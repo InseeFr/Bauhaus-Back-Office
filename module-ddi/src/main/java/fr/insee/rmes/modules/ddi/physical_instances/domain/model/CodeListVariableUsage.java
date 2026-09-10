@@ -17,5 +17,4 @@ public record CodeListVariableUsage(
         String physicalInstanceLabel,
         String variableAgencyId,
         String variableId,
-        String variableLabel
-) {}
+        String variableLabel) {}

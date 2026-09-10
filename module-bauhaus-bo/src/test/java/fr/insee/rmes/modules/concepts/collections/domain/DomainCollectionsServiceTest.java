@@ -1,10 +1,15 @@
 package fr.insee.rmes.modules.concepts.collections.domain;
 
-import fr.insee.rmes.modules.shared_kernel.domain.model.LocalisedLabel;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.never;
+
+import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionAlreadyPublishedException;
 import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionsFetchException;
 import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionsSaveException;
 import fr.insee.rmes.modules.concepts.collections.domain.exceptions.InvalidCreateCollectionCommandException;
-import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionAlreadyPublishedException;
 import fr.insee.rmes.modules.concepts.collections.domain.model.Collection;
 import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionDashboardItem;
 import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionId;
@@ -14,20 +19,14 @@ import fr.insee.rmes.modules.concepts.collections.domain.model.CompactCollection
 import fr.insee.rmes.modules.concepts.collections.domain.model.commands.CreateCollectionCommand;
 import fr.insee.rmes.modules.concepts.collections.domain.model.commands.UpdateCollectionCommand;
 import fr.insee.rmes.modules.concepts.collections.domain.port.serverside.CollectionsRepository;
+import fr.insee.rmes.modules.shared_kernel.domain.model.LocalisedLabel;
 import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
+import java.time.LocalDateTime;
+import java.util.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
-
-import java.time.LocalDateTime;
-import java.util.*;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.never;
 
 class DomainCollectionsServiceTest {
 
@@ -47,16 +46,16 @@ class DomainCollectionsServiceTest {
             null);
 
     static final CompactCollection[] COMPACT_COLLECTIONS = {
-            new CompactCollection(ID, LocalisedLabel.ofDefaultLanguage("fr")),
-            new CompactCollection(new CollectionId(uuid2.toString()), LocalisedLabel.ofAlternativeLanguage("en"))
+        new CompactCollection(ID, LocalisedLabel.ofDefaultLanguage("fr")),
+        new CompactCollection(new CollectionId(uuid2.toString()), LocalisedLabel.ofAlternativeLanguage("en"))
     };
 
     CollectionsRepository collectionsRepository;
 
-    DomainCollectionsService domainCollectionsService ;
+    DomainCollectionsService domainCollectionsService;
 
     @BeforeEach
-    void resetDomainCollectionService(){
+    void resetDomainCollectionService() {
         collectionsRepository = Mockito.mock(CollectionsRepository.class);
         domainCollectionsService = new DomainCollectionsService(collectionsRepository);
     }
@@ -65,24 +64,25 @@ class DomainCollectionsServiceTest {
     void all_collections_should_be_returned() throws CollectionsFetchException {
         // Given
         when(collectionsRepository.getCollections()).thenReturn(Arrays.asList(COMPACT_COLLECTIONS));
-        //When
+        // When
         List<CompactCollection> allCollections = domainCollectionsService.getAllCollections();
-        //Then
+        // Then
         assertThat(allCollections).containsExactlyInAnyOrder(COMPACT_COLLECTIONS);
     }
 
     @Test
     void found_collection_should_be_returned() throws CollectionsFetchException {
-        //Given
+        // Given
         when(collectionsRepository.getCollection(ID)).thenReturn(Optional.of(COLLECTION));
-        //When
+        // When
         Optional<Collection> actualCollection = domainCollectionsService.getCollection(ID);
-        //Then
+        // Then
         assertThat(actualCollection).contains(COLLECTION);
     }
 
     @Test
-    void collection_id_should_be_returned_when_collection_is_created() throws InvalidCreateCollectionCommandException, CollectionsSaveException, CollectionsFetchException {
+    void collection_id_should_be_returned_when_collection_is_created()
+            throws InvalidCreateCollectionCommandException, CollectionsSaveException, CollectionsFetchException {
         when(collectionsRepository.getCollection(ID)).thenReturn(Optional.empty());
         CreateCollectionCommand command = new CreateCollectionCommand(
                 ID.value(),
@@ -90,18 +90,18 @@ class DomainCollectionsServiceTest {
                 null,
                 "HIE0010",
                 null,
-                Collections.emptyList()
-        );
-        //When
+                Collections.emptyList());
+        // When
         CollectionId collectionId = domainCollectionsService.createCollection(command);
         verify(collectionsRepository, times(1)).save(any());
 
-        //Then
+        // Then
         assertThat(collectionId).isEqualTo(ID);
     }
 
     @Test
-    void should_throw_when_collection_id_already_exists() throws CollectionsFetchException, InvalidCreateCollectionCommandException, CollectionsSaveException {
+    void should_throw_when_collection_id_already_exists()
+            throws CollectionsFetchException, InvalidCreateCollectionCommandException, CollectionsSaveException {
         when(collectionsRepository.getCollection(ID)).thenReturn(Optional.of(COLLECTION));
         CreateCollectionCommand command = new CreateCollectionCommand(
                 ID.value(),
@@ -109,8 +109,7 @@ class DomainCollectionsServiceTest {
                 null,
                 "HIE0010",
                 null,
-                Collections.emptyList()
-        );
+                Collections.emptyList());
 
         assertThrows(
                 fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionAlreadyExistsException.class,
@@ -169,7 +168,8 @@ class DomainCollectionsServiceTest {
     @Test
     void dashboard_items_should_be_returned() throws CollectionsFetchException {
         // Given
-        var dashboardItem = new CollectionDashboardItem(ID, "Label", "2024-01-01T10:00:00", null, ValidationStatus.UNPUBLISHED, "creator1", 2);
+        var dashboardItem = new CollectionDashboardItem(
+                ID, "Label", "2024-01-01T10:00:00", null, ValidationStatus.UNPUBLISHED, "creator1", 2);
         when(collectionsRepository.getDashboard()).thenReturn(List.of(dashboardItem));
         // When
         var result = domainCollectionsService.getDashboard();
@@ -220,7 +220,8 @@ class DomainCollectionsServiceTest {
     }
 
     @Test
-    void sync_should_link_and_unlink_when_collections_change() throws CollectionsSaveException, CollectionsFetchException {
+    void sync_should_link_and_unlink_when_collections_change()
+            throws CollectionsSaveException, CollectionsFetchException {
         CollectionId ID2 = new CollectionId(uuid2.toString());
         when(collectionsRepository.getCollectionIdsByConceptId("c00001")).thenReturn(List.of(uuid1.toString()));
 
@@ -231,7 +232,8 @@ class DomainCollectionsServiceTest {
     }
 
     @Test
-    void sync_should_do_nothing_when_collections_unchanged() throws CollectionsSaveException, CollectionsFetchException {
+    void sync_should_do_nothing_when_collections_unchanged()
+            throws CollectionsSaveException, CollectionsFetchException {
         when(collectionsRepository.getCollectionIdsByConceptId("c00001")).thenReturn(List.of(uuid1.toString()));
 
         domainCollectionsService.syncConceptCollections("c00001", List.of(uuid1.toString()));
@@ -241,7 +243,8 @@ class DomainCollectionsServiceTest {
     }
 
     @Test
-    void sync_should_do_nothing_when_new_collections_is_empty_and_current_is_empty() throws CollectionsSaveException, CollectionsFetchException {
+    void sync_should_do_nothing_when_new_collections_is_empty_and_current_is_empty()
+            throws CollectionsSaveException, CollectionsFetchException {
         when(collectionsRepository.getCollectionIdsByConceptId("c00001")).thenReturn(Collections.emptyList());
 
         domainCollectionsService.syncConceptCollections("c00001", Collections.emptyList());
@@ -255,17 +258,18 @@ class DomainCollectionsServiceTest {
         when(collectionsRepository.findExistingCollectionIds(List.of(uuid1.toString())))
                 .thenReturn(Set.of(uuid1.toString()));
 
-        assertDoesNotThrow(() ->
-                domainCollectionsService.validateCollections(List.of(uuid1.toString())));
+        assertDoesNotThrow(() -> domainCollectionsService.validateCollections(List.of(uuid1.toString())));
     }
 
     @Test
-    void validate_should_throw_when_collection_does_not_exist() throws CollectionsFetchException, CollectionsSaveException {
+    void validate_should_throw_when_collection_does_not_exist()
+            throws CollectionsFetchException, CollectionsSaveException {
         when(collectionsRepository.findExistingCollectionIds(List.of("unknown-collection")))
                 .thenReturn(Set.of());
 
-        assertThrows(CollectionsFetchException.class, () ->
-                domainCollectionsService.validateCollections(List.of("unknown-collection")));
+        assertThrows(
+                CollectionsFetchException.class,
+                () -> domainCollectionsService.validateCollections(List.of("unknown-collection")));
 
         verify(collectionsRepository, never()).linkConceptToCollection(any(), any());
         verify(collectionsRepository, never()).unlinkConceptFromCollection(any(), any());
@@ -273,28 +277,30 @@ class DomainCollectionsServiceTest {
 
     @Test
     void validate_should_do_nothing_when_list_is_empty() throws CollectionsFetchException {
-        assertDoesNotThrow(() ->
-                domainCollectionsService.validateCollections(Collections.emptyList()));
+        assertDoesNotThrow(() -> domainCollectionsService.validateCollections(Collections.emptyList()));
 
         verify(collectionsRepository, never()).findExistingCollectionIds(any());
     }
 
     @Test
-    void publish_should_throw_when_a_collection_is_already_published() throws CollectionsFetchException, CollectionsSaveException {
+    void publish_should_throw_when_a_collection_is_already_published()
+            throws CollectionsFetchException, CollectionsSaveException {
         when(collectionsRepository.findExistingCollectionIds(List.of(uuid1.toString())))
                 .thenReturn(Set.of(uuid1.toString()));
         when(collectionsRepository.findValidatedCollectionIds(List.of(uuid1.toString())))
                 .thenReturn(Set.of(uuid1.toString()));
 
-        CollectionAlreadyPublishedException exception = assertThrows(CollectionAlreadyPublishedException.class, () ->
-                domainCollectionsService.publishCollections(List.of(ID)));
+        CollectionAlreadyPublishedException exception = assertThrows(
+                CollectionAlreadyPublishedException.class,
+                () -> domainCollectionsService.publishCollections(List.of(ID)));
 
         assertThat(exception.getMessage()).contains(uuid1.toString());
         verify(collectionsRepository, never()).publishCollections(any());
     }
 
     @Test
-    void publish_should_succeed_when_no_collection_is_already_published() throws CollectionsFetchException, CollectionsSaveException {
+    void publish_should_succeed_when_no_collection_is_already_published()
+            throws CollectionsFetchException, CollectionsSaveException {
         when(collectionsRepository.findExistingCollectionIds(List.of(uuid1.toString())))
                 .thenReturn(Set.of(uuid1.toString()));
         when(collectionsRepository.findValidatedCollectionIds(List.of(uuid1.toString())))

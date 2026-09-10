@@ -1,9 +1,8 @@
 package fr.insee.rmes.bauhaus_services.datasets;
 
+import static fr.insee.rmes.exceptions.ErrorCodes.DATASET_PATCH_INCORRECT_BODY;
+
 import fr.insee.rmes.BauhausLanguagesProperties;
-import fr.insee.rmes.modules.datasets.datasets.model.*;
-import fr.insee.rmes.persistance.sparql_queries.datasets.DatasetQueries;
-import fr.insee.rmes.persistance.sparql_queries.datasets.DatasetDistributionQueries;
 import fr.insee.rmes.bauhaus_services.OrganizationsService;
 import fr.insee.rmes.bauhaus_services.operations.series.SeriesRepository;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
@@ -16,12 +15,18 @@ import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.graphdb.ontologies.ADMS;
 import fr.insee.rmes.graphdb.ontologies.INSEE;
+import fr.insee.rmes.json.JSONUtils;
+import fr.insee.rmes.modules.datasets.datasets.model.*;
+import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
+import fr.insee.rmes.persistance.sparql_queries.datasets.DatasetDistributionQueries;
+import fr.insee.rmes.persistance.sparql_queries.datasets.DatasetQueries;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.Deserializer;
 import fr.insee.rmes.utils.DiacriticSorter;
 import fr.insee.rmes.utils.IdGenerator;
-import fr.insee.rmes.json.JSONUtils;
+import java.util.*;
+import java.util.regex.Pattern;
 import org.eclipse.rdf4j.model.BNode;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -35,17 +40,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import java.util.*;
-import java.util.regex.Pattern;
-
-import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
-
-import static fr.insee.rmes.exceptions.ErrorCodes.DATASET_PATCH_INCORRECT_BODY;
-
 @Service
 public class DatasetServiceImpl extends RdfService implements DatasetService {
     private final BauhausLanguagesProperties languages;
-
 
     public static final String CONTRIBUTOR = "contributor";
     private static final Pattern ALT_IDENTIFIER_PATTERN = Pattern.compile("^[a-zA-Z0-9-_]+$");
@@ -98,8 +95,8 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
             @Value("${fr.insee.rmes.bauhaus.sesame.gestion.baseURI}") String baseUriGestion,
             @Value("${fr.insee.rmes.bauhaus.distribution.baseURI}") String distributionsBaseUriSuffix,
             @Value("${fr.insee.rmes.bauhaus.adms.graph}") String admsGraphSuffix,
-            @Value("${fr.insee.rmes.bauhaus.adms.identifiantsAlternatifs.baseURI}") String identifiantsAlternatifsBaseUri
-    ) {
+            @Value("${fr.insee.rmes.bauhaus.adms.identifiantsAlternatifs.baseURI}")
+                    String identifiantsAlternatifsBaseUri) {
         super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
         this.languages = languages;
         this.seriesRepository = seriesRepository;
@@ -116,31 +113,31 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         this.identifiantsAlternatifsBaseUri = identifiantsAlternatifsBaseUri;
     }
 
-    private String getDatasetsGraph(){
+    private String getDatasetsGraph() {
         return baseGraph + datasetsGraphSuffix;
     }
 
-    private String getAdmsGraph(){
+    private String getAdmsGraph() {
         return baseGraph + admsGraphSuffix;
     }
 
-    private String getDistributionBaseUri(){
+    private String getDistributionBaseUri() {
         return baseUriGestion + distributionsBaseUriSuffix;
     }
 
-    protected String getDatasetsBaseUri(){
+    protected String getDatasetsBaseUri() {
         return baseUriGestion + datasetsBaseUriSuffix;
     }
 
-    protected IRI getDatasetIri(String datasetId){
+    protected IRI getDatasetIri(String datasetId) {
         return RdfUtils.createIRI(getDatasetsBaseUri() + "/" + datasetId);
     }
 
-    private String getDatasetsAdmsBaseUri(){
+    private String getDatasetsAdmsBaseUri() {
         return baseUriGestion + identifiantsAlternatifsBaseUri;
     }
 
-    private String getCatalogRecordBaseUri(){
+    private String getCatalogRecordBaseUri() {
         return baseUriGestion + datasetsRecordBaseUriSuffix;
     }
 
@@ -156,7 +153,8 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
 
     @Override
     public String publishDataset(String id) throws RmesException {
-        PublicationUtils.rejectIfAlreadyPublished("Dataset", id, getDatasetByID(id).getValidationState());
+        PublicationUtils.rejectIfAlreadyPublished(
+                "Dataset", id, getDatasetByID(id).getValidationState());
 
         Model model = new LinkedHashModel();
         IRI iri = RdfUtils.createIRI(getDatasetsBaseUri() + "/" + id);
@@ -164,9 +162,21 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
 
         publicationUtils.publishResource(iri, Set.of("processStep", "archiveUnit", "validationState"));
         publicationUtils.publishResource(catalogRecordIri, Set.of(CREATOR, CONTRIBUTOR));
-        model.add(iri, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.VALIDATED), RdfUtils.createIRI(getDatasetsGraph()));
-        model.remove(iri, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.UNPUBLISHED), RdfUtils.createIRI(getDatasetsGraph()));
-        model.remove(iri, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.MODIFIED), RdfUtils.createIRI(getDatasetsGraph()));
+        model.add(
+                iri,
+                INSEE.VALIDATION_STATE,
+                RdfUtils.setLiteralString(ValidationStatus.VALIDATED),
+                RdfUtils.createIRI(getDatasetsGraph()));
+        model.remove(
+                iri,
+                INSEE.VALIDATION_STATE,
+                RdfUtils.setLiteralString(ValidationStatus.UNPUBLISHED),
+                RdfUtils.createIRI(getDatasetsGraph()));
+        model.remove(
+                iri,
+                INSEE.VALIDATION_STATE,
+                RdfUtils.setLiteralString(ValidationStatus.MODIFIED),
+                RdfUtils.createIRI(getDatasetsGraph()));
 
         repoGestion.objectValidation(iri, model);
 
@@ -175,24 +185,22 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
 
     private List<PartialDataset> getDatasets(Set<String> stamps) throws RmesException {
         var datasets = this.repoGestion.getResponseAsArray(datasetQueries.getDatasets(getDatasetsGraph(), stamps));
-        return DiacriticSorter.sort(datasets,
-                PartialDataset[].class,
-                PartialDataset::label);
+        return DiacriticSorter.sort(datasets, PartialDataset[].class, PartialDataset::label);
     }
 
     @Override
     public List<DatasetsForSearch> getDatasetsForSearch() throws RmesException {
-        var datasets = this.repoGestion.getResponseAsArray(datasetQueries.getDatasetsForSearch(getDatasetsGraph(), getAdmsGraph()));
-        return DiacriticSorter.sort(datasets,
-                DatasetsForSearch[].class,
-                DatasetsForSearch::labelLg1);
+        var datasets = this.repoGestion.getResponseAsArray(
+                datasetQueries.getDatasetsForSearch(getDatasetsGraph(), getAdmsGraph()));
+        return DiacriticSorter.sort(datasets, DatasetsForSearch[].class, DatasetsForSearch::labelLg1);
     }
 
     @Override
     public Dataset getDatasetByID(String id) throws RmesException {
-        JSONArray datasetWithThemes =  this.repoGestion.getResponseAsArray(datasetQueries.getDataset(id, getDatasetsGraph(), getAdmsGraph()));
+        JSONArray datasetWithThemes =
+                this.repoGestion.getResponseAsArray(datasetQueries.getDataset(id, getDatasetsGraph(), getAdmsGraph()));
 
-        if(datasetWithThemes.isEmpty()){
+        if (datasetWithThemes.isEmpty()) {
             throw new RmesNotFoundException("This dataset does not exist");
         }
 
@@ -206,29 +214,46 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         dataset.put("themes", themes);
         dataset.remove(THEME);
 
-        this.repoGestion.getMultipleTripletsForObject(dataset, "creators", datasetQueries.getDatasetCreators(id, getDatasetsGraph()), CREATOR);
-        this.repoGestion.getMultipleTripletsForObject(dataset, "wasGeneratedIRIs", datasetQueries.getDatasetWasGeneratedIris(id, getDatasetsGraph()), "iri");
+        this.repoGestion.getMultipleTripletsForObject(
+                dataset, "creators", datasetQueries.getDatasetCreators(id, getDatasetsGraph()), CREATOR);
+        this.repoGestion.getMultipleTripletsForObject(
+                dataset, "wasGeneratedIRIs", datasetQueries.getDatasetWasGeneratedIris(id, getDatasetsGraph()), "iri");
         IRI catalogRecordIRI = RdfUtils.createIRI(getCatalogRecordBaseUri() + "/" + id);
-        this.repoGestion.getMultipleTripletsForObject(dataset, "spacialResolutions", datasetQueries.getDatasetSpacialResolutions(id, getDatasetsGraph()), "spacialResolution");
-        this.repoGestion.getMultipleTripletsForObject(dataset, "statisticalUnit", datasetQueries.getDatasetStatisticalUnits(id, getDatasetsGraph()), "statisticalUnit");
-        this.repoGestion.getMultipleTripletsForObject(dataset, "linkedDocuments", datasetQueries.getLinkedDocuments(id, getDatasetsGraph()), "linkedDocument");
+        this.repoGestion.getMultipleTripletsForObject(
+                dataset,
+                "spacialResolutions",
+                datasetQueries.getDatasetSpacialResolutions(id, getDatasetsGraph()),
+                "spacialResolution");
+        this.repoGestion.getMultipleTripletsForObject(
+                dataset,
+                "statisticalUnit",
+                datasetQueries.getDatasetStatisticalUnits(id, getDatasetsGraph()),
+                "statisticalUnit");
+        this.repoGestion.getMultipleTripletsForObject(
+                dataset,
+                "linkedDocuments",
+                datasetQueries.getLinkedDocuments(id, getDatasetsGraph()),
+                "linkedDocument");
         addKeywordsToDataset(id, dataset);
 
-
         JSONObject catalogRecord = new JSONObject();
-        this.repoGestion.getMultipleTripletsForObject(catalogRecord, CONTRIBUTOR, datasetQueries.getDatasetContributors(catalogRecordIRI, getDatasetsGraph()), CONTRIBUTOR);
+        this.repoGestion.getMultipleTripletsForObject(
+                catalogRecord,
+                CONTRIBUTOR,
+                datasetQueries.getDatasetContributors(catalogRecordIRI, getDatasetsGraph()),
+                CONTRIBUTOR);
         resolveContributorIris(catalogRecord);
 
-        if(dataset.has(CATALOG_RECORD_CREATOR)){
+        if (dataset.has(CATALOG_RECORD_CREATOR)) {
             catalogRecord.put(CREATOR, dataset.getString(CATALOG_RECORD_CREATOR));
             dataset.remove(CATALOG_RECORD_CREATOR);
         }
 
-        if(dataset.has(CATALOG_RECORD_CREATED)){
+        if (dataset.has(CATALOG_RECORD_CREATED)) {
             catalogRecord.put("created", dataset.getString(CATALOG_RECORD_CREATED));
             dataset.remove(CATALOG_RECORD_CREATED);
         }
-        if(dataset.has(CATALOG_RECORD_UPDATED)){
+        if (dataset.has(CATALOG_RECORD_UPDATED)) {
             catalogRecord.put("updated", dataset.getString(CATALOG_RECORD_UPDATED));
             dataset.remove(CATALOG_RECORD_UPDATED);
         }
@@ -239,23 +264,20 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
     private void addKeywordsToDataset(String id, JSONObject dataset) throws RmesException {
         JSONArray keywords = this.repoGestion.getResponseAsArray(datasetQueries.getKeywords(id, getDatasetsGraph()));
 
-
-
         List<String> lg1 = new ArrayList<>();
         List<String> lg2 = new ArrayList<>();
 
-        if(keywords != null){
+        if (keywords != null) {
             keywords.forEach(k -> {
                 JSONObject keyword = (JSONObject) k;
-                if(keyword.getString("lang").equalsIgnoreCase(languages.lg1())){
+                if (keyword.getString("lang").equalsIgnoreCase(languages.lg1())) {
                     lg1.add(keyword.getString("keyword"));
                 }
-                if(keyword.getString("lang").equalsIgnoreCase(languages.lg2())){
+                if (keyword.getString("lang").equalsIgnoreCase(languages.lg2())) {
                     lg2.add(keyword.getString("keyword"));
                 }
             });
         }
-
 
         JSONObject formattedKeywords = new JSONObject();
         formattedKeywords.put("lg1", lg1);
@@ -266,21 +288,21 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
     private String update(String datasetId, Dataset dataset) throws RmesException {
         dataset.setId(datasetId);
 
-        if(ValidationStatus.VALIDATED.toString().equalsIgnoreCase(dataset.getValidationState())){
+        if (ValidationStatus.VALIDATED.toString().equalsIgnoreCase(dataset.getValidationState())) {
             dataset.setValidationState(ValidationStatus.MODIFIED.toString());
         }
 
-        if(dataset.getCatalogRecord() == null){
+        if (dataset.getCatalogRecord() == null) {
             dataset.setCatalogRecord(new CatalogRecord());
         }
 
         this.validate(dataset);
 
-
         dataset.getCatalogRecord().setUpdated(DateUtils.getCurrentDate());
 
         return this.persist(dataset);
     }
+
     @Override
     public String update(String datasetId, String body) throws RmesException {
         Dataset dataset = Deserializer.deserializeJsonString(body, Dataset.class);
@@ -293,7 +315,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         dataset.setId(idGenerator.generateNextId());
         dataset.setValidationState(ValidationStatus.UNPUBLISHED.toString());
 
-        if(dataset.getCatalogRecord() == null){
+        if (dataset.getCatalogRecord() == null) {
             dataset.setCatalogRecord(new CatalogRecord());
         }
 
@@ -307,42 +329,51 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
 
     @Override
     public String getDistributions(String id) throws RmesException {
-        return this.repoGestion.getResponseAsArray(datasetDistributionQueries.getDatasetDistributions(id, getDatasetsGraph())).toString();
+        return this.repoGestion
+                .getResponseAsArray(datasetDistributionQueries.getDatasetDistributions(id, getDatasetsGraph()))
+                .toString();
     }
 
     @Override
     public String getArchivageUnits() throws RmesException {
-        return this.repoGestion.getResponseAsArray(datasetQueries.getArchivageUnits()).toString();
+        return this.repoGestion
+                .getResponseAsArray(datasetQueries.getArchivageUnits())
+                .toString();
     }
 
     @Override
     public void patchDataset(String datasetId, PatchDataset patchDataset) throws RmesException {
         Dataset dataset = getDatasetByID(datasetId);
-        if  (patchDataset.updated() == null && patchDataset.issued() == null && patchDataset.numObservations() == null
-                && patchDataset.numSeries() == null && patchDataset.temporal() == null){
-            throw new RmesBadRequestException(DATASET_PATCH_INCORRECT_BODY,"One of these attributes is required : updated, issued, numObservations, numSeries, temporal");
+        if (patchDataset.updated() == null
+                && patchDataset.issued() == null
+                && patchDataset.numObservations() == null
+                && patchDataset.numSeries() == null
+                && patchDataset.temporal() == null) {
+            throw new RmesBadRequestException(
+                    DATASET_PATCH_INCORRECT_BODY,
+                    "One of these attributes is required : updated, issued, numObservations, numSeries, temporal");
         }
 
-        if ( patchDataset.issued() != null){
+        if (patchDataset.issued() != null) {
             dataset.setIssued(patchDataset.issued());
         }
 
-        if ( patchDataset.updated() != null){
+        if (patchDataset.updated() != null) {
             dataset.setUpdated(patchDataset.updated());
         }
 
-        if ( patchDataset.temporal() != null){
+        if (patchDataset.temporal() != null) {
             String temporalCoverageStartDate = patchDataset.temporal().startPeriod();
             String temporalCoverageEndDate = patchDataset.temporal().endPeriod();
             dataset.setTemporalCoverageStartDate(temporalCoverageStartDate);
             dataset.setTemporalCoverageStartDate(temporalCoverageEndDate);
         }
 
-        if ( patchDataset.numObservations() != null && patchDataset.numObservations() > 0){
+        if (patchDataset.numObservations() != null && patchDataset.numObservations() > 0) {
             dataset.setObservationNumber(patchDataset.numObservations());
         }
 
-        if ( patchDataset.numSeries() != null){
+        if (patchDataset.numSeries() != null) {
             dataset.setTimeSeriesNumber(patchDataset.numSeries());
         }
 
@@ -350,18 +381,23 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
     }
 
     @Override
-    public void deleteDatasetId(String datasetId) throws RmesException{
+    public void deleteDatasetId(String datasetId) throws RmesException {
         Dataset dataset = getDatasetByID(datasetId);
-        if (isPublished(dataset)){
-             throw new RmesBadRequestException(ErrorCodes.DATASET_DELETE_ONLY_UNPUBLISHED, "Only unpublished datasets can be deleted");
+        if (isPublished(dataset)) {
+            throw new RmesBadRequestException(
+                    ErrorCodes.DATASET_DELETE_ONLY_UNPUBLISHED, "Only unpublished datasets can be deleted");
         }
 
         if (hasDistribution(dataset)) {
-            throw new RmesBadRequestException(ErrorCodes.DATASET_DELETE_ONLY_WITHOUT_DISTRIBUTION, "Only dataset without any distribution can be deleted");
+            throw new RmesBadRequestException(
+                    ErrorCodes.DATASET_DELETE_ONLY_WITHOUT_DISTRIBUTION,
+                    "Only dataset without any distribution can be deleted");
         }
 
         if (hasDerivedDataset(dataset)) {
-            throw new RmesBadRequestException(ErrorCodes.DATASET_DELETE_ONLY_WITHOUT_DERIVED_DATASET, "Only dataset without any derived dataset can be deleted");
+            throw new RmesBadRequestException(
+                    ErrorCodes.DATASET_DELETE_ONLY_WITHOUT_DERIVED_DATASET,
+                    "Only dataset without any derived dataset can be deleted");
         }
 
         IRI datasetIRI = RdfUtils.createIRI(getDatasetsBaseUri());
@@ -370,11 +406,11 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         IRI catalogRecordIRI = RdfUtils.createIRI(getCatalogRecordBaseUri() + "/" + datasetId);
         IRI datasetAdmsIri = RdfUtils.createIRI(getDatasetsAdmsBaseUri() + "/" + datasetId);
 
-        if (hasTemporalCoverage(dataset)){
+        if (hasTemporalCoverage(dataset)) {
             deleteTemporalWhiteNode(datasetId);
         }
 
-        if (isDerivedFromADataset(dataset)){
+        if (isDerivedFromADataset(dataset)) {
             deleteQualifiedDerivationWhiteNode(datasetId);
         }
         repoGestion.deleteObject(RdfUtils.toURI(datasetURI));
@@ -382,7 +418,6 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         repoGestion.deleteObject(datasetAdmsIri);
         repoGestion.deleteTripletByPredicate(datasetIRI, DCAT.DATASET, graph);
     }
-
 
     private boolean isPublished(Dataset dataset) {
         return !"Unpublished".equalsIgnoreCase(dataset.getValidationState());
@@ -395,7 +430,8 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
 
     private boolean hasDerivedDataset(Dataset dataset) throws RmesException {
         String datasetId = dataset.getId();
-        JSONObject datasetDerivation =  this.repoGestion.getResponseAsObject(datasetQueries.getDerivedDataset(datasetId, getDatasetsGraph()));
+        JSONObject datasetDerivation =
+                this.repoGestion.getResponseAsObject(datasetQueries.getDerivedDataset(datasetId, getDatasetsGraph()));
         return (datasetDerivation.has("id"));
     }
 
@@ -409,7 +445,8 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
 
     private boolean isDerivedFromADataset(Dataset dataset) throws RmesException {
         String datasetId = dataset.getId();
-        JSONObject datasetDerivedFrom =  this.repoGestion.getResponseAsObject(datasetQueries.getDatasetDerivedFrom(datasetId, getDatasetsGraph()));
+        JSONObject datasetDerivedFrom = this.repoGestion.getResponseAsObject(
+                datasetQueries.getDatasetDerivedFrom(datasetId, getDatasetsGraph()));
         return (!datasetDerivedFrom.optString("wasDerivedFromS").isEmpty());
     }
 
@@ -429,17 +466,20 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         RdfUtils.addTripleUri(catalogRecordIRI, FOAF.PRIMARY_TOPIC, datasetIri, model, graph);
 
         model.add(catalogRecordIRI, RDF.TYPE, DCAT.CATALOG_RECORD, graph);
-        RdfUtils.addTripleUri(catalogRecordIRI, DC.CREATOR, resolveOrganisationIri(catalogRecord.getCreator()), model, graph);
+        RdfUtils.addTripleUri(
+                catalogRecordIRI, DC.CREATOR, resolveOrganisationIri(catalogRecord.getCreator()), model, graph);
 
-        catalogRecord.getContributor().forEach(contributor -> RdfUtils.addTripleUri(catalogRecordIRI, DC.CONTRIBUTOR, resolveOrganisationIri(contributor), model, graph));
+        catalogRecord
+                .getContributor()
+                .forEach(contributor -> RdfUtils.addTripleUri(
+                        catalogRecordIRI, DC.CONTRIBUTOR, resolveOrganisationIri(contributor), model, graph));
         RdfUtils.addTripleDateTime(catalogRecordIRI, DCTERMS.CREATED, catalogRecord.getCreated(), model, graph);
         RdfUtils.addTripleDateTime(catalogRecordIRI, DCTERMS.MODIFIED, catalogRecord.getUpdated(), model, graph);
 
         repoGestion.loadSimpleObject(catalogRecordIRI, model, null);
-
     }
 
-    private void persistGeneralInformations(IRI datasetIri, Dataset dataset, Model model, Resource graph){
+    private void persistGeneralInformations(IRI datasetIri, Dataset dataset, Model model, Resource graph) {
         model.add(datasetIri, DCTERMS.TITLE, RdfUtils.setLiteralString(dataset.getLabelLg1(), languages.lg1()), graph);
         model.add(datasetIri, DCTERMS.TITLE, RdfUtils.setLiteralString(dataset.getLabelLg2(), languages.lg2()), graph);
         RdfUtils.addTripleString(datasetIri, INSEE.SUBTITLE, dataset.getSubTitleLg1(), languages.lg1(), model, graph);
@@ -447,102 +487,125 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
 
         RdfUtils.addTripleUri(datasetIri, DCTERMS.ACCRUAL_PERIODICITY, dataset.getAccrualPeriodicity(), model, graph);
         RdfUtils.addTripleUri(datasetIri, DCTERMS.ACCESS_RIGHTS, dataset.getAccessRights(), model, graph);
-        RdfUtils.addTripleUri(datasetIri, INSEE.CONFIDENTIALITY_STATUS, dataset.getConfidentialityStatus(), model, graph);
+        RdfUtils.addTripleUri(
+                datasetIri, INSEE.CONFIDENTIALITY_STATUS, dataset.getConfidentialityStatus(), model, graph);
 
-        if(dataset.getCreators() != null){
-            dataset.getCreators().forEach(creator -> RdfUtils.addTripleUri(datasetIri, DCTERMS.CREATOR, creator, model, graph));
+        if (dataset.getCreators() != null) {
+            dataset.getCreators()
+                    .forEach(creator -> RdfUtils.addTripleUri(datasetIri, DCTERMS.CREATOR, creator, model, graph));
         }
 
         RdfUtils.addTripleUri(datasetIri, DCTERMS.PUBLISHER, dataset.getPublisher(), model, graph);
 
-        RdfUtils.addTripleString(datasetIri, DCAT.LANDING_PAGE, dataset.getLandingPageLg1(), languages.lg1(), model, graph);
-        RdfUtils.addTripleString(datasetIri, DCAT.LANDING_PAGE, dataset.getLandingPageLg2(), languages.lg2(), model, graph);
+        RdfUtils.addTripleString(
+                datasetIri, DCAT.LANDING_PAGE, dataset.getLandingPageLg1(), languages.lg1(), model, graph);
+        RdfUtils.addTripleString(
+                datasetIri, DCAT.LANDING_PAGE, dataset.getLandingPageLg2(), languages.lg2(), model, graph);
 
         RdfUtils.addTripleDateTime(datasetIri, DCTERMS.MODIFIED, dataset.getUpdated(), model, graph);
         RdfUtils.addTripleDateTime(datasetIri, DCTERMS.ISSUED, dataset.getIssued(), model, graph);
-
     }
 
-    private void persistInternalManagment(IRI datasetIri, Dataset dataset, Model model, Resource graph) throws RmesException {
+    private void persistInternalManagment(IRI datasetIri, Dataset dataset, Model model, Resource graph)
+            throws RmesException {
         RdfUtils.addTripleUri(datasetIri, INSEE.DISSEMINATIONSTATUS, dataset.getDisseminationStatus(), model, graph);
         RdfUtils.addTripleUri(datasetIri, INSEE.PROCESS_STEP, dataset.getProcessStep(), model, graph);
         RdfUtils.addTripleUri(datasetIri, INSEE.ARCHIVE_UNIT, dataset.getArchiveUnit(), model, graph);
 
-        if(dataset.getAltIdentifier() != null){
+        if (dataset.getAltIdentifier() != null) {
             Resource admsGraph = RdfUtils.createIRI(getAdmsGraph());
             IRI datasetAdmsIri = RdfUtils.createIRI(getDatasetsAdmsBaseUri() + "/" + dataset.getId());
-
 
             RdfUtils.addTripleUri(datasetIri, ADMS.HAS_IDENTIFIER, datasetAdmsIri, model, graph);
 
             Model datasetAdmsModel = new LinkedHashModel();
             RdfUtils.addTripleUri(datasetAdmsIri, RDF.TYPE, ADMS.IDENTIFIER, datasetAdmsModel, admsGraph);
-            RdfUtils.addTripleString(datasetAdmsIri, SKOS.NOTATION, dataset.getAltIdentifier(), datasetAdmsModel, admsGraph);
+            RdfUtils.addTripleString(
+                    datasetAdmsIri, SKOS.NOTATION, dataset.getAltIdentifier(), datasetAdmsModel, admsGraph);
             repoGestion.loadSimpleObject(datasetAdmsIri, datasetAdmsModel, null);
-
         }
-
     }
 
-    private void persistNotes(IRI datasetIri, Dataset dataset, Model model, Resource graph){
-        RdfUtils.addTripleString(datasetIri, DCTERMS.DESCRIPTION, dataset.getDescriptionLg1(), languages.lg1(), model, graph);
-        RdfUtils.addTripleString(datasetIri, DCTERMS.DESCRIPTION, dataset.getDescriptionLg2(), languages.lg2(), model, graph);
+    private void persistNotes(IRI datasetIri, Dataset dataset, Model model, Resource graph) {
+        RdfUtils.addTripleString(
+                datasetIri, DCTERMS.DESCRIPTION, dataset.getDescriptionLg1(), languages.lg1(), model, graph);
+        RdfUtils.addTripleString(
+                datasetIri, DCTERMS.DESCRIPTION, dataset.getDescriptionLg2(), languages.lg2(), model, graph);
         RdfUtils.addTripleString(datasetIri, DCTERMS.ABSTRACT, dataset.getAbstractLg1(), languages.lg1(), model, graph);
         RdfUtils.addTripleString(datasetIri, DCTERMS.ABSTRACT, dataset.getAbstractLg2(), languages.lg2(), model, graph);
         RdfUtils.addTripleString(datasetIri, SKOS.SCOPE_NOTE, dataset.getCautionLg1(), languages.lg1(), model, graph);
         RdfUtils.addTripleString(datasetIri, SKOS.SCOPE_NOTE, dataset.getCautionLg2(), languages.lg2(), model, graph);
     }
 
-    private void persistStatisticsInformations(IRI datasetIri, Dataset dataset, Model model, Resource graph){
+    private void persistStatisticsInformations(IRI datasetIri, Dataset dataset, Model model, Resource graph) {
         RdfUtils.addTripleUri(datasetIri, DCTERMS.TYPE, dataset.getType(), model, graph);
 
-        if(dataset.getStatisticalUnit() != null){
-            dataset.getStatisticalUnit().forEach(statisticalUnit -> RdfUtils.addTripleUri(datasetIri, INSEE.STATISTICAL_UNIT, statisticalUnit, model, graph));
+        if (dataset.getStatisticalUnit() != null) {
+            dataset.getStatisticalUnit()
+                    .forEach(statisticalUnit ->
+                            RdfUtils.addTripleUri(datasetIri, INSEE.STATISTICAL_UNIT, statisticalUnit, model, graph));
         }
         RdfUtils.addTripleUri(datasetIri, INSEE.STRUCTURE, dataset.getDataStructure(), model, graph);
-        if(dataset.getObservationNumber() != null){
-            RdfUtils.addTripleInt(datasetIri, INSEE.NUM_OBSERVATIONS, dataset.getObservationNumber().toString(), model, graph);
+        if (dataset.getObservationNumber() != null) {
+            RdfUtils.addTripleInt(
+                    datasetIri,
+                    INSEE.NUM_OBSERVATIONS,
+                    dataset.getObservationNumber().toString(),
+                    model,
+                    graph);
         }
-        if(dataset.getTimeSeriesNumber() != null){
-            RdfUtils.addTripleInt(datasetIri, RdfUtils.createIRI("http://data.europa.eu/m8g/numSeries"), dataset.getTimeSeriesNumber().toString(), model, graph);
+        if (dataset.getTimeSeriesNumber() != null) {
+            RdfUtils.addTripleInt(
+                    datasetIri,
+                    RdfUtils.createIRI("http://data.europa.eu/m8g/numSeries"),
+                    dataset.getTimeSeriesNumber().toString(),
+                    model,
+                    graph);
         }
         RdfUtils.addTripleUri(datasetIri, DCTERMS.SPATIAL, dataset.getSpacialCoverage(), model, graph);
         RdfUtils.addTripleDate(datasetIri, INSEE.SPATIAL_TEMPORAL, dataset.getSpacialTemporal(), model, graph);
         RdfUtils.addTripleUri(datasetIri, DCAT.TEMPORAL_RESOLUTION, dataset.getTemporalResolution(), model, graph);
 
-        if(dataset.getSpacialResolutions() != null){
-            dataset.getSpacialResolutions().forEach(spacialResolution -> RdfUtils.addTripleUri(datasetIri, INSEE.SPATIAL_RESOLUTION, spacialResolution, model, graph));
+        if (dataset.getSpacialResolutions() != null) {
+            dataset.getSpacialResolutions()
+                    .forEach(spacialResolution -> RdfUtils.addTripleUri(
+                            datasetIri, INSEE.SPATIAL_RESOLUTION, spacialResolution, model, graph));
         }
 
-        if(dataset.getTemporalCoverageEndDate() != null && dataset.getTemporalCoverageStartDate() != null){
-            BNode node =  RdfUtils.createBlankNode();
+        if (dataset.getTemporalCoverageEndDate() != null && dataset.getTemporalCoverageStartDate() != null) {
+            BNode node = RdfUtils.createBlankNode();
             model.add(node, RDF.TYPE, DCTERMS.PERIOD_OF_TIME, graph);
 
-            if(dataset.getTemporalCoverageDataType() != null && dataset.getTemporalCoverageDataType().endsWith("date")){
+            if (dataset.getTemporalCoverageDataType() != null
+                    && dataset.getTemporalCoverageDataType().endsWith("date")) {
 
-                if(StringUtils.hasLength(dataset.getTemporalCoverageStartDate())){
-                    model.add(node, DCAT.START_DATE, RdfUtils.setLiteralDate(dataset.getTemporalCoverageStartDate()), graph);
+                if (StringUtils.hasLength(dataset.getTemporalCoverageStartDate())) {
+                    model.add(
+                            node,
+                            DCAT.START_DATE,
+                            RdfUtils.setLiteralDate(dataset.getTemporalCoverageStartDate()),
+                            graph);
                 }
-                if(StringUtils.hasLength(dataset.getTemporalCoverageEndDate())){
-                    model.add(node, DCAT.END_DATE, RdfUtils.setLiteralDate(dataset.getTemporalCoverageEndDate()), graph);
+                if (StringUtils.hasLength(dataset.getTemporalCoverageEndDate())) {
+                    model.add(
+                            node, DCAT.END_DATE, RdfUtils.setLiteralDate(dataset.getTemporalCoverageEndDate()), graph);
                 }
 
             } else {
-                model.add(node, DCAT.START_DATE, RdfUtils.setLiteralYear(dataset.getTemporalCoverageStartDate()), graph);
+                model.add(
+                        node, DCAT.START_DATE, RdfUtils.setLiteralYear(dataset.getTemporalCoverageStartDate()), graph);
                 model.add(node, DCAT.END_DATE, RdfUtils.setLiteralYear(dataset.getTemporalCoverageEndDate()), graph);
-
             }
 
             RdfUtils.addTripleBNode(datasetIri, DCTERMS.TEMPORAL, node, model, graph);
         }
     }
 
-    private void addKeywords(IRI datasetIri, Optional<List<String>> keywords, String language, Model model, Resource graph) {
-        keywords.ifPresent(list -> list.forEach(keyword ->
-                RdfUtils.addTripleString(datasetIri, DCAT.KEYWORD, keyword, language, model, graph)
-        ));
+    private void addKeywords(
+            IRI datasetIri, Optional<List<String>> keywords, String language, Model model, Resource graph) {
+        keywords.ifPresent(list -> list.forEach(
+                keyword -> RdfUtils.addTripleString(datasetIri, DCAT.KEYWORD, keyword, language, model, graph)));
     }
-
 
     private void persistDataset(Dataset dataset) throws RmesException {
         Resource graph = RdfUtils.createIRI(getDatasetsGraph());
@@ -561,18 +624,27 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
 
         RdfUtils.addTripleString(datasetIri, INSEE.VALIDATION_STATE, dataset.getValidationState(), model, graph);
 
-
-        Optional.ofNullable(dataset.getWasGeneratedIRIs()).ifPresent(list -> list.forEach(iri -> RdfUtils.addTripleUri(datasetIri, PROV.WAS_GENERATED_BY, iri, model, graph)));
-        Optional.ofNullable(dataset.getThemes()).ifPresent(list -> list.forEach(theme -> RdfUtils.addTripleUri(datasetIri, DCAT.THEME, theme, model, graph)));
-        Optional.ofNullable(dataset.getLinkedDocuments()).ifPresent(list -> list.forEach(linkDocument -> RdfUtils.addTripleString(datasetIri, DCTERMS.RELATION, linkDocument, model, graph)));
+        Optional.ofNullable(dataset.getWasGeneratedIRIs())
+                .ifPresent(list -> list.forEach(
+                        iri -> RdfUtils.addTripleUri(datasetIri, PROV.WAS_GENERATED_BY, iri, model, graph)));
+        Optional.ofNullable(dataset.getThemes())
+                .ifPresent(list ->
+                        list.forEach(theme -> RdfUtils.addTripleUri(datasetIri, DCAT.THEME, theme, model, graph)));
+        Optional.ofNullable(dataset.getLinkedDocuments())
+                .ifPresent(list -> list.forEach(linkDocument ->
+                        RdfUtils.addTripleString(datasetIri, DCTERMS.RELATION, linkDocument, model, graph)));
         Optional.ofNullable(dataset.getKeywords()).ifPresent(keywords -> {
             addKeywords(datasetIri, Optional.ofNullable(keywords.lg1()), languages.lg1(), model, graph);
             addKeywords(datasetIri, Optional.ofNullable(keywords.lg2()), languages.lg2(), model, graph);
         });
 
-        if(dataset.getKeywords() != null){
-            Optional.ofNullable(dataset.getKeywords().lg1()).ifPresent(list -> list.forEach(keyword -> RdfUtils.addTripleString(datasetIri, DCAT.KEYWORD, keyword, languages.lg1(), model, graph)));
-            Optional.ofNullable(dataset.getKeywords().lg2()).ifPresent(list -> list.forEach(keyword -> RdfUtils.addTripleString(datasetIri, DCAT.KEYWORD, keyword, languages.lg2(), model, graph)));
+        if (dataset.getKeywords() != null) {
+            Optional.ofNullable(dataset.getKeywords().lg1())
+                    .ifPresent(list -> list.forEach(keyword -> RdfUtils.addTripleString(
+                            datasetIri, DCAT.KEYWORD, keyword, languages.lg1(), model, graph)));
+            Optional.ofNullable(dataset.getKeywords().lg2())
+                    .ifPresent(list -> list.forEach(keyword -> RdfUtils.addTripleString(
+                            datasetIri, DCAT.KEYWORD, keyword, languages.lg2(), model, graph)));
         }
 
         JSONUtils.stream(new JSONArray(this.getDistributions(dataset.getId())))
@@ -581,7 +653,8 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
                     String id = distribution.getString("id");
                     return RdfUtils.createIRI(getDistributionBaseUri() + "/" + id);
                 })
-                .forEach(distributionIRI -> RdfUtils.addTripleUri(datasetIri, DCAT.HAS_DISTRIBUTION, distributionIRI, model, graph));
+                .forEach(distributionIRI ->
+                        RdfUtils.addTripleUri(datasetIri, DCAT.HAS_DISTRIBUTION, distributionIRI, model, graph));
 
         repoGestion.loadSimpleObject(datasetIri, model, null);
     }
@@ -602,17 +675,19 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         if (dataset.getCatalogRecord().getCreator() == null) {
             throw new RmesBadRequestException("The property creator is required");
         }
-        if (dataset.getCatalogRecord().getContributor() == null || dataset.getCatalogRecord().getContributor().isEmpty()) {
+        if (dataset.getCatalogRecord().getContributor() == null
+                || dataset.getCatalogRecord().getContributor().isEmpty()) {
             throw new RmesBadRequestException("The property contributor is required");
         }
         if (dataset.getDisseminationStatus() == null) {
             throw new RmesBadRequestException("The property disseminationStatus is required");
         }
-        if (dataset.getAltIdentifier() != null && !ALT_IDENTIFIER_PATTERN.matcher(dataset.getAltIdentifier()).matches()) {
+        if (dataset.getAltIdentifier() != null
+                && !ALT_IDENTIFIER_PATTERN.matcher(dataset.getAltIdentifier()).matches()) {
             throw new RmesBadRequestException("The property altIdentifier contains forbidden characters");
         }
 
-        if(!this.seriesRepository.isSeriesAndOperationsExist(dataset.getWasGeneratedIRIs())){
+        if (!this.seriesRepository.isSeriesAndOperationsExist(dataset.getWasGeneratedIRIs())) {
             throw new RmesBadRequestException("Some series or operations do not exist");
         }
     }

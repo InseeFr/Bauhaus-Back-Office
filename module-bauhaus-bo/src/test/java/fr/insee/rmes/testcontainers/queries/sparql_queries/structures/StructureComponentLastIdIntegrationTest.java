@@ -1,5 +1,7 @@
 package fr.insee.rmes.testcontainers.queries.sparql_queries.structures;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
@@ -14,8 +16,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 /**
  * {@code StructureQueries.lastId} alimente le compteur des composants mutualisés :
  * {@code StructureComponentRepository.generateNextId} rend « d »/« m »/« a » + (dernier identifiant + 1).
@@ -26,12 +26,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 class StructureComponentLastIdIntegrationTest extends WithGraphDBContainer {
 
     private final RepositoryGestion repositoryGestion = new RepositoryGestion(
-            getRdfGestionConnectionDetails(),
-            new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED));
+            getRdfGestionConnectionDetails(), new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED));
 
     private final StructureQueries structureQueries = new StructureQueries(
-            new BauhausLanguagesProperties("fr", "en"),
-            GraphsPropertiesStub.stub("operations", "a9-composants"));
+            new BauhausLanguagesProperties("fr", "en"), GraphsPropertiesStub.stub("operations", "a9-composants"));
 
     @BeforeAll
     static void initData() {
@@ -60,8 +58,8 @@ class StructureComponentLastIdIntegrationTest extends WithGraphDBContainer {
 
     @Test
     void lastId_does_not_leak_the_identifier_of_another_component_type() throws RmesException {
-        JSONObject result = repositoryGestion.getResponseAsObject(
-                structureQueries.lastId("m", QB.MEASURE_PROPERTY.stringValue()));
+        JSONObject result =
+                repositoryGestion.getResponseAsObject(structureQueries.lastId("m", QB.MEASURE_PROPERTY.stringValue()));
 
         assertThat(result.getString("id"))
                 .as("m1300 est le seul identifiant de mesure du graphe")

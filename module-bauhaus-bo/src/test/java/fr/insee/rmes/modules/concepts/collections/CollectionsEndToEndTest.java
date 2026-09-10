@@ -1,5 +1,7 @@
 package fr.insee.rmes.modules.concepts.collections;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import fr.insee.rmes.testcontainers.WithGraphDBContainer;
 import org.json.JSONObject;
 import org.junit.jupiter.api.DisplayName;
@@ -18,15 +20,14 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.web.client.RestClient;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class CollectionsEndToEndTest extends WithGraphDBContainer {
 
-    public static final String ISO_8601_DATE_TIME_PATTERN = "^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(\\.[0-9]+)?(Z|[+-](?:2[0-3]|[01][0-9]):[0-5][0-9])?$";
+    public static final String ISO_8601_DATE_TIME_PATTERN =
+            "^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(\\.[0-9]+)?(Z|[+-](?:2[0-3]|[01][0-9]):[0-5][0-9])?$";
     private static final String BAUHAUS_TEST_PUBLICATION_REPOSITORY = "bauhaus-test-pub";
-    final static String CREATE_COLLECTION_REQUEST_JSON = """
+    static final String CREATE_COLLECTION_REQUEST_JSON = """
             {
                  "id": "%s",
                  "labels": [{"value": "label fr", "lang": "fr"}],
@@ -37,7 +38,7 @@ class CollectionsEndToEndTest extends WithGraphDBContainer {
              }
             """;
 
-    final static String UPDATE_COLLECTION_REQUEST_JSON = """
+    static final String UPDATE_COLLECTION_REQUEST_JSON = """
             {
                 "id": "%s",
                  "labels": [{"value": "label fr v2", "lang": "fr"}],
@@ -60,7 +61,8 @@ class CollectionsEndToEndTest extends WithGraphDBContainer {
         registry.add("fr.insee.rmes.bauhaus.sesame.publication.sesameServer", () -> sesameServer);
         registry.add("fr.insee.rmes.bauhaus.sesame.publication.repository", () -> BAUHAUS_TEST_PUBLICATION_REPOSITORY);
         registry.add("fr.insee.rmes.bauhaus.sesame.publication.baseURI", () -> "http://id.insee.fr/");
-        container.withInitFolder("fr/insee/rmes/modules/concepts/collections")
+        container
+                .withInitFolder("fr/insee/rmes/modules/concepts/collections")
                 .withTrigFiles("collections-end-to-end-test.trig");
     }
 
@@ -81,7 +83,8 @@ class CollectionsEndToEndTest extends WithGraphDBContainer {
         JSONAssert.assertEquals("[]", fetchedCollections, true);
 
         String requestedId = "Collection-e2e-001";
-        var entityResponse = restClient.post()
+        var entityResponse = restClient
+                .post()
                 .uri(collectionsEndpoint)
                 .body(CREATE_COLLECTION_REQUEST_JSON.formatted(requestedId))
                 .contentType(MediaType.APPLICATION_JSON)
@@ -94,7 +97,8 @@ class CollectionsEndToEndTest extends WithGraphDBContainer {
         String uuid = entityResponse.getBody();
 
         assertThat(uuid).isEqualTo(requestedId);
-        assertThat(entityResponse.getHeaders().get(HttpHeaders.LOCATION)).containsExactly(collectionsEndpoint + "/" + uuid);
+        assertThat(entityResponse.getHeaders().get(HttpHeaders.LOCATION))
+                .containsExactly(collectionsEndpoint + "/" + uuid);
 
         fetchedCollections = restClient
                 .get()
@@ -112,7 +116,8 @@ class CollectionsEndToEndTest extends WithGraphDBContainer {
                 """.formatted(uuid), fetchedCollections, true);
 
         fetchedCollections = restClient
-                .get().uri(collectionsEndpoint + "/" + uuid)
+                .get()
+                .uri(collectionsEndpoint + "/" + uuid)
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
                 .body(String.class);
@@ -130,16 +135,22 @@ class CollectionsEndToEndTest extends WithGraphDBContainer {
         assertThat((new JSONObject(fetchedCollections)).has("modified")).isTrue();
         assertThat((new JSONObject(fetchedCollections)).isNull("modified")).isTrue();
 
-        var updateResponseKo = restClient.put().uri(collectionsEndpoint + "/" + uuid).body(UPDATE_COLLECTION_REQUEST_JSON.formatted("1"))
+        var updateResponseKo = restClient
+                .put()
+                .uri(collectionsEndpoint + "/" + uuid)
+                .body(UPDATE_COLLECTION_REQUEST_JSON.formatted("1"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.TEXT_PLAIN)
                 .retrieve()
-                .onStatus(HttpStatusCode::isError, (req, res) -> { })
+                .onStatus(HttpStatusCode::isError, (req, res) -> {})
                 .toBodilessEntity();
 
         assertThat(updateResponseKo.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
 
-        var updateResponseOk = restClient.put().uri(collectionsEndpoint + "/" + uuid).body(UPDATE_COLLECTION_REQUEST_JSON.formatted(uuid))
+        var updateResponseOk = restClient
+                .put()
+                .uri(collectionsEndpoint + "/" + uuid)
+                .body(UPDATE_COLLECTION_REQUEST_JSON.formatted(uuid))
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.TEXT_PLAIN)
                 .retrieve()
@@ -148,7 +159,8 @@ class CollectionsEndToEndTest extends WithGraphDBContainer {
         assertThat(updateResponseOk.getStatusCode()).isEqualTo(HttpStatus.OK);
 
         fetchedCollections = restClient
-                .get().uri(collectionsEndpoint + "/" + uuid)
+                .get()
+                .uri(collectionsEndpoint + "/" + uuid)
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
                 .body(String.class);
@@ -165,7 +177,8 @@ class CollectionsEndToEndTest extends WithGraphDBContainer {
                 """.formatted(uuid), fetchedCollections, false);
 
         var dashboardResponse = restClient
-                .get().uri(collectionsEndpoint + "/dashboard")
+                .get()
+                .uri(collectionsEndpoint + "/dashboard")
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
                 .body(String.class);
@@ -181,7 +194,8 @@ class CollectionsEndToEndTest extends WithGraphDBContainer {
                 """.formatted(uuid), dashboardResponse, false);
 
         var toValidateResponse = restClient
-                .get().uri(collectionsEndpoint + "/toValidate")
+                .get()
+                .uri(collectionsEndpoint + "/toValidate")
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
                 .body(String.class);
@@ -195,7 +209,8 @@ class CollectionsEndToEndTest extends WithGraphDBContainer {
                 """.formatted(uuid), toValidateResponse, false);
 
         var membersResponse = restClient
-                .get().uri(collectionsEndpoint + "/" + uuid + "/members")
+                .get()
+                .uri(collectionsEndpoint + "/" + uuid + "/members")
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
                 .body(String.class);
@@ -207,7 +222,6 @@ class CollectionsEndToEndTest extends WithGraphDBContainer {
                   }
                 ]
                 """, membersResponse, false);
-
     }
 
     @Test
@@ -217,13 +231,16 @@ class CollectionsEndToEndTest extends WithGraphDBContainer {
         String collectionsEndpoint = "http://localhost:" + serverPort + "/api/concepts/collections";
         RestClient restClient = RestClient.create();
 
-        restClient.post()
+        restClient
+                .post()
                 .uri(collectionsEndpoint)
                 .body(CREATE_COLLECTION_REQUEST_JSON.formatted("invalid id with spaces"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.TEXT_PLAIN)
                 .retrieve()
-                .onStatus(status -> true, (req, res) -> assertThat(res.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST))
+                .onStatus(
+                        status -> true,
+                        (req, res) -> assertThat(res.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST))
                 .toBodilessEntity();
     }
 
@@ -235,7 +252,8 @@ class CollectionsEndToEndTest extends WithGraphDBContainer {
         RestClient restClient = RestClient.create();
         String existingId = "Collection-conflict-001";
 
-        var firstCreate = restClient.post()
+        var firstCreate = restClient
+                .post()
                 .uri(collectionsEndpoint)
                 .body(CREATE_COLLECTION_REQUEST_JSON.formatted(existingId))
                 .contentType(MediaType.APPLICATION_JSON)
@@ -244,13 +262,16 @@ class CollectionsEndToEndTest extends WithGraphDBContainer {
                 .toEntity(String.class);
         assertThat(firstCreate.getStatusCode()).isEqualTo(HttpStatus.CREATED);
 
-        restClient.post()
+        restClient
+                .post()
                 .uri(collectionsEndpoint)
                 .body(CREATE_COLLECTION_REQUEST_JSON.formatted(existingId))
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.TEXT_PLAIN)
                 .retrieve()
-                .onStatus(status -> true, (req, res) -> assertThat(res.getStatusCode()).isEqualTo(HttpStatus.CONFLICT))
+                .onStatus(
+                        status -> true,
+                        (req, res) -> assertThat(res.getStatusCode()).isEqualTo(HttpStatus.CONFLICT))
                 .toBodilessEntity();
     }
 
@@ -262,7 +283,8 @@ class CollectionsEndToEndTest extends WithGraphDBContainer {
         RestClient restClient = RestClient.create();
         String validatedId = "Collection-validate-001";
 
-        restClient.post()
+        restClient
+                .post()
                 .uri(collectionsEndpoint)
                 .body(CREATE_COLLECTION_REQUEST_JSON.formatted(validatedId))
                 .contentType(MediaType.APPLICATION_JSON)
@@ -270,7 +292,8 @@ class CollectionsEndToEndTest extends WithGraphDBContainer {
                 .retrieve()
                 .toBodilessEntity();
 
-        var validateResponse = restClient.put()
+        var validateResponse = restClient
+                .put()
                 .uri(collectionsEndpoint + "/" + validatedId + "/validate")
                 .contentType(MediaType.APPLICATION_JSON)
                 .body("[\"%s\"]".formatted(validatedId))
@@ -279,7 +302,8 @@ class CollectionsEndToEndTest extends WithGraphDBContainer {
         assertThat(validateResponse.getStatusCode().is2xxSuccessful()).isTrue();
 
         var fetched = restClient
-                .get().uri(collectionsEndpoint + "/" + validatedId)
+                .get()
+                .uri(collectionsEndpoint + "/" + validatedId)
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
                 .body(String.class);
@@ -294,7 +318,8 @@ class CollectionsEndToEndTest extends WithGraphDBContainer {
         RestClient restClient = RestClient.create();
         String exportedId = "Collection-export-001";
 
-        restClient.post()
+        restClient
+                .post()
                 .uri(collectionsEndpoint)
                 .body(CREATE_COLLECTION_REQUEST_JSON.formatted(exportedId))
                 .contentType(MediaType.APPLICATION_JSON)
@@ -303,7 +328,8 @@ class CollectionsEndToEndTest extends WithGraphDBContainer {
                 .toBodilessEntity();
 
         var exportResponse = restClient
-                .get().uri(collectionsEndpoint + "/" + exportedId + "/export")
+                .get()
+                .uri(collectionsEndpoint + "/" + exportedId + "/export")
                 .accept(MediaType.APPLICATION_OCTET_STREAM)
                 .retrieve()
                 .toEntity(byte[].class);
@@ -320,5 +346,4 @@ class CollectionsEndToEndTest extends WithGraphDBContainer {
                 .as("Access-Control-Expose-Headers must expose Content-Disposition so the browser fetch can read it")
                 .contains("Content-Disposition");
     }
-
 }

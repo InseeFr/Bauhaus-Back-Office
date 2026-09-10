@@ -1,14 +1,21 @@
 package fr.insee.rmes.bauhaus_services.concepts.collections;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
 import fr.insee.rmes.bauhaus_services.concepts.publication.ConceptsPublication;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.config.GraphsPropertiesStub;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.ontologies.INSEE;
 import fr.insee.rmes.modules.concepts.collections.infrastructure.graphdb.GraphDBCollectionProperties;
 import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
-import fr.insee.rmes.domain.exceptions.RmesException;
+import java.util.Collection;
+import java.util.Optional;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Statement;
 import org.json.JSONArray;
@@ -19,14 +26,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.Collection;
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class LegacyCollectionsRepositoryTest {
@@ -42,15 +41,16 @@ class LegacyCollectionsRepositoryTest {
     @BeforeAll
     static void initConfig() {
         RdfUtils.setGraphs(GraphsPropertiesStub.stub());
-        RdfUtils.setBauhausUriBuilder(new BauhausUriBuilder("http://bauhaus/publication/", "http://bauhaus/", p -> Optional.of("/collection")));
+        RdfUtils.setBauhausUriBuilder(new BauhausUriBuilder(
+                "http://bauhaus/publication/", "http://bauhaus/", p -> Optional.of("/collection")));
     }
 
     @BeforeEach
     void setUp() {
-        GraphDBCollectionProperties collectionProperties =
-                new GraphDBCollectionProperties("http://rdf.insee.fr/graphes/concepts/definitions",
-                        "http://bauhaus//concepts/definitions");
-        legacyCollectionsRepository = new LegacyCollectionsRepository(conceptsPublication, repositoryGestion, collectionProperties);
+        GraphDBCollectionProperties collectionProperties = new GraphDBCollectionProperties(
+                "http://rdf.insee.fr/graphes/concepts/definitions", "http://bauhaus//concepts/definitions");
+        legacyCollectionsRepository =
+                new LegacyCollectionsRepository(conceptsPublication, repositoryGestion, collectionProperties);
     }
 
     @Test
@@ -69,9 +69,7 @@ class LegacyCollectionsRepositoryTest {
     @Test
     void shouldValidateCollectionsFromJSONArray() throws RmesException {
         // Given
-        JSONArray collectionsToValidate = new JSONArray()
-                .put("collection1")
-                .put("collection2");
+        JSONArray collectionsToValidate = new JSONArray().put("collection1").put("collection2");
 
         // When
         legacyCollectionsRepository.collectionsValidation(collectionsToValidate);
@@ -120,11 +118,8 @@ class LegacyCollectionsRepositoryTest {
     @Test
     void shouldValidateMultipleCollections() throws RmesException {
         // Given
-        JSONArray collectionsToValidate = new JSONArray()
-                .put("col1")
-                .put("col2")
-                .put("col3")
-                .put("col4");
+        JSONArray collectionsToValidate =
+                new JSONArray().put("col1").put("col2").put("col3").put("col4");
 
         // When
         legacyCollectionsRepository.collectionsValidation(collectionsToValidate);

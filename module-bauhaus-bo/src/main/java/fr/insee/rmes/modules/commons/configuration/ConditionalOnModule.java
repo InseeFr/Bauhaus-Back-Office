@@ -1,12 +1,11 @@
 package fr.insee.rmes.modules.commons.configuration;
 
-import org.springframework.context.annotation.Conditional;
-
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import org.springframework.context.annotation.Conditional;
 
 /**
  * Conditional annotation that checks if a specific module is active.

@@ -1,10 +1,9 @@
 package fr.insee.rmes.modules.checks.domain.model;
 
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Map;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.Test;
 
 class CheckResultTest {
 
@@ -39,11 +38,7 @@ class CheckResultTest {
     void constructor_shouldHandleComplexValue() {
         // Given
         String name = "complex_check";
-        Map<String, Object> complexValue = Map.of(
-                "status", "success",
-                "count", 42,
-                "details", Map.of("sub", "value")
-        );
+        Map<String, Object> complexValue = Map.of("status", "success", "count", 42, "details", Map.of("sub", "value"));
 
         // When
         CheckResult result = new CheckResult(name, complexValue);

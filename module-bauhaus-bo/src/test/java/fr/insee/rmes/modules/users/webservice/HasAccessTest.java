@@ -1,17 +1,16 @@
 package fr.insee.rmes.modules.users.webservice;
 
-import fr.insee.rmes.modules.users.domain.model.RBAC;
-import org.junit.jupiter.api.Test;
-import org.springframework.security.access.prepost.PreAuthorize;
+import static org.assertj.core.api.Assertions.assertThat;
 
+import fr.insee.rmes.modules.users.domain.model.RBAC;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.reflect.Method;
 import java.util.Arrays;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.Test;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 class HasAccessTest {
 
@@ -37,11 +36,11 @@ class HasAccessTest {
 
         assertThat(preAuthorize).isNotNull();
         assertThat(preAuthorize.value())
-            .contains("@propertiesAccessPrivilegesChecker.hasAccess")
-            .contains("{module}")
-            .contains("{privilege}")
-            .contains("#id")
-            .contains("authentication.principal");
+                .contains("@propertiesAccessPrivilegesChecker.hasAccess")
+                .contains("{module}")
+                .contains("{privilege}")
+                .contains("#id")
+                .contains("authentication.principal");
     }
 
     @Test
@@ -65,16 +64,15 @@ class HasAccessTest {
         // Create a test class with the annotation
         class TestController {
             @HasAccess(module = RBAC.Module.CONCEPT_CONCEPT, privilege = RBAC.Privilege.READ)
-            public void testMethod() {
-            }
+            public void testMethod() {}
         }
 
         Method[] methods = TestController.class.getDeclaredMethods();
 
         // Filter out Jacoco synthetic methods
         Method[] nonSyntheticMethods = Arrays.stream(methods)
-            .filter(m -> !m.isSynthetic() && !m.getName().startsWith("$"))
-            .toArray(Method[]::new);
+                .filter(m -> !m.isSynthetic() && !m.getName().startsWith("$"))
+                .toArray(Method[]::new);
 
         Method method = nonSyntheticMethods[0];
         HasAccess annotation = method.getAnnotation(HasAccess.class);
@@ -87,8 +85,7 @@ class HasAccessTest {
     @Test
     void should_be_usable_on_type() {
         @HasAccess(module = RBAC.Module.OPERATION_SERIES, privilege = RBAC.Privilege.CREATE)
-        class TestController {
-        }
+        class TestController {}
 
         HasAccess annotation = TestController.class.getAnnotation(HasAccess.class);
 
@@ -114,8 +111,8 @@ class HasAccessTest {
 
         // Filter out Jacoco synthetic methods
         Method[] nonSyntheticMethods = Arrays.stream(methods)
-            .filter(m -> !m.isSynthetic() && !m.getName().startsWith("$"))
-            .toArray(Method[]::new);
+                .filter(m -> !m.isSynthetic() && !m.getName().startsWith("$"))
+                .toArray(Method[]::new);
 
         assertThat(nonSyntheticMethods).hasSize(3);
         for (Method method : nonSyntheticMethods) {
@@ -152,21 +149,21 @@ class HasAccessTest {
 
         // Filter out Jacoco synthetic methods
         Method[] nonSyntheticMethods = Arrays.stream(methods)
-            .filter(m -> !m.isSynthetic() && !m.getName().startsWith("$"))
-            .toArray(Method[]::new);
+                .filter(m -> !m.isSynthetic() && !m.getName().startsWith("$"))
+                .toArray(Method[]::new);
 
         assertThat(nonSyntheticMethods).hasSize(6);
         for (Method method : nonSyntheticMethods) {
             HasAccess annotation = method.getAnnotation(HasAccess.class);
             assertThat(annotation).isNotNull();
-            assertThat(annotation.privilege()).isIn(
-                RBAC.Privilege.CREATE,
-                RBAC.Privilege.READ,
-                RBAC.Privilege.UPDATE,
-                RBAC.Privilege.DELETE,
-                RBAC.Privilege.PUBLISH,
-                RBAC.Privilege.ADMINISTRATION
-            );
+            assertThat(annotation.privilege())
+                    .isIn(
+                            RBAC.Privilege.CREATE,
+                            RBAC.Privilege.READ,
+                            RBAC.Privilege.UPDATE,
+                            RBAC.Privilege.DELETE,
+                            RBAC.Privilege.PUBLISH,
+                            RBAC.Privilege.ADMINISTRATION);
         }
     }
 
@@ -191,8 +188,8 @@ class HasAccessTest {
 
         // Filter out Jacoco synthetic methods
         Method[] nonSyntheticMethods = Arrays.stream(methods)
-            .filter(m -> !m.isSynthetic() && !m.getName().startsWith("$"))
-            .toArray(Method[]::new);
+                .filter(m -> !m.isSynthetic() && !m.getName().startsWith("$"))
+                .toArray(Method[]::new);
 
         for (Method method : nonSyntheticMethods) {
             HasAccess annotation = method.getAnnotation(HasAccess.class);

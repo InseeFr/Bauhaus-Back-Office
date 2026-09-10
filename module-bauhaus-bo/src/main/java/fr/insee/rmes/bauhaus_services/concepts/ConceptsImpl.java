@@ -8,10 +8,7 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
-import fr.insee.rmes.rdf_utils.RepositoryGestion;
-import fr.insee.rmes.utils.IdGenerator;
 import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.modules.shared_kernel.domain.model.Language;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
@@ -19,15 +16,19 @@ import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.graphdb.QueryUtils;
 import fr.insee.rmes.model.concepts.*;
 import fr.insee.rmes.model.concepts.Collection;
-import fr.insee.rmes.modules.concepts.concept.domain.model.ConceptForAdvancedSearch;
 import fr.insee.rmes.modules.concepts.collections.domain.port.serverside.CollectionRepository;
+import fr.insee.rmes.modules.concepts.concept.domain.model.ConceptForAdvancedSearch;
+import fr.insee.rmes.modules.shared_kernel.domain.model.Language;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptCollectionsQueries;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptConceptsQueries;
-
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.utils.DiacriticSorter;
 import fr.insee.rmes.utils.FilesUtils;
+import fr.insee.rmes.utils.IdGenerator;
 import fr.insee.rmes.utils.XMLUtils;
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.InputStream;
+import java.util.*;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -38,23 +39,20 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.io.InputStream;
-import java.util.*;
-
 @Service
-public class ConceptsImpl  extends RdfService implements ConceptsService {
+public class ConceptsImpl extends RdfService implements ConceptsService {
 
-	private static final String THE_CONCEPT = "The concept ";
+    private static final String THE_CONCEPT = "The concept ";
 
-	static final Logger logger = LoggerFactory.getLogger(ConceptsImpl.class);
+    static final Logger logger = LoggerFactory.getLogger(ConceptsImpl.class);
 
-	private final LegacyConceptsRepository legacyConceptsRepository;
+    private final LegacyConceptsRepository legacyConceptsRepository;
 
-	private final ConceptsExportBuilder conceptsExport;
-	private final CollectionExportBuilder collectionExport;
-	private final CollectionRepository collectionRepository;
+    private final ConceptsExportBuilder conceptsExport;
+    private final CollectionExportBuilder collectionExport;
+    private final CollectionRepository collectionRepository;
 
-	private final int maxLength;
+    private final int maxLength;
 
     private final ConceptCollectionsQueries conceptCollectionsQueries;
     private final ConceptConceptsQueries conceptConceptsQueries;
@@ -75,279 +73,289 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
         this.legacyConceptsRepository = legacyConceptsRepository;
         this.conceptsExport = conceptsExport;
         this.collectionExport = collectionExport;
-		this.collectionRepository = collectionRepository;
+        this.collectionRepository = collectionRepository;
         this.maxLength = maxLength;
         this.conceptCollectionsQueries = conceptCollectionsQueries;
         this.conceptConceptsQueries = conceptConceptsQueries;
     }
 
+    @Override
+    public List<PartialConcept> getConcepts() throws RmesException {
+        logger.info("Starting to get concepts list");
+
+        var concepts = repoGestion.getResponseAsArray(conceptConceptsQueries.conceptsQuery());
+
+        return DiacriticSorter.sortGroupingByIdConcatenatingAltLabels(
+                concepts, PartialConcept[].class, PartialConcept::label);
+    }
 
     @Override
-	public List<PartialConcept> getConcepts()  throws RmesException {
-		logger.info("Starting to get concepts list");
+    public List<ConceptForAdvancedSearch> getConceptsSearch() throws RmesException {
+        logger.info("Starting to get concepts list for advanced search");
+        var concepts = repoGestion.getResponseAsArray(conceptConceptsQueries.conceptsSearchQuery());
 
-		var concepts = repoGestion.getResponseAsArray(conceptConceptsQueries.conceptsQuery());
+        return DiacriticSorter.sortGroupingByIdConcatenatingAltLabels(
+                concepts, ConceptForAdvancedSearch[].class, ConceptForAdvancedSearch::label);
+    }
 
-		return DiacriticSorter.sortGroupingByIdConcatenatingAltLabels(concepts,
-				PartialConcept[].class,
-				PartialConcept::label);
+    @Override
+    public String getConceptsToValidate() throws RmesException {
+        logger.info("Starting to get provisionals concepts list");
+        return repoGestion
+                .getResponseAsArray(conceptConceptsQueries.conceptsToValidateQuery())
+                .toString();
+    }
 
-	}
+    @Override
+    public String getConceptByID(String id) throws RmesException {
+        JSONObject concept = legacyConceptsRepository.getConceptById(id);
+        return concept.toString();
+    }
 
-	@Override
-	public List<ConceptForAdvancedSearch> getConceptsSearch()  throws RmesException{
-		logger.info("Starting to get concepts list for advanced search");
-		var concepts = repoGestion.getResponseAsArray(conceptConceptsQueries.conceptsSearchQuery());
+    @Override
+    public String getRelatedConcepts(String id) throws RmesException {
+        String uriConcept = RdfUtils.toString(RdfUtils.objectIRI(ObjectType.CONCEPT, id));
+        JSONArray resQuery = legacyConceptsRepository.getRelatedConcepts(uriConcept);
+        return QueryUtils.correctEmptyGroupConcat(resQuery.toString());
+    }
 
-		return DiacriticSorter.sortGroupingByIdConcatenatingAltLabels(concepts,
-				ConceptForAdvancedSearch[].class,
-				ConceptForAdvancedSearch::label);
-	}
+    /**
+     * @param id
+     * @return String
+     * @throws RmesException
+     */
+    @Override
+    public void deleteConcept(String id) throws RmesException {
+        String uriConcept = RdfUtils.toString(RdfUtils.objectIRI(ObjectType.CONCEPT, id));
+        JSONArray graphArray = legacyConceptsRepository.getGraphsWithConcept(uriConcept);
 
-	@Override
-	public String getConceptsToValidate()  throws RmesException{
-		logger.info("Starting to get provisionals concepts list");
-		return repoGestion.getResponseAsArray(conceptConceptsQueries.conceptsToValidateQuery()).toString();
-	}
-	
-	@Override
-	public String getConceptByID(String id)  throws RmesException{
-		JSONObject concept = legacyConceptsRepository.getConceptById(id);
-		return concept.toString();
-	}
-	
-	@Override
-	public String getRelatedConcepts(String id)  throws RmesException{
-		String uriConcept = RdfUtils.toString(RdfUtils.objectIRI(ObjectType.CONCEPT,id));
-		JSONArray resQuery = legacyConceptsRepository.getRelatedConcepts(uriConcept);
-		return QueryUtils.correctEmptyGroupConcat(resQuery.toString());
-	}
+        /* check concept isn't used in several graphs */
+        if (graphArray.length() > 1) {
+            JSONObject details = new JSONObject();
+            details.put("idConcept", id);
+            details.put("graphs", graphArray);
+            throw new RmesBadRequestException(
+                    ErrorCodes.CONCEPT_DELETION_SEVERAL_GRAPHS,
+                    THE_CONCEPT + id + " cannot be deleted because it is used in several graphs.",
+                    details);
+        }
+        /* Check concept has no link */
+        String listConcepts = getRelatedConcepts(id);
+        if (!listConcepts.equals("[]")) {
+            JSONObject details = new JSONObject();
+            details.put("idConcept", id);
+            details.put("linkedConcepts", listConcepts);
+            throw new RmesBadRequestException(
+                    ErrorCodes.CONCEPT_DELETION_LINKED,
+                    THE_CONCEPT + id + " cannot be deleted because it is linked to other concepts.",
+                    details);
+        }
+        /* deletion */
+        HttpStatus result = legacyConceptsRepository.deleteConcept(id);
+        if (result != HttpStatus.OK) {
+            throw new RmesException(
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(), "Unexpected return message: ", result.toString());
+        }
+    }
 
+    @Override
+    public String getConceptLinksByID(String id) throws RmesException {
+        return repoGestion
+                .getResponseAsArray(conceptConceptsQueries.conceptLinks(id))
+                .toString();
+    }
 
-	/**
-	 * @param id
-	 * @return String
-	 * @throws RmesException
-	 */	
-	@Override
-	public void deleteConcept(String id) throws RmesException {
-		String uriConcept = RdfUtils.toString(RdfUtils.objectIRI(ObjectType.CONCEPT,id));
-		JSONArray graphArray = legacyConceptsRepository.getGraphsWithConcept(uriConcept);
+    @Override
+    public String getConceptNotesByID(String id, int conceptVersion) throws RmesException {
+        return repoGestion
+                .getResponseAsObject(conceptConceptsQueries.conceptNotesQuery(id, conceptVersion))
+                .toString();
+    }
 
-		/* check concept isn't used in several graphs */
-		if (graphArray.length()>1) {
-			JSONObject details = new JSONObject();
-			details.put("idConcept", id);
-			details.put("graphs", graphArray);
-			throw new RmesBadRequestException(ErrorCodes.CONCEPT_DELETION_SEVERAL_GRAPHS,
-					THE_CONCEPT+id+" cannot be deleted because it is used in several graphs.",
-					details);
-			
-		}
-		/* Check concept has no link */
-		String listConcepts=getRelatedConcepts(id);
-		if(!listConcepts.equals("[]")) { 
-			JSONObject details = new JSONObject();
-			details.put("idConcept", id);
-			details.put("linkedConcepts", listConcepts);
-			throw new RmesBadRequestException(
-					ErrorCodes.CONCEPT_DELETION_LINKED,
-					THE_CONCEPT+id+" cannot be deleted because it is linked to other concepts.",
-					details);
-		}
-		/* deletion */
-		HttpStatus result= legacyConceptsRepository.deleteConcept(id);
-		if (result!= HttpStatus.OK) {
-			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(),"Unexpected return message: ",result.toString());
-		}
-	}
+    @Override
+    public String getCollectionsToValidate() throws RmesException {
+        return repoGestion
+                .getResponseAsArray(conceptCollectionsQueries.collectionsToValidateQuery())
+                .toString();
+    }
 
-	@Override
-	public String getConceptLinksByID(String id)  throws RmesException{
-		return repoGestion.getResponseAsArray(conceptConceptsQueries.conceptLinks(id)).toString();
-	}
+    /**
+     * Create new concept
+     * @throws RmesException
+     */
+    @Override
+    public String setConcept(String body) throws RmesException {
+        return legacyConceptsRepository.setConcept(body);
+    }
 
-	@Override
-	public String getConceptNotesByID(String id, int conceptVersion)  throws RmesException{
-		return repoGestion.getResponseAsObject(conceptConceptsQueries.conceptNotesQuery(id, conceptVersion)).toString();
-	}
+    /**
+     * Modify concept
+     * @throws RmesException
+     */
+    @Override
+    public void setConcept(String id, String body) throws RmesException {
+        legacyConceptsRepository.setConcept(id, body);
+    }
 
-	@Override
-	public String getCollectionsToValidate()  throws RmesException{
-		return repoGestion.getResponseAsArray(conceptCollectionsQueries.collectionsToValidateQuery()).toString();
-	}
+    /**
+     * Create new collection
+     *
+     * @return
+     * @throws RmesException
+     */
+    @Override
+    public String createCollection(Collection collection) throws RmesException {
+        collection.setId(idGenerator.generateNextId());
+        return collectionRepository.save(collection);
+    }
+    //
+    /**
+     * Modify collection
+     *
+     * @return
+     * @throws RmesException
+     * @throws RmesUnauthorizedException
+     * @throws Exception
+     */
+    @Override
+    public void updateCollection(String id, Collection collection) throws RmesException {
+        collectionRepository.save(collection);
+    }
 
+    /**
+     * Validate concept(s)
+     * @throws RmesException
+     * @throws RmesUnauthorizedException
+     */
+    @Override
+    public void setConceptsValidation(String body) throws RmesException {
+        legacyConceptsRepository.conceptsValidation(body);
+    }
 
-	/**
-	 * Create new concept
-	 * @throws RmesException 
-	 */
-	@Override
-	public String setConcept(String body) throws RmesException {
-		return legacyConceptsRepository.setConcept(body);
-	}
+    /**
+     * Export concept(s)
+     */
+    @Override
+    public ResponseEntity<?> exportConcept(String id, String acceptHeader) throws RmesException {
+        ConceptForExport concept;
+        try {
+            concept = conceptsExport.getConceptData(id);
+        } catch (RmesException e) {
+            return ResponseEntity.status(e.getStatus())
+                    .contentType(MediaType.TEXT_PLAIN)
+                    .body(e.getDetails());
+        }
 
+        Map<String, String> xmlContent = convertConceptInXml(concept);
+        String fileName = getFileNameForExport(concept);
+        return conceptsExport.exportAsResponse(fileName, xmlContent, true, true, true);
+    }
 
-	/**
-	 * Modify concept
-	 * @throws RmesException 
-	 */
-	@Override
-	public void setConcept(String id, String body) throws RmesException {
-		legacyConceptsRepository.setConcept(id, body);
-	}
+    @Override
+    public void exportZipConcept(
+            String ids,
+            String acceptHeader,
+            HttpServletResponse response,
+            Language lg,
+            String type,
+            boolean withConcepts)
+            throws RmesException {
+        Map<String, Map<String, String>> collections = new HashMap<>();
+        Map<String, Map<String, InputStream>> collectionsConcepts = new HashMap<>();
 
+        CollectionForExport collection = new CollectionForExport();
+        collection.setId("custom");
+        collection.setPrefLabelLg1("Liste de Concepts");
+        collection.setPrefLabelLg2("Concepts List");
 
-	/**
-	 * Create new collection
-	 *
-	 * @return
-	 * @throws RmesException
-	 */
-	@Override
-	public String createCollection(Collection collection) throws RmesException {
-		collection.setId(idGenerator.generateNextId());
-		return collectionRepository.save(collection);
-	}
-	//	
-	/**
-	 * Modify collection
-	 *
-	 * @return
-	 * @throws RmesException
-	 * @throws RmesUnauthorizedException
-	 * @throws Exception
-	 */
-	@Override
-	public void updateCollection(String id, Collection collection) throws RmesException {
-		collectionRepository.save(collection);
-	}
+        List<String> conceptsIds = Arrays.asList(ids.split("_AND_"));
+        List<MembersLg> members = new ArrayList<>();
+        Map<String, InputStream> concepts = getConceptsExportIS(conceptsIds, members);
+        collection.setMembersLg(members);
 
-	/**
-	 * Validate concept(s)
-	 * @throws RmesException 
-	 * @throws RmesUnauthorizedException 
-	 */
-	@Override
-	public void setConceptsValidation(String body) throws  RmesException  {
-		legacyConceptsRepository.conceptsValidation(body);
-	}
+        Map<String, String> xmlContent = convertCollectionInXml(collection);
+        String fileName = getFileNameForExport(collection, lg);
+        collections.put(fileName, xmlContent);
 
-	/**
-	 * Export concept(s)
-	 */
-	@Override
-	public ResponseEntity<?> exportConcept(String id, String acceptHeader) throws RmesException {
-		ConceptForExport concept;
-		try {
-			concept = conceptsExport.getConceptData(id);
-		} catch (RmesException e) {
-			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
-		}
+        if (withConcepts) {
+            collectionsConcepts.put(fileName, concepts);
+        }
 
-		Map<String, String> xmlContent = convertConceptInXml(concept);
-		String fileName = getFileNameForExport(concept);
-		return conceptsExport.exportAsResponse(fileName,xmlContent,true,true,true);
-	}
+        if ("odt".equalsIgnoreCase(type)) {
+            collectionExport.exportMultipleCollectionsAsZipOdt(
+                    collections, true, true, true, response, lg, collectionsConcepts, withConcepts);
 
-	@Override
-	public void exportZipConcept(String ids, String acceptHeader, HttpServletResponse response, Language lg, String type, boolean withConcepts) throws RmesException {
-		Map<String, Map<String, String>> collections = new HashMap<>();
-		Map<String, Map<String, InputStream>> collectionsConcepts = new HashMap<>();
+        } else {
+            collectionExport.exportMultipleCollectionsAsZipOds(
+                    collections, true, true, true, response, collectionsConcepts, withConcepts);
+        }
+    }
 
-		CollectionForExport collection = new CollectionForExport();
-		collection.setId("custom");
-		collection.setPrefLabelLg1("Liste de Concepts");
-		collection.setPrefLabelLg2("Concepts List");
+    public String getFileNameForExport(CollectionForExport collection, Language lg) {
+        if (lg == Language.lg2) {
+            return FilesUtils.generateFinalFileNameWithoutExtension(
+                    collection.getId() + "-" + collection.getPrefLabelLg2(), this.maxLength);
+        }
+        return FilesUtils.generateFinalFileNameWithoutExtension(
+                collection.getId() + "-" + collection.getPrefLabelLg1(), this.maxLength);
+    }
 
+    private String getFileNameForExport(ConceptForExport concept) {
+        return FilesUtils.generateFinalFileNameWithoutExtension(
+                concept.getId() + "-" + concept.getPrefLabelLg1(), maxLength);
+    }
 
-		List<String> conceptsIds = Arrays.asList(ids.split("_AND_"));
-		List<MembersLg> members = new ArrayList<>();
-		Map<String, InputStream> concepts = getConceptsExportIS(conceptsIds, members);
-		collection.setMembersLg(members);
+    private MembersLg convertConceptIntoMembers(ConceptForExport concept) {
+        MembersLg member = new MembersLg();
+        member.setId(concept.getId());
+        member.setCreator(concept.getCreator());
+        member.setPrefLabelLg1(concept.getPrefLabelLg1());
+        member.setPrefLabelLg2(concept.getPrefLabelLg2());
+        member.setIsValidated(concept.getIsValidated());
+        member.setCreated(concept.getCreated());
+        member.setModified(concept.getModified());
+        member.setDefLongueLg1(concept.getDefinitionLg1());
+        member.setDefLongueLg2(concept.getDefinitionLg2());
 
+        member.setDefCourteLg1(concept.getScopeNoteLg1());
+        member.setDefCourteLg2(concept.getScopeNoteLg2());
 
-		Map<String, String> xmlContent = convertCollectionInXml(collection);
-		String fileName = getFileNameForExport(collection, lg);
-		collections.put(fileName, xmlContent);
+        member.setEditorialNoteLg1(concept.getEditorialNoteLg1());
+        member.setEditorialNoteLg2(concept.getEditorialNoteLg2());
+        return member;
+    }
 
-		if(withConcepts){
-			collectionsConcepts.put(fileName, concepts);
-		}
+    @Override
+    public Map<String, InputStream> getConceptsExportIS(List<String> ids, List<MembersLg> members) {
+        Map<String, InputStream> ret = new HashMap<>();
+        ids.parallelStream().forEach(id -> {
+            try {
+                ConceptForExport concept = conceptsExport.getConceptData(id);
+                Map<String, String> xmlContent = convertConceptInXml(concept);
+                String fileName = legacyConceptsRepository.getConceptExportFileName(concept);
+                ret.put(fileName, conceptsExport.exportAsInputStream(fileName, xmlContent, true, true, true));
 
-		if("odt".equalsIgnoreCase(type)){
-			collectionExport.exportMultipleCollectionsAsZipOdt(collections, true, true, true, response, lg, collectionsConcepts, withConcepts);
+                if (members != null) {
+                    members.add(convertConceptIntoMembers(concept));
+                }
+            } catch (RmesException e) {
+                logger.error("Failed to export concept {}", id, e);
+            }
+        });
+        return ret;
+    }
 
-		} else {
-			collectionExport.exportMultipleCollectionsAsZipOds(collections, true, true, true, response, collectionsConcepts, withConcepts);
-		}
-	}
+    private Map<String, String> convertConceptInXml(ConceptForExport concept) throws RmesException {
+        String conceptXml = XMLUtils.produceXMLResponse(concept);
+        Map<String, String> xmlContent = new HashMap<>();
+        xmlContent.put("conceptFile", conceptXml.replace("ConceptForExport", "Concept"));
+        return xmlContent;
+    }
 
-	public String getFileNameForExport(CollectionForExport collection, Language lg){
-		if (lg == Language.lg2){
-			return FilesUtils.generateFinalFileNameWithoutExtension(collection.getId() + "-" + collection.getPrefLabelLg2(), this.maxLength);
-		}
-		return FilesUtils.generateFinalFileNameWithoutExtension(collection.getId() + "-" + collection.getPrefLabelLg1(), this.maxLength);
-	}
-
-	private String getFileNameForExport(ConceptForExport concept) {
-		return FilesUtils.generateFinalFileNameWithoutExtension(concept.getId() + "-" + concept.getPrefLabelLg1(), maxLength);
-	}
-
-	private MembersLg convertConceptIntoMembers(ConceptForExport concept){
-		MembersLg member = new MembersLg();
-		member.setId(concept.getId());
-		member.setCreator(concept.getCreator());
-		member.setPrefLabelLg1(concept.getPrefLabelLg1());
-		member.setPrefLabelLg2(concept.getPrefLabelLg2());
-		member.setIsValidated(concept.getIsValidated());
-		member.setCreated(concept.getCreated());
-		member.setModified(concept.getModified());
-		member.setDefLongueLg1(concept.getDefinitionLg1());
-		member.setDefLongueLg2(concept.getDefinitionLg2());
-
-		member.setDefCourteLg1(concept.getScopeNoteLg1());
-		member.setDefCourteLg2(concept.getScopeNoteLg2());
-
-		member.setEditorialNoteLg1(concept.getEditorialNoteLg1());
-		member.setEditorialNoteLg2(concept.getEditorialNoteLg2());
-		return member;
-	}
-
-	@Override
-	public Map<String, InputStream> getConceptsExportIS(List<String> ids, List<MembersLg> members) {
-		Map<String,InputStream> ret = new HashMap<>();
-		ids.parallelStream().forEach(id -> {
-			try {
-				ConceptForExport concept = conceptsExport.getConceptData(id);
-				Map<String, String> xmlContent = convertConceptInXml(concept);
-				String fileName = legacyConceptsRepository.getConceptExportFileName(concept);
-				ret.put(fileName, conceptsExport.exportAsInputStream(fileName,xmlContent,true,true,true));
-
-				if(members != null){
-					members.add(convertConceptIntoMembers(concept));
-				}
-			} catch (RmesException e) {
-				logger.error("Failed to export concept {}", id, e);
-			}
-		});
-		return ret;
-	}
-
-
-	private Map<String, String> convertConceptInXml(ConceptForExport concept) throws RmesException {
-		String conceptXml = XMLUtils.produceXMLResponse(concept);
-		Map<String,String> xmlContent = new HashMap<>();
-		xmlContent.put("conceptFile",  conceptXml.replace("ConceptForExport", "Concept"));
-		return xmlContent;
-	}
-	
-	private Map<String, String> convertCollectionInXml(CollectionForExport collection) {
-		String collectionXml = XMLUtils.produceXMLResponse(collection);
-		Map<String,String> xmlContent = new HashMap<>();
-		xmlContent.put("collectionFile",  collectionXml.replace("CollectionForExport", "Collection"));
-		return xmlContent;
-	}
-	
-
+    private Map<String, String> convertCollectionInXml(CollectionForExport collection) {
+        String collectionXml = XMLUtils.produceXMLResponse(collection);
+        Map<String, String> xmlContent = new HashMap<>();
+        xmlContent.put("collectionFile", collectionXml.replace("CollectionForExport", "Collection"));
+        return xmlContent;
+    }
 }

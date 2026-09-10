@@ -1,5 +1,9 @@
 package fr.insee.rmes.modules.operations.msd.webservice;
 
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import fr.insee.rmes.bauhaus_services.OperationsDocumentationsService;
 import fr.insee.rmes.bauhaus_services.OperationsService;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
@@ -18,18 +22,11 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 @WebMvcTest(
         value = MetadataReportResources.class,
         excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = LogRequestFilter.class),
         excludeAutoConfiguration = OAuth2ResourceServerAutoConfiguration.class,
-        properties = {
-                "fr.insee.rmes.bauhaus.modules.operations.enabled=true"
-        }
-)
+        properties = {"fr.insee.rmes.bauhaus.modules.operations.enabled=true"})
 @AutoConfigureMockMvc(addFilters = false)
 class MetadataReportResourcesDeleteTest {
 
@@ -52,8 +49,7 @@ class MetadataReportResourcesDeleteTest {
     void deleteMetadataReport_withAcceptJson_shouldReturnSuccess() throws Exception {
         when(documentationsService.deleteMetadataReport("42")).thenReturn(HttpStatus.NO_CONTENT);
 
-        mockMvc.perform(delete("/operations/metadataReport/{id}", "42")
-                        .accept(MediaType.APPLICATION_JSON))
+        mockMvc.perform(delete("/operations/metadataReport/{id}", "42").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNoContent());
     }
 
@@ -62,15 +58,13 @@ class MetadataReportResourcesDeleteTest {
         when(documentationsService.deleteMetadataReport("unknown"))
                 .thenThrow(new RmesNotFoundException("Documentation not found", "unknown"));
 
-        mockMvc.perform(delete("/operations/metadataReport/{id}", "unknown"))
-                .andExpect(status().isNotFound());
+        mockMvc.perform(delete("/operations/metadataReport/{id}", "unknown")).andExpect(status().isNotFound());
     }
 
     @Test
     void deleteMetadataReport_withoutAccept_shouldReturnSuccess() throws Exception {
         when(documentationsService.deleteMetadataReport("42")).thenReturn(HttpStatus.NO_CONTENT);
 
-        mockMvc.perform(delete("/operations/metadataReport/{id}", "42"))
-                .andExpect(status().isNoContent());
+        mockMvc.perform(delete("/operations/metadataReport/{id}", "42")).andExpect(status().isNoContent());
     }
 }

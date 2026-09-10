@@ -1,20 +1,29 @@
 package fr.insee.rmes.integration.authorizations;
 
+import static fr.insee.rmes.integration.authorizations.TokenForTestsConfiguration.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import fr.insee.rmes.bauhaus_services.OperationsDocumentationsService;
 import fr.insee.rmes.bauhaus_services.OperationsService;
-import fr.insee.rmes.modules.commons.configuration.LogRequestFilter;
-import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
-import fr.insee.rmes.modules.shared_kernel.domain.model.Roles;
+import fr.insee.rmes.config.auth.UserAuthTestConfiguration;
 import fr.insee.rmes.integration.AbstractResourcesEnvProd;
 import fr.insee.rmes.model.operations.documentations.Documentation;
 import fr.insee.rmes.model.operations.documentations.MSD;
+import fr.insee.rmes.modules.commons.configuration.LogRequestFilter;
 import fr.insee.rmes.modules.operations.msd.domain.model.ExportedFile;
 import fr.insee.rmes.modules.operations.msd.domain.model.commands.MetadataExportRequest;
 import fr.insee.rmes.modules.operations.msd.domain.port.clientside.DocumentationExportService;
 import fr.insee.rmes.modules.operations.msd.domain.port.clientside.DocumentationService;
 import fr.insee.rmes.modules.operations.msd.webservice.MetadataReportResources;
-import fr.insee.rmes.config.auth.UserAuthTestConfiguration;
+import fr.insee.rmes.modules.shared_kernel.domain.model.Roles;
+import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
 import fr.insee.rmes.utils.XMLUtils;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
@@ -28,28 +37,14 @@ import org.springframework.http.MediaType;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-import java.util.List;
-
-import static fr.insee.rmes.integration.authorizations.TokenForTestsConfiguration.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 @WebMvcTest(
         controllers = MetadataReportResources.class,
         excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = LogRequestFilter.class),
         properties = {
-                "fr.insee.rmes.bauhaus.modules.operations.enabled=true",
-                "fr.insee.rmes.bauhaus.extensions=pdf,odt"
-        }
-)
-@Import({
-        MetadataReportResources.class,
-        UserAuthTestConfiguration.class
-})
+            "fr.insee.rmes.bauhaus.modules.operations.enabled=true",
+            "fr.insee.rmes.bauhaus.extensions=pdf,odt"
+        })
+@Import({MetadataReportResources.class, UserAuthTestConfiguration.class})
 class TestMetadataReportResourcesAuthorizationsEnvProd extends AbstractResourcesEnvProd {
 
     @Configuration
@@ -70,7 +65,7 @@ class TestMetadataReportResourcesAuthorizationsEnvProd extends AbstractResources
     @MockitoBean
     private DocumentationExportService documentationExportService;
 
-   @Test
+    @Test
     void testGetMSDJson() throws Exception, MissingUserInformationException {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
         when(checker.hasAccess(any(), any(), any(), any())).thenReturn(true);
@@ -97,7 +92,9 @@ class TestMetadataReportResourcesAuthorizationsEnvProd extends AbstractResources
 
         when(documentationsService.getMSD()).thenReturn(msd);
         try (MockedStatic<XMLUtils> mockedFactory = Mockito.mockStatic(XMLUtils.class)) {
-            mockedFactory.when(() -> XMLUtils.produceResponse(msd, MediaType.APPLICATION_XML_VALUE)).thenReturn(xmlResponse);
+            mockedFactory
+                    .when(() -> XMLUtils.produceResponse(msd, MediaType.APPLICATION_XML_VALUE))
+                    .thenReturn(xmlResponse);
 
             mvc.perform(get("/operations/metadataStructureDefinition")
                             .header("Authorization", "Bearer toto")
@@ -107,7 +104,6 @@ class TestMetadataReportResourcesAuthorizationsEnvProd extends AbstractResources
                     .andExpect(content().xml(xmlResponse));
         }
     }
-
 
     @Test
     void testGetMetadataReport() throws Exception, MissingUserInformationException {
@@ -126,7 +122,6 @@ class TestMetadataReportResourcesAuthorizationsEnvProd extends AbstractResources
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(content().json(jsonResponse));
     }
-
 
     @Test
     void testGetMetadataReportOwner_returnsShortStampForm() throws Exception, MissingUserInformationException {
@@ -192,7 +187,9 @@ class TestMetadataReportResourcesAuthorizationsEnvProd extends AbstractResources
 
         when(documentationsService.getFullSimsForXml(id)).thenReturn(documentation);
         try (MockedStatic<XMLUtils> mockedFactory = Mockito.mockStatic(XMLUtils.class)) {
-            mockedFactory.when(() -> XMLUtils.produceResponse(documentation, MediaType.APPLICATION_XML_VALUE)).thenReturn(xmlResponse);
+            mockedFactory
+                    .when(() -> XMLUtils.produceResponse(documentation, MediaType.APPLICATION_XML_VALUE))
+                    .thenReturn(xmlResponse);
 
             mvc.perform(get("/operations/metadataReport/fullSims/{id}", id)
                             .header("Authorization", "Bearer toto")
@@ -202,7 +199,6 @@ class TestMetadataReportResourcesAuthorizationsEnvProd extends AbstractResources
                     .andExpect(content().xml(xmlResponse));
         }
     }
-
 
     @Test
     void testGetSimsExport() throws Exception, MissingUserInformationException {
@@ -214,9 +210,15 @@ class TestMetadataReportResourcesAuthorizationsEnvProd extends AbstractResources
         boolean lg1 = true;
         boolean lg2 = true;
         boolean document = true;
-        ExportedFile exported = new ExportedFile("MockedDocument", ".odt", new ByteArrayResource("Mocked Document Content".getBytes()), MediaType.APPLICATION_OCTET_STREAM_VALUE, null);
+        ExportedFile exported = new ExportedFile(
+                "MockedDocument",
+                ".odt",
+                new ByteArrayResource("Mocked Document Content".getBytes()),
+                MediaType.APPLICATION_OCTET_STREAM_VALUE,
+                null);
 
-        when(documentationExportService.exportMetadataReport(new MetadataExportRequest(id, includeEmptyMas, lg1, lg2, document)))
+        when(documentationExportService.exportMetadataReport(
+                        new MetadataExportRequest(id, includeEmptyMas, lg1, lg2, document)))
                 .thenReturn(exported);
 
         mvc.perform(get("/operations/metadataReport/export/{id}", id)
@@ -237,7 +239,12 @@ class TestMetadataReportResourcesAuthorizationsEnvProd extends AbstractResources
         when(checker.hasAccess(any(), any(), any(), any())).thenReturn(true);
 
         String id = "1234";
-        ExportedFile exported = new ExportedFile("MockedDocument", ".odt", new ByteArrayResource("Mocked Document Content".getBytes()), MediaType.APPLICATION_OCTET_STREAM_VALUE, null);
+        ExportedFile exported = new ExportedFile(
+                "MockedDocument",
+                ".odt",
+                new ByteArrayResource("Mocked Document Content".getBytes()),
+                MediaType.APPLICATION_OCTET_STREAM_VALUE,
+                null);
 
         when(documentationExportService.exportMetadataReport(new MetadataExportRequest(id, true, true, true, true)))
                 .thenReturn(exported);
@@ -277,7 +284,6 @@ class TestMetadataReportResourcesAuthorizationsEnvProd extends AbstractResources
                 .andExpect(status().isOk());
     }
 
-
     @Test
     void postMetadataReportContributor_OK() throws Exception, MissingUserInformationException {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("Gestionnaire_indicateur_RMESGNCS"));
@@ -304,6 +310,4 @@ class TestMetadataReportResourcesAuthorizationsEnvProd extends AbstractResources
                                 """))
                 .andExpect(status().isOk());
     }
-
-
 }

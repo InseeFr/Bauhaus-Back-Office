@@ -1,7 +1,6 @@
 package fr.insee.rmes.modules.ddi.physical_instances.domain.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.util.List;
 
 /**
@@ -23,8 +22,7 @@ public record Ddi4ManagedRepresentationScheme(
         @JsonProperty("ID") String id,
         @JsonProperty("Version") String version,
         @JsonProperty("Label") List<LangString> label,
-        @JsonProperty("ManagedRepresentationReference") List<Reference> managedRepresentationReference
-) {
+        @JsonProperty("ManagedRepresentationReference") List<Reference> managedRepresentationReference) {
 
     public static final String TYPE = "ManagedRepresentationScheme";
 }

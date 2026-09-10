@@ -1,5 +1,9 @@
 package fr.insee.rmes.modules.operations.msd.domain;
 
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.operations.msd.domain.model.ExportGoal;
 import fr.insee.rmes.modules.operations.msd.domain.model.ExportedFile;
@@ -12,10 +16,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.io.ByteArrayResource;
-
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class DocumentationExportServiceImplTest {
@@ -45,7 +45,8 @@ class DocumentationExportServiceImplTest {
     void exportMetadataReportForLabel_buildsLabelRequest() throws RmesException {
         ExportedFile expected = file("label");
         MetadataExportRequest expectedRequest = new MetadataExportRequest("99", true, true, false, false);
-        when(gateway.exportMetadataReport(expectedRequest, ExportGoal.COMITE_LABEL)).thenReturn(expected);
+        when(gateway.exportMetadataReport(expectedRequest, ExportGoal.COMITE_LABEL))
+                .thenReturn(expected);
 
         ExportedFile result = service.exportMetadataReportForLabel("99");
 
@@ -65,6 +66,7 @@ class DocumentationExportServiceImplTest {
     }
 
     private static ExportedFile file(String name) {
-        return new ExportedFile(name, ".odt", new ByteArrayResource(new byte[]{1, 2, 3}), "application/octet-stream", null);
+        return new ExportedFile(
+                name, ".odt", new ByteArrayResource(new byte[] {1, 2, 3}), "application/octet-stream", null);
     }
 }

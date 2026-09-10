@@ -4,5 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 public interface DDIItemConverter {
     boolean supports(String xmlRootElementLocalName);
+
     JsonNode convert(String xmlFragment);
 }

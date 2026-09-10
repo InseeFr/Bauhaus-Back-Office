@@ -25,14 +25,15 @@ public class DatabaseQueryException extends RmesException {
         this.exception = exception;
         this.message = message;
 
-        logger.error("{} {}",EXECUTE_QUERY_FAILED, query, this.exception);
+        logger.error("{} {}", EXECUTE_QUERY_FAILED, query, this.exception);
     }
 
     /**
      * Traduit un échec RDF4J en exception applicative, en explicitant le cas particulier
      * du 401 renvoyé par GraphDB, que RDF4J signale sans message.
      */
-    public static DatabaseQueryException from(RDF4JException exception, String query, RepositoryInitiator.Type authType) {
+    public static DatabaseQueryException from(
+            RDF4JException exception, String query, RepositoryInitiator.Type authType) {
         if (GraphDbUnauthorizedException.isUnauthorized(exception)) {
             return new GraphDbUnauthorizedException(exception, query, authType);
         }

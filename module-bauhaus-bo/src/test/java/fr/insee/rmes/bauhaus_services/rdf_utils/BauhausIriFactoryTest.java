@@ -1,14 +1,13 @@
 package fr.insee.rmes.bauhaus_services.rdf_utils;
 
-import fr.insee.rmes.config.GraphsPropertiesStub;
-import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
-import org.junit.jupiter.api.Test;
-
-import java.util.Optional;
-
 import static fr.insee.rmes.PropertiesKeys.CONCEPTS_BASE_URI;
 import static fr.insee.rmes.PropertiesKeys.STRUCTURES_COMPONENTS_BASE_URI;
 import static org.assertj.core.api.Assertions.assertThat;
+
+import fr.insee.rmes.config.GraphsPropertiesStub;
+import java.util.Optional;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
+import org.junit.jupiter.api.Test;
 
 /**
  * Contrat de {@link BauhausIriFactory}, successeur injectable de la partie « à état » de

@@ -1,12 +1,11 @@
 package fr.insee.rmes.bauhaus_services.operations.documentations;
 
-import fr.insee.rmes.model.operations.documentations.DocumentationRubric;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import fr.insee.rmes.model.operations.documentations.DocumentationRubric;
 import java.util.List;
 import java.util.Set;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.Test;
 
 class AutoUpdatedDateRubricsTest {
 

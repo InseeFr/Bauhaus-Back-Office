@@ -1,20 +1,19 @@
 package fr.insee.rmes.testcontainers.queries.organisations;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.modules.organisations.domain.model.OrganisationOption;
 import fr.insee.rmes.graphdb.RepositoryInitiator;
 import fr.insee.rmes.graphdb.RepositoryUtils;
+import fr.insee.rmes.modules.organisations.domain.model.OrganisationOption;
 import fr.insee.rmes.modules.organisations.infrastructure.graphdb.OrganisationGraphDBRepository;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.testcontainers.WithGraphDBContainer;
+import java.util.List;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @Tag("integration")
 class OrganisationGraphDBRepositoryIntegrationTest extends WithGraphDBContainer {
@@ -26,17 +25,14 @@ class OrganisationGraphDBRepositoryIntegrationTest extends WithGraphDBContainer 
         container.withTrigFiles("organizations.trig");
 
         RepositoryGestion repositoryGestion = new RepositoryGestion(
-                getRdfGestionConnectionDetails(),
-                new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED)
-        );
+                getRdfGestionConnectionDetails(), new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED));
 
         repository = new OrganisationGraphDBRepository(
                 repositoryGestion,
                 "http://rdf.insee.fr/graphes/",
                 "organisations",
                 "organisations/insee",
-                new BauhausLanguagesProperties("fr", "en")
-        );
+                new BauhausLanguagesProperties("fr", "en"));
     }
 
     @Test
@@ -47,11 +43,7 @@ class OrganisationGraphDBRepositoryIntegrationTest extends WithGraphDBContainer 
         // Then
         assertThat(organisations)
                 .isNotEmpty()
-                .anyMatch(org ->
-                        org.stamp().equals("HIE2000069") &&
-                                org.label().contains("Direction")
-                );
-
+                .anyMatch(org -> org.stamp().equals("HIE2000069") && org.label().contains("Direction"));
     }
 
     @Test

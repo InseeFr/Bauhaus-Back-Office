@@ -2,32 +2,43 @@ package fr.insee.rmes.bauhaus_services.operations.documentations.documents;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import fr.insee.rmes.DocumentsStorageProperties;
 import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.Constants;
-import fr.insee.rmes.modules.commons.configuration.StorageProperties;
-import fr.insee.rmes.modules.commons.domain.port.serverside.FilesOperations;
+import fr.insee.rmes.DocumentsStorageProperties;
 import fr.insee.rmes.bauhaus_services.operations.OperationsParentRepository;
-import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
-import fr.insee.rmes.rdf_utils.RepositoryGestion;
-import fr.insee.rmes.utils.IdGenerator;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesNotAcceptableException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
-import fr.insee.rmes.model.operations.documentations.Document;
+import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.graphdb.ontologies.INSEE;
 import fr.insee.rmes.graphdb.ontologies.PAV;
 import fr.insee.rmes.graphdb.ontologies.SCHEMA;
-import fr.insee.rmes.persistance.sparql_queries.operations.OperationDocumentsQueries;
-import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.json.JSONUtils;
+import fr.insee.rmes.model.operations.documentations.Document;
+import fr.insee.rmes.modules.commons.configuration.StorageProperties;
+import fr.insee.rmes.modules.commons.domain.port.serverside.FilesOperations;
+import fr.insee.rmes.persistance.sparql_queries.operations.OperationDocumentsQueries;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.utils.DateUtils;
+import fr.insee.rmes.utils.IdGenerator;
 import fr.insee.rmes.utils.UriUtils;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -51,22 +62,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StreamUtils;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.nio.file.NoSuchFileException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 @Component
 public class DocumentsUtils extends RdfService {
     private final BauhausLanguagesProperties languages;
-
 
     private static final String SCHEME_FILE = "file://";
     static final Logger logger = LoggerFactory.getLogger(DocumentsUtils.class);
@@ -80,12 +78,17 @@ public class DocumentsUtils extends RdfService {
 
     private final DocumentsStorageProperties documentsStorage;
 
-    public DocumentsUtils(RepositoryGestion repoGestion, IdGenerator idGenerator,
-                          RepositoryPublication repositoryPublication, BauhausLanguagesProperties languages,
-                          PublicationUtils publicationUtils,
-                          OperationsParentRepository operationsParentRepository, FilesOperations filesOperations,
-                          StorageProperties storageProperties, OperationDocumentsQueries operationDocumentsQueries,
-                          DocumentsStorageProperties documentsStorage) {
+    public DocumentsUtils(
+            RepositoryGestion repoGestion,
+            IdGenerator idGenerator,
+            RepositoryPublication repositoryPublication,
+            BauhausLanguagesProperties languages,
+            PublicationUtils publicationUtils,
+            OperationsParentRepository operationsParentRepository,
+            FilesOperations filesOperations,
+            StorageProperties storageProperties,
+            OperationDocumentsQueries operationDocumentsQueries,
+            DocumentsStorageProperties documentsStorage) {
         super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
         this.languages = languages;
         this.operationsParentRepository = operationsParentRepository;
@@ -118,7 +121,6 @@ public class DocumentsUtils extends RdfService {
         model.add(textUri, INSEE.ADDITIONALMATERIAL, head, graph);
     }
 
-
     /**
      * Get documents link to one rubric of a metadata report
      *
@@ -128,7 +130,8 @@ public class DocumentsUtils extends RdfService {
      * @throws RmesException
      */
     public JSONArray getListDocumentLink(String idSims, String idRubric, String lang) throws RmesException {
-        JSONArray allDocs = repoGestion.getResponseAsArray(operationDocumentsQueries.getDocumentsForSimsRubricQuery(idSims, idRubric, "http://bauhaus/codes/langue/" + lang));
+        JSONArray allDocs = repoGestion.getResponseAsArray(operationDocumentsQueries.getDocumentsForSimsRubricQuery(
+                idSims, idRubric, "http://bauhaus/codes/langue/" + lang));
         JSONArray ordered = RdfListOrderer.orderByList(allDocs, "listCell", "listNext");
         formatDateInJsonArray(ordered);
         return ordered;
@@ -222,7 +225,6 @@ public class DocumentsUtils extends RdfService {
         }
     }
 
-
     /**
      * Create document
      *
@@ -244,9 +246,7 @@ public class DocumentsUtils extends RdfService {
             logger.error(e.getMessage());
         }
 
-
         validate(document);
-
 
         if (isLink) {
             checkLinkDoesNotExist(id, document.getUrl());
@@ -260,7 +260,7 @@ public class DocumentsUtils extends RdfService {
             uploadFile(documentFile, documentName, url, false);
         }
 
-        //Write RDF graph in database
+        // Write RDF graph in database
         try {
             IRI docUri = RdfUtils.toURI(document.getUri());
             writeRdfDocument(document, docUri);
@@ -269,7 +269,6 @@ public class DocumentsUtils extends RdfService {
             throw e;
         }
     }
-
 
     private void checkLinkDoesNotExist(String id, String url) throws RmesException {
         if (StringUtils.isEmpty(url)) {
@@ -287,26 +286,30 @@ public class DocumentsUtils extends RdfService {
             throw new RmesNotAcceptableException(ErrorCodes.LINK_BAD_URL, "A link must be a valid url. ", id);
         }
 
-
         // Check if the url is already used by a link
         checkUrlDoesNotExist(id, url, ErrorCodes.LINK_EXISTING_URL, "This url is already referenced by another link.");
     }
 
     private void checkDocumentDoesNotExist(String id, String url) throws RmesException {
         if (StringUtils.isEmpty(url)) {
-            throw new RmesNotAcceptableException(ErrorCodes.DOCUMENT_EMPTY_NAME, "A document must have a non-empty url. ", id);
+            throw new RmesNotAcceptableException(
+                    ErrorCodes.DOCUMENT_EMPTY_NAME, "A document must have a non-empty url. ", id);
         }
         if (url.contains(SCHEME_FILE)) {
             url = url.replace(SCHEME_FILE, "");
         }
 
         // Check if the url is already used by another document
-        checkUrlDoesNotExist(id, getDocumentNameFromUrl(url), ErrorCodes.DOCUMENT_CREATION_EXISTING_FILE, "This url is already referenced by another document.");
+        checkUrlDoesNotExist(
+                id,
+                getDocumentNameFromUrl(url),
+                ErrorCodes.DOCUMENT_CREATION_EXISTING_FILE,
+                "This url is already referenced by another document.");
     }
 
-
     private void checkUrlDoesNotExist(String id, String url, int errorCode, String errorMessage) throws RmesException {
-        JSONObject existingUriJson = repoGestion.getResponseAsObject(operationDocumentsQueries.getDocumentUriQuery(url));
+        JSONObject existingUriJson =
+                repoGestion.getResponseAsObject(operationDocumentsQueries.getDocumentUriQuery(url));
         if (!existingUriJson.isEmpty()) {
             String uri = existingUriJson.getString(Constants.DOCUMENT);
             String existingId = getDocumentNameFromUrl(uri);
@@ -315,7 +318,6 @@ public class DocumentsUtils extends RdfService {
             }
         }
     }
-
 
     /**
      * Update a document or link
@@ -332,7 +334,6 @@ public class DocumentsUtils extends RdfService {
         } catch (IOException e) {
             logger.error(e.getMessage());
         }
-
 
         logger.info("Update document : {} - {} / {}", document.getId(), document.getLabelLg1(), document.getLabelLg2());
         validate(document);
@@ -366,7 +367,10 @@ public class DocumentsUtils extends RdfService {
 
         if (jsonDocs.isNull(Constants.URI)) {
             logger.error("Error with the document {}. It looks like it does not have an uri", id);
-            throw new RmesNotFoundException(ErrorCodes.DOCUMENT_UNKNOWN_ID, "Cannot find " + (isLink ? "Link" : "Document") + " with id : " + id, id);
+            throw new RmesNotFoundException(
+                    ErrorCodes.DOCUMENT_UNKNOWN_ID,
+                    "Cannot find " + (isLink ? "Link" : "Document") + " with id : " + id,
+                    id);
         }
         formatDateInJsonObject(jsonDocs);
         jsonDocs.put("sims", this.getSimsByDocument(id, isLink));
@@ -378,7 +382,10 @@ public class DocumentsUtils extends RdfService {
 
         for (int i = 0; i < sims.length(); i++) {
             JSONObject sim = sims.getJSONObject(i);
-            sim.put(Constants.CREATORS, new JSONArray(operationsParentRepository.getDocumentationOwnersByIdSims(sim.getString(Constants.ID))));
+            sim.put(
+                    Constants.CREATORS,
+                    new JSONArray(
+                            operationsParentRepository.getDocumentationOwnersByIdSims(sim.getString(Constants.ID))));
         }
         return sims;
     }
@@ -400,7 +407,8 @@ public class DocumentsUtils extends RdfService {
         // remove the physical file : c'est bien schema:url qui porte le chemin du fichier,
         // l'IRI RDF n'a pas de schéma file:// et ne désigne aucun emplacement de stockage.
         if (!isLink) {
-            filesOperations.delete(fr.insee.rmes.modules.commons.domain.model.Document.fromUri(URI.create(jsonDoc.getString(Constants.URL))));
+            filesOperations.delete(fr.insee.rmes.modules.commons.domain.model.Document.fromUri(
+                    URI.create(jsonDoc.getString(Constants.URL))));
         }
         // delete the Document in the rdf base
         return repoGestion.executeUpdate(operationDocumentsQueries.deleteDocumentQuery(docUri));
@@ -408,11 +416,16 @@ public class DocumentsUtils extends RdfService {
 
     // Check that the document is not referred to by any sims
     private void checkDocumentReference(String docId, String uri) throws RmesException {
-        JSONArray jsonResultat = repoGestion.getResponseAsArray(operationDocumentsQueries.getLinksToDocumentQuery(docId));
+        JSONArray jsonResultat =
+                repoGestion.getResponseAsArray(operationDocumentsQueries.getLinksToDocumentQuery(docId));
         if (!jsonResultat.isEmpty()) {
-            throw new RmesBadRequestException(ErrorCodes.DOCUMENT_DELETION_LINKED,
+            throw new RmesBadRequestException(
+                    ErrorCodes.DOCUMENT_DELETION_LINKED,
                     "The document " + uri + "cannot be deleted because it is referred to by " + jsonResultat.length()
-                            + " sims, including: " + ((JSONObject) jsonResultat.get(0)).get(Constants.TEXT).toString(),
+                            + " sims, including: "
+                            + ((JSONObject) jsonResultat.get(0))
+                                    .get(Constants.TEXT)
+                                    .toString(),
                     jsonResultat);
         }
     }
@@ -422,18 +435,21 @@ public class DocumentsUtils extends RdfService {
         JSONObject jsonDoc = getDocument(docId, false);
         // Cannot upload file for a Link = if not found it's probably a link
         if (!jsonDoc.has(Constants.URL)) {
-            throw new RmesException(HttpStatus.NOT_ACCEPTABLE.value(),
-                    "Document not found. Warning : Links have no attached file. Cannot upload file " + documentName + " for this document: ", docId);
+            throw new RmesException(
+                    HttpStatus.NOT_ACCEPTABLE.value(),
+                    "Document not found. Warning : Links have no attached file. Cannot upload file " + documentName
+                            + " for this document: ",
+                    docId);
         }
 
         String docUrl = getDocumentUrlFromDocument(jsonDoc);
-
 
         // Warning if different file extension
         String oldExt = StringUtils.substringAfterLast(docUrl, ".");
         String newExt = StringUtils.substringAfterLast(documentName, ".");
         if (!oldExt.equals(newExt)) {
-            logger.info("Warning: The new file has extension: .{} while the old file had extension: .{}", newExt, oldExt);
+            logger.info(
+                    "Warning: The new file has extension: .{} while the old file had extension: .{}", newExt, oldExt);
         }
 
         String oldName = getDocumentNameFromUrl(docUrl);
@@ -448,7 +464,8 @@ public class DocumentsUtils extends RdfService {
         else {
             // Delete the old file
             logger.info("Delete old file {}, with URL {}", documentName, docUrl);
-            filesOperations.delete(fr.insee.rmes.modules.commons.domain.model.Document.fromUri(URI.create(jsonDoc.getString(Constants.URL))));
+            filesOperations.delete(fr.insee.rmes.modules.commons.domain.model.Document.fromUri(
+                    URI.create(jsonDoc.getString(Constants.URL))));
 
             // Upload the new file
             newUrl = createFileUrl(documentName);
@@ -473,19 +490,28 @@ public class DocumentsUtils extends RdfService {
         Path path = Paths.get(url.replace(SCHEME_FILE, ""));
         logger.debug("PATH : {}", path);
         if (!sameName && path.toFile().exists()) {
-            throw new RmesBadRequestException(ErrorCodes.DOCUMENT_CREATION_EXISTING_FILE,
-                    "There is already a document with that name.", documentName);
+            throw new RmesBadRequestException(
+                    ErrorCodes.DOCUMENT_CREATION_EXISTING_FILE,
+                    "There is already a document with that name.",
+                    documentName);
         }
-        filesOperations.write(documentFile, new fr.insee.rmes.modules.commons.domain.model.Document(this.storageProperties.directoryGestion(), path.getFileName().toString()));
+        filesOperations.write(
+                documentFile,
+                new fr.insee.rmes.modules.commons.domain.model.Document(
+                        this.storageProperties.directoryGestion(),
+                        path.getFileName().toString()));
     }
-
 
     private void validate(Document document) throws RmesException {
         if (isLabelAlreadyUsed(document, document.getLabelLg1(), languages.lg1())) {
-            throw new RmesBadRequestException(ErrorCodes.OPERATION_DOCUMENT_LINK_EXISTING_LABEL_LG1, "This labelLg1 is already used by another document or link.");
+            throw new RmesBadRequestException(
+                    ErrorCodes.OPERATION_DOCUMENT_LINK_EXISTING_LABEL_LG1,
+                    "This labelLg1 is already used by another document or link.");
         }
         if (isLabelAlreadyUsed(document, document.getLabelLg2(), languages.lg2())) {
-            throw new RmesBadRequestException(ErrorCodes.OPERATION_DOCUMENT_LINK_EXISTING_LABEL_LG2, "This labelLg2 is already used by another document or link.");
+            throw new RmesBadRequestException(
+                    ErrorCodes.OPERATION_DOCUMENT_LINK_EXISTING_LABEL_LG2,
+                    "This labelLg2 is already used by another document or link.");
         }
     }
 
@@ -496,7 +522,8 @@ public class DocumentsUtils extends RdfService {
      */
     private boolean isLabelAlreadyUsed(Document document, String label, String lang) throws RmesException {
         return StringUtils.isNotEmpty(label)
-                && repoGestion.getResponseAsBoolean(operationDocumentsQueries.checkLabelUnicity(document.getId(), label, lang));
+                && repoGestion.getResponseAsBoolean(
+                        operationDocumentsQueries.checkLabelUnicity(document.getId(), label, lang));
     }
 
     private void writeRdfDocument(Document document, IRI docUri) throws RmesException {
@@ -547,16 +574,16 @@ public class DocumentsUtils extends RdfService {
     }
 
     private String createFileUrl(String name) throws RmesException {
-        if (!filesOperations.exists(documentsStorage.storageGestion())){
-            throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Storage folder not found",
-                    "config.DOCUMENTS_STORAGE");
+        if (!filesOperations.exists(documentsStorage.storageGestion())) {
+            throw new RmesException(
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(), "Storage folder not found", "config.DOCUMENTS_STORAGE");
         }
 
-        Path gestionStorageFolder=Path.of(documentsStorage.storageGestion());
-        String url= gestionStorageFolder.resolve(name).toString();
+        Path gestionStorageFolder = Path.of(documentsStorage.storageGestion());
+        String url = gestionStorageFolder.resolve(name).toString();
         Pattern p = Pattern.compile("^(?:[a-zA-Z]+:/)");
         Matcher m = p.matcher(url);
-        if (m.find()) {// absolute URL
+        if (m.find()) { // absolute URL
             return url;
         }
         return addSchemeFile(url);
@@ -570,8 +597,8 @@ public class DocumentsUtils extends RdfService {
      * @throws RmesException
      */
     private IRI getDocumentUri(IRI url) throws RmesException {
-        JSONObject uri = repoGestion
-                .getResponseAsObject(operationDocumentsQueries.getDocumentUriQuery(getDocumentNameFromUrl(url.stringValue())));
+        JSONObject uri = repoGestion.getResponseAsObject(
+                operationDocumentsQueries.getDocumentUriQuery(getDocumentNameFromUrl(url.stringValue())));
         if (uri.isEmpty() || !uri.has(Constants.DOCUMENT)) {
             String id = createDocumentID();
             return RdfUtils.objectIRI(ObjectType.DOCUMENT, id);
@@ -593,7 +620,8 @@ public class DocumentsUtils extends RdfService {
         Matcher m = VALID_FILENAME_PATTERN.matcher(fileName);
         if (!m.matches()) {
             logger.info("There is a forbidden character in the FileName ");
-            throw new RmesNotAcceptableException(ErrorCodes.DOCUMENT_FORBIDDEN_CHARACTER_NAME,
+            throw new RmesNotAcceptableException(
+                    ErrorCodes.DOCUMENT_FORBIDDEN_CHARACTER_NAME,
                     "FileName contains forbidden characters, please use only Letters, Numbers, Underscores and Hyphens",
                     fileName);
         }
@@ -647,7 +675,9 @@ public class DocumentsUtils extends RdfService {
     public ResponseEntity<org.springframework.core.io.Resource> downloadDocumentFile(String id) throws RmesException {
         String filePath = getDocumentFilename(id);
 
-        try (InputStream inputStream = filesOperations.read(new fr.insee.rmes.modules.commons.domain.model.Document(storageProperties.directoryGestion(),filePath))) { // Lire via l'abstraction et utiliser try-with-resources
+        try (InputStream inputStream = filesOperations.read(new fr.insee.rmes.modules.commons.domain.model.Document(
+                storageProperties.directoryGestion(),
+                filePath))) { // Lire via l'abstraction et utiliser try-with-resources
             byte[] data = StreamUtils.copyToByteArray(inputStream); // Convertir InputStream en byte[]
 
             HttpHeaders headers = new HttpHeaders();
@@ -659,14 +689,13 @@ public class DocumentsUtils extends RdfService {
                     .headers(headers)
                     .contentType(MediaType.APPLICATION_OCTET_STREAM)
                     .body(new ByteArrayResource(data));
-        }catch (NoSuchFileException _){
-            throw new RmesNotFoundException(HttpStatus.NOT_FOUND.value(), filePath+" not found", filePath+" not found");
-        }catch (IOException _) {
+        } catch (NoSuchFileException _) {
+            throw new RmesNotFoundException(
+                    HttpStatus.NOT_FOUND.value(), filePath + " not found", filePath + " not found");
+        } catch (IOException _) {
             throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "I/O error", "Error downloading file");
         }
     }
-
-
 
     private String getFileName(String path) {
         // Extraire juste le nom de fichier du chemin
@@ -675,13 +704,11 @@ public class DocumentsUtils extends RdfService {
 
     public InputStream retrieveDocumentFromStorage(String filename) {
         return filesOperations.read(new fr.insee.rmes.modules.commons.domain.model.Document(
-                storageProperties.directoryGestion(),
-                filename
-        ));
+                storageProperties.directoryGestion(), filename));
     }
 
     public boolean existsInStorage(String filename) {
-        return filesOperations.exists(new fr.insee.rmes.modules.commons.domain.model.Document(storageProperties.directoryGestion(),filename));
+        return filesOperations.exists(new fr.insee.rmes.modules.commons.domain.model.Document(
+                storageProperties.directoryGestion(), filename));
     }
 }
-

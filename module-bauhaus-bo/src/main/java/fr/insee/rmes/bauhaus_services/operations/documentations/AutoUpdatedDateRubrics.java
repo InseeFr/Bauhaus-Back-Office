@@ -1,7 +1,6 @@
 package fr.insee.rmes.bauhaus_services.operations.documentations;
 
 import fr.insee.rmes.model.operations.documentations.DocumentationRubric;
-
 import java.util.List;
 import java.util.Set;
 

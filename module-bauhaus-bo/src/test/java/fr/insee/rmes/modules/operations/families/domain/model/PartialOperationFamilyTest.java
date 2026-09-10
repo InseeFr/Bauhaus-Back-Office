@@ -1,8 +1,8 @@
 package fr.insee.rmes.modules.operations.families.domain.model;
 
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.*;
+
+import org.junit.jupiter.api.Test;
 
 class PartialOperationFamilyTest {
 
@@ -82,12 +82,12 @@ class PartialOperationFamilyTest {
     @Test
     void record_immutability() {
         PartialOperationFamily family = new PartialOperationFamily("fam001", "Label");
-        
+
         // Records are immutable, so we cannot modify values after creation
         // This test ensures the getters return the same values
         assertEquals("fam001", family.id());
         assertEquals("Label", family.label());
-        
+
         // Creating a new instance with different values should not affect the original
         PartialOperationFamily anotherFamily = new PartialOperationFamily("fam002", "Another Label");
         assertEquals("fam001", family.id());

@@ -2,7 +2,6 @@ package fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside;
 
 import fr.insee.rmes.modules.commons.hexagonal.ClientSidePort;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.InvalidDdi4JsonException;
-
 import java.util.List;
 
 /**

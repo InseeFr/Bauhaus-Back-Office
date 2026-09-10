@@ -1,13 +1,12 @@
 package fr.insee.rmes;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import fr.insee.rmes.modules.clientconfig.domain.model.ModuleConfig;
 import fr.insee.rmes.modules.clientconfig.domain.model.ModuleSettings;
-import org.junit.jupiter.api.Test;
-
 import java.util.LinkedHashMap;
 import java.util.Map;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.Test;
 
 class BauhausConfigurationTest {
 
@@ -17,9 +16,9 @@ class BauhausConfigurationTest {
         modules.put("concepts", new ModuleSettings(true, true, true));
         modules.put("classifications", new ModuleSettings(true, false, true));
 
-        assertThat(configurationWith(modules).enabledModules()).containsExactly(
-                new ModuleConfig("concepts", true, true),
-                new ModuleConfig("classifications", false, true));
+        assertThat(configurationWith(modules).enabledModules())
+                .containsExactly(
+                        new ModuleConfig("concepts", true, true), new ModuleConfig("classifications", false, true));
     }
 
     @Test

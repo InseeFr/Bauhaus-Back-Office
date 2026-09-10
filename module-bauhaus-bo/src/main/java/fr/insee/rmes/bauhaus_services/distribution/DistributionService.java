@@ -5,7 +5,6 @@ import fr.insee.rmes.modules.datasets.distributions.model.Distribution;
 import fr.insee.rmes.modules.datasets.distributions.model.DistributionsForSearch;
 import fr.insee.rmes.modules.datasets.distributions.model.PartialDistribution;
 import fr.insee.rmes.modules.datasets.distributions.model.PatchDistribution;
-
 import java.util.List;
 
 public interface DistributionService {

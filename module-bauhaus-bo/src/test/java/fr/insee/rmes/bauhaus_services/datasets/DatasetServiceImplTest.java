@@ -1,24 +1,33 @@
 package fr.insee.rmes.bauhaus_services.datasets;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.*;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.BauhausLanguagesProperties;
-import fr.insee.rmes.persistance.sparql_queries.datasets.DatasetQueries;
-import fr.insee.rmes.persistance.sparql_queries.datasets.DatasetDistributionQueries;
 import fr.insee.rmes.bauhaus_services.OrganizationsService;
 import fr.insee.rmes.bauhaus_services.operations.series.SeriesRepository;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
-import fr.insee.rmes.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.exceptions.RmesRuntimeBadRequestException;
 import fr.insee.rmes.modules.datasets.datasets.model.Dataset;
 import fr.insee.rmes.modules.datasets.datasets.model.PatchDataset;
-import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.persistance.sparql_queries.datasets.DatasetDistributionQueries;
+import fr.insee.rmes.persistance.sparql_queries.datasets.DatasetQueries;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.IdGenerator;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.util.Date;
+import java.util.List;
+import java.util.Set;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
@@ -31,16 +40,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
-
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.*;
 
 class DatasetServiceImplTest {
 
@@ -85,8 +84,7 @@ class DatasetServiceImplTest {
                 "http://",
                 "distributionIRI",
                 "adms",
-                "identifiantsAlternatifs/jeuDeDonnees"
-        );
+                "identifiantsAlternatifs/jeuDeDonnees");
     }
 
     @Test
@@ -113,8 +111,7 @@ class DatasetServiceImplTest {
                 .put("wasGeneratedIRIs", "wasGeneratedIRIs")
                 .put("created", "created")
                 .put("updated", "updated")
-                .put("altIdentifier", "ALT-001")
-        );
+                .put("altIdentifier", "ALT-001"));
 
         when(datasetQueries.getDatasetsForSearch(anyString(), anyString())).thenReturn("query");
         when(repositoryGestion.getResponseAsArray("query")).thenReturn(array);
@@ -142,11 +139,9 @@ class DatasetServiceImplTest {
         JSONObject object1 = new JSONObject().put("id", "1").put("theme", "theme1");
         JSONObject object2 = new JSONObject().put("id", "1").put("theme", "theme2");
         JSONArray array = new JSONArray().put(object).put(object1).put(object2);
-        JSONArray keywords = new JSONArray().put(
-                new JSONObject().put("lang","fr").put("keyword", "keyword 1")
-        ).put(
-                new JSONObject().put("lang","en").put("keyword", "keyword 2")
-        );
+        JSONArray keywords = new JSONArray()
+                .put(new JSONObject().put("lang", "fr").put("keyword", "keyword 1"))
+                .put(new JSONObject().put("lang", "en").put("keyword", "keyword 2"));
 
         doCallRealMethod().when(repositoryGestion).getMultipleTripletsForObject(any(), any(), any(), any());
         when(datasetQueries.getDataset(eq("1"), any(), any())).thenReturn("query");
@@ -156,12 +151,17 @@ class DatasetServiceImplTest {
         when(datasetQueries.getKeywords(eq("1"), any())).thenReturn("query-keywords");
         when(repositoryGestion.getResponseAsArray("query")).thenReturn(array);
         when(repositoryGestion.getResponseAsArray("query-keywords")).thenReturn(keywords);
-        when(repositoryGestion.getResponseAsArray("query-creators")).thenReturn(new JSONArray().put(new JSONObject().put("creator", "creator-1")));
-        when(repositoryGestion.getResponseAsArray("query-spacialResolutions")).thenReturn(new JSONArray().put(new JSONObject().put("spacialResolution", "spacialResolutions-1")));
-        when(repositoryGestion.getResponseAsArray("query-statisticalUnits")).thenReturn(new JSONArray().put(new JSONObject().put("statisticalUnit", "statisticalUnit-1")));
+        when(repositoryGestion.getResponseAsArray("query-creators"))
+                .thenReturn(new JSONArray().put(new JSONObject().put("creator", "creator-1")));
+        when(repositoryGestion.getResponseAsArray("query-spacialResolutions"))
+                .thenReturn(new JSONArray().put(new JSONObject().put("spacialResolution", "spacialResolutions-1")));
+        when(repositoryGestion.getResponseAsArray("query-statisticalUnits"))
+                .thenReturn(new JSONArray().put(new JSONObject().put("statisticalUnit", "statisticalUnit-1")));
         Dataset response = datasetService.getDatasetByID("1");
         String responseJson = objectMapper.writeValueAsString(response);
-        Assertions.assertEquals("{\"creators\":[\"creator-1\"],\"keywords\":{\"lg1\":[\"keyword 1\"],\"lg2\":[\"keyword 2\"]},\"statisticalUnit\":[\"statisticalUnit-1\"],\"spacialResolutions\":[\"spacialResolutions-1\"],\"id\":\"1\",\"themes\":[\"theme2\",\"theme1\"],\"catalogRecord\":{\"creator\":null,\"contributor\":null,\"created\":null,\"updated\":null}}", responseJson);
+        Assertions.assertEquals(
+                "{\"creators\":[\"creator-1\"],\"keywords\":{\"lg1\":[\"keyword 1\"],\"lg2\":[\"keyword 2\"]},\"statisticalUnit\":[\"statisticalUnit-1\"],\"spacialResolutions\":[\"spacialResolutions-1\"],\"id\":\"1\",\"themes\":[\"theme2\",\"theme1\"],\"catalogRecord\":{\"creator\":null,\"contributor\":null,\"created\":null,\"updated\":null}}",
+                responseJson);
     }
 
     @Test
@@ -182,11 +182,10 @@ class DatasetServiceImplTest {
         when(repositoryGestion.getResponseAsArray("query-spacialResolutions")).thenReturn(new JSONArray());
         when(repositoryGestion.getResponseAsArray("query-statisticalUnits")).thenReturn(new JSONArray());
         when(repositoryGestion.getResponseAsArray("query-keywords")).thenReturn(new JSONArray());
-        when(repositoryGestion.getResponseAsArray("query-contributors")).thenReturn(
-                new JSONArray()
+        when(repositoryGestion.getResponseAsArray("query-contributors"))
+                .thenReturn(new JSONArray()
                         .put(new JSONObject().put("contributor", "HIE2000001"))
-                        .put(new JSONObject().put("contributor", "http://bauhaus/organisations/insee/HIE2000002"))
-        );
+                        .put(new JSONObject().put("contributor", "http://bauhaus/organisations/insee/HIE2000002")));
 
         when(organizationsService.getOrganizationUriById("HIE2000001"))
                 .thenReturn("http://bauhaus/organisations/insee/HIE2000001");
@@ -196,10 +195,8 @@ class DatasetServiceImplTest {
         Assertions.assertEquals(
                 List.of(
                         "http://bauhaus/organisations/insee/HIE2000001",
-                        "http://bauhaus/organisations/insee/HIE2000002"
-                ),
-                response.getCatalogRecord().getContributor()
-        );
+                        "http://bauhaus/organisations/insee/HIE2000002"),
+                response.getCatalogRecord().getContributor());
     }
 
     @Test
@@ -222,7 +219,8 @@ class DatasetServiceImplTest {
             lastId.put("id", "1000");
             return lastId;
         });
-        RmesException exception = assertThrows(RmesBadRequestException.class, () -> datasetService.create(body.toString()));
+        RmesException exception =
+                assertThrows(RmesBadRequestException.class, () -> datasetService.create(body.toString()));
         Assertions.assertEquals("{\"message\":\"The property labelLg1 is required\"}", exception.getDetails());
     }
 
@@ -236,7 +234,8 @@ class DatasetServiceImplTest {
             lastId.put("id", "1000");
             return lastId;
         });
-        RmesException exception = assertThrows(RmesBadRequestException.class, () -> datasetService.create(body.toString()));
+        RmesException exception =
+                assertThrows(RmesBadRequestException.class, () -> datasetService.create(body.toString()));
         Assertions.assertEquals("{\"message\":\"The property labelLg2 is required\"}", exception.getDetails());
     }
 
@@ -251,7 +250,8 @@ class DatasetServiceImplTest {
             lastId.put("id", "1000");
             return lastId;
         });
-        RmesException exception = assertThrows(RmesBadRequestException.class, () -> datasetService.create(body.toString()));
+        RmesException exception =
+                assertThrows(RmesBadRequestException.class, () -> datasetService.create(body.toString()));
         Assertions.assertEquals("{\"message\":\"The property creator is required\"}", exception.getDetails());
     }
 
@@ -270,7 +270,8 @@ class DatasetServiceImplTest {
             lastId.put("id", "1000");
             return lastId;
         });
-        RmesException exception = assertThrows(RmesBadRequestException.class, () -> datasetService.create(body.toString()));
+        RmesException exception =
+                assertThrows(RmesBadRequestException.class, () -> datasetService.create(body.toString()));
         Assertions.assertEquals("{\"message\":\"The property contributor is required\"}", exception.getDetails());
     }
 
@@ -287,8 +288,10 @@ class DatasetServiceImplTest {
             lastId.put("id", "1000");
             return lastId;
         });
-        RmesException exception = assertThrows(RmesBadRequestException.class, () -> datasetService.create(body.toString()));
-        Assertions.assertEquals("{\"message\":\"The property disseminationStatus is required\"}", exception.getDetails());
+        RmesException exception =
+                assertThrows(RmesBadRequestException.class, () -> datasetService.create(body.toString()));
+        Assertions.assertEquals(
+                "{\"message\":\"The property disseminationStatus is required\"}", exception.getDetails());
     }
 
     @Test
@@ -305,8 +308,10 @@ class DatasetServiceImplTest {
             lastId.put("id", "1000");
             return lastId;
         });
-        RmesException exception = assertThrows(RmesBadRequestException.class, () -> datasetService.create(body.toString()));
-        Assertions.assertEquals("{\"message\":\"The property altIdentifier contains forbidden characters\"}", exception.getDetails());
+        RmesException exception =
+                assertThrows(RmesBadRequestException.class, () -> datasetService.create(body.toString()));
+        Assertions.assertEquals(
+                "{\"message\":\"The property altIdentifier contains forbidden characters\"}", exception.getDetails());
     }
 
     @Test
@@ -325,7 +330,8 @@ class DatasetServiceImplTest {
             lastId.put("id", "1000");
             return lastId;
         });
-        RmesException exception = assertThrows(RmesBadRequestException.class, () -> datasetService.create(body.toString()));
+        RmesException exception =
+                assertThrows(RmesBadRequestException.class, () -> datasetService.create(body.toString()));
         Assertions.assertEquals("{\"message\":\"Some series or operations do not exist\"}", exception.getDetails());
     }
 
@@ -344,7 +350,8 @@ class DatasetServiceImplTest {
             lastId.put("id", "1000");
             return lastId;
         });
-        RmesException exception = assertThrows(RmesBadRequestException.class, () -> datasetService.create(body.toString()));
+        RmesException exception =
+                assertThrows(RmesBadRequestException.class, () -> datasetService.create(body.toString()));
         Assertions.assertEquals("{\"message\":\"Some series or operations do not exist\"}", exception.getDetails());
     }
 
@@ -383,19 +390,25 @@ class DatasetServiceImplTest {
         when(datasetQueries.getDatasetContributors(any(), any())).thenReturn("query-contributor");
         when(datasetQueries.getDatasetStatisticalUnits(eq(datasetId), any())).thenReturn("query-statisticalUnits");
         when(repositoryGestion.getResponseAsArray("query")).thenReturn(array);
-        when(repositoryGestion.getResponseAsArray("query-creators")).thenReturn(new JSONArray().put(new JSONObject().put("creator", "http://creator-1")));
-        when(repositoryGestion.getResponseAsArray("query-contributor")).thenReturn(new JSONArray().put(new JSONObject().put("contributor", "http://contributor")));
-        when(repositoryGestion.getResponseAsArray("query-spacialResolutions")).thenReturn(new JSONArray().put(new JSONObject().put("spacialResolution", "http://spacialResolutions-1")));
-        when(repositoryGestion.getResponseAsArray("query-statisticalUnits")).thenReturn(new JSONArray().put(new JSONObject().put("statisticalUnit", "http://statisticalUnit-1")));
+        when(repositoryGestion.getResponseAsArray("query-creators"))
+                .thenReturn(new JSONArray().put(new JSONObject().put("creator", "http://creator-1")));
+        when(repositoryGestion.getResponseAsArray("query-contributor"))
+                .thenReturn(new JSONArray().put(new JSONObject().put("contributor", "http://contributor")));
+        when(repositoryGestion.getResponseAsArray("query-spacialResolutions"))
+                .thenReturn(
+                        new JSONArray().put(new JSONObject().put("spacialResolution", "http://spacialResolutions-1")));
+        when(repositoryGestion.getResponseAsArray("query-statisticalUnits"))
+                .thenReturn(new JSONArray().put(new JSONObject().put("statisticalUnit", "http://statisticalUnit-1")));
 
         PatchDataset dataset = new PatchDataset(null, null, 5, null, null);
         datasetService.patchDataset(datasetId, dataset);
 
-
         ArgumentCaptor<Model> model = ArgumentCaptor.forClass(Model.class);
         verify(repositoryGestion, times(1)).loadSimpleObject(eq(iri), model.capture(), any());
 
-        Assertions.assertEquals("[(http://datasetIRI/jd1001, http://purl.org/dc/terms/identifier, \"jd1001\") [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://www.w3.org/ns/dcat#Dataset) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/title, \"labelLg1\"@fr) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/title, \"labelLg2\"@en) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#subtitle, \"subTitleLg1\"@fr) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#subtitle, \"subTitleLg2\"@en) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/accrualPeriodicity, https://accrualPeriodicity) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/accessRights, https://accessRights) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#confidentialityStatus, https://confidentialityStatus) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/creator, http://creator-1) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/publisher, http://c3) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/dcat#landingPage, \"landingPageLg1\"@fr) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/dcat#landingPage, \"landingPageLg2\"@en) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/modified, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/issued, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#disseminationStatus, http://disseminationStatus) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#statisticalUnit, http://statisticalUnit-1) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#numObservations, \"5\"^^<http://www.w3.org/2001/XMLSchema#int>) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#spatialResolution, http://spacialResolutions-1) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/dcat#distribution, http://distributionIRI/d1000) [http://rdf.insee.fr/graphes/datasetGraph/]]", model.getValue().toString());
+        Assertions.assertEquals(
+                "[(http://datasetIRI/jd1001, http://purl.org/dc/terms/identifier, \"jd1001\") [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://www.w3.org/ns/dcat#Dataset) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/title, \"labelLg1\"@fr) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/title, \"labelLg2\"@en) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#subtitle, \"subTitleLg1\"@fr) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#subtitle, \"subTitleLg2\"@en) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/accrualPeriodicity, https://accrualPeriodicity) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/accessRights, https://accessRights) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#confidentialityStatus, https://confidentialityStatus) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/creator, http://creator-1) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/publisher, http://c3) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/dcat#landingPage, \"landingPageLg1\"@fr) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/dcat#landingPage, \"landingPageLg2\"@en) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/modified, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/issued, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#disseminationStatus, http://disseminationStatus) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#statisticalUnit, http://statisticalUnit-1) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#numObservations, \"5\"^^<http://www.w3.org/2001/XMLSchema#int>) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#spatialResolution, http://spacialResolutions-1) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/dcat#distribution, http://distributionIRI/d1000) [http://rdf.insee.fr/graphes/datasetGraph/]]",
+                model.getValue().toString());
     }
 
     private void generateGeneralInformation(JSONObject body) {
@@ -438,10 +451,8 @@ class DatasetServiceImplTest {
     }
 
     private void createANewDataset(String nextId) throws RmesException {
-        try (
-                MockedStatic<RdfUtils> rdfUtilsMock = mockStatic(RdfUtils.class);
-                MockedStatic<DateUtils> dateUtilsMock = mockStatic(DateUtils.class)
-        ) {
+        try (MockedStatic<RdfUtils> rdfUtilsMock = mockStatic(RdfUtils.class);
+                MockedStatic<DateUtils> dateUtilsMock = mockStatic(DateUtils.class)) {
             when(idGenerator.generateNextId()).thenReturn(nextId);
             IRI iri = SimpleValueFactory.getInstance().createIRI("http://datasetIRI/" + nextId);
             IRI catalogRecordIri = SimpleValueFactory.getInstance().createIRI("http://recordIRI/" + nextId);
@@ -451,21 +462,38 @@ class DatasetServiceImplTest {
 
             dateUtilsMock.when(DateUtils::getCurrentDate).thenReturn("2023-10-19T11:44:23.335590");
             dateUtilsMock.when(() -> DateUtils.parseDate(anyString())).thenCallRealMethod();
-            dateUtilsMock.when(() -> DateUtils.parseDateTime(anyString())).thenReturn(LocalDateTime.parse("2023-10-19T11:44:23.335590"));
-            rdfUtilsMock.when(() -> RdfUtils.seriesIRI("2")).thenReturn(SimpleValueFactory.getInstance().createIRI("http://seriesIRI/2"));
+            dateUtilsMock
+                    .when(() -> DateUtils.parseDateTime(anyString()))
+                    .thenReturn(LocalDateTime.parse("2023-10-19T11:44:23.335590"));
+            rdfUtilsMock
+                    .when(() -> RdfUtils.seriesIRI("2"))
+                    .thenReturn(SimpleValueFactory.getInstance().createIRI("http://seriesIRI/2"));
             rdfUtilsMock.when(() -> RdfUtils.setLiteralString(anyString())).thenCallRealMethod();
-            rdfUtilsMock.when(() -> RdfUtils.setLiteralString(anyString(), anyString())).thenCallRealMethod();
+            rdfUtilsMock
+                    .when(() -> RdfUtils.setLiteralString(anyString(), anyString()))
+                    .thenCallRealMethod();
             rdfUtilsMock.when(() -> RdfUtils.setLiteralDateTime(any())).thenCallRealMethod();
             rdfUtilsMock.when(() -> RdfUtils.setLiteralDate(any())).thenCallRealMethod();
-            rdfUtilsMock.when(() -> RdfUtils.addTripleString(any(), any(), any(), any(), any(), any())).thenCallRealMethod();
-            rdfUtilsMock.when(() -> RdfUtils.addTripleString(any(), any(), any(), any(), any())).thenCallRealMethod();
-            rdfUtilsMock.when(() -> RdfUtils.addTripleInt(any(), any(), any(), any(), any())).thenCallRealMethod();
-            rdfUtilsMock.when(() -> RdfUtils.addTripleUri(any(IRI.class), any(), any(IRI.class), any(), any())).thenCallRealMethod();
-            rdfUtilsMock.when(() -> RdfUtils.addTripleDateTime(any(), any(), any(), any(), any())).thenCallRealMethod();
-            rdfUtilsMock.when(() -> RdfUtils.addTripleUri(any(), any(IRI.class), any(String.class), any(), any())).thenCallRealMethod();
+            rdfUtilsMock
+                    .when(() -> RdfUtils.addTripleString(any(), any(), any(), any(), any(), any()))
+                    .thenCallRealMethod();
+            rdfUtilsMock
+                    .when(() -> RdfUtils.addTripleString(any(), any(), any(), any(), any()))
+                    .thenCallRealMethod();
+            rdfUtilsMock
+                    .when(() -> RdfUtils.addTripleInt(any(), any(), any(), any(), any()))
+                    .thenCallRealMethod();
+            rdfUtilsMock
+                    .when(() -> RdfUtils.addTripleUri(any(IRI.class), any(), any(IRI.class), any(), any()))
+                    .thenCallRealMethod();
+            rdfUtilsMock
+                    .when(() -> RdfUtils.addTripleDateTime(any(), any(), any(), any(), any()))
+                    .thenCallRealMethod();
+            rdfUtilsMock
+                    .when(() -> RdfUtils.addTripleUri(any(), any(IRI.class), any(String.class), any(), any()))
+                    .thenCallRealMethod();
             rdfUtilsMock.when(() -> RdfUtils.setLiteralInt(any())).thenCallRealMethod();
             rdfUtilsMock.when(RdfUtils::createBlankNode).thenCallRealMethod();
-
 
             JSONObject body = new JSONObject();
 
@@ -480,13 +508,12 @@ class DatasetServiceImplTest {
             body.put("wasGeneratedIRIs", List.of("http://2"));
             body.put("themes", new JSONArray().put("https://theme"));
 
-
             JSONArray distributions = new JSONArray();
-            when(datasetDistributionQueries.getDatasetDistributions(any(), any())).thenReturn("distributions-query");
+            when(datasetDistributionQueries.getDatasetDistributions(any(), any()))
+                    .thenReturn("distributions-query");
             when(repositoryGestion.getResponseAsArray(anyString())).thenReturn(distributions);
 
             when(seriesRepository.isSeriesAndOperationsExist(anyList())).thenReturn(true);
-
 
             String id = datasetService.create(body.toString());
 
@@ -496,12 +523,16 @@ class DatasetServiceImplTest {
             ArgumentCaptor<Model> model2 = ArgumentCaptor.forClass(Model.class);
             verify(repositoryGestion, times(1)).loadSimpleObject(eq(catalogRecordIri), model2.capture(), any());
 
-            Assertions.assertEquals("[(http://datasetIRI/jd1001, http://purl.org/dc/terms/identifier, \"jd1001\") [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://www.w3.org/ns/dcat#Dataset) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/title, \"labelLg1\"@fr) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/title, \"labelLg2\"@en) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#subtitle, \"subTitleLg1\"@fr) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#subtitle, \"subTitleLg2\"@en) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/accrualPeriodicity, https://accrualPeriodicity) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/accessRights, https://accessRights) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#confidentialityStatus, https://confidentialityStatus) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/creator, http://c1) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/creator, http://c2) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/publisher, http://c3) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/dcat#landingPage, \"landingPageLg1\"@fr) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/dcat#landingPage, \"landingPageLg2\"@en) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/modified, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/issued, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#disseminationStatus, https://disseminationStatus) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#processStep, https://disseminationStatus) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#archiveUnit, https://archiveUnit) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/description, \"descriptionLg2\"@en) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/type, http://type) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#statisticalUnit, https://statisticalUnit) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#structure, https://dataStructure) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#numObservations, \"2\"^^<http://www.w3.org/2001/XMLSchema#int>) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/spatial, https://spacialCoverage) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/dcat#temporalResolution, https://temporalResolution) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#spatialResolution, http://spacialResolutions) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#validationState, \"Unpublished\") [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/prov#wasGeneratedBy, http://2) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/dcat#theme, https://theme) [http://rdf.insee.fr/graphes/datasetGraph/]]".replaceAll("jd1001", nextId), model.getValue().toString());
-            Assertions.assertEquals("[(http://recordIRI/jd1001, http://xmlns.com/foaf/0.1/primaryTopic, http://datasetIRI/jd1001) [http://rdf.insee.fr/graphes/datasetGraph/], (http://recordIRI/jd1001, http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://www.w3.org/ns/dcat#CatalogRecord) [http://rdf.insee.fr/graphes/datasetGraph/], (http://recordIRI/jd1001, http://purl.org/dc/elements/1.1/creator, http://creator) [http://rdf.insee.fr/graphes/datasetGraph/], (http://recordIRI/jd1001, http://purl.org/dc/elements/1.1/contributor, http://contributor) [http://rdf.insee.fr/graphes/datasetGraph/], (http://recordIRI/jd1001, http://purl.org/dc/terms/created, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>) [http://rdf.insee.fr/graphes/datasetGraph/], (http://recordIRI/jd1001, http://purl.org/dc/terms/modified, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>) [http://rdf.insee.fr/graphes/datasetGraph/]]", model2.getValue().toString());
+            Assertions.assertEquals(
+                    "[(http://datasetIRI/jd1001, http://purl.org/dc/terms/identifier, \"jd1001\") [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://www.w3.org/ns/dcat#Dataset) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/title, \"labelLg1\"@fr) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/title, \"labelLg2\"@en) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#subtitle, \"subTitleLg1\"@fr) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#subtitle, \"subTitleLg2\"@en) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/accrualPeriodicity, https://accrualPeriodicity) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/accessRights, https://accessRights) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#confidentialityStatus, https://confidentialityStatus) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/creator, http://c1) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/creator, http://c2) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/publisher, http://c3) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/dcat#landingPage, \"landingPageLg1\"@fr) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/dcat#landingPage, \"landingPageLg2\"@en) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/modified, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/issued, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#disseminationStatus, https://disseminationStatus) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#processStep, https://disseminationStatus) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#archiveUnit, https://archiveUnit) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/description, \"descriptionLg2\"@en) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/type, http://type) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#statisticalUnit, https://statisticalUnit) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#structure, https://dataStructure) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#numObservations, \"2\"^^<http://www.w3.org/2001/XMLSchema#int>) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/spatial, https://spacialCoverage) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/dcat#temporalResolution, https://temporalResolution) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#spatialResolution, http://spacialResolutions) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#validationState, \"Unpublished\") [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/prov#wasGeneratedBy, http://2) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/dcat#theme, https://theme) [http://rdf.insee.fr/graphes/datasetGraph/]]"
+                            .replaceAll("jd1001", nextId),
+                    model.getValue().toString());
+            Assertions.assertEquals(
+                    "[(http://recordIRI/jd1001, http://xmlns.com/foaf/0.1/primaryTopic, http://datasetIRI/jd1001) [http://rdf.insee.fr/graphes/datasetGraph/], (http://recordIRI/jd1001, http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://www.w3.org/ns/dcat#CatalogRecord) [http://rdf.insee.fr/graphes/datasetGraph/], (http://recordIRI/jd1001, http://purl.org/dc/elements/1.1/creator, http://creator) [http://rdf.insee.fr/graphes/datasetGraph/], (http://recordIRI/jd1001, http://purl.org/dc/elements/1.1/contributor, http://contributor) [http://rdf.insee.fr/graphes/datasetGraph/], (http://recordIRI/jd1001, http://purl.org/dc/terms/created, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>) [http://rdf.insee.fr/graphes/datasetGraph/], (http://recordIRI/jd1001, http://purl.org/dc/terms/modified, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>) [http://rdf.insee.fr/graphes/datasetGraph/]]",
+                    model2.getValue().toString());
             Assertions.assertEquals(id, nextId);
         }
     }
-
 
     @Test
     void shouldPersistExistingDataset() throws RmesException {
@@ -509,32 +540,56 @@ class DatasetServiceImplTest {
         IRI catalogRecordIri = SimpleValueFactory.getInstance().createIRI("http://recordIRI/jd1001");
         IRI admsIri = SimpleValueFactory.getInstance().createIRI("http://identifiantsAlternatifs/jeuDeDonnees/jd1001");
 
-        try (
-                MockedStatic<RdfUtils> rdfUtilsMock = mockStatic(RdfUtils.class);
-                MockedStatic<DateUtils> dateUtilsMock = mockStatic(DateUtils.class)
-        ) {
+        try (MockedStatic<RdfUtils> rdfUtilsMock = mockStatic(RdfUtils.class);
+                MockedStatic<DateUtils> dateUtilsMock = mockStatic(DateUtils.class)) {
             rdfUtilsMock.when(() -> RdfUtils.createIRI(any())).thenCallRealMethod();
             rdfUtilsMock.when(() -> RdfUtils.toURI(any())).thenCallRealMethod();
 
             dateUtilsMock.when(DateUtils::getCurrentDate).thenReturn("2023-10-19T11:44:23.335590");
-            dateUtilsMock.when(() -> DateUtils.parseDateTime(eq("2023-10-19T11:44:23.335590"))).thenReturn(LocalDateTime.parse("2023-10-19T11:44:23.335590"));
-            dateUtilsMock.when(() -> DateUtils.parseDateTime(eq("2022-10-19T11:44:23.335590"))).thenReturn(LocalDateTime.parse("2022-10-19T11:44:23.335590"));
-            dateUtilsMock.when(() -> DateUtils.parseDate(eq("2022-10-19T11:44:23.335590"))).thenReturn(Date.from(Instant.parse("2022-10-19T00:00:00.000Z")));
-            dateUtilsMock.when(() -> DateUtils.parseDate(eq("2022-10-19T11:44:23.335590"))).thenReturn(Date.from(Instant.parse("2022-10-19T00:00:00.000Z")));
+            dateUtilsMock
+                    .when(() -> DateUtils.parseDateTime(eq("2023-10-19T11:44:23.335590")))
+                    .thenReturn(LocalDateTime.parse("2023-10-19T11:44:23.335590"));
+            dateUtilsMock
+                    .when(() -> DateUtils.parseDateTime(eq("2022-10-19T11:44:23.335590")))
+                    .thenReturn(LocalDateTime.parse("2022-10-19T11:44:23.335590"));
+            dateUtilsMock
+                    .when(() -> DateUtils.parseDate(eq("2022-10-19T11:44:23.335590")))
+                    .thenReturn(Date.from(Instant.parse("2022-10-19T00:00:00.000Z")));
+            dateUtilsMock
+                    .when(() -> DateUtils.parseDate(eq("2022-10-19T11:44:23.335590")))
+                    .thenReturn(Date.from(Instant.parse("2022-10-19T00:00:00.000Z")));
 
-            rdfUtilsMock.when(() -> RdfUtils.seriesIRI("2")).thenReturn(SimpleValueFactory.getInstance().createIRI("http://seriesIRI/2"));
+            rdfUtilsMock
+                    .when(() -> RdfUtils.seriesIRI("2"))
+                    .thenReturn(SimpleValueFactory.getInstance().createIRI("http://seriesIRI/2"));
             rdfUtilsMock.when(() -> RdfUtils.setLiteralString(anyString())).thenCallRealMethod();
-            rdfUtilsMock.when(() -> RdfUtils.setLiteralString(anyString(), anyString())).thenCallRealMethod();
+            rdfUtilsMock
+                    .when(() -> RdfUtils.setLiteralString(anyString(), anyString()))
+                    .thenCallRealMethod();
             rdfUtilsMock.when(() -> RdfUtils.setLiteralDateTime(any())).thenCallRealMethod();
             rdfUtilsMock.when(() -> RdfUtils.setLiteralDate(any())).thenCallRealMethod();
-            rdfUtilsMock.when(() -> RdfUtils.addTripleString(any(), any(), any(), any(), any(), any())).thenCallRealMethod();
-            rdfUtilsMock.when(() -> RdfUtils.addTripleString(any(), any(), any(), any(), any())).thenCallRealMethod();
-            rdfUtilsMock.when(() -> RdfUtils.addTripleInt(any(), any(), any(), any(), any())).thenCallRealMethod();
-            rdfUtilsMock.when(() -> RdfUtils.addTripleUri(any(), any(), any(String.class), any(), any())).thenCallRealMethod();
-            rdfUtilsMock.when(() -> RdfUtils.addTripleUri(any(), any(), any(IRI.class), any(), any())).thenCallRealMethod();
-            rdfUtilsMock.when(() -> RdfUtils.addTripleDateTime(any(), any(), any(), any(), any())).thenCallRealMethod();
+            rdfUtilsMock
+                    .when(() -> RdfUtils.addTripleString(any(), any(), any(), any(), any(), any()))
+                    .thenCallRealMethod();
+            rdfUtilsMock
+                    .when(() -> RdfUtils.addTripleString(any(), any(), any(), any(), any()))
+                    .thenCallRealMethod();
+            rdfUtilsMock
+                    .when(() -> RdfUtils.addTripleInt(any(), any(), any(), any(), any()))
+                    .thenCallRealMethod();
+            rdfUtilsMock
+                    .when(() -> RdfUtils.addTripleUri(any(), any(), any(String.class), any(), any()))
+                    .thenCallRealMethod();
+            rdfUtilsMock
+                    .when(() -> RdfUtils.addTripleUri(any(), any(), any(IRI.class), any(), any()))
+                    .thenCallRealMethod();
+            rdfUtilsMock
+                    .when(() -> RdfUtils.addTripleDateTime(any(), any(), any(), any(), any()))
+                    .thenCallRealMethod();
             rdfUtilsMock.when(() -> RdfUtils.setLiteralInt(any())).thenCallRealMethod();
-            rdfUtilsMock.when(() -> RdfUtils.addTripleBNode(any(), any(), any(), any(), any())).thenCallRealMethod();
+            rdfUtilsMock
+                    .when(() -> RdfUtils.addTripleBNode(any(), any(), any(), any(), any()))
+                    .thenCallRealMethod();
             rdfUtilsMock.when(RdfUtils::createBlankNode).thenCallRealMethod();
 
             JSONObject body = new JSONObject();
@@ -560,7 +615,8 @@ class DatasetServiceImplTest {
             JSONObject d = new JSONObject();
             d.put("id", "d1000");
             distributions.put(d);
-            when(datasetDistributionQueries.getDatasetDistributions(any(), any())).thenReturn("distributions-query");
+            when(datasetDistributionQueries.getDatasetDistributions(any(), any()))
+                    .thenReturn("distributions-query");
             when(repositoryGestion.getResponseAsArray(anyString())).thenReturn(distributions);
 
             when(seriesRepository.isSeriesAndOperationsExist(any())).thenReturn(true);
@@ -576,9 +632,15 @@ class DatasetServiceImplTest {
             ArgumentCaptor<Model> model3 = ArgumentCaptor.forClass(Model.class);
             verify(repositoryGestion, times(1)).loadSimpleObject(eq(admsIri), model3.capture(), any());
 
-            Assertions.assertEquals("[(http://datasetIRI/jd1001, http://purl.org/dc/terms/identifier, \"jd1001\") [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://www.w3.org/ns/dcat#Dataset) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/title, \"labelLg1\"@fr) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/title, \"labelLg2\"@en) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#subtitle, \"subTitleLg1\"@fr) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#subtitle, \"subTitleLg2\"@en) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/accrualPeriodicity, https://accrualPeriodicity) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/accessRights, https://accessRights) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#confidentialityStatus, https://confidentialityStatus) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/creator, http://c1) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/creator, http://c2) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/publisher, http://c3) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/dcat#landingPage, \"landingPageLg1\"@fr) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/dcat#landingPage, \"landingPageLg2\"@en) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/modified, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/issued, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#disseminationStatus, https://disseminationStatus) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#processStep, https://disseminationStatus) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#archiveUnit, https://archiveUnit) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/adms#identifier, http://identifiantsAlternatifs/jeuDeDonnees/jd1001) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/description, \"descriptionLg1\"@fr) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/description, \"descriptionLg2\"@en) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/type, http://type) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#statisticalUnit, https://statisticalUnit) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#structure, https://dataStructure) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#numObservations, \"2\"^^<http://www.w3.org/2001/XMLSchema#int>) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/spatial, https://spacialCoverage) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/dcat#temporalResolution, https://temporalResolution) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#spatialResolution, http://spacialResolutions) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/prov#wasGeneratedBy, http://2) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/dcat#theme, http://theme) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/dcat#distribution, http://distributionIRI/d1000) [http://rdf.insee.fr/graphes/datasetGraph/]]", model.getValue().toString());
-            Assertions.assertEquals("[(http://recordIRI/jd1001, http://xmlns.com/foaf/0.1/primaryTopic, http://datasetIRI/jd1001) [http://rdf.insee.fr/graphes/datasetGraph/], (http://recordIRI/jd1001, http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://www.w3.org/ns/dcat#CatalogRecord) [http://rdf.insee.fr/graphes/datasetGraph/], (http://recordIRI/jd1001, http://purl.org/dc/elements/1.1/creator, http://creator) [http://rdf.insee.fr/graphes/datasetGraph/], (http://recordIRI/jd1001, http://purl.org/dc/elements/1.1/contributor, http://contributor) [http://rdf.insee.fr/graphes/datasetGraph/], (http://recordIRI/jd1001, http://purl.org/dc/terms/created, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>) [http://rdf.insee.fr/graphes/datasetGraph/], (http://recordIRI/jd1001, http://purl.org/dc/terms/modified, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>) [http://rdf.insee.fr/graphes/datasetGraph/]]", model2.getValue().toString());
-            Assertions.assertEquals("[(http://identifiantsAlternatifs/jeuDeDonnees/jd1001, http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://www.w3.org/ns/adms#Identifier) [http://rdf.insee.fr/graphes/adms], (http://identifiantsAlternatifs/jeuDeDonnees/jd1001, http://www.w3.org/2004/02/skos/core#notation, \"1\") [http://rdf.insee.fr/graphes/adms]]", model3.getValue().toString());
+            Assertions.assertEquals(
+                    "[(http://datasetIRI/jd1001, http://purl.org/dc/terms/identifier, \"jd1001\") [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://www.w3.org/ns/dcat#Dataset) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/title, \"labelLg1\"@fr) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/title, \"labelLg2\"@en) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#subtitle, \"subTitleLg1\"@fr) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#subtitle, \"subTitleLg2\"@en) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/accrualPeriodicity, https://accrualPeriodicity) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/accessRights, https://accessRights) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#confidentialityStatus, https://confidentialityStatus) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/creator, http://c1) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/creator, http://c2) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/publisher, http://c3) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/dcat#landingPage, \"landingPageLg1\"@fr) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/dcat#landingPage, \"landingPageLg2\"@en) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/modified, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/issued, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#disseminationStatus, https://disseminationStatus) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#processStep, https://disseminationStatus) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#archiveUnit, https://archiveUnit) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/adms#identifier, http://identifiantsAlternatifs/jeuDeDonnees/jd1001) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/description, \"descriptionLg1\"@fr) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/description, \"descriptionLg2\"@en) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/type, http://type) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#statisticalUnit, https://statisticalUnit) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#structure, https://dataStructure) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#numObservations, \"2\"^^<http://www.w3.org/2001/XMLSchema#int>) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/spatial, https://spacialCoverage) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/dcat#temporalResolution, https://temporalResolution) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#spatialResolution, http://spacialResolutions) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/prov#wasGeneratedBy, http://2) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/dcat#theme, http://theme) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/dcat#distribution, http://distributionIRI/d1000) [http://rdf.insee.fr/graphes/datasetGraph/]]",
+                    model.getValue().toString());
+            Assertions.assertEquals(
+                    "[(http://recordIRI/jd1001, http://xmlns.com/foaf/0.1/primaryTopic, http://datasetIRI/jd1001) [http://rdf.insee.fr/graphes/datasetGraph/], (http://recordIRI/jd1001, http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://www.w3.org/ns/dcat#CatalogRecord) [http://rdf.insee.fr/graphes/datasetGraph/], (http://recordIRI/jd1001, http://purl.org/dc/elements/1.1/creator, http://creator) [http://rdf.insee.fr/graphes/datasetGraph/], (http://recordIRI/jd1001, http://purl.org/dc/elements/1.1/contributor, http://contributor) [http://rdf.insee.fr/graphes/datasetGraph/], (http://recordIRI/jd1001, http://purl.org/dc/terms/created, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>) [http://rdf.insee.fr/graphes/datasetGraph/], (http://recordIRI/jd1001, http://purl.org/dc/terms/modified, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>) [http://rdf.insee.fr/graphes/datasetGraph/]]",
+                    model2.getValue().toString());
+            Assertions.assertEquals(
+                    "[(http://identifiantsAlternatifs/jeuDeDonnees/jd1001, http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://www.w3.org/ns/adms#Identifier) [http://rdf.insee.fr/graphes/adms], (http://identifiantsAlternatifs/jeuDeDonnees/jd1001, http://www.w3.org/2004/02/skos/core#notation, \"1\") [http://rdf.insee.fr/graphes/adms]]",
+                    model3.getValue().toString());
             Assertions.assertEquals("jd1001", id);
         }
     }
@@ -587,7 +649,8 @@ class DatasetServiceImplTest {
     void shouldNotPublishAnAlreadyPublishedDatasetAndReturn400() throws RmesException {
         givenDatasetWithValidationState("Validated");
 
-        RmesBadRequestException exception = assertThrows(RmesBadRequestException.class, () -> datasetService.publishDataset("1"));
+        RmesBadRequestException exception =
+                assertThrows(RmesBadRequestException.class, () -> datasetService.publishDataset("1"));
 
         assertThat(exception.getDetails()).contains("\"code\":1301");
         assertThat(exception.getDetails()).contains("This dataset is already published");
@@ -626,7 +689,9 @@ class DatasetServiceImplTest {
         ArgumentCaptor<Model> modelIri = ArgumentCaptor.forClass(Model.class);
 
         verify(repositoryGestion, times(1)).objectValidation(eq(iri), modelIri.capture());
-        Assertions.assertEquals("[(http://datasetIRI/1, http://rdf.insee.fr/def/base#validationState, \"Validated\") [http://rdf.insee.fr/graphes/datasetGraph/]]", modelIri.getValue().toString());
+        Assertions.assertEquals(
+                "[(http://datasetIRI/1, http://rdf.insee.fr/def/base#validationState, \"Validated\") [http://rdf.insee.fr/graphes/datasetGraph/]]",
+                modelIri.getValue().toString());
         Assertions.assertEquals("1", id);
     }
 
@@ -642,8 +707,12 @@ class DatasetServiceImplTest {
 
     @Test
     void shouldPatchDatasetReturn400IfNoOneOfRequiredAttributesPatchEmpty() {
-        RmesRuntimeBadRequestException exception = assertThrows(RmesRuntimeBadRequestException.class, () -> datasetService.patchDataset("jd0001", new PatchDataset(null, null, null, null, null)));
-        Assertions.assertEquals("One of these attributes is required : updated, issued, numObservations, numSeries, temporal", exception.getMessage());
+        RmesRuntimeBadRequestException exception = assertThrows(
+                RmesRuntimeBadRequestException.class,
+                () -> datasetService.patchDataset("jd0001", new PatchDataset(null, null, null, null, null)));
+        Assertions.assertEquals(
+                "One of these attributes is required : updated, issued, numObservations, numSeries, temporal",
+                exception.getMessage());
     }
 
     @Test
@@ -651,8 +720,10 @@ class DatasetServiceImplTest {
         when(datasetQueries.getDataset(any(), any(), any())).thenReturn("query");
         JSONArray mockJSON = new JSONArray("[]");
         when(repositoryGestion.getResponseAsArray(anyString())).thenReturn(mockJSON);
-        RmesNotFoundException exception = assertThrows(RmesNotFoundException.class, () -> datasetService.deleteDatasetId("idTest"));
-        Assertions.assertEquals("{\"details\":\"Not found\",\"message\":\"This dataset does not exist\"}", exception.getDetails());
+        RmesNotFoundException exception =
+                assertThrows(RmesNotFoundException.class, () -> datasetService.deleteDatasetId("idTest"));
+        Assertions.assertEquals(
+                "{\"details\":\"Not found\",\"message\":\"This dataset does not exist\"}", exception.getDetails());
     }
 
     @Test
@@ -673,8 +744,10 @@ class DatasetServiceImplTest {
         when(datasetQueries.getDatasetCreators(any(), any())).thenReturn("query2 ");
         when(repositoryGestion.getResponseAsArray("query2 ")).thenReturn(empty_array);
 
-        RmesBadRequestException exception = assertThrows(RmesBadRequestException.class, () -> datasetService.deleteDatasetId("idTest"));
-        Assertions.assertEquals("{\"code\":1203,\"message\":\"Only unpublished datasets can be deleted\"}", exception.getDetails());
+        RmesBadRequestException exception =
+                assertThrows(RmesBadRequestException.class, () -> datasetService.deleteDatasetId("idTest"));
+        Assertions.assertEquals(
+                "{\"code\":1203,\"message\":\"Only unpublished datasets can be deleted\"}", exception.getDetails());
     }
 
     @Test
@@ -698,8 +771,11 @@ class DatasetServiceImplTest {
         when(datasetDistributionQueries.getDatasetDistributions(any(), any())).thenReturn("query3 ");
         when(repositoryGestion.getResponseAsArray("query3 ")).thenReturn(mockDistrib);
 
-        RmesBadRequestException exception = assertThrows(RmesBadRequestException.class, () -> datasetService.deleteDatasetId("idTest"));
-        Assertions.assertEquals("{\"code\":1204,\"message\":\"Only dataset without any distribution can be deleted\"}", exception.getDetails());
+        RmesBadRequestException exception =
+                assertThrows(RmesBadRequestException.class, () -> datasetService.deleteDatasetId("idTest"));
+        Assertions.assertEquals(
+                "{\"code\":1204,\"message\":\"Only dataset without any distribution can be deleted\"}",
+                exception.getDetails());
     }
 
     @Test
@@ -745,8 +821,8 @@ class DatasetServiceImplTest {
             Assertions.assertEquals(datasetUri, uriCaptor.getValue());
 
             verify(repositoryGestion, times(3)).deleteObject(datasetUri);
-            verify(repositoryGestion, times(1)).deleteTripletByPredicate(any(IRI.class), eq(DCAT.DATASET), any(IRI.class));
+            verify(repositoryGestion, times(1))
+                    .deleteTripletByPredicate(any(IRI.class), eq(DCAT.DATASET), any(IRI.class));
         }
     }
-
 }

@@ -2,31 +2,33 @@ package fr.insee.rmes.modules.operations.msd.infrastructure.graphdb;
 
 import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.config.GraphsPropertiesStub;
-import fr.insee.rmes.modules.operations.msd.domain.model.DocumentationAttribute;
 import fr.insee.rmes.graphdb.RepositoryInitiator;
 import fr.insee.rmes.graphdb.RepositoryUtils;
 import fr.insee.rmes.modules.commons.domain.GenericInternalServerException;
 import fr.insee.rmes.modules.operations.msd.domain.NotFoundAttributeException;
 import fr.insee.rmes.modules.operations.msd.domain.OperationDocumentationRubricWithoutRangeException;
+import fr.insee.rmes.modules.operations.msd.domain.model.DocumentationAttribute;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.testcontainers.WithGraphDBContainer;
+import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
-
 @Tag("integration")
 class GraphDBDocumentationRepositoryTest extends WithGraphDBContainer {
 
-    RepositoryGestion repositoryGestion = new RepositoryGestion(getRdfGestionConnectionDetails(), new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED));
-    DocumentationQueries documentationQueries = new DocumentationQueries(new BauhausLanguagesProperties("fr", "en"), GraphsPropertiesStub.stub());
+    RepositoryGestion repositoryGestion = new RepositoryGestion(
+            getRdfGestionConnectionDetails(), new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED));
+    DocumentationQueries documentationQueries =
+            new DocumentationQueries(new BauhausLanguagesProperties("fr", "en"), GraphsPropertiesStub.stub());
 
-    GraphDBDocumentationRepository repository = new GraphDBDocumentationRepository(repositoryGestion, documentationQueries);
+    GraphDBDocumentationRepository repository =
+            new GraphDBDocumentationRepository(repositoryGestion, documentationQueries);
 
     @BeforeAll
-    static void initData(){
+    static void initData() {
         container.withTrigFiles("sims-metadata.trig");
     }
 
@@ -34,7 +36,6 @@ class GraphDBDocumentationRepositoryTest extends WithGraphDBContainer {
     void should_return_rubrics_sans_object() throws Exception {
         List<DocumentationAttribute> result = repository.getAttributesSpecification();
         Assertions.assertEquals(96, result.size());
-
 
         for (DocumentationAttribute obj : result) {
             if ("S.4".equalsIgnoreCase(obj.id())) {
@@ -45,17 +46,20 @@ class GraphDBDocumentationRepositoryTest extends WithGraphDBContainer {
                 Assertions.assertFalse(obj.sansObject());
             }
         }
-
     }
 
     @Test
-    void should_return_rubric_with_true_sans_object_property() throws NotFoundAttributeException, GenericInternalServerException, OperationDocumentationRubricWithoutRangeException {
+    void should_return_rubric_with_true_sans_object_property()
+            throws NotFoundAttributeException, GenericInternalServerException,
+                    OperationDocumentationRubricWithoutRangeException {
         DocumentationAttribute result = repository.getAttributeSpecification("S.4");
         Assertions.assertTrue(result.sansObject());
     }
 
     @Test
-    void should_return_rubric_with_false_sans_object_property() throws NotFoundAttributeException, GenericInternalServerException, OperationDocumentationRubricWithoutRangeException {
+    void should_return_rubric_with_false_sans_object_property()
+            throws NotFoundAttributeException, GenericInternalServerException,
+                    OperationDocumentationRubricWithoutRangeException {
         DocumentationAttribute result = repository.getAttributeSpecification("S.6");
         Assertions.assertFalse(result.sansObject());
     }

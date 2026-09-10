@@ -60,15 +60,14 @@ class ColecticaSchemeFiler {
     private final String defaultLang;
 
     ColecticaSchemeFiler(
-        ColecticaConfiguration.ColecticaInstanceConfiguration instanceConfiguration,
-        ColecticaConfiguration colecticaConfiguration,
-        ColecticaClient colecticaClient,
-        DDI3toDDI4ConverterService ddi3ToDdi4Converter,
-        DDI4toDDI3ConverterService ddi4ToDdi3Converter,
-        MutualizedCodeListRefsStrategy mutualizedCodeListRefsProvider,
-        ColecticaCatalogRepository catalog,
-        String defaultLang
-    ) {
+            ColecticaConfiguration.ColecticaInstanceConfiguration instanceConfiguration,
+            ColecticaConfiguration colecticaConfiguration,
+            ColecticaClient colecticaClient,
+            DDI3toDDI4ConverterService ddi3ToDdi4Converter,
+            DDI4toDDI3ConverterService ddi4ToDdi3Converter,
+            MutualizedCodeListRefsStrategy mutualizedCodeListRefsProvider,
+            ColecticaCatalogRepository catalog,
+            String defaultLang) {
         this.instanceConfiguration = instanceConfiguration;
         this.colecticaConfiguration = colecticaConfiguration;
         this.colecticaClient = colecticaClient;
@@ -89,23 +88,22 @@ class ColecticaSchemeFiler {
      *                     résoudre via les relations Colectica
      */
     void appendSchemeUpdates(
-        String agencyId,
-        String id,
-        Ddi4Response ddi4Response,
-        List<ColecticaItemResponse> colecticaItems,
-        List<ColecticaItemResponse> additionalItems,
-        PhysicalInstanceParents knownParents
-    ) {
+            String agencyId,
+            String id,
+            Ddi4Response ddi4Response,
+            List<ColecticaItemResponse> colecticaItems,
+            List<ColecticaItemResponse> additionalItems,
+            PhysicalInstanceParents knownParents) {
         List<Ddi4CodeList> codeLists = ddi4Response.codeList();
-        List<Ddi4CodeList> nonMutualized = (codeLists == null || codeLists.isEmpty())
-            ? List.of() : filterNonMutualizedCodeLists(codeLists);
+        List<Ddi4CodeList> nonMutualized =
+                (codeLists == null || codeLists.isEmpty()) ? List.of() : filterNonMutualizedCodeLists(codeLists);
         List<Ddi4Category> categories = orEmpty(ddi4Response.category());
         List<Ddi4Variable> variables = orEmpty(ddi4Response.variable());
         List<Ddi4ManagedMissingValuesRepresentation> missingValuesRepresentations =
-            orEmpty(ddi4Response.managedMissingValuesRepresentation());
+                orEmpty(ddi4Response.managedMissingValuesRepresentation());
 
-        boolean groupWork = !nonMutualized.isEmpty() || !categories.isEmpty()
-            || !missingValuesRepresentations.isEmpty();
+        boolean groupWork =
+                !nonMutualized.isEmpty() || !categories.isEmpty() || !missingValuesRepresentations.isEmpty();
         boolean studyUnitWork = !variables.isEmpty();
         if (!groupWork && !studyUnitWork) {
             return;
@@ -120,14 +118,12 @@ class ColecticaSchemeFiler {
                 // StudyUnit. On saute le rangement — le PATCH qui rattache l'instance réenregistre le
                 // même contenu avec les parents portés par sa requête, et range tout à ce moment-là.
                 logger.warn(
-                    "Skipping scheme filing for physical instance {}/{}: no study unit attached yet",
-                    agencyId, id);
+                        "Skipping scheme filing for physical instance {}/{}: no study unit attached yet", agencyId, id);
                 return;
             }
         }
         if (groupWork) {
-            appendGroupSchemesUpdate(parents, nonMutualized, categories, missingValuesRepresentations,
-                colecticaItems);
+            appendGroupSchemesUpdate(parents, nonMutualized, categories, missingValuesRepresentations, colecticaItems);
         }
         if (studyUnitWork) {
             appendStudyUnitVariableSchemeUpdate(parents, variables, colecticaItems, additionalItems);
@@ -146,12 +142,11 @@ class ColecticaSchemeFiler {
      * différentes. Le groupe est réenregistré au plus une fois, et seulement si ce LogicalProduct est neuf.
      */
     private void appendGroupSchemesUpdate(
-        PhysicalInstanceParents parents,
-        List<Ddi4CodeList> nonMutualized,
-        List<Ddi4Category> categories,
-        List<Ddi4ManagedMissingValuesRepresentation> missingValuesRepresentations,
-        List<ColecticaItemResponse> colecticaItems
-    ) {
+            PhysicalInstanceParents parents,
+            List<Ddi4CodeList> nonMutualized,
+            List<Ddi4Category> categories,
+            List<Ddi4ManagedMissingValuesRepresentation> missingValuesRepresentations,
+            List<ColecticaItemResponse> colecticaItems) {
         String groupAgency = parents.groupAgency();
         String groupId = parents.groupId();
         List<ItemReference> logicalProducts = findContainerLogicalProducts(groupAgency, groupId);
@@ -159,20 +154,19 @@ class ColecticaSchemeFiler {
 
         if (!nonMutualized.isEmpty()) {
             fileGroupCodeLists(groupAgency, groupId, logicalProducts, nonMutualized, colecticaItems)
-                .ifPresent(newSchemeRefs::add);
+                    .ifPresent(newSchemeRefs::add);
         }
         if (!categories.isEmpty()) {
             fileGroupCategories(groupAgency, groupId, logicalProducts, categories, colecticaItems)
-                .ifPresent(newSchemeRefs::add);
+                    .ifPresent(newSchemeRefs::add);
         }
         if (!missingValuesRepresentations.isEmpty()) {
-            fileGroupManagedMissingValues(groupAgency, groupId, logicalProducts,
-                missingValuesRepresentations, colecticaItems)
-                .ifPresent(newSchemeRefs::add);
+            fileGroupManagedMissingValues(
+                            groupAgency, groupId, logicalProducts, missingValuesRepresentations, colecticaItems)
+                    .ifPresent(newSchemeRefs::add);
         }
         if (!newSchemeRefs.isEmpty()) {
-            fileSchemesUnderGroupLogicalProduct(
-                groupAgency, groupId, logicalProducts, newSchemeRefs, colecticaItems);
+            fileSchemesUnderGroupLogicalProduct(groupAgency, groupId, logicalProducts, newSchemeRefs, colecticaItems);
         }
     }
 
@@ -181,12 +175,14 @@ class ColecticaSchemeFiler {
      *         du groupe), ou vide quand les listes ont été fusionnées dans un scheme existant
      */
     private Optional<Reference> fileGroupCodeLists(
-        String groupAgency, String groupId, List<ItemReference> logicalProducts,
-        List<Ddi4CodeList> nonMutualized, List<ColecticaItemResponse> colecticaItems
-    ) {
+            String groupAgency,
+            String groupId,
+            List<ItemReference> logicalProducts,
+            List<Ddi4CodeList> nonMutualized,
+            List<ColecticaItemResponse> colecticaItems) {
         List<Reference> newRefs = nonMutualized.stream()
-            .map(cl -> Reference.of(cl.agency(), cl.id(), cl.version(), Ddi4CodeList.TYPE))
-            .toList();
+                .map(cl -> Reference.of(cl.agency(), cl.id(), cl.version(), Ddi4CodeList.TYPE))
+                .toList();
         Optional<ItemReference> schemeRefOpt = findScheme(logicalProducts, CODE_LIST_SCHEME);
         if (schemeRefOpt.isPresent()) {
             ItemReference schemeRef = schemeRefOpt.get();
@@ -195,22 +191,43 @@ class ColecticaSchemeFiler {
             if (merged == null) {
                 return Optional.empty();
             }
-            Ddi4CodeListScheme updated = new Ddi4CodeListScheme(current.type(), current.versionDate(),
-                current.urn(), current.agency(), current.id(), current.version(), current.label(), merged);
-            colecticaItems.add(ColecticaItems.toColecticaItem(
-                ddi4ToDdi3Converter.toCodeListSchemeItem(updated)));
-            logger.info("Filed {} code list(s) under code list scheme {}/{} of group {}/{}",
-                newRefs.size(), schemeRef.agencyId(), schemeRef.identifier(), groupAgency, groupId);
+            Ddi4CodeListScheme updated = new Ddi4CodeListScheme(
+                    current.type(),
+                    current.versionDate(),
+                    current.urn(),
+                    current.agency(),
+                    current.id(),
+                    current.version(),
+                    current.label(),
+                    merged);
+            colecticaItems.add(ColecticaItems.toColecticaItem(ddi4ToDdi3Converter.toCodeListSchemeItem(updated)));
+            logger.info(
+                    "Filed {} code list(s) under code list scheme {}/{} of group {}/{}",
+                    newRefs.size(),
+                    schemeRef.agencyId(),
+                    schemeRef.identifier(),
+                    groupAgency,
+                    groupId);
             return Optional.empty();
         }
         String schemeId = deterministicId(groupAgency, groupId, "#codelistscheme");
-        Ddi4CodeListScheme scheme = new Ddi4CodeListScheme(Ddi4CodeListScheme.TYPE,
-            CogsDate.ofDateTime(ColecticaDates.nowIso()), urn(groupAgency, schemeId),
-            groupAgency, schemeId, "1", LangStrings.of(defaultLang, "Code List Scheme"), newRefs);
-        colecticaItems.add(ColecticaItems.toColecticaItem(
-            ddi4ToDdi3Converter.toCodeListSchemeItem(scheme)));
-        logger.info("Auto-provisioned code list scheme {}/{} for group {}/{} and filed {} code list(s)",
-            groupAgency, schemeId, groupAgency, groupId, newRefs.size());
+        Ddi4CodeListScheme scheme = new Ddi4CodeListScheme(
+                Ddi4CodeListScheme.TYPE,
+                CogsDate.ofDateTime(ColecticaDates.nowIso()),
+                urn(groupAgency, schemeId),
+                groupAgency,
+                schemeId,
+                "1",
+                LangStrings.of(defaultLang, "Code List Scheme"),
+                newRefs);
+        colecticaItems.add(ColecticaItems.toColecticaItem(ddi4ToDdi3Converter.toCodeListSchemeItem(scheme)));
+        logger.info(
+                "Auto-provisioned code list scheme {}/{} for group {}/{} and filed {} code list(s)",
+                groupAgency,
+                schemeId,
+                groupAgency,
+                groupId,
+                newRefs.size());
         return Optional.of(Reference.of(groupAgency, schemeId, "1", CODE_LIST_SCHEME));
     }
 
@@ -219,12 +236,14 @@ class ColecticaSchemeFiler {
      *         du groupe), ou vide quand les catégories ont été fusionnées dans un scheme existant
      */
     private Optional<Reference> fileGroupCategories(
-        String groupAgency, String groupId, List<ItemReference> logicalProducts,
-        List<Ddi4Category> categories, List<ColecticaItemResponse> colecticaItems
-    ) {
+            String groupAgency,
+            String groupId,
+            List<ItemReference> logicalProducts,
+            List<Ddi4Category> categories,
+            List<ColecticaItemResponse> colecticaItems) {
         List<Reference> newRefs = categories.stream()
-            .map(cat -> Reference.of(cat.agency(), cat.id(), cat.version(), Ddi4Category.TYPE))
-            .toList();
+                .map(cat -> Reference.of(cat.agency(), cat.id(), cat.version(), Ddi4Category.TYPE))
+                .toList();
         Optional<ItemReference> schemeRefOpt = findScheme(logicalProducts, CATEGORY_SCHEME);
         if (schemeRefOpt.isPresent()) {
             ItemReference schemeRef = schemeRefOpt.get();
@@ -233,22 +252,43 @@ class ColecticaSchemeFiler {
             if (merged == null) {
                 return Optional.empty();
             }
-            Ddi4CategoryScheme updated = new Ddi4CategoryScheme(current.type(), current.versionDate(),
-                current.urn(), current.agency(), current.id(), current.version(), current.label(), merged);
-            colecticaItems.add(ColecticaItems.toColecticaItem(
-                ddi4ToDdi3Converter.toCategorySchemeItem(updated)));
-            logger.info("Filed {} category(ies) under category scheme {}/{} of group {}/{}",
-                newRefs.size(), schemeRef.agencyId(), schemeRef.identifier(), groupAgency, groupId);
+            Ddi4CategoryScheme updated = new Ddi4CategoryScheme(
+                    current.type(),
+                    current.versionDate(),
+                    current.urn(),
+                    current.agency(),
+                    current.id(),
+                    current.version(),
+                    current.label(),
+                    merged);
+            colecticaItems.add(ColecticaItems.toColecticaItem(ddi4ToDdi3Converter.toCategorySchemeItem(updated)));
+            logger.info(
+                    "Filed {} category(ies) under category scheme {}/{} of group {}/{}",
+                    newRefs.size(),
+                    schemeRef.agencyId(),
+                    schemeRef.identifier(),
+                    groupAgency,
+                    groupId);
             return Optional.empty();
         }
         String schemeId = deterministicId(groupAgency, groupId, "#categoryscheme");
-        Ddi4CategoryScheme scheme = new Ddi4CategoryScheme(Ddi4CategoryScheme.TYPE,
-            CogsDate.ofDateTime(ColecticaDates.nowIso()), urn(groupAgency, schemeId),
-            groupAgency, schemeId, "1", LangStrings.of(defaultLang, "Category Scheme"), newRefs);
-        colecticaItems.add(ColecticaItems.toColecticaItem(
-            ddi4ToDdi3Converter.toCategorySchemeItem(scheme)));
-        logger.info("Auto-provisioned category scheme {}/{} for group {}/{} and filed {} category(ies)",
-            groupAgency, schemeId, groupAgency, groupId, newRefs.size());
+        Ddi4CategoryScheme scheme = new Ddi4CategoryScheme(
+                Ddi4CategoryScheme.TYPE,
+                CogsDate.ofDateTime(ColecticaDates.nowIso()),
+                urn(groupAgency, schemeId),
+                groupAgency,
+                schemeId,
+                "1",
+                LangStrings.of(defaultLang, "Category Scheme"),
+                newRefs);
+        colecticaItems.add(ColecticaItems.toColecticaItem(ddi4ToDdi3Converter.toCategorySchemeItem(scheme)));
+        logger.info(
+                "Auto-provisioned category scheme {}/{} for group {}/{} and filed {} category(ies)",
+                groupAgency,
+                schemeId,
+                groupAgency,
+                groupId,
+                newRefs.size());
         return Optional.of(Reference.of(groupAgency, schemeId, "1", CATEGORY_SCHEME));
     }
 
@@ -261,44 +301,65 @@ class ColecticaSchemeFiler {
      *         scheme existant
      */
     private Optional<Reference> fileGroupManagedMissingValues(
-        String groupAgency, String groupId, List<ItemReference> logicalProducts,
-        List<Ddi4ManagedMissingValuesRepresentation> missingValuesRepresentations,
-        List<ColecticaItemResponse> colecticaItems
-    ) {
+            String groupAgency,
+            String groupId,
+            List<ItemReference> logicalProducts,
+            List<Ddi4ManagedMissingValuesRepresentation> missingValuesRepresentations,
+            List<ColecticaItemResponse> colecticaItems) {
         List<Reference> newRefs = missingValuesRepresentations.stream()
-            .map(mmvr -> Reference.of(mmvr.agency(), mmvr.id(), mmvr.version(),
-                Ddi4ManagedMissingValuesRepresentation.TYPE))
-            .toList();
+                .map(mmvr -> Reference.of(
+                        mmvr.agency(), mmvr.id(), mmvr.version(), Ddi4ManagedMissingValuesRepresentation.TYPE))
+                .toList();
         Optional<ItemReference> schemeRefOpt = findScheme(logicalProducts, MANAGED_REPRESENTATION_SCHEME);
         if (schemeRefOpt.isPresent()) {
             ItemReference schemeRef = schemeRefOpt.get();
             Ddi4ManagedRepresentationScheme current =
-                ddi3ToDdi4Converter.toManagedRepresentationScheme(itemXml(schemeRef));
+                    ddi3ToDdi4Converter.toManagedRepresentationScheme(itemXml(schemeRef));
             List<Reference> merged = mergeReferences(current.managedRepresentationReference(), newRefs);
             if (merged == null) {
                 return Optional.empty();
             }
             Ddi4ManagedRepresentationScheme updated = new Ddi4ManagedRepresentationScheme(
-                current.type(), current.versionDate(), current.urn(), current.agency(), current.id(),
-                current.version(), current.label(), merged);
-            colecticaItems.add(ColecticaItems.toColecticaItem(
-                ddi4ToDdi3Converter.toManagedRepresentationSchemeItem(updated)));
-            logger.info("Filed {} missing values representation(s) under managed representation scheme "
-                    + "{}/{} of group {}/{}",
-                newRefs.size(), schemeRef.agencyId(), schemeRef.identifier(), groupAgency, groupId);
+                    current.type(),
+                    current.versionDate(),
+                    current.urn(),
+                    current.agency(),
+                    current.id(),
+                    current.version(),
+                    current.label(),
+                    merged);
+            colecticaItems.add(
+                    ColecticaItems.toColecticaItem(ddi4ToDdi3Converter.toManagedRepresentationSchemeItem(updated)));
+            logger.info(
+                    "Filed {} missing values representation(s) under managed representation scheme "
+                            + "{}/{} of group {}/{}",
+                    newRefs.size(),
+                    schemeRef.agencyId(),
+                    schemeRef.identifier(),
+                    groupAgency,
+                    groupId);
             return Optional.empty();
         }
         String schemeId = deterministicId(groupAgency, groupId, "#managedrepresentationscheme");
         Ddi4ManagedRepresentationScheme scheme = new Ddi4ManagedRepresentationScheme(
-            Ddi4ManagedRepresentationScheme.TYPE,
-            CogsDate.ofDateTime(ColecticaDates.nowIso()), urn(groupAgency, schemeId),
-            groupAgency, schemeId, "1", LangStrings.of(defaultLang, "Managed Representation Scheme"),
-            newRefs);
-        colecticaItems.add(ColecticaItems.toColecticaItem(
-            ddi4ToDdi3Converter.toManagedRepresentationSchemeItem(scheme)));
-        logger.info("Auto-provisioned managed representation scheme {}/{} for group {}/{} and filed "
-                + "{} missing values representation(s)",
-            groupAgency, schemeId, groupAgency, groupId, newRefs.size());
+                Ddi4ManagedRepresentationScheme.TYPE,
+                CogsDate.ofDateTime(ColecticaDates.nowIso()),
+                urn(groupAgency, schemeId),
+                groupAgency,
+                schemeId,
+                "1",
+                LangStrings.of(defaultLang, "Managed Representation Scheme"),
+                newRefs);
+        colecticaItems.add(
+                ColecticaItems.toColecticaItem(ddi4ToDdi3Converter.toManagedRepresentationSchemeItem(scheme)));
+        logger.info(
+                "Auto-provisioned managed representation scheme {}/{} for group {}/{} and filed "
+                        + "{} missing values representation(s)",
+                groupAgency,
+                schemeId,
+                groupAgency,
+                groupId,
+                newRefs.size());
         return Optional.of(Reference.of(groupAgency, schemeId, "1", MANAGED_REPRESENTATION_SCHEME));
     }
 
@@ -309,42 +370,65 @@ class ColecticaSchemeFiler {
      * nouveaux schemes est créé et le groupe est réenregistré en pointant dessus.
      */
     private void fileSchemesUnderGroupLogicalProduct(
-        String groupAgency, String groupId, List<ItemReference> logicalProducts,
-        List<Reference> newSchemeRefs, List<ColecticaItemResponse> colecticaItems
-    ) {
+            String groupAgency,
+            String groupId,
+            List<ItemReference> logicalProducts,
+            List<Reference> newSchemeRefs,
+            List<ColecticaItemResponse> colecticaItems) {
         if (!logicalProducts.isEmpty()) {
             ItemReference logicalProductRef = logicalProducts.getFirst();
             Ddi4LogicalProduct current = ddi3ToDdi4Converter.toLogicalProduct(itemXml(logicalProductRef));
             Ddi4LogicalProduct updated = new Ddi4LogicalProduct(
-                current.type(), current.versionDate(), current.urn(), current.agency(), current.id(),
-                current.version(), current.label(),
-                addSchemeReferences(current.codeListSchemeReference(), newSchemeRefs, CODE_LIST_SCHEME),
-                addSchemeReferences(current.categorySchemeReference(), newSchemeRefs, CATEGORY_SCHEME),
-                current.variableSchemeReference(),
-                addSchemeReferences(current.managedRepresentationSchemeReference(), newSchemeRefs,
-                    MANAGED_REPRESENTATION_SCHEME));
-            colecticaItems.add(ColecticaItems.toColecticaItem(
-                ddi4ToDdi3Converter.toLogicalProductItem(updated)));
-            logger.info("Filed {} scheme(s) under the existing logical product {}/{} of group {}/{}",
-                newSchemeRefs.size(), logicalProductRef.agencyId(), logicalProductRef.identifier(),
-                groupAgency, groupId);
+                    current.type(),
+                    current.versionDate(),
+                    current.urn(),
+                    current.agency(),
+                    current.id(),
+                    current.version(),
+                    current.label(),
+                    addSchemeReferences(current.codeListSchemeReference(), newSchemeRefs, CODE_LIST_SCHEME),
+                    addSchemeReferences(current.categorySchemeReference(), newSchemeRefs, CATEGORY_SCHEME),
+                    current.variableSchemeReference(),
+                    addSchemeReferences(
+                            current.managedRepresentationSchemeReference(),
+                            newSchemeRefs,
+                            MANAGED_REPRESENTATION_SCHEME));
+            colecticaItems.add(ColecticaItems.toColecticaItem(ddi4ToDdi3Converter.toLogicalProductItem(updated)));
+            logger.info(
+                    "Filed {} scheme(s) under the existing logical product {}/{} of group {}/{}",
+                    newSchemeRefs.size(),
+                    logicalProductRef.agencyId(),
+                    logicalProductRef.identifier(),
+                    groupAgency,
+                    groupId);
             return;
         }
         String logicalProductId = deterministicId(groupAgency, groupId, "#logicalproduct");
         Ddi4LogicalProduct logicalProduct = new Ddi4LogicalProduct(
-            Ddi4LogicalProduct.TYPE, CogsDate.ofDateTime(ColecticaDates.nowIso()),
-            urn(groupAgency, logicalProductId), groupAgency, logicalProductId, "1",
-            LangStrings.of(defaultLang, "Logical Product"),
-            schemeReferencesOfType(newSchemeRefs, CODE_LIST_SCHEME),
-            schemeReferencesOfType(newSchemeRefs, CATEGORY_SCHEME),
-            null,
-            schemeReferencesOfType(newSchemeRefs, MANAGED_REPRESENTATION_SCHEME));
-        colecticaItems.add(ColecticaItems.toColecticaItem(
-            ddi4ToDdi3Converter.toLogicalProductItem(logicalProduct)));
-        logger.info("Auto-provisioned logical product {}/{} for group {}/{} filing {} scheme(s)",
-            groupAgency, logicalProductId, groupAgency, groupId, newSchemeRefs.size());
-        reRegisterGroupWithLogicalProducts(groupAgency, groupId,
-            List.of(Reference.of(groupAgency, logicalProductId, "1", LOGICAL_PRODUCT)), colecticaItems);
+                Ddi4LogicalProduct.TYPE,
+                CogsDate.ofDateTime(ColecticaDates.nowIso()),
+                urn(groupAgency, logicalProductId),
+                groupAgency,
+                logicalProductId,
+                "1",
+                LangStrings.of(defaultLang, "Logical Product"),
+                schemeReferencesOfType(newSchemeRefs, CODE_LIST_SCHEME),
+                schemeReferencesOfType(newSchemeRefs, CATEGORY_SCHEME),
+                null,
+                schemeReferencesOfType(newSchemeRefs, MANAGED_REPRESENTATION_SCHEME));
+        colecticaItems.add(ColecticaItems.toColecticaItem(ddi4ToDdi3Converter.toLogicalProductItem(logicalProduct)));
+        logger.info(
+                "Auto-provisioned logical product {}/{} for group {}/{} filing {} scheme(s)",
+                groupAgency,
+                logicalProductId,
+                groupAgency,
+                groupId,
+                newSchemeRefs.size());
+        reRegisterGroupWithLogicalProducts(
+                groupAgency,
+                groupId,
+                List.of(Reference.of(groupAgency, logicalProductId, "1", LOGICAL_PRODUCT)),
+                colecticaItems);
     }
 
     /**
@@ -358,16 +442,15 @@ class ColecticaSchemeFiler {
      * éviter d'émettre deux items StudyUnit contradictoires.
      */
     private void appendStudyUnitVariableSchemeUpdate(
-        PhysicalInstanceParents parents,
-        List<Ddi4Variable> variables,
-        List<ColecticaItemResponse> colecticaItems,
-        List<ColecticaItemResponse> additionalItems
-    ) {
+            PhysicalInstanceParents parents,
+            List<Ddi4Variable> variables,
+            List<ColecticaItemResponse> colecticaItems,
+            List<ColecticaItemResponse> additionalItems) {
         String suAgency = parents.studyUnitAgency();
         String suId = parents.studyUnitId();
         List<Reference> newRefs = variables.stream()
-            .map(v -> Reference.of(v.agency(), v.id(), v.version(), Ddi4Variable.TYPE))
-            .toList();
+                .map(v -> Reference.of(v.agency(), v.id(), v.version(), Ddi4Variable.TYPE))
+                .toList();
 
         Optional<ItemReference> schemeRefOpt = findContainerScheme(suAgency, suId, VARIABLE_SCHEME);
         if (schemeRefOpt.isPresent()) {
@@ -377,44 +460,75 @@ class ColecticaSchemeFiler {
             if (merged == null) {
                 return;
             }
-            Ddi4VariableScheme updated = new Ddi4VariableScheme(current.type(), current.versionDate(),
-                current.urn(), current.agency(), current.id(), current.version(), current.label(), merged);
-            colecticaItems.add(ColecticaItems.toColecticaItem(
-                ddi4ToDdi3Converter.toVariableSchemeItem(updated)));
-            logger.info("Filed {} variable(s) under variable scheme {}/{} of study unit {}/{}",
-                newRefs.size(), schemeRef.agencyId(), schemeRef.identifier(), suAgency, suId);
+            Ddi4VariableScheme updated = new Ddi4VariableScheme(
+                    current.type(),
+                    current.versionDate(),
+                    current.urn(),
+                    current.agency(),
+                    current.id(),
+                    current.version(),
+                    current.label(),
+                    merged);
+            colecticaItems.add(ColecticaItems.toColecticaItem(ddi4ToDdi3Converter.toVariableSchemeItem(updated)));
+            logger.info(
+                    "Filed {} variable(s) under variable scheme {}/{} of study unit {}/{}",
+                    newRefs.size(),
+                    schemeRef.agencyId(),
+                    schemeRef.identifier(),
+                    suAgency,
+                    suId);
             return;
         }
 
         if (isStudyUnitAlreadyInBatch(additionalItems, suAgency, suId)) {
-            logger.warn("Skipping variable scheme auto-provision for study unit {}/{}: it is already "
-                + "re-registered in the same batch; its variables will not be filed this time", suAgency, suId);
+            logger.warn(
+                    "Skipping variable scheme auto-provision for study unit {}/{}: it is already "
+                            + "re-registered in the same batch; its variables will not be filed this time",
+                    suAgency,
+                    suId);
             return;
         }
 
         String schemeId = deterministicId(suAgency, suId, "#variablescheme");
-        Ddi4VariableScheme scheme = new Ddi4VariableScheme(Ddi4VariableScheme.TYPE,
-            CogsDate.ofDateTime(ColecticaDates.nowIso()), urn(suAgency, schemeId),
-            suAgency, schemeId, "1", LangStrings.of(defaultLang, "Variable Scheme"), newRefs);
-        colecticaItems.add(ColecticaItems.toColecticaItem(
-            ddi4ToDdi3Converter.toVariableSchemeItem(scheme)));
+        Ddi4VariableScheme scheme = new Ddi4VariableScheme(
+                Ddi4VariableScheme.TYPE,
+                CogsDate.ofDateTime(ColecticaDates.nowIso()),
+                urn(suAgency, schemeId),
+                suAgency,
+                schemeId,
+                "1",
+                LangStrings.of(defaultLang, "Variable Scheme"),
+                newRefs);
+        colecticaItems.add(ColecticaItems.toColecticaItem(ddi4ToDdi3Converter.toVariableSchemeItem(scheme)));
 
         Reference logicalProductRef = appendSchemeLogicalProduct(
-            suAgency, suId, "#studyunit-logicalproduct", schemeId, VARIABLE_SCHEME, colecticaItems);
+                suAgency, suId, "#studyunit-logicalproduct", schemeId, VARIABLE_SCHEME, colecticaItems);
 
         Ddi4StudyUnit studyUnit = ddi3ToDdi4Converter.toStudyUnit(
-            colecticaClient.getItem(suAgency, suId, null).item());
-        List<Reference> logicalProductRefs = new ArrayList<>(
-            orEmpty(studyUnit.logicalProductReferences()));
+                colecticaClient.getItem(suAgency, suId, null).item());
+        List<Reference> logicalProductRefs = new ArrayList<>(orEmpty(studyUnit.logicalProductReferences()));
         logicalProductRefs.add(logicalProductRef);
-        Ddi4StudyUnit updatedStudyUnit = new Ddi4StudyUnit(studyUnit.type(), studyUnit.versionDate(),
-            studyUnit.urn(), studyUnit.agency(), studyUnit.id(), studyUnit.version(), studyUnit.citation(),
-            studyUnit.operationIri(), studyUnit.physicalInstanceReferences(), logicalProductRefs);
-        colecticaItems.add(ColecticaItems.toColecticaItem(
-            ddi4ToDdi3Converter.toStudyUnitItem(updatedStudyUnit, STUDY_UNIT_UUID)));
+        Ddi4StudyUnit updatedStudyUnit = new Ddi4StudyUnit(
+                studyUnit.type(),
+                studyUnit.versionDate(),
+                studyUnit.urn(),
+                studyUnit.agency(),
+                studyUnit.id(),
+                studyUnit.version(),
+                studyUnit.citation(),
+                studyUnit.operationIri(),
+                studyUnit.physicalInstanceReferences(),
+                logicalProductRefs);
+        colecticaItems.add(
+                ColecticaItems.toColecticaItem(ddi4ToDdi3Converter.toStudyUnitItem(updatedStudyUnit, STUDY_UNIT_UUID)));
 
-        logger.info("Auto-provisioned variable scheme {}/{} for study unit {}/{} and filed {} variable(s)",
-            suAgency, schemeId, suAgency, suId, newRefs.size());
+        logger.info(
+                "Auto-provisioned variable scheme {}/{} for study unit {}/{} and filed {} variable(s)",
+                suAgency,
+                schemeId,
+                suAgency,
+                suId,
+                newRefs.size());
     }
 
     /**
@@ -423,10 +537,11 @@ class ColecticaSchemeFiler {
      * {@code <…SchemeReference>} n'est alors simplement pas écrit).
      */
     private static List<Reference> addSchemeReferences(
-        List<Reference> existing, List<Reference> newSchemeRefs, String schemeType
-    ) {
+            List<Reference> existing, List<Reference> newSchemeRefs, String schemeType) {
         List<Reference> refs = new ArrayList<>(orEmpty(existing));
-        refs.addAll(newSchemeRefs.stream().filter(ref -> schemeType.equals(ref.type())).toList());
+        refs.addAll(newSchemeRefs.stream()
+                .filter(ref -> schemeType.equals(ref.type()))
+                .toList());
         return refs.isEmpty() ? null : refs;
     }
 
@@ -449,11 +564,11 @@ class ColecticaSchemeFiler {
             return codeLists;
         }
         Set<String> mutualizedKeys = mutualizedCodeListRefsProvider.codeListRefs().stream()
-            .map(ref -> ref.agencyId() + "/" + ref.identifier())
-            .collect(Collectors.toSet());
+                .map(ref -> ref.agencyId() + "/" + ref.identifier())
+                .collect(Collectors.toSet());
         return codeLists.stream()
-            .filter(cl -> !mutualizedKeys.contains(cl.agency() + "/" + cl.id()))
-            .toList();
+                .filter(cl -> !mutualizedKeys.contains(cl.agency() + "/" + cl.id()))
+                .toList();
     }
 
     /**
@@ -462,30 +577,27 @@ class ColecticaSchemeFiler {
      * n'en existe pas encore (l'appelant en auto-provisionne alors un).
      */
     private Optional<ItemReference> findContainerScheme(
-        String containerAgency, String containerId, String schemeTypeKey
-    ) {
+            String containerAgency, String containerId, String schemeTypeKey) {
         return findScheme(findContainerLogicalProducts(containerAgency, containerId), schemeTypeKey);
     }
 
     /** Les LogicalProducts rangés par un conteneur (Group ou StudyUnit), via {@code bysubject}. */
     private List<ItemReference> findContainerLogicalProducts(String containerAgency, String containerId) {
         return ColecticaRelationships.childrenOfType(
-            colecticaClient, new ItemReference(containerAgency, containerId), itemType(LOGICAL_PRODUCT));
+                colecticaClient, new ItemReference(containerAgency, containerId), itemType(LOGICAL_PRODUCT));
     }
 
     /**
      * Cherche un scheme rangé sous l'un des {@code logicalProducts}. Vide quand il n'en existe pas
      * encore (l'appelant en auto-provisionne alors un).
      */
-    private Optional<ItemReference> findScheme(
-        List<ItemReference> logicalProducts, String schemeTypeKey
-    ) {
+    private Optional<ItemReference> findScheme(List<ItemReference> logicalProducts, String schemeTypeKey) {
         String schemeType = itemType(schemeTypeKey);
         for (ItemReference logicalProduct : logicalProducts) {
-            Optional<ItemReference> scheme = colecticaClient.findRelatedDescriptions(
-                    RelationshipDirection.BY_SUBJECT, logicalProduct, List.of(schemeType))
-                .stream()
-                .findFirst();
+            Optional<ItemReference> scheme = colecticaClient
+                    .findRelatedDescriptions(RelationshipDirection.BY_SUBJECT, logicalProduct, List.of(schemeType))
+                    .stream()
+                    .findFirst();
             if (scheme.isPresent()) {
                 return scheme;
             }
@@ -517,20 +629,26 @@ class ColecticaSchemeFiler {
      * renvoie une référence vers lui (à ajouter au conteneur par son réenregistrement).
      */
     private Reference appendSchemeLogicalProduct(
-        String containerAgency, String containerId, String lpSeedSuffix,
-        String schemeId, String schemeTypeKey, List<ColecticaItemResponse> colecticaItems
-    ) {
+            String containerAgency,
+            String containerId,
+            String lpSeedSuffix,
+            String schemeId,
+            String schemeTypeKey,
+            List<ColecticaItemResponse> colecticaItems) {
         String logicalProductId = deterministicId(containerAgency, containerId, lpSeedSuffix);
         Reference schemeReference = Reference.of(containerAgency, schemeId, "1", schemeTypeKey);
         Ddi4LogicalProduct logicalProduct = new Ddi4LogicalProduct(
-            Ddi4LogicalProduct.TYPE, CogsDate.ofDateTime(ColecticaDates.nowIso()),
-            urn(containerAgency, logicalProductId), containerAgency, logicalProductId, "1",
-            LangStrings.of(defaultLang, "Logical Product"),
-            CODE_LIST_SCHEME.equals(schemeTypeKey) ? List.of(schemeReference) : null,
-            CATEGORY_SCHEME.equals(schemeTypeKey) ? List.of(schemeReference) : null,
-            VARIABLE_SCHEME.equals(schemeTypeKey) ? List.of(schemeReference) : null);
-        colecticaItems.add(ColecticaItems.toColecticaItem(
-            ddi4ToDdi3Converter.toLogicalProductItem(logicalProduct)));
+                Ddi4LogicalProduct.TYPE,
+                CogsDate.ofDateTime(ColecticaDates.nowIso()),
+                urn(containerAgency, logicalProductId),
+                containerAgency,
+                logicalProductId,
+                "1",
+                LangStrings.of(defaultLang, "Logical Product"),
+                CODE_LIST_SCHEME.equals(schemeTypeKey) ? List.of(schemeReference) : null,
+                CATEGORY_SCHEME.equals(schemeTypeKey) ? List.of(schemeReference) : null,
+                VARIABLE_SCHEME.equals(schemeTypeKey) ? List.of(schemeReference) : null);
+        colecticaItems.add(ColecticaItems.toColecticaItem(ddi4ToDdi3Converter.toLogicalProductItem(logicalProduct)));
         return Reference.of(containerAgency, logicalProductId, "1", LOGICAL_PRODUCT);
     }
 
@@ -540,28 +658,37 @@ class ColecticaSchemeFiler {
      * {@code Group → LogicalProduct → scheme} que parcourent les lectures.
      */
     private void reRegisterGroupWithLogicalProducts(
-        String groupAgency, String groupId,
-        List<Reference> newLogicalProductRefs, List<ColecticaItemResponse> colecticaItems
-    ) {
+            String groupAgency,
+            String groupId,
+            List<Reference> newLogicalProductRefs,
+            List<ColecticaItemResponse> colecticaItems) {
         Ddi4Group group = ddi3ToDdi4Converter.toGroup(
-            colecticaClient.getItem(groupAgency, groupId, null).item());
+                colecticaClient.getItem(groupAgency, groupId, null).item());
         List<Reference> logicalProductRefs = new ArrayList<>(orEmpty(group.logicalProductReference()));
         logicalProductRefs.addAll(newLogicalProductRefs);
         Ddi4Group updatedGroup = new Ddi4Group(
-            group.type(), group.versionDate(), group.urn(), group.agency(), group.id(), group.version(),
-            group.versionResponsibility(), group.citation(), group.studyUnitReference(),
-            group.seriesIris(), group.typeOfGroup(), logicalProductRefs);
+                group.type(),
+                group.versionDate(),
+                group.urn(),
+                group.agency(),
+                group.id(),
+                group.version(),
+                group.versionResponsibility(),
+                group.citation(),
+                group.studyUnitReference(),
+                group.seriesIris(),
+                group.typeOfGroup(),
+                logicalProductRefs);
         colecticaItems.add(ColecticaItems.toColecticaItem(
-            ddi4ToDdi3Converter.toGroupItem(updatedGroup, ColecticaItemTypes.GROUP_UUID)));
+                ddi4ToDdi3Converter.toGroupItem(updatedGroup, ColecticaItemTypes.GROUP_UUID)));
     }
 
     private static boolean isStudyUnitAlreadyInBatch(
-        List<ColecticaItemResponse> additionalItems, String suAgency, String suId
-    ) {
-        return additionalItems.stream().anyMatch(item ->
-            STUDY_UNIT_UUID.equals(item.itemType())
-                && suAgency.equals(item.agencyId())
-                && suId.equals(item.identifier()));
+            List<ColecticaItemResponse> additionalItems, String suAgency, String suId) {
+        return additionalItems.stream()
+                .anyMatch(item -> STUDY_UNIT_UUID.equals(item.itemType())
+                        && suAgency.equals(item.agencyId())
+                        && suId.equals(item.identifier()));
     }
 
     private String itemXml(ItemReference ref) {

@@ -1,18 +1,5 @@
 package fr.insee.rmes.modules.operations.families.infrastructure.graphdb;
 
-import fr.insee.rmes.BauhausLanguagesProperties;
-import fr.insee.rmes.freemarker.FreeMarkerUtils;
-import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.modules.shared_kernel.domain.model.Language;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.MockedStatic;
-import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.HashMap;
-import java.util.Map;
-
 import static fr.insee.rmes.persistance.sparql_queries.SparqlQueryNormalizer.normalize;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -20,6 +7,18 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mockStatic;
+
+import fr.insee.rmes.BauhausLanguagesProperties;
+import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.freemarker.FreeMarkerUtils;
+import fr.insee.rmes.modules.shared_kernel.domain.model.Language;
+import java.util.HashMap;
+import java.util.Map;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.MockedStatic;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class OperationFamilyQueriesTest {
@@ -32,7 +31,8 @@ class OperationFamilyQueriesTest {
 
     @BeforeEach
     void setUp() {
-        operationFamilyQueries = new OperationFamilyQueries(new BauhausLanguagesProperties(lg1, lg2), baseGraph, operationsGraph);
+        operationFamilyQueries =
+                new OperationFamilyQueries(new BauhausLanguagesProperties(lg1, lg2), baseGraph, operationsGraph);
     }
 
     @Test
@@ -40,17 +40,15 @@ class OperationFamilyQueriesTest {
         String expectedQuery = "SPARQL QUERY RESULT";
 
         try (MockedStatic<FreeMarkerUtils> mockedFreeMarkerUtils = mockStatic(FreeMarkerUtils.class)) {
-            mockedFreeMarkerUtils.when(() -> FreeMarkerUtils.buildRequest(anyString(), anyString(), any(Map.class)))
+            mockedFreeMarkerUtils
+                    .when(() -> FreeMarkerUtils.buildRequest(anyString(), anyString(), any(Map.class)))
                     .thenReturn(expectedQuery);
 
             String result = operationFamilyQueries.familiesQuery();
 
             assertEquals(expectedQuery, result);
             mockedFreeMarkerUtils.verify(() -> FreeMarkerUtils.buildRequest(
-                    eq("operations/famOpeSer/"),
-                    eq("getFamilies.ftlh"),
-                    any(HashMap.class)
-            ));
+                    eq("operations/famOpeSer/"), eq("getFamilies.ftlh"), any(HashMap.class)));
         }
     }
 
@@ -59,10 +57,12 @@ class OperationFamilyQueriesTest {
         RmesException expectedException = new RmesException(500, "FreeMarker error", "Details");
 
         try (MockedStatic<FreeMarkerUtils> mockedFreeMarkerUtils = mockStatic(FreeMarkerUtils.class)) {
-            mockedFreeMarkerUtils.when(() -> FreeMarkerUtils.buildRequest(anyString(), anyString(), any(Map.class)))
+            mockedFreeMarkerUtils
+                    .when(() -> FreeMarkerUtils.buildRequest(anyString(), anyString(), any(Map.class)))
                     .thenThrow(expectedException);
 
-            RmesException thrownException = assertThrows(RmesException.class, () -> operationFamilyQueries.familiesQuery());
+            RmesException thrownException =
+                    assertThrows(RmesException.class, () -> operationFamilyQueries.familiesQuery());
 
             assertEquals(expectedException, thrownException);
         }
@@ -74,17 +74,15 @@ class OperationFamilyQueriesTest {
         String expectedQuery = "SPARQL QUERY RESULT";
 
         try (MockedStatic<FreeMarkerUtils> mockedFreeMarkerUtils = mockStatic(FreeMarkerUtils.class)) {
-            mockedFreeMarkerUtils.when(() -> FreeMarkerUtils.buildRequest(anyString(), anyString(), any(Map.class)))
+            mockedFreeMarkerUtils
+                    .when(() -> FreeMarkerUtils.buildRequest(anyString(), anyString(), any(Map.class)))
                     .thenReturn(expectedQuery);
 
             String result = operationFamilyQueries.familyQuery(familyId);
 
             assertEquals(expectedQuery, result);
             mockedFreeMarkerUtils.verify(() -> FreeMarkerUtils.buildRequest(
-                    eq("operations/famOpeSer/"),
-                    eq("getFamily.ftlh"),
-                    any(HashMap.class)
-            ));
+                    eq("operations/famOpeSer/"), eq("getFamily.ftlh"), any(HashMap.class)));
         }
     }
 
@@ -94,11 +92,12 @@ class OperationFamilyQueriesTest {
         RmesException expectedException = new RmesException(500, "FreeMarker error", "Details");
 
         try (MockedStatic<FreeMarkerUtils> mockedFreeMarkerUtils = mockStatic(FreeMarkerUtils.class)) {
-            mockedFreeMarkerUtils.when(() -> FreeMarkerUtils.buildRequest(anyString(), anyString(), any(Map.class)))
+            mockedFreeMarkerUtils
+                    .when(() -> FreeMarkerUtils.buildRequest(anyString(), anyString(), any(Map.class)))
                     .thenThrow(expectedException);
 
-            RmesException thrownException = assertThrows(RmesException.class, () -> 
-                    operationFamilyQueries.familyQuery(familyId));
+            RmesException thrownException =
+                    assertThrows(RmesException.class, () -> operationFamilyQueries.familyQuery(familyId));
 
             assertEquals(expectedException, thrownException);
         }
@@ -110,17 +109,15 @@ class OperationFamilyQueriesTest {
         String expectedQuery = "SPARQL QUERY RESULT";
 
         try (MockedStatic<FreeMarkerUtils> mockedFreeMarkerUtils = mockStatic(FreeMarkerUtils.class)) {
-            mockedFreeMarkerUtils.when(() -> FreeMarkerUtils.buildRequest(anyString(), anyString(), any(Map.class)))
+            mockedFreeMarkerUtils
+                    .when(() -> FreeMarkerUtils.buildRequest(anyString(), anyString(), any(Map.class)))
                     .thenReturn(expectedQuery);
 
             String result = operationFamilyQueries.getSeries(familyId);
 
             assertEquals(expectedQuery, result);
             mockedFreeMarkerUtils.verify(() -> FreeMarkerUtils.buildRequest(
-                    eq("operations/famOpeSer/"),
-                    eq("getSeries.ftlh"),
-                    any(HashMap.class)
-            ));
+                    eq("operations/famOpeSer/"), eq("getSeries.ftlh"), any(HashMap.class)));
         }
     }
 
@@ -130,11 +127,12 @@ class OperationFamilyQueriesTest {
         RmesException expectedException = new RmesException(500, "FreeMarker error", "Details");
 
         try (MockedStatic<FreeMarkerUtils> mockedFreeMarkerUtils = mockStatic(FreeMarkerUtils.class)) {
-            mockedFreeMarkerUtils.when(() -> FreeMarkerUtils.buildRequest(anyString(), anyString(), any(Map.class)))
+            mockedFreeMarkerUtils
+                    .when(() -> FreeMarkerUtils.buildRequest(anyString(), anyString(), any(Map.class)))
                     .thenThrow(expectedException);
 
-            RmesException thrownException = assertThrows(RmesException.class, () -> 
-                    operationFamilyQueries.getSeries(familyId));
+            RmesException thrownException =
+                    assertThrows(RmesException.class, () -> operationFamilyQueries.getSeries(familyId));
 
             assertEquals(expectedException, thrownException);
         }
@@ -177,7 +175,8 @@ class OperationFamilyQueriesTest {
         String testBaseGraph = "http://test-base/";
         String testOperationsGraph = "test-operations/";
 
-        OperationFamilyQueries queries = new OperationFamilyQueries(new BauhausLanguagesProperties(testLg1, testLg2), testBaseGraph, testOperationsGraph);
+        OperationFamilyQueries queries = new OperationFamilyQueries(
+                new BauhausLanguagesProperties(testLg1, testLg2), testBaseGraph, testOperationsGraph);
 
         String subjectsQuery = queries.getSubjects("test-id");
         assertTrue(subjectsQuery.contains("FILTER (lang(?labelLg1) = \"" + testLg1 + "\")"));
@@ -188,19 +187,21 @@ class OperationFamilyQueriesTest {
     @Test
     void check_pref_label_unicity_should_build_the_ask_query_for_the_requested_language() throws RmesException {
         try (MockedStatic<FreeMarkerUtils> mockedFreeMarker = mockStatic(FreeMarkerUtils.class)) {
-            mockedFreeMarker.when(() -> FreeMarkerUtils.buildRequest(eq("operations/"), eq("checkFamilyPrefLabelUnicity.ftlh"), any(Map.class)))
+            mockedFreeMarker
+                    .when(() -> FreeMarkerUtils.buildRequest(
+                            eq("operations/"), eq("checkFamilyPrefLabelUnicity.ftlh"), any(Map.class)))
                     .thenReturn("ASK { ?s skos:prefLabel 'Test Family'@fr }");
 
             String result = operationFamilyQueries.checkPrefLabelUnicity("fam123", "Test Family", Language.lg1);
 
             assertEquals("ASK { ?s skos:prefLabel 'Test Family'@fr }", result);
-            mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("operations/"), eq("checkFamilyPrefLabelUnicity.ftlh"),
-                    argThat(params -> {
+            mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(
+                    eq("operations/"), eq("checkFamilyPrefLabelUnicity.ftlh"), argThat(params -> {
                         Map<String, Object> map = (Map<String, Object>) params;
-                        return "\"Test Family\"@fr".equals(map.get("LABEL")) &&
-                               "\"/operations/famille/fam123\"".equals(map.get("URI_SUFFIX")) &&
-                               "insee:StatisticalOperationFamily".equals(map.get("TYPE")) &&
-                               ("<" + baseGraph + operationsGraph + ">").equals(map.get("OPERATIONS_GRAPH"));
+                        return "\"Test Family\"@fr".equals(map.get("LABEL"))
+                                && "\"/operations/famille/fam123\"".equals(map.get("URI_SUFFIX"))
+                                && "insee:StatisticalOperationFamily".equals(map.get("TYPE"))
+                                && ("<" + baseGraph + operationsGraph + ">").equals(map.get("OPERATIONS_GRAPH"));
                     })));
         }
     }
@@ -208,19 +209,23 @@ class OperationFamilyQueriesTest {
     @Test
     void check_pref_label_unicity_should_tag_the_label_with_lg2_when_asked_for_lg2() throws RmesException {
         try (MockedStatic<FreeMarkerUtils> mockedFreeMarker = mockStatic(FreeMarkerUtils.class)) {
-            mockedFreeMarker.when(() -> FreeMarkerUtils.buildRequest(anyString(), anyString(), any(Map.class)))
+            mockedFreeMarker
+                    .when(() -> FreeMarkerUtils.buildRequest(anyString(), anyString(), any(Map.class)))
                     .thenReturn("ASK {}");
 
             operationFamilyQueries.checkPrefLabelUnicity("fam123", "Test Family", Language.lg2);
 
-            mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(anyString(), anyString(),
+            mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(
+                    anyString(),
+                    anyString(),
                     argThat(params -> "\"Test Family\"@en".equals(((Map<String, Object>) params).get("LABEL")))));
         }
     }
 
     @Test
     void check_pref_label_unicity_should_reject_null_values() {
-        assertThrows(IllegalArgumentException.class,
+        assertThrows(
+                IllegalArgumentException.class,
                 () -> operationFamilyQueries.checkPrefLabelUnicity(null, null, Language.lg1));
     }
 }

@@ -1,5 +1,7 @@
 package fr.insee.rmes.testcontainers.queries.sparql_queries.operations.famOpeSer;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
@@ -13,8 +15,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 /**
  * {@code OperationQueries.lastId()} alimente le compteur partagé des familles, séries et
  * opérations : {@code OperationsObjectMapper.createId()} rend « s » + (dernier identifiant + 1).
@@ -26,12 +26,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 class OperationLastIdIntegrationTest extends WithGraphDBContainer {
 
     private final RepositoryGestion repositoryGestion = new RepositoryGestion(
-            getRdfGestionConnectionDetails(),
-            new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED));
+            getRdfGestionConnectionDetails(), new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED));
 
     private final OperationQueries operationQueries = new OperationQueries(
-            new BauhausLanguagesProperties("fr", "en"),
-            GraphsPropertiesStub.stub("a9-operations", "composants"));
+            new BauhausLanguagesProperties("fr", "en"), GraphsPropertiesStub.stub("a9-operations", "composants"));
 
     @BeforeAll
     static void initData() {

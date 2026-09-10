@@ -1,10 +1,15 @@
 package fr.insee.rmes.graphdb;
 
 import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.graphdb.ontologies.QB;
 import fr.insee.rmes.graphdb.exceptions.DatabaseQueryException;
 import fr.insee.rmes.graphdb.exceptions.GraphDbUnauthorizedException;
+import fr.insee.rmes.graphdb.ontologies.QB;
 import fr.insee.rmes.keycloak.TokenService;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 import org.eclipse.rdf4j.common.exception.RDF4JException;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
@@ -26,319 +31,323 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
 @Service
 public class RepositoryUtils {
-	
-	private static final String BINDINGS = "bindings";
-	private static final String RESULTS = "results";
-	private static final String EXECUTE_QUERY_FAILED = "Execute query failed : ";
-	
-	static final Logger logger = LoggerFactory.getLogger(RepositoryUtils.class);
-	private final RepositoryInitiator repositoryInitiator;
-	private final RepositoryInitiator.Type authType;
 
+    private static final String BINDINGS = "bindings";
+    private static final String RESULTS = "results";
+    private static final String EXECUTE_QUERY_FAILED = "Execute query failed : ";
 
-	public RepositoryUtils(TokenService tokenService, @Value("${fr.insee.rmes.bauhaus.rdf.auth}")RepositoryInitiator.Type type){
-		this.authType=type;
-		repositoryInitiator=RepositoryInitiator.newInstance(type, tokenService);
-	}
+    static final Logger logger = LoggerFactory.getLogger(RepositoryUtils.class);
+    private final RepositoryInitiator repositoryInitiator;
+    private final RepositoryInitiator.Type authType;
 
-	/**
-	 * @return le mode d'authentification RDF configuré, nécessaire pour expliciter un 401 de GraphDB.
-	 */
-	public RepositoryInitiator.Type authType() {
-		return authType;
-	}
+    public RepositoryUtils(
+            TokenService tokenService, @Value("${fr.insee.rmes.bauhaus.rdf.auth}") RepositoryInitiator.Type type) {
+        this.authType = type;
+        repositoryInitiator = RepositoryInitiator.newInstance(type, tokenService);
+    }
 
-	public Repository initRepository(String rdfServer, String repositoryID) {
-		if (rdfServer==null|| rdfServer.isEmpty()) {
-            logger.warn("rdfServer ({}) et repositoryID ({}) ne doivent pas être nuls dans RepositoryUtils.initRepository", rdfServer, repositoryID);
-			return null;
-		}
-		Repository repository=null;
-		try{
-			repository= this.repositoryInitiator.initRepository(rdfServer, repositoryID);
-		} catch(Exception e) {
+    /**
+     * @return le mode d'authentification RDF configuré, nécessaire pour expliciter un 401 de GraphDB.
+     */
+    public RepositoryInitiator.Type authType() {
+        return authType;
+    }
+
+    public Repository initRepository(String rdfServer, String repositoryID) {
+        if (rdfServer == null || rdfServer.isEmpty()) {
+            logger.warn(
+                    "rdfServer ({}) et repositoryID ({}) ne doivent pas être nuls dans RepositoryUtils.initRepository",
+                    rdfServer,
+                    repositoryID);
+            return null;
+        }
+        Repository repository = null;
+        try {
+            repository = this.repositoryInitiator.initRepository(rdfServer, repositoryID);
+        } catch (Exception e) {
             logger.error("Initialisation de la connection à la base RDF {} impossible", rdfServer, e);
-		}
-		return repository;
-	}
+        }
+        return repository;
+    }
 
+    public RepositoryConnection getConnection(Repository repository) throws RmesException {
+        RepositoryConnection con;
+        try {
+            con = repository.getConnection();
+        } catch (RepositoryException e) {
+            logger.error("Connection au repository impossible : {}", repository.getDataDir());
+            logger.error(e.getMessage());
+            throw new RmesException(
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    e.getMessage(),
+                    "Connection au repository impossible : " + repository.getDataDir());
+        }
+        return con;
+    }
 
-	public RepositoryConnection getConnection(Repository repository) throws RmesException {
-		RepositoryConnection con;
-		try {
-			con = repository.getConnection();
-		} catch (RepositoryException e) {
-			logger.error("Connection au repository impossible : {}", repository.getDataDir());
-			logger.error(e.getMessage());
-			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), "Connection au repository impossible : " + repository.getDataDir());		}
-		return con;
-	}
-	
-	/**
-	 * Method which aims to execute a sparql update
-	 * 
-	 * @param updateQuery
-	 * @return String
-	 * @throws RmesException 
-	 */
-	public HttpStatus executeUpdate(String updateQuery,Repository repository) throws RmesException {
-		if (repository == null) {return HttpStatus.EXPECTATION_FAILED;}
-		try (RepositoryConnection conn = repository.getConnection()) {
-			Update update = conn.prepareUpdate(QueryLanguage.SPARQL, updateQuery);
-			update.execute();
-			logTrace("Repo {} --- Executed update --- \n{}", repository, updateQuery);
-		} catch (RepositoryException e) {
-			if (GraphDbUnauthorizedException.isUnauthorized(e)) {
-				throw new GraphDbUnauthorizedException(e, updateQuery, authType);
-			}
-			logger.error("{} {} {}",EXECUTE_QUERY_FAILED, updateQuery, repository);
-			logger.error(e.getMessage());
-			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), EXECUTE_QUERY_FAILED + updateQuery);
-		}
-		return(HttpStatus.OK);
-	}
-
-	private static void logTrace(String message, Repository repository, String query) {
-		if (logger.isTraceEnabled()){
-			var repoUrl=repository instanceof HTTPRepository httpRepository ? httpRepository.getRepositoryURL():"unknown ("+repository.getClass()+")";
-			logger.trace(message, repoUrl, query);
-		}
-	}
-
-
-	public RepositoryResult<Statement> getCompleteGraph(RepositoryConnection con, Resource context) throws RmesException {
-		RepositoryResult<Statement> statements;
-		try {
-			statements = con.getStatements(null, null, null,context); //get the complete Graph
-		} catch (RepositoryException e) {
-			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), "Failure get following graph : " + context);
-		}
-		return statements;
-	}
-
-
-
-	/**
-	 * Method which aims to execute a sparql query
-	 * 
-	 * @param query
-	 * @return String
+    /**
+     * Method which aims to execute a sparql update
+     *
+     * @param updateQuery
+     * @return String
+     * @throws RmesException
      */
-	public String executeQuery(RepositoryConnection conn, String query) throws DatabaseQueryException {
-		TupleQuery tupleQuery;
+    public HttpStatus executeUpdate(String updateQuery, Repository repository) throws RmesException {
+        if (repository == null) {
+            return HttpStatus.EXPECTATION_FAILED;
+        }
+        try (RepositoryConnection conn = repository.getConnection()) {
+            Update update = conn.prepareUpdate(QueryLanguage.SPARQL, updateQuery);
+            update.execute();
+            logTrace("Repo {} --- Executed update --- \n{}", repository, updateQuery);
+        } catch (RepositoryException e) {
+            if (GraphDbUnauthorizedException.isUnauthorized(e)) {
+                throw new GraphDbUnauthorizedException(e, updateQuery, authType);
+            }
+            logger.error("{} {} {}", EXECUTE_QUERY_FAILED, updateQuery, repository);
+            logger.error(e.getMessage());
+            throw new RmesException(
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), EXECUTE_QUERY_FAILED + updateQuery);
+        }
+        return (HttpStatus.OK);
+    }
 
-		String result;
-		try {
-			var stream = new ByteArrayOutputStream();
-			tupleQuery = conn.prepareTupleQuery(QueryLanguage.SPARQL, query);
-			tupleQuery.evaluate(new SPARQLResultsJSONWriter(stream));
-			// SPARQLResultsJSONWriter emits UTF-8 (JSON spec); decode explicitly to avoid
-			// relying on the JVM default charset, which mangles accented characters on
-			// JVMs started with file.encoding=ISO-8859-1 (typical Docker/POSIX locale).
-			result= stream.toString(StandardCharsets.UTF_8);
-			traceLogResult(conn, query, result);
-		} catch (RDF4JException e) {
-			logAndThrowError(query, e);
-			result="";
-		}
-		return result;
-	}
+    private static void logTrace(String message, Repository repository, String query) {
+        if (logger.isTraceEnabled()) {
+            var repoUrl = repository instanceof HTTPRepository httpRepository
+                    ? httpRepository.getRepositoryURL()
+                    : "unknown (" + repository.getClass() + ")";
+            logger.trace(message, repoUrl, query);
+        }
+    }
 
-	private static void traceLogResult(RepositoryConnection conn, String query, String result) {
-		logTrace("Repo {} --- Executed query --- \n{}", conn.getRepository(), query);
-		logger.trace("--- Results ---\n{}", result);
-	}
+    public RepositoryResult<Statement> getCompleteGraph(RepositoryConnection con, Resource context)
+            throws RmesException {
+        RepositoryResult<Statement> statements;
+        try {
+            statements = con.getStatements(null, null, null, context); // get the complete Graph
+        } catch (RepositoryException e) {
+            throw new RmesException(
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    e.getMessage(),
+                    "Failure get following graph : " + context);
+        }
+        return statements;
+    }
 
-	/**
-	 * Method which aims to execute a sparql ASK query
-	 * 
-	 * @param query
-	 * @return String
+    /**
+     * Method which aims to execute a sparql query
+     *
+     * @param query
+     * @return String
      */
-	public boolean executeAskQuery(RepositoryConnection conn, String query) throws DatabaseQueryException {
-		BooleanQuery tupleQuery;
-		try {
-			tupleQuery = conn.prepareBooleanQuery(QueryLanguage.SPARQL, query);
-			var result =  tupleQuery.evaluate();
-			traceLogResult(conn, query, Boolean.toString(result));
-			return result;
-		} catch (RDF4JException e) {
-			logAndThrowError(query, e);		
-		}
-		return false;
-	}
-	
-	/**
-	 * Method which aims to produce response from a sparql query
-	 * 
-	 * @param query
-	 * @return String
+    public String executeQuery(RepositoryConnection conn, String query) throws DatabaseQueryException {
+        TupleQuery tupleQuery;
+
+        String result;
+        try {
+            var stream = new ByteArrayOutputStream();
+            tupleQuery = conn.prepareTupleQuery(QueryLanguage.SPARQL, query);
+            tupleQuery.evaluate(new SPARQLResultsJSONWriter(stream));
+            // SPARQLResultsJSONWriter emits UTF-8 (JSON spec); decode explicitly to avoid
+            // relying on the JVM default charset, which mangles accented characters on
+            // JVMs started with file.encoding=ISO-8859-1 (typical Docker/POSIX locale).
+            result = stream.toString(StandardCharsets.UTF_8);
+            traceLogResult(conn, query, result);
+        } catch (RDF4JException e) {
+            logAndThrowError(query, e);
+            result = "";
+        }
+        return result;
+    }
+
+    private static void traceLogResult(RepositoryConnection conn, String query, String result) {
+        logTrace("Repo {} --- Executed query --- \n{}", conn.getRepository(), query);
+        logger.trace("--- Results ---\n{}", result);
+    }
+
+    /**
+     * Method which aims to execute a sparql ASK query
+     *
+     * @param query
+     * @return String
      */
-	public String getResponse(String query, Repository repository) throws DatabaseQueryException {
-		String response = "";
-		try (RepositoryConnection conn = repository.getConnection()) {
-			response = executeQuery(conn, query);
-		} catch (RDF4JException e) {
-			logAndThrowError(query, e);
-		}
-		return response;
-	}
+    public boolean executeAskQuery(RepositoryConnection conn, String query) throws DatabaseQueryException {
+        BooleanQuery tupleQuery;
+        try {
+            tupleQuery = conn.prepareBooleanQuery(QueryLanguage.SPARQL, query);
+            var result = tupleQuery.evaluate();
+            traceLogResult(conn, query, Boolean.toString(result));
+            return result;
+        } catch (RDF4JException e) {
+            logAndThrowError(query, e);
+        }
+        return false;
+    }
 
-	private void logAndThrowError(String query, RDF4JException e) throws DatabaseQueryException {
-		throw DatabaseQueryException.from(e, query, authType);
-	}
-	
-	/**
-	 * Method which aims to produce response from a sparql query
-	 * 
-	 * @param query
-	 * @return String
+    /**
+     * Method which aims to produce response from a sparql query
+     *
+     * @param query
+     * @return String
      */
-	public boolean getResponseForAskQuery(String query, Repository repository) throws DatabaseQueryException {
-		boolean response = false;
-		try (RepositoryConnection conn = repository.getConnection()) {
-			response = executeAskQuery(conn, query);
-		} catch (RDF4JException e) {
-			logAndThrowError(query, e);
-		}
-		return response;
-	}
-	
-	/**
-	 * Method which aims to produce response from a sparql query
-	 * 
-	 * @param query
-	 * @return JSONArray
-	 * @throws RmesException 
-	 */
-	public JSONArray getResponseAsArray(String query, Repository repository) throws RmesException {
-		String response = getResponse(query, repository);
-		if (response.isEmpty()){
-			return null;
-		}
-		JSONObject res = new JSONObject(response);
-		return sparqlJSONToResultArrayValues(res);
-	}
-	
-	/**
-	 * Method which aims to produce response from a sparql query
-	 * 
-	 * @param query
-	 * @return JSONArray
-	 * @throws RmesException 
-	 */
-	public JSONArray getResponseAsJSONList(String query, Repository repository) throws RmesException {
-		String response = getResponse(query, repository);
-		if (response.isEmpty()){
-			return null;
-		}
-		JSONObject res = new JSONObject(response);
-		return sparqlJSONToResultListValues(res);
-	}
-	
-	
-	/**
-	 * Method which aims to produce response from a sparql query
-	 * 
-	 * @param query
-	 * @return JSONObject
-	 * @throws RmesException 
-	 */
-	public JSONObject getResponseAsObject(String query, Repository repository) throws RmesException {
-		JSONArray resArray = getResponseAsArray(query, repository);
-		if (resArray==null || resArray.isEmpty()) {
-			return new JSONObject();
-		}
-		return (JSONObject) resArray.get(0);
-	}
-	
-	/**
-	 * Return a JsonArray containing a list of jsonobject (key value)
-	 * @param jsonSparql
-	 * @return
-	 */
-	public static JSONArray sparqlJSONToResultArrayValues(JSONObject jsonSparql) {
-		JSONArray arrayRes = new JSONArray();
-		if (!jsonSparql.has(RESULTS) || jsonSparql.get(RESULTS) == null) {
-			return null;
-		}
+    public String getResponse(String query, Repository repository) throws DatabaseQueryException {
+        String response = "";
+        try (RepositoryConnection conn = repository.getConnection()) {
+            response = executeQuery(conn, query);
+        } catch (RDF4JException e) {
+            logAndThrowError(query, e);
+        }
+        return response;
+    }
 
-		int nbRes = ((JSONArray) ((JSONObject) jsonSparql.get(RESULTS)).get(BINDINGS)).length();
+    private void logAndThrowError(String query, RDF4JException e) throws DatabaseQueryException {
+        throw DatabaseQueryException.from(e, query, authType);
+    }
 
-		for (int i = 0; i < nbRes; i++) {
-			final JSONObject json = (JSONObject) ((JSONArray) ((JSONObject) jsonSparql.get(RESULTS)).get(BINDINGS))
-					.get(i);
-			final JSONObject jsonResults = new JSONObject();
+    /**
+     * Method which aims to produce response from a sparql query
+     *
+     * @param query
+     * @return String
+     */
+    public boolean getResponseForAskQuery(String query, Repository repository) throws DatabaseQueryException {
+        boolean response = false;
+        try (RepositoryConnection conn = repository.getConnection()) {
+            response = executeAskQuery(conn, query);
+        } catch (RDF4JException e) {
+            logAndThrowError(query, e);
+        }
+        return response;
+    }
 
-			Set<String> set = json.keySet();
-			set.forEach(s -> {
+    /**
+     * Method which aims to produce response from a sparql query
+     *
+     * @param query
+     * @return JSONArray
+     * @throws RmesException
+     */
+    public JSONArray getResponseAsArray(String query, Repository repository) throws RmesException {
+        String response = getResponse(query, repository);
+        if (response.isEmpty()) {
+            return null;
+        }
+        JSONObject res = new JSONObject(response);
+        return sparqlJSONToResultArrayValues(res);
+    }
+
+    /**
+     * Method which aims to produce response from a sparql query
+     *
+     * @param query
+     * @return JSONArray
+     * @throws RmesException
+     */
+    public JSONArray getResponseAsJSONList(String query, Repository repository) throws RmesException {
+        String response = getResponse(query, repository);
+        if (response.isEmpty()) {
+            return null;
+        }
+        JSONObject res = new JSONObject(response);
+        return sparqlJSONToResultListValues(res);
+    }
+
+    /**
+     * Method which aims to produce response from a sparql query
+     *
+     * @param query
+     * @return JSONObject
+     * @throws RmesException
+     */
+    public JSONObject getResponseAsObject(String query, Repository repository) throws RmesException {
+        JSONArray resArray = getResponseAsArray(query, repository);
+        if (resArray == null || resArray.isEmpty()) {
+            return new JSONObject();
+        }
+        return (JSONObject) resArray.get(0);
+    }
+
+    /**
+     * Return a JsonArray containing a list of jsonobject (key value)
+     * @param jsonSparql
+     * @return
+     */
+    public static JSONArray sparqlJSONToResultArrayValues(JSONObject jsonSparql) {
+        JSONArray arrayRes = new JSONArray();
+        if (!jsonSparql.has(RESULTS) || jsonSparql.get(RESULTS) == null) {
+            return null;
+        }
+
+        int nbRes = ((JSONArray) ((JSONObject) jsonSparql.get(RESULTS)).get(BINDINGS)).length();
+
+        for (int i = 0; i < nbRes; i++) {
+            final JSONObject json =
+                    (JSONObject) ((JSONArray) ((JSONObject) jsonSparql.get(RESULTS)).get(BINDINGS)).get(i);
+            final JSONObject jsonResults = new JSONObject();
+
+            Set<String> set = json.keySet();
+            set.forEach(s -> {
                 var jsonObject = (JSONObject) json.get(s);
                 jsonResults.put(s, jsonObject.get("value"));
-                if(jsonObject.has("xml:lang")) {
+                if (jsonObject.has("xml:lang")) {
                     jsonResults.put(s + "_lg", jsonObject.get("xml:lang"));
                 }
             });
-			arrayRes.put(jsonResults);
-		}
-		return arrayRes;
-	}
-	
-	/**
-	 * Return a JsonArray containing a list of string (without key)
-	 * @param jsonSparql
-	 * @return
-	 */
-	public static JSONArray sparqlJSONToResultListValues(JSONObject jsonSparql) {
-		JSONArray arrayRes = new JSONArray();
-		if (!jsonSparql.has(RESULTS) || jsonSparql.get(RESULTS) == null) {
-			return null;
-		}
+            arrayRes.put(jsonResults);
+        }
+        return arrayRes;
+    }
 
-		int nbRes = ((JSONArray) ((JSONObject) jsonSparql.get(RESULTS)).get(BINDINGS)).length();
+    /**
+     * Return a JsonArray containing a list of string (without key)
+     * @param jsonSparql
+     * @return
+     */
+    public static JSONArray sparqlJSONToResultListValues(JSONObject jsonSparql) {
+        JSONArray arrayRes = new JSONArray();
+        if (!jsonSparql.has(RESULTS) || jsonSparql.get(RESULTS) == null) {
+            return null;
+        }
 
-		for (int i = 0; i < nbRes; i++) {
-			final JSONObject json = (JSONObject) ((JSONArray) ((JSONObject) jsonSparql.get(RESULTS)).get(BINDINGS))
-					.get(i);
-			Set<String> set = json.keySet();
-			set.forEach(s -> arrayRes.put(((JSONObject)json.get(s)).get("value")));
-		}
-		return arrayRes;
-	}
+        int nbRes = ((JSONArray) ((JSONObject) jsonSparql.get(RESULTS)).get(BINDINGS)).length();
 
-	
-	public void clearStructureAndComponents(Resource structure, Repository repository) throws RmesException {
-		List<Resource> toRemove = new ArrayList<>();
-		try (RepositoryConnection conn = repository.getConnection()) {
-			try (RepositoryResult<Statement> nodes = conn.getStatements(structure, QB.COMPONENT, null, false)) {
-				while (nodes.hasNext()) {
-					Resource node = (Resource) nodes.next().getObject();
-					toRemove.add(node);
-					try (RepositoryResult<Statement> specifications = conn.getStatements(node, QB.COMPONENT, null, false)) {
-						while (specifications.hasNext()) {
-							toRemove.add((Resource) specifications.next().getObject());
-						}
-					}
-				}
-			}
-			toRemove.forEach(res -> {
-				try (RepositoryResult<Statement> statements = conn.getStatements(res, null, null, false)) {
-					conn.remove(statements);
-				} catch (RepositoryException e) {
-					logger.error("Repository {} Error {}",repository, e.getMessage());
-				}
-			});
-		} catch (RepositoryException e) {
-			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), "Failure deletion : " + structure);
-		}
-	}
-	
+        for (int i = 0; i < nbRes; i++) {
+            final JSONObject json =
+                    (JSONObject) ((JSONArray) ((JSONObject) jsonSparql.get(RESULTS)).get(BINDINGS)).get(i);
+            Set<String> set = json.keySet();
+            set.forEach(s -> arrayRes.put(((JSONObject) json.get(s)).get("value")));
+        }
+        return arrayRes;
+    }
 
+    public void clearStructureAndComponents(Resource structure, Repository repository) throws RmesException {
+        List<Resource> toRemove = new ArrayList<>();
+        try (RepositoryConnection conn = repository.getConnection()) {
+            try (RepositoryResult<Statement> nodes = conn.getStatements(structure, QB.COMPONENT, null, false)) {
+                while (nodes.hasNext()) {
+                    Resource node = (Resource) nodes.next().getObject();
+                    toRemove.add(node);
+                    try (RepositoryResult<Statement> specifications =
+                            conn.getStatements(node, QB.COMPONENT, null, false)) {
+                        while (specifications.hasNext()) {
+                            toRemove.add((Resource) specifications.next().getObject());
+                        }
+                    }
+                }
+            }
+            toRemove.forEach(res -> {
+                try (RepositoryResult<Statement> statements = conn.getStatements(res, null, null, false)) {
+                    conn.remove(statements);
+                } catch (RepositoryException e) {
+                    logger.error("Repository {} Error {}", repository, e.getMessage());
+                }
+            });
+        } catch (RepositoryException e) {
+            throw new RmesException(
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), "Failure deletion : " + structure);
+        }
+    }
 }

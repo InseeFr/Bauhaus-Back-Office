@@ -1,15 +1,15 @@
 package fr.insee.rmes.modules.organisations;
 
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.when;
+
 import fr.insee.rmes.modules.organisations.domain.exceptions.OrganisationFetchException;
 import fr.insee.rmes.modules.organisations.domain.port.serverside.OrganisationsRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class DefaultContributorValidatorTest {

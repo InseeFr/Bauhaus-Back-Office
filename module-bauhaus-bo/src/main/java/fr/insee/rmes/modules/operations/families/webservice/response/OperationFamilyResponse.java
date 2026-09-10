@@ -1,9 +1,8 @@
 package fr.insee.rmes.modules.operations.families.webservice.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import fr.insee.rmes.modules.operations.families.domain.model.OperationFamily;
 import fr.insee.rmes.modules.commons.webservice.BaseResponse;
-
+import fr.insee.rmes.modules.operations.families.domain.model.OperationFamily;
 import java.util.List;
 
 @JsonIgnoreProperties(allowGetters = true)
@@ -12,21 +11,23 @@ public class OperationFamilyResponse extends BaseResponse<OperationFamilyRespons
     private final List<OperationFamilySeriesResponse> series;
     private final List<OperationFamilySubjectResponse> subjects;
 
-    private OperationFamilyResponse(OperationFamily domainObject, List<OperationFamilySeriesResponse> series, List<OperationFamilySubjectResponse> subjects) {
+    private OperationFamilyResponse(
+            OperationFamily domainObject,
+            List<OperationFamilySeriesResponse> series,
+            List<OperationFamilySubjectResponse> subjects) {
         super(domainObject);
         this.series = series;
         this.subjects = subjects;
     }
-    
+
     public static OperationFamilyResponse fromDomain(
             OperationFamily family,
             List<OperationFamilySeriesResponse> series,
             List<OperationFamilySubjectResponse> subjects) {
-        return new OperationFamilyResponse(family, series
-                , subjects);
+        return new OperationFamilyResponse(family, series, subjects);
     }
 
-    public List<OperationFamilySeriesResponse> getSeries(){
+    public List<OperationFamilySeriesResponse> getSeries() {
         return series;
     }
 

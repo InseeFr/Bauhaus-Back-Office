@@ -13,7 +13,8 @@ public class RdfUtilsInitializer {
     private final BauhausUriProperties uris;
     private final DocumentationsProperties documentations;
 
-    public RdfUtilsInitializer(GraphsProperties graphs, BauhausUriProperties uris, DocumentationsProperties documentations) {
+    public RdfUtilsInitializer(
+            GraphsProperties graphs, BauhausUriProperties uris, DocumentationsProperties documentations) {
         this.graphs = graphs;
         this.uris = uris;
         this.documentations = documentations;

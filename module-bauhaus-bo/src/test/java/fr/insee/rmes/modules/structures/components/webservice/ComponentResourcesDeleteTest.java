@@ -1,5 +1,9 @@
 package fr.insee.rmes.modules.structures.components.webservice;
 
+import static org.mockito.Mockito.doThrow;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import fr.insee.rmes.bauhaus_services.structures.StructureComponent;
 import fr.insee.rmes.bauhaus_services.structures.StructureService;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
@@ -14,18 +18,11 @@ import org.springframework.context.annotation.FilterType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.mockito.Mockito.doThrow;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 @WebMvcTest(
         value = ComponentResources.class,
         excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = LogRequestFilter.class),
         excludeAutoConfiguration = OAuth2ResourceServerAutoConfiguration.class,
-        properties = {
-                "fr.insee.rmes.bauhaus.modules.structures.enabled=true"
-        }
-)
+        properties = {"fr.insee.rmes.bauhaus.modules.structures.enabled=true"})
 @AutoConfigureMockMvc(addFilters = false)
 class ComponentResourcesDeleteTest {
 
@@ -41,9 +38,9 @@ class ComponentResourcesDeleteTest {
     @Test
     void deleteComponent_whenComponentDoesNotExist_shouldReturnNotFound() throws Exception {
         doThrow(new RmesNotFoundException("Not Found", "component with unknown not found"))
-                .when(structureComponentService).deleteComponent("unknown");
+                .when(structureComponentService)
+                .deleteComponent("unknown");
 
-        mockMvc.perform(delete("/structures/components/{id}", "unknown"))
-                .andExpect(status().isNotFound());
+        mockMvc.perform(delete("/structures/components/{id}", "unknown")).andExpect(status().isNotFound());
     }
 }

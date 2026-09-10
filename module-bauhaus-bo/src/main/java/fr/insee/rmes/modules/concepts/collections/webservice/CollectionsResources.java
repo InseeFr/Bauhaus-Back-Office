@@ -1,15 +1,20 @@
 package fr.insee.rmes.modules.concepts.collections.webservice;
 
-import fr.insee.rmes.modules.shared_kernel.domain.model.Language;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+
 import fr.insee.rmes.modules.commons.configuration.ConditionalOnModule;
 import fr.insee.rmes.modules.concepts.collections.domain.exceptions.*;
 import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionExport;
 import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionExportType;
 import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionId;
 import fr.insee.rmes.modules.concepts.collections.domain.port.clientside.CollectionsService;
-import fr.insee.rmes.modules.users.webservice.HasAccess;
+import fr.insee.rmes.modules.shared_kernel.domain.model.Language;
 import fr.insee.rmes.modules.users.domain.model.RBAC;
+import fr.insee.rmes.modules.users.webservice.HasAccess;
 import jakarta.servlet.http.HttpServletResponse;
+import java.net.URI;
+import java.util.Arrays;
+import java.util.List;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -20,26 +25,23 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import java.net.URI;
-import java.util.Arrays;
-import java.util.List;
-
-import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
-
 @RestController
 @RequestMapping("/concepts/collections")
 @ConditionalOnModule("concepts")
 public class CollectionsResources {
     private final CollectionsService service;
+
     public CollectionsResources(CollectionsService service) {
         this.service = service;
     }
 
     @GetMapping(produces = APPLICATION_JSON_VALUE)
     @HasAccess(module = RBAC.Module.CONCEPT_COLLECTION, privilege = RBAC.Privilege.READ)
-    List<PartialCollectionResponse> getAll(){
+    List<PartialCollectionResponse> getAll() {
         try {
-            return this.service.getAllCollections().stream().map(PartialCollectionResponse::fromDomain).toList();
+            return this.service.getAllCollections().stream()
+                    .map(PartialCollectionResponse::fromDomain)
+                    .toList();
         } catch (CollectionsFetchException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
         }
@@ -49,7 +51,9 @@ public class CollectionsResources {
     @HasAccess(module = RBAC.Module.CONCEPT_COLLECTION, privilege = RBAC.Privilege.READ)
     List<CollectionDashboardItemResponse> getDashboard() {
         try {
-            return this.service.getDashboard().stream().map(CollectionDashboardItemResponse::fromDomain).toList();
+            return this.service.getDashboard().stream()
+                    .map(CollectionDashboardItemResponse::fromDomain)
+                    .toList();
         } catch (CollectionsFetchException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
         }
@@ -59,7 +63,9 @@ public class CollectionsResources {
     @HasAccess(module = RBAC.Module.CONCEPT_COLLECTION, privilege = RBAC.Privilege.READ)
     List<CollectionToValidateResponse> getToValidate() {
         try {
-            return this.service.getToValidate().stream().map(CollectionToValidateResponse::fromDomain).toList();
+            return this.service.getToValidate().stream()
+                    .map(CollectionToValidateResponse::fromDomain)
+                    .toList();
         } catch (CollectionsFetchException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
         }
@@ -69,7 +75,9 @@ public class CollectionsResources {
     @HasAccess(module = RBAC.Module.CONCEPT_COLLECTION, privilege = RBAC.Privilege.READ)
     List<CollectionMemberResponse> getCollectionMembers(@PathVariable String id) {
         try {
-            return this.service.getCollectionMembers(new CollectionId(id)).stream().map(CollectionMemberResponse::fromDomain).toList();
+            return this.service.getCollectionMembers(new CollectionId(id)).stream()
+                    .map(CollectionMemberResponse::fromDomain)
+                    .toList();
         } catch (InvalidCollectionIdException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
         } catch (CollectionsFetchException e) {
@@ -79,9 +87,13 @@ public class CollectionsResources {
 
     @GetMapping("/{id}")
     @HasAccess(module = RBAC.Module.CONCEPT_COLLECTION, privilege = RBAC.Privilege.READ)
-    CollectionResponse getById(@PathVariable String id){
+    CollectionResponse getById(@PathVariable String id) {
         try {
-            return this.service.getCollection(new CollectionId(id)).map(CollectionResponse::fromDomain).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Collection %s not found".formatted(id)));
+            return this.service
+                    .getCollection(new CollectionId(id))
+                    .map(CollectionResponse::fromDomain)
+                    .orElseThrow(() ->
+                            new ResponseStatusException(HttpStatus.NOT_FOUND, "Collection %s not found".formatted(id)));
         } catch (CollectionsFetchException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
         } catch (InvalidCollectionIdException e) {
@@ -91,12 +103,11 @@ public class CollectionsResources {
 
     @PostMapping(produces = MediaType.TEXT_PLAIN_VALUE)
     @HasAccess(module = RBAC.Module.CONCEPT_COLLECTION, privilege = RBAC.Privilege.CREATE)
-    String create(@RequestBody CreateCollectionRequest collection, HttpServletResponse response){
+    String create(@RequestBody CreateCollectionRequest collection, HttpServletResponse response) {
         try {
             var collectionId = this.service.createCollection(collection.toCreateCommand());
 
-            URI location = ServletUriComponentsBuilder
-                    .fromCurrentRequest()
+            URI location = ServletUriComponentsBuilder.fromCurrentRequest()
                     .path("/{id}")
                     .buildAndExpand(collectionId.value())
                     .toUri();
@@ -105,7 +116,9 @@ public class CollectionsResources {
             response.setHeader(HttpHeaders.LOCATION, location.toString());
 
             return collectionId.value();
-        } catch (InvalidCreateCollectionCommandException | InvalidCollectionIdException | MalformedLocalisedLabelException e) {
+        } catch (InvalidCreateCollectionCommandException
+                | InvalidCollectionIdException
+                | MalformedLocalisedLabelException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
         } catch (CollectionAlreadyExistsException e) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage(), e);
@@ -116,10 +129,10 @@ public class CollectionsResources {
 
     @PutMapping("/{id}")
     @HasAccess(module = RBAC.Module.CONCEPT_COLLECTION, privilege = RBAC.Privilege.UPDATE)
-    void update(@PathVariable String id, @RequestBody UpdateCollectionRequest collection){
+    void update(@PathVariable String id, @RequestBody UpdateCollectionRequest collection) {
         try {
 
-            if(!id.equalsIgnoreCase(collection.id())){
+            if (!id.equalsIgnoreCase(collection.id())) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The identifiers are not equal");
             }
 
@@ -133,24 +146,28 @@ public class CollectionsResources {
 
     @DeleteMapping("/{id}")
     @HasAccess(module = RBAC.Module.CONCEPT_COLLECTION, privilege = RBAC.Privilege.DELETE)
-    ResponseEntity<String> delete(@PathVariable String id){
+    ResponseEntity<String> delete(@PathVariable String id) {
         return null;
     }
 
     @GetMapping("/search")
     @HasAccess(module = RBAC.Module.CONCEPT_COLLECTION, privilege = RBAC.Privilege.READ)
-    ResponseEntity<String> search(){
+    ResponseEntity<String> search() {
         return null;
     }
 
-    @GetMapping(value = "/{id}/export/{type}", produces = { MediaType.APPLICATION_OCTET_STREAM_VALUE, "application/vnd.oasis.opendocument.text" })
+    @GetMapping(
+            value = "/{id}/export/{type}",
+            produces = {MediaType.APPLICATION_OCTET_STREAM_VALUE, "application/vnd.oasis.opendocument.text"})
     @HasAccess(module = RBAC.Module.CONCEPT_COLLECTION, privilege = RBAC.Privilege.READ)
-    ResponseEntity<Resource> exportByType(@PathVariable String id,
-                                          @PathVariable String type,
-                                          @RequestParam("langue") Language langue,
-                                          @RequestParam("withConcepts") boolean withConcepts) {
+    ResponseEntity<Resource> exportByType(
+            @PathVariable String id,
+            @PathVariable String type,
+            @RequestParam("langue") Language langue,
+            @RequestParam("withConcepts") boolean withConcepts) {
         try {
-            CollectionExport export = this.service.exportCollectionByType(new CollectionId(id), CollectionExportType.fromString(type), langue, withConcepts);
+            CollectionExport export = this.service.exportCollectionByType(
+                    new CollectionId(id), CollectionExportType.fromString(type), langue, withConcepts);
             return buildExportResponse(export);
         } catch (InvalidCollectionIdException | IllegalArgumentException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
@@ -159,15 +176,20 @@ public class CollectionsResources {
         }
     }
 
-    @GetMapping(value = "/export-zip/{ids}/{type}", produces = { MediaType.APPLICATION_OCTET_STREAM_VALUE, "application/zip" })
+    @GetMapping(
+            value = "/export-zip/{ids}/{type}",
+            produces = {MediaType.APPLICATION_OCTET_STREAM_VALUE, "application/zip"})
     @HasAccess(module = RBAC.Module.CONCEPT_COLLECTION, privilege = RBAC.Privilege.READ)
-    ResponseEntity<Resource> exportZip(@PathVariable String ids,
-                                       @PathVariable String type,
-                                       @RequestParam("langue") Language langue,
-                                       @RequestParam("withConcepts") boolean withConcepts) {
+    ResponseEntity<Resource> exportZip(
+            @PathVariable String ids,
+            @PathVariable String type,
+            @RequestParam("langue") Language langue,
+            @RequestParam("withConcepts") boolean withConcepts) {
         try {
-            List<CollectionId> collectionIds = Arrays.stream(ids.split("_AND_")).map(CollectionId::new).toList();
-            CollectionExport export = this.service.exportCollectionsZip(collectionIds, CollectionExportType.fromString(type), langue, withConcepts);
+            List<CollectionId> collectionIds =
+                    Arrays.stream(ids.split("_AND_")).map(CollectionId::new).toList();
+            CollectionExport export = this.service.exportCollectionsZip(
+                    collectionIds, CollectionExportType.fromString(type), langue, withConcepts);
             return buildExportResponse(export);
         } catch (InvalidCollectionIdException | IllegalArgumentException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
@@ -194,9 +216,11 @@ public class CollectionsResources {
         throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
     }
 
-    @GetMapping(value = "/{id}/export", produces = { MediaType.APPLICATION_OCTET_STREAM_VALUE, "application/vnd.oasis.opendocument.text" })
+    @GetMapping(
+            value = "/{id}/export",
+            produces = {MediaType.APPLICATION_OCTET_STREAM_VALUE, "application/vnd.oasis.opendocument.text"})
     @HasAccess(module = RBAC.Module.CONCEPT_COLLECTION, privilege = RBAC.Privilege.READ)
-    ResponseEntity<Resource> export(@PathVariable String id){
+    ResponseEntity<Resource> export(@PathVariable String id) {
         try {
             return buildExportResponse(this.service.exportCollection(new CollectionId(id)));
         } catch (InvalidCollectionIdException e) {
@@ -208,9 +232,10 @@ public class CollectionsResources {
 
     @PutMapping(value = "/{id}/validate", consumes = APPLICATION_JSON_VALUE)
     @HasAccess(module = RBAC.Module.CONCEPT_COLLECTION, privilege = RBAC.Privilege.PUBLISH)
-    ResponseEntity<Void> publish(@PathVariable String id, @RequestBody List<String> collectionIds){
+    ResponseEntity<Void> publish(@PathVariable String id, @RequestBody List<String> collectionIds) {
         try {
-            this.service.publishCollections(collectionIds.stream().map(CollectionId::new).toList());
+            this.service.publishCollections(
+                    collectionIds.stream().map(CollectionId::new).toList());
             return ResponseEntity.noContent().build();
         } catch (InvalidCollectionIdException | CollectionAlreadyPublishedException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);

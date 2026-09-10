@@ -1,8 +1,9 @@
 package fr.insee.rmes.model.operations.documentations;
 
-import org.junit.jupiter.api.Test;
-import java.util.Objects;
 import static org.junit.jupiter.api.Assertions.*;
+
+import java.util.Objects;
+import org.junit.jupiter.api.Test;
 
 class DocumentationTest {
 
@@ -13,7 +14,7 @@ class DocumentationTest {
         documentationWithZeroComponents.setIdSeries("");
         documentationWithZeroComponents.setIdIndicator("");
 
-        Documentation documentationWithIdOperation  = new Documentation();
+        Documentation documentationWithIdOperation = new Documentation();
         documentationWithIdOperation.setIdOperation("idOperation");
         documentationWithIdOperation.setIdSeries("");
         documentationWithIdOperation.setIdIndicator("");
@@ -28,12 +29,14 @@ class DocumentationTest {
         documentationWithIdIndicator.setIdSeries("");
         documentationWithIdIndicator.setIdIndicator("idIndicator");
 
-        boolean isGetIdTargetNull=documentationWithZeroComponents.getIdTarget()==null;
-        boolean isGetIdTargetIsIdOperation= Objects.equals(documentationWithIdOperation.getIdTarget(), "idOperation");
-        boolean isGetIdTargetIsIdSeries= Objects.equals(documentationWithIdSeries.getIdTarget(), "idSeries");
+        boolean isGetIdTargetNull = documentationWithZeroComponents.getIdTarget() == null;
+        boolean isGetIdTargetIsIdOperation = Objects.equals(documentationWithIdOperation.getIdTarget(), "idOperation");
+        boolean isGetIdTargetIsIdSeries = Objects.equals(documentationWithIdSeries.getIdTarget(), "idSeries");
         boolean isGetIdTargetIsIdIndicator = Objects.equals(documentationWithIdIndicator.getIdTarget(), "idIndicator");
 
-        assertTrue(isGetIdTargetNull && isGetIdTargetIsIdOperation && isGetIdTargetIsIdSeries && isGetIdTargetIsIdIndicator);
-
+        assertTrue(isGetIdTargetNull
+                && isGetIdTargetIsIdOperation
+                && isGetIdTargetIsIdSeries
+                && isGetIdTargetIsIdIndicator);
     }
 }

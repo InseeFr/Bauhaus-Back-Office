@@ -15,8 +15,7 @@ import java.util.function.Function;
  */
 final class LabelComparators {
 
-    private LabelComparators() {
-    }
+    private LabelComparators() {}
 
     static <T> Comparator<T> byLabelAscending(Function<T, String> labelExtractor) {
         Collator collator = Collator.getInstance(Locale.FRENCH);

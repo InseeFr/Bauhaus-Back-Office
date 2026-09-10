@@ -1,10 +1,9 @@
 package fr.insee.rmes.modules.users.domain.port.serverside;
 
-import fr.insee.rmes.modules.users.domain.model.Source;
 import fr.insee.rmes.modules.commons.hexagonal.ServerSidePort;
 import fr.insee.rmes.modules.users.domain.model.ModuleAccessPrivileges;
 import fr.insee.rmes.modules.users.domain.model.RBAC;
-
+import fr.insee.rmes.modules.users.domain.model.Source;
 import java.util.List;
 import java.util.Set;
 
@@ -15,7 +14,8 @@ public interface RbacFetcher {
 
     Set<ModuleAccessPrivileges.Privilege> getApplicationPrivilegesByRole(String roleName, RBAC.Module application);
 
-    RBAC.Strategy getApplicationActionStrategyByRole(List<String> roles, RBAC.Module application, RBAC.Privilege privilege);
+    RBAC.Strategy getApplicationActionStrategyByRole(
+            List<String> roles, RBAC.Module application, RBAC.Privilege privilege);
 
     Set<ModuleAccessPrivileges> computePrivileges(List<String> roles, Source source);
 }

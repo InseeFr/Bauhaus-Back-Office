@@ -1,4 +1,5 @@
 package fr.insee.rmes.modules.datasets.distributions.model;
+
 public record PartialDistribution(
         String id,
         String idDataset,
@@ -10,6 +11,4 @@ public record PartialDistribution(
         String updated,
         String format,
         String byteSize,
-        String url
-) {
-}
+        String url) {}

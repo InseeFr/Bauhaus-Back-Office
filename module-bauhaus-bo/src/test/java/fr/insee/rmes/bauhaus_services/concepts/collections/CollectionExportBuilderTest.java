@@ -1,15 +1,24 @@
 package fr.insee.rmes.bauhaus_services.concepts.collections;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+
 import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.modules.shared_kernel.domain.model.Language;
-import fr.insee.rmes.modules.organisations.domain.model.OrganisationOption;
-import fr.insee.rmes.modules.organisations.domain.port.clientside.OrganisationService;
 import fr.insee.rmes.model.concepts.CollectionForExport;
 import fr.insee.rmes.model.concepts.CollectionForExportOld;
+import fr.insee.rmes.modules.organisations.domain.model.OrganisationOption;
+import fr.insee.rmes.modules.organisations.domain.port.clientside.OrganisationService;
+import fr.insee.rmes.modules.shared_kernel.domain.model.Language;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptCollectionsQueries;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.utils.ExportUtils;
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.text.Collator;
+import java.util.*;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,16 +28,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.ResponseEntity;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.text.Collator;
-import java.util.*;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class CollectionExportBuilderTest {
@@ -51,17 +50,22 @@ class CollectionExportBuilderTest {
     private CollectionExportBuilder collectionExportBuilder;
 
     String keyName = "prefLabelLg1";
-    JSONObject members1 = new JSONObject().put("id","members1").put(keyName,"en");
-    JSONObject members2 = new JSONObject().put("id","members2").put(keyName,"fr");
-    JSONObject members3 = new JSONObject().put("id","members3").put(keyName,"en");
-    JSONObject members4 = new JSONObject().put("id","members4").put(keyName,"fr");
+    JSONObject members1 = new JSONObject().put("id", "members1").put(keyName, "en");
+    JSONObject members2 = new JSONObject().put("id", "members2").put(keyName, "fr");
+    JSONObject members3 = new JSONObject().put("id", "members3").put(keyName, "en");
+    JSONObject members4 = new JSONObject().put("id", "members4").put(keyName, "fr");
 
     @BeforeEach
     void setUp() throws Exception {
-        collectionExportBuilder = new CollectionExportBuilder(repoGestion, null, null, null, organisationService, exportUtils, conceptCollectionsQueries);
+        collectionExportBuilder = new CollectionExportBuilder(
+                repoGestion, null, null, null, organisationService, exportUtils, conceptCollectionsQueries);
         lenient().when(conceptCollectionsQueries.collectionQuery(anyString())).thenReturn("mock-query");
-        lenient().when(conceptCollectionsQueries.collectionConceptsQuery(anyString())).thenReturn("mock-query");
-        lenient().when(conceptCollectionsQueries.collectionMembersQuery(anyString())).thenReturn("mock-query");
+        lenient()
+                .when(conceptCollectionsQueries.collectionConceptsQuery(anyString()))
+                .thenReturn("mock-query");
+        lenient()
+                .when(conceptCollectionsQueries.collectionMembersQuery(anyString()))
+                .thenReturn("mock-query");
     }
 
     @Test
@@ -74,22 +78,23 @@ class CollectionExportBuilderTest {
         String valC = (String) members3.get(keyName);
         String valD = (String) members4.get(keyName);
 
-        List<Integer> actual = List.of(instance.compare(valA.toLowerCase(), valB.toLowerCase()),
-        instance.compare(valB.toLowerCase(), valC.toLowerCase()),
-        instance.compare(valA.toLowerCase(), valC.toLowerCase()),
-        instance.compare(valB.toLowerCase(), valD.toLowerCase()));
+        List<Integer> actual = List.of(
+                instance.compare(valA.toLowerCase(), valB.toLowerCase()),
+                instance.compare(valB.toLowerCase(), valC.toLowerCase()),
+                instance.compare(valA.toLowerCase(), valC.toLowerCase()),
+                instance.compare(valB.toLowerCase(), valD.toLowerCase()));
 
-        List<Integer> expected = List.of(-1,1,0,0);
+        List<Integer> expected = List.of(-1, 1, 0, 0);
 
-        assertEquals(expected,actual);
+        assertEquals(expected, actual);
     }
 
     @Test
     void shouldSortJsonObjects() {
 
-        List<JSONObject> orderMembers= List.of(members1,members3,members2,members4);
+        List<JSONObject> orderMembers = List.of(members1, members3, members2, members4);
 
-        List<JSONObject>  notOrderMembers = new ArrayList<>();
+        List<JSONObject> notOrderMembers = new ArrayList<>();
         notOrderMembers.add(members1);
         notOrderMembers.add(members2);
         notOrderMembers.add(members3);
@@ -108,7 +113,7 @@ class CollectionExportBuilderTest {
             }
         });
 
-        assertEquals(orderMembers,notOrderMembers);
+        assertEquals(orderMembers, notOrderMembers);
     }
 
     @Test
@@ -155,8 +160,7 @@ class CollectionExportBuilderTest {
                 .put("isValidated", "Unpublished")
                 .put("creator", "Creator");
 
-        JSONArray members = new JSONArray()
-                .put(new JSONObject().put("id", "m1").put("prefLabelLg1", "Member 1"));
+        JSONArray members = new JSONArray().put(new JSONObject().put("id", "m1").put("prefLabelLg1", "Member 1"));
 
         when(repoGestion.getResponseAsObject(anyString())).thenReturn(collectionJson);
         when(repoGestion.getResponseAsArray(anyString())).thenReturn(members);
@@ -189,7 +193,8 @@ class CollectionExportBuilderTest {
         // Then
         assertNotNull(result);
         assertEquals(expectedResponse, result);
-        verify(exportUtils, times(1)).exportAsODT(anyString(), anyMap(), anyString(), anyString(), anyString(), anyString());
+        verify(exportUtils, times(1))
+                .exportAsODT(anyString(), anyMap(), anyString(), anyString(), anyString(), anyString());
     }
 
     @Test
@@ -210,7 +215,8 @@ class CollectionExportBuilderTest {
         // Then
         assertNotNull(result);
         assertEquals(expectedResponse, result);
-        verify(exportUtils, times(1)).exportAsODT(anyString(), anyMap(), anyString(), anyString(), anyString(), anyString());
+        verify(exportUtils, times(1))
+                .exportAsODT(anyString(), anyMap(), anyString(), anyString(), anyString(), anyString());
     }
 
     @Test
@@ -230,7 +236,8 @@ class CollectionExportBuilderTest {
         // Then
         assertNotNull(result);
         assertEquals(expectedResponse, result);
-        verify(exportUtils, times(1)).exportAsODS(anyString(), anyMap(), anyString(), anyString(), anyString(), anyString());
+        verify(exportUtils, times(1))
+                .exportAsODS(anyString(), anyMap(), anyString(), anyString(), anyString(), anyString());
     }
 
     @Test
@@ -249,20 +256,28 @@ class CollectionExportBuilderTest {
             public void write(int b) {
                 outputStream.write(b);
             }
+
             @Override
-            public boolean isReady() { return true; }
+            public boolean isReady() {
+                return true;
+            }
+
             @Override
             public void setWriteListener(jakarta.servlet.WriteListener writeListener) {}
         });
 
-        when(exportUtils.exportAsInputStream(anyString(), anyMap(), anyString(), anyString(), anyString(), anyString(), anyString()))
+        when(exportUtils.exportAsInputStream(
+                        anyString(), anyMap(), anyString(), anyString(), anyString(), anyString(), anyString()))
                 .thenReturn(new ByteArrayInputStream(new byte[0]));
 
         // When
-        collectionExportBuilder.exportMultipleCollectionsAsZipOdt(collections, true, true, false, response, Language.lg1, concepts, false);
+        collectionExportBuilder.exportMultipleCollectionsAsZipOdt(
+                collections, true, true, false, response, Language.lg1, concepts, false);
 
         // Then
-        verify(exportUtils, atLeastOnce()).exportAsInputStream(anyString(), anyMap(), anyString(), anyString(), anyString(), anyString(), anyString());
+        verify(exportUtils, atLeastOnce())
+                .exportAsInputStream(
+                        anyString(), anyMap(), anyString(), anyString(), anyString(), anyString(), anyString());
     }
 
     @Test
@@ -281,20 +296,28 @@ class CollectionExportBuilderTest {
             public void write(int b) {
                 outputStream.write(b);
             }
+
             @Override
-            public boolean isReady() { return true; }
+            public boolean isReady() {
+                return true;
+            }
+
             @Override
             public void setWriteListener(jakarta.servlet.WriteListener writeListener) {}
         });
 
-        when(exportUtils.exportAsInputStream(anyString(), anyMap(), anyString(), anyString(), anyString(), anyString(), anyString()))
+        when(exportUtils.exportAsInputStream(
+                        anyString(), anyMap(), anyString(), anyString(), anyString(), anyString(), anyString()))
                 .thenReturn(new ByteArrayInputStream(new byte[0]));
 
         // When
-        collectionExportBuilder.exportMultipleCollectionsAsZipOds(collections, true, false, true, response, concepts, false);
+        collectionExportBuilder.exportMultipleCollectionsAsZipOds(
+                collections, true, false, true, response, concepts, false);
 
         // Then
-        verify(exportUtils, atLeastOnce()).exportAsInputStream(anyString(), anyMap(), anyString(), anyString(), anyString(), anyString(), anyString());
+        verify(exportUtils, atLeastOnce())
+                .exportAsInputStream(
+                        anyString(), anyMap(), anyString(), anyString(), anyString(), anyString(), anyString());
     }
 
     @Test
@@ -373,10 +396,14 @@ class CollectionExportBuilderTest {
 
         when(repoGestion.getResponseAsObject(anyString())).thenReturn(collectionJsonWith(creator, contributor));
         when(repoGestion.getResponseAsArray(anyString())).thenReturn(members);
-        when(organisationService.getOrganisationsMap(anyList())).thenReturn(Map.of(
-                creator, new OrganisationOption("DG75-L201", "Division Concepts, harmonisation et nomenclatures"),
-                contributor, new OrganisationOption("DG75-C901", "Département des Ressources humaines (DRH)"),
-                "HIE0000042", new OrganisationOption("DG75-F001", "Division Emploi")));
+        when(organisationService.getOrganisationsMap(anyList()))
+                .thenReturn(Map.of(
+                        creator,
+                        new OrganisationOption("DG75-L201", "Division Concepts, harmonisation et nomenclatures"),
+                        contributor,
+                        new OrganisationOption("DG75-C901", "Département des Ressources humaines (DRH)"),
+                        "HIE0000042",
+                        new OrganisationOption("DG75-F001", "Division Emploi")));
 
         // When
         CollectionForExport result = collectionExportBuilder.getCollectionData("c1");
@@ -384,12 +411,14 @@ class CollectionExportBuilderTest {
         // Then
         assertEquals("Division Concepts, harmonisation et nomenclatures", result.getCreator());
         assertEquals("Département des Ressources humaines (DRH)", result.getContributor());
-        assertEquals("Division Concepts, harmonisation et nomenclatures", result.getMembersLg().get(0).getCreator());
+        assertEquals(
+                "Division Concepts, harmonisation et nomenclatures",
+                result.getMembersLg().get(0).getCreator());
         assertEquals("Division Emploi", result.getMembersLg().get(1).getCreator());
         assertNull(result.getMembersLg().get(2).getCreator());
         // Un seul appel batch, identifiants dédupliqués (le creator du membre m1 est aussi celui de la collection)
-        verify(organisationService, times(1)).getOrganisationsMap(
-                argThat(identifiers -> identifiers.size() == 3
+        verify(organisationService, times(1))
+                .getOrganisationsMap(argThat(identifiers -> identifiers.size() == 3
                         && identifiers.containsAll(List.of(creator, contributor, "HIE0000042"))));
     }
 
@@ -431,9 +460,12 @@ class CollectionExportBuilderTest {
         when(repoGestion.getResponseAsObject(anyString())).thenReturn(collectionJsonWith("HIE2000069", "DG75-L201"));
         when(repoGestion.getResponseAsArray(anyString()))
                 .thenReturn(new JSONArray().put(new JSONObject().put("id", "m1").put(keyName, "Member 1")));
-        when(organisationService.getOrganisationsMap(List.of("HIE2000069", "DG75-L201"))).thenReturn(Map.of(
-                "HIE2000069", new OrganisationOption("DG75-L201", "Division Concepts, harmonisation et nomenclatures"),
-                "DG75-L201", new OrganisationOption("DG75-L201", "Division Emploi")));
+        when(organisationService.getOrganisationsMap(List.of("HIE2000069", "DG75-L201")))
+                .thenReturn(Map.of(
+                        "HIE2000069",
+                                new OrganisationOption(
+                                        "DG75-L201", "Division Concepts, harmonisation et nomenclatures"),
+                        "DG75-L201", new OrganisationOption("DG75-L201", "Division Emploi")));
 
         // When
         CollectionForExportOld result = collectionExportBuilder.getCollectionDataOld("c1");

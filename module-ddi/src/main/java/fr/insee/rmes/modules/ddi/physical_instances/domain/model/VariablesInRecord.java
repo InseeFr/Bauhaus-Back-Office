@@ -6,6 +6,4 @@ import java.util.List;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record VariablesInRecord(
-        @JsonProperty("VariableUsedReference") List<Reference> variableUsedReference
-) {
-}
+        @JsonProperty("VariableUsedReference") List<Reference> variableUsedReference) {}

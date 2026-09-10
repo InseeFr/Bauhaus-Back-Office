@@ -1,11 +1,22 @@
 package fr.insee.rmes.integration.authorizations;
 
+import static fr.insee.rmes.integration.authorizations.TokenForTestsConfiguration.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import fr.insee.rmes.bauhaus_services.ConceptsService;
-import fr.insee.rmes.modules.commons.configuration.LogRequestFilter;
-import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
-import fr.insee.rmes.integration.AbstractResourcesEnvProd;
-import fr.insee.rmes.modules.concepts.concept.webservice.ConceptsResources;
 import fr.insee.rmes.config.auth.UserAuthTestConfiguration;
+import fr.insee.rmes.integration.AbstractResourcesEnvProd;
+import fr.insee.rmes.modules.commons.configuration.LogRequestFilter;
+import fr.insee.rmes.modules.concepts.concept.webservice.ConceptsResources;
+import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -18,31 +29,12 @@ import org.springframework.http.MediaType;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-
-import static fr.insee.rmes.integration.authorizations.TokenForTestsConfiguration.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-
 @WebMvcTest(
         controllers = ConceptsResources.class,
         excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = LogRequestFilter.class),
-        properties = {
-                "fr.insee.rmes.bauhaus.modules.concepts.enabled=true",
-                "fr.insee.rmes.bauhaus.extensions=pdf,odt"
-        }
-)
-@Import({
-        ConceptsResources.class,
-        UserAuthTestConfiguration.class
-})
+        properties = {"fr.insee.rmes.bauhaus.modules.concepts.enabled=true", "fr.insee.rmes.bauhaus.extensions=pdf,odt"
+        })
+@Import({ConceptsResources.class, UserAuthTestConfiguration.class})
 class ConceptsAuthorizationTest extends AbstractResourcesEnvProd {
     @Configuration
     @EnableMethodSecurity(securedEnabled = true)
@@ -56,9 +48,8 @@ class ConceptsAuthorizationTest extends AbstractResourcesEnvProd {
     @MockitoBean
     fr.insee.rmes.modules.concepts.concept.domain.port.clientside.ConceptsService hexagonalConceptsService;
 
-    static String conceptVersion="16";
-    static String id ="2025";
-
+    static String conceptVersion = "16";
+    static String id = "2025";
 
     @ParameterizedTest
     @MethodSource("TestGetEndpointsOkWhenAnyRole")
@@ -66,21 +57,19 @@ class ConceptsAuthorizationTest extends AbstractResourcesEnvProd {
         when(checker.hasAccess(anyString(), anyString(), any(), any())).thenReturn(true);
 
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of());
-        mvc.perform(get(url).header("Authorization", "Bearer toto")
-                        .contentType(MediaType.APPLICATION_JSON))
+        mvc.perform(get(url).header("Authorization", "Bearer toto").contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }
 
-    static Collection<Arguments> TestGetEndpointsOkWhenAnyRole(){
+    static Collection<Arguments> TestGetEndpointsOkWhenAnyRole() {
         return Arrays.asList(
                 Arguments.of("/concepts"),
                 Arguments.of("/concepts/toValidate"),
-                Arguments.of("/concepts/concept/"+id+"/notes/16"+conceptVersion),
-                Arguments.of("/concepts/concept/"+id+"/links"),
-                Arguments.of("/concepts/concept/export/"+id),
+                Arguments.of("/concepts/concept/" + id + "/notes/16" + conceptVersion),
+                Arguments.of("/concepts/concept/" + id + "/links"),
+                Arguments.of("/concepts/concept/export/" + id),
                 Arguments.of("/concepts/advanced-search"),
-                Arguments.of("/concepts/concept/"+id)
-        );
+                Arguments.of("/concepts/concept/" + id));
     }
 
     @ParameterizedTest
@@ -88,15 +77,15 @@ class ConceptsAuthorizationTest extends AbstractResourcesEnvProd {
     void publishConcept(Integer code, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
         when(checker.hasAccess(any(), any(), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
-        var request = put("/concepts/c1116/validate").contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON).content("[\"c1116\"]");
+        var request = put("/concepts/c1116/validate")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content("[\"c1116\"]");
         request.header("Authorization", "Bearer toto");
         mvc.perform(request).andExpect(status().is(code));
     }
 
     static Collection<Arguments> TestRoleCaseForPublishConcept() {
-        return Arrays.asList(
-                Arguments.of(204, true),
-                Arguments.of(403, false)
-        );
+        return Arrays.asList(Arguments.of(204, true), Arguments.of(403, false));
     }
 }

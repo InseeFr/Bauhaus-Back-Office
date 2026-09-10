@@ -1,6 +1,10 @@
 package fr.insee.rmes.bauhaus_services.rdf_utils;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import fr.insee.rmes.graphdb.ObjectType;
+import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
+import java.util.Optional;
 import org.eclipse.rdf4j.model.*;
 import org.eclipse.rdf4j.model.base.InternedIRI;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
@@ -8,15 +12,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
-
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class RdfUtilsTest {
 
-    Model modelExample ;
+    Model modelExample;
     IRI predicateExample;
     Resource graphExample;
     Resource objectResource;
@@ -24,42 +23,41 @@ class RdfUtilsTest {
     IRI valueIri;
 
     @BeforeEach
-   void setUp(){
-       this.modelExample=new LinkedHashModel();
-       this.predicateExample=new InternedIRI("namespacePredicate","localNamePredicate");
-       this.graphExample =new InternedIRI("namespaceGraph","localNameGraph");
-       this.objectResource = new InternedIRI("namespaceObject","localNameObject");
-       this.objectIri= new InternedIRI("https://namespaceObject","localNameObject");
-       this.valueIri = new InternedIRI("namespaceValue","localNameValue");
-   }
-
+    void setUp() {
+        this.modelExample = new LinkedHashModel();
+        this.predicateExample = new InternedIRI("namespacePredicate", "localNamePredicate");
+        this.graphExample = new InternedIRI("namespaceGraph", "localNameGraph");
+        this.objectResource = new InternedIRI("namespaceObject", "localNameObject");
+        this.objectIri = new InternedIRI("https://namespaceObject", "localNameObject");
+        this.valueIri = new InternedIRI("namespaceValue", "localNameValue");
+    }
 
     @Test
     void shouldAddTripleNode() {
         BNode value = RdfUtils.createBlankNode();
         int modelSizeBefore = modelExample.size();
-        RdfUtils.addTripleBNode(objectResource,predicateExample,value,modelExample,graphExample);
+        RdfUtils.addTripleBNode(objectResource, predicateExample, value, modelExample, graphExample);
         int modelSizeAfter = modelExample.size();
-        assertTrue(modelSizeBefore<modelSizeAfter);
+        assertTrue(modelSizeBefore < modelSizeAfter);
     }
 
     @Test
     void shouldAddTripleUri() {
 
         int modelSizeBefore = modelExample.size();
-        RdfUtils.addTripleUri(objectIri,predicateExample,valueIri,modelExample,graphExample);
+        RdfUtils.addTripleUri(objectIri, predicateExample, valueIri, modelExample, graphExample);
         int modelSizeAfter = modelExample.size();
 
-        boolean compareSizesModel = modelSizeBefore<modelSizeAfter;
+        boolean compareSizesModel = modelSizeBefore < modelSizeAfter;
 
-        Resource objectOther = new InternedIRI("namespaceObject","localNameObject");
+        Resource objectOther = new InternedIRI("namespaceObject", "localNameObject");
         Model modelOther = new LinkedHashModel();
 
         int modelOtherSizeBefore = modelOther.size();
-        RdfUtils.addTripleUri(objectOther,predicateExample,"urn:example:example",modelOther,graphExample);
-        int modelOtherSizeAfter =modelOther.size();
+        RdfUtils.addTripleUri(objectOther, predicateExample, "urn:example:example", modelOther, graphExample);
+        int modelOtherSizeAfter = modelOther.size();
 
-        boolean compareSizesModelOther = modelOtherSizeBefore<modelOtherSizeAfter;
+        boolean compareSizesModelOther = modelOtherSizeBefore < modelOtherSizeAfter;
 
         assertTrue(compareSizesModel && compareSizesModelOther);
     }
@@ -67,70 +65,72 @@ class RdfUtilsTest {
     @Test
     void shouldAddTripleInt() {
         int modelSizeBefore = modelExample.size();
-        RdfUtils.addTripleInt(objectIri,predicateExample,"urn:example:example",modelExample,graphExample);
+        RdfUtils.addTripleInt(objectIri, predicateExample, "urn:example:example", modelExample, graphExample);
         int modelSizeAfter = modelExample.size();
-        assertTrue(modelSizeBefore<modelSizeAfter);
+        assertTrue(modelSizeBefore < modelSizeAfter);
     }
 
     @Test
     void shouldAddTripleLiteralXML() {
         int modelSizeBefore = modelExample.size();
-        RdfUtils.addTripleLiteralXML(objectIri,predicateExample,"valueExample",modelExample,graphExample);
+        RdfUtils.addTripleLiteralXML(objectIri, predicateExample, "valueExample", modelExample, graphExample);
         int modelSizeAfter = modelExample.size();
-        assertTrue(modelSizeBefore<modelSizeAfter);
+        assertTrue(modelSizeBefore < modelSizeAfter);
     }
 
     @Test
     void shouldAddTripleDate() {
         int modelSizeBefore = modelExample.size();
-        RdfUtils. addTripleDate(objectIri,predicateExample,"2025-04-08",modelExample,graphExample);
+        RdfUtils.addTripleDate(objectIri, predicateExample, "2025-04-08", modelExample, graphExample);
         int modelSizeAfter = modelExample.size();
-        assertTrue(modelSizeBefore<modelSizeAfter);
+        assertTrue(modelSizeBefore < modelSizeAfter);
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"2025-04-08", "2011-12-03T10:15:30Z" })
+    @ValueSource(strings = {"2025-04-08", "2011-12-03T10:15:30Z"})
     void shouldAddTripleDateTime(String value) {
         int modelSizeBefore = modelExample.size();
-        RdfUtils.addTripleDateTime(objectIri,predicateExample,value,modelExample,graphExample);
+        RdfUtils.addTripleDateTime(objectIri, predicateExample, value, modelExample, graphExample);
         int modelSizeAfter = modelExample.size();
-        assertTrue(modelSizeBefore<modelSizeAfter);
+        assertTrue(modelSizeBefore < modelSizeAfter);
     }
 
     @Test
     void shouldAddTripleStringMdToXhtml() {
         int modelSizeBefore = modelExample.size();
-        RdfUtils.addTripleStringMdToXhtml(objectIri,predicateExample,"example","fr",modelExample,graphExample);
+        RdfUtils.addTripleStringMdToXhtml(objectIri, predicateExample, "example", "fr", modelExample, graphExample);
         int modelSizeAfter = modelExample.size();
-        assertTrue(modelSizeBefore<modelSizeAfter);
+        assertTrue(modelSizeBefore < modelSizeAfter);
     }
 
     @Test
     void shouldAddTripleString() {
 
         int modelSizeBefore = modelExample.size();
-        RdfUtils.addTripleString(objectIri,predicateExample,"example","fr",modelExample,graphExample);
+        RdfUtils.addTripleString(objectIri, predicateExample, "example", "fr", modelExample, graphExample);
         int modelSizeAfter = modelExample.size();
-        boolean compareSizesModel = modelSizeBefore<modelSizeAfter;
+        boolean compareSizesModel = modelSizeBefore < modelSizeAfter;
 
         setUp();
 
         Model modelOther = new LinkedHashModel();
         int modelOtherSizeBefore = modelOther.size();
-        RdfUtils.addTripleString(objectIri,predicateExample,"example",modelOther,graphExample);
+        RdfUtils.addTripleString(objectIri, predicateExample, "example", modelOther, graphExample);
         int modelOtherSizeAfter = modelOther.size();
-        boolean compareOtherSizesModel = modelOtherSizeBefore<modelOtherSizeAfter;
+        boolean compareOtherSizesModel = modelOtherSizeBefore < modelOtherSizeAfter;
 
         assertTrue(compareSizesModel && compareOtherSizesModel);
     }
 
     @Test
     void shouldNotConvertStringToUri() {
-        assertThrows(IllegalArgumentException.class, () -> {RdfUtils.toURI("example");});
+        assertThrows(IllegalArgumentException.class, () -> {
+            RdfUtils.toURI("example");
+        });
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"urn:example:example","http:/example/example.com"})
+    @ValueSource(strings = {"urn:example:example", "http:/example/example.com"})
     void shouldConvertStringToUri(String string) {
         assertDoesNotThrow(() -> RdfUtils.toURI(string));
     }
@@ -139,74 +139,75 @@ class RdfUtilsTest {
     void shouldSetLiteralLanguage() {
         String string = "example";
         Literal answer = RdfUtils.setLiteralLanguage(string);
-        assertEquals("\"example\"^^<http://www.w3.org/2001/XMLSchema#language>",answer.toString());
+        assertEquals("\"example\"^^<http://www.w3.org/2001/XMLSchema#language>", answer.toString());
     }
 
     @Test
     void shouldSetLiteralXML() {
         String string = "example";
         Literal answer = RdfUtils.setLiteralXML(string);
-        assertEquals("\"example\"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#XMLLiteral>",answer.toString());
+        assertEquals("\"example\"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#XMLLiteral>", answer.toString());
     }
 
     @Test
     void shouldSetLiteralYear() {
         String string = "2025-04-09";
         Literal answer = RdfUtils.setLiteralYear(string);
-        assertEquals("\"2025-04-09\"^^<http://www.w3.org/2001/XMLSchema#gYear>",answer.toString());
+        assertEquals("\"2025-04-09\"^^<http://www.w3.org/2001/XMLSchema#gYear>", answer.toString());
     }
 
     @Test
     void shouldSetLiteralDate() {
         String string = "2025-04-09";
         Literal answer = RdfUtils.setLiteralDate(string);
-        assertEquals("\"2025-04-09\"^^<http://www.w3.org/2001/XMLSchema#date>",answer.toString());
+        assertEquals("\"2025-04-09\"^^<http://www.w3.org/2001/XMLSchema#date>", answer.toString());
     }
 
     @Test
     void shouldSetLiteralDateTime() {
         String string = "2025-04-09";
         Literal answer = RdfUtils.setLiteralDateTime(string);
-        assertEquals("\"2025-04-09T00:00:00\"^^<http://www.w3.org/2001/XMLSchema#dateTime>",answer.toString());
+        assertEquals("\"2025-04-09T00:00:00\"^^<http://www.w3.org/2001/XMLSchema#dateTime>", answer.toString());
     }
 
     @Test
     void shouldSetLiteralInt() {
         String string = "421";
         Literal answer = RdfUtils.setLiteralInt(string);
-        assertEquals("\"421\"^^<http://www.w3.org/2001/XMLSchema#int>",answer.toString());
+        assertEquals("\"421\"^^<http://www.w3.org/2001/XMLSchema#int>", answer.toString());
     }
 
     @Test
     void shouldCreateLiteral() {
         String string = "example";
-        Literal answer = RdfUtils.createLiteral(string,objectIri);
-        assertEquals("\"example\"^^<https://namespaceObjectlocalNameObject>",answer.toString());
+        Literal answer = RdfUtils.createLiteral(string, objectIri);
+        assertEquals("\"example\"^^<https://namespaceObjectlocalNameObject>", answer.toString());
     }
 
     @Test
     void shouldSetLiteralBoolean() {
         Boolean booleanTrue = true;
         Literal answer = RdfUtils.setLiteralBoolean(booleanTrue);
-        assertEquals("\"true\"^^<http://www.w3.org/2001/XMLSchema#boolean>",answer.toString());
+        assertEquals("\"true\"^^<http://www.w3.org/2001/XMLSchema#boolean>", answer.toString());
     }
 
     @Test
     void shouldSetLiteralString() {
         String stringWithSpace = "example        ";
-        String stringWithoutSpace  = "example";
-        String language= "language";
+        String stringWithoutSpace = "example";
+        String language = "language";
         ValidationStatus validationStatus = ValidationStatus.VALIDATED;
 
-        Literal answerStringWithSpace = RdfUtils.setLiteralString(stringWithSpace,language);
+        Literal answerStringWithSpace = RdfUtils.setLiteralString(stringWithSpace, language);
         Literal answerStringWithoutSpace = RdfUtils.setLiteralString(stringWithoutSpace);
         Literal answerValidationStatus = RdfUtils.setLiteralString(validationStatus);
 
-        boolean isAnswerStringWithSpaceCorrect ="\"example\"@language".equals(answerStringWithSpace.toString());
-        boolean isAnswerStringWithoutSpaceCorrect ="\"example\"".equals(answerStringWithoutSpace.toString());
-        boolean isAnswerValidationStatusCorrect ="\"Validated\"".equals(answerValidationStatus.toString());
+        boolean isAnswerStringWithSpaceCorrect = "\"example\"@language".equals(answerStringWithSpace.toString());
+        boolean isAnswerStringWithoutSpaceCorrect = "\"example\"".equals(answerStringWithoutSpace.toString());
+        boolean isAnswerValidationStatusCorrect = "\"Validated\"".equals(answerValidationStatus.toString());
 
-        assertTrue(isAnswerStringWithSpaceCorrect && isAnswerStringWithoutSpaceCorrect && isAnswerValidationStatusCorrect );
+        assertTrue(
+                isAnswerStringWithSpaceCorrect && isAnswerStringWithoutSpaceCorrect && isAnswerValidationStatusCorrect);
     }
 
     @Test
@@ -216,8 +217,9 @@ class RdfUtilsTest {
     }
 
     @Test
-    void objectIRIPrefixesPlainIdsWithTheGestionBaseUri(){
-        RdfUtils.setBauhausUriBuilder(new BauhausUriBuilder("http://bauhaus/publication/", "http://bauhaus/", p -> Optional.of("concepts/definitions")));
+    void objectIRIPrefixesPlainIdsWithTheGestionBaseUri() {
+        RdfUtils.setBauhausUriBuilder(new BauhausUriBuilder(
+                "http://bauhaus/publication/", "http://bauhaus/", p -> Optional.of("concepts/definitions")));
 
         IRI iri = RdfUtils.objectIRI(ObjectType.CONCEPT, "c123");
 
@@ -225,8 +227,9 @@ class RdfUtilsTest {
     }
 
     @Test
-    void objectIRIIsIdempotentWhenGivenAnAbsoluteConceptUri(){
-        RdfUtils.setBauhausUriBuilder(new BauhausUriBuilder("http://bauhaus/publication/", "http://bauhaus/", p -> Optional.of("concepts/definitions")));
+    void objectIRIIsIdempotentWhenGivenAnAbsoluteConceptUri() {
+        RdfUtils.setBauhausUriBuilder(new BauhausUriBuilder(
+                "http://bauhaus/publication/", "http://bauhaus/", p -> Optional.of("concepts/definitions")));
 
         // Defensive: callers occasionally pass a fully-qualified concept URI instead of the
         // bare notation (#1494). Re-prefixing produces malformed URIs like

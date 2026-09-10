@@ -32,57 +32,25 @@ public class PhysicalInstanceVariablesResources {
         this.ddiService = ddiService;
     }
 
-    @GetMapping(
-        value = "/{agency}/{id}/{version}",
-        produces = MediaType.APPLICATION_XML_VALUE
-    )
+    @GetMapping(value = "/{agency}/{id}/{version}", produces = MediaType.APPLICATION_XML_VALUE)
     public ResponseEntity<String> getVariablesXmlByVersion(
-        @PathVariable String agency,
-        @PathVariable String id,
-        @PathVariable String version
-    ) {
-        return DdiResponses.xml(
-            ddiService.getDataRelationshipsXml(agency, id, version)
-        );
+            @PathVariable String agency, @PathVariable String id, @PathVariable String version) {
+        return DdiResponses.xml(ddiService.getDataRelationshipsXml(agency, id, version));
     }
 
-    @GetMapping(
-        value = "/{agency}/{id}/{version}",
-        produces = MediaType.APPLICATION_JSON_VALUE
-    )
+    @GetMapping(value = "/{agency}/{id}/{version}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Ddi4Response> getVariablesJsonByVersion(
-        @PathVariable String agency,
-        @PathVariable String id,
-        @PathVariable String version
-    ) {
-        return DdiResponses.json(
-            ddiService.getDataRelationships(agency, id, version)
-        );
+            @PathVariable String agency, @PathVariable String id, @PathVariable String version) {
+        return DdiResponses.json(ddiService.getDataRelationships(agency, id, version));
     }
 
-    @GetMapping(
-        value = "/{agency}/{id}",
-        produces = MediaType.APPLICATION_XML_VALUE
-    )
-    public ResponseEntity<String> getVariablesXml(
-        @PathVariable String agency,
-        @PathVariable String id
-    ) {
-        return DdiResponses.xml(
-            ddiService.getDataRelationshipsXml(agency, id, null)
-        );
+    @GetMapping(value = "/{agency}/{id}", produces = MediaType.APPLICATION_XML_VALUE)
+    public ResponseEntity<String> getVariablesXml(@PathVariable String agency, @PathVariable String id) {
+        return DdiResponses.xml(ddiService.getDataRelationshipsXml(agency, id, null));
     }
 
-    @GetMapping(
-        value = "/{agency}/{id}",
-        produces = MediaType.APPLICATION_JSON_VALUE
-    )
-    public ResponseEntity<Ddi4Response> getVariablesJson(
-        @PathVariable String agency,
-        @PathVariable String id
-    ) {
-        return DdiResponses.json(
-            ddiService.getDataRelationships(agency, id, null)
-        );
+    @GetMapping(value = "/{agency}/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Ddi4Response> getVariablesJson(@PathVariable String agency, @PathVariable String id) {
+        return DdiResponses.json(ddiService.getDataRelationships(agency, id, null));
     }
 }

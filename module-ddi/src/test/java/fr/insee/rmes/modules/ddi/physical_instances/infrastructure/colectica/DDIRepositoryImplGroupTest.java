@@ -1,12 +1,20 @@
 package fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica;
 
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.*;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.DDIRepository;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.services.Ddi4ToLifecycle33;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
 import fr.insee.rmes.colectica.client.ColecticaClient;
 import fr.insee.rmes.colectica.client.dto.ColecticaCreateItemRequest;
 import fr.insee.rmes.colectica.client.dto.ColecticaItem;
 import fr.insee.rmes.colectica.client.dto.UpdateItemStateRequest;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.*;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.DDIRepository;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.services.Ddi4ToLifecycle33;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import javax.xml.stream.XMLStreamException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -14,15 +22,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import javax.xml.stream.XMLStreamException;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class DDIRepositoryImplGroupTest {
@@ -57,25 +56,28 @@ class DDIRepositoryImplGroupTest {
         @BeforeEach
         void setUp() {
             groupRepository = new ColecticaGroupRepository(
-                    colecticaClient, instanceConfiguration, ddi4ToLifecycle33, ddiRepository
-            );
+                    colecticaClient, instanceConfiguration, ddi4ToLifecycle33, ddiRepository);
         }
 
         @Test
         void createOrUpdate_shouldTransformAndPostGroup() throws XMLStreamException {
-            Ddi4Group group = new Ddi4Group(Ddi4Group.TYPE,
+            Ddi4Group group = new Ddi4Group(
+                    Ddi4Group.TYPE,
                     CogsDate.ofDateTime("2026-04-02T00:00:00Z"),
-                    "urn:ddi:fr.insee:group-uuid:1", "fr.insee", "group-uuid", "1",
+                    "urn:ddi:fr.insee:group-uuid:1",
+                    "fr.insee",
+                    "group-uuid",
+                    "1",
                     "bauhaus",
                     new Citation(LangStrings.of("fr-FR", "s1001 Group")),
                     List.of(Reference.of("fr.insee", "su-uuid-1", "1", "StudyUnit")),
                     List.of("http://id.insee.fr/operations/serie/s1001"),
-                    "insee:StatisticalOperationSeries"
-            );
+                    "insee:StatisticalOperationSeries");
 
             groupRepository.createOrUpdate(group);
 
-            ArgumentCaptor<ColecticaCreateItemRequest> captor = ArgumentCaptor.forClass(ColecticaCreateItemRequest.class);
+            ArgumentCaptor<ColecticaCreateItemRequest> captor =
+                    ArgumentCaptor.forClass(ColecticaCreateItemRequest.class);
             verify(colecticaClient).createOrUpdateItems(captor.capture());
 
             ColecticaCreateItemRequest request = captor.getValue();
@@ -96,11 +98,11 @@ class DDIRepositoryImplGroupTest {
 
         @Test
         void deprecate_shouldDeprecateOnlyTheRequestedExistingGroups() {
-            when(ddiRepository.getGroups()).thenReturn(List.of(
-                    new PartialGroup("group-id-1", "Groupe 1", null, "fr.insee", List.of()),
-                    new PartialGroup("group-id-2", "Groupe 2", null, "fr.insee", List.of()),
-                    new PartialGroup("group-id-3", "Groupe 3", null, "fr.insee", List.of())
-            ));
+            when(ddiRepository.getGroups())
+                    .thenReturn(List.of(
+                            new PartialGroup("group-id-1", "Groupe 1", null, "fr.insee", List.of()),
+                            new PartialGroup("group-id-2", "Groupe 2", null, "fr.insee", List.of()),
+                            new PartialGroup("group-id-3", "Groupe 3", null, "fr.insee", List.of())));
 
             groupRepository.deprecate(Set.of("group-id-1", "group-id-3"));
 
@@ -112,7 +114,8 @@ class DDIRepositoryImplGroupTest {
             assertThat(body.state()).isTrue();
             assertThat(body.applyToAllVersions()).isTrue();
 
-            assertThat(body.ids()).extracting(UpdateItemStateRequest.ItemIdentifier::identifier)
+            assertThat(body.ids())
+                    .extracting(UpdateItemStateRequest.ItemIdentifier::identifier)
                     .containsExactlyInAnyOrder("group-id-1", "group-id-3");
         }
 
@@ -126,9 +129,8 @@ class DDIRepositoryImplGroupTest {
 
         @Test
         void deprecate_shouldDoNothingWhenNoRequestedGroupExists() {
-            when(ddiRepository.getGroups()).thenReturn(List.of(
-                    new PartialGroup("group-id-1", "Groupe 1", null, "fr.insee", List.of())
-            ));
+            when(ddiRepository.getGroups())
+                    .thenReturn(List.of(new PartialGroup("group-id-1", "Groupe 1", null, "fr.insee", List.of())));
 
             groupRepository.deprecate(Set.of("unknown-group"));
 
@@ -146,23 +148,26 @@ class DDIRepositoryImplGroupTest {
         @BeforeEach
         void setUp() {
             studyUnitRepository = new ColecticaStudyUnitRepository(
-                    colecticaClient, instanceConfiguration, ddi4ToLifecycle33, ddiRepository
-            );
+                    colecticaClient, instanceConfiguration, ddi4ToLifecycle33, ddiRepository);
         }
 
         @Test
         void createOrUpdate_shouldTransformAndPostStudyUnit() throws XMLStreamException {
-            Ddi4StudyUnit studyUnit = new Ddi4StudyUnit(Ddi4StudyUnit.TYPE,
+            Ddi4StudyUnit studyUnit = new Ddi4StudyUnit(
+                    Ddi4StudyUnit.TYPE,
                     CogsDate.ofDateTime("2026-04-02T00:00:00Z"),
-                    "urn:ddi:fr.insee:su-uuid:1", "fr.insee", "su-uuid", "1",
+                    "urn:ddi:fr.insee:su-uuid:1",
+                    "fr.insee",
+                    "su-uuid",
+                    "1",
                     new Citation(LangStrings.of("fr-FR", "op1 Study Unit")),
                     "http://id.insee.fr/operations/operation/op1",
-                    null
-            );
+                    null);
 
             studyUnitRepository.createOrUpdate(studyUnit);
 
-            ArgumentCaptor<ColecticaCreateItemRequest> captor = ArgumentCaptor.forClass(ColecticaCreateItemRequest.class);
+            ArgumentCaptor<ColecticaCreateItemRequest> captor =
+                    ArgumentCaptor.forClass(ColecticaCreateItemRequest.class);
             verify(colecticaClient).createOrUpdateItems(captor.capture());
 
             ColecticaCreateItemRequest request = captor.getValue();
@@ -182,10 +187,10 @@ class DDIRepositoryImplGroupTest {
 
         @Test
         void deprecate_shouldDeprecateOnlyTheRequestedExistingStudyUnits() {
-            when(ddiRepository.getStudyUnits()).thenReturn(List.of(
-                    new PartialStudyUnit("su-id-1", "Study Unit 1", null, "fr.insee"),
-                    new PartialStudyUnit("su-id-2", "Study Unit 2", null, "fr.insee")
-            ));
+            when(ddiRepository.getStudyUnits())
+                    .thenReturn(List.of(
+                            new PartialStudyUnit("su-id-1", "Study Unit 1", null, "fr.insee"),
+                            new PartialStudyUnit("su-id-2", "Study Unit 2", null, "fr.insee")));
 
             studyUnitRepository.deprecate(Set.of("su-id-1"));
 
@@ -195,7 +200,8 @@ class DDIRepositoryImplGroupTest {
             UpdateItemStateRequest body = captor.getValue();
             assertThat(body.state()).isTrue();
             assertThat(body.applyToAllVersions()).isTrue();
-            assertThat(body.ids()).extracting(UpdateItemStateRequest.ItemIdentifier::identifier)
+            assertThat(body.ids())
+                    .extracting(UpdateItemStateRequest.ItemIdentifier::identifier)
                     .containsExactly("su-id-1");
         }
 
@@ -219,8 +225,10 @@ class DDIRepositoryImplGroupTest {
 
     @Test
     void generateDeterministicUuid_shouldDifferForDifferentUris() {
-        String uuid1 = AbstractColecticaItemRepository.generateDeterministicUuid("http://id.insee.fr/operations/serie/s1001");
-        String uuid2 = AbstractColecticaItemRepository.generateDeterministicUuid("http://id.insee.fr/operations/serie/s1002");
+        String uuid1 =
+                AbstractColecticaItemRepository.generateDeterministicUuid("http://id.insee.fr/operations/serie/s1001");
+        String uuid2 =
+                AbstractColecticaItemRepository.generateDeterministicUuid("http://id.insee.fr/operations/serie/s1002");
         assertThat(uuid1).isNotEqualTo(uuid2);
     }
 
@@ -228,13 +236,28 @@ class DDIRepositoryImplGroupTest {
 
     private ColecticaItem createColecticaItem(String identifier, String label) {
         return new ColecticaItem(
-                null, Map.of("fr-FR", label), null, null, null,
-                0, null, false, null,
+                null,
+                Map.of("fr-FR", label),
+                null,
+                null,
+                null,
+                0,
+                null,
+                false,
+                null,
                 "4bd6eef6-99df-40e6-9b11-5b8f64e5cb23",
-                "fr.insee", 1, identifier, null, null,
-                "2026-04-02T00:00:00", "bauhaus",
-                false, false, false,
-                "DC337820-AF3A-4C0B-82F9-CF02535CDE83", 0L, 0
-        );
+                "fr.insee",
+                1,
+                identifier,
+                null,
+                null,
+                "2026-04-02T00:00:00",
+                "bauhaus",
+                false,
+                false,
+                false,
+                "DC337820-AF3A-4C0B-82F9-CF02535CDE83",
+                0L,
+                0);
     }
 }

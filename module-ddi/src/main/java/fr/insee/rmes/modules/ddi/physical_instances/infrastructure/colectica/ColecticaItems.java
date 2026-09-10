@@ -21,8 +21,7 @@ import java.util.function.Function;
  */
 final class ColecticaItems {
 
-    private ColecticaItems() {
-    }
+    private ColecticaItems() {}
 
     /** Clé {@code agence|identifiant} des mémos de relations. */
     static String key(String agency, String id) {
@@ -59,13 +58,14 @@ final class ColecticaItems {
         return List.copyOf(byKey.values());
     }
 
-    private static <T> List<T> latestByKey(
-            List<T> items, Function<T, String> keyOf, Function<T, Integer> versionOf) {
+    private static <T> List<T> latestByKey(List<T> items, Function<T, String> keyOf, Function<T, Integer> versionOf) {
         Map<String, T> byKey = new LinkedHashMap<>();
         for (T item : items) {
-            byKey.merge(keyOf.apply(item), item,
-                    (kept, candidate) -> version(versionOf.apply(candidate)) > version(versionOf.apply(kept))
-                            ? candidate : kept);
+            byKey.merge(
+                    keyOf.apply(item),
+                    item,
+                    (kept, candidate) ->
+                            version(versionOf.apply(candidate)) > version(versionOf.apply(kept)) ? candidate : kept);
         }
         return List.copyOf(byKey.values());
     }
@@ -81,34 +81,32 @@ final class ColecticaItems {
 
     static ColecticaItemResponse toColecticaItem(Ddi3Response.Ddi3Item ddi3Item) {
         return new ColecticaItemResponse(
-            ddi3Item.itemType(),
-            ddi3Item.agencyId(),
-            Integer.parseInt(ddi3Item.version()),
-            ddi3Item.identifier(),
-            ddi3Item.item(),
-            ddi3Item.versionDate(),
-            ddi3Item.versionResponsibility(),
-            ddi3Item.isPublished(),
-            ddi3Item.isDeprecated(),
-            ddi3Item.isProvisional(),
-            ddi3Item.itemFormat()
-        );
+                ddi3Item.itemType(),
+                ddi3Item.agencyId(),
+                Integer.parseInt(ddi3Item.version()),
+                ddi3Item.identifier(),
+                ddi3Item.item(),
+                ddi3Item.versionDate(),
+                ddi3Item.versionResponsibility(),
+                ddi3Item.isPublished(),
+                ddi3Item.isDeprecated(),
+                ddi3Item.isProvisional(),
+                ddi3Item.itemFormat());
     }
 
     static Ddi3Response.Ddi3Item toDdi3Item(ColecticaItemResponse item) {
         return new Ddi3Response.Ddi3Item(
-            item.itemType(),
-            item.agencyId(),
-            String.valueOf(item.version()),
-            item.identifier(),
-            item.item(),
-            item.versionDate(),
-            item.versionResponsibility(),
-            item.isPublished(),
-            item.isDeprecated(),
-            item.isProvisional(),
-            item.itemFormat()
-        );
+                item.itemType(),
+                item.agencyId(),
+                String.valueOf(item.version()),
+                item.identifier(),
+                item.item(),
+                item.versionDate(),
+                item.versionResponsibility(),
+                item.isPublished(),
+                item.isDeprecated(),
+                item.isProvisional(),
+                item.itemFormat());
     }
 
     static List<Ddi3Response.Ddi3Item> toDdi3Items(ColecticaItemResponse[] itemResponses) {
@@ -117,22 +115,22 @@ final class ColecticaItems {
 
     static List<String> fragmentXmls(List<ColecticaItemResponse> items) {
         return items.stream()
-            .map(ColecticaItemResponse::item)
-            .filter(Objects::nonNull)
-            .toList();
+                .map(ColecticaItemResponse::item)
+                .filter(Objects::nonNull)
+                .toList();
     }
 
     static List<GetDescriptionsRequest.IdentifierRef> identifiersOfSet(ColecticaSetItem[] setItems) {
         return Arrays.stream(setItems)
-            .map(item -> new GetDescriptionsRequest.IdentifierRef(
-                item.agencyId(), item.identifier(), item.version()))
-            .toList();
+                .map(item ->
+                        new GetDescriptionsRequest.IdentifierRef(item.agencyId(), item.identifier(), item.version()))
+                .toList();
     }
 
     static List<GetDescriptionsRequest.IdentifierRef> identifiersOf(List<ColecticaItem> items) {
         return items.stream()
-            .map(item -> new GetDescriptionsRequest.IdentifierRef(
-                item.agencyId(), item.identifier(), item.version()))
-            .toList();
+                .map(item ->
+                        new GetDescriptionsRequest.IdentifierRef(item.agencyId(), item.identifier(), item.version()))
+                .toList();
     }
 }

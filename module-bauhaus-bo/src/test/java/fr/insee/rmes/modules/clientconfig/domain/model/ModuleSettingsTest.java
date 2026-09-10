@@ -1,5 +1,8 @@
 package fr.insee.rmes.modules.clientconfig.domain.model;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -7,29 +10,27 @@ import org.springframework.boot.context.properties.bind.Bindable;
 import org.springframework.boot.context.properties.bind.Binder;
 import org.springframework.mock.env.MockEnvironment;
 
-import java.util.Map;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 class ModuleSettingsTest {
 
     private static final String MODULES_PROPERTY = "fr.insee.rmes.bauhaus.modules";
 
     @ParameterizedTest(name = "show={0}, directAccess={1} -> show={2}, directAccess={3}")
-    @CsvSource(nullValues = "absent", value = {
-            // Rien de déclaré : module pleinement ouvert.
-            "absent, absent, true,  true",
-            // `show` seul : l'accès suit la tuile.
-            "true,   absent, true,  true",
-            "false,  absent, false, false",
-            // `directAccess` seul : la tuile prend la valeur opposée, la seule qui rende
-            // le drapeau utile — tuile en maintenance, ou module joignable mais masqué.
-            "absent, false,  true,  false",
-            "absent, true,   false, true",
-            // Les deux déclarés : rien à déduire.
-            "true,   true,   true,  true",
-            "false,  true,   false, true",
-    })
+    @CsvSource(
+            nullValues = "absent",
+            value = {
+                // Rien de déclaré : module pleinement ouvert.
+                "absent, absent, true,  true",
+                // `show` seul : l'accès suit la tuile.
+                "true,   absent, true,  true",
+                "false,  absent, false, false",
+                // `directAccess` seul : la tuile prend la valeur opposée, la seule qui rende
+                // le drapeau utile — tuile en maintenance, ou module joignable mais masqué.
+                "absent, false,  true,  false",
+                "absent, true,   false, true",
+                // Les deux déclarés : rien à déduire.
+                "true,   true,   true,  true",
+                "false,  true,   false, true",
+            })
     void should_deduce_the_flag_that_is_not_declared(
             String show, String directAccess, boolean expectedShow, boolean expectedDirectAccess) {
         MockEnvironment environment = new MockEnvironment();

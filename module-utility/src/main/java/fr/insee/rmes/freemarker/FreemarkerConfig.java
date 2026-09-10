@@ -5,11 +5,9 @@ import freemarker.cache.TemplateLoader;
 import freemarker.core.PlainTextOutputFormat;
 import freemarker.template.Configuration;
 import freemarker.template.TemplateExceptionHandler;
+import java.util.Locale;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Locale;
-
 
 public class FreemarkerConfig {
 
@@ -38,7 +36,10 @@ public class FreemarkerConfig {
         // plain directory for it, but non-file-system sources are possible too:
 
         TemplateLoader templateLoader = getTemplateLoader();
-        logger.info("Init freemarker templateloader {} , {}", FreemarkerConfig.class.getClassLoader().getResource("request"), FreemarkerConfig.class.getClassLoader().getResource("xdocreport"));
+        logger.info(
+                "Init freemarker templateloader {} , {}",
+                FreemarkerConfig.class.getClassLoader().getResource("request"),
+                FreemarkerConfig.class.getClassLoader().getResource("xdocreport"));
         cfg.setTemplateLoader(templateLoader);
 
         // Set the preferred charset template files are stored in. UTF-8 is
@@ -62,17 +63,14 @@ public class FreemarkerConfig {
         // templates. Les fragments inclus par un autre template n'héritent pas de l'auto-include, ils
         // le reçoivent via leur hôte.
         cfg.addAutoInclude(PREFIXES_TEMPLATE);
-
-
     }
 
     /**
      * Get template loader
      */
     private static TemplateLoader getTemplateLoader() {
-       return new ClassTemplateLoader(FreemarkerConfig.class, "/request");
+        return new ClassTemplateLoader(FreemarkerConfig.class, "/request");
     }
-
 
     public static Configuration getCfg() {
         if (cfg == null) {

@@ -17,7 +17,10 @@ public abstract class AbstractDDIItemConverter implements DDIItemConverter {
         if (item.sizeOfVersionArray() > 0) target.put("Version", item.getVersionArray(0));
 
         if (item.isSetVersionDate()) {
-            target.set("VersionDate", MAPPER.createObjectNode().put("DateTime", item.xgetVersionDate().getStringValue()));
+            target.set(
+                    "VersionDate",
+                    MAPPER.createObjectNode()
+                            .put("DateTime", item.xgetVersionDate().getStringValue()));
         }
     }
 
@@ -30,7 +33,8 @@ public abstract class AbstractDDIItemConverter implements DDIItemConverter {
             String value = userId.getStringValue();
             if (value != null && !value.isBlank()) node.put("StringValue", value);
             String type = userId.getTypeOfUserID();
-            if (type != null && !type.isBlank()) node.set("TypeOfUserID", MAPPER.createObjectNode().put("StringValue", type));
+            if (type != null && !type.isBlank())
+                node.set("TypeOfUserID", MAPPER.createObjectNode().put("StringValue", type));
             userIds.add(node);
         }
         if (!userIds.isEmpty()) target.set("UserID", userIds);

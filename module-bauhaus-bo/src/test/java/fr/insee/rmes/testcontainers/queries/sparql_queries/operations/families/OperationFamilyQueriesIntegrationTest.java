@@ -1,5 +1,7 @@
 package fr.insee.rmes.testcontainers.queries.sparql_queries.operations.families;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.RepositoryInitiator;
@@ -12,8 +14,6 @@ import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Non-régression des requêtes de {@code OperationFamilyQueries} qui ne se vérifient que
@@ -30,8 +30,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class OperationFamilyQueriesIntegrationTest extends WithGraphDBContainer {
 
     private final RepositoryGestion repositoryGestion = new RepositoryGestion(
-            getRdfGestionConnectionDetails(),
-            new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED));
+            getRdfGestionConnectionDetails(), new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED));
 
     private final OperationFamilyQueries queries = new OperationFamilyQueries(
             new BauhausLanguagesProperties("fr", "en"), "http://rdf.insee.fr/graphes/", "operations");
@@ -71,7 +70,8 @@ class OperationFamilyQueriesIntegrationTest extends WithGraphDBContainer {
     }
 
     @Test
-    void getSubjects_returns_nothing_when_the_operations_graph_is_not_the_one_holding_the_family() throws RmesException {
+    void getSubjects_returns_nothing_when_the_operations_graph_is_not_the_one_holding_the_family()
+            throws RmesException {
         OperationFamilyQueries otherGraph = new OperationFamilyQueries(
                 new BauhausLanguagesProperties("fr", "en"), "http://rdf.insee.fr/graphes/", "concepts/");
 

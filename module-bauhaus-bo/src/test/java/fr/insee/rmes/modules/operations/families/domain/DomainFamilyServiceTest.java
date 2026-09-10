@@ -1,5 +1,8 @@
 package fr.insee.rmes.modules.operations.families.domain;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.operations.families.domain.exceptions.FamilyAlreadyPublishedException;
 import fr.insee.rmes.modules.operations.families.domain.exceptions.FamilyNotFoundException;
@@ -11,21 +14,17 @@ import fr.insee.rmes.modules.operations.families.domain.model.commands.UpdateFam
 import fr.insee.rmes.modules.operations.families.domain.port.serverside.OperationFamilyRepository;
 import fr.insee.rmes.modules.shared_kernel.domain.model.Language;
 import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.util.Arrays;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.time.Clock;
-import java.time.Instant;
-import java.time.ZoneId;
-import java.util.Arrays;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class DomainFamilyServiceTest {
@@ -38,6 +37,7 @@ class DomainFamilyServiceTest {
     /** 2026-08-27T10:15:30 en Europe/Paris, pour que les dates écrites soient prévisibles. */
     private static final Clock FIXED_CLOCK =
             Clock.fixed(Instant.parse("2026-08-27T08:15:30Z"), ZoneId.of("Europe/Paris"));
+
     private static final String NOW = "2026-08-27T10:15:30";
 
     @BeforeEach
@@ -99,8 +99,7 @@ class DomainFamilyServiceTest {
     void create_family_should_save_the_family_unpublished_under_a_generated_id() throws Exception {
         when(operationFamilyRepository.generateId()).thenReturn("s1001");
 
-        String id = familyService.createFamily(
-                new CreateFamilyCommand("Famille", "Family", "Résumé", "Abstract"));
+        String id = familyService.createFamily(new CreateFamilyCommand("Famille", "Family", "Résumé", "Abstract"));
 
         assertEquals("s1001", id);
         ArgumentCaptor<OperationFamily> captor = ArgumentCaptor.forClass(OperationFamily.class);
@@ -119,9 +118,11 @@ class DomainFamilyServiceTest {
     @Test
     void create_family_should_reject_a_pref_label_lg1_already_used_by_another_family() throws Exception {
         when(operationFamilyRepository.generateId()).thenReturn("s1001");
-        when(operationFamilyRepository.isPrefLabelAlreadyUsed("s1001", "Famille", Language.lg1)).thenReturn(true);
+        when(operationFamilyRepository.isPrefLabelAlreadyUsed("s1001", "Famille", Language.lg1))
+                .thenReturn(true);
 
-        FamilyPrefLabelAlreadyUsedException exception = assertThrows(FamilyPrefLabelAlreadyUsedException.class,
+        FamilyPrefLabelAlreadyUsedException exception = assertThrows(
+                FamilyPrefLabelAlreadyUsedException.class,
                 () -> familyService.createFamily(new CreateFamilyCommand("Famille", "Family", null, null)));
 
         assertEquals(Language.lg1, exception.language());
@@ -131,10 +132,13 @@ class DomainFamilyServiceTest {
     @Test
     void create_family_should_reject_a_pref_label_lg2_already_used_by_another_family() throws Exception {
         when(operationFamilyRepository.generateId()).thenReturn("s1001");
-        when(operationFamilyRepository.isPrefLabelAlreadyUsed("s1001", "Famille", Language.lg1)).thenReturn(false);
-        when(operationFamilyRepository.isPrefLabelAlreadyUsed("s1001", "Family", Language.lg2)).thenReturn(true);
+        when(operationFamilyRepository.isPrefLabelAlreadyUsed("s1001", "Famille", Language.lg1))
+                .thenReturn(false);
+        when(operationFamilyRepository.isPrefLabelAlreadyUsed("s1001", "Family", Language.lg2))
+                .thenReturn(true);
 
-        FamilyPrefLabelAlreadyUsedException exception = assertThrows(FamilyPrefLabelAlreadyUsedException.class,
+        FamilyPrefLabelAlreadyUsedException exception = assertThrows(
+                FamilyPrefLabelAlreadyUsedException.class,
                 () -> familyService.createFamily(new CreateFamilyCommand("Famille", "Family", null, null)));
 
         assertEquals(Language.lg2, exception.language());
@@ -145,8 +149,10 @@ class DomainFamilyServiceTest {
     void update_family_should_reject_an_unknown_id() throws Exception {
         when(operationFamilyRepository.exists("s1001")).thenReturn(false);
 
-        assertThrows(FamilyNotFoundException.class, () -> familyService.updateFamily(
-                new UpdateFamilyCommand("s1001", "Famille", "Family", null, null, null)));
+        assertThrows(
+                FamilyNotFoundException.class,
+                () -> familyService.updateFamily(
+                        new UpdateFamilyCommand("s1001", "Famille", "Family", null, null, null)));
 
         verify(operationFamilyRepository, never()).save(any());
     }
@@ -156,7 +162,8 @@ class DomainFamilyServiceTest {
         when(operationFamilyRepository.exists("s1001")).thenReturn(true);
         when(operationFamilyRepository.getValidationStatus("s1001")).thenReturn(ValidationStatus.UNPUBLISHED);
 
-        familyService.updateFamily(new UpdateFamilyCommand("s1001", "Famille", "Family", "Résumé", "Abstract", "2026-01-01T00:00:00"));
+        familyService.updateFamily(
+                new UpdateFamilyCommand("s1001", "Famille", "Family", "Résumé", "Abstract", "2026-01-01T00:00:00"));
 
         ArgumentCaptor<OperationFamily> captor = ArgumentCaptor.forClass(OperationFamily.class);
         verify(operationFamilyRepository).save(captor.capture());

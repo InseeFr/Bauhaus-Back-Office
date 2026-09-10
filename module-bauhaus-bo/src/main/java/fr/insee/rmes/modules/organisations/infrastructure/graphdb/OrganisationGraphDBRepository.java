@@ -2,21 +2,20 @@ package fr.insee.rmes.modules.organisations.infrastructure.graphdb;
 
 import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.modules.organisations.domain.model.OrganisationOption;
-import fr.insee.rmes.modules.organisations.domain.port.serverside.OrganisationRepository;
 import fr.insee.rmes.freemarker.FreeMarkerUtils;
 import fr.insee.rmes.graphdb.SparqlLiterals;
-import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.json.JSONUtils;
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Repository;
-
+import fr.insee.rmes.modules.organisations.domain.model.OrganisationOption;
+import fr.insee.rmes.modules.organisations.domain.port.serverside.OrganisationRepository;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Repository;
 
 @Repository
 public class OrganisationGraphDBRepository implements OrganisationRepository {
@@ -113,7 +112,9 @@ public class OrganisationGraphDBRepository implements OrganisationRepository {
         params.put(ORGANIZATIONS_INSEE_GRAPH_PARAM, SparqlLiterals.iri(organizationsGraph));
         params.put("LANG", SparqlLiterals.literal(languages.lg1()));
         params.put("IRI_IDENTIFIERS", iris.stream().map(SparqlLiterals::iri).toList());
-        params.put("LITERAL_IDENTIFIERS", literals.stream().map(SparqlLiterals::literal).toList());
+        params.put(
+                "LITERAL_IDENTIFIERS",
+                literals.stream().map(SparqlLiterals::literal).toList());
 
         String query = FreeMarkerUtils.buildRequest(ORGANISATIONS_PATH, "getOrganisationsMap.ftlh", params);
         JSONArray results = repositoryGestion.getResponseAsArray(query);

@@ -2,22 +2,21 @@ package fr.insee.rmes.modules.commons.webservice;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
+import java.util.HashMap;
+import java.util.Map;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Links;
 import org.springframework.hateoas.RepresentationModel;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  * Generic base class for response objects that provides HATEOAS support
  * and domain-to-response conversion contract.
- * 
+ *
  * @param <T> the concrete response type
  * @param <D> the domain object type
  */
-public abstract class BaseResponse<T extends BaseResponse<T, D>, D> extends RepresentationModel<T> 
+public abstract class BaseResponse<T extends BaseResponse<T, D>, D> extends RepresentationModel<T>
         implements DomainToResponseConverter<D, T> {
 
     @JsonUnwrapped
@@ -32,7 +31,7 @@ public abstract class BaseResponse<T extends BaseResponse<T, D>, D> extends Repr
         if (!hasLinks()) {
             return null;
         }
-        
+
         Map<String, Object> halLinks = new HashMap<>();
         for (Link link : getLinks()) {
             Map<String, String> linkObject = new HashMap<>();
@@ -41,7 +40,7 @@ public abstract class BaseResponse<T extends BaseResponse<T, D>, D> extends Repr
         }
         return halLinks;
     }
-    
+
     @JsonProperty(value = "links", access = JsonProperty.Access.WRITE_ONLY)
     @Override
     public @NotNull Links getLinks() {

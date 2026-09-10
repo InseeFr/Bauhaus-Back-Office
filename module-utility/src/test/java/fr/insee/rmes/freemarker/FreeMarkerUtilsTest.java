@@ -1,17 +1,16 @@
 package fr.insee.rmes.freemarker;
 
-import fr.insee.rmes.domain.exceptions.RmesException;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.io.TempDir;
+import static org.junit.jupiter.api.Assertions.*;
 
+import fr.insee.rmes.domain.exceptions.RmesException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Map;
 import java.util.HashMap;
-
-import static org.junit.jupiter.api.Assertions.*;
+import java.util.Map;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 class FreeMarkerUtilsTest {
 
@@ -22,11 +21,10 @@ class FreeMarkerUtilsTest {
     void setUp() throws IOException {
         Path requestDir = tempDir.resolve("request");
         Files.createDirectories(requestDir);
-        
+
         Path testTemplate = requestDir.resolve("test.ftl");
         Files.write(testTemplate, "Hello ${name}!".getBytes());
     }
-
 
     @Test
     void shouldBuildRequestWithValidTemplate() throws RmesException {

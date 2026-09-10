@@ -6,6 +6,4 @@ import org.springframework.hateoas.config.EnableHypermediaSupport.HypermediaType
 
 @Configuration
 @EnableHypermediaSupport(type = {HypermediaType.HAL})
-public class HateoasConfig {
-
-}
+public class HateoasConfig {}

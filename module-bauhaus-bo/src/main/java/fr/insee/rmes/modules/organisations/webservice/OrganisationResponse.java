@@ -10,6 +10,7 @@ import fr.insee.rmes.modules.organisations.domain.model.OrganisationSummary;
 public record OrganisationResponse(String iri, String id, String stamp, String label, String labelLg2) {
 
     public static OrganisationResponse fromDomain(OrganisationSummary summary) {
-        return new OrganisationResponse(summary.iri(), summary.identifier(), summary.stamp(), summary.label(), summary.labelLg2());
+        return new OrganisationResponse(
+                summary.iri(), summary.identifier(), summary.stamp(), summary.label(), summary.labelLg2());
     }
 }

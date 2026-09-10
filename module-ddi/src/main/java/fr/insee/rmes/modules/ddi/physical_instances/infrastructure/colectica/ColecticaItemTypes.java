@@ -14,6 +14,7 @@ final class ColecticaItemTypes {
     static final String PHYSICAL_INSTANCE = "PhysicalInstance";
     /** Clé {@code itemTypes} du type CodeList, aussi utilisée comme nom d'élément XML. */
     static final String CODE_LIST = "CodeList";
+
     static final String CATEGORY = "Category";
     static final String VARIABLE = "Variable";
     static final String DATA_RELATIONSHIP = "DataRelationship";
@@ -25,6 +26,5 @@ final class ColecticaItemTypes {
     static final String MANAGED_REPRESENTATION_SCHEME = "ManagedRepresentationScheme";
     static final String MANAGED_MISSING_VALUES_REPRESENTATION = "ManagedMissingValuesRepresentation";
 
-    private ColecticaItemTypes() {
-    }
+    private ColecticaItemTypes() {}
 }

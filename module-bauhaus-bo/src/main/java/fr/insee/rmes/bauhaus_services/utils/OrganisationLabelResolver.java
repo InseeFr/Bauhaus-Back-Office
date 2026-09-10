@@ -3,12 +3,11 @@ package fr.insee.rmes.bauhaus_services.utils;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.organisations.domain.model.OrganisationOption;
 import fr.insee.rmes.modules.organisations.domain.port.clientside.OrganisationService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Resolves organisation stamps or IRIs into human-readable labels for exports.
@@ -17,10 +16,10 @@ public final class OrganisationLabelResolver {
 
     private static final Logger logger = LoggerFactory.getLogger(OrganisationLabelResolver.class);
 
-    private OrganisationLabelResolver() {
-    }
+    private OrganisationLabelResolver() {}
 
-    public static Map<String, OrganisationOption> organisationsByIdentifier(OrganisationService organisationService, Collection<String> rawIdentifiers) {
+    public static Map<String, OrganisationOption> organisationsByIdentifier(
+            OrganisationService organisationService, Collection<String> rawIdentifiers) {
         List<String> identifiers = rawIdentifiers.stream()
                 .filter(identifier -> identifier != null && !identifier.isBlank())
                 .distinct()
@@ -41,7 +40,9 @@ public final class OrganisationLabelResolver {
             return identifier;
         }
         OrganisationOption organisation = organisations.get(identifier);
-        if (organisation != null && organisation.label() != null && !organisation.label().isEmpty()) {
+        if (organisation != null
+                && organisation.label() != null
+                && !organisation.label().isEmpty()) {
             return organisation.label();
         }
         return shortenIfIri(identifier);
@@ -52,8 +53,6 @@ public final class OrganisationLabelResolver {
             return identifier;
         }
         int lastSlash = identifier.lastIndexOf('/');
-        return lastSlash >= 0 && lastSlash < identifier.length() - 1
-                ? identifier.substring(lastSlash + 1)
-                : identifier;
+        return lastSlash >= 0 && lastSlash < identifier.length() - 1 ? identifier.substring(lastSlash + 1) : identifier;
     }
 }

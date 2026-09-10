@@ -1,14 +1,18 @@
 package fr.insee.rmes.testcontainers.queries.sparql_queries.operations.documents;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import fr.insee.rmes.BauhausLanguagesProperties;
-import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.config.BauhausUriPropertiesStub;
+import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.graphdb.RepositoryInitiator;
 import fr.insee.rmes.graphdb.RepositoryUtils;
 import fr.insee.rmes.json.JSONUtils;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationDocumentsQueries;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.testcontainers.WithGraphDBContainer;
+import java.util.ArrayList;
+import java.util.List;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.json.JSONArray;
@@ -18,18 +22,11 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 @Tag("integration")
 class OperationDocumentsQueriesIntegrationTest extends WithGraphDBContainer {
 
     RepositoryGestion repositoryGestion = new RepositoryGestion(
-            getRdfGestionConnectionDetails(),
-            new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED)
-    );
+            getRdfGestionConnectionDetails(), new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED));
 
     private OperationDocumentsQueries operationDocumentsQueries;
 
@@ -40,11 +37,15 @@ class OperationDocumentsQueriesIntegrationTest extends WithGraphDBContainer {
 
     @BeforeEach
     void setUp() {
-        operationDocumentsQueries = new OperationDocumentsQueries(BauhausUriPropertiesStub.stub(), new BauhausLanguagesProperties("fr", "en"), GraphsPropertiesStub.stub());
+        operationDocumentsQueries = new OperationDocumentsQueries(
+                BauhausUriPropertiesStub.stub(),
+                new BauhausLanguagesProperties("fr", "en"),
+                GraphsPropertiesStub.stub());
     }
 
     @Test
-    @DisplayName("Comportement attendu apres correction: getDocumentUriQuery devrait retourner uniquement le document avec l'URL exacte")
+    @DisplayName(
+            "Comportement attendu apres correction: getDocumentUriQuery devrait retourner uniquement le document avec l'URL exacte")
     void should_return_only_exact_match_expected_behavior() throws Exception {
         // Ce test montre le comportement ATTENDU apres la correction du bug
         // Pour l'instant, ce test ECHOUE car le bug existe
@@ -67,7 +68,6 @@ class OperationDocumentsQueriesIntegrationTest extends WithGraphDBContainer {
         assertThat(result.getJSONObject(0).getString("document"))
                 .as("Le document retourne devrait etre le document 1")
                 .contains("document/1");
-
 
         // Pour l'instant, on verifie juste que la requete s'execute sans erreur
         assertThat(result).isNotNull();

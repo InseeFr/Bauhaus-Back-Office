@@ -5,21 +5,20 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
-import fr.insee.rmes.rdf_utils.RepositoryGestion;
-import fr.insee.rmes.utils.IdGenerator;
-import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.modules.classifications.nomenclatures.model.ClassificationItem;
-import fr.insee.rmes.persistance.sparql_queries.classifications.ClassificationsQueries;
 import fr.insee.rmes.persistance.sparql_queries.classifications.ClassificationItemsQueries;
+import fr.insee.rmes.persistance.sparql_queries.classifications.ClassificationsQueries;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.utils.IdGenerator;
+import java.io.IOException;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-
-import java.io.IOException;
 
 @Service
 public class ClassificationItemServiceImpl extends RdfService implements ClassificationItemService {
@@ -33,12 +32,14 @@ public class ClassificationItemServiceImpl extends RdfService implements Classif
 
     static final Logger logger = LoggerFactory.getLogger(ClassificationItemServiceImpl.class);
 
-    public ClassificationItemServiceImpl(RepositoryGestion repoGestion, IdGenerator idGenerator,
-                                         RepositoryPublication repositoryPublication,
-                                         PublicationUtils publicationUtils,
-                                         ClassificationItemRepository classificationItemRepository,
-                                         ClassificationsQueries classificationsQueries,
-                                         ClassificationItemsQueries classificationItemsQueries) {
+    public ClassificationItemServiceImpl(
+            RepositoryGestion repoGestion,
+            IdGenerator idGenerator,
+            RepositoryPublication repositoryPublication,
+            PublicationUtils publicationUtils,
+            ClassificationItemRepository classificationItemRepository,
+            ClassificationsQueries classificationsQueries,
+            ClassificationItemsQueries classificationItemsQueries) {
         super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
         this.classificationItemRepository = classificationItemRepository;
         this.classificationsQueries = classificationsQueries;
@@ -46,33 +47,41 @@ public class ClassificationItemServiceImpl extends RdfService implements Classif
     }
 
     @Override
-    public String getClassificationItems(String id) throws RmesException{
+    public String getClassificationItems(String id) throws RmesException {
         logger.info("Starting to get a classification scheme");
-        return repoGestion.getResponseAsArray(classificationsQueries.classificationItemsQuery(id)).toString();
+        return repoGestion
+                .getResponseAsArray(classificationsQueries.classificationItemsQuery(id))
+                .toString();
     }
 
     @Override
-    public String getClassificationItem(String classificationId, String itemId) throws RmesException{
+    public String getClassificationItem(String classificationId, String itemId) throws RmesException {
         logger.info("Starting to get classification item {} from {}", itemId, classificationId);
-        JSONObject item = repoGestion.getResponseAsObject(classificationItemsQueries.itemQuery(classificationId, itemId));
-        JSONArray altLabels = repoGestion.getResponseAsArray(classificationItemsQueries.itemAltQuery(classificationId, itemId));
-        if(!altLabels.isEmpty()) {
+        JSONObject item =
+                repoGestion.getResponseAsObject(classificationItemsQueries.itemQuery(classificationId, itemId));
+        JSONArray altLabels =
+                repoGestion.getResponseAsArray(classificationItemsQueries.itemAltQuery(classificationId, itemId));
+        if (!altLabels.isEmpty()) {
             item.put("altLabels", altLabels);
         }
         return item.toString();
     }
 
     @Override
-    public String getClassificationItemNotes(String classificationId, String itemId, int conceptVersion)throws RmesException {
+    public String getClassificationItemNotes(String classificationId, String itemId, int conceptVersion)
+            throws RmesException {
         logger.info("Starting to get classification item notes {} from {}", itemId, classificationId);
-        JSONObject classificationItemNotes = repoGestion.getResponseAsObject(classificationItemsQueries.itemNotesQuery(classificationId, itemId, conceptVersion));
+        JSONObject classificationItemNotes = repoGestion.getResponseAsObject(
+                classificationItemsQueries.itemNotesQuery(classificationId, itemId, conceptVersion));
         return classificationItemNotes.toString();
     }
 
     @Override
     public String getClassificationItemNarrowers(String classificationId, String itemId) throws RmesException {
         logger.info("Starting to get classification item members {} from {}", itemId, classificationId);
-        return repoGestion.getResponseAsArray(classificationItemsQueries.itemNarrowersQuery(classificationId, itemId)).toString();
+        return repoGestion
+                .getResponseAsArray(classificationItemsQueries.itemNarrowersQuery(classificationId, itemId))
+                .toString();
     }
 
     @Override
@@ -86,11 +95,13 @@ public class ClassificationItemServiceImpl extends RdfService implements Classif
             item = mapper.readerForUpdating(item).readValue(body);
         } catch (IOException e) {
             logger.error(e.getMessage());
-            throw new RmesNotFoundException(ErrorCodes.CLASSIFICATION_INCORRECT_BODY, e.getMessage(), CAN_T_READ_REQUEST_BODY);
+            throw new RmesNotFoundException(
+                    ErrorCodes.CLASSIFICATION_INCORRECT_BODY, e.getMessage(), CAN_T_READ_REQUEST_BODY);
         }
 
-
-        String itemUri = repoGestion.getResponseAsObject(classificationsQueries.classificationItemQueryUri(classificationId, itemId)).getString("item");
+        String itemUri = repoGestion
+                .getResponseAsObject(classificationsQueries.classificationItemQueryUri(classificationId, itemId))
+                .getString("item");
         classificationItemRepository.updateClassificationItem(item, itemUri, classificationId);
     }
 }

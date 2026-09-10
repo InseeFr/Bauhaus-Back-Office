@@ -1,37 +1,36 @@
 package fr.insee.rmes.modules.users.infrastructure.stamps;
 
-import fr.insee.rmes.modules.organisations.domain.model.OrganisationOption;
-import fr.insee.rmes.modules.organisations.domain.port.clientside.OrganisationService;
-import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.graphdb.ontologies.QB;
+import fr.insee.rmes.json.JSONUtils;
 import fr.insee.rmes.modules.commons.hexagonal.ServerSideAdaptor;
 import fr.insee.rmes.modules.datasets.datasets.infrastructure.DatasetQueries;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4GroupResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.DDIRepository;
 import fr.insee.rmes.modules.operation.series.domain.port.serverside.SeriesCreatorsPort;
+import fr.insee.rmes.modules.organisations.domain.model.OrganisationOption;
+import fr.insee.rmes.modules.organisations.domain.port.clientside.OrganisationService;
 import fr.insee.rmes.modules.structures.infrastructure.graphdb.StructureQueries;
 import fr.insee.rmes.modules.users.domain.exceptions.StampFetchException;
 import fr.insee.rmes.modules.users.domain.exceptions.UnsupportedModuleException;
 import fr.insee.rmes.modules.users.domain.model.RBAC;
 import fr.insee.rmes.modules.users.domain.port.serverside.StampChecker;
 import fr.insee.rmes.persistance.sparql_queries.datasets.DatasetDistributionQueries;
-import fr.insee.rmes.rdf_utils.RepositoryGestion;
-import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationSeriesQueries;
-import fr.insee.rmes.json.JSONUtils;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import org.eclipse.rdf4j.model.IRI;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
 
 @ServerSideAdaptor
 @Repository
@@ -66,14 +65,15 @@ public class GraphDbStampChecker implements StampChecker {
         this.organisationService = organisationService;
     }
 
-
     @Override
-    public List<String> getCreatorsStamps(RBAC.Module module, String id) throws UnsupportedModuleException, StampFetchException {
+    public List<String> getCreatorsStamps(RBAC.Module module, String id)
+            throws UnsupportedModuleException, StampFetchException {
         try {
             return switch (module) {
                 case OPERATION_SERIES -> {
                     var iri = RdfUtils.objectIRI(ObjectType.SERIES, id);
-                    yield normalizeOrganisationStamps(this.getStamps("creators", operationSeriesQueries.getCreatorsBySeriesUri(iri.toString())));
+                    yield normalizeOrganisationStamps(
+                            this.getStamps("creators", operationSeriesQueries.getCreatorsBySeriesUri(iri.toString())));
                 }
                 case DDI_PHYSICALINSTANCE -> {
                     if (id == null) yield List.of();
@@ -82,8 +82,9 @@ public class GraphDbStampChecker implements StampChecker {
                     String agency = parts[0];
                     String groupId = parts[1];
                     Ddi4GroupResponse groupResponse = ddiRepository.getGroup(agency, groupId);
-                    List<String> seriesIris = groupResponse.group() == null ? List.of() :
-                            groupResponse.group().stream()
+                    List<String> seriesIris = groupResponse.group() == null
+                            ? List.of()
+                            : groupResponse.group().stream()
                                     .filter(g -> g.seriesIris() != null)
                                     .flatMap(g -> g.seriesIris().stream())
                                     .toList();
@@ -93,7 +94,9 @@ public class GraphDbStampChecker implements StampChecker {
                             .flatMap(Collection::stream)
                             .distinct()
                             .toList();
-                    yield normalizeOrganisationStamps(distinctCreators).stream().distinct().toList();
+                    yield normalizeOrganisationStamps(distinctCreators).stream()
+                            .distinct()
+                            .toList();
                 }
                 default -> throw new UnsupportedModuleException(module);
             };
@@ -104,29 +107,31 @@ public class GraphDbStampChecker implements StampChecker {
     }
 
     @Override
-    public List<String> getContributorsStamps(RBAC.Module module, String id) throws UnsupportedModuleException, StampFetchException {
+    public List<String> getContributorsStamps(RBAC.Module module, String id)
+            throws UnsupportedModuleException, StampFetchException {
         try {
-            var query = switch (module) {
-                case STRUCTURE_STRUCTURE -> {
-                    var iri = RdfUtils.objectIRI(ObjectType.STRUCTURE, id);
-                    yield structureQueries.getContributorsByStructureUri(iri.toString());
-                }
-                case STRUCTURE_COMPONENT -> {
-                    var iri = findStructureComponentIri(id);
-                    yield structureQueries.getContributorsByComponentUri(iri.toString());
-                }
-                case DATASET_DISTRIBUTION -> {
-                    var iri = RdfUtils.objectIRI(ObjectType.DISTRIBUTION, id);
-                    yield datasetDistributionQueries.getContributorsByDistributionUri(iri.toString());
-                }
-                case DATASET_DATASET -> {
-                    var iri = RdfUtils.objectIRI(ObjectType.DATASET, id);
-                    yield datasetQueries.getDatasetContributors(iri);
-                }
-                default -> throw new UnsupportedModuleException(module);
-            };
+            var query =
+                    switch (module) {
+                        case STRUCTURE_STRUCTURE -> {
+                            var iri = RdfUtils.objectIRI(ObjectType.STRUCTURE, id);
+                            yield structureQueries.getContributorsByStructureUri(iri.toString());
+                        }
+                        case STRUCTURE_COMPONENT -> {
+                            var iri = findStructureComponentIri(id);
+                            yield structureQueries.getContributorsByComponentUri(iri.toString());
+                        }
+                        case DATASET_DISTRIBUTION -> {
+                            var iri = RdfUtils.objectIRI(ObjectType.DISTRIBUTION, id);
+                            yield datasetDistributionQueries.getContributorsByDistributionUri(iri.toString());
+                        }
+                        case DATASET_DATASET -> {
+                            var iri = RdfUtils.objectIRI(ObjectType.DATASET, id);
+                            yield datasetQueries.getDatasetContributors(iri);
+                        }
+                        default -> throw new UnsupportedModuleException(module);
+                    };
             return normalizeOrganisationStamps(this.getStamps("contributors", query));
-        } catch (RmesException | IllegalArgumentException _){
+        } catch (RmesException | IllegalArgumentException _) {
             // IllegalArgumentException : l'identifiant ne donne pas une IRI injectable dans la requête.
             throw new StampFetchException(module, id);
         }
@@ -137,7 +142,8 @@ public class GraphDbStampChecker implements StampChecker {
         if (values.isEmpty()) return values;
         Map<String, OrganisationOption> organisationsMap;
         try {
-            organisationsMap = organisationService.getOrganisationsMap(values.stream().distinct().toList());
+            organisationsMap = organisationService.getOrganisationsMap(
+                    values.stream().distinct().toList());
         } catch (RmesException e) {
             logger.warn("Failed to resolve organisation stamps; keeping raw values", e);
             return values;

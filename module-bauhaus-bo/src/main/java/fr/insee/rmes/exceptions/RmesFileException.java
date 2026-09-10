@@ -15,8 +15,6 @@ public class RmesFileException extends RuntimeException {
 
     @Override
     public String toString() {
-        return "RmesFileException{" +
-                "fileName='" + fileName + '\'' +
-                '}';
+        return "RmesFileException{" + "fileName='" + fileName + '\'' + '}';
     }
 }

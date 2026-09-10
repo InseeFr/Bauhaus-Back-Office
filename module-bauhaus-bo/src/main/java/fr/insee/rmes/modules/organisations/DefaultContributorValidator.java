@@ -3,14 +3,13 @@ package fr.insee.rmes.modules.organisations;
 import fr.insee.rmes.modules.organisations.domain.exceptions.OrganisationFetchException;
 import fr.insee.rmes.modules.organisations.domain.port.serverside.OrganisationsRepository;
 import jakarta.annotation.PostConstruct;
+import java.net.URI;
+import java.net.URISyntaxException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
-
-import java.net.URI;
-import java.net.URISyntaxException;
 
 /**
  * Vérifie au démarrage que {@code fr.insee.rmes.bauhaus.defaultContributor} désigne bien
@@ -48,16 +47,16 @@ public class DefaultContributorValidator {
     public void validate() {
         String iri = requireAbsoluteUri();
         if (!existsInManagementDatabase(iri)) {
-            throw new InvalidDefaultContributorException(PROPERTY_NAME + " = " + iri
-                    + " : this organisation does not exist in the management database.");
+            throw new InvalidDefaultContributorException(
+                    PROPERTY_NAME + " = " + iri + " : this organisation does not exist in the management database.");
         }
         logger.info("{} = {} : organisation trouvée en base de gestion", PROPERTY_NAME, iri);
     }
 
     private String requireAbsoluteUri() {
         if (defaultContributor == null || defaultContributor.isBlank()) {
-            throw new InvalidDefaultContributorException(PROPERTY_NAME + " est vide : renseigner l'IRI "
-                    + "de l'organisation contributrice par défaut.");
+            throw new InvalidDefaultContributorException(
+                    PROPERTY_NAME + " est vide : renseigner l'IRI " + "de l'organisation contributrice par défaut.");
         }
         String iri = defaultContributor.trim();
         try {
@@ -79,8 +78,8 @@ public class DefaultContributorValidator {
         try {
             return organisationsRepository.checkIfOrganisationExists(iri);
         } catch (OrganisationFetchException e) {
-            throw new InvalidDefaultContributorException(PROPERTY_NAME + " = " + iri
-                    + " : n'a pas pu être vérifié en base de gestion.", e);
+            throw new InvalidDefaultContributorException(
+                    PROPERTY_NAME + " = " + iri + " : n'a pas pu être vérifié en base de gestion.", e);
         }
     }
 }

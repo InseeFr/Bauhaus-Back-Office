@@ -12,8 +12,7 @@ public record GraphDBCollectionDashboardItem(
         @Nullable String modified,
         @Nullable String validationState,
         @Nullable String creator,
-        String nbMembers
-) {
+        String nbMembers) {
     CollectionDashboardItem toDomain() {
         return new CollectionDashboardItem(
                 new CollectionId(id),
@@ -22,7 +21,6 @@ public record GraphDBCollectionDashboardItem(
                 modified,
                 ValidationStatus.fromValue(validationState),
                 creator,
-                Integer.parseInt(nbMembers)
-        );
+                Integer.parseInt(nbMembers));
     }
 }

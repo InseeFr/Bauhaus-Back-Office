@@ -7,5 +7,4 @@ import org.jspecify.annotations.Nullable;
  * Ce que la base sait déjà d'une liste de codes, et que le client ne peut pas décider lui-même :
  * sa date de création et son état de publication.
  */
-public record PersistedCodesList(@Nullable String created, ValidationStatus validationState) {
-}
+public record PersistedCodesList(@Nullable String created, ValidationStatus validationState) {}

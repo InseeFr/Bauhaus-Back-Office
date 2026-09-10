@@ -5,7 +5,8 @@ import fr.insee.rmes.modules.concepts.concept.domain.model.PartialConcept;
 import fr.insee.rmes.modules.shared_kernel.domain.model.LocalisedLabel;
 import org.jspecify.annotations.Nullable;
 
-public record GraphDBPartialConcept(String id, String label, @Nullable String altLabel) {
+public record GraphDBPartialConcept(
+        String id, String label, @Nullable String altLabel) {
 
     /**
      * The listing query returns one row per alternative label: rows of a same concept are merged
@@ -27,8 +28,7 @@ public record GraphDBPartialConcept(String id, String label, @Nullable String al
         return new PartialConcept(
                 new ConceptId(id),
                 LocalisedLabel.ofDefaultLanguage(label),
-                isBlank(altLabel) ? null : LocalisedLabel.ofDefaultLanguage(altLabel)
-        );
+                isBlank(altLabel) ? null : LocalisedLabel.ofDefaultLanguage(altLabel));
     }
 
     private static boolean isBlank(@Nullable String value) {

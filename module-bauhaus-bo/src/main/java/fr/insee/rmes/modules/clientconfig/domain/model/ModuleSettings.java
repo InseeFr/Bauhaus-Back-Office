@@ -32,7 +32,7 @@ public record ModuleSettings(Boolean enabled, Boolean show, Boolean directAccess
             directAccess = false;
         } else {
             /* L'accès suit la tuile ; et écrire `directAccess` seul n'a d'intérêt que pour le
-               réglage que la tuile ne donne pas déjà, d'où la valeur opposée. */
+            réglage que la tuile ne donne pas déjà, d'où la valeur opposée. */
             if (show == null) {
                 show = directAccess == null || !directAccess;
             }

@@ -1,16 +1,22 @@
 package fr.insee.rmes.bauhaus_services.structures.persistence;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+
 import fr.insee.rmes.AppSpringBootTest;
 import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
-import fr.insee.rmes.modules.structures.structures.domain.model.Structure;
-import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.structures.infrastructure.graphdb.StructureQueries;
+import fr.insee.rmes.modules.structures.structures.domain.model.Structure;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
+import java.util.List;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
@@ -23,18 +29,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Spy;
-import org.mockito.Mockito;
 import org.mockito.MockedStatic;
+import org.mockito.Mockito;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @AppSpringBootTest
@@ -61,8 +60,10 @@ class StructureRepositoryTest {
         Structure structure = new Structure();
         structure.setId("id");
         when(repositoryGestion.getResponseAsObject(Mockito.anyString())).thenReturn(mockJSON);
-        RmesException exception = assertThrows(RmesBadRequestException.class, () -> structureRepository.deleteStructure("id"));
-        Assertions.assertEquals("{\"code\":1103,\"message\":\"Only unpublished codelist can be deleted\"}", exception.getDetails());
+        RmesException exception =
+                assertThrows(RmesBadRequestException.class, () -> structureRepository.deleteStructure("id"));
+        Assertions.assertEquals(
+                "{\"code\":1103,\"message\":\"Only unpublished codelist can be deleted\"}", exception.getDetails());
     }
 
     @Test
@@ -70,25 +71,29 @@ class StructureRepositoryTest {
         when(structureQueries.getValidationStatus(anyString())).thenReturn("validation-status-query");
         when(repositoryGestion.getResponseAsObject(Mockito.anyString())).thenReturn(new JSONObject());
 
-        RmesException exception = assertThrows(RmesNotFoundException.class, () -> structureRepository.deleteStructure("unknown"));
+        RmesException exception =
+                assertThrows(RmesNotFoundException.class, () -> structureRepository.deleteStructure("unknown"));
         Assertions.assertEquals(404, exception.getStatus());
     }
 
     @Test
-    void shouldThrowRmesExceptionWhenSetStructure()  {
-        RmesException exception = assertThrows(RmesException.class, () -> structureRepository.setStructure(fakeJsonObjectBody));
-        Assertions.assertTrue( exception.getDetails().contains("{\"details\":\"IOException\",\"message\":\"Unrecognized token"));
+    void shouldThrowRmesExceptionWhenSetStructure() {
+        RmesException exception =
+                assertThrows(RmesException.class, () -> structureRepository.setStructure(fakeJsonObjectBody));
+        Assertions.assertTrue(
+                exception.getDetails().contains("{\"details\":\"IOException\",\"message\":\"Unrecognized token"));
     }
 
     @Test
-    void shouldThrowRmesExceptionWhenPublishingAnAlreadyPublishedStructure()  {
+    void shouldThrowRmesExceptionWhenPublishingAnAlreadyPublishedStructure() {
         JSONObject jsonObject = new JSONObject()
                 .put(Constants.ID, "dsd1000")
                 .put(Constants.CREATOR, "creatorExample")
                 .put("disseminationStatus", "http://status")
                 .put("validationState", "Validated");
 
-        RmesException exception = assertThrows(RmesBadRequestException.class, () -> structureRepository.publishStructure(jsonObject));
+        RmesException exception =
+                assertThrows(RmesBadRequestException.class, () -> structureRepository.publishStructure(jsonObject));
 
         assertThat(exception.getDetails()).contains("\"code\":1301");
         assertThat(exception.getDetails()).contains("This structure is already published");
@@ -96,36 +101,50 @@ class StructureRepositoryTest {
     }
 
     @Test
-    void shouldThrowRmesExceptionWhenPublishStructureWhenCreatorEmpty()  {
-        JSONObject jsonObject = new JSONObject().put(Constants.CREATOR,"");
-        RmesException exception = assertThrows(RmesBadRequestException.class, () -> structureRepository.publishStructure(jsonObject));
-        Assertions.assertEquals(("{\"code\":1004,\"details\":\"[]\",\"message\":\"The creator should not be empty\"}"), exception.getDetails());
+    void shouldThrowRmesExceptionWhenPublishStructureWhenCreatorEmpty() {
+        JSONObject jsonObject = new JSONObject().put(Constants.CREATOR, "");
+        RmesException exception =
+                assertThrows(RmesBadRequestException.class, () -> structureRepository.publishStructure(jsonObject));
+        Assertions.assertEquals(
+                ("{\"code\":1004,\"details\":\"[]\",\"message\":\"The creator should not be empty\"}"),
+                exception.getDetails());
     }
 
     @Test
-    void shouldThrowRmesExceptionWhenPublishStructureWhenCreatorNull()  {
-        RmesException exception = assertThrows(RmesBadRequestException.class, () -> structureRepository.publishStructure(new JSONObject()));
-        Assertions.assertEquals(("{\"code\":1004,\"details\":\"[]\",\"message\":\"The creator should not be empty\"}"), exception.getDetails());
+    void shouldThrowRmesExceptionWhenPublishStructureWhenCreatorNull() {
+        RmesException exception = assertThrows(
+                RmesBadRequestException.class, () -> structureRepository.publishStructure(new JSONObject()));
+        Assertions.assertEquals(
+                ("{\"code\":1004,\"details\":\"[]\",\"message\":\"The creator should not be empty\"}"),
+                exception.getDetails());
     }
 
     @Test
-    void shouldThrowRmesExceptionWhenPublishStructureWhenDisseminationStatusNull()  {
-        JSONObject jsonObject = new JSONObject().put(Constants.CREATOR,"creatorExample");
-        RmesException exception = assertThrows(RmesBadRequestException.class, () -> structureRepository.publishStructure(jsonObject));
-        Assertions.assertEquals("{\"code\":1005,\"details\":\"[]\",\"message\":\"The dissemination status should not be empty\"}",exception.getDetails());
+    void shouldThrowRmesExceptionWhenPublishStructureWhenDisseminationStatusNull() {
+        JSONObject jsonObject = new JSONObject().put(Constants.CREATOR, "creatorExample");
+        RmesException exception =
+                assertThrows(RmesBadRequestException.class, () -> structureRepository.publishStructure(jsonObject));
+        Assertions.assertEquals(
+                "{\"code\":1005,\"details\":\"[]\",\"message\":\"The dissemination status should not be empty\"}",
+                exception.getDetails());
     }
 
     @Test
-    void shouldThrowRmesExceptionWhenPublishStructureWhenDisseminationStatusIsEmpty()  {
-        JSONObject jsonObject = new JSONObject().put(Constants.CREATOR,"creatorExample").put("disseminationStatus","");
-        RmesException exception = assertThrows(RmesBadRequestException.class, () -> structureRepository.publishStructure(jsonObject));
-        Assertions.assertEquals("{\"code\":1005,\"details\":\"[]\",\"message\":\"The dissemination status should not be empty\"}",exception.getDetails());
+    void shouldThrowRmesExceptionWhenPublishStructureWhenDisseminationStatusIsEmpty() {
+        JSONObject jsonObject =
+                new JSONObject().put(Constants.CREATOR, "creatorExample").put("disseminationStatus", "");
+        RmesException exception =
+                assertThrows(RmesBadRequestException.class, () -> structureRepository.publishStructure(jsonObject));
+        Assertions.assertEquals(
+                "{\"code\":1005,\"details\":\"[]\",\"message\":\"The dissemination status should not be empty\"}",
+                exception.getDetails());
     }
 
     @Test
-    void shouldThrowRmesExceptionWhenSetStructureWithIdAndBody()  {
-       RmesException exception = assertThrows(RmesException.class, () -> structureRepository.setStructure("idExample",fakeJsonObjectBody));
-       Assertions.assertTrue(exception.getDetails().contains("{\"details\":\"IOException\""));
+    void shouldThrowRmesExceptionWhenSetStructureWithIdAndBody() {
+        RmesException exception = assertThrows(
+                RmesException.class, () -> structureRepository.setStructure("idExample", fakeJsonObjectBody));
+        Assertions.assertTrue(exception.getDetails().contains("{\"details\":\"IOException\""));
     }
 
     @Test
@@ -136,14 +155,37 @@ class StructureRepositoryTest {
         try (MockedStatic<RdfUtils> rdfUtilsMock = mockStatic(RdfUtils.class)) {
             rdfUtilsMock.when(() -> RdfUtils.toURI(anyString())).thenCallRealMethod();
             rdfUtilsMock.when(() -> RdfUtils.setLiteralString(anyString())).thenCallRealMethod();
-            rdfUtilsMock.when(() -> RdfUtils.setLiteralString(anyString(), anyString())).thenCallRealMethod();
-            rdfUtilsMock.when(() -> RdfUtils.setLiteralString(any(ValidationStatus.class))).thenCallRealMethod();
-            rdfUtilsMock.when(() -> RdfUtils.addTripleString(any(IRI.class), any(IRI.class), anyString(), any(Model.class), any(Resource.class))).thenCallRealMethod();
-            rdfUtilsMock.when(() -> RdfUtils.addTripleString(any(IRI.class), any(IRI.class), anyString(), anyString(), any(Model.class), any(Resource.class))).thenCallRealMethod();
-            rdfUtilsMock.when(() -> RdfUtils.addTripleDateTime(any(IRI.class), any(IRI.class), anyString(), any(Model.class), any(Resource.class))).thenCallRealMethod();
-            rdfUtilsMock.when(() -> RdfUtils.addTripleUri(any(IRI.class), any(IRI.class), any(IRI.class), any(Model.class), any(Resource.class))).thenCallRealMethod();
-            rdfUtilsMock.when(() -> RdfUtils.addTripleUri(any(Resource.class), any(IRI.class), anyString(), any(Model.class), any(Resource.class))).thenCallRealMethod();
-
+            rdfUtilsMock
+                    .when(() -> RdfUtils.setLiteralString(anyString(), anyString()))
+                    .thenCallRealMethod();
+            rdfUtilsMock
+                    .when(() -> RdfUtils.setLiteralString(any(ValidationStatus.class)))
+                    .thenCallRealMethod();
+            rdfUtilsMock
+                    .when(() -> RdfUtils.addTripleString(
+                            any(IRI.class), any(IRI.class), anyString(), any(Model.class), any(Resource.class)))
+                    .thenCallRealMethod();
+            rdfUtilsMock
+                    .when(() -> RdfUtils.addTripleString(
+                            any(IRI.class),
+                            any(IRI.class),
+                            anyString(),
+                            anyString(),
+                            any(Model.class),
+                            any(Resource.class)))
+                    .thenCallRealMethod();
+            rdfUtilsMock
+                    .when(() -> RdfUtils.addTripleDateTime(
+                            any(IRI.class), any(IRI.class), anyString(), any(Model.class), any(Resource.class)))
+                    .thenCallRealMethod();
+            rdfUtilsMock
+                    .when(() -> RdfUtils.addTripleUri(
+                            any(IRI.class), any(IRI.class), any(IRI.class), any(Model.class), any(Resource.class)))
+                    .thenCallRealMethod();
+            rdfUtilsMock
+                    .when(() -> RdfUtils.addTripleUri(
+                            any(Resource.class), any(IRI.class), anyString(), any(Model.class), any(Resource.class)))
+                    .thenCallRealMethod();
 
             Structure structure = new Structure("dsd1000");
             structure.setIdentifiant("identifiant");
@@ -153,7 +195,8 @@ class StructureRepositoryTest {
             structure.setContributor(List.of("http://contributor-uri"));
             structure.setComponentDefinitions(List.of());
 
-            structureRepository.createRdfStructure(structure, "dsd1000", structureIri, graph, ValidationStatus.UNPUBLISHED);
+            structureRepository.createRdfStructure(
+                    structure, "dsd1000", structureIri, graph, ValidationStatus.UNPUBLISHED);
 
             ArgumentCaptor<Model> modelCaptor = ArgumentCaptor.forClass(Model.class);
             verify(repositoryGestion).loadSimpleObject(eq(structureIri), modelCaptor.capture(), isNull());
@@ -162,13 +205,12 @@ class StructureRepositoryTest {
             IRI expectedCreatorIri = SimpleValueFactory.getInstance().createIRI("http://creator-uri");
             IRI expectedContributorIri = SimpleValueFactory.getInstance().createIRI("http://contributor-uri");
 
-            assertThat(model).anyMatch(stmt ->
-                stmt.getPredicate().equals(DC.CREATOR) && stmt.getObject().equals(expectedCreatorIri)
-            );
-            assertThat(model).anyMatch(stmt ->
-                stmt.getPredicate().equals(DC.CONTRIBUTOR) && stmt.getObject().equals(expectedContributorIri)
-            );
+            assertThat(model)
+                    .anyMatch(stmt -> stmt.getPredicate().equals(DC.CREATOR)
+                            && stmt.getObject().equals(expectedCreatorIri));
+            assertThat(model)
+                    .anyMatch(stmt -> stmt.getPredicate().equals(DC.CONTRIBUTOR)
+                            && stmt.getObject().equals(expectedContributorIri));
         }
     }
-
 }

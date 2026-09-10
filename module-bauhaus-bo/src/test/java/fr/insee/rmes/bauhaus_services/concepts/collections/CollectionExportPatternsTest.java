@@ -1,30 +1,32 @@
 package fr.insee.rmes.bauhaus_services.concepts.collections;
 
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+
 class CollectionExportPatternsTest {
 
     @ParameterizedTest
-    @ValueSource(strings = {
-            "/xslTransformerFiles/collection/collectionFrPatternContent.xml",
-            "/xslTransformerFiles/collection/collectionEnPatternContent.xml",
-            "/xslTransformerFiles/collection/collectionOdsPatternContent.xml"
-    })
+    @ValueSource(
+            strings = {
+                "/xslTransformerFiles/collection/collectionFrPatternContent.xml",
+                "/xslTransformerFiles/collection/collectionEnPatternContent.xml",
+                "/xslTransformerFiles/collection/collectionOdsPatternContent.xml"
+            })
     void conceptLinksShouldTargetTheConceptsRoute(String pattern) throws IOException {
         String content = readResource(pattern);
 
-        assertTrue(content.contains("${rmesUrl}/concepts/${collectionConcept/id}"),
+        assertTrue(
+                content.contains("${rmesUrl}/concepts/${collectionConcept/id}"),
                 pattern + " should link concepts to the /concepts/ front-end route");
-        assertFalse(content.contains("${rmesUrl}/concept/${collectionConcept/id}"),
+        assertFalse(
+                content.contains("${rmesUrl}/concept/${collectionConcept/id}"),
                 pattern + " should not link concepts to the unknown /concept/ route");
     }
 

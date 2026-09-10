@@ -1,5 +1,7 @@
 package fr.insee.rmes.testcontainers.queries.sparql_queries.operations.series;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
@@ -10,17 +12,14 @@ import fr.insee.rmes.modules.users.domain.model.Stamp;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationSeriesQueries;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.testcontainers.WithGraphDBContainer;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 import org.json.JSONArray;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Integration test for {@link OperationSeriesQueries#seriesWithStampQuery(Set, boolean)}.
@@ -38,9 +37,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Tag("integration")
 class SeriesWithStampQueryIntegrationTest extends WithGraphDBContainer {
 
-    private final RepositoryGestion repositoryGestion =
-            new RepositoryGestion(getRdfGestionConnectionDetails(),
-                    new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED));
+    private final RepositoryGestion repositoryGestion = new RepositoryGestion(
+            getRdfGestionConnectionDetails(), new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED));
 
     private OperationSeriesQueries operationSeriesQueries;
 
@@ -52,7 +50,8 @@ class SeriesWithStampQueryIntegrationTest extends WithGraphDBContainer {
 
     @BeforeEach
     void setUp() {
-        operationSeriesQueries = new OperationSeriesQueries(new BauhausLanguagesProperties("fr", "en"), GraphsPropertiesStub.stub());
+        operationSeriesQueries =
+                new OperationSeriesQueries(new BauhausLanguagesProperties("fr", "en"), GraphsPropertiesStub.stub());
     }
 
     @Test

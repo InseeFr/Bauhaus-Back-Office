@@ -1,14 +1,21 @@
 package fr.insee.rmes.integration.authorizations.operations;
 
-import fr.insee.rmes.modules.commons.configuration.LogRequestFilter;
-import fr.insee.rmes.modules.organisations.domain.port.clientside.OrganisationsService;
-import fr.insee.rmes.modules.users.domain.port.clientside.AccessPrivilegesCheckerService;
+import static fr.insee.rmes.integration.authorizations.TokenForTestsConfiguration.*;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import fr.insee.rmes.config.auth.UserAuthTestConfiguration;
-import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
-import fr.insee.rmes.modules.users.infrastructure.JwtProperties;
+import fr.insee.rmes.modules.commons.configuration.LogRequestFilter;
 import fr.insee.rmes.modules.operations.families.domain.model.OperationFamily;
 import fr.insee.rmes.modules.operations.families.domain.port.clientside.FamilyService;
 import fr.insee.rmes.modules.operations.families.webservice.FamilyResources;
+import fr.insee.rmes.modules.organisations.domain.port.clientside.OrganisationsService;
+import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
+import fr.insee.rmes.modules.users.domain.port.clientside.AccessPrivilegesCheckerService;
+import fr.insee.rmes.modules.users.infrastructure.JwtProperties;
+import java.util.Collections;
+import java.util.stream.Stream;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -26,26 +33,14 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.Collections;
-import java.util.stream.Stream;
-
-import static fr.insee.rmes.integration.authorizations.TokenForTestsConfiguration.*;
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 @WebMvcTest(
         controllers = FamilyResources.class,
         excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = LogRequestFilter.class),
         properties = {
-                "fr.insee.rmes.bauhaus.modules.operations.enabled=true",
-                "fr.insee.rmes.bauhaus.extensions=pdf,odt"
-        }
-)
-@Import({
-        FamilyResources.class,
-        UserAuthTestConfiguration.class
-})
+            "fr.insee.rmes.bauhaus.modules.operations.enabled=true",
+            "fr.insee.rmes.bauhaus.extensions=pdf,odt"
+        })
+@Import({FamilyResources.class, UserAuthTestConfiguration.class})
 @ImportAutoConfiguration(ServletWebSecurityAutoConfiguration.class)
 class TestFamiliesResourcesEnvProd {
     @Configuration
@@ -80,37 +75,33 @@ class TestFamiliesResourcesEnvProd {
     private final String idep = "xxxxux";
     private final String timbre = "XX59-YYY";
 
-
     private static Stream<Arguments> provideDataForGetEndpoints() {
         return Stream.of(
                 Arguments.of("/operations/families", 200, true),
                 Arguments.of("/operations/families/1/seriesWithReport", 200, true),
                 Arguments.of("/operations/family/1", 200, true),
-
                 Arguments.of("/operations/families", 403, false),
                 Arguments.of("/operations/families/1/seriesWithReport", 403, false),
-                Arguments.of("/operations/family/1", 403, false)
-        );
+                Arguments.of("/operations/family/1", 403, false));
     }
-
 
     @MethodSource("provideDataForGetEndpoints")
     @ParameterizedTest
     void getData(String url, Integer code, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
         when(checker.hasAccess(any(), any(), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
-        when(familyService.getFamily(anyString())).thenReturn(new OperationFamily(
-                "id",
-                "prefLabelLg1",
-                "prefLabelLg2",
-                "abstractLg1",
-                "abstractLg2",
-                "validationState",
-                "created",
-                "modified",
-                Collections.emptyList(),
-                Collections.emptyList()
-                ));
+        when(familyService.getFamily(anyString()))
+                .thenReturn(new OperationFamily(
+                        "id",
+                        "prefLabelLg1",
+                        "prefLabelLg2",
+                        "abstractLg1",
+                        "abstractLg2",
+                        "validationState",
+                        "created",
+                        "modified",
+                        Collections.emptyList(),
+                        Collections.emptyList()));
         var request = get(url).contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
         request.header("Authorization", "Bearer toto");
 
@@ -118,10 +109,7 @@ class TestFamiliesResourcesEnvProd {
     }
 
     private static Stream<Arguments> provideDataForPutEndpoints() {
-        return Stream.of(
-                Arguments.of(200, true),
-                Arguments.of(403, false)
-        );
+        return Stream.of(Arguments.of(200, true), Arguments.of(403, false));
     }
 
     @MethodSource("provideDataForPutEndpoints")
@@ -138,12 +126,8 @@ class TestFamiliesResourcesEnvProd {
         mvc.perform(request).andExpect(status().is(code));
     }
 
-
     private static Stream<Arguments> provideDataForPostEndpoints() {
-        return Stream.of(
-                Arguments.of(200, true),
-                Arguments.of(403, false)
-        );
+        return Stream.of(Arguments.of(200, true), Arguments.of(403, false));
     }
 
     @MethodSource("provideDataForPostEndpoints")
@@ -152,20 +136,16 @@ class TestFamiliesResourcesEnvProd {
         when(checker.hasAccess(any(), any(), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
         var request = post("/operations/family")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .content(FAMILY_BODY);
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(FAMILY_BODY);
         request.header("Authorization", "Bearer toto");
 
         mvc.perform(request).andExpect(status().is(code));
     }
 
-
     private static Stream<Arguments> provideDataForPublishEndpoints() {
-        return Stream.of(
-                Arguments.of(200, true),
-                Arguments.of(403, false)
-        );
+        return Stream.of(Arguments.of(200, true), Arguments.of(403, false));
     }
 
     @MethodSource("provideDataForPublishEndpoints")
@@ -174,12 +154,11 @@ class TestFamiliesResourcesEnvProd {
         when(checker.hasAccess(any(), any(), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
         var request = put("/operations/family/1/validate")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .content("{\"id\": \"1\"}");
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content("{\"id\": \"1\"}");
         request.header("Authorization", "Bearer toto");
 
         mvc.perform(request).andExpect(status().is(code));
     }
-
 }

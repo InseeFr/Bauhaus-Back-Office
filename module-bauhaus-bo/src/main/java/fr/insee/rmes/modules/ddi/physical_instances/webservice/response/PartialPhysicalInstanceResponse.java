@@ -1,12 +1,13 @@
 package fr.insee.rmes.modules.ddi.physical_instances.webservice.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialPhysicalInstance;
 import fr.insee.rmes.modules.commons.webservice.BaseResponse;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialPhysicalInstance;
 
-public class PartialPhysicalInstanceResponse extends BaseResponse<PartialPhysicalInstanceResponse, PartialPhysicalInstance> {
+public class PartialPhysicalInstanceResponse
+        extends BaseResponse<PartialPhysicalInstanceResponse, PartialPhysicalInstance> {
     public PartialPhysicalInstanceResponse(PartialPhysicalInstance pi) {
-       super(pi);
+        super(pi);
     }
 
     public static PartialPhysicalInstanceResponse fromDomain(PartialPhysicalInstance instance) {

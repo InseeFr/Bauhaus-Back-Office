@@ -1,5 +1,11 @@
 package fr.insee.rmes.modules.commons.configuration.swagger;
 
+import static org.hamcrest.Matchers.containsString;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -16,23 +22,18 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.hamcrest.Matchers.containsString;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 /**
  * Swagger activé : la documentation et son UI sont servies, et restent joignables sans jeton
  * (le navigateur qui charge l'UI n'en présente aucun), alors que le reste de l'API demeure protégé.
  */
 @SpringBootTest(classes = SwaggerEnabledIntegrationTest.TestConfiguration.class)
 @AutoConfigureMockMvc
-@TestPropertySource(properties = {
-        "fr.insee.rmes.bauhaus.swagger.enabled=true",
-        "spring.security.oauth2.resourceserver.jwt.issuer-uri=https://auth.test/realms/bauhaus",
-        "fr.insee.rmes.bauhaus.swagger.oauth.client-id=bauhaus-swagger"
-})
+@TestPropertySource(
+        properties = {
+            "fr.insee.rmes.bauhaus.swagger.enabled=true",
+            "spring.security.oauth2.resourceserver.jwt.issuer-uri=https://auth.test/realms/bauhaus",
+            "fr.insee.rmes.bauhaus.swagger.oauth.client-id=bauhaus-swagger"
+        })
 class SwaggerEnabledIntegrationTest {
 
     @Configuration
@@ -68,7 +69,8 @@ class SwaggerEnabledIntegrationTest {
     void should_declare_a_bearer_security_scheme_so_the_ui_can_authenticate() throws Exception {
         mvc.perform(get("/v3/api-docs"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.components.securitySchemes.bearerAuth.scheme").value("bearer"))
+                .andExpect(jsonPath("$.components.securitySchemes.bearerAuth.scheme")
+                        .value("bearer"))
                 .andExpect(jsonPath("$.security[0].bearerAuth").exists());
     }
 

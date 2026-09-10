@@ -1,5 +1,7 @@
 package fr.insee.rmes.modules.concepts.concept;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import fr.insee.rmes.testcontainers.WithGraphDBContainer;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -11,8 +13,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.web.client.RestClient;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class ConceptCollectionEndToEndTest extends WithGraphDBContainer {
@@ -65,7 +65,8 @@ class ConceptCollectionEndToEndTest extends WithGraphDBContainer {
         String sesameServer = "http://" + container.getHost() + ":" + container.getMappedPort(7200);
         registry.add("fr.insee.rmes.bauhaus.sesame.gestion.sesameServer", () -> sesameServer);
         registry.add("fr.insee.rmes.bauhaus.sesame.gestion.repository", () -> BAUHAUS_TEST_REPOSITORY);
-        container.withInitFolder("fr/insee/rmes/modules/concepts/concept")
+        container
+                .withInitFolder("fr/insee/rmes/modules/concepts/concept")
                 .withTrigFiles("concept-collection-end-to-end-test.trig");
     }
 
@@ -75,7 +76,8 @@ class ConceptCollectionEndToEndTest extends WithGraphDBContainer {
         RestClient restClient = RestClient.create();
         String conceptUrl = "http://localhost:" + serverPort + "/api/concepts/concept/c00002";
 
-        var response = restClient.get()
+        var response = restClient
+                .get()
                 .uri(conceptUrl)
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
@@ -95,7 +97,8 @@ class ConceptCollectionEndToEndTest extends WithGraphDBContainer {
         String c00001Endpoint = conceptsBaseUrl + "/concept/c00001";
 
         // Initially c00001 has no collections
-        var c00001Initial = restClient.get()
+        var c00001Initial = restClient
+                .get()
                 .uri(c00001Endpoint)
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
@@ -105,7 +108,8 @@ class ConceptCollectionEndToEndTest extends WithGraphDBContainer {
                 """, c00001Initial, false);
 
         // Create a collection containing c00001
-        var createResponse = restClient.post()
+        var createResponse = restClient
+                .post()
                 .uri(collectionsEndpoint)
                 .body(CREATE_COLLECTION_WITH_CONCEPT_JSON.formatted("Collection-sync-001"))
                 .contentType(MediaType.APPLICATION_JSON)
@@ -117,7 +121,8 @@ class ConceptCollectionEndToEndTest extends WithGraphDBContainer {
         assertThat(collectionId).isNotNull();
 
         // c00001 should now belong to the collection
-        var c00001AfterCollectionCreation = restClient.get()
+        var c00001AfterCollectionCreation = restClient
+                .get()
                 .uri(c00001Endpoint)
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
@@ -127,7 +132,8 @@ class ConceptCollectionEndToEndTest extends WithGraphDBContainer {
                 """.formatted(collectionId), c00001AfterCollectionCreation, false);
 
         // Update concept to remove from all collections
-        var updateStatus = restClient.put()
+        var updateStatus = restClient
+                .put()
                 .uri(c00001Endpoint)
                 .body(UPDATE_CONCEPT_WITHOUT_COLLECTIONS_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -136,7 +142,8 @@ class ConceptCollectionEndToEndTest extends WithGraphDBContainer {
         assertThat(updateStatus.getStatusCode().is2xxSuccessful()).isTrue();
 
         // c00001 should no longer belong to any collection
-        var c00001AfterRemoval = restClient.get()
+        var c00001AfterRemoval = restClient
+                .get()
                 .uri(c00001Endpoint)
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
@@ -155,7 +162,8 @@ class ConceptCollectionEndToEndTest extends WithGraphDBContainer {
         String c00001Endpoint = conceptsBaseUrl + "/concept/c00001";
 
         // Create first collection (with c00001 as member)
-        var createResponse1 = restClient.post()
+        var createResponse1 = restClient
+                .post()
                 .uri(collectionsEndpoint)
                 .body(CREATE_COLLECTION_WITH_CONCEPT_JSON.formatted("Collection-multi-001"))
                 .contentType(MediaType.APPLICATION_JSON)
@@ -166,7 +174,8 @@ class ConceptCollectionEndToEndTest extends WithGraphDBContainer {
         String collectionId1 = createResponse1.getBody();
 
         // Create second collection (empty)
-        var createResponse2 = restClient.post()
+        var createResponse2 = restClient
+                .post()
                 .uri(collectionsEndpoint)
                 .body(CREATE_EMPTY_COLLECTION_JSON.formatted("Collection-multi-002"))
                 .contentType(MediaType.APPLICATION_JSON)
@@ -177,7 +186,8 @@ class ConceptCollectionEndToEndTest extends WithGraphDBContainer {
         String collectionId2 = createResponse2.getBody();
 
         // Update concept to link it to both collections
-        var updateStatus = restClient.put()
+        var updateStatus = restClient
+                .put()
                 .uri(c00001Endpoint)
                 .body("""
                         {
@@ -193,7 +203,8 @@ class ConceptCollectionEndToEndTest extends WithGraphDBContainer {
         assertThat(updateStatus.getStatusCode().is2xxSuccessful()).isTrue();
 
         // Both collections should be returned
-        var c00001Response = restClient.get()
+        var c00001Response = restClient
+                .get()
                 .uri(c00001Endpoint)
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()

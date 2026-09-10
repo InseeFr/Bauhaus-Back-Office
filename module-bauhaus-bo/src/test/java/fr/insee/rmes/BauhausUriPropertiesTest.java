@@ -1,20 +1,21 @@
 package fr.insee.rmes;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 @SpringBootTest(classes = BauhausUriProperties.class)
-@TestPropertySource(properties = {
-        "fr.insee.rmes.bauhaus.sesame.gestion.baseURI=http://test.gestion/",
-        "fr.insee.rmes.bauhaus.links.baseURI=http://test.links/",
-        "fr.insee.rmes.bauhaus.codeList.baseURI=http://test.codelist/",
-        "fr.insee.rmes.bauhaus.documents.baseURI=http://test.documents/",
-        "fr.insee.rmes.bauhaus.products.baseURI=http://test.products/"
-})
+@TestPropertySource(
+        properties = {
+            "fr.insee.rmes.bauhaus.sesame.gestion.baseURI=http://test.gestion/",
+            "fr.insee.rmes.bauhaus.links.baseURI=http://test.links/",
+            "fr.insee.rmes.bauhaus.codeList.baseURI=http://test.codelist/",
+            "fr.insee.rmes.bauhaus.documents.baseURI=http://test.documents/",
+            "fr.insee.rmes.bauhaus.products.baseURI=http://test.products/"
+        })
 class BauhausUriPropertiesTest {
 
     @Autowired

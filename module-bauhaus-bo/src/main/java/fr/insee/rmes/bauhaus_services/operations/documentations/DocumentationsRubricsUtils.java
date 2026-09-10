@@ -1,32 +1,36 @@
 package fr.insee.rmes.bauhaus_services.operations.documentations;
 
 import fr.insee.rmes.BauhausLanguagesProperties;
-import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.Constants;
+import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.bauhaus_services.GeographyService;
 import fr.insee.rmes.bauhaus_services.code_list.LangService;
 import fr.insee.rmes.bauhaus_services.operations.documentations.documents.DocumentsUtils;
 import fr.insee.rmes.bauhaus_services.organizations.OrganizationRepository;
-import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
-import fr.insee.rmes.rdf_utils.RepositoryGestion;
-import fr.insee.rmes.utils.IdGenerator;
-import fr.insee.rmes.model.operations.documentations.Document;
-import fr.insee.rmes.model.operations.documentations.DocumentationRubric;
-import fr.insee.rmes.model.operations.documentations.RangeType;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
-import fr.insee.rmes.modules.operations.msd.infrastructure.graphdb.DocumentationQueries;
+import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.graphdb.ontologies.DCMITYPE;
 import fr.insee.rmes.graphdb.ontologies.INSEE;
 import fr.insee.rmes.graphdb.ontologies.SDMX_MM;
-import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.json.JSONUtils;
-import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
+import fr.insee.rmes.model.operations.documentations.Document;
+import fr.insee.rmes.model.operations.documentations.DocumentationRubric;
+import fr.insee.rmes.model.operations.documentations.RangeType;
+import fr.insee.rmes.modules.operations.msd.infrastructure.graphdb.DocumentationQueries;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.utils.DateUtils;
+import fr.insee.rmes.utils.IdGenerator;
 import fr.insee.rmes.utils.XMLUtils;
+import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.eclipse.rdf4j.model.IRI;
@@ -41,417 +45,437 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 @Component
-public class
-DocumentationsRubricsUtils extends RdfService {
+public class DocumentationsRubricsUtils extends RdfService {
 
-	private final BauhausLanguagesProperties languages;
+    private final BauhausLanguagesProperties languages;
 
-	static final Logger logger = LoggerFactory.getLogger(DocumentationsRubricsUtils.class);
+    static final Logger logger = LoggerFactory.getLogger(DocumentationsRubricsUtils.class);
 
-	/**
-	 * idAttribute de la rubrique « fantôme » que la requête de lecture
-	 * (getDocumentationRubricsQuery) peut faire remonter : l'arête structurelle
-	 * sdmx-mm:metadataReport, dont l'idAttribute est dérivé du local name du prédicat
-	 * (cf. BIND REPLACE côté SPARQL puis upperCase dans DocumentationRubric#getIdAttribute).
-	 * Ce n'est pas un attribut de la MSD : on l'ignore à l'écriture au lieu d'échouer.
-	 */
-	private static final String METADATA_REPORT_PHANTOM_ID = StringUtils.upperCase(
-			StringUtils.substringAfterLast(SDMX_MM.METADATA_REPORT_PREDICATE.stringValue(), "/"));
+    /**
+     * idAttribute de la rubrique « fantôme » que la requête de lecture
+     * (getDocumentationRubricsQuery) peut faire remonter : l'arête structurelle
+     * sdmx-mm:metadataReport, dont l'idAttribute est dérivé du local name du prédicat
+     * (cf. BIND REPLACE côté SPARQL puis upperCase dans DocumentationRubric#getIdAttribute).
+     * Ce n'est pas un attribut de la MSD : on l'ignore à l'écriture au lieu d'échouer.
+     */
+    private static final String METADATA_REPORT_PHANTOM_ID =
+            StringUtils.upperCase(StringUtils.substringAfterLast(SDMX_MM.METADATA_REPORT_PREDICATE.stringValue(), "/"));
 
-	private final MetadataStructureDefUtils msdUtils;
+    private final MetadataStructureDefUtils msdUtils;
 
-	private final DocumentationQueries documentationQueries;
+    private final DocumentationQueries documentationQueries;
 
-	private DocumentsUtils docUtils;
+    private DocumentsUtils docUtils;
 
-	private final OrganizationRepository organizationRepository;
+    private final OrganizationRepository organizationRepository;
 
-	private final fr.insee.rmes.bauhaus_services.utils.OrganisationLookup organisationLookup;
+    private final fr.insee.rmes.bauhaus_services.utils.OrganisationLookup organisationLookup;
 
-	private final CodeListService codeListService;
+    private final CodeListService codeListService;
 
-	private final LangService langService;
+    private final LangService langService;
 
-	private final GeographyService geoService;
+    private final GeographyService geoService;
 
-	public DocumentationsRubricsUtils(RepositoryGestion repoGestion, IdGenerator idGenerator,
-									  RepositoryPublication repositoryPublication, BauhausLanguagesProperties languages,
-									  PublicationUtils publicationUtils,
-									  MetadataStructureDefUtils msdUtils, DocumentationQueries documentationQueries,
-									  DocumentsUtils docUtils, OrganizationRepository organizationRepository,
-									  fr.insee.rmes.bauhaus_services.utils.OrganisationLookup organisationLookup,
-									  CodeListService codeListService, LangService langService,
-									  GeographyService geoService) {
-		super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
+    public DocumentationsRubricsUtils(
+            RepositoryGestion repoGestion,
+            IdGenerator idGenerator,
+            RepositoryPublication repositoryPublication,
+            BauhausLanguagesProperties languages,
+            PublicationUtils publicationUtils,
+            MetadataStructureDefUtils msdUtils,
+            DocumentationQueries documentationQueries,
+            DocumentsUtils docUtils,
+            OrganizationRepository organizationRepository,
+            fr.insee.rmes.bauhaus_services.utils.OrganisationLookup organisationLookup,
+            CodeListService codeListService,
+            LangService langService,
+            GeographyService geoService) {
+        super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
         this.languages = languages;
-		this.msdUtils = msdUtils;
-		this.documentationQueries = documentationQueries;
-		this.docUtils = docUtils;
-		this.organizationRepository = organizationRepository;
-		this.organisationLookup = organisationLookup;
-		this.codeListService = codeListService;
-		this.langService = langService;
-		this.geoService = geoService;
-	}
+        this.msdUtils = msdUtils;
+        this.documentationQueries = documentationQueries;
+        this.docUtils = docUtils;
+        this.organizationRepository = organizationRepository;
+        this.organisationLookup = organisationLookup;
+        this.codeListService = codeListService;
+        this.langService = langService;
+        this.geoService = geoService;
+    }
 
-	public void setDocUtils(DocumentsUtils documentsUtils){
-		this.docUtils=documentsUtils;
-	}
+    public void setDocUtils(DocumentsUtils documentsUtils) {
+        this.docUtils = documentsUtils;
+    }
 
-	/**
-	 * GETTER
-	 * @param idSims, jsonObject containing the sims
-	 * @return void : the jsonObject is updated
-	 * @throws RmesException
-	 */
-	public void getAllRubricsJson(String idSims, JSONObject jsonSims) throws RmesException {
-		JSONArray docRubrics = repoGestion
-				.getResponseAsArray(documentationQueries.getDocumentationRubricsQuery(idSims, langService.getLanguage1(), langService.getLanguage2()));
-		if (!docRubrics.isEmpty()) {
-			clearRubrics(idSims, docRubrics);
-			jsonSims.put("rubrics", docRubrics);
-		}
-		else jsonSims.put("rubrics", new JSONArray());
-	}
+    /**
+     * GETTER
+     * @param idSims, jsonObject containing the sims
+     * @return void : the jsonObject is updated
+     * @throws RmesException
+     */
+    public void getAllRubricsJson(String idSims, JSONObject jsonSims) throws RmesException {
+        JSONArray docRubrics = repoGestion.getResponseAsArray(documentationQueries.getDocumentationRubricsQuery(
+                idSims, langService.getLanguage1(), langService.getLanguage2()));
+        if (!docRubrics.isEmpty()) {
+            clearRubrics(idSims, docRubrics);
+            jsonSims.put("rubrics", docRubrics);
+        } else jsonSims.put("rubrics", new JSONArray());
+    }
 
-	/**
-	 * From JSON to JSON
-	 * Get documents if exist, format date and format list of values for codelist
-	 * @param idSims
-	 * @param docRubrics
-	 * @return
-	 * @throws RmesException
-	 */
-	private void clearRubrics(String idSims, JSONArray docRubrics) throws RmesException {
-		Map<String, JSONObject> tempMultipleCodeList = new HashMap<>();
+    /**
+     * From JSON to JSON
+     * Get documents if exist, format date and format list of values for codelist
+     * @param idSims
+     * @param docRubrics
+     * @return
+     * @throws RmesException
+     */
+    private void clearRubrics(String idSims, JSONArray docRubrics) throws RmesException {
+        Map<String, JSONObject> tempMultipleCodeList = new HashMap<>();
 
-		for (int i = docRubrics.length() - 1; i >= 0; i--) {
-			JSONObject rubric = docRubrics.getJSONObject(i);
+        for (int i = docRubrics.length() - 1; i >= 0; i--) {
+            JSONObject rubric = docRubrics.getJSONObject(i);
 
-			// Get documents
-			if (rubric.has(Constants.HAS_DOC_LG1)) {
-				clearDocuments(idSims, rubric, Constants.HAS_DOC_LG1);
-			}
-			if (rubric.has(Constants.HAS_DOC_LG2)) {
-				clearDocuments(idSims, rubric, Constants.HAS_DOC_LG2);
-			}
-			// Format date
-			else if (rubric.get(Constants.RANGE_TYPE).equals(RangeType.DATE)) {
-				rubric.put(Constants.VALUE, DateUtils.getDate(rubric.getString(Constants.VALUE)));
-			}
+            // Get documents
+            if (rubric.has(Constants.HAS_DOC_LG1)) {
+                clearDocuments(idSims, rubric, Constants.HAS_DOC_LG1);
+            }
+            if (rubric.has(Constants.HAS_DOC_LG2)) {
+                clearDocuments(idSims, rubric, Constants.HAS_DOC_LG2);
+            }
+            // Format date
+            else if (rubric.get(Constants.RANGE_TYPE).equals(RangeType.DATE)) {
+                rubric.put(Constants.VALUE, DateUtils.getDate(rubric.getString(Constants.VALUE)));
+            }
 
-			// Format codelist with multiple value
-			else if (rubric.has("maxOccurs")) {
-				putMultipleValueInList(docRubrics, tempMultipleCodeList, i, rubric);
-			}
+            // Format codelist with multiple value
+            else if (rubric.has("maxOccurs")) {
+                putMultipleValueInList(docRubrics, tempMultipleCodeList, i, rubric);
+            }
 
-			//Format Geo features
-			else if (rubric.get(Constants.RANGE_TYPE).equals(RangeType.GEOGRAPHY.name())) {
-				clearGeographyRubric(rubric);
-			}
-		}
-		if (!tempMultipleCodeList.isEmpty()) {
-			tempMultipleCodeList.forEach((k, v) -> docRubrics.put(v));
-		}
-	}
+            // Format Geo features
+            else if (rubric.get(Constants.RANGE_TYPE).equals(RangeType.GEOGRAPHY.name())) {
+                clearGeographyRubric(rubric);
+            }
+        }
+        if (!tempMultipleCodeList.isEmpty()) {
+            tempMultipleCodeList.forEach((k, v) -> docRubrics.put(v));
+        }
+    }
 
-	private void clearGeographyRubric(JSONObject rubric) throws RmesException {
-		String value = rubric.getString(Constants.URI);
-		if (StringUtils.isNotEmpty(value)) {
-			IRI geoUri = RdfUtils.createIRI(value);
-			JSONObject feature = geoService.getGeoFeature(geoUri);
-			feature.keys().forEachRemaining(key -> rubric.put(key,feature.get(key)));
-		}
-	}
+    private void clearGeographyRubric(JSONObject rubric) throws RmesException {
+        String value = rubric.getString(Constants.URI);
+        if (StringUtils.isNotEmpty(value)) {
+            IRI geoUri = RdfUtils.createIRI(value);
+            JSONObject feature = geoService.getGeoFeature(geoUri);
+            feature.keys().forEachRemaining(key -> rubric.put(key, feature.get(key)));
+        }
+    }
 
-	private void putMultipleValueInList(JSONArray docRubrics, Map<String, JSONObject> tempMultipleCodeList, int i,
-			JSONObject rubric) {
-		String newValue = rubric.getString(Constants.VALUE);
-		String attribute = rubric.getString(Constants.ID_ATTRIBUTE);
+    private void putMultipleValueInList(
+            JSONArray docRubrics, Map<String, JSONObject> tempMultipleCodeList, int i, JSONObject rubric) {
+        String newValue = rubric.getString(Constants.VALUE);
+        String attribute = rubric.getString(Constants.ID_ATTRIBUTE);
 
-		if (tempMultipleCodeList.containsKey(attribute)) {
-			JSONObject tempObject = tempMultipleCodeList.get(attribute);
-			tempObject.accumulate(Constants.VALUE, newValue);
-			tempMultipleCodeList.replace(attribute, tempObject);
-		} else {
-			tempMultipleCodeList.put(attribute, rubric);
-		}
-		docRubrics.remove(i);
-	}
+        if (tempMultipleCodeList.containsKey(attribute)) {
+            JSONObject tempObject = tempMultipleCodeList.get(attribute);
+            tempObject.accumulate(Constants.VALUE, newValue);
+            tempMultipleCodeList.replace(attribute, tempObject);
+        } else {
+            tempMultipleCodeList.put(attribute, rubric);
+        }
+        docRubrics.remove(i);
+    }
 
-	private void clearDocuments(String idSims, JSONObject rubric, String hasDocLg) throws RmesException {
-		if (rubric.getBoolean(hasDocLg)) {
-			JSONArray listDoc = docUtils.getListDocumentLink(idSims, rubric.getString(Constants.ID_ATTRIBUTE), hasDocLg.equals(Constants.HAS_DOC_LG1)? languages.lg1() : languages.lg2());
-			rubric.put(hasDocLg.equals(Constants.HAS_DOC_LG1)?Constants.DOCUMENTS_LG1 : Constants.DOCUMENTS_LG2, listDoc);
-		}
-		rubric.remove(hasDocLg);
-	}
-	
+    private void clearDocuments(String idSims, JSONObject rubric, String hasDocLg) throws RmesException {
+        if (rubric.getBoolean(hasDocLg)) {
+            JSONArray listDoc = docUtils.getListDocumentLink(
+                    idSims,
+                    rubric.getString(Constants.ID_ATTRIBUTE),
+                    hasDocLg.equals(Constants.HAS_DOC_LG1) ? languages.lg1() : languages.lg2());
+            rubric.put(
+                    hasDocLg.equals(Constants.HAS_DOC_LG1) ? Constants.DOCUMENTS_LG1 : Constants.DOCUMENTS_LG2,
+                    listDoc);
+        }
+        rubric.remove(hasDocLg);
+    }
 
-	/**
-	 * From Object to RDF
-	 * Add all rubrics to the specified metadata report
-	 * @param model
-	 * @param simsId
-	 * @param graph
-	 * @param rubrics
-	 * @throws RmesException
-	 */
-	public void addRubricsToModel(Model model, String simsId, Resource graph, List<DocumentationRubric> rubrics)
-			throws RmesException {
-		Map<String, String> attributesUriList = msdUtils.getMetadataAttributesUri();
-		IRI simsUri = RdfUtils.objectIRI(ObjectType.DOCUMENTATION, simsId);
+    /**
+     * From Object to RDF
+     * Add all rubrics to the specified metadata report
+     * @param model
+     * @param simsId
+     * @param graph
+     * @param rubrics
+     * @throws RmesException
+     */
+    public void addRubricsToModel(Model model, String simsId, Resource graph, List<DocumentationRubric> rubrics)
+            throws RmesException {
+        Map<String, String> attributesUriList = msdUtils.getMetadataAttributesUri();
+        IRI simsUri = RdfUtils.objectIRI(ObjectType.DOCUMENTATION, simsId);
 
-		for (DocumentationRubric rubric : rubrics) {
-			RangeType type = getRangeType(rubric);
-			String idAttribute = rubric.getIdAttribute();
-			String predicate = attributesUriList.get(idAttribute);
-			if (predicate == null) {
-				if (METADATA_REPORT_PHANTOM_ID.equals(idAttribute)) {
-					logger.warn("Rubrique fantôme '{}' ignorée pour le sims {} : arête structurelle metadataReport "
-							+ "remontée par la requête de lecture, ce n'est pas un attribut de la MSD", idAttribute, simsId);
-					continue;
-				}
-				logger.warn("idAttribute '{}' introuvable dans la MSD pour le sims {}. Attributs connus : {}",
-						idAttribute, simsId, attributesUriList.keySet());
-				throw new RmesBadRequestException("idAttribute not found", idAttribute);
-			}
-			IRI predicateUri;
-			IRI attributeUri;
-			try {
-				predicateUri = RdfUtils.toURI(predicate);
-				attributeUri = getAttributeUri(simsId, predicate);
-			} catch (RuntimeException e) {
-				logger.error("URI invalide pour l'idAttribute '{}' (predicate '{}') du sims {}",
-						idAttribute, predicate, simsId, e);
-				throw new RmesException(HttpStatus.SC_BAD_REQUEST, "Invalid attribute URI",
-						"idAttribute=" + idAttribute + ", predicate=" + predicate, e);
-			}
-			RdfUtils.addTripleUri(attributeUri, SDMX_MM.METADATA_REPORT_PREDICATE, simsUri, model, graph);
-			addRubricByRangeType(model, graph, rubric, type, predicateUri, attributeUri);
-		}
-	}
+        for (DocumentationRubric rubric : rubrics) {
+            RangeType type = getRangeType(rubric);
+            String idAttribute = rubric.getIdAttribute();
+            String predicate = attributesUriList.get(idAttribute);
+            if (predicate == null) {
+                if (METADATA_REPORT_PHANTOM_ID.equals(idAttribute)) {
+                    logger.warn(
+                            "Rubrique fantôme '{}' ignorée pour le sims {} : arête structurelle metadataReport "
+                                    + "remontée par la requête de lecture, ce n'est pas un attribut de la MSD",
+                            idAttribute,
+                            simsId);
+                    continue;
+                }
+                logger.warn(
+                        "idAttribute '{}' introuvable dans la MSD pour le sims {}. Attributs connus : {}",
+                        idAttribute,
+                        simsId,
+                        attributesUriList.keySet());
+                throw new RmesBadRequestException("idAttribute not found", idAttribute);
+            }
+            IRI predicateUri;
+            IRI attributeUri;
+            try {
+                predicateUri = RdfUtils.toURI(predicate);
+                attributeUri = getAttributeUri(simsId, predicate);
+            } catch (RuntimeException e) {
+                logger.error(
+                        "URI invalide pour l'idAttribute '{}' (predicate '{}') du sims {}",
+                        idAttribute,
+                        predicate,
+                        simsId,
+                        e);
+                throw new RmesException(
+                        HttpStatus.SC_BAD_REQUEST,
+                        "Invalid attribute URI",
+                        "idAttribute=" + idAttribute + ", predicate=" + predicate,
+                        e);
+            }
+            RdfUtils.addTripleUri(attributeUri, SDMX_MM.METADATA_REPORT_PREDICATE, simsUri, model, graph);
+            addRubricByRangeType(model, graph, rubric, type, predicateUri, attributeUri);
+        }
+    }
 
-	/**
-	 * Add one rubric to the model
-	 * @param model
-	 * @param graph
-	 * @param rubric
-	 * @param type
-	 * @param predicateUri
-	 * @param attributeUri
-	 * @throws RmesException
-	 */
-	private void addRubricByRangeType(Model model, Resource graph, DocumentationRubric rubric, RangeType type,
-			IRI predicateUri, IRI attributeUri) throws RmesException {
-		switch (type) {
-		case DATE:
-			RdfUtils.addTripleDate(attributeUri, predicateUri, rubric.getSimpleValue(), model, graph);
-			break;
-		case CODELIST:
-			if (rubric.getValue() != null) {
-				for (String code : rubric.getValue()) {
-					getCodeUriAndAddToModel(model, graph, rubric, predicateUri, attributeUri, code);
-				}
-			}
-			break;
-		case RICHTEXT:
-			if (!rubric.isEmpty()) {
-				addRichTextToModel(model, graph, rubric, predicateUri, attributeUri);
-			}
-			break;
-		case ORGANIZATION:
-			organisationLookup.resolve(rubric.getSimpleValue())
-					.ifPresent(iri -> RdfUtils.addTripleUri(attributeUri, predicateUri, RdfUtils.toURI(iri), model, graph));
-			break;
-		case STRING:
-			if (!rubric.isEmpty()) {
-				addSimpleTextToModel(model, graph, rubric, predicateUri, attributeUri);
-			}
-			break;
-		case GEOGRAPHY:
-			String featureUri = rubric.getUri();
-			if (StringUtils.isNotEmpty(featureUri)) {
-				RdfUtils.addTripleUri(attributeUri, predicateUri, RdfUtils.toURI(featureUri), model, graph);
-			}
-			break;
-		case RUBRIQUE_SANS_OBJECT:
-			RdfUtils.addTripleUri(attributeUri, predicateUri, INSEE.RUBRIQUE_SANS_OBJECT, model, graph);
-			break;
-		default:
-			break;
-		}
-	}
+    /**
+     * Add one rubric to the model
+     * @param model
+     * @param graph
+     * @param rubric
+     * @param type
+     * @param predicateUri
+     * @param attributeUri
+     * @throws RmesException
+     */
+    private void addRubricByRangeType(
+            Model model, Resource graph, DocumentationRubric rubric, RangeType type, IRI predicateUri, IRI attributeUri)
+            throws RmesException {
+        switch (type) {
+            case DATE:
+                RdfUtils.addTripleDate(attributeUri, predicateUri, rubric.getSimpleValue(), model, graph);
+                break;
+            case CODELIST:
+                if (rubric.getValue() != null) {
+                    for (String code : rubric.getValue()) {
+                        getCodeUriAndAddToModel(model, graph, rubric, predicateUri, attributeUri, code);
+                    }
+                }
+                break;
+            case RICHTEXT:
+                if (!rubric.isEmpty()) {
+                    addRichTextToModel(model, graph, rubric, predicateUri, attributeUri);
+                }
+                break;
+            case ORGANIZATION:
+                organisationLookup
+                        .resolve(rubric.getSimpleValue())
+                        .ifPresent(iri ->
+                                RdfUtils.addTripleUri(attributeUri, predicateUri, RdfUtils.toURI(iri), model, graph));
+                break;
+            case STRING:
+                if (!rubric.isEmpty()) {
+                    addSimpleTextToModel(model, graph, rubric, predicateUri, attributeUri);
+                }
+                break;
+            case GEOGRAPHY:
+                String featureUri = rubric.getUri();
+                if (StringUtils.isNotEmpty(featureUri)) {
+                    RdfUtils.addTripleUri(attributeUri, predicateUri, RdfUtils.toURI(featureUri), model, graph);
+                }
+                break;
+            case RUBRIQUE_SANS_OBJECT:
+                RdfUtils.addTripleUri(attributeUri, predicateUri, INSEE.RUBRIQUE_SANS_OBJECT, model, graph);
+                break;
+            default:
+                break;
+        }
+    }
 
-	private void getCodeUriAndAddToModel(Model model, Resource graph, DocumentationRubric rubric, IRI predicateUri,
-			IRI attributeUri, String code) throws RmesException {
-		String codeUri = codeListService.getCodeUri(rubric.getCodeList(), code);
-		if (codeUri != null) {
-			RdfUtils.addTripleUri(attributeUri, predicateUri, RdfUtils.toURI(codeUri), model, graph);
-		}
-	}
+    private void getCodeUriAndAddToModel(
+            Model model, Resource graph, DocumentationRubric rubric, IRI predicateUri, IRI attributeUri, String code)
+            throws RmesException {
+        String codeUri = codeListService.getCodeUri(rubric.getCodeList(), code);
+        if (codeUri != null) {
+            RdfUtils.addTripleUri(attributeUri, predicateUri, RdfUtils.toURI(codeUri), model, graph);
+        }
+    }
 
-	private void addSimpleTextToModel(Model model, Resource graph, DocumentationRubric rubric, IRI predicateUri,
-			IRI attributeUri) {
-		RdfUtils.addTripleUri(attributeUri, RDF.TYPE, SDMX_MM.REPORTED_ATTRIBUTE, model, graph);
-		if (StringUtils.isNotEmpty(rubric.getLabelLg1())) {
-			RdfUtils.addTripleString(attributeUri, predicateUri, rubric.getLabelLg1(), languages.lg1(), model, graph);
-		}
-		if (StringUtils.isNotEmpty(rubric.getLabelLg2())) {
-			RdfUtils.addTripleString(attributeUri, predicateUri, rubric.getLabelLg2(), languages.lg2(), model, graph);
-		}
-	}
+    private void addSimpleTextToModel(
+            Model model, Resource graph, DocumentationRubric rubric, IRI predicateUri, IRI attributeUri) {
+        RdfUtils.addTripleUri(attributeUri, RDF.TYPE, SDMX_MM.REPORTED_ATTRIBUTE, model, graph);
+        if (StringUtils.isNotEmpty(rubric.getLabelLg1())) {
+            RdfUtils.addTripleString(attributeUri, predicateUri, rubric.getLabelLg1(), languages.lg1(), model, graph);
+        }
+        if (StringUtils.isNotEmpty(rubric.getLabelLg2())) {
+            RdfUtils.addTripleString(attributeUri, predicateUri, rubric.getLabelLg2(), languages.lg2(), model, graph);
+        }
+    }
 
-	private void addRichTextToModel(Model model, Resource graph, DocumentationRubric rubric, IRI predicateUri,
-			IRI attributeUri) throws RmesException {		
-		if (rubric.hasRichTextLg1()) {
-			IRI textUriLg1 = RdfUtils.toURI(attributeUri.stringValue().concat("/").concat(Constants.TEXT_LG1));
-			RdfUtils.addTripleUri(attributeUri, predicateUri, textUriLg1, model, graph);
-			RdfUtils.addTripleUri(textUriLg1, RDF.TYPE, DCMITYPE.TEXT, model, graph);
-			RdfUtils.addTripleUri(textUriLg1, DCTERMS.LANGUAGE, langService.getLanguage1(), model, graph);
+    private void addRichTextToModel(
+            Model model, Resource graph, DocumentationRubric rubric, IRI predicateUri, IRI attributeUri)
+            throws RmesException {
+        if (rubric.hasRichTextLg1()) {
+            IRI textUriLg1 =
+                    RdfUtils.toURI(attributeUri.stringValue().concat("/").concat(Constants.TEXT_LG1));
+            RdfUtils.addTripleUri(attributeUri, predicateUri, textUriLg1, model, graph);
+            RdfUtils.addTripleUri(textUriLg1, RDF.TYPE, DCMITYPE.TEXT, model, graph);
+            RdfUtils.addTripleUri(textUriLg1, DCTERMS.LANGUAGE, langService.getLanguage1(), model, graph);
 
-			if (StringUtils.isNotEmpty(rubric.getLabelLg1())) {
-				RdfUtils.addTripleString(textUriLg1, RDF.VALUE, rubric.getLabelLg1(), languages.lg1(), model, graph);
-			}
-			docUtils.addDocumentsAndLinksToRubric(model, graph, rubric.getDocumentsLg1(), textUriLg1);
-		}
-		if (rubric.hasRichTextLg2()) {
-			IRI textUriLg2 = RdfUtils.toURI(attributeUri.stringValue().concat("/").concat(Constants.TEXT_LG2));
-			RdfUtils.addTripleUri(attributeUri, predicateUri, textUriLg2, model, graph);
-			RdfUtils.addTripleUri(textUriLg2, RDF.TYPE, DCMITYPE.TEXT, model, graph);
-			RdfUtils.addTripleUri(textUriLg2, DCTERMS.LANGUAGE, langService.getLanguage2(), model, graph);
+            if (StringUtils.isNotEmpty(rubric.getLabelLg1())) {
+                RdfUtils.addTripleString(textUriLg1, RDF.VALUE, rubric.getLabelLg1(), languages.lg1(), model, graph);
+            }
+            docUtils.addDocumentsAndLinksToRubric(model, graph, rubric.getDocumentsLg1(), textUriLg1);
+        }
+        if (rubric.hasRichTextLg2()) {
+            IRI textUriLg2 =
+                    RdfUtils.toURI(attributeUri.stringValue().concat("/").concat(Constants.TEXT_LG2));
+            RdfUtils.addTripleUri(attributeUri, predicateUri, textUriLg2, model, graph);
+            RdfUtils.addTripleUri(textUriLg2, RDF.TYPE, DCMITYPE.TEXT, model, graph);
+            RdfUtils.addTripleUri(textUriLg2, DCTERMS.LANGUAGE, langService.getLanguage2(), model, graph);
 
-			if (StringUtils.isNotEmpty(rubric.getLabelLg2())) {
-				RdfUtils.addTripleString(textUriLg2, RDF.VALUE, rubric.getLabelLg2(), languages.lg2(), model, graph);
-			}
-			docUtils.addDocumentsAndLinksToRubric(model, graph, rubric.getDocumentsLg2(), textUriLg2);
-		}
-	}
+            if (StringUtils.isNotEmpty(rubric.getLabelLg2())) {
+                RdfUtils.addTripleString(textUriLg2, RDF.VALUE, rubric.getLabelLg2(), languages.lg2(), model, graph);
+            }
+            docUtils.addDocumentsAndLinksToRubric(model, graph, rubric.getDocumentsLg2(), textUriLg2);
+        }
+    }
 
+    private RangeType getRangeType(DocumentationRubric rubric) throws RmesException {
+        if (rubric.getRangeType() == null) {
+            throw new RmesException(
+                    HttpStatus.SC_BAD_REQUEST,
+                    "At least one rubric doesn't have rangeType",
+                    "Rubric :" + rubric.getIdAttribute());
+        }
+        return RangeType.getEnumByJsonType(rubric.getRangeType());
+    }
 
+    /**
+     * Get attribute uri for a metadata report and the associated attribute definition
+     * @param simsId
+     * @param predicate
+     * @return
+     */
+    private IRI getAttributeUri(String simsId, String predicate) {
+        String newUri = predicate.replace("/simsv2fr/attribut/", "/attribut/" + simsId + "/");
+        return RdfUtils.toURI(newUri);
+    }
 
+    /**
+     * From JSONObject to JAVA Object DocumentationRubric
+     *
+     * @param jsonRubric
+     * @param forXml
+     * @return
+     */
+    public DocumentationRubric buildRubricFromJson(JSONObject jsonRubric, boolean forXml) {
+        DocumentationRubric documentationRubric = new DocumentationRubric();
+        if (jsonRubric.has(Constants.ID_ATTRIBUTE)) {
+            documentationRubric.setIdAttribute(jsonRubric.getString(Constants.ID_ATTRIBUTE));
+        }
+        if (jsonRubric.has(Constants.VALUE)) {
+            try {
+                documentationRubric.setValue(
+                        fr.insee.rmes.utils.StringUtils.stringToList(jsonRubric.getString(Constants.VALUE)));
+            } catch (JSONException _) {
+                /* value is not a string but an array */
+                JSONArray jsonArrayValue = jsonRubric.getJSONArray(Constants.VALUE);
+                documentationRubric.setValue(JSONUtils.jsonArrayToList(jsonArrayValue));
+            }
+        }
+        if (jsonRubric.has(Constants.LABEL_LG1)) {
+            String labelLg1 = jsonRubric.getString(Constants.LABEL_LG1);
+            if (forXml) {
+                if (isRichText(jsonRubric)) {
+                    // Convert Markdown to XHTML for rich text fields during XML export
+                    // Then escape XML characters - the XSLT rich-text template expects escaped HTML (&lt; instead of <)
+                    labelLg1 = XhtmlToMarkdownUtils.markdownToXhtml(labelLg1);
+                    labelLg1 = XMLUtils.solveSpecialXmlcharacters(labelLg1);
+                } else {
+                    // Escape XML characters for non-RICHTEXT fields
+                    labelLg1 = XMLUtils.solveSpecialXmlcharacters(labelLg1);
+                }
+            }
+            documentationRubric.setLabelLg1(labelLg1);
+        }
+        if (jsonRubric.has(Constants.LABEL_LG2)) {
+            String labelLg2 = jsonRubric.getString(Constants.LABEL_LG2);
+            if (forXml) {
+                if (isRichText(jsonRubric)) {
+                    // Convert Markdown to XHTML for rich text fields during XML export
+                    // Then escape XML characters - the XSLT rich-text template expects escaped HTML (&lt; instead of <)
+                    labelLg2 = XhtmlToMarkdownUtils.markdownToXhtml(labelLg2);
+                    labelLg2 = XMLUtils.solveSpecialXmlcharacters(labelLg2);
+                } else {
+                    // Escape XML characters for non-RICHTEXT fields
+                    labelLg2 = XMLUtils.solveSpecialXmlcharacters(labelLg2);
+                }
+            }
+            documentationRubric.setLabelLg2(labelLg2);
+        }
+        if (jsonRubric.has(Constants.CODELIST)) {
+            documentationRubric.setCodeList(jsonRubric.getString(Constants.CODELIST));
+        }
+        if (jsonRubric.has(Constants.RANGE_TYPE)) {
+            documentationRubric.setRangeType(jsonRubric.getString(Constants.RANGE_TYPE));
+        }
 
-	private RangeType getRangeType(DocumentationRubric rubric) throws RmesException {
-		if (rubric.getRangeType() == null) {
-			throw new RmesException(HttpStatus.SC_BAD_REQUEST, "At least one rubric doesn't have rangeType",
-					"Rubric :" + rubric.getIdAttribute());
-		}
-		return RangeType.getEnumByJsonType(rubric.getRangeType());
-	}
+        if (jsonRubric.has(Constants.DOCUMENTS_LG1)) {
+            addJsonDocumentToObjectRubric(jsonRubric, documentationRubric, Constants.DOCUMENTS_LG1);
+        }
+        if (jsonRubric.has(Constants.DOCUMENTS_LG2)) {
+            addJsonDocumentToObjectRubric(jsonRubric, documentationRubric, Constants.DOCUMENTS_LG2);
+        }
+        return documentationRubric;
+    }
 
-	/**
-	 * Get attribute uri for a metadata report and the associated attribute definition
-	 * @param simsId
-	 * @param predicate
-	 * @return
-	 */
-	private IRI getAttributeUri(String simsId, String predicate) {
-		String newUri = predicate.replace("/simsv2fr/attribut/", "/attribut/" + simsId + "/");
-		return RdfUtils.toURI(newUri);
-	}
+    private void addJsonDocumentToObjectRubric(
+            JSONObject rubric, DocumentationRubric documentationRubric, String documentsWithRubricLang) {
+        List<Document> docs = new ArrayList<>();
 
-	/**
-	 * From JSONObject to JAVA Object DocumentationRubric
-	 *
-	 * @param jsonRubric
-	 * @param forXml
-	 * @return
-	 */
-	public DocumentationRubric buildRubricFromJson(JSONObject jsonRubric, boolean forXml) {
-		DocumentationRubric documentationRubric = new DocumentationRubric();
-		if (jsonRubric.has(Constants.ID_ATTRIBUTE)) {
-			documentationRubric.setIdAttribute(jsonRubric.getString(Constants.ID_ATTRIBUTE));
-		}
-		if (jsonRubric.has(Constants.VALUE)) {
-			try{
-				documentationRubric.setValue(fr.insee.rmes.utils.StringUtils.stringToList(jsonRubric.getString(Constants.VALUE)));
-			}
-			catch(JSONException _) {
-				/* value is not a string but an array */
-				JSONArray jsonArrayValue =jsonRubric.getJSONArray(Constants.VALUE);
-				documentationRubric.setValue(JSONUtils.jsonArrayToList(jsonArrayValue));
-			}
-		}
-		if (jsonRubric.has(Constants.LABEL_LG1)) {
-			String labelLg1 = jsonRubric.getString(Constants.LABEL_LG1);
-			if (forXml) {
-				if (isRichText(jsonRubric)) {
-					// Convert Markdown to XHTML for rich text fields during XML export
-					// Then escape XML characters - the XSLT rich-text template expects escaped HTML (&lt; instead of <)
-					labelLg1 = XhtmlToMarkdownUtils.markdownToXhtml(labelLg1);
-					labelLg1 = XMLUtils.solveSpecialXmlcharacters(labelLg1);
-				} else {
-					// Escape XML characters for non-RICHTEXT fields
-					labelLg1 = XMLUtils.solveSpecialXmlcharacters(labelLg1);
-				}
-			}
-			documentationRubric.setLabelLg1(labelLg1);
-		}
-		if (jsonRubric.has(Constants.LABEL_LG2)) {
-			String labelLg2 = jsonRubric.getString(Constants.LABEL_LG2);
-			if (forXml) {
-				if (isRichText(jsonRubric)) {
-					// Convert Markdown to XHTML for rich text fields during XML export
-					// Then escape XML characters - the XSLT rich-text template expects escaped HTML (&lt; instead of <)
-					labelLg2 = XhtmlToMarkdownUtils.markdownToXhtml(labelLg2);
-					labelLg2 = XMLUtils.solveSpecialXmlcharacters(labelLg2);
-				} else {
-					// Escape XML characters for non-RICHTEXT fields
-					labelLg2 = XMLUtils.solveSpecialXmlcharacters(labelLg2);
-				}
-			}
-			documentationRubric.setLabelLg2(labelLg2);
-		}
-		if (jsonRubric.has(Constants.CODELIST)) {
-			documentationRubric.setCodeList(jsonRubric.getString(Constants.CODELIST));
-		}
-		if (jsonRubric.has(Constants.RANGE_TYPE)) {
-			documentationRubric.setRangeType(jsonRubric.getString(Constants.RANGE_TYPE));
-		}
+        JSONArray documents = rubric.getJSONArray(documentsWithRubricLang);
 
-		if (jsonRubric.has(Constants.DOCUMENTS_LG1)) {	
-			addJsonDocumentToObjectRubric(jsonRubric, documentationRubric, Constants.DOCUMENTS_LG1);
-		}
-		if (jsonRubric.has(Constants.DOCUMENTS_LG2)) {	
-			addJsonDocumentToObjectRubric(jsonRubric, documentationRubric, Constants.DOCUMENTS_LG2);
-		}
-		return documentationRubric;
-	}
-	
-	private void addJsonDocumentToObjectRubric(JSONObject rubric, DocumentationRubric documentationRubric, String documentsWithRubricLang) {
-		List<Document> docs = new ArrayList<>();
+        JSONUtils.stream(documents).map(docUtils::buildDocumentFromJson).forEach(docs::add);
+        if (documentsWithRubricLang.equals(Constants.DOCUMENTS_LG1)) {
+            documentationRubric.setDocumentsLg1(docs);
+        } else {
+            documentationRubric.setDocumentsLg2(docs);
+        }
+    }
 
-		JSONArray documents = rubric.getJSONArray(documentsWithRubricLang);
-
-		JSONUtils.stream(documents)
-				.map(docUtils::buildDocumentFromJson)
-				.forEach(docs::add);
-		if (documentsWithRubricLang.equals(Constants.DOCUMENTS_LG1)) {
-			documentationRubric.setDocumentsLg1(docs);
-		}else {
-			documentationRubric.setDocumentsLg2(docs);
-		}
-	}
-
-	/**
-	 * Helper method to check if a rubric is of type RICHTEXT.
-	 * This is used to determine if Markdown to XHTML conversion should be applied during XML export.
-	 *
-	 * @param jsonRubric The rubric JSON object to check
-	 * @return true if the rubric is of type RICHTEXT, false otherwise
-	 */
-	private boolean isRichText(JSONObject jsonRubric) {
-		if (!jsonRubric.has(Constants.RANGE_TYPE)) {
-			return false;
-		}
-		String rangeType = jsonRubric.getString(Constants.RANGE_TYPE);
-		return RangeType.RICHTEXT.getJsonType().equals(rangeType);
-	}
-
+    /**
+     * Helper method to check if a rubric is of type RICHTEXT.
+     * This is used to determine if Markdown to XHTML conversion should be applied during XML export.
+     *
+     * @param jsonRubric The rubric JSON object to check
+     * @return true if the rubric is of type RICHTEXT, false otherwise
+     */
+    private boolean isRichText(JSONObject jsonRubric) {
+        if (!jsonRubric.has(Constants.RANGE_TYPE)) {
+            return false;
+        }
+        String rangeType = jsonRubric.getString(Constants.RANGE_TYPE);
+        return RangeType.RICHTEXT.getJsonType().equals(rangeType);
+    }
 }

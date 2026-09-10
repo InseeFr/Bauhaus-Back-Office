@@ -2,6 +2,7 @@ package fr.insee.rmes.bauhaus_services.rdf_utils;
 
 import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import fr.insee.rmes.utils.DateUtils;
+import java.time.format.DateTimeFormatter;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Model;
@@ -9,8 +10,6 @@ import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.XSD;
-
-import java.time.format.DateTimeFormatter;
 
 /**
  * Successeur sans état de {@link RdfUtils} pour la construction de triplets.
@@ -28,8 +27,7 @@ public final class RdfTriples {
 
     private static final ValueFactory FACTORY = SimpleValueFactory.getInstance();
 
-    private RdfTriples() {
-    }
+    private RdfTriples() {}
 
     public static IRI iri(String value) {
         return FACTORY.createIRI(value.trim());
@@ -52,7 +50,8 @@ public final class RdfTriples {
     }
 
     public static Literal dateTime(String date) {
-        return FACTORY.createLiteral(DateTimeFormatter.ISO_DATE_TIME.format(DateUtils.parseDateTime(date)), XSD.DATETIME);
+        return FACTORY.createLiteral(
+                DateTimeFormatter.ISO_DATE_TIME.format(DateUtils.parseDateTime(date)), XSD.DATETIME);
     }
 
     public static void addString(IRI subject, IRI predicate, String value, Model model, Resource graph) {
@@ -61,7 +60,8 @@ public final class RdfTriples {
         }
     }
 
-    public static void addString(IRI subject, IRI predicate, String value, String language, Model model, Resource graph) {
+    public static void addString(
+            IRI subject, IRI predicate, String value, String language, Model model, Resource graph) {
         if (isFilled(value)) {
             model.add(subject, predicate, string(value, language), graph);
         }

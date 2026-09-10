@@ -5,132 +5,125 @@ import org.springframework.util.ObjectUtils;
 
 public class Operation {
 
-	public String id;
+    public String id;
 
-	public String prefLabelLg1;
+    public String prefLabelLg1;
 
-	public String prefLabelLg2;
+    public String prefLabelLg2;
 
-	public String altLabelLg1;
+    public String altLabelLg1;
 
-	public String altLabelLg2;
+    public String altLabelLg2;
 
-	public IdLabelTwoLangs series;
-	
-	public String idSims;
+    public IdLabelTwoLangs series;
 
-	private String created;
+    public String idSims;
 
-	private String modified;
+    private String created;
 
-	private String validationState;
+    private String modified;
 
-	private Integer year;
+    private String validationState;
 
-	public Operation() {
-		super();
-	}
+    private Integer year;
 
-	public static Operation of(String id) {
-		Operation operation = new Operation();
-		operation.id = id;
-		return operation;
-	}
+    public Operation() {
+        super();
+    }
 
-	public String getId() {
-		return id;
-	}
+    public static Operation of(String id) {
+        Operation operation = new Operation();
+        operation.id = id;
+        return operation;
+    }
 
-	public void setId(String id) {
-		if(!ObjectUtils.isEmpty(id)) {
-			this.id = id;
-		}
-	}
-	
+    public String getId() {
+        return id;
+    }
 
-	public String getPrefLabelLg1() {
-		return prefLabelLg1;
-	}
+    public void setId(String id) {
+        if (!ObjectUtils.isEmpty(id)) {
+            this.id = id;
+        }
+    }
 
+    public String getPrefLabelLg1() {
+        return prefLabelLg1;
+    }
 
-	public String getPrefLabelLg2() {
-		return prefLabelLg2;
-	}
+    public String getPrefLabelLg2() {
+        return prefLabelLg2;
+    }
 
+    public String getAltLabelLg1() {
+        return altLabelLg1;
+    }
 
-	public String getAltLabelLg1() {
-		return altLabelLg1;
-	}
+    public String getAltLabelLg2() {
+        return altLabelLg2;
+    }
 
+    public IdLabelTwoLangs getSeries() {
+        return series;
+    }
 
-	public String getAltLabelLg2() {
-		return altLabelLg2;
-	}
+    public String getIdSims() {
+        return idSims;
+    }
 
+    public void setPrefLabelLg1(String prefLabelLg1) {
+        this.prefLabelLg1 = prefLabelLg1;
+    }
 
-	public IdLabelTwoLangs getSeries() {
-		return series;
-	}
+    public void setPrefLabelLg2(String prefLabelLg2) {
+        this.prefLabelLg2 = prefLabelLg2;
+    }
 
+    public void setAltLabelLg1(String altLabelLg1) {
+        this.altLabelLg1 = altLabelLg1;
+    }
 
-	public String getIdSims() {
-		return idSims;
-	}
+    public void setAltLabelLg2(String altLabelLg2) {
+        this.altLabelLg2 = altLabelLg2;
+    }
 
-	public void setPrefLabelLg1(String prefLabelLg1) {
-		this.prefLabelLg1 = prefLabelLg1;
-	}
+    public void setSeries(IdLabelTwoLangs series) {
+        this.series = series;
+    }
 
-	public void setPrefLabelLg2(String prefLabelLg2) {
-		this.prefLabelLg2 = prefLabelLg2;
-	}
+    public void setIdSims(String idSims) {
+        this.idSims = idSims;
+    }
 
-	public void setAltLabelLg1(String altLabelLg1) {
-		this.altLabelLg1 = altLabelLg1;
-	}
+    public String getCreated() {
+        return created;
+    }
 
-	public void setAltLabelLg2(String altLabelLg2) {
-		this.altLabelLg2 = altLabelLg2;
-	}
+    public void setCreated(String created) {
+        this.created = created;
+    }
 
-	public void setSeries(IdLabelTwoLangs series) {
-		this.series = series;
-	}
+    public String getModified() {
+        return modified;
+    }
 
-	public void setIdSims(String idSims) {
-		this.idSims = idSims;
-	}
+    public void setModified(String modified) {
+        this.modified = modified;
+    }
 
+    public String getValidationState() {
+        return validationState;
+    }
 
-	public String getCreated() {
-		return created;
-	}
+    public void setValidationState(String validationState) {
+        this.validationState = validationState;
+    }
 
-	public void setCreated(String created) {
-		this.created = created;
-	}
+    public Integer getYear() {
+        return year;
+    }
 
-	public String getModified() {
-		return modified;
-	}
-
-	public void setModified(String modified) {
-		this.modified = modified;
-	}
-
-	public String getValidationState() {
-		return validationState;
-	}
-
-	public void setValidationState(String validationState) {
-		this.validationState = validationState;
-	}
-
-	public Integer getYear() {
-		return year;
-	}
-
-	public void setYear(Integer year) {
-		this.year = year;
-	}
+    public void setYear(Integer year) {
+        this.year = year;
+    }
 }

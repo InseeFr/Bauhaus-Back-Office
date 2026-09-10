@@ -2,7 +2,6 @@ package fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside;
 
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialGroup;
-
 import java.util.Collection;
 import java.util.List;
 

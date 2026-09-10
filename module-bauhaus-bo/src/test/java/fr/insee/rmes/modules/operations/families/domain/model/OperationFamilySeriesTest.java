@@ -1,9 +1,9 @@
 package fr.insee.rmes.modules.operations.families.domain.model;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class OperationFamilySeriesTest {
 
@@ -23,8 +23,7 @@ class OperationFamilySeriesTest {
 
     @Test
     void from_json_with_missing_fields() {
-        JSONObject json = new JSONObject()
-                .put("id", "series002");
+        JSONObject json = new JSONObject().put("id", "series002");
 
         OperationFamilySeries series = OperationFamilySeries.fromJSON(json);
 
@@ -46,9 +45,7 @@ class OperationFamilySeriesTest {
 
     @Test
     void from_json_with_partial_fields() {
-        JSONObject json = new JSONObject()
-                .put("id", "series003")
-                .put("labelLg1", "Population Series");
+        JSONObject json = new JSONObject().put("id", "series003").put("labelLg1", "Population Series");
 
         OperationFamilySeries series = OperationFamilySeries.fromJSON(json);
 

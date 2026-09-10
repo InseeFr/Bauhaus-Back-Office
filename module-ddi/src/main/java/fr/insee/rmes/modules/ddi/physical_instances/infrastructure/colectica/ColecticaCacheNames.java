@@ -10,8 +10,7 @@ package fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica;
  */
 public final class ColecticaCacheNames {
 
-    private ColecticaCacheNames() {
-    }
+    private ColecticaCacheNames() {}
 
     /** Cache of the mutualized code lists exposed by {@code GET /ddi/mutualized-codes-list}. */
     public static final String MUTUALIZED_CODES_LISTS = "mutualizedCodesLists";

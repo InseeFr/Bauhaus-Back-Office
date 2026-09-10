@@ -3,7 +3,6 @@ package fr.insee.rmes.modules.concepts.collections.webservice;
 import fr.insee.rmes.modules.concepts.collections.domain.exceptions.InvalidCreateCollectionCommandException;
 import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionId;
 import fr.insee.rmes.modules.concepts.collections.domain.model.commands.CreateCollectionCommand;
-
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -18,7 +17,13 @@ public class CreateCollectionRequest {
     protected final String contributor;
     protected final List<String> conceptsIdentifiers;
 
-    public CreateCollectionRequest(String id, List<LocalisedLabelResponse> labels, List<LocalisedLabelResponse> descriptions, String creator, String contributor, List<String> conceptsIdentifiers) {
+    public CreateCollectionRequest(
+            String id,
+            List<LocalisedLabelResponse> labels,
+            List<LocalisedLabelResponse> descriptions,
+            String creator,
+            String contributor,
+            List<String> conceptsIdentifiers) {
         this.id = id;
         this.labels = labels;
         this.descriptions = descriptions;
@@ -28,7 +33,9 @@ public class CreateCollectionRequest {
     }
 
     CreateCollectionCommand toCreateCommand() throws InvalidCreateCollectionCommandException {
-        if (this.id != null && !this.id.isEmpty() && !ID_PATTERN.matcher(this.id).matches()) {
+        if (this.id != null
+                && !this.id.isEmpty()
+                && !ID_PATTERN.matcher(this.id).matches()) {
             throw new InvalidCreateCollectionCommandException(
                     "The identifier is invalid: only alphanumeric characters and hyphens are allowed");
         }
@@ -38,8 +45,7 @@ public class CreateCollectionRequest {
                 this.descriptions.stream().map(LocalisedLabelResponse::toDomain).toList(),
                 this.creator,
                 this.contributor,
-                this.conceptsIdentifiers
-        );
+                this.conceptsIdentifiers);
     }
 
     public String id() {

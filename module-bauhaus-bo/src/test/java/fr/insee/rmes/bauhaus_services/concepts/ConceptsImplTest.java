@@ -1,18 +1,35 @@
 package fr.insee.rmes.bauhaus_services.concepts;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.when;
+
 import fr.insee.rmes.bauhaus_services.concepts.collections.CollectionExportBuilder;
 import fr.insee.rmes.bauhaus_services.concepts.concepts.ConceptsExportBuilder;
 import fr.insee.rmes.bauhaus_services.concepts.concepts.LegacyConceptsRepository;
 import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.modules.shared_kernel.domain.model.Language;
-import fr.insee.rmes.modules.organisations.domain.model.OrganisationOption;
-import fr.insee.rmes.modules.organisations.domain.port.clientside.OrganisationService;
 import fr.insee.rmes.model.concepts.CollectionForExport;
 import fr.insee.rmes.modules.concepts.collections.domain.port.serverside.CollectionRepository;
+import fr.insee.rmes.modules.organisations.domain.model.OrganisationOption;
+import fr.insee.rmes.modules.organisations.domain.port.clientside.OrganisationService;
+import fr.insee.rmes.modules.shared_kernel.domain.model.Language;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptConceptsQueries;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.utils.ExportUtils;
 import fr.insee.rmes.utils.FilesUtils;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
@@ -25,24 +42,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.xmlunit.builder.DiffBuilder;
 import org.xmlunit.diff.Diff;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.List;
-import java.util.Map;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ConceptsImplTest {
@@ -59,7 +58,6 @@ class ConceptsImplTest {
     @Mock
     CollectionForExport collectionForExport;
 
-
     @Mock
     CollectionRepository collectionRepository;
 
@@ -70,17 +68,18 @@ class ConceptsImplTest {
     ConceptConceptsQueries conceptConceptsQueries;
 
     @Test
-    void shouldReturnFileNameForExport()  {
+    void shouldReturnFileNameForExport() {
         when(collectionForExport.getId()).thenReturn("421");
         when(collectionForExport.getPrefLabelLg1()).thenReturn("FR");
-        String response = FilesUtils.generateFinalFileNameWithoutExtension(collectionForExport.getId() + "-" + collectionForExport.getPrefLabelLg1(), 32);
-        assertEquals("421Fr",response);
+        String response = FilesUtils.generateFinalFileNameWithoutExtension(
+                collectionForExport.getId() + "-" + collectionForExport.getPrefLabelLg1(), 32);
+        assertEquals("421Fr", response);
     }
-
 
     @Test
     void shouldGetConceptsList() throws RmesException {
-        ConceptsImpl conceptsImpl = new ConceptsImpl(repoGestion, null, null, null, null, null, collectionExport, null, 10, null, conceptConceptsQueries);
+        ConceptsImpl conceptsImpl = new ConceptsImpl(
+                repoGestion, null, null, null, null, null, collectionExport, null, 10, null, conceptConceptsQueries);
 
         JSONArray array = new JSONArray();
         array.put(new JSONObject().put("id", "1").put("label", "label 1").put("altLabel", "latLabel1"));
@@ -112,7 +111,8 @@ class ConceptsImplTest {
 
     @Test
     void shouldGetConceptsListForAdvancedSearch() throws RmesException {
-        ConceptsImpl conceptsImpl = new ConceptsImpl(repoGestion, null, null, null, null, null, collectionExport, null, 10, null, conceptConceptsQueries);
+        ConceptsImpl conceptsImpl = new ConceptsImpl(
+                repoGestion, null, null, null, null, null, collectionExport, null, 10, null, conceptConceptsQueries);
 
         JSONArray array = new JSONArray();
         array.put(new JSONObject().put("id", "1").put("label", "label 1").put("altLabel", "latLabel1"));
@@ -142,9 +142,8 @@ class ConceptsImplTest {
         assertEquals("latLabel1 || latLabel2", concepts.get(3).altLabel());
     }
 
-
     @Test
-    void shouldReturnFileName(){
+    void shouldReturnFileName() {
         CollectionForExport collection = new CollectionForExport();
         collection.setId("1");
         collection.setPrefLabelLg1("Lg1Collection");
@@ -155,13 +154,23 @@ class ConceptsImplTest {
         assertEquals("1Lg1collec", conceptsImpl.getFileNameForExport(collection, Language.lg1));
         assertEquals("1Lg2collec", conceptsImpl.getFileNameForExport(collection, Language.lg2));
     }
+
     @Test
     void exportConceptTest() throws RmesException, IOException, URISyntaxException {
         // GIVEN
         var idConcept = "c1116";
-        ConceptsExportBuilder conceptsExportBuilder = new ConceptsExportBuilder(repoGestion, null, null, null, legacyConceptsRepository, organisationService, new ExportUtils(200, null), conceptConceptsQueries);
+        ConceptsExportBuilder conceptsExportBuilder = new ConceptsExportBuilder(
+                repoGestion,
+                null,
+                null,
+                null,
+                legacyConceptsRepository,
+                organisationService,
+                new ExportUtils(200, null),
+                conceptConceptsQueries);
 
-        ConceptsImpl conceptsImpl = new ConceptsImpl(null, null, null, null, null, conceptsExportBuilder, null, null, 10, null, conceptConceptsQueries);
+        ConceptsImpl conceptsImpl = new ConceptsImpl(
+                null, null, null, null, null, conceptsExportBuilder, null, null, 10, null, conceptConceptsQueries);
 
         JSONObject jsonConcept = new JSONObject("""
                 {
@@ -181,11 +190,13 @@ class ConceptsImplTest {
         when(legacyConceptsRepository.getConceptById(idConcept)).thenReturn(jsonConcept);
         when(organisationService.getOrganisationsMap(List.of("SSM-SDES", "DG75-L201")))
                 .thenReturn(Map.of(
-                        "SSM-SDES", new OrganisationOption("SSM-SDES", "Service des données et études statistiques (SDES)"),
-                        "DG75-L201", new OrganisationOption("DG75-L201", "Division Concepts, harmonisation et nomenclatures")));
+                        "SSM-SDES",
+                                new OrganisationOption("SSM-SDES", "Service des données et études statistiques (SDES)"),
+                        "DG75-L201",
+                                new OrganisationOption(
+                                        "DG75-L201", "Division Concepts, harmonisation et nomenclatures")));
         when(repoGestion.getResponseAsArray(any())).thenReturn(new JSONArray());
-        when(repoGestion.getResponseAsObject(any())).thenReturn(new JSONObject(
-        """
+        when(repoGestion.getResponseAsObject(any())).thenReturn(new JSONObject("""
                 {
                     "definitionLg2": "<div xmlns=\\"http://www.w3.org/1999/xhtml\\"><p>A traffic accident is defined as an accident involving at least one vehicle on a road open to public traffic in which at least one person is injured or killed.<\\/p><\\/div>",
                     "definitionLg1": "<div xmlns=\\"http://www.w3.org/1999/xhtml\\"><p>Est défini comme accident corporel de la circulation tout accident impliquant au moins un véhicule, survenant sur une voie ouverte à la circulation publique, et dans lequel au moins une personne est blessée ou tuée.<\\/p><ul><li>aucun diplôme :<ul><li>pas de scolarité<\\/li><li>scolarité jusqu'à la fin du collège<\\/li><\\/ul><\\/li><li>CAP, BEP<\\/li><\\/ul><\\/div>",
@@ -197,11 +208,16 @@ class ConceptsImplTest {
                 }
                 """));
 
-       String expectedXmlForOdtContent = Files.readAllLines(Path.of(ConceptsImplTest.class.getResource("/expectedTestsResult/accidentsCorporelsDeLaCirculation-c1116_content.xml").toURI())).stream()
-               .reduce((a,b)->a+"\n"+b).get();
+        String expectedXmlForOdtContent = Files.readAllLines(Path.of(ConceptsImplTest.class
+                        .getResource("/expectedTestsResult/accidentsCorporelsDeLaCirculation-c1116_content.xml")
+                        .toURI()))
+                .stream()
+                .reduce((a, b) -> a + "\n" + b)
+                .get();
 
         // WHEN
-        ResponseEntity<ByteArrayResource> result = (ResponseEntity<ByteArrayResource>) conceptsImpl.exportConcept(idConcept, MediaType.APPLICATION_OCTET_STREAM_VALUE);
+        ResponseEntity<ByteArrayResource> result = (ResponseEntity<ByteArrayResource>)
+                conceptsImpl.exportConcept(idConcept, MediaType.APPLICATION_OCTET_STREAM_VALUE);
         // THEN
         assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(result.getHeaders().getContentDisposition().getFilename()).isEqualTo("c1116accid.odt");
@@ -216,7 +232,7 @@ class ConceptsImplTest {
 
     private String getOdtContent(byte[] byteArray) {
         try (InputStream inputStream = new ByteArrayInputStream(byteArray);
-             ZipInputStream zipInputStream = new ZipInputStream(inputStream)) {
+                ZipInputStream zipInputStream = new ZipInputStream(inputStream)) {
             setoffStreamToEntryContentXML(zipInputStream);
             return new String(zipInputStream.readAllBytes(), StandardCharsets.UTF_8);
         } catch (IOException e) {
@@ -233,5 +249,4 @@ class ConceptsImplTest {
         }
         return null;
     }
-
 }

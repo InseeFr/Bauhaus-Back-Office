@@ -1,5 +1,8 @@
 package fr.insee.rmes.bauhaus_services.rdf_utils;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -13,9 +16,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Contrat de {@link RdfTriples}, successeur sans état de {@code RdfUtils} (déprécié pour
@@ -38,8 +38,7 @@ class RdfTriplesTest {
 
     @Test
     void iri_rejects_a_value_that_is_not_an_iri() {
-        assertThatThrownBy(() -> RdfTriples.iri("pas une IRI"))
-                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> RdfTriples.iri("pas une IRI")).isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
@@ -73,16 +72,16 @@ class RdfTriplesTest {
     void addString_adds_a_plain_literal() {
         RdfTriples.addString(SUBJECT, SKOS.NOTATION, "  NOTATION  ", model, GRAPH);
 
-        assertThat(model).containsExactly(
-                VF.createStatement(SUBJECT, SKOS.NOTATION, VF.createLiteral("NOTATION"), GRAPH));
+        assertThat(model)
+                .containsExactly(VF.createStatement(SUBJECT, SKOS.NOTATION, VF.createLiteral("NOTATION"), GRAPH));
     }
 
     @Test
     void addString_adds_a_localized_literal() {
         RdfTriples.addString(SUBJECT, RDFS.LABEL, "libellé", "fr", model, GRAPH);
 
-        assertThat(model).containsExactly(
-                VF.createStatement(SUBJECT, RDFS.LABEL, VF.createLiteral("libellé", "fr"), GRAPH));
+        assertThat(model)
+                .containsExactly(VF.createStatement(SUBJECT, RDFS.LABEL, VF.createLiteral("libellé", "fr"), GRAPH));
     }
 
     @ParameterizedTest
@@ -115,8 +114,9 @@ class RdfTriplesTest {
     void addUri_converts_a_string_value_into_an_iri() {
         RdfTriples.addUri(SUBJECT, RDFS.SEEALSO, "http://bauhaus/concept/c1", model, GRAPH);
 
-        assertThat(model).containsExactly(VF.createStatement(SUBJECT, RDFS.SEEALSO,
-                VF.createIRI("http://bauhaus/concept/c1"), GRAPH));
+        assertThat(model)
+                .containsExactly(
+                        VF.createStatement(SUBJECT, RDFS.SEEALSO, VF.createIRI("http://bauhaus/concept/c1"), GRAPH));
     }
 
     @ParameterizedTest

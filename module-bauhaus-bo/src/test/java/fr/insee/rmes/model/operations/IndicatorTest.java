@@ -1,9 +1,10 @@
 package fr.insee.rmes.model.operations;
 
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.util.ArrayList;
 import java.util.List;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.Test;
 
 class IndicatorTest {
 
@@ -22,9 +23,8 @@ class IndicatorTest {
 
         List<Boolean> result = new ArrayList<>();
 
-        objects.forEach(object->result.add(indicator.equals(object)));
+        objects.forEach(object -> result.add(indicator.equals(object)));
 
-        assertEquals(List.of(true,true,false,false,false,false),result);
+        assertEquals(List.of(true, true, false, false, false, false), result);
     }
-
 }

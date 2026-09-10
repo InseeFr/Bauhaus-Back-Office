@@ -53,6 +53,7 @@ public class OpenApiConfiguration {
 
     /** Endpoints OIDC, relatifs à l'issuer du realm Keycloak. */
     private static final String AUTHORIZATION_ENDPOINT = "/protocol/openid-connect/auth";
+
     private static final String TOKEN_ENDPOINT = "/protocol/openid-connect/token";
 
     /** Portée demandée par le front (cf. {@code createReactOidc}), reprise à l'identique. */
@@ -68,11 +69,7 @@ public class OpenApiConfiguration {
      * {@value #OAUTH_REDIRECT_PATH}, sur lequel Keycloak renvoie le navigateur.
      */
     private static final String[] SWAGGER_PATHS = {
-            "/v3/api-docs",
-            "/v3/api-docs/**",
-            "/v3/api-docs.yaml",
-            "/swagger-ui.html",
-            "/swagger-ui/**"
+        "/v3/api-docs", "/v3/api-docs/**", "/v3/api-docs.yaml", "/swagger-ui.html", "/swagger-ui/**"
     };
 
     private final String appVersion;
@@ -96,16 +93,15 @@ public class OpenApiConfiguration {
     @Bean
     public OpenAPI openAPI() {
         Components components = new Components()
-                .addSecuritySchemes(BEARER_SCHEME_NAME, new SecurityScheme()
-                        .type(SecurityScheme.Type.HTTP)
-                        .scheme("bearer")
-                        .bearerFormat("JWT"));
+                .addSecuritySchemes(
+                        BEARER_SCHEME_NAME,
+                        new SecurityScheme()
+                                .type(SecurityScheme.Type.HTTP)
+                                .scheme("bearer")
+                                .bearerFormat("JWT"));
 
         OpenAPI openAPI = new OpenAPI()
-                .info(new Info()
-                        .title(TITLE)
-                        .version(appVersion)
-                        .description(DESCRIPTION))
+                .info(new Info().title(TITLE).version(appVersion).description(DESCRIPTION))
                 .components(components)
                 // Bouton « Authorize » de l'UI, appliqué à toutes les opérations.
                 .addSecurityItem(new SecurityRequirement().addList(BEARER_SCHEME_NAME));
@@ -127,11 +123,12 @@ public class OpenApiConfiguration {
                 .type(SecurityScheme.Type.OAUTH2)
                 .in(SecurityScheme.In.HEADER)
                 .description("Keycloak — même realm que celui qui valide les jetons de l'API (" + issuerUri + ")")
-                .flows(new OAuthFlows().authorizationCode(new OAuthFlow()
-                        .authorizationUrl(authorizationUrl())
-                        .tokenUrl(tokenUrl())
-                        .refreshUrl(tokenUrl())
-                        .scopes(new Scopes().addString(OPENID_SCOPE, "Jeton OIDC, comme celui du front"))));
+                .flows(new OAuthFlows()
+                        .authorizationCode(new OAuthFlow()
+                                .authorizationUrl(authorizationUrl())
+                                .tokenUrl(tokenUrl())
+                                .refreshUrl(tokenUrl())
+                                .scopes(new Scopes().addString(OPENID_SCOPE, "Jeton OIDC, comme celui du front"))));
     }
 
     /**
@@ -140,30 +137,44 @@ public class OpenApiConfiguration {
      */
     @PostConstruct
     void logOAuthConfiguration() {
-        log.info("Swagger UI activé : documentation sur {}v3/api-docs, UI sur {}swagger-ui.html",
-                contextPath, contextPath);
+        log.info(
+                "Swagger UI activé : documentation sur {}v3/api-docs, UI sur {}swagger-ui.html",
+                contextPath,
+                contextPath);
 
         if (!oauthFlowDescribed()) {
-            log.warn("Swagger UI : pas de flow OAuth2 ({} non renseigné), le bouton « Authorize » n'offrira "
-                    + "que le collage manuel d'un jeton", ISSUER_PROPERTY);
+            log.warn(
+                    "Swagger UI : pas de flow OAuth2 ({} non renseigné), le bouton « Authorize » n'offrira "
+                            + "que le collage manuel d'un jeton",
+                    ISSUER_PROPERTY);
             return;
         }
 
         // Garde explicite : les URLs tracées ci-dessous sont construites par appel de méthode, donc
         // calculées même si INFO est coupé.
         if (log.isInfoEnabled()) {
-            log.info("Swagger UI : jeton demandé à l'émetteur qui protège l'API ({}), donc mêmes rôles et mêmes "
-                    + "droits qu'un appel du front", issuerUri);
-            log.info("Swagger UI : autorisation {} | jeton {} | client_id « {} » | scope « {} »",
-                    authorizationUrl(), tokenUrl(), clientId.isEmpty() ? "<absent>" : clientId, OPENID_SCOPE);
-            log.info("Swagger UI : le client Keycloak doit avoir le flow standard activé et autoriser la redirect "
-                    + "URI <origine>{}{} (PKCE S256), sans quoi Keycloak répondra « Invalid parameter: redirect_uri »",
-                    contextPath, OAUTH_REDIRECT_PATH);
+            log.info(
+                    "Swagger UI : jeton demandé à l'émetteur qui protège l'API ({}), donc mêmes rôles et mêmes "
+                            + "droits qu'un appel du front",
+                    issuerUri);
+            log.info(
+                    "Swagger UI : autorisation {} | jeton {} | client_id « {} » | scope « {} »",
+                    authorizationUrl(),
+                    tokenUrl(),
+                    clientId.isEmpty() ? "<absent>" : clientId,
+                    OPENID_SCOPE);
+            log.info(
+                    "Swagger UI : le client Keycloak doit avoir le flow standard activé et autoriser la redirect "
+                            + "URI <origine>{}{} (PKCE S256), sans quoi Keycloak répondra « Invalid parameter: redirect_uri »",
+                    contextPath,
+                    OAUTH_REDIRECT_PATH);
         }
 
         if (clientId.isEmpty()) {
-            log.warn("Swagger UI : aucun client_id ({} non renseigné), la fenêtre « Authorize » s'ouvrira avec "
-                    + "un champ client_id vide, à saisir à la main", CLIENT_ID_PROPERTY);
+            log.warn(
+                    "Swagger UI : aucun client_id ({} non renseigné), la fenêtre « Authorize » s'ouvrira avec "
+                            + "un champ client_id vide, à saisir à la main",
+                    CLIENT_ID_PROPERTY);
         }
     }
 
@@ -186,8 +197,7 @@ public class OpenApiConfiguration {
     @Bean
     @Order(0)
     public SecurityFilterChain swaggerSecurityFilterChain(HttpSecurity http) throws Exception {
-        return http
-                .securityMatcher(SWAGGER_PATHS)
+        return http.securityMatcher(SWAGGER_PATHS)
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(request -> request.anyRequest().permitAll())
                 .build();

@@ -21,7 +21,6 @@ import java.lang.annotation.Target;
  * {@code infrastructure} ({@code LazyPublicEndpointsMatcher}); a neutral home keeps the
  * hexagonal rule "infrastructure must not depend on webservice" satisfied.
  */
-@Target({ ElementType.METHOD, ElementType.TYPE })
+@Target({ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface PublicEndpoint {
-}
+public @interface PublicEndpoint {}

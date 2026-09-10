@@ -12,7 +12,6 @@ import fr.insee.rmes.modules.commons.hexagonal.ServerSideAdaptor;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.InvalidDdi4JsonException;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.Ddi4SchemaRepository;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.Ddi4SchemaValidator;
-
 import java.util.List;
 
 /**
@@ -51,9 +50,7 @@ public class NetworkntDdi4SchemaValidator implements Ddi4SchemaValidator {
     @Override
     public List<String> validate(String json) {
         JsonNode document = readDocument(json);
-        return compiledSchema()
-                .validate(document)
-                .stream()
+        return compiledSchema().validate(document).stream()
                 .map(ValidationMessage::getMessage)
                 .toList();
     }
@@ -81,9 +78,8 @@ public class NetworkntDdi4SchemaValidator implements Ddi4SchemaValidator {
     }
 
     private JsonSchema compile() {
-        SchemaValidatorsConfig config = SchemaValidatorsConfig.builder()
-                .preloadJsonSchema(false)
-                .build();
+        SchemaValidatorsConfig config =
+                SchemaValidatorsConfig.builder().preloadJsonSchema(false).build();
         try {
             JsonNode schemaNode = mapper.readTree(schemaRepository.schemaDocument());
             return JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V202012)

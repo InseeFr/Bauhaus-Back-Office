@@ -1,20 +1,19 @@
 package fr.insee.rmes.keycloak;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+import java.time.Instant;
+import java.util.Date;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.web.client.RestClient;
-
-import java.time.Instant;
-import java.util.Date;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
 
 class KeycloakServiceTest {
 
@@ -38,8 +37,7 @@ class KeycloakServiceTest {
         var properties = new KeycloakProperties(
                 new KeycloakProperties.Server("keycloak.test"),
                 new KeycloakProperties.RealmConfig("default-realm", "default-client", "default-secret"),
-                new KeycloakProperties.RealmConfig("colectica-realm", "colectica-client", "colectica-secret")
-        );
+                new KeycloakProperties.RealmConfig("colectica-realm", "colectica-client", "colectica-secret"));
         keycloakService = new KeycloakService(properties);
         keycloakService.keycloakClient = testRestClient;
 
@@ -69,9 +67,7 @@ class KeycloakServiceTest {
     @Test
     void getAccessToken_shouldCallKeycloakServerWithDefaultRealm() {
         keycloakService.getAccessToken();
-        verify(requestBodyUriSpec).uri(
-                "keycloak.test/realms/default-realm/protocol/openid-connect/token"
-        );
+        verify(requestBodyUriSpec).uri("keycloak.test/realms/default-realm/protocol/openid-connect/token");
     }
 
     @Test
@@ -86,8 +82,7 @@ class KeycloakServiceTest {
         var propertiesWithNullServer = new KeycloakProperties(
                 null,
                 new KeycloakProperties.RealmConfig("default-realm", "default-client", "default-secret"),
-                new KeycloakProperties.RealmConfig("colectica-realm", "colectica-client", "colectica-secret")
-        );
+                new KeycloakProperties.RealmConfig("colectica-realm", "colectica-client", "colectica-secret"));
         KeycloakService serviceWithNullServer = new KeycloakService(propertiesWithNullServer);
 
         assertThrows(MissingKeycloakConfigurationException.class, serviceWithNullServer::getAccessToken);

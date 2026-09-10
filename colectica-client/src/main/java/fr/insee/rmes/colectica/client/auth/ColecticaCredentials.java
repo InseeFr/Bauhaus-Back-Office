@@ -15,7 +15,7 @@ import java.util.function.Supplier;
  * </ul>
  */
 public sealed interface ColecticaCredentials
-    permits ColecticaCredentials.UserPassword, ColecticaCredentials.BearerToken {
+        permits ColecticaCredentials.UserPassword, ColecticaCredentials.BearerToken {
 
     record UserPassword(String username, String password) implements ColecticaCredentials {}
 
@@ -23,7 +23,9 @@ public sealed interface ColecticaCredentials
 
         /** Static / self-refreshing supplier with no invalidation hook. */
         public BearerToken(Supplier<String> tokenSupplier) {
-            this(tokenSupplier, () -> { /* no-op */ });
+            this(tokenSupplier, () -> {
+                /* no-op */
+            });
         }
     }
 }

@@ -1,24 +1,32 @@
 package fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica;
 
+import static fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.AbstractColecticaItemRepository.generateDeterministicUuid;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+
+import fr.insee.rmes.colectica.client.ColecticaClient;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CogsDate;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CreatePhysicalInstanceRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Category;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CategoryScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeListScheme;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedMissingValuesRepresentation;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4LogicalProduct;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedMissingValuesRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedRepresentationScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4PhysicalInstance;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4VariableScheme;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.GroupService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.StudyUnitService;
-import fr.insee.rmes.colectica.client.ColecticaClient;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
@@ -28,15 +36,6 @@ import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.CommandLineRunner;
-
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import static fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.AbstractColecticaItemRepository.generateDeterministicUuid;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class LocalColecticaGroupInitConfigurationTest {
@@ -57,17 +56,30 @@ class LocalColecticaGroupInitConfigurationTest {
     private ColecticaClient colecticaClient;
 
     private Ddi4Response piResponse(String agency, String id) {
-        Ddi4PhysicalInstance pi = new Ddi4PhysicalInstance(Ddi4PhysicalInstance.TYPE,CogsDate.ofDateTime("2026-01-01T00:00:00Z"),
-                "urn:ddi:%s:%s:1".formatted(agency, id), agency, id, "1", null, null, null);
+        Ddi4PhysicalInstance pi = new Ddi4PhysicalInstance(
+                Ddi4PhysicalInstance.TYPE,
+                CogsDate.ofDateTime("2026-01-01T00:00:00Z"),
+                "urn:ddi:%s:%s:1".formatted(agency, id),
+                agency,
+                id,
+                "1",
+                null,
+                null,
+                null);
         return new Ddi4Response(null, null, List.of(pi), null, null, null, null, null);
     }
 
     private ColecticaConfiguration createColecticaConfig() {
         var instanceConfig = new ColecticaConfiguration.ColecticaInstanceConfiguration(
-                "http://localhost:8082", "/api/v1/", null,
-                "bauhaus", "DC337820-AF3A-4C0B-82F9-CF02535CDE83",
-                "token", null, null, "fr.insee"
-        );
+                "http://localhost:8082",
+                "/api/v1/",
+                null,
+                "bauhaus",
+                "DC337820-AF3A-4C0B-82F9-CF02535CDE83",
+                "token",
+                null,
+                null,
+                "fr.insee");
         return new ColecticaConfiguration(List.of("fr-FR"), instanceConfig, null, null);
     }
 
@@ -97,10 +109,14 @@ class LocalColecticaGroupInitConfigurationTest {
 
         LocalColecticaGroupInitConfiguration config = new LocalColecticaGroupInitConfiguration();
         CommandLineRunner runner = config.initColecticaGroups(
-                groupService, studyUnitService, ddiService, repositoryPublicationReader,
-                createColecticaConfig(), colecticaClient,
-                "http://rdf.insee.fr/graphes/", "operations"
-        );
+                groupService,
+                studyUnitService,
+                ddiService,
+                repositoryPublicationReader,
+                createColecticaConfig(),
+                colecticaClient,
+                "http://rdf.insee.fr/graphes/",
+                "operations");
 
         // When
         runner.run();
@@ -110,8 +126,10 @@ class LocalColecticaGroupInitConfigurationTest {
         Set<String> expectedGroupIds = Set.copyOf(
                 LocalColecticaGroupInitConfiguration.variantUuids("http://id.insee.fr/operations/serie/s1001"));
         Set<String> expectedStudyUnitIds = new HashSet<>();
-        expectedStudyUnitIds.addAll(LocalColecticaGroupInitConfiguration.variantUuids("http://id.insee.fr/operations/operation/op1"));
-        expectedStudyUnitIds.addAll(LocalColecticaGroupInitConfiguration.variantUuids("http://id.insee.fr/operations/operation/op2"));
+        expectedStudyUnitIds.addAll(
+                LocalColecticaGroupInitConfiguration.variantUuids("http://id.insee.fr/operations/operation/op1"));
+        expectedStudyUnitIds.addAll(
+                LocalColecticaGroupInitConfiguration.variantUuids("http://id.insee.fr/operations/operation/op2"));
 
         InOrder inOrder = inOrder(groupService, studyUnitService);
         inOrder.verify(groupService).deprecate(expectedGroupIds);
@@ -125,7 +143,8 @@ class LocalColecticaGroupInitConfigurationTest {
         List<Ddi4StudyUnit> studyUnits = suCaptor.getAllValues();
         assertThat(studyUnits).hasSize(2 * variants);
         assertThat(studyUnits.subList(0, variants))
-                .allSatisfy(su -> assertThat(su.operationIri()).isEqualTo("http://id.insee.fr/operations/operation/op1"))
+                .allSatisfy(
+                        su -> assertThat(su.operationIri()).isEqualTo("http://id.insee.fr/operations/operation/op1"))
                 .extracting(su -> su.citation().title().get(0).value())
                 .containsExactly(
                         "Enquête innovation 2020 Zoulou Study Unit",
@@ -168,9 +187,14 @@ class LocalColecticaGroupInitConfigurationTest {
 
         LocalColecticaGroupInitConfiguration config = new LocalColecticaGroupInitConfiguration();
         CommandLineRunner runner = config.initColecticaGroups(
-                groupService, studyUnitService, ddiService, repositoryPublicationReader,
-                createColecticaConfig(), colecticaClient,
-                "http://rdf.insee.fr/graphes/", "operations");
+                groupService,
+                studyUnitService,
+                ddiService,
+                repositoryPublicationReader,
+                createColecticaConfig(),
+                colecticaClient,
+                "http://rdf.insee.fr/graphes/",
+                "operations");
 
         // When
         runner.run();
@@ -198,12 +222,15 @@ class LocalColecticaGroupInitConfigurationTest {
         for (int variant = 0; variant < variants; variant++) {
             Ddi4LogicalProduct lp = logicalProducts.get(variant);
             assertThat(lp.codeListSchemeReference()).hasSize(1);
-            assertThat(lp.codeListSchemeReference().get(0).id()).isEqualTo(schemes.get(variant).id());
+            assertThat(lp.codeListSchemeReference().get(0).id())
+                    .isEqualTo(schemes.get(variant).id());
             assertThat(lp.codeListSchemeReference().get(0).type()).isEqualTo("CodeListScheme");
 
             assertThat(groups.get(variant).logicalProductReference()).hasSize(1);
-            assertThat(groups.get(variant).logicalProductReference().get(0).id()).isEqualTo(lp.id());
-            assertThat(groups.get(variant).logicalProductReference().get(0).type()).isEqualTo("LogicalProduct");
+            assertThat(groups.get(variant).logicalProductReference().get(0).id())
+                    .isEqualTo(lp.id());
+            assertThat(groups.get(variant).logicalProductReference().get(0).type())
+                    .isEqualTo("LogicalProduct");
         }
 
         // Creation order, per variant: CodeListScheme, then LogicalProduct, then the Group referencing it
@@ -228,9 +255,14 @@ class LocalColecticaGroupInitConfigurationTest {
 
         LocalColecticaGroupInitConfiguration config = new LocalColecticaGroupInitConfiguration();
         CommandLineRunner runner = config.initColecticaGroups(
-                groupService, studyUnitService, ddiService, repositoryPublicationReader,
-                createColecticaConfig(), colecticaClient,
-                "http://rdf.insee.fr/graphes/", "operations");
+                groupService,
+                studyUnitService,
+                ddiService,
+                repositoryPublicationReader,
+                createColecticaConfig(),
+                colecticaClient,
+                "http://rdf.insee.fr/graphes/",
+                "operations");
 
         // When
         runner.run();
@@ -255,7 +287,8 @@ class LocalColecticaGroupInitConfigurationTest {
             Ddi4LogicalProduct lp = logicalProducts.get(variant);
             assertThat(lp.codeListSchemeReference()).hasSize(1);
             assertThat(lp.categorySchemeReference()).hasSize(1);
-            assertThat(lp.categorySchemeReference().get(0).id()).isEqualTo(categorySchemes.get(variant).id());
+            assertThat(lp.categorySchemeReference().get(0).id())
+                    .isEqualTo(categorySchemes.get(variant).id());
             assertThat(lp.categorySchemeReference().get(0).type()).isEqualTo("CategoryScheme");
         }
 
@@ -280,9 +313,14 @@ class LocalColecticaGroupInitConfigurationTest {
 
         LocalColecticaGroupInitConfiguration config = new LocalColecticaGroupInitConfiguration();
         CommandLineRunner runner = config.initColecticaGroups(
-                groupService, studyUnitService, ddiService, repositoryPublicationReader,
-                createColecticaConfig(), colecticaClient,
-                "http://rdf.insee.fr/graphes/", "operations");
+                groupService,
+                studyUnitService,
+                ddiService,
+                repositoryPublicationReader,
+                createColecticaConfig(),
+                colecticaClient,
+                "http://rdf.insee.fr/graphes/",
+                "operations");
 
         // When
         runner.run();
@@ -290,7 +328,8 @@ class LocalColecticaGroupInitConfigurationTest {
         // Then: one ManagedRepresentationScheme per group variant, each filing the variant's example
         // ManagedMissingValuesRepresentation (cf. #1566) and filed in the group LogicalProduct
         int variants = LocalColecticaGroupInitConfiguration.VARIANT_LABEL_WORDS.size();
-        ArgumentCaptor<Ddi4ManagedRepresentationScheme> mrsCaptor = ArgumentCaptor.forClass(Ddi4ManagedRepresentationScheme.class);
+        ArgumentCaptor<Ddi4ManagedRepresentationScheme> mrsCaptor =
+                ArgumentCaptor.forClass(Ddi4ManagedRepresentationScheme.class);
         ArgumentCaptor<Ddi4LogicalProduct> lpCaptor = ArgumentCaptor.forClass(Ddi4LogicalProduct.class);
         verify(ddiService, times(variants)).createManagedRepresentationScheme(mrsCaptor.capture());
         verify(ddiService, times(variants)).createLogicalProduct(lpCaptor.capture());
@@ -338,9 +377,14 @@ class LocalColecticaGroupInitConfigurationTest {
 
         LocalColecticaGroupInitConfiguration config = new LocalColecticaGroupInitConfiguration();
         CommandLineRunner runner = config.initColecticaGroups(
-                groupService, studyUnitService, ddiService, repositoryPublicationReader,
-                createColecticaConfig(), colecticaClient,
-                "http://rdf.insee.fr/graphes/", "operations");
+                groupService,
+                studyUnitService,
+                ddiService,
+                repositoryPublicationReader,
+                createColecticaConfig(),
+                colecticaClient,
+                "http://rdf.insee.fr/graphes/",
+                "operations");
 
         // When
         runner.run();
@@ -365,7 +409,8 @@ class LocalColecticaGroupInitConfigurationTest {
         for (int variant = 0; variant < variants; variant++) {
             List<Ddi4Category> categories = categoryCaptor.getAllValues().subList(2 * variant, 2 * variant + 2);
             Ddi4CodeList codeList = codeListCaptor.getAllValues().get(variant);
-            Ddi4ManagedMissingValuesRepresentation mmvr = mmvrCaptor.getAllValues().get(variant);
+            Ddi4ManagedMissingValuesRepresentation mmvr =
+                    mmvrCaptor.getAllValues().get(variant);
 
             // La CodeList sentinelle porte 2 codes (NSP, REF) pointant vers les 2 catégories
             assertThat(codeList.code()).hasSize(2);
@@ -379,19 +424,29 @@ class LocalColecticaGroupInitConfigurationTest {
             // La MMVR référence la CodeList sentinelle via son MissingCodeRepresentation, avec un label
             assertThat(mmvr.label()).isNotEmpty();
             assertThat(mmvr.missingCodeRepresentation()).hasSize(1);
-            assertThat(mmvr.missingCodeRepresentation().get(0).codeListReference().id())
+            assertThat(mmvr.missingCodeRepresentation()
+                            .get(0)
+                            .codeListReference()
+                            .id())
                     .isEqualTo(codeList.id());
 
             // Classements : CodeList dans le CodeListScheme, catégories dans le CategoryScheme,
             // MMVR dans le ManagedRepresentationScheme
             assertThat(clsCaptor.getAllValues().get(variant).codeListReference())
-                    .extracting(Reference::id).containsExactly(codeList.id());
+                    .extracting(Reference::id)
+                    .containsExactly(codeList.id());
             assertThat(catsCaptor.getAllValues().get(variant).categoryReference())
                     .extracting(Reference::id)
                     .containsExactly(categories.get(0).id(), categories.get(1).id());
             assertThat(mrsCaptor.getAllValues().get(variant).managedRepresentationReference())
-                    .extracting(Reference::id).containsExactly(mmvr.id());
-            assertThat(mrsCaptor.getAllValues().get(variant).managedRepresentationReference().get(0).type())
+                    .extracting(Reference::id)
+                    .containsExactly(mmvr.id());
+            assertThat(mrsCaptor
+                            .getAllValues()
+                            .get(variant)
+                            .managedRepresentationReference()
+                            .get(0)
+                            .type())
                     .isEqualTo("ManagedMissingValuesRepresentation");
         }
 
@@ -419,14 +474,18 @@ class LocalColecticaGroupInitConfigurationTest {
                 .put("operationLabel", "Enquête innovation 2020"));
 
         when(repositoryPublicationReader.getResponseAsArray(anyString())).thenReturn(sparqlResults);
-        when(ddiService.createPhysicalInstance(any()))
-                .thenReturn(piResponse("fr.insee", "pi-uuid-1"));
+        when(ddiService.createPhysicalInstance(any())).thenReturn(piResponse("fr.insee", "pi-uuid-1"));
 
         LocalColecticaGroupInitConfiguration config = new LocalColecticaGroupInitConfiguration();
         CommandLineRunner runner = config.initColecticaGroups(
-                groupService, studyUnitService, ddiService, repositoryPublicationReader,
-                createColecticaConfig(), colecticaClient,
-                "http://rdf.insee.fr/graphes/", "operations");
+                groupService,
+                studyUnitService,
+                ddiService,
+                repositoryPublicationReader,
+                createColecticaConfig(),
+                colecticaClient,
+                "http://rdf.insee.fr/graphes/",
+                "operations");
 
         // When
         runner.run();
@@ -448,7 +507,8 @@ class LocalColecticaGroupInitConfigurationTest {
         ArgumentCaptor<Ddi4LogicalProduct> lpCaptor = ArgumentCaptor.forClass(Ddi4LogicalProduct.class);
         verify(ddiService, atLeastOnce()).createLogicalProduct(lpCaptor.capture());
         List<Ddi4LogicalProduct> studyUnitLps = lpCaptor.getAllValues().stream()
-                .filter(lp -> lp.variableSchemeReference() != null && !lp.variableSchemeReference().isEmpty())
+                .filter(lp -> lp.variableSchemeReference() != null
+                        && !lp.variableSchemeReference().isEmpty())
                 .toList();
         assertThat(studyUnitLps).hasSize(variants);
         assertThat(studyUnitLps).extracting(Ddi4LogicalProduct::id).doesNotHaveDuplicates();
@@ -493,10 +553,14 @@ class LocalColecticaGroupInitConfigurationTest {
 
         LocalColecticaGroupInitConfiguration config = new LocalColecticaGroupInitConfiguration();
         CommandLineRunner runner = config.initColecticaGroups(
-                groupService, studyUnitService, ddiService, repositoryPublicationReader,
-                createColecticaConfig(), colecticaClient,
-                "http://rdf.insee.fr/graphes/", "operations"
-        );
+                groupService,
+                studyUnitService,
+                ddiService,
+                repositoryPublicationReader,
+                createColecticaConfig(),
+                colecticaClient,
+                "http://rdf.insee.fr/graphes/",
+                "operations");
 
         // When
         runner.run();
@@ -518,7 +582,8 @@ class LocalColecticaGroupInitConfigurationTest {
                         "Enquête innovation Mike Group",
                         "Enquête innovation Bravo Group",
                         "Enquête innovation Yankee Group");
-        assertThat(groupCaptor.getAllValues()).allSatisfy(g -> assertThat(g.studyUnitReference()).isEmpty());
+        assertThat(groupCaptor.getAllValues())
+                .allSatisfy(g -> assertThat(g.studyUnitReference()).isEmpty());
         verify(studyUnitService, never()).createOrUpdate(any());
     }
 
@@ -543,20 +608,24 @@ class LocalColecticaGroupInitConfigurationTest {
 
         when(repositoryPublicationReader.getResponseAsArray(anyString())).thenReturn(sparqlResults);
 
-        when(ddiService.createPhysicalInstance(any()))
-                .thenReturn(piResponse("fr.insee", "pi-uuid-1"));
+        when(ddiService.createPhysicalInstance(any())).thenReturn(piResponse("fr.insee", "pi-uuid-1"));
 
         // First study unit creation fails
         doThrow(new RuntimeException("API error"))
                 .doNothing()
-                .when(studyUnitService).createOrUpdate(any());
+                .when(studyUnitService)
+                .createOrUpdate(any());
 
         LocalColecticaGroupInitConfiguration config = new LocalColecticaGroupInitConfiguration();
         CommandLineRunner runner = config.initColecticaGroups(
-                groupService, studyUnitService, ddiService, repositoryPublicationReader,
-                createColecticaConfig(), colecticaClient,
-                "http://rdf.insee.fr/graphes/", "operations"
-        );
+                groupService,
+                studyUnitService,
+                ddiService,
+                repositoryPublicationReader,
+                createColecticaConfig(),
+                colecticaClient,
+                "http://rdf.insee.fr/graphes/",
+                "operations");
 
         // When
         runner.run();
@@ -572,23 +641,42 @@ class LocalColecticaGroupInitConfigurationTest {
         // Given: 2 series, first with 2 ops, second with 1 op
         JSONArray sparqlResults = new JSONArray();
         sparqlResults.put(new JSONObject()
-                .put("seriesId", "s1001").put("seriesIri", "iri:s1001").put("seriesLabel", "Série A")
-                .put("operationId", "op1").put("operationIri", "iri:op1").put("operationLabel", "Opération 1"));
+                .put("seriesId", "s1001")
+                .put("seriesIri", "iri:s1001")
+                .put("seriesLabel", "Série A")
+                .put("operationId", "op1")
+                .put("operationIri", "iri:op1")
+                .put("operationLabel", "Opération 1"));
         sparqlResults.put(new JSONObject()
-                .put("seriesId", "s1001").put("seriesIri", "iri:s1001").put("seriesLabel", "Série A")
-                .put("operationId", "op2").put("operationIri", "iri:op2").put("operationLabel", "Opération 2"));
+                .put("seriesId", "s1001")
+                .put("seriesIri", "iri:s1001")
+                .put("seriesLabel", "Série A")
+                .put("operationId", "op2")
+                .put("operationIri", "iri:op2")
+                .put("operationLabel", "Opération 2"));
         sparqlResults.put(new JSONObject()
-                .put("seriesId", "s2001").put("seriesIri", "iri:s2001").put("seriesLabel", "Série B")
-                .put("operationId", "op3").put("operationIri", "iri:op3").put("operationLabel", "Opération 3"));
+                .put("seriesId", "s2001")
+                .put("seriesIri", "iri:s2001")
+                .put("seriesLabel", "Série B")
+                .put("operationId", "op3")
+                .put("operationIri", "iri:op3")
+                .put("operationLabel", "Opération 3"));
 
         when(repositoryPublicationReader.getResponseAsArray(anyString())).thenReturn(sparqlResults);
 
         LocalColecticaGroupInitConfiguration config = new LocalColecticaGroupInitConfiguration();
-        var result = config.querySeriesAndOperations(repositoryPublicationReader, "http://rdf.insee.fr/graphes/operations");
+        var result =
+                config.querySeriesAndOperations(repositoryPublicationReader, "http://rdf.insee.fr/graphes/operations");
 
         // 2 series
-        var s1001 = result.stream().filter(s -> s.seriesId().equals("s1001")).findFirst().orElseThrow();
-        var s2001 = result.stream().filter(s -> s.seriesId().equals("s2001")).findFirst().orElseThrow();
+        var s1001 = result.stream()
+                .filter(s -> s.seriesId().equals("s1001"))
+                .findFirst()
+                .orElseThrow();
+        var s2001 = result.stream()
+                .filter(s -> s.seriesId().equals("s2001"))
+                .findFirst()
+                .orElseThrow();
 
         assertThat(s1001.operations()).hasSize(2);
         assertThat(s1001.seriesLabel()).isEqualTo("Série A");
@@ -599,10 +687,14 @@ class LocalColecticaGroupInitConfigurationTest {
     @Test
     void buildDdiAssociations_mapsEachSeriesToGroupAndEachOperationToStudyUnit() {
         var series = new LocalColecticaGroupInitConfiguration.SeriesWithOperations(
-                "s1001", "http://id.insee.fr/operations/serie/s1001", "Série A",
+                "s1001",
+                "http://id.insee.fr/operations/serie/s1001",
+                "Série A",
                 List.of(
-                        new LocalColecticaGroupInitConfiguration.OperationInfo("op1", "http://id.insee.fr/operations/operation/op1", "Opération 1"),
-                        new LocalColecticaGroupInitConfiguration.OperationInfo("op2", "http://id.insee.fr/operations/operation/op2", "Opération 2")));
+                        new LocalColecticaGroupInitConfiguration.OperationInfo(
+                                "op1", "http://id.insee.fr/operations/operation/op1", "Opération 1"),
+                        new LocalColecticaGroupInitConfiguration.OperationInfo(
+                                "op2", "http://id.insee.fr/operations/operation/op2", "Opération 2")));
 
         LocalColecticaGroupInitConfiguration config = new LocalColecticaGroupInitConfiguration();
         var associations = config.buildDdiAssociations(List.of(series));
@@ -621,7 +713,8 @@ class LocalColecticaGroupInitConfigurationTest {
     }
 
     @Test
-    void versionedStudyUnitExample_createsAStudyUnitInTwoVersionsBothCarryingTheSameBasicPhysicalInstance() throws Exception {
+    void versionedStudyUnitExample_createsAStudyUnitInTwoVersionsBothCarryingTheSameBasicPhysicalInstance()
+            throws Exception {
         when(ddiService.createPhysicalInstance(any())).thenReturn(piResponse("fr.insee", "pi-two-versions"));
 
         LocalColecticaGroupInitConfiguration config = new LocalColecticaGroupInitConfiguration();

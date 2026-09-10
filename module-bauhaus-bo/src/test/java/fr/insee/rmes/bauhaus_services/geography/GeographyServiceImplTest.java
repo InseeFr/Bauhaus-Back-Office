@@ -1,14 +1,14 @@
 package fr.insee.rmes.bauhaus_services.geography;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import fr.insee.rmes.AppSpringBootTest;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.modules.geographies.model.GeoFeature;
-import fr.insee.rmes.domain.exceptions.RmesException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @AppSpringBootTest
 class GeographyServiceImplTest {
@@ -19,7 +19,8 @@ class GeographyServiceImplTest {
     @Test
     void shouldReturnBadRequestExceptionIfMissingId() {
         GeoFeature feature = new GeoFeature();
-        RmesException exception = assertThrows(RmesBadRequestException.class, () -> geographyService.createRdfGeoFeature(feature));
+        RmesException exception =
+                assertThrows(RmesBadRequestException.class, () -> geographyService.createRdfGeoFeature(feature));
         Assertions.assertEquals("{\"code\":845,\"message\":\"id is mandatory\"}", exception.getDetails());
     }
 
@@ -27,7 +28,8 @@ class GeographyServiceImplTest {
     void shouldReturnBadRequestExceptionIfMissingLabelLg1() {
         GeoFeature feature = new GeoFeature();
         feature.setId("id");
-        RmesException exception = assertThrows(RmesBadRequestException.class, () -> geographyService.createRdfGeoFeature(feature));
+        RmesException exception =
+                assertThrows(RmesBadRequestException.class, () -> geographyService.createRdfGeoFeature(feature));
         Assertions.assertEquals("{\"code\":846,\"message\":\"LabelLg1 is mandatory\"}", exception.getDetails());
     }
 
@@ -36,7 +38,8 @@ class GeographyServiceImplTest {
         GeoFeature feature = new GeoFeature();
         feature.setId("id");
         feature.setLabelLg1("labelLg1");
-        RmesException exception = assertThrows(RmesBadRequestException.class, () -> geographyService.createRdfGeoFeature(feature));
+        RmesException exception =
+                assertThrows(RmesBadRequestException.class, () -> geographyService.createRdfGeoFeature(feature));
         Assertions.assertEquals("{\"code\":846,\"message\":\"LabelLg2 is mandatory\"}", exception.getDetails());
     }
 }

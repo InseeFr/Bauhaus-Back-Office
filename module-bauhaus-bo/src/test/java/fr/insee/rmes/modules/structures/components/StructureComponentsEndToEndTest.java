@@ -1,5 +1,7 @@
 package fr.insee.rmes.modules.structures.components;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.testcontainers.WithGraphDBContainer;
@@ -13,8 +15,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.web.client.RestClient;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Parcours complet d'un composant mutualisé de structure, du POST à la relecture, contre un vrai
@@ -50,7 +50,8 @@ class StructureComponentsEndToEndTest extends WithGraphDBContainer {
 
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
-        registry.add("fr.insee.rmes.bauhaus.sesame.gestion.sesameServer",
+        registry.add(
+                "fr.insee.rmes.bauhaus.sesame.gestion.sesameServer",
                 () -> "http://" + container.getHost() + ":" + container.getMappedPort(7200));
         registry.add("fr.insee.rmes.bauhaus.sesame.gestion.repository", () -> BAUHAUS_TEST_REPOSITORY);
     }
@@ -83,12 +84,16 @@ class StructureComponentsEndToEndTest extends WithGraphDBContainer {
         assertThat(component.getString("creator")).isEqualTo("http://bauhaus/HIE000000");
 
         String iri = COMPONENTS_BASE_URI + "dimension/" + id;
-        assertThat(triplePresent(iri, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", "<" + QB + "DimensionProperty>"))
-                .as("le composant est typé qb:DimensionProperty dans le graphe des composants").isTrue();
+        assertThat(triplePresent(
+                        iri, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", "<" + QB + "DimensionProperty>"))
+                .as("le composant est typé qb:DimensionProperty dans le graphe des composants")
+                .isTrue();
         assertThat(triplePresent(iri, "http://purl.org/dc/terms/identifier", "\"" + id + "\""))
-                .as("dcterms:identifier est un littéral simple").isTrue();
+                .as("dcterms:identifier est un littéral simple")
+                .isTrue();
         assertThat(triplePresent(iri, "http://www.w3.org/2000/01/rdf-schema#label", "\"Dimension géographique\"@fr"))
-                .as("le libellé porte la langue lg1").isTrue();
+                .as("le libellé porte la langue lg1")
+                .isTrue();
         assertThat(triplePresent(iri, INSEE + "validationState", "\"Unpublished\""))
                 .isTrue();
     }
@@ -110,7 +115,8 @@ class StructureComponentsEndToEndTest extends WithGraphDBContainer {
                 }""".formatted(QB, XSD));
 
         String iri = COMPONENTS_BASE_URI + "mesure/" + id;
-        assertThat(triplePresent(iri, "http://www.w3.org/2000/01/rdf-schema#range", "<" + XSD + "string>")).isTrue();
+        assertThat(triplePresent(iri, "http://www.w3.org/2000/01/rdf-schema#range", "<" + XSD + "string>"))
+                .isTrue();
         assertThat(triplePresent(iri, XSD + "minLength", "\"1\"@fr")).isTrue();
         assertThat(triplePresent(iri, XSD + "maxLength", "\"10\"@fr")).isTrue();
         assertThat(triplePresent(iri, XSD + "pattern", "\"[A-Z]+\"@fr")).isTrue();
@@ -133,10 +139,13 @@ class StructureComponentsEndToEndTest extends WithGraphDBContainer {
 
         String iri = COMPONENTS_BASE_URI + "attribut/" + id;
         assertThat(triplePresent(iri, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", "<" + QB + "CodedProperty>"))
-                .as("un composant adossé à une liste de codes est aussi une qb:CodedProperty").isTrue();
+                .as("un composant adossé à une liste de codes est aussi une qb:CodedProperty")
+                .isTrue();
         assertThat(triplePresent(iri, "http://www.w3.org/2000/01/rdf-schema#range", "<" + SKOS_CONCEPT + ">"))
-                .as("faute de classe OWL déclarée, la portée retombe sur skos:Concept").isTrue();
-        assertThat(triplePresent(iri, QB + "codeList", "<http://bauhaus/codes/listeCodes>")).isTrue();
+                .as("faute de classe OWL déclarée, la portée retombe sur skos:Concept")
+                .isTrue();
+        assertThat(triplePresent(iri, QB + "codeList", "<http://bauhaus/codes/listeCodes>"))
+                .isTrue();
     }
 
     /**
@@ -162,9 +171,11 @@ class StructureComponentsEndToEndTest extends WithGraphDBContainer {
 
         String iri = COMPONENTS_BASE_URI + "dimension/" + id;
         assertThat(triplePresent(iri, "http://bauhaus/attribut/lien", "<http://bauhaus/valeur/cible>"))
-                .as("une valeur d'attribut qui est une IRI est stockée en ressource").isTrue();
+                .as("une valeur d'attribut qui est une IRI est stockée en ressource")
+                .isTrue();
         assertThat(triplePresent(iri, "http://bauhaus/attribut/texte", "\"une valeur libre\""))
-                .as("une valeur d'attribut qui n'est pas une IRI retombe en littéral").isTrue();
+                .as("une valeur d'attribut qui n'est pas une IRI retombe en littéral")
+                .isTrue();
     }
 
     @Test
@@ -182,7 +193,8 @@ class StructureComponentsEndToEndTest extends WithGraphDBContainer {
         String iri = COMPONENTS_BASE_URI + "dimension/" + id;
         assertThat(componentExists(iri)).isTrue();
 
-        RestClient.create().delete()
+        RestClient.create()
+                .delete()
                 .uri(componentsEndpoint() + "/" + id)
                 .retrieve()
                 .toBodilessEntity();
@@ -195,7 +207,8 @@ class StructureComponentsEndToEndTest extends WithGraphDBContainer {
     }
 
     private String create(String body) {
-        var response = RestClient.create().post()
+        var response = RestClient.create()
+                .post()
                 .uri(componentsEndpoint())
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(body)
@@ -207,7 +220,8 @@ class StructureComponentsEndToEndTest extends WithGraphDBContainer {
     }
 
     private String read(String id) {
-        return RestClient.create().get()
+        return RestClient.create()
+                .get()
                 .uri(componentsEndpoint() + "/" + id)
                 .retrieve()
                 .body(String.class);

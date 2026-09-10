@@ -14,8 +14,7 @@ public record CogsDate(
         @JsonProperty("Date") String date,
         @JsonProperty("GYearMonth") String gYearMonth,
         @JsonProperty("GYear") String gYear,
-        @JsonProperty("Duration") Number duration
-) {
+        @JsonProperty("Duration") Number duration) {
 
     public static CogsDate ofDateTime(String dateTime) {
         return new CogsDate(dateTime, null, null, null, null);

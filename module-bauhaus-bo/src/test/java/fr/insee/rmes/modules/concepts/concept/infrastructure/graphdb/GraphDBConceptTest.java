@@ -1,15 +1,14 @@
 package fr.insee.rmes.modules.concepts.concept.infrastructure.graphdb;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import fr.insee.rmes.modules.concepts.concept.domain.model.Concept;
 import fr.insee.rmes.modules.concepts.concept.domain.model.ConceptVersion;
 import fr.insee.rmes.modules.shared_kernel.domain.model.Lang;
 import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
-import org.junit.jupiter.api.Test;
-
 import java.time.LocalDateTime;
 import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.Test;
 
 class GraphDBConceptTest {
 
@@ -32,8 +31,7 @@ class GraphDBConceptTest {
                 "Validated",
                 List.of("alt-fr-1", "alt-fr-2"),
                 List.of("alt-en-1"),
-                List.of("Collection-001")
-        );
+                List.of("Collection-001"));
 
         Concept concept = row.toDomain();
 
@@ -71,8 +69,7 @@ class GraphDBConceptTest {
                 "Unpublished",
                 null,
                 null,
-                null
-        );
+                null);
 
         Concept concept = row.toDomain();
 
@@ -88,12 +85,19 @@ class GraphDBConceptTest {
         var row = new GraphDBConcept(
                 "c00003",
                 "Concept",
-                null, null, null, null, null,
+                null,
+                null,
+                null,
+                null,
+                null,
                 "2026-01-01T10:00:00.000+01:00",
                 "2026-06-01T15:30:00.000+02:00",
-                null, 1, "Unpublished",
-                null, null, null
-        );
+                null,
+                1,
+                "Unpublished",
+                null,
+                null,
+                null);
 
         Concept concept = row.toDomain();
 
@@ -108,11 +112,19 @@ class GraphDBConceptTest {
         var row = new GraphDBConcept(
                 "c00004",
                 "Concept",
-                null, null, null, null, null,
+                null,
+                null,
+                null,
+                null,
+                null,
                 "2026-01-01T10:00:00",
-                null, null, 0, "Unpublished",
-                null, null, null
-        );
+                null,
+                null,
+                0,
+                "Unpublished",
+                null,
+                null,
+                null);
 
         Concept concept = row.toDomain();
 

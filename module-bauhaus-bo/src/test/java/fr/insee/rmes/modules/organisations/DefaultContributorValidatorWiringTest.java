@@ -1,16 +1,16 @@
 package fr.insee.rmes.modules.organisations;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import fr.insee.rmes.modules.organisations.domain.exceptions.OrganisationFetchException;
 import fr.insee.rmes.modules.organisations.domain.port.serverside.OrganisationsRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 /**
  * Le contrôle doit faire échouer le démarrage du contexte, et rester débrayable par propriété
@@ -24,7 +24,8 @@ class DefaultContributorValidatorWiringTest {
     @Test
     void should_fail_the_context_startup_when_the_contributor_is_unknown() {
         contextRunner
-                .withPropertyValues("fr.insee.rmes.bauhaus.defaultContributor=http://bauhaus/organisations/insee/UNKNOWN")
+                .withPropertyValues(
+                        "fr.insee.rmes.bauhaus.defaultContributor=http://bauhaus/organisations/insee/UNKNOWN")
                 .run(context -> assertThat(context)
                         .hasFailed()
                         .getFailure()
@@ -36,7 +37,8 @@ class DefaultContributorValidatorWiringTest {
     @Test
     void should_start_when_the_contributor_exists() {
         contextRunner
-                .withPropertyValues("fr.insee.rmes.bauhaus.defaultContributor=http://bauhaus/organisations/insee/HIE3014990")
+                .withPropertyValues(
+                        "fr.insee.rmes.bauhaus.defaultContributor=http://bauhaus/organisations/insee/HIE3014990")
                 .run(context -> assertThat(context).hasSingleBean(DefaultContributorValidator.class));
     }
 
@@ -55,7 +57,8 @@ class DefaultContributorValidatorWiringTest {
         OrganisationsRepository organisationsRepository() throws OrganisationFetchException {
             OrganisationsRepository repository = mock(OrganisationsRepository.class);
             when(repository.checkIfOrganisationExists(anyString())).thenReturn(false);
-            when(repository.checkIfOrganisationExists("http://bauhaus/organisations/insee/HIE3014990")).thenReturn(true);
+            when(repository.checkIfOrganisationExists("http://bauhaus/organisations/insee/HIE3014990"))
+                    .thenReturn(true);
             return repository;
         }
     }

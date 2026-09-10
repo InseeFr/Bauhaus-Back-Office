@@ -1,19 +1,18 @@
 package fr.insee.rmes.modules.commons.configuration.conditional;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import fr.insee.rmes.modules.commons.configuration.ConditionalOnModule;
 import fr.insee.rmes.modules.commons.configuration.OnModuleCondition;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.condition.ConditionOutcome;
 import org.springframework.context.annotation.ConditionContext;
 import org.springframework.core.type.AnnotatedTypeMetadata;
 import org.springframework.mock.env.MockEnvironment;
-
-import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 class OnModuleConditionTest {
 
@@ -63,7 +62,8 @@ class OnModuleConditionTest {
     void shouldNotMatchWhenAttributesAreNull() {
         ConditionContext context = mock(ConditionContext.class);
         AnnotatedTypeMetadata metadata = mock(AnnotatedTypeMetadata.class);
-        when(metadata.getAnnotationAttributes(ConditionalOnModule.class.getName())).thenReturn(null);
+        when(metadata.getAnnotationAttributes(ConditionalOnModule.class.getName()))
+                .thenReturn(null);
 
         ConditionOutcome outcome = condition.getMatchOutcome(context, metadata);
 

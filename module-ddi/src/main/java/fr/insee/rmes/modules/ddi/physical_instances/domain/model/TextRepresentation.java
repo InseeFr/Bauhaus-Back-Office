@@ -9,8 +9,7 @@ public record TextRepresentation(
         @JsonProperty("MaxLength") Integer maxLength,
         @JsonProperty("MinLength") Integer minLength,
         @JsonProperty("RegExp") String regExp,
-        @JsonProperty("BlankIsMissingValue") Boolean blankIsMissingValue
-) {
+        @JsonProperty("BlankIsMissingValue") Boolean blankIsMissingValue) {
 
     public static final String TYPE = "TextRepresentationBaseType";
 }

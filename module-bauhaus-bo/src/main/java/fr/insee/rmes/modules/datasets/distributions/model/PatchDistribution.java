@@ -5,11 +5,10 @@ public class PatchDistribution {
     private String byteSize;
     private String url;
 
-
-
     public String getUpdated() {
         return updated;
     }
+
     public String getByteSize() {
         return byteSize;
     }
@@ -19,11 +18,10 @@ public class PatchDistribution {
     }
 
     public void setByteSize(String byteSize) {
-            this.byteSize = byteSize;
+        this.byteSize = byteSize;
     }
 
-    public PatchDistribution() {
-    }
+    public PatchDistribution() {}
 
     public static PatchDistribution of(String updated, String byteSize, String url) {
         PatchDistribution patch = new PatchDistribution();

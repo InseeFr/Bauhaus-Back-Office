@@ -10,5 +10,4 @@ package fr.insee.rmes.modules.ddi.physical_instances.domain.model;
  *
  * @param label {@code null} quand Colectica n'en expose aucun pour cet item.
  */
-public record UsageItem(String agencyId, String id, String label) {
-}
+public record UsageItem(String agencyId, String id, String label) {}

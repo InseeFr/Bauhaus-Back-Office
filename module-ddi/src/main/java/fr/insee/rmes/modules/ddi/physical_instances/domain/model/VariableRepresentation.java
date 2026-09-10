@@ -10,6 +10,4 @@ public record VariableRepresentation(
         @JsonProperty("NumericRepresentation") NumericRepresentation numericRepresentation,
         @JsonProperty("DateTimeRepresentation") DateTimeRepresentation dateTimeRepresentation,
         @JsonProperty("TextRepresentation") TextRepresentation textRepresentation,
-        @JsonProperty("MissingValuesReference") Reference missingValuesReference
-) {
-}
+        @JsonProperty("MissingValuesReference") Reference missingValuesReference) {}

@@ -8,26 +8,25 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.bauhaus_services.utils.OrganisationLabelResolver;
-import fr.insee.rmes.rdf_utils.RepositoryGestion;
-import fr.insee.rmes.utils.IdGenerator;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.json.JSONUtils;
-import fr.insee.rmes.modules.organisations.domain.model.OrganisationOption;
-import fr.insee.rmes.modules.organisations.domain.port.clientside.OrganisationService;
 import fr.insee.rmes.model.concepts.ConceptForExport;
 import fr.insee.rmes.modules.commons.domain.model.DisseminationStatus;
+import fr.insee.rmes.modules.organisations.domain.model.OrganisationOption;
+import fr.insee.rmes.modules.organisations.domain.port.clientside.OrganisationService;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptConceptsQueries;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.utils.*;
+import fr.insee.rmes.utils.IdGenerator;
+import java.io.InputStream;
+import java.util.Arrays;
+import java.util.Map;
 import org.apache.http.HttpStatus;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-
-import java.io.InputStream;
-import java.util.Arrays;
-import java.util.Map;
 
 @Component
 public class ConceptsExportBuilder extends RdfService {
@@ -43,10 +42,15 @@ public class ConceptsExportBuilder extends RdfService {
     private static final String xmlPattern = "/xslTransformerFiles/concept/conceptPatternContent.xml";
     private static final String zip = "/xslTransformerFiles/concept/toZipForConcept.zip";
 
-    public ConceptsExportBuilder(RepositoryGestion repoGestion, IdGenerator idGenerator,
-                                 RepositoryPublication repositoryPublication,
-                                 PublicationUtils publicationUtils,
-                                 LegacyConceptsRepository legacyConceptsRepository, OrganisationService organisationService, ExportUtils exportUtils, ConceptConceptsQueries conceptConceptsQueries) {
+    public ConceptsExportBuilder(
+            RepositoryGestion repoGestion,
+            IdGenerator idGenerator,
+            RepositoryPublication repositoryPublication,
+            PublicationUtils publicationUtils,
+            LegacyConceptsRepository legacyConceptsRepository,
+            OrganisationService organisationService,
+            ExportUtils exportUtils,
+            ConceptConceptsQueries conceptConceptsQueries) {
         super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
         this.legacyConceptsRepository = legacyConceptsRepository;
         this.organisationService = organisationService;
@@ -56,13 +60,15 @@ public class ConceptsExportBuilder extends RdfService {
 
     private void transformAltLabelListInString(JSONObject general) {
         if (general.has(Constants.ALT_LABEL_LG1)) {
-            general.put(Constants.ALT_LABEL_LG1,
+            general.put(
+                    Constants.ALT_LABEL_LG1,
                     JSONUtils.jsonArrayOfStringToString(general.getJSONArray(Constants.ALT_LABEL_LG1)));
         } else {
             general.remove(Constants.ALT_LABEL_LG1);
         }
         if (general.has(Constants.ALT_LABEL_LG2)) {
-            general.put(Constants.ALT_LABEL_LG2,
+            general.put(
+                    Constants.ALT_LABEL_LG2,
                     JSONUtils.jsonArrayOfStringToString(general.getJSONArray(Constants.ALT_LABEL_LG2)));
         } else {
             general.remove(Constants.ALT_LABEL_LG2);
@@ -73,7 +79,6 @@ public class ConceptsExportBuilder extends RdfService {
         ConceptForExport concept;
         JSONObject general = legacyConceptsRepository.getConceptById(id);
         transformAltLabelListInString(general);
-
 
         JSONArray links = repoGestion.getResponseAsArray(conceptConceptsQueries.conceptLinks(id));
         JSONObject notes = repoGestion.getResponseAsObject(
@@ -97,29 +102,36 @@ public class ConceptsExportBuilder extends RdfService {
 
             resolveOrganisationLabels(concept);
         } catch (JsonProcessingException e) {
-            throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), e.getClass().getSimpleName());
+            throw new RmesException(
+                    HttpStatus.SC_INTERNAL_SERVER_ERROR,
+                    e.getMessage(),
+                    e.getClass().getSimpleName());
         }
         return concept;
-
     }
 
     private void resolveOrganisationLabels(ConceptForExport concept) {
         Map<String, OrganisationOption> organisations = OrganisationLabelResolver.organisationsByIdentifier(
                 organisationService, Arrays.asList(concept.getCreator(), concept.getContributor()));
         concept.setCreator(OrganisationLabelResolver.labelOrReadableIdentifier(concept.getCreator(), organisations));
-        concept.setContributor(OrganisationLabelResolver.labelOrReadableIdentifier(concept.getContributor(), organisations));
+        concept.setContributor(
+                OrganisationLabelResolver.labelOrReadableIdentifier(concept.getContributor(), organisations));
     }
 
-    public ResponseEntity<Resource> exportAsResponse(String fileName, Map<String, String> xmlContent, boolean lg1, boolean lg2, boolean includeEmptyFields) throws RmesException {
+    public ResponseEntity<Resource> exportAsResponse(
+            String fileName, Map<String, String> xmlContent, boolean lg1, boolean lg2, boolean includeEmptyFields)
+            throws RmesException {
         String parametersXML = XsltUtils.buildParams(lg1, lg2, includeEmptyFields, Constants.CONCEPT);
         xmlContent.put(Constants.PARAMETERS_FILE, parametersXML);
         return exportUtils.exportAsODT(fileName, xmlContent, xslFile, xmlPattern, zip, Constants.CONCEPT);
     }
 
-    public InputStream exportAsInputStream(String fileName, Map<String, String> xmlContent, boolean lg1, boolean lg2, boolean includeEmptyFields) throws RmesException {
+    public InputStream exportAsInputStream(
+            String fileName, Map<String, String> xmlContent, boolean lg1, boolean lg2, boolean includeEmptyFields)
+            throws RmesException {
         String parametersXML = XsltUtils.buildParams(lg1, lg2, includeEmptyFields, Constants.CONCEPT);
         xmlContent.put(Constants.PARAMETERS_FILE, parametersXML);
-        return exportUtils.exportAsInputStream(fileName, xmlContent, xslFile, xmlPattern, zip, Constants.CONCEPT, FilesUtils.ODT_EXTENSION);
+        return exportUtils.exportAsInputStream(
+                fileName, xmlContent, xslFile, xmlPattern, zip, Constants.CONCEPT, FilesUtils.ODT_EXTENSION);
     }
-
 }

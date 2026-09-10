@@ -4,16 +4,15 @@ import fr.insee.rmes.modules.concepts.concept.domain.exceptions.ConceptAlreadyPu
 import fr.insee.rmes.modules.concepts.concept.domain.exceptions.ConceptNotFoundException;
 import fr.insee.rmes.modules.concepts.concept.domain.exceptions.ConceptsFetchException;
 import fr.insee.rmes.modules.concepts.concept.domain.exceptions.ConceptsSaveException;
-import fr.insee.rmes.modules.concepts.concept.domain.model.PartialConcept;
 import fr.insee.rmes.modules.concepts.concept.domain.model.Concept;
 import fr.insee.rmes.modules.concepts.concept.domain.model.ConceptDashboardItem;
 import fr.insee.rmes.modules.concepts.concept.domain.model.ConceptId;
 import fr.insee.rmes.modules.concepts.concept.domain.model.ConceptToValidate;
+import fr.insee.rmes.modules.concepts.concept.domain.model.PartialConcept;
 import fr.insee.rmes.modules.concepts.concept.domain.model.commands.CreateConceptCommand;
 import fr.insee.rmes.modules.concepts.concept.domain.model.commands.UpdateConceptCommand;
 import fr.insee.rmes.modules.concepts.concept.domain.port.clientside.ConceptsService;
 import fr.insee.rmes.modules.concepts.concept.domain.port.serverside.ConceptsRepository;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -60,7 +59,8 @@ public class DomainConceptsService implements ConceptsService {
     }
 
     @Override
-    public void updateConcept(UpdateConceptCommand command) throws ConceptsFetchException, ConceptsSaveException, ConceptNotFoundException {
+    public void updateConcept(UpdateConceptCommand command)
+            throws ConceptsFetchException, ConceptsSaveException, ConceptNotFoundException {
         ConceptId conceptId = command.conceptId();
         if (this.repository.getConcept(conceptId).isEmpty()) {
             throw new ConceptNotFoundException("Concept %s not found".formatted(conceptId.value()));
@@ -70,17 +70,20 @@ public class DomainConceptsService implements ConceptsService {
     }
 
     @Override
-    public void validateConcepts(List<ConceptId> ids) throws ConceptsFetchException, ConceptsSaveException, ConceptAlreadyPublishedException {
+    public void validateConcepts(List<ConceptId> ids)
+            throws ConceptsFetchException, ConceptsSaveException, ConceptAlreadyPublishedException {
         if (ids.isEmpty()) return;
         List<String> rawIds = ids.stream().map(ConceptId::value).toList();
         Set<String> existing = this.repository.findExistingConceptIds(rawIds);
-        List<String> missing = rawIds.stream().filter(id -> !existing.contains(id)).toList();
+        List<String> missing =
+                rawIds.stream().filter(id -> !existing.contains(id)).toList();
         if (!missing.isEmpty()) {
             throw new ConceptsFetchException(
                     new ConceptNotFoundException("Concepts not found: " + String.join(", ", missing)));
         }
         Set<String> alreadyPublished = this.repository.findValidatedConceptIds(rawIds);
-        List<String> published = rawIds.stream().filter(alreadyPublished::contains).toList();
+        List<String> published =
+                rawIds.stream().filter(alreadyPublished::contains).toList();
         if (!published.isEmpty()) {
             throw new ConceptAlreadyPublishedException("Concepts already published: " + String.join(", ", published));
         }
@@ -88,7 +91,8 @@ public class DomainConceptsService implements ConceptsService {
     }
 
     @Override
-    public void deleteConcept(ConceptId id) throws ConceptsFetchException, ConceptsSaveException, ConceptNotFoundException {
+    public void deleteConcept(ConceptId id)
+            throws ConceptsFetchException, ConceptsSaveException, ConceptNotFoundException {
         if (this.repository.getConcept(id).isEmpty()) {
             throw new ConceptNotFoundException("Concept %s not found".formatted(id.value()));
         }

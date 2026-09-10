@@ -2,14 +2,13 @@ package fr.insee.rmes.modules.clientconfig;
 
 import fr.insee.rmes.BauhausConfiguration;
 import fr.insee.rmes.BauhausLanguagesProperties;
-import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.ColecticaConfiguration;
 import fr.insee.rmes.modules.clientconfig.domain.DomainClientConfigService;
 import fr.insee.rmes.modules.clientconfig.domain.port.clientside.ClientConfigService;
+import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.ColecticaConfiguration;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import java.util.List;
 
 @Configuration
 public class ClientConfigConfiguration {
@@ -33,7 +32,6 @@ public class ClientConfigConfiguration {
                 extraMandatoryFields,
                 colecticaConfiguration.server().defaultAgencyId(),
                 colecticaConfiguration.langs(),
-                bauhausConfiguration.enableDevTools()
-        );
+                bauhausConfiguration.enableDevTools());
     }
 }

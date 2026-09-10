@@ -1,20 +1,19 @@
 package fr.insee.rmes.modules.organisations.domain;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.organisations.domain.model.OrganisationOption;
 import fr.insee.rmes.modules.organisations.domain.port.serverside.OrganisationRepository;
+import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.List;
-import java.util.Map;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class DomainOrganisationServiceTest {
@@ -35,9 +34,7 @@ class DomainOrganisationServiceTest {
         List<String> stamps = organisationService.getStamps();
 
         // Then
-        assertThat(stamps)
-                .isNotEmpty()
-                .contains("DG75-A001", "DR13-DIR", "SSM-DARES");
+        assertThat(stamps).isNotEmpty().contains("DG75-A001", "DR13-DIR", "SSM-DARES");
     }
 
     @Test
@@ -45,17 +42,14 @@ class DomainOrganisationServiceTest {
         // Given
         List<OrganisationOption> expectedOrganisations = List.of(
                 new OrganisationOption("DG75-A001", "Direction Générale 75 - Service A001"),
-                new OrganisationOption("DR13-DIR", "Direction Régionale 13 - Direction")
-        );
+                new OrganisationOption("DR13-DIR", "Direction Régionale 13 - Direction"));
         when(organisationRepository.getOrganisations()).thenReturn(expectedOrganisations);
 
         // When
         List<OrganisationOption> result = organisationService.getOrganisations();
 
         // Then
-        assertThat(result)
-                .hasSize(2)
-                .isEqualTo(expectedOrganisations);
+        assertThat(result).hasSize(2).isEqualTo(expectedOrganisations);
         verify(organisationRepository).getOrganisations();
     }
 
@@ -63,7 +57,8 @@ class DomainOrganisationServiceTest {
     void shouldReturnOrganisationByIdentifier() throws RmesException {
         // Given
         String identifier = "DG75-A001";
-        OrganisationOption expectedOrganisation = new OrganisationOption("DG75-A001", "Direction Générale 75 - Service A001");
+        OrganisationOption expectedOrganisation =
+                new OrganisationOption("DG75-A001", "Direction Générale 75 - Service A001");
         when(organisationRepository.getOrganisation(identifier)).thenReturn(expectedOrganisation);
 
         // When
@@ -97,17 +92,14 @@ class DomainOrganisationServiceTest {
         Map<String, OrganisationOption> expectedMap = Map.of(
                 "DG75-A001", new OrganisationOption("DG75-A001", "Direction Générale 75 - Service A001"),
                 "DR13-DIR", new OrganisationOption("DR13-DIR", "Direction Régionale 13"),
-                "SSM-DARES", new OrganisationOption("SSM-DARES", "Service DARES")
-        );
+                "SSM-DARES", new OrganisationOption("SSM-DARES", "Service DARES"));
         when(organisationRepository.getOrganisationsMap(identifiers)).thenReturn(expectedMap);
 
         // When
         Map<String, OrganisationOption> result = organisationService.getOrganisationsMap(identifiers);
 
         // Then
-        assertThat(result)
-                .hasSize(3)
-                .containsKeys("DG75-A001", "DR13-DIR", "SSM-DARES");
+        assertThat(result).hasSize(3).containsKeys("DG75-A001", "DR13-DIR", "SSM-DARES");
         assertThat(result.get("DG75-A001").label()).isEqualTo("Direction Générale 75 - Service A001");
         verify(organisationRepository).getOrganisationsMap(identifiers);
     }
@@ -147,17 +139,14 @@ class DomainOrganisationServiceTest {
                 "DG75-A001", new OrganisationOption("DG75-A001", "Direction Générale 75 - Service A001"),
                 "DR13-DIR", new OrganisationOption("DR13-DIR", "Direction Régionale 13")
                 // UNKNOWN is not in the map (not found)
-        );
+                );
         when(organisationRepository.getOrganisationsMap(identifiers)).thenReturn(expectedMap);
 
         // When
         Map<String, OrganisationOption> result = organisationService.getOrganisationsMap(identifiers);
 
         // Then
-        assertThat(result)
-                .hasSize(2)
-                .containsKeys("DG75-A001", "DR13-DIR")
-                .doesNotContainKey("UNKNOWN");
+        assertThat(result).hasSize(2).containsKeys("DG75-A001", "DR13-DIR").doesNotContainKey("UNKNOWN");
         verify(organisationRepository).getOrganisationsMap(identifiers);
     }
 }

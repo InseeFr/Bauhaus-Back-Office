@@ -1,9 +1,9 @@
 package fr.insee.rmes.graphdb.ontologies;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import org.eclipse.rdf4j.model.Namespace;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class INSEETest {
 
@@ -111,5 +111,4 @@ class INSEETest {
         assertNotNull(INSEE.RUBRIQUE_SANS_OBJECT);
         assertEquals("http://rdf.insee.fr/def/base#rubriqueSansObjet", INSEE.RUBRIQUE_SANS_OBJECT.toString());
     }
-
 }

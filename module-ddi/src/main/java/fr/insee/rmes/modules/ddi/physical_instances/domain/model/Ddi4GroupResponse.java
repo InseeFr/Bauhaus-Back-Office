@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -20,8 +19,7 @@ public record Ddi4GroupResponse(
         @JsonIgnore String schema,
         @JsonIgnore List<Reference> topLevelReference,
         @JsonIgnore List<Ddi4Group> group,
-        @JsonIgnore List<Ddi4StudyUnit> studyUnit
-) {
+        @JsonIgnore List<Ddi4StudyUnit> studyUnit) {
 
     /** Références de premier niveau de l'enveloppe. */
     @JsonProperty("topLevelReferences")
@@ -43,8 +41,7 @@ public record Ddi4GroupResponse(
     @JsonCreator
     public static Ddi4GroupResponse fromWire(
             @JsonProperty("topLevelReferences") List<Reference> topLevelReferences,
-            @JsonProperty("items") List<Ddi4Item> items
-    ) {
+            @JsonProperty("items") List<Ddi4Item> items) {
         List<Ddi4Group> groups = new ArrayList<>();
         List<Ddi4StudyUnit> studyUnits = new ArrayList<>();
 
@@ -52,12 +49,16 @@ public record Ddi4GroupResponse(
             switch (item) {
                 case Ddi4Group it -> groups.add(it);
                 case Ddi4StudyUnit it -> studyUnits.add(it);
-                default -> throw new IllegalArgumentException(
-                        "Type d'item DDI 4 non supporté : " + item.getClass().getSimpleName());
+                default ->
+                    throw new IllegalArgumentException("Type d'item DDI 4 non supporté : "
+                            + item.getClass().getSimpleName());
             }
         }
 
-        return new Ddi4GroupResponse(Ddi4Response.SCHEMA, topLevelReferences,
-                groups.isEmpty() ? null : groups, studyUnits.isEmpty() ? null : studyUnits);
+        return new Ddi4GroupResponse(
+                Ddi4Response.SCHEMA,
+                topLevelReferences,
+                groups.isEmpty() ? null : groups,
+                studyUnits.isEmpty() ? null : studyUnits);
     }
 }

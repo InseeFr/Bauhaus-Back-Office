@@ -15,8 +15,8 @@ public record Ddi4CodeList(
         @JsonProperty("BasedOnObject") BasedOnObject basedOnObject,
         @JsonProperty("Label") List<LangString> label,
         @JsonProperty("Level") List<Level> level,
-        @JsonProperty("Code") List<Code> code
-) implements Ddi4VersionedItem {
+        @JsonProperty("Code") List<Code> code)
+        implements Ddi4VersionedItem {
 
     public static final String TYPE = "CodeList";
 
@@ -24,14 +24,21 @@ public record Ddi4CodeList(
      * Constructeur de compatibilité (sans {@code BasedOnObject}) : la plupart des listes ne sont
      * pas des variantes — seule une liste forkée porte la référence à sa liste d'origine.
      */
-    public Ddi4CodeList(String type, CogsDate versionDate, String urn, String agency, String id,
-            String version, List<LangString> label, List<Level> level, List<Code> code) {
+    public Ddi4CodeList(
+            String type,
+            CogsDate versionDate,
+            String urn,
+            String agency,
+            String id,
+            String version,
+            List<LangString> label,
+            List<Level> level,
+            List<Code> code) {
         this(type, versionDate, urn, agency, id, version, null, label, level, code);
     }
 
     @Override
     public Ddi4CodeList withVersionDate(CogsDate versionDate) {
-        return new Ddi4CodeList(
-                type, versionDate, urn, agency, id, version, basedOnObject, label, level, code);
+        return new Ddi4CodeList(type, versionDate, urn, agency, id, version, basedOnObject, label, level, code);
     }
 }

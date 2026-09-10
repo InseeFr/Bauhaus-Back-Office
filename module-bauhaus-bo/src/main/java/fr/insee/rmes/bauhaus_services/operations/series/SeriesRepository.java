@@ -10,10 +10,9 @@ import fr.insee.rmes.bauhaus_services.operations.OperationsParentRepository;
 import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationsUtils;
 import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.OperationsObjectMapper;
 import fr.insee.rmes.bauhaus_services.operations.series.validation.SeriesValidator;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.utils.OrganisationLookup;
-import fr.insee.rmes.modules.commons.configuration.swagger.model.IdLabelTwoLangs;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
@@ -22,13 +21,16 @@ import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.graphdb.QueryUtils;
 import fr.insee.rmes.graphdb.ontologies.ADMS;
 import fr.insee.rmes.graphdb.ontologies.INSEE;
-import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
-import fr.insee.rmes.rdf_utils.RepositoryGestion;
-import fr.insee.rmes.model.links.OperationsLink;
-import fr.insee.rmes.modules.operations.series.domain.model.Series;
-import fr.insee.rmes.persistance.sparql_queries.operations.OperationSeriesQueries;
-import fr.insee.rmes.utils.*;
 import fr.insee.rmes.json.JSONUtils;
+import fr.insee.rmes.model.links.OperationsLink;
+import fr.insee.rmes.modules.commons.configuration.swagger.model.IdLabelTwoLangs;
+import fr.insee.rmes.modules.operations.series.domain.model.Series;
+import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
+import fr.insee.rmes.persistance.sparql_queries.operations.OperationSeriesQueries;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.utils.*;
+import java.io.IOException;
+import java.util.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.eclipse.rdf4j.model.IRI;
@@ -41,9 +43,6 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
-
-import java.io.IOException;
-import java.util.*;
 
 @Repository
 public class SeriesRepository {
@@ -136,13 +135,12 @@ public class SeriesRepository {
         return series;
     }
 
-
     public JSONObject getSeriesJsonById(String id, EncodingType encode) throws RmesException {
         JSONObject series = repositoryGestion.getResponseAsObject(operationSeriesQueries.oneSeriesQuery(id));
         // check that the series exist
         if (JSONUtils.isEmpty(series)) {
-            throw new RmesNotFoundException(ErrorCodes.SERIES_UNKNOWN_ID, "Series not found",
-                    "The series " + id + " cannot be found.");
+            throw new RmesNotFoundException(
+                    ErrorCodes.SERIES_UNKNOWN_ID, "Series not found", "The series " + id + " cannot be found.");
         }
         if (EncodingType.MARKDOWN.equals(encode)) {
             XhtmlToMarkdownUtils.convertJSONObject(series);
@@ -155,7 +153,6 @@ public class SeriesRepository {
         addGeneratedWith(id, series);
         return series;
     }
-
 
     public String getSeriesForSearch(String stamp) throws RmesException {
         JSONArray resQuery = repositoryGestion.getResponseAsArray(operationSeriesQueries.getSeriesForSearch(stamp));
@@ -218,7 +215,6 @@ public class SeriesRepository {
         operationsObjectMapper.fixOrganizationsNames(series);
     }
 
-
     /**
      * Add to series the link of type "predicate".
      * Links can be multiple
@@ -230,7 +226,8 @@ public class SeriesRepository {
      */
     private void addOneTypeOfLink(String id, JSONObject series, IRI predicate, String resultType) throws RmesException {
 
-        JSONArray links = repositoryGestion.getResponseAsArray(operationSeriesQueries.seriesLinks(id, predicate, resultType));
+        JSONArray links =
+                repositoryGestion.getResponseAsArray(operationSeriesQueries.seriesLinks(id, predicate, resultType));
         if (!links.isEmpty()) {
             links = QueryUtils.transformRdfTypeInString(links);
         }
@@ -238,7 +235,8 @@ public class SeriesRepository {
     }
 
     private Map<String, JSONArray> getOneTypeOfLink(IRI predicate, String resultType) throws RmesException {
-        JSONArray links = repositoryGestion.getResponseAsArray(operationSeriesQueries.seriesLinks("", predicate, resultType));
+        JSONArray links =
+                repositoryGestion.getResponseAsArray(operationSeriesQueries.seriesLinks("", predicate, resultType));
         Map<String, JSONArray> map = new HashMap<>();
 
         if (!links.isEmpty()) {
@@ -288,8 +286,8 @@ public class SeriesRepository {
         return map;
     }
 
-
-    public void addMulltiLangValues(Model model, IRI seriesIri, Resource graph, String valueLg1, String valueLg2, IRI predicate) {
+    public void addMulltiLangValues(
+            Model model, IRI seriesIri, Resource graph, String valueLg1, String valueLg2, IRI predicate) {
         RdfUtils.addTripleStringMdToXhtml(seriesIri, predicate, valueLg1, languages.lg1(), model, graph);
         RdfUtils.addTripleStringMdToXhtml(seriesIri, predicate, valueLg2, languages.lg2(), model, graph);
     }
@@ -301,56 +299,90 @@ public class SeriesRepository {
         IRI seriesURI = RdfUtils.objectIRI(ObjectType.SERIES, series.getId());
         /*Const*/
         model.add(seriesURI, RDF.TYPE, INSEE.SERIES, RdfUtils.operationsGraph());
-        model.add(seriesURI, ADMS.HAS_IDENTIFIER, RdfUtils.setLiteralString(series.getId()), RdfUtils.operationsGraph());
+        model.add(
+                seriesURI, ADMS.HAS_IDENTIFIER, RdfUtils.setLiteralString(series.getId()), RdfUtils.operationsGraph());
         /*Required*/
-        model.add(seriesURI, SKOS.PREF_LABEL, RdfUtils.setLiteralString(series.getPrefLabelLg1(), languages.lg1()), RdfUtils.operationsGraph());
-        model.add(seriesURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(newStatus.toString()), RdfUtils.operationsGraph());
+        model.add(
+                seriesURI,
+                SKOS.PREF_LABEL,
+                RdfUtils.setLiteralString(series.getPrefLabelLg1(), languages.lg1()),
+                RdfUtils.operationsGraph());
+        model.add(
+                seriesURI,
+                INSEE.VALIDATION_STATE,
+                RdfUtils.setLiteralString(newStatus.toString()),
+                RdfUtils.operationsGraph());
         /*Optional*/
-        RdfUtils.addTripleString(seriesURI, SKOS.PREF_LABEL, series.getPrefLabelLg2(), languages.lg2(), model, RdfUtils.operationsGraph());
-        RdfUtils.addTripleString(seriesURI, SKOS.ALT_LABEL, series.getAltLabelLg1(), languages.lg1(), model, RdfUtils.operationsGraph());
-        RdfUtils.addTripleString(seriesURI, SKOS.ALT_LABEL, series.getAltLabelLg2(), languages.lg2(), model, RdfUtils.operationsGraph());
+        RdfUtils.addTripleString(
+                seriesURI,
+                SKOS.PREF_LABEL,
+                series.getPrefLabelLg2(),
+                languages.lg2(),
+                model,
+                RdfUtils.operationsGraph());
+        RdfUtils.addTripleString(
+                seriesURI, SKOS.ALT_LABEL, series.getAltLabelLg1(), languages.lg1(), model, RdfUtils.operationsGraph());
+        RdfUtils.addTripleString(
+                seriesURI, SKOS.ALT_LABEL, series.getAltLabelLg2(), languages.lg2(), model, RdfUtils.operationsGraph());
         RdfUtils.addTripleDateTime(seriesURI, DCTERMS.CREATED, series.getCreated(), model, RdfUtils.operationsGraph());
         RdfUtils.addTripleDateTime(seriesURI, DCTERMS.MODIFIED, series.getUpdated(), model, RdfUtils.operationsGraph());
 
-
-        addMulltiLangValues(model, seriesURI, RdfUtils.operationsGraph(), series.getAbstractLg1(), series.getAbstractLg2(), DCTERMS.ABSTRACT);
-        addMulltiLangValues(model, seriesURI, RdfUtils.operationsGraph(), series.getHistoryNoteLg1(), series.getHistoryNoteLg2(), SKOS.HISTORY_NOTE);
+        addMulltiLangValues(
+                model,
+                seriesURI,
+                RdfUtils.operationsGraph(),
+                series.getAbstractLg1(),
+                series.getAbstractLg2(),
+                DCTERMS.ABSTRACT);
+        addMulltiLangValues(
+                model,
+                seriesURI,
+                RdfUtils.operationsGraph(),
+                series.getHistoryNoteLg1(),
+                series.getHistoryNoteLg2(),
+                SKOS.HISTORY_NOTE);
 
         addCreators(model, seriesURI, series.getCreators());
 
-        //Organismes responsables
+        // Organismes responsables
         addOperationLinksOrganization(series.getPublishers(), DCTERMS.PUBLISHER, model, seriesURI);
 
-        //partenaires
+        // partenaires
         addOperationLinksOrganization(series.getContributors(), DCTERMS.CONTRIBUTOR, model, seriesURI);
 
-        //Data_collector
+        // Data_collector
         addOperationLinksOrganization(series.getDataCollectors(), INSEE.DATA_COLLECTOR, model, seriesURI);
 
-        //Type
+        // Type
         addCodeList(series.getTypeList(), series.getTypeCode(), DCTERMS.TYPE, model, seriesURI);
-        //PERIODICITY
-        addCodeList(series.getAccrualPeriodicityList(), series.getAccrualPeriodicityCode(), DCTERMS.ACCRUAL_PERIODICITY, model, seriesURI);
+        // PERIODICITY
+        addCodeList(
+                series.getAccrualPeriodicityList(),
+                series.getAccrualPeriodicityCode(),
+                DCTERMS.ACCRUAL_PERIODICITY,
+                model,
+                seriesURI);
 
         addOperationLinks(series.getSeeAlso(), RDFS.SEEALSO, model, seriesURI);
 
         List<OperationsLink> replaces = series.getReplaces();
-        Optional.ofNullable(replaces)
-                .orElseGet(Collections::emptyList).stream().filter(repl -> !repl.isEmpty()).forEach(replace -> {
+        Optional.ofNullable(replaces).orElseGet(Collections::emptyList).stream()
+                .filter(repl -> !repl.isEmpty())
+                .forEach(replace -> {
                     String replUri = this.bauhausUriBuilder.getCompleteUriGestion(replace.getType(), replace.getId());
                     addReplacesAndReplacedBy(model, RdfUtils.toURI(replUri), seriesURI);
                 });
 
-
         List<OperationsLink> isReplacedBys = series.getIsReplacedBy();
-        Optional.ofNullable(isReplacedBys)
-                .orElseGet(Collections::emptyList).stream().filter(isRepl -> !isRepl.isEmpty()).forEach(isRepl -> {
+        Optional.ofNullable(isReplacedBys).orElseGet(Collections::emptyList).stream()
+                .filter(isRepl -> !isRepl.isEmpty())
+                .forEach(isRepl -> {
                     String isReplUri = this.bauhausUriBuilder.getCompleteUriGestion(isRepl.getType(), isRepl.getId());
                     addReplacesAndReplacedBy(model, seriesURI, RdfUtils.toURI(isReplUri));
                 });
 
         if (familyURI != null) {
-            //case CREATION : link series to family
+            // case CREATION : link series to family
             RdfUtils.addTripleUri(seriesURI, DCTERMS.IS_PART_OF, familyURI, model, RdfUtils.operationsGraph());
             RdfUtils.addTripleUri(familyURI, DCTERMS.HAS_PART, seriesURI, model, RdfUtils.operationsGraph());
         }
@@ -401,8 +433,8 @@ public class SeriesRepository {
         addOperationLinksOrganization(data, predicate, model, seriesURI, RdfUtils.operationsGraph());
     }
 
-    void addOperationLinksOrganization(List<OperationsLink> data, IRI predicate, Model model, IRI seriesURI, Resource graph)
-            throws RmesException {
+    void addOperationLinksOrganization(
+            List<OperationsLink> data, IRI predicate, Model model, IRI seriesURI, Resource graph) throws RmesException {
         if (data != null) {
             for (OperationsLink d : data) {
                 if (!d.isEmpty()) {
@@ -422,7 +454,8 @@ public class SeriesRepository {
         // Tester l'existence de la famille
         String idFamily = series.getFamily().getId();
         if (!operationsObjectMapper.checkIfObjectExists(ObjectType.FAMILY, idFamily)) {
-            throw new RmesBadRequestException(ErrorCodes.SERIES_UNKNOWN_FAMILY, "Unknown family: " + idFamily, new JSONArray());
+            throw new RmesBadRequestException(
+                    ErrorCodes.SERIES_UNKNOWN_FAMILY, "Unknown family: " + idFamily, new JSONArray());
         }
 
         IRI familyURI = RdfUtils.objectIRI(ObjectType.FAMILY, idFamily);
@@ -452,7 +485,8 @@ public class SeriesRepository {
         series.setUpdated(DateUtils.getCurrentDate());
 
         String status = operationsParentRepository.getFamOpSerValidationStatus(id);
-        documentationsUtils.updateDocumentationTitle(series.getIdSims(), series.getPrefLabelLg1(), series.getPrefLabelLg2());
+        documentationsUtils.updateDocumentationTitle(
+                series.getIdSims(), series.getPrefLabelLg1(), series.getPrefLabelLg2());
         if (status.equals(ValidationStatus.UNPUBLISHED.getValue()) || status.equals(Constants.UNDEFINED)) {
             createRdfSeries(series, null, ValidationStatus.UNPUBLISHED);
         } else {
@@ -468,11 +502,20 @@ public class SeriesRepository {
         JSONObject serieJson = getSeriesJsonById(id, EncodingType.XML);
         seriesPublication.publishSeries(id, serieJson);
 
-        model.add(seriesURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.VALIDATED),
+        model.add(
+                seriesURI,
+                INSEE.VALIDATION_STATE,
+                RdfUtils.setLiteralString(ValidationStatus.VALIDATED),
                 RdfUtils.operationsGraph());
-        model.remove(seriesURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.UNPUBLISHED),
+        model.remove(
+                seriesURI,
+                INSEE.VALIDATION_STATE,
+                RdfUtils.setLiteralString(ValidationStatus.UNPUBLISHED),
                 RdfUtils.operationsGraph());
-        model.remove(seriesURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.MODIFIED),
+        model.remove(
+                seriesURI,
+                INSEE.VALIDATION_STATE,
+                RdfUtils.setLiteralString(ValidationStatus.MODIFIED),
                 RdfUtils.operationsGraph());
         logger.info("Validate series : {}", seriesURI);
 
@@ -480,8 +523,9 @@ public class SeriesRepository {
     }
 
     public boolean isSeriesAndOperationsExist(List<String> iris) throws RmesException {
-        var length = repositoryGestion.getResponseAsArray(operationSeriesQueries.checkIfSeriesExists(iris)).length();
+        var length = repositoryGestion
+                .getResponseAsArray(operationSeriesQueries.checkIfSeriesExists(iris))
+                .length();
         return length == iris.size();
     }
-
 }

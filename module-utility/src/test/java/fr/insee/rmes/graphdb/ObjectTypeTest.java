@@ -1,7 +1,10 @@
 package fr.insee.rmes.graphdb;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.graphdb.ontologies.INSEE;
+import java.util.Optional;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.DCAT;
@@ -9,10 +12,6 @@ import org.eclipse.rdf4j.model.vocabulary.FOAF;
 import org.eclipse.rdf4j.model.vocabulary.ORG;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;
 import org.junit.jupiter.api.Test;
-
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class ObjectTypeTest {
 
@@ -107,15 +106,17 @@ class ObjectTypeTest {
         assertNotNull(ObjectType.CONCEPT.baseUriModifier());
         assertNotNull(ObjectType.COLLECTION.baseUriModifier());
         assertNotNull(ObjectType.FAMILY.baseUriModifier());
-        
+
         // Test identity modifier
         assertEquals("test", ObjectType.CONCEPT.baseUriModifier().apply("test"));
         assertEquals("test", ObjectType.COLLECTION.baseUriModifier().apply("test"));
-        
+
         // Test specific modifiers
         assertEquals("testmesure", ObjectType.MEASURE_PROPERTY.baseUriModifier().apply("test"));
-        assertEquals("testattribut", ObjectType.ATTRIBUTE_PROPERTY.baseUriModifier().apply("test"));
-        assertEquals("testdimension", ObjectType.DIMENSION_PROPERTY.baseUriModifier().apply("test"));
+        assertEquals(
+                "testattribut", ObjectType.ATTRIBUTE_PROPERTY.baseUriModifier().apply("test"));
+        assertEquals(
+                "testdimension", ObjectType.DIMENSION_PROPERTY.baseUriModifier().apply("test"));
         assertEquals("", ObjectType.ORGANIZATION.baseUriModifier().apply("test"));
         assertEquals("", ObjectType.UNDEFINED.baseUriModifier().apply("test"));
     }
@@ -124,20 +125,20 @@ class ObjectTypeTest {
     void shouldHaveAllRequiredEnumValues() {
         ObjectType[] values = ObjectType.values();
         assertTrue(values.length >= 18); // At least 18 types defined
-        
+
         // Verify key types exist
         boolean hasConceptType = false;
         boolean hasCollectionType = false;
         boolean hasFamilyType = false;
         boolean hasUndefinedType = false;
-        
+
         for (ObjectType type : values) {
             if (type == ObjectType.CONCEPT) hasConceptType = true;
             if (type == ObjectType.COLLECTION) hasCollectionType = true;
             if (type == ObjectType.FAMILY) hasFamilyType = true;
             if (type == ObjectType.UNDEFINED) hasUndefinedType = true;
         }
-        
+
         assertTrue(hasConceptType);
         assertTrue(hasCollectionType);
         assertTrue(hasFamilyType);

@@ -1,5 +1,7 @@
 package fr.insee.rmes.testcontainers.documentations;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.config.BauhausUriPropertiesStub;
@@ -10,17 +12,14 @@ import fr.insee.rmes.json.JSONUtils;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationDocumentsQueries;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.testcontainers.WithGraphDBContainer;
+import java.util.ArrayList;
+import java.util.List;
 import org.json.JSONArray;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Filet de sécurité E2E pour l'ordre des documents dans une rubrique RICHTEXT.
@@ -41,9 +40,7 @@ class DocumentRubricOrderEndToEndTest extends WithGraphDBContainer {
     private static final String LANG_FR = "fr";
 
     private final RepositoryGestion repositoryGestion = new RepositoryGestion(
-            getRdfGestionConnectionDetails(),
-            new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED)
-    );
+            getRdfGestionConnectionDetails(), new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED));
 
     private OperationDocumentsQueries operationDocumentsQueries;
 
@@ -89,9 +86,7 @@ class DocumentRubricOrderEndToEndTest extends WithGraphDBContainer {
 
     private static List<String> idsOf(JSONArray docs) {
         List<String> ids = new ArrayList<>(docs.length());
-        JSONUtils.stream(docs)
-                .map(doc -> doc.getString(Constants.ID))
-                .forEach(ids::add);
+        JSONUtils.stream(docs).map(doc -> doc.getString(Constants.ID)).forEach(ids::add);
         return ids;
     }
 }

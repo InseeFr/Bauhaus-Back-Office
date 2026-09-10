@@ -1,12 +1,11 @@
 package fr.insee.rmes.exceptions.errors;
 
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
-
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Test;
 
 class CodesListErrorCodesTest {
 
@@ -22,11 +21,10 @@ class CodesListErrorCodesTest {
                 CodesListErrorCodes.STRUCTURE_DELETE_ONLY_UNPUBLISHED);
 
         SortedSet<Integer> expected = new TreeSet<>(actual);
-        boolean existDuplicates = expected.size()!= actual.size();
-        boolean existSameCode = CodesListErrorCodes.CODE_LIST_DELETE_ONLY_UNPUBLISHED==CodesListErrorCodes.STRUCTURE_DELETE_ONLY_UNPUBLISHED;
+        boolean existDuplicates = expected.size() != actual.size();
+        boolean existSameCode = CodesListErrorCodes.CODE_LIST_DELETE_ONLY_UNPUBLISHED
+                == CodesListErrorCodes.STRUCTURE_DELETE_ONLY_UNPUBLISHED;
 
-        assertTrue( existDuplicates && existSameCode);
-
+        assertTrue(existDuplicates && existSameCode);
     }
-
 }

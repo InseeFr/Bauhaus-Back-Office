@@ -1,6 +1,7 @@
 package fr.insee.rmes.modules.commons.configuration.conditional;
 
 import fr.insee.rmes.modules.clientconfig.domain.model.ModuleSettings;
+import java.util.Map;
 import org.springframework.boot.autoconfigure.condition.ConditionMessage;
 import org.springframework.boot.autoconfigure.condition.ConditionOutcome;
 import org.springframework.boot.autoconfigure.condition.SpringBootCondition;
@@ -8,8 +9,6 @@ import org.springframework.boot.context.properties.bind.Bindable;
 import org.springframework.boot.context.properties.bind.Binder;
 import org.springframework.context.annotation.ConditionContext;
 import org.springframework.core.type.AnnotatedTypeMetadata;
-
-import java.util.Map;
 
 public class OnModuleCondition extends SpringBootCondition {
 
@@ -20,8 +19,8 @@ public class OnModuleCondition extends SpringBootCondition {
         Map<String, Object> attributes = metadata.getAnnotationAttributes(ConditionalOnModule.class.getName());
 
         if (attributes == null || !attributes.containsKey("value")) {
-            return ConditionOutcome.noMatch(ConditionMessage.forCondition(ConditionalOnModule.class)
-                    .because("no module specified"));
+            return ConditionOutcome.noMatch(
+                    ConditionMessage.forCondition(ConditionalOnModule.class).because("no module specified"));
         }
 
         String requiredModule = (String) attributes.get("value");

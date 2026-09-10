@@ -14,26 +14,25 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.Ddi4S
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.Ddi4SchemaValidator;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.GroupRepository;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.StudyUnitRepository;
-import fr.insee.rmes.modules.operation.series.domain.port.serverside.SeriesCreatorsPort;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.services.DDI3toDDI4ConverterServiceImpl;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.services.DDI4toDDI3ConverterServiceImpl;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.services.DDIItemConvertServiceImpl;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.services.DDIServiceImpl;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.services.DomainDdi4SchemaService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.services.Ddi4ToLifecycle33;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.services.Lifecycle33ToDdi4;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.services.converters.GroupDDIItemConverter;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.services.DomainDdi4SchemaService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.services.GroupServiceImpl;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.services.converters.StudyUnitDDIItemConverter;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.services.Lifecycle33ToDdi4;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.services.StudyUnitServiceImpl;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.services.converters.GroupDDIItemConverter;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.services.converters.StudyUnitDDIItemConverter;
 import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.ColecticaConfiguration;
 import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.schema.ClasspathDdi4SchemaRepository;
 import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.schema.NetworkntDdi4SchemaValidator;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-
+import fr.insee.rmes.modules.operation.series.domain.port.serverside.SeriesCreatorsPort;
 import java.time.Clock;
 import java.util.List;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class PhysicalInstanceConfiguration {
@@ -54,19 +53,21 @@ public class PhysicalInstanceConfiguration {
     }
 
     @Bean
-    Ddi4SchemaService ddi4SchemaService(Ddi4SchemaRepository ddi4SchemaRepository,
-                                        Ddi4SchemaValidator ddi4SchemaValidator) {
+    Ddi4SchemaService ddi4SchemaService(
+            Ddi4SchemaRepository ddi4SchemaRepository, Ddi4SchemaValidator ddi4SchemaValidator) {
         return new DomainDdi4SchemaService(ddi4SchemaRepository, ddi4SchemaValidator);
     }
 
     @Bean
     DDI4toDDI3ConverterService ddi4toDdi3ConverterService(ColecticaConfiguration colecticaConfiguration) {
-        return new DDI4toDDI3ConverterServiceImpl(colecticaConfiguration.server().itemTypes());
+        return new DDI4toDDI3ConverterServiceImpl(
+                colecticaConfiguration.server().itemTypes());
     }
 
     @Bean
     DDI3toDDI4ConverterService ddi3toDdi4ConverterService(ColecticaConfiguration colecticaConfiguration) {
-        return new DDI3toDDI4ConverterServiceImpl(colecticaConfiguration.server().itemTypes());
+        return new DDI3toDDI4ConverterServiceImpl(
+                colecticaConfiguration.server().itemTypes());
     }
 
     @Bean
@@ -100,12 +101,15 @@ public class PhysicalInstanceConfiguration {
     }
 
     @Bean
-    DDIItemConvertService ddiItemConvertService(List<DDIItemConverter> converters,
-                                                DDI3toDDI4ConverterService ddi3toDdi4ConverterService,
-                                                ColecticaConfiguration colecticaConfiguration,
-                                                ObjectMapper objectMapper) {
+    DDIItemConvertService ddiItemConvertService(
+            List<DDIItemConverter> converters,
+            DDI3toDDI4ConverterService ddi3toDdi4ConverterService,
+            ColecticaConfiguration colecticaConfiguration,
+            ObjectMapper objectMapper) {
         return new DDIItemConvertServiceImpl(
-                converters, ddi3toDdi4ConverterService,
-                colecticaConfiguration.server().itemTypes(), objectMapper);
+                converters,
+                ddi3toDdi4ConverterService,
+                colecticaConfiguration.server().itemTypes(),
+                objectMapper);
     }
 }

@@ -1,18 +1,17 @@
 package fr.insee.rmes.modules.concepts.collections.infrastructure.graphdb;
 
-import fr.insee.rmes.modules.shared_kernel.domain.model.Lang;
-import fr.insee.rmes.modules.shared_kernel.domain.model.LocalisedLabel;
-import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import fr.insee.rmes.modules.concepts.collections.domain.model.Collection;
 import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionId;
 import fr.insee.rmes.modules.concepts.concept.domain.model.ConceptId;
-import org.jspecify.annotations.Nullable;
-
+import fr.insee.rmes.modules.shared_kernel.domain.model.Lang;
+import fr.insee.rmes.modules.shared_kernel.domain.model.LocalisedLabel;
+import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.*;
+import org.jspecify.annotations.Nullable;
 
 public record GraphDBCollection(
         String id,
@@ -31,8 +30,7 @@ public record GraphDBCollection(
         @Nullable String validationState,
         String creator,
         String contributor,
-        List<String> conceptIds
-) {
+        List<String> conceptIds) {
 
     private static Optional<LocalisedLabel> getDescriptionByIndex(List<LocalisedLabel> localisedLabels, int i) {
         if (localisedLabels.size() <= i) {
@@ -52,42 +50,38 @@ public record GraphDBCollection(
                 collection.id().value().toString(),
                 collection.prefLabel().value(),
                 collection.prefLabel().lang().toString(),
-
                 firstAlternativeLabel.map(LocalisedLabel::value).orElse(null),
-                firstAlternativeLabel.map(LocalisedLabel::lang).map(Lang::toString).orElse(null),
-
+                firstAlternativeLabel
+                        .map(LocalisedLabel::lang)
+                        .map(Lang::toString)
+                        .orElse(null),
                 collection.created().toString(),
                 collection.modified().map(LocalDateTime::toString).orElse(null),
 
-                //descriptionLg1
+                // descriptionLg1
                 firstDescription.map(LocalisedLabel::value).orElse(null),
 
-                //descriptionLg1_lg
+                // descriptionLg1_lg
                 firstDescription.map(LocalisedLabel::lang).map(Lang::toString).orElse(null),
 
-                //descriptionLg2
+                // descriptionLg2
                 secondDescription.map(LocalisedLabel::value).orElse(null),
 
-                //descriptionLg2_lg
+                // descriptionLg2_lg
                 secondDescription.map(LocalisedLabel::lang).map(Lang::toString).orElse(null),
-
-
-
                 collection.validationState().getValue(),
                 collection.creator(),
                 collection.contributor().orElse(null),
-                collection.conceptIds().stream().map(ConceptId::value).toList()
-        );
+                collection.conceptIds().stream().map(ConceptId::value).toList());
     }
 
     private static Optional<LocalisedLabel> getFirstAlternativeLabel(Collection collection) {
-        if(collection.alternativeLabels().isEmpty()){
+        if (collection.alternativeLabels().isEmpty()) {
             return Optional.empty();
         }
 
         return Optional.of(collection.alternativeLabels().getFirst());
     }
-
 
     Collection toDomain() {
         return new Collection(
@@ -99,9 +93,7 @@ public record GraphDBCollection(
                 parseDateTime(created),
                 Objects.isNull(modified) ? null : parseDateTime(modified),
                 ValidationStatus.fromValue(validationState),
-                conceptIds.stream()
-                        .map(ConceptId::new)
-                        .toList());
+                conceptIds.stream().map(ConceptId::new).toList());
     }
 
     private static LocalDateTime parseDateTime(String dateString) {
@@ -124,9 +116,7 @@ public record GraphDBCollection(
             list.add(new LocalisedLabel(prefLabelLg2, Lang.valueOf(prefLabelLg2_lg.toUpperCase())));
         }
         return list;
-
     }
-
 
     private List<LocalisedLabel> toLocalisedDescriptions() {
         var list = new ArrayList<LocalisedLabel>();
@@ -140,7 +130,8 @@ public record GraphDBCollection(
     }
 
     public GraphDBCollection withConcepts(GraphDBConcept[] graphDBConcepts) {
-        return new GraphDBCollection(id,
+        return new GraphDBCollection(
+                id,
                 prefLabelLg1,
                 prefLabelLg1_lg,
                 prefLabelLg2,
@@ -154,7 +145,6 @@ public record GraphDBCollection(
                 validationState,
                 creator,
                 contributor,
-                Arrays.stream(graphDBConcepts).map(GraphDBConcept::id).toList()
-        );
+                Arrays.stream(graphDBConcepts).map(GraphDBConcept::id).toList());
     }
 }

@@ -1,7 +1,6 @@
 package fr.insee.rmes.colectica.client.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.util.List;
 
 /**
@@ -10,10 +9,9 @@ import java.util.List;
  * ({@code TextProperties}/{@code DateProperties}/...), notably {@code DateProperties.versionDate}.
  */
 public record QueryAdvancedRequest(
-    @JsonProperty("itemTypes") List<String> itemTypes,
-    @JsonProperty("searchLatestVersion") boolean searchLatestVersion,
-    @JsonProperty("resultsIncludeAll") boolean resultsIncludeAll
-) {
+        @JsonProperty("itemTypes") List<String> itemTypes,
+        @JsonProperty("searchLatestVersion") boolean searchLatestVersion,
+        @JsonProperty("resultsIncludeAll") boolean resultsIncludeAll) {
     public QueryAdvancedRequest(List<String> itemTypes) {
         this(itemTypes, true, true);
     }

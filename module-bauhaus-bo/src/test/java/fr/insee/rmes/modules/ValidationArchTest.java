@@ -1,5 +1,7 @@
 package fr.insee.rmes.modules;
 
+import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.methods;
+
 import com.tngtech.archunit.base.DescribedPredicate;
 import com.tngtech.archunit.core.domain.JavaMethod;
 import com.tngtech.archunit.core.domain.JavaParameter;
@@ -16,8 +18,6 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-
-import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.methods;
 
 /**
  * Un corps de requête doit être validé par Bean Validation, pas par des {@code if} dispersés
@@ -38,7 +38,7 @@ public class ValidationArchTest {
             .that(areWriteMappings())
             .should(declareValidOnEveryRequestBody())
             .because("A request body must be validated by Bean Validation (@Valid + constraints on the DTO), "
-                   + "so that a rejected payload answers the contractual 400 {errors:[{field,message}]}"));
+                    + "so that a rejected payload answers the contractual 400 {errors:[{field,message}]}"));
 
     private static DescribedPredicate<JavaMethod> areWriteMappings() {
         return new DescribedPredicate<>("are annotated with @PostMapping, @PutMapping or @PatchMapping") {
@@ -57,7 +57,8 @@ public class ValidationArchTest {
             public void check(JavaMethod method, ConditionEvents events) {
                 for (JavaParameter parameter : method.getParameters()) {
                     if (parameter.isAnnotatedWith(RequestBody.class) && !parameter.isAnnotatedWith(Valid.class)) {
-                        events.add(SimpleConditionEvent.violated(method,
+                        events.add(SimpleConditionEvent.violated(
+                                method,
                                 method.getFullName() + " takes a @RequestBody that is not annotated with @Valid"));
                     }
                 }

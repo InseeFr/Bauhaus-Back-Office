@@ -1,5 +1,7 @@
 package fr.insee.rmes.modules.ddi.physical_instances.domain.services;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Citation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Code;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeRepresentation;
@@ -17,11 +19,8 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.ValueType;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.VariableRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.VariablesInRecord;
-import org.junit.jupiter.api.Test;
-
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.Test;
 
 class VersionDateReconcilerTest {
 
@@ -61,9 +60,17 @@ class VersionDateReconcilerTest {
     void refreshesCodeListAndItsAncestorsWhenACodeChanges() {
         Ddi4Response stored = storedResponse();
         // même contenu sauf la valeur d'un code de cl-1
-        Ddi4Response incoming = response(FRONT_DATE, FRONT_DATE, FRONT_DATE, FRONT_DATE,
-                FRONT_DATE, FRONT_DATE, FRONT_DATE, FRONT_DATE,
-                "code-value-1-modifie", "Catégorie 1");
+        Ddi4Response incoming = response(
+                FRONT_DATE,
+                FRONT_DATE,
+                FRONT_DATE,
+                FRONT_DATE,
+                FRONT_DATE,
+                FRONT_DATE,
+                FRONT_DATE,
+                FRONT_DATE,
+                "code-value-1-modifie",
+                "Catégorie 1");
 
         Ddi4Response reconciled = VersionDateReconciler.reconcile(stored, incoming, NOW);
 
@@ -81,9 +88,17 @@ class VersionDateReconcilerTest {
     void refreshesWholeChainUpToPhysicalInstanceWhenACategoryChanges() {
         Ddi4Response stored = storedResponse();
         // même contenu sauf le label de cat-1
-        Ddi4Response incoming = response(FRONT_DATE, FRONT_DATE, FRONT_DATE, FRONT_DATE,
-                FRONT_DATE, FRONT_DATE, FRONT_DATE, FRONT_DATE,
-                "code-value-1", "Catégorie 1 modifiée");
+        Ddi4Response incoming = response(
+                FRONT_DATE,
+                FRONT_DATE,
+                FRONT_DATE,
+                FRONT_DATE,
+                FRONT_DATE,
+                FRONT_DATE,
+                FRONT_DATE,
+                FRONT_DATE,
+                "code-value-1",
+                "Catégorie 1 modifiée");
 
         Ddi4Response reconciled = VersionDateReconciler.reconcile(stored, incoming, NOW);
 
@@ -102,10 +117,9 @@ class VersionDateReconcilerTest {
         // cl-1 porte un code hiérarchique dont un code enfant référence cat-3 :
         // la propagation doit traverser cette structure imbriquée quelconque.
         CogsDate cat3Date = date("2020-09-01T00:00:00Z");
-        Ddi4Response stored = hierarchicalResponse(PI_DATE, DR_DATE, VAR1_DATE, CL1_DATE,
-                cat3Date, "Catégorie 3");
-        Ddi4Response incoming = hierarchicalResponse(FRONT_DATE, FRONT_DATE, FRONT_DATE, FRONT_DATE,
-                FRONT_DATE, "Catégorie 3 modifiée");
+        Ddi4Response stored = hierarchicalResponse(PI_DATE, DR_DATE, VAR1_DATE, CL1_DATE, cat3Date, "Catégorie 3");
+        Ddi4Response incoming = hierarchicalResponse(
+                FRONT_DATE, FRONT_DATE, FRONT_DATE, FRONT_DATE, FRONT_DATE, "Catégorie 3 modifiée");
 
         Ddi4Response reconciled = VersionDateReconciler.reconcile(stored, incoming, NOW);
 
@@ -121,11 +135,18 @@ class VersionDateReconcilerTest {
         Ddi4Response stored = storedResponse();
         Ddi4Response sameContent = responseWithSameDateEverywhere(FRONT_DATE);
         // var-3 n'existe pas dans l'état stocké
-        Ddi4Response incoming = new Ddi4Response(sameContent.schema(), sameContent.topLevelReference(),
-                sameContent.physicalInstance(), sameContent.dataRelationship(),
-                List.of(sameContent.variable().get(0), sameContent.variable().get(1),
+        Ddi4Response incoming = new Ddi4Response(
+                sameContent.schema(),
+                sameContent.topLevelReference(),
+                sameContent.physicalInstance(),
+                sameContent.dataRelationship(),
+                List.of(
+                        sameContent.variable().get(0),
+                        sameContent.variable().get(1),
                         variable("var-3", FRONT_DATE, "cl-2")),
-                sameContent.codeList(), sameContent.category(), null);
+                sameContent.codeList(),
+                sameContent.category(),
+                null);
 
         Ddi4Response reconciled = VersionDateReconciler.reconcile(stored, incoming, NOW);
 
@@ -160,7 +181,8 @@ class VersionDateReconcilerTest {
 
         Ddi4Response reconciled = VersionDateReconciler.reconcile(stored, incoming, NOW);
 
-        assertEquals(NOW, reconciled.managedMissingValuesRepresentation().getFirst().versionDate());
+        assertEquals(
+                NOW, reconciled.managedMissingValuesRepresentation().getFirst().versionDate());
     }
 
     /** Valeurs sentinelles (#1566) : une MMVR réutilisée telle quelle garde sa date stockée. */
@@ -172,114 +194,205 @@ class VersionDateReconcilerTest {
 
         Ddi4Response reconciled = VersionDateReconciler.reconcile(stored, incoming, NOW);
 
-        assertEquals(mmvrDate, reconciled.managedMissingValuesRepresentation().getFirst().versionDate());
+        assertEquals(
+                mmvrDate,
+                reconciled.managedMissingValuesRepresentation().getFirst().versionDate());
     }
 
     private static Ddi4Response mmvrOnlyResponse(Ddi4ManagedMissingValuesRepresentation mmvr) {
-        return new Ddi4Response(Ddi4Response.SCHEMA, null, null, null, null, null, null,
-                mmvr == null ? null : List.of(mmvr));
+        return new Ddi4Response(
+                Ddi4Response.SCHEMA, null, null, null, null, null, null, mmvr == null ? null : List.of(mmvr));
     }
 
     private static Ddi4ManagedMissingValuesRepresentation mmvr(CogsDate date) {
         return new Ddi4ManagedMissingValuesRepresentation(
-                Ddi4ManagedMissingValuesRepresentation.TYPE, date,
-                "urn:ddi:fr.insee:mmvr-1:1", AGENCY, "mmvr-1", "1",
+                Ddi4ManagedMissingValuesRepresentation.TYPE,
+                date,
+                "urn:ddi:fr.insee:mmvr-1:1",
+                AGENCY,
+                "mmvr-1",
+                "1",
                 List.of(new LangString("fr", "Valeurs sentinelles NSP/REF")),
-                List.of(new CodeRepresentation(CodeRepresentation.TYPE, false,
-                        ref("cl-sentinelles", Ddi4CodeList.TYPE))));
+                List.of(new CodeRepresentation(
+                        CodeRepresentation.TYPE, false, ref("cl-sentinelles", Ddi4CodeList.TYPE))));
     }
 
     // --- fixtures : PI -> DR -> {var-1 -> cl-1 -> cat-1, var-2 -> cl-2 -> cat-2} ---
 
     /** État stocké (résultat du GET), avec une date distincte par item. */
     private static Ddi4Response storedResponse() {
-        return response(PI_DATE, DR_DATE, VAR1_DATE, VAR2_DATE, CL1_DATE, CL2_DATE,
-                CAT1_DATE, CAT2_DATE, "code-value-1", "Catégorie 1");
+        return response(
+                PI_DATE,
+                DR_DATE,
+                VAR1_DATE,
+                VAR2_DATE,
+                CL1_DATE,
+                CL2_DATE,
+                CAT1_DATE,
+                CAT2_DATE,
+                "code-value-1",
+                "Catégorie 1");
     }
 
     /** Même contenu que l'état stocké, mais toutes les dates à {@code date}. */
     private static Ddi4Response responseWithSameDateEverywhere(CogsDate date) {
-        return response(date, date, date, date, date, date, date, date,
-                "code-value-1", "Catégorie 1");
+        return response(date, date, date, date, date, date, date, date, "code-value-1", "Catégorie 1");
     }
 
-    private static Ddi4Response response(CogsDate piDate, CogsDate drDate,
-                                         CogsDate var1Date, CogsDate var2Date,
-                                         CogsDate cl1Date, CogsDate cl2Date,
-                                         CogsDate cat1Date, CogsDate cat2Date,
-                                         String cl1CodeValue, String cat1Label) {
-        return new Ddi4Response(Ddi4Response.SCHEMA,
+    private static Ddi4Response response(
+            CogsDate piDate,
+            CogsDate drDate,
+            CogsDate var1Date,
+            CogsDate var2Date,
+            CogsDate cl1Date,
+            CogsDate cl2Date,
+            CogsDate cat1Date,
+            CogsDate cat2Date,
+            String cl1CodeValue,
+            String cat1Label) {
+        return new Ddi4Response(
+                Ddi4Response.SCHEMA,
                 List.of(ref("pi-1", Ddi4PhysicalInstance.TYPE)),
                 List.of(physicalInstance(piDate)),
                 List.of(dataRelationship(drDate)),
                 List.of(variable("var-1", var1Date, "cl-1"), variable("var-2", var2Date, "cl-2")),
-                List.of(codeList("cl-1", cl1Date, "cat-1", cl1CodeValue),
+                List.of(
+                        codeList("cl-1", cl1Date, "cat-1", cl1CodeValue),
                         codeList("cl-2", cl2Date, "cat-2", "code-value-2")),
-                List.of(category("cat-1", cat1Date, cat1Label),
-                        category("cat-2", cat2Date, "Catégorie 2")), null);
+                List.of(category("cat-1", cat1Date, cat1Label), category("cat-2", cat2Date, "Catégorie 2")),
+                null);
     }
 
     /**
      * Variante hiérarchique : PI -> DR -> var-1 -> cl-1, dont le code racine
      * porte un code enfant référençant cat-3.
      */
-    private static Ddi4Response hierarchicalResponse(CogsDate piDate, CogsDate drDate,
-                                                     CogsDate var1Date, CogsDate cl1Date,
-                                                     CogsDate cat3Date, String cat3Label) {
-        Code childCode = new Code(Code.TYPE, urn("cl-1-c1-1"), AGENCY, "cl-1-c1-1", "1",
-                ref("cat-3", Ddi4Category.TYPE), ValueType.of("child-value"), null);
-        Code rootCode = new Code(Code.TYPE, urn("cl-1-c1"), AGENCY, "cl-1-c1", "1",
-                null, ValueType.of("root-value"), List.of(childCode));
-        Ddi4CodeList hierarchicalCodeList = new Ddi4CodeList(Ddi4CodeList.TYPE, cl1Date,
-                urn("cl-1"), AGENCY, "cl-1", "1",
-                List.of(new LangString("fr", "cl-1")), null, List.of(rootCode));
-        return new Ddi4Response(Ddi4Response.SCHEMA,
+    private static Ddi4Response hierarchicalResponse(
+            CogsDate piDate,
+            CogsDate drDate,
+            CogsDate var1Date,
+            CogsDate cl1Date,
+            CogsDate cat3Date,
+            String cat3Label) {
+        Code childCode = new Code(
+                Code.TYPE,
+                urn("cl-1-c1-1"),
+                AGENCY,
+                "cl-1-c1-1",
+                "1",
+                ref("cat-3", Ddi4Category.TYPE),
+                ValueType.of("child-value"),
+                null);
+        Code rootCode = new Code(
+                Code.TYPE,
+                urn("cl-1-c1"),
+                AGENCY,
+                "cl-1-c1",
+                "1",
+                null,
+                ValueType.of("root-value"),
+                List.of(childCode));
+        Ddi4CodeList hierarchicalCodeList = new Ddi4CodeList(
+                Ddi4CodeList.TYPE,
+                cl1Date,
+                urn("cl-1"),
+                AGENCY,
+                "cl-1",
+                "1",
+                List.of(new LangString("fr", "cl-1")),
+                null,
+                List.of(rootCode));
+        return new Ddi4Response(
+                Ddi4Response.SCHEMA,
                 List.of(ref("pi-1", Ddi4PhysicalInstance.TYPE)),
                 List.of(physicalInstance(piDate)),
                 List.of(dataRelationship(drDate)),
                 List.of(variable("var-1", var1Date, "cl-1")),
                 List.of(hierarchicalCodeList),
-                List.of(category("cat-3", cat3Date, cat3Label)), null);
+                List.of(category("cat-3", cat3Date, cat3Label)),
+                null);
     }
 
     private static Ddi4PhysicalInstance physicalInstance(CogsDate date) {
-        return new Ddi4PhysicalInstance(Ddi4PhysicalInstance.TYPE, date,
-                urn("pi-1"), AGENCY, "pi-1", "1", null,
+        return new Ddi4PhysicalInstance(
+                Ddi4PhysicalInstance.TYPE,
+                date,
+                urn("pi-1"),
+                AGENCY,
+                "pi-1",
+                "1",
+                null,
                 new Citation(List.of(new LangString("fr", "Ma PI"))),
                 List.of(ref("dr-1", Ddi4DataRelationship.TYPE)));
     }
 
     private static Ddi4DataRelationship dataRelationship(CogsDate date) {
-        return new Ddi4DataRelationship(Ddi4DataRelationship.TYPE, date,
-                urn("dr-1"), AGENCY, "dr-1", "1", null,
+        return new Ddi4DataRelationship(
+                Ddi4DataRelationship.TYPE,
+                date,
+                urn("dr-1"),
+                AGENCY,
+                "dr-1",
+                "1",
+                null,
                 List.of(new LangString("fr", "Mon DR")),
-                List.of(new LogicalRecord(LogicalRecord.TYPE, urn("lr-1"), AGENCY, "lr-1", "1",
+                List.of(new LogicalRecord(
+                        LogicalRecord.TYPE,
+                        urn("lr-1"),
+                        AGENCY,
+                        "lr-1",
+                        "1",
                         List.of(new LangString("fr", "Mon LR")),
-                        new VariablesInRecord(List.of(
-                                ref("var-1", Ddi4Variable.TYPE),
-                                ref("var-2", Ddi4Variable.TYPE))))));
+                        new VariablesInRecord(
+                                List.of(ref("var-1", Ddi4Variable.TYPE), ref("var-2", Ddi4Variable.TYPE))))));
     }
 
     private static Ddi4Variable variable(String id, CogsDate date, String codeListId) {
-        return new Ddi4Variable(Ddi4Variable.TYPE, date, urn(id), AGENCY, id, "1", null,
-                List.of(new LangString("fr", id)), null, null,
-                new VariableRepresentation(null,
-                        new CodeRepresentation(CodeRepresentation.TYPE, null,
-                                ref(codeListId, Ddi4CodeList.TYPE)),
-                        null, null, null, null),
+        return new Ddi4Variable(
+                Ddi4Variable.TYPE,
+                date,
+                urn(id),
+                AGENCY,
+                id,
+                "1",
+                null,
+                List.of(new LangString("fr", id)),
+                null,
+                null,
+                new VariableRepresentation(
+                        null,
+                        new CodeRepresentation(CodeRepresentation.TYPE, null, ref(codeListId, Ddi4CodeList.TYPE)),
+                        null,
+                        null,
+                        null,
+                        null),
                 null);
     }
 
     private static Ddi4CodeList codeList(String id, CogsDate date, String categoryId, String codeValue) {
-        return new Ddi4CodeList(Ddi4CodeList.TYPE, date, urn(id), AGENCY, id, "1",
-                List.of(new LangString("fr", id)), null,
-                List.of(new Code(Code.TYPE, urn(id + "-c1"), AGENCY, id + "-c1", "1",
-                        ref(categoryId, Ddi4Category.TYPE), ValueType.of(codeValue), null)));
+        return new Ddi4CodeList(
+                Ddi4CodeList.TYPE,
+                date,
+                urn(id),
+                AGENCY,
+                id,
+                "1",
+                List.of(new LangString("fr", id)),
+                null,
+                List.of(new Code(
+                        Code.TYPE,
+                        urn(id + "-c1"),
+                        AGENCY,
+                        id + "-c1",
+                        "1",
+                        ref(categoryId, Ddi4Category.TYPE),
+                        ValueType.of(codeValue),
+                        null)));
     }
 
     private static Ddi4Category category(String id, CogsDate date, String label) {
-        return new Ddi4Category(Ddi4Category.TYPE, date, urn(id), AGENCY, id, "1",
-                List.of(new LangString("fr", label)));
+        return new Ddi4Category(
+                Ddi4Category.TYPE, date, urn(id), AGENCY, id, "1", List.of(new LangString("fr", label)));
     }
 
     private static Reference ref(String id, String type) {
@@ -296,16 +409,25 @@ class VersionDateReconcilerTest {
 
     private static CogsDate variableDate(Ddi4Response response, String id) {
         return response.variable().stream()
-                .filter(v -> id.equals(v.id())).findFirst().orElseThrow().versionDate();
+                .filter(v -> id.equals(v.id()))
+                .findFirst()
+                .orElseThrow()
+                .versionDate();
     }
 
     private static CogsDate codeListDate(Ddi4Response response, String id) {
         return response.codeList().stream()
-                .filter(cl -> id.equals(cl.id())).findFirst().orElseThrow().versionDate();
+                .filter(cl -> id.equals(cl.id()))
+                .findFirst()
+                .orElseThrow()
+                .versionDate();
     }
 
     private static CogsDate categoryDate(Ddi4Response response, String id) {
         return response.category().stream()
-                .filter(c -> id.equals(c.id())).findFirst().orElseThrow().versionDate();
+                .filter(c -> id.equals(c.id()))
+                .findFirst()
+                .orElseThrow()
+                .versionDate();
     }
 }

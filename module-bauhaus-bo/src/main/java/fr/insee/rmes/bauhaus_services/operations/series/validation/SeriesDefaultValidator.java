@@ -2,18 +2,17 @@ package fr.insee.rmes.bauhaus_services.operations.series.validation;
 
 import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.bauhaus_services.utils.OrganisationLookup;
-import fr.insee.rmes.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
-import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.model.links.OperationsLink;
 import fr.insee.rmes.modules.operations.series.domain.model.Series;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationSeriesQueries;
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Component;
-
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import java.util.ArrayList;
 import java.util.List;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Component;
 
 @Component()
 @Profile("!insee")
@@ -28,8 +27,7 @@ public class SeriesDefaultValidator implements SeriesValidator {
             RepositoryGestion repositoryGestion,
             BauhausLanguagesProperties languages,
             OperationSeriesQueries operationSeriesQueries,
-            OrganisationLookup organisationLookup
-    ) {
+            OrganisationLookup organisationLookup) {
 
         this.repositoryGestion = repositoryGestion;
         this.languages = languages;
@@ -39,11 +37,17 @@ public class SeriesDefaultValidator implements SeriesValidator {
 
     @Override
     public void validate(Series series) throws RmesException {
-        if (repositoryGestion.getResponseAsBoolean(operationSeriesQueries.checkPrefLabelUnicity(series.getId(), series.getPrefLabelLg1(), languages.lg1()))) {
-            throw new RmesBadRequestException(ErrorCodes.OPERATION_SERIES_EXISTING_PREF_LABEL_LG1, "This prefLabelLg1 is already used by another series.");
+        if (repositoryGestion.getResponseAsBoolean(operationSeriesQueries.checkPrefLabelUnicity(
+                series.getId(), series.getPrefLabelLg1(), languages.lg1()))) {
+            throw new RmesBadRequestException(
+                    ErrorCodes.OPERATION_SERIES_EXISTING_PREF_LABEL_LG1,
+                    "This prefLabelLg1 is already used by another series.");
         }
-        if (repositoryGestion.getResponseAsBoolean(operationSeriesQueries.checkPrefLabelUnicity(series.getId(), series.getPrefLabelLg2(), languages.lg2()))) {
-            throw new RmesBadRequestException(ErrorCodes.OPERATION_SERIES_EXISTING_PREF_LABEL_LG2, "This prefLabelLg2 is already used by another series.");
+        if (repositoryGestion.getResponseAsBoolean(operationSeriesQueries.checkPrefLabelUnicity(
+                series.getId(), series.getPrefLabelLg2(), languages.lg2()))) {
+            throw new RmesBadRequestException(
+                    ErrorCodes.OPERATION_SERIES_EXISTING_PREF_LABEL_LG2,
+                    "This prefLabelLg2 is already used by another series.");
         }
         validateOrganisations(series);
     }

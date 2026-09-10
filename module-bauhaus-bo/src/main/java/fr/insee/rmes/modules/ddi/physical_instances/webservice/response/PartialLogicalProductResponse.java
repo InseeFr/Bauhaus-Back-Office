@@ -1,12 +1,12 @@
 package fr.insee.rmes.modules.ddi.physical_instances.webservice.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialLogicalProduct;
 import fr.insee.rmes.modules.commons.webservice.BaseResponse;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialLogicalProduct;
 
 public class PartialLogicalProductResponse extends BaseResponse<PartialLogicalProductResponse, PartialLogicalProduct> {
     public PartialLogicalProductResponse(PartialLogicalProduct lp) {
-       super(lp);
+        super(lp);
     }
 
     public static PartialLogicalProductResponse fromDomain(PartialLogicalProduct product) {

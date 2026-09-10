@@ -1,14 +1,14 @@
 package fr.insee.rmes.modules.commons.configuration;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.context.annotation.Configuration;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class ThemePropertiesTest {
 
@@ -31,7 +31,8 @@ class ThemePropertiesTest {
     @Test
     @DisplayName("A missing theme graph is rejected")
     void ko_when_graph_is_missing() {
-        var exception = assertThrows(IllegalArgumentException.class,
+        var exception = assertThrows(
+                IllegalArgumentException.class,
                 () -> new ThemeProperties(null, "http://bauhaus/concepts/themes/Theme"));
 
         assertThat(exception).hasMessageContaining("fr.insee.rmes.bauhaus.theme.graph");
@@ -64,13 +65,13 @@ class ThemePropertiesTest {
                 .withPropertyValues(
                         "fr.insee.rmes.bauhaus.theme.graph=concepts",
                         "fr.insee.rmes.bauhaus.theme.type=http://bauhaus/concepts/themes/Theme")
-                .run(context -> assertThat(context).hasNotFailed()
+                .run(context -> assertThat(context)
+                        .hasNotFailed()
                         .getBean(ThemeProperties.class)
                         .isEqualTo(new ThemeProperties("concepts", "http://bauhaus/concepts/themes/Theme")));
     }
 
     @Configuration
     @EnableConfigurationProperties(ThemeProperties.class)
-    static class ThemePropertiesConfiguration {
-    }
+    static class ThemePropertiesConfiguration {}
 }

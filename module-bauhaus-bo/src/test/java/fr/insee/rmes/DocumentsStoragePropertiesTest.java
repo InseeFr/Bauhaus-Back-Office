@@ -1,17 +1,18 @@
 package fr.insee.rmes;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 @SpringBootTest(classes = DocumentsStorageProperties.class)
-@TestPropertySource(properties = {
-        "fr.insee.rmes.bauhaus.storage.document.gestion=/storage/gestion",
-        "fr.insee.web4g.baseURL=  http://web4g.test/  "
-})
+@TestPropertySource(
+        properties = {
+            "fr.insee.rmes.bauhaus.storage.document.gestion=/storage/gestion",
+            "fr.insee.web4g.baseURL=  http://web4g.test/  "
+        })
 class DocumentsStoragePropertiesTest {
 
     @Autowired

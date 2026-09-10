@@ -1,15 +1,24 @@
 package fr.insee.rmes.modules.concepts.collections.webservice;
 
-import fr.insee.rmes.modules.commons.configuration.LogRequestFilter;
-import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
+import static fr.insee.rmes.integration.authorizations.TokenForTestsConfiguration.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import fr.insee.rmes.config.auth.UserAuthTestConfiguration;
 import fr.insee.rmes.integration.AbstractResourcesEnvProd;
+import fr.insee.rmes.modules.commons.configuration.LogRequestFilter;
 import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionsFetchException;
 import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionsSaveException;
 import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionId;
 import fr.insee.rmes.modules.concepts.collections.domain.port.clientside.CollectionsService;
-
+import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
+import java.util.Collections;
 import java.util.List;
-import fr.insee.rmes.config.auth.UserAuthTestConfiguration;
+import java.util.Optional;
+import java.util.stream.Stream;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -22,30 +31,12 @@ import org.springframework.http.MediaType;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-import java.util.Collections;
-import java.util.Optional;
-import java.util.stream.Stream;
-
-import static fr.insee.rmes.integration.authorizations.TokenForTestsConfiguration.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-
 @WebMvcTest(
         controllers = CollectionsResources.class,
         excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = LogRequestFilter.class),
-        properties = {
-                "fr.insee.rmes.bauhaus.modules.concepts.enabled=true",
-                "fr.insee.rmes.bauhaus.extensions=pdf,odt"
-        }
-)
-@Import({
-        CollectionsResources.class,
-        UserAuthTestConfiguration.class
-})
+        properties = {"fr.insee.rmes.bauhaus.modules.concepts.enabled=true", "fr.insee.rmes.bauhaus.extensions=pdf,odt"
+        })
+@Import({CollectionsResources.class, UserAuthTestConfiguration.class})
 class CollectionsResourcesHasAccessIntegrationTest extends AbstractResourcesEnvProd {
 
     @Configuration
@@ -61,12 +52,15 @@ class CollectionsResourcesHasAccessIntegrationTest extends AbstractResourcesEnvP
 
     @MethodSource("provideCollectionData")
     @ParameterizedTest
-    void getAllCollections(Integer code, boolean hasAccessReturn) throws Exception, CollectionsFetchException, MissingUserInformationException {
+    void getAllCollections(Integer code, boolean hasAccessReturn)
+            throws Exception, CollectionsFetchException, MissingUserInformationException {
         when(checker.hasAccess(any(), any(), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
         when(collectionsService.getAllCollections()).thenReturn(Collections.emptyList());
 
-        var request = get("/concepts/collections").contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+        var request = get("/concepts/collections")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON);
         request.header("Authorization", "Bearer toto");
 
         mvc.perform(request).andExpect(status().is(code));
@@ -74,12 +68,15 @@ class CollectionsResourcesHasAccessIntegrationTest extends AbstractResourcesEnvP
 
     @MethodSource("provideCollectionData")
     @ParameterizedTest
-    void getCollectionById(Integer code, boolean hasAccessReturn) throws Exception, CollectionsFetchException, MissingUserInformationException {
+    void getCollectionById(Integer code, boolean hasAccessReturn)
+            throws Exception, CollectionsFetchException, MissingUserInformationException {
         when(checker.hasAccess(any(), any(), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
         when(collectionsService.getCollection(any())).thenReturn(Optional.empty());
 
-        var request = get("/concepts/collections/" + collectionId).contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+        var request = get("/concepts/collections/" + collectionId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON);
         request.header("Authorization", "Bearer toto");
 
         mvc.perform(request).andExpect(status().is(code == 200 ? 404 : code));
@@ -87,18 +84,26 @@ class CollectionsResourcesHasAccessIntegrationTest extends AbstractResourcesEnvP
 
     @MethodSource("providePostCollectionData")
     @ParameterizedTest
-    void createCollection(Integer code, boolean hasAccessReturn) throws Exception, CollectionsSaveException, fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionsFetchException, MissingUserInformationException {
+    void createCollection(Integer code, boolean hasAccessReturn)
+            throws Exception, CollectionsSaveException,
+                    fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionsFetchException,
+                    MissingUserInformationException {
         when(checker.hasAccess(any(), any(), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
         when(collectionsService.createCollection(any())).thenReturn(new CollectionId("1"));
-        var request = post("/concepts/collections").contentType(MediaType.APPLICATION_JSON).accept(MediaType.TEXT_PLAIN_VALUE).content("{\"id\": \"Collection-1\", \"creator\": \"creator\", \"contributor\": \"contributor\", \"labels\": [{\"value\": \"value\", \"lang\": \"fr\"}], \"descriptions\": [], \"conceptsIdentifiers\": []}");
+        var request = post("/concepts/collections")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.TEXT_PLAIN_VALUE)
+                .content(
+                        "{\"id\": \"Collection-1\", \"creator\": \"creator\", \"contributor\": \"contributor\", \"labels\": [{\"value\": \"value\", \"lang\": \"fr\"}], \"descriptions\": [], \"conceptsIdentifiers\": []}");
         request.header("Authorization", "Bearer toto");
         mvc.perform(request).andExpect(status().is(code));
     }
 
     @MethodSource("provideCollectionData")
     @ParameterizedTest
-    void updateCollection(Integer code, boolean hasAccessReturn) throws Exception, MissingUserInformationException, CollectionsSaveException {
+    void updateCollection(Integer code, boolean hasAccessReturn)
+            throws Exception, MissingUserInformationException, CollectionsSaveException {
         when(checker.hasAccess(any(), any(), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
         doNothing().when(collectionsService).update(any());
@@ -119,7 +124,9 @@ class CollectionsResourcesHasAccessIntegrationTest extends AbstractResourcesEnvP
         when(checker.hasAccess(any(), any(), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
 
-        var request = delete("/concepts/collections/" + collectionId).contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+        var request = delete("/concepts/collections/" + collectionId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON);
         request.header("Authorization", "Bearer toto");
 
         mvc.perform(request).andExpect(status().is(code));
@@ -127,7 +134,8 @@ class CollectionsResourcesHasAccessIntegrationTest extends AbstractResourcesEnvP
 
     @MethodSource("providePublishCollectionData")
     @ParameterizedTest
-    void publishCollection(Integer code, boolean hasAccessReturn) throws Exception, MissingUserInformationException, CollectionsFetchException, CollectionsSaveException {
+    void publishCollection(Integer code, boolean hasAccessReturn)
+            throws Exception, MissingUserInformationException, CollectionsFetchException, CollectionsSaveException {
         when(checker.hasAccess(any(), any(), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
         doNothing().when(collectionsService).publishCollections(any());
@@ -143,15 +151,16 @@ class CollectionsResourcesHasAccessIntegrationTest extends AbstractResourcesEnvP
 
     @MethodSource("provideExportCollectionData")
     @ParameterizedTest
-    void exportCollection(Integer code, boolean hasAccessReturn) throws Exception, MissingUserInformationException, CollectionsFetchException {
+    void exportCollection(Integer code, boolean hasAccessReturn)
+            throws Exception, MissingUserInformationException, CollectionsFetchException {
         when(checker.hasAccess(any(), any(), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
-        when(collectionsService.exportCollection(any())).thenReturn(
-                new fr.insee.rmes.modules.concepts.collections.domain.model.CollectionExport(
-                        "file.odt", new byte[]{'P', 'K'}, MediaType.APPLICATION_OCTET_STREAM_VALUE));
+        when(collectionsService.exportCollection(any()))
+                .thenReturn(new fr.insee.rmes.modules.concepts.collections.domain.model.CollectionExport(
+                        "file.odt", new byte[] {'P', 'K'}, MediaType.APPLICATION_OCTET_STREAM_VALUE));
 
-        var request = get("/concepts/collections/" + collectionId + "/export")
-                .accept(MediaType.APPLICATION_OCTET_STREAM);
+        var request =
+                get("/concepts/collections/" + collectionId + "/export").accept(MediaType.APPLICATION_OCTET_STREAM);
         request.header("Authorization", "Bearer toto");
 
         mvc.perform(request).andExpect(status().is(code));
@@ -159,12 +168,15 @@ class CollectionsResourcesHasAccessIntegrationTest extends AbstractResourcesEnvP
 
     @MethodSource("provideCollectionData")
     @ParameterizedTest
-    void getDashboard(Integer code, boolean hasAccessReturn) throws Exception, CollectionsFetchException, MissingUserInformationException {
+    void getDashboard(Integer code, boolean hasAccessReturn)
+            throws Exception, CollectionsFetchException, MissingUserInformationException {
         when(checker.hasAccess(any(), any(), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
         when(collectionsService.getDashboard()).thenReturn(List.of());
 
-        var request = get("/concepts/collections/dashboard").contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+        var request = get("/concepts/collections/dashboard")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON);
         request.header("Authorization", "Bearer toto");
 
         mvc.perform(request).andExpect(status().is(code));
@@ -172,12 +184,15 @@ class CollectionsResourcesHasAccessIntegrationTest extends AbstractResourcesEnvP
 
     @MethodSource("provideCollectionData")
     @ParameterizedTest
-    void getToValidate(Integer code, boolean hasAccessReturn) throws Exception, CollectionsFetchException, MissingUserInformationException {
+    void getToValidate(Integer code, boolean hasAccessReturn)
+            throws Exception, CollectionsFetchException, MissingUserInformationException {
         when(checker.hasAccess(any(), any(), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
         when(collectionsService.getToValidate()).thenReturn(List.of());
 
-        var request = get("/concepts/collections/toValidate").contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+        var request = get("/concepts/collections/toValidate")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON);
         request.header("Authorization", "Bearer toto");
 
         mvc.perform(request).andExpect(status().is(code));
@@ -185,12 +200,15 @@ class CollectionsResourcesHasAccessIntegrationTest extends AbstractResourcesEnvP
 
     @MethodSource("provideCollectionData")
     @ParameterizedTest
-    void getCollectionMembers(Integer code, boolean hasAccessReturn) throws Exception, CollectionsFetchException, MissingUserInformationException {
+    void getCollectionMembers(Integer code, boolean hasAccessReturn)
+            throws Exception, CollectionsFetchException, MissingUserInformationException {
         when(checker.hasAccess(any(), any(), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
         when(collectionsService.getCollectionMembers(any())).thenReturn(List.of());
 
-        var request = get("/concepts/collections/" + collectionId + "/members").contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+        var request = get("/concepts/collections/" + collectionId + "/members")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON);
         request.header("Authorization", "Bearer toto");
 
         mvc.perform(request).andExpect(status().is(code));
@@ -202,38 +220,27 @@ class CollectionsResourcesHasAccessIntegrationTest extends AbstractResourcesEnvP
         when(checker.hasAccess(any(), any(), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
 
-        var request = get("/concepts/collections/search").contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+        var request = get("/concepts/collections/search")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON);
         request.header("Authorization", "Bearer toto");
-
 
         mvc.perform(request).andExpect(status().is(code));
     }
 
     private static Stream<Arguments> providePostCollectionData() {
-        return Stream.of(
-                Arguments.of(201, true),
-                Arguments.of(403, false)
-        );
+        return Stream.of(Arguments.of(201, true), Arguments.of(403, false));
     }
 
     private static Stream<Arguments> provideCollectionData() {
-        return Stream.of(
-                Arguments.of(200, true),
-                Arguments.of(403, false)
-        );
+        return Stream.of(Arguments.of(200, true), Arguments.of(403, false));
     }
 
     private static Stream<Arguments> providePublishCollectionData() {
-        return Stream.of(
-                Arguments.of(204, true),
-                Arguments.of(403, false)
-        );
+        return Stream.of(Arguments.of(204, true), Arguments.of(403, false));
     }
 
     private static Stream<Arguments> provideExportCollectionData() {
-        return Stream.of(
-                Arguments.of(200, true),
-                Arguments.of(403, false)
-        );
+        return Stream.of(Arguments.of(200, true), Arguments.of(403, false));
     }
 }

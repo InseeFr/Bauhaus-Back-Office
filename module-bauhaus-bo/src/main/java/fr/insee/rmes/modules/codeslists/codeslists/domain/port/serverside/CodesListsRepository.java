@@ -5,7 +5,6 @@ import fr.insee.rmes.modules.codeslists.codeslists.domain.exceptions.CodesListsS
 import fr.insee.rmes.modules.codeslists.codeslists.domain.model.CodesList;
 import fr.insee.rmes.modules.codeslists.codeslists.domain.model.PersistedCodesList;
 import fr.insee.rmes.modules.commons.hexagonal.ServerSidePort;
-
 import java.util.Optional;
 
 @ServerSidePort

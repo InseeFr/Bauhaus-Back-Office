@@ -7,8 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public record CodeRepresentation(
         @JsonProperty("$type") String type,
         @JsonProperty("BlankIsMissingValue") Boolean blankIsMissingValue,
-        @JsonProperty("CodeListReference") Reference codeListReference
-) {
+        @JsonProperty("CodeListReference") Reference codeListReference) {
 
     public static final String TYPE = "CodeRepresentationBaseType";
 }

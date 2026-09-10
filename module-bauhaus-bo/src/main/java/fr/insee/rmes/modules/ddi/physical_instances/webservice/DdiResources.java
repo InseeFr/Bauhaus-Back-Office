@@ -6,6 +6,7 @@ import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.commons.security.PublicEndpoint;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.InvalidDdi4JsonException;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CreatePhysicalInstanceRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi3Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
@@ -13,7 +14,6 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnitRe
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodesList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialPhysicalInstance;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UpdatePhysicalInstanceRequest;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.InvalidDdi4JsonException;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3toDDI4ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI4toDDI3ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIItemConvertService;
@@ -51,9 +51,8 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 @RestController
 @RequestMapping(
-    value = "/ddi",
-    produces = { "application/hal+json", MediaType.APPLICATION_JSON_VALUE }
-)
+        value = "/ddi",
+        produces = {"application/hal+json", MediaType.APPLICATION_JSON_VALUE})
 public class DdiResources {
 
     private final DDIService ddiService;
@@ -66,15 +65,14 @@ public class DdiResources {
     private final Ddi4SchemaService ddi4SchemaService;
 
     public DdiResources(
-        DDIService ddiService,
-        DDI4toDDI3ConverterService ddi4toDdi3ConverterService,
-        DDI3toDDI4ConverterService ddi3toDdi4ConverterService,
-        DDIItemConvertService ddiItemConvertService,
-        UserProvider userProvider,
-        RbacFetcher rbacFetcher,
-        BauhausUriBuilder bauhausUriBuilder,
-        Ddi4SchemaService ddi4SchemaService
-    ) {
+            DDIService ddiService,
+            DDI4toDDI3ConverterService ddi4toDdi3ConverterService,
+            DDI3toDDI4ConverterService ddi3toDdi4ConverterService,
+            DDIItemConvertService ddiItemConvertService,
+            UserProvider userProvider,
+            RbacFetcher rbacFetcher,
+            BauhausUriBuilder bauhausUriBuilder,
+            Ddi4SchemaService ddi4SchemaService) {
         this.ddiService = ddiService;
         this.ddi4toDdi3ConverterService = ddi4toDdi3ConverterService;
         this.ddi3toDdi4ConverterService = ddi3toDdi4ConverterService;
@@ -86,101 +84,63 @@ public class DdiResources {
     }
 
     @GetMapping("/physical-instance")
-    @HasAccess(
-        module = RBAC.Module.DDI_PHYSICALINSTANCE,
-        privilege = RBAC.Privilege.READ
-    )
-    public ResponseEntity<
-        List<PartialPhysicalInstanceResponse>
-    > getPhysicalInstances() {
+    @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.READ)
+    public ResponseEntity<List<PartialPhysicalInstanceResponse>> getPhysicalInstances() {
         List<PartialPhysicalInstance> instances = resolvePhysicalInstances();
 
-        List<PartialPhysicalInstanceResponse> responses = instances
-            .stream()
-            .map(instance -> {
-                var response = PartialPhysicalInstanceResponse.fromDomain(
-                    instance
-                );
-                response.add(
-                    linkTo(DdiResources.class)
-                        .slash("physical-instance")
-                        .slash(instance.agency())
-                        .slash(instance.id())
-                        .withSelfRel()
-                );
-                return response;
-            })
-            .toList();
+        List<PartialPhysicalInstanceResponse> responses = instances.stream()
+                .map(instance -> {
+                    var response = PartialPhysicalInstanceResponse.fromDomain(instance);
+                    response.add(linkTo(DdiResources.class)
+                            .slash("physical-instance")
+                            .slash(instance.agency())
+                            .slash(instance.id())
+                            .withSelfRel());
+                    return response;
+                })
+                .toList();
 
         return ResponseEntity.ok()
-            .contentType(org.springframework.hateoas.MediaTypes.HAL_JSON)
-            .body(responses);
+                .contentType(org.springframework.hateoas.MediaTypes.HAL_JSON)
+                .body(responses);
     }
 
     @GetMapping("/physical-instance/search")
-    @HasAccess(
-        module = RBAC.Module.DDI_PHYSICALINSTANCE,
-        privilege = RBAC.Privilege.READ
-    )
-    public ResponseEntity<
-        List<PhysicalInstanceSearchResponse>
-    > searchPhysicalInstances(
-        @RequestHeader(
-            value = HttpHeaders.CACHE_CONTROL,
-            required = false
-        ) String cacheControl
-    ) {
+    @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.READ)
+    public ResponseEntity<List<PhysicalInstanceSearchResponse>> searchPhysicalInstances(
+            @RequestHeader(value = HttpHeaders.CACHE_CONTROL, required = false) String cacheControl) {
         if (requestsCacheBypass(cacheControl)) {
             ddiService.evictPhysicalInstanceSearchRowsCache();
         }
-        List<PhysicalInstanceSearchResponse> responses = resolveByReadStampStrategy(
-            ddiService::searchPhysicalInstancesFilteredByStamp,
-            ddiService::searchPhysicalInstances
-        )
-            .stream()
-            .map(PhysicalInstanceSearchResponse::fromDomain)
-            .toList();
+        List<PhysicalInstanceSearchResponse> responses =
+                resolveByReadStampStrategy(
+                                ddiService::searchPhysicalInstancesFilteredByStamp, ddiService::searchPhysicalInstances)
+                        .stream()
+                        .map(PhysicalInstanceSearchResponse::fromDomain)
+                        .toList();
 
-        return ResponseEntity.ok()
-            .contentType(MediaType.APPLICATION_JSON)
-            .body(responses);
+        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(responses);
     }
 
     @GetMapping("/mutualized-codes-list")
-    @HasAccess(
-        module = RBAC.Module.DDI_PHYSICALINSTANCE,
-        privilege = RBAC.Privilege.READ
-    )
-    public ResponseEntity<
-        List<CodeListSummaryResponse>
-    > getMutualizedCodesLists(
-        @RequestHeader(
-            value = HttpHeaders.CACHE_CONTROL,
-            required = false
-        ) String cacheControl
-    ) {
+    @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.READ)
+    public ResponseEntity<List<CodeListSummaryResponse>> getMutualizedCodesLists(
+            @RequestHeader(value = HttpHeaders.CACHE_CONTROL, required = false) String cacheControl) {
         if (requestsCacheBypass(cacheControl)) {
             ddiService.evictMutualizedCodesListsCache();
         }
-        List<PartialCodesList> codesLists =
-            ddiService.getMutualizedCodesLists();
+        List<PartialCodesList> codesLists = ddiService.getMutualizedCodesLists();
 
-        List<CodeListSummaryResponse> responses = codesLists
-            .stream()
-            .map(codesList ->
-                new CodeListSummaryResponse(
-                    codesList.agency(),
-                    codesList.id(),
-                    codesList.label(),
-                    codesList.name(),
-                    codesList.versionDate()
-                )
-            )
-            .toList();
+        List<CodeListSummaryResponse> responses = codesLists.stream()
+                .map(codesList -> new CodeListSummaryResponse(
+                        codesList.agency(),
+                        codesList.id(),
+                        codesList.label(),
+                        codesList.name(),
+                        codesList.versionDate()))
+                .toList();
 
-        return ResponseEntity.ok()
-            .contentType(MediaType.APPLICATION_JSON)
-            .body(responses);
+        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(responses);
     }
 
     /**
@@ -193,31 +153,20 @@ public class DdiResources {
             return false;
         }
         String normalized = cacheControl.toLowerCase();
-        return (
-            normalized.contains("no-cache") || normalized.contains("no-store")
-        );
+        return (normalized.contains("no-cache") || normalized.contains("no-store"));
     }
 
     @GetMapping("/mutualized-codes-list/{agencyId}/{id}")
-    @HasAccess(
-        module = RBAC.Module.DDI_PHYSICALINSTANCE,
-        privilege = RBAC.Privilege.READ
-    )
+    @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.READ)
     public ResponseEntity<Ddi4Response> getMutualizedCodesList(
-        @PathVariable String agencyId,
-        @PathVariable(Constants.ID) String id
-    ) {
+            @PathVariable String agencyId, @PathVariable(Constants.ID) String id) {
         Ddi4Response response = ddiService.getMutualizedCodesList(agencyId, id);
-        return ResponseEntity.ok()
-            .contentType(MediaType.APPLICATION_JSON)
-            .body(response);
+        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(response);
     }
 
     private List<PartialPhysicalInstance> resolvePhysicalInstances() {
         return resolveByReadStampStrategy(
-            ddiService::getPhysicalInstancesFilteredByStamp,
-            ddiService::getPhysicalInstances
-        );
+                ddiService::getPhysicalInstancesFilteredByStamp, ddiService::getPhysicalInstances);
     }
 
     /**
@@ -226,17 +175,11 @@ public class DdiResources {
      * (ou en cas d'information utilisateur manquante) la liste complète.
      */
     private <T> List<T> resolveByReadStampStrategy(
-        Function<Set<String>, List<T>> filteredByStamp,
-        Supplier<List<T>> unfiltered
-    ) {
+            Function<Set<String>, List<T>> filteredByStamp, Supplier<List<T>> unfiltered) {
         try {
             User user = userProvider.findUser().orElse(User.EMPTY_USER);
-            RBAC.Strategy strategy =
-                rbacFetcher.getApplicationActionStrategyByRole(
-                    user.roles(),
-                    RBAC.Module.DDI_PHYSICALINSTANCE,
-                    RBAC.Privilege.READ
-                );
+            RBAC.Strategy strategy = rbacFetcher.getApplicationActionStrategyByRole(
+                    user.roles(), RBAC.Module.DDI_PHYSICALINSTANCE, RBAC.Privilege.READ);
             if (strategy == RBAC.Strategy.STAMP) {
                 return filteredByStamp.apply(user.getStamps());
             }
@@ -248,231 +191,124 @@ public class DdiResources {
 
     @PostMapping("/physical-instance")
     @PreAuthorize(
-        "@propertiesAccessPrivilegesChecker.hasAccess('DDI_PHYSICALINSTANCE', 'CREATE', #request.groupAgency + '|' + #request.groupId, authentication.principal)"
-    )
-    public ResponseEntity<Ddi4Response> createPhysicalInstance(
-        @RequestBody CreatePhysicalInstanceRequest request
-    ) {
+            "@propertiesAccessPrivilegesChecker.hasAccess('DDI_PHYSICALINSTANCE', 'CREATE', #request.groupAgency + '|' + #request.groupId, authentication.principal)")
+    public ResponseEntity<Ddi4Response> createPhysicalInstance(@RequestBody CreatePhysicalInstanceRequest request) {
         Ddi4Response response = ddiService.createPhysicalInstance(request);
-        return ResponseEntity.ok()
-            .contentType(MediaType.APPLICATION_JSON)
-            .body(response);
+        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(response);
     }
 
     @GetMapping("/physical-instance/{agencyId}/{id}")
-    @HasAccess(
-        module = RBAC.Module.DDI_PHYSICALINSTANCE,
-        privilege = RBAC.Privilege.READ
-    )
+    @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.READ)
     public ResponseEntity<Ddi4Response> getDdi4PhysicalInstance(
-        @PathVariable String agencyId,
-        @PathVariable(Constants.ID) String id
-    ) {
-        Ddi4Response response = ddiService.getDdi4PhysicalInstance(
-            agencyId,
-            id
-        );
-        return ResponseEntity.ok()
-            .contentType(MediaType.APPLICATION_JSON)
-            .body(response);
+            @PathVariable String agencyId, @PathVariable(Constants.ID) String id) {
+        Ddi4Response response = ddiService.getDdi4PhysicalInstance(agencyId, id);
+        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(response);
     }
 
     @GetMapping("/physical-instance/{agencyId}/{id}/parents")
-    @HasAccess(
-        module = RBAC.Module.DDI_PHYSICALINSTANCE,
-        privilege = RBAC.Privilege.READ
-    )
+    @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.READ)
     public ResponseEntity<PhysicalInstanceParentsResponse> getPhysicalInstanceParents(
-        @PathVariable String agencyId,
-        @PathVariable(Constants.ID) String id
-    ) {
+            @PathVariable String agencyId, @PathVariable(Constants.ID) String id) {
         PhysicalInstanceParentsResponse response =
-            PhysicalInstanceParentsResponse.fromDomain(
-                ddiService.getPhysicalInstanceParents(agencyId, id)
-            );
-        return ResponseEntity.ok()
-            .contentType(MediaType.APPLICATION_JSON)
-            .body(response);
+                PhysicalInstanceParentsResponse.fromDomain(ddiService.getPhysicalInstanceParents(agencyId, id));
+        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(response);
     }
 
     @GetMapping("/physical-instance/{agencyId}/{id}/codeslists")
-    @HasAccess(
-        module = RBAC.Module.DDI_PHYSICALINSTANCE,
-        privilege = RBAC.Privilege.READ
-    )
-    public ResponseEntity<
-        List<CodeListSummaryResponse>
-    > getPhysicalInstanceCodesLists(
-        @PathVariable String agencyId,
-        @PathVariable(Constants.ID) String id
-    ) {
-        List<CodeListSummaryResponse> codeLists = ddiService
-            .getPhysicalInstanceCodeLists(agencyId, id)
-            .stream()
-            .map(CodeListSummaryResponse::fromDdi4CodeList)
-            .toList();
-        return ResponseEntity.ok()
-            .contentType(MediaType.APPLICATION_JSON)
-            .body(codeLists);
+    @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.READ)
+    public ResponseEntity<List<CodeListSummaryResponse>> getPhysicalInstanceCodesLists(
+            @PathVariable String agencyId, @PathVariable(Constants.ID) String id) {
+        List<CodeListSummaryResponse> codeLists = ddiService.getPhysicalInstanceCodeLists(agencyId, id).stream()
+                .map(CodeListSummaryResponse::fromDdi4CodeList)
+                .toList();
+        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(codeLists);
     }
 
     @PatchMapping("/physical-instance/{agencyId}/{id}")
-    @HasAccess(
-        module = RBAC.Module.DDI_PHYSICALINSTANCE,
-        privilege = RBAC.Privilege.UPDATE
-    )
+    @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.UPDATE)
     public ResponseEntity<Ddi4Response> updatePhysicalInstance(
-        @PathVariable String agencyId,
-        @PathVariable String id,
-        @RequestBody UpdatePhysicalInstanceRequest request
-    ) {
-        Ddi4Response updatedInstance = ddiService.updatePhysicalInstance(
-            agencyId,
-            id,
-            request
-        );
-        return ResponseEntity.ok()
-            .contentType(MediaType.APPLICATION_JSON)
-            .body(updatedInstance);
+            @PathVariable String agencyId,
+            @PathVariable String id,
+            @RequestBody UpdatePhysicalInstanceRequest request) {
+        Ddi4Response updatedInstance = ddiService.updatePhysicalInstance(agencyId, id, request);
+        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(updatedInstance);
     }
 
     @PutMapping("/physical-instance/{agencyId}/{id}")
-    @HasAccess(
-        module = RBAC.Module.DDI_PHYSICALINSTANCE,
-        privilege = RBAC.Privilege.UPDATE
-    )
+    @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.UPDATE)
     public ResponseEntity<Ddi4Response> replacePhysicalInstance(
-        @PathVariable String agencyId,
-        @PathVariable String id,
-        @RequestBody Ddi4Response ddi4Response
-    ) {
-        Ddi4Response updatedInstance = ddiService.updateFullPhysicalInstance(
-            agencyId,
-            id,
-            ddi4Response
-        );
-        return ResponseEntity.ok()
-            .contentType(MediaType.APPLICATION_JSON)
-            .body(updatedInstance);
+            @PathVariable String agencyId, @PathVariable String id, @RequestBody Ddi4Response ddi4Response) {
+        Ddi4Response updatedInstance = ddiService.updateFullPhysicalInstance(agencyId, id, ddi4Response);
+        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(updatedInstance);
     }
 
     @PostMapping("/convert/ddi4-to-ddi3")
-    @HasAccess(
-        module = RBAC.Module.DDI_PHYSICALINSTANCE,
-        privilege = RBAC.Privilege.READ
-    )
-    public ResponseEntity<String> convertDdi4ToDdi3(
-        @RequestBody Ddi4Response ddi4
-    ) {
+    @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.READ)
+    public ResponseEntity<String> convertDdi4ToDdi3(@RequestBody Ddi4Response ddi4) {
         String ddi3Xml = ddi4toDdi3ConverterService.convertDdi4ToDdi3Xml(ddi4);
-        return ResponseEntity.ok()
-            .contentType(MediaType.APPLICATION_XML)
-            .body(ddi3Xml);
+        return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML).body(ddi3Xml);
     }
 
     @PostMapping("/convert/ddi3-to-ddi4")
-    @HasAccess(
-        module = RBAC.Module.DDI_PHYSICALINSTANCE,
-        privilege = RBAC.Privilege.READ
-    )
-    public ResponseEntity<Ddi4Response> convertDdi3ToDdi4(
-        @RequestBody Ddi3Response ddi3
-    ) {
+    @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.READ)
+    public ResponseEntity<Ddi4Response> convertDdi3ToDdi4(@RequestBody Ddi3Response ddi3) {
         String schemaUrl = ServletUriComponentsBuilder.fromCurrentContextPath()
-            .path("/ddi/schema")
-            .toUriString();
-        Ddi4Response ddi4 = ddi3toDdi4ConverterService.convertDdi3ToDdi4(
-            ddi3,
-            schemaUrl
-        );
-        return ResponseEntity.ok()
-            .contentType(MediaType.APPLICATION_JSON)
-            .body(ddi4);
+                .path("/ddi/schema")
+                .toUriString();
+        Ddi4Response ddi4 = ddi3toDdi4ConverterService.convertDdi3ToDdi4(ddi3, schemaUrl);
+        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(ddi4);
     }
 
     @GetMapping("/schema")
-    @HasAccess(
-        module = RBAC.Module.DDI_PHYSICALINSTANCE,
-        privilege = RBAC.Privilege.READ
-    )
+    @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.READ)
     public ResponseEntity<String> getDdiSchema() {
-        return ResponseEntity.ok()
-            .contentType(MediaType.APPLICATION_JSON)
-            .body(ddi4SchemaService.schemaDocument());
+        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(ddi4SchemaService.schemaDocument());
     }
 
-    @GetMapping(
-        value = "/public/item/{agency}/{id}/{version}",
-        produces = MediaType.APPLICATION_XML_VALUE
-    )
+    @GetMapping(value = "/public/item/{agency}/{id}/{version}", produces = MediaType.APPLICATION_XML_VALUE)
     @PublicEndpoint
     public ResponseEntity<String> getItemXmlByVersion(
-        @PathVariable String agency,
-        @PathVariable String id,
-        @PathVariable String version
-    ) {
+            @PathVariable String agency, @PathVariable String id, @PathVariable String version) {
         String xml = ddiService.getItemXml(agency, id, version);
         if (xml == null) {
             return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.ok()
-            .contentType(MediaType.APPLICATION_XML)
-            .body(xml);
+        return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML).body(xml);
     }
 
-    @GetMapping(
-        value = "/public/item/{agency}/{id}/{version}",
-        produces = MediaType.APPLICATION_JSON_VALUE
-    )
+    @GetMapping(value = "/public/item/{agency}/{id}/{version}", produces = MediaType.APPLICATION_JSON_VALUE)
     @PublicEndpoint
     public ResponseEntity<String> getItemJsonByVersion(
-        @PathVariable String agency,
-        @PathVariable String id,
-        @PathVariable String version
-    ) {
+            @PathVariable String agency, @PathVariable String id, @PathVariable String version) {
         String xml = ddiService.getItemXml(agency, id, version);
         if (xml == null) {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok()
-            .contentType(MediaType.APPLICATION_JSON)
-            .body(ddiItemConvertService.convert(xml).toString());
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(ddiItemConvertService.convert(xml).toString());
     }
 
-    @GetMapping(
-        value = "/public/item/{agency}/{id}",
-        produces = MediaType.APPLICATION_XML_VALUE
-    )
+    @GetMapping(value = "/public/item/{agency}/{id}", produces = MediaType.APPLICATION_XML_VALUE)
     @PublicEndpoint
-    public ResponseEntity<String> getItemXml(
-        @PathVariable String agency,
-        @PathVariable String id
-    ) {
+    public ResponseEntity<String> getItemXml(@PathVariable String agency, @PathVariable String id) {
+        String xml = ddiService.getItemXml(agency, id);
+        if (xml == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML).body(xml);
+    }
+
+    @GetMapping(value = "/public/item/{agency}/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PublicEndpoint
+    public ResponseEntity<String> getItemJson(@PathVariable String agency, @PathVariable String id) {
         String xml = ddiService.getItemXml(agency, id);
         if (xml == null) {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok()
-            .contentType(MediaType.APPLICATION_XML)
-            .body(xml);
-    }
-
-    @GetMapping(
-        value = "/public/item/{agency}/{id}",
-        produces = MediaType.APPLICATION_JSON_VALUE
-    )
-    @PublicEndpoint
-    public ResponseEntity<String> getItemJson(
-        @PathVariable String agency,
-        @PathVariable String id
-    ) {
-        String xml = ddiService.getItemXml(agency, id);
-        if (xml == null) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok()
-            .contentType(MediaType.APPLICATION_JSON)
-            .body(ddiItemConvertService.convert(xml).toString());
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(ddiItemConvertService.convert(xml).toString());
     }
 
     /**
@@ -481,53 +317,29 @@ public class DdiResources {
      * selon la négociation de contenu. Le préfixe {@code /ddi} est requis par la redirection Gravitee,
      * qui ne route vers Bauhaus que les chemins commençant par {@code /ddi/}.
      */
-    @GetMapping(
-        value = "/public/codelist/{agency}/{id}/{version}",
-        produces = MediaType.APPLICATION_XML_VALUE
-    )
+    @GetMapping(value = "/public/codelist/{agency}/{id}/{version}", produces = MediaType.APPLICATION_XML_VALUE)
     @PublicEndpoint
     public ResponseEntity<String> getCodeListXmlByVersion(
-        @PathVariable String agency,
-        @PathVariable String id,
-        @PathVariable String version
-    ) {
+            @PathVariable String agency, @PathVariable String id, @PathVariable String version) {
         return DdiResponses.xml(ddiService.getCodeListXml(agency, id, version));
     }
 
-    @GetMapping(
-        value = "/public/codelist/{agency}/{id}/{version}",
-        produces = MediaType.APPLICATION_JSON_VALUE
-    )
+    @GetMapping(value = "/public/codelist/{agency}/{id}/{version}", produces = MediaType.APPLICATION_JSON_VALUE)
     @PublicEndpoint
     public ResponseEntity<Ddi4Response> getCodeListJsonByVersion(
-        @PathVariable String agency,
-        @PathVariable String id,
-        @PathVariable String version
-    ) {
+            @PathVariable String agency, @PathVariable String id, @PathVariable String version) {
         return DdiResponses.json(ddiService.getCodeList(agency, id, version));
     }
 
-    @GetMapping(
-        value = "/public/codelist/{agency}/{id}",
-        produces = MediaType.APPLICATION_XML_VALUE
-    )
+    @GetMapping(value = "/public/codelist/{agency}/{id}", produces = MediaType.APPLICATION_XML_VALUE)
     @PublicEndpoint
-    public ResponseEntity<String> getCodeListXml(
-        @PathVariable String agency,
-        @PathVariable String id
-    ) {
+    public ResponseEntity<String> getCodeListXml(@PathVariable String agency, @PathVariable String id) {
         return DdiResponses.xml(ddiService.getCodeListXml(agency, id, null));
     }
 
-    @GetMapping(
-        value = "/public/codelist/{agency}/{id}",
-        produces = MediaType.APPLICATION_JSON_VALUE
-    )
+    @GetMapping(value = "/public/codelist/{agency}/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @PublicEndpoint
-    public ResponseEntity<Ddi4Response> getCodeListJson(
-        @PathVariable String agency,
-        @PathVariable String id
-    ) {
+    public ResponseEntity<Ddi4Response> getCodeListJson(@PathVariable String agency, @PathVariable String id) {
         return DdiResponses.json(ddiService.getCodeList(agency, id, null));
     }
 
@@ -540,49 +352,26 @@ public class DdiResources {
      * sont déréférencées et l'accompagnent — fragments d'une même {@code <FragmentInstance>} côté
      * XML, items de l'enveloppe {@code topLevelReferences}/{@code items} côté JSON.
      */
-    @GetMapping(
-        value = "/public/operation/{id}/fichiers",
-        produces = MediaType.APPLICATION_JSON_VALUE
-    )
+    @GetMapping(value = "/public/operation/{id}/fichiers", produces = MediaType.APPLICATION_JSON_VALUE)
     @PublicEndpoint
-    public ResponseEntity<Ddi4StudyUnitResponse> getOperationStudyUnitJson(
-        @PathVariable(Constants.ID) String id
-    ) {
-        String operationIri = bauhausUriBuilder.getCompleteUriPublication(
-            "operation",
-            id
-        );
+    public ResponseEntity<Ddi4StudyUnitResponse> getOperationStudyUnitJson(@PathVariable(Constants.ID) String id) {
+        String operationIri = bauhausUriBuilder.getCompleteUriPublication("operation", id);
 
         return DdiResponses.json(
-            ddiService.getStudyUnitByOperationIri(operationIri).orElse(null)
-        );
+                ddiService.getStudyUnitByOperationIri(operationIri).orElse(null));
     }
 
-    @GetMapping(
-        value = "/public/operation/{id}/fichiers",
-        produces = MediaType.APPLICATION_XML_VALUE
-    )
+    @GetMapping(value = "/public/operation/{id}/fichiers", produces = MediaType.APPLICATION_XML_VALUE)
     @PublicEndpoint
-    public ResponseEntity<String> getOperationStudyUnitXml(
-        @PathVariable(Constants.ID) String id
-    ) {
-        String operationIri = bauhausUriBuilder.getCompleteUriPublication(
-            "operation",
-            id
-        );
+    public ResponseEntity<String> getOperationStudyUnitXml(@PathVariable(Constants.ID) String id) {
+        String operationIri = bauhausUriBuilder.getCompleteUriPublication("operation", id);
         return DdiResponses.xml(
-            ddiService.getStudyUnitXmlByOperationIri(operationIri).orElse(null)
-        );
+                ddiService.getStudyUnitXmlByOperationIri(operationIri).orElse(null));
     }
 
     @PostMapping("/validate")
-    @HasAccess(
-        module = RBAC.Module.DDI_PHYSICALINSTANCE,
-        privilege = RBAC.Privilege.PUBLISH
-    )
-    public ResponseEntity<ValidationResponse> validateDdi4(
-        @RequestBody String jsonData
-    ) {
+    @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.PUBLISH)
+    public ResponseEntity<ValidationResponse> validateDdi4(@RequestBody String jsonData) {
         try {
             // Le DDI 4 circule déjà sous l'enveloppe du schéma ({topLevelReferences, items}) :
             // rien à traduire ici. Le schéma est compilé une fois pour toutes par le validateur.
@@ -590,23 +379,19 @@ public class DdiResources {
 
             if (errors.isEmpty()) {
                 return ResponseEntity.ok()
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(ValidationResponse.success());
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(ValidationResponse.success());
             } else {
                 return ResponseEntity.badRequest()
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(ValidationResponse.failure(errors));
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(ValidationResponse.failure(errors));
             }
         } catch (InvalidDdi4JsonException e) {
             // Seul un document mal formé vaut un 400 : une panne de chargement du schéma doit
             // remonter en 500 plutôt que de se déguiser en erreur de saisie.
             return ResponseEntity.badRequest()
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(
-                    ValidationResponse.failure(
-                        List.of("Invalid JSON: " + e.getMessage())
-                    )
-                );
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(ValidationResponse.failure(List.of("Invalid JSON: " + e.getMessage())));
         }
     }
 }

@@ -7,21 +7,9 @@ public record UpdatePhysicalInstanceRequest(
         String studyUnitId,
         String studyUnitAgency,
         String groupId,
-        String groupAgency
-) {
+        String groupAgency) {
     public UpdatePhysicalInstanceRequest(
-            String physicalInstanceLabel,
-            String dataRelationshipLabel,
-            String logicalRecordLabel
-    ) {
-        this(
-                physicalInstanceLabel,
-                dataRelationshipLabel,
-                logicalRecordLabel,
-                null,
-                null,
-                null,
-                null
-        );
+            String physicalInstanceLabel, String dataRelationshipLabel, String logicalRecordLabel) {
+        this(physicalInstanceLabel, dataRelationshipLabel, logicalRecordLabel, null, null, null, null);
     }
 }

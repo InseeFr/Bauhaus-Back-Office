@@ -1,13 +1,12 @@
 package fr.insee.rmes.modules.ddi.physical_instances.domain.services;
 
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.*;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.*;
 import java.util.List;
 import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 class DDI3toDDI4ConverterServiceImplTest {
 
@@ -17,13 +16,12 @@ class DDI3toDDI4ConverterServiceImplTest {
     @BeforeEach
     void setUp() {
         converter = new DDI3toDDI4ConverterServiceImpl(Map.of(
-            "PhysicalInstance", "a51e85bb-6259-4488-8df2-f08cb43485f8",
-            "DataRelationship", "f39ff278-8500-45fe-a850-3906da2d242b",
-            "Variable", "683889c6-f74b-4d5e-92ed-908c0a42bb2d",
-            "CodeList", "8b108ef8-b642-4484-9c49-f88e4bf7cf1d",
-            "Category", "7e47c269-bcab-40f7-a778-af7bbc4e3d00",
-            "ManagedMissingValuesRepresentation", "c29c3125-2a53-4179-8fa6-aa3beb2bb5ed"
-        ));
+                "PhysicalInstance", "a51e85bb-6259-4488-8df2-f08cb43485f8",
+                "DataRelationship", "f39ff278-8500-45fe-a850-3906da2d242b",
+                "Variable", "683889c6-f74b-4d5e-92ed-908c0a42bb2d",
+                "CodeList", "8b108ef8-b642-4484-9c49-f88e4bf7cf1d",
+                "Category", "7e47c269-bcab-40f7-a778-af7bbc4e3d00",
+                "ManagedMissingValuesRepresentation", "c29c3125-2a53-4179-8fa6-aa3beb2bb5ed"));
     }
 
     /**
@@ -60,16 +58,18 @@ class DDI3toDDI4ConverterServiceImplTest {
                         false,
                         false,
                         false,
-                        "DC337820-AF3A-4C0B-82F9-CF02535CDE83"
-                )));
+                        "DC337820-AF3A-4C0B-82F9-CF02535CDE83")));
 
         Ddi4Response result = converter.convertDdi3ToDdi4(ddi3, SCHEMA_URL);
 
         assertNotNull(result.managedMissingValuesRepresentation());
         assertEquals(1, result.managedMissingValuesRepresentation().size());
-        Ddi4ManagedMissingValuesRepresentation mmvr = result.managedMissingValuesRepresentation().get(0);
+        Ddi4ManagedMissingValuesRepresentation mmvr =
+                result.managedMissingValuesRepresentation().get(0);
         assertEquals("mmvr-1", mmvr.id());
-        assertEquals("cl-sentinelles", mmvr.missingCodeRepresentation().get(0).codeListReference().id());
+        assertEquals(
+                "cl-sentinelles",
+                mmvr.missingCodeRepresentation().get(0).codeListReference().id());
     }
 
     @Test
@@ -131,9 +131,14 @@ class DDI3toDDI4ConverterServiceImplTest {
     void shouldParseGroupFromFragmentXml() {
         // Build a schema-valid Group fragment with the real serializer, then parse it back:
         // this is the exact round-trip the auto-provision of a group's CodeListScheme relies on.
-        Ddi4Group original = new Ddi4Group(Ddi4Group.TYPE,
+        Ddi4Group original = new Ddi4Group(
+                Ddi4Group.TYPE,
                 CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
-                "urn:ddi:fr.insee:group-id:1", "fr.insee", "group-id", "1", "resp",
+                "urn:ddi:fr.insee:group-id:1",
+                "fr.insee",
+                "group-id",
+                "1",
+                "resp",
                 new Citation(LangStrings.of("fr-FR", "Enquête innovation")),
                 List.of(Reference.of("fr.insee", "su-1", "1", "StudyUnit")),
                 List.of("http://id.insee.fr/operations/serie/s1001"),
@@ -159,9 +164,14 @@ class DDI3toDDI4ConverterServiceImplTest {
 
     @Test
     void shouldParseCategorySchemeFromFragmentXml() {
-        Ddi4CategoryScheme original = new Ddi4CategoryScheme(Ddi4CategoryScheme.TYPE,
-                CogsDate.ofDateTime("2026-04-03T12:00:00Z"), "urn:ddi:fr.insee:cats-id:1",
-                "fr.insee", "cats-id", "1", LangStrings.of("fr-FR", "Schéma catégories"),
+        Ddi4CategoryScheme original = new Ddi4CategoryScheme(
+                Ddi4CategoryScheme.TYPE,
+                CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
+                "urn:ddi:fr.insee:cats-id:1",
+                "fr.insee",
+                "cats-id",
+                "1",
+                LangStrings.of("fr-FR", "Schéma catégories"),
                 List.of(Reference.of("fr.insee", "cat-1", "1", "Category")));
         String xml = new Ddi4ToLifecycle33().toCategoryScheme(original).xmlText(logicalProductFragmentOptions());
 
@@ -175,9 +185,14 @@ class DDI3toDDI4ConverterServiceImplTest {
 
     @Test
     void shouldParseVariableSchemeFromFragmentXml() {
-        Ddi4VariableScheme original = new Ddi4VariableScheme(Ddi4VariableScheme.TYPE,
-                CogsDate.ofDateTime("2026-04-03T12:00:00Z"), "urn:ddi:fr.insee:vars-id:1",
-                "fr.insee", "vars-id", "1", LangStrings.of("fr-FR", "Schéma variables"),
+        Ddi4VariableScheme original = new Ddi4VariableScheme(
+                Ddi4VariableScheme.TYPE,
+                CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
+                "urn:ddi:fr.insee:vars-id:1",
+                "fr.insee",
+                "vars-id",
+                "1",
+                LangStrings.of("fr-FR", "Schéma variables"),
                 List.of(Reference.of("fr.insee", "var-1", "1", "Variable")));
         String xml = new Ddi4ToLifecycle33().toVariableScheme(original).xmlText(logicalProductFragmentOptions());
 
@@ -193,9 +208,14 @@ class DDI3toDDI4ConverterServiceImplTest {
     void shouldParseLogicalProductFromFragmentXml() {
         // Round-trip through the real serializer: this is what reading a group's existing
         // LogicalProduct relies on, to add a scheme reference to it instead of creating a second one.
-        Ddi4LogicalProduct original = new Ddi4LogicalProduct(Ddi4LogicalProduct.TYPE,
-                CogsDate.ofDateTime("2026-04-03T12:00:00Z"), "urn:ddi:fr.insee:lp-id:1",
-                "fr.insee", "lp-id", "1", LangStrings.of("fr-FR", "Produit logique"),
+        Ddi4LogicalProduct original = new Ddi4LogicalProduct(
+                Ddi4LogicalProduct.TYPE,
+                CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
+                "urn:ddi:fr.insee:lp-id:1",
+                "fr.insee",
+                "lp-id",
+                "1",
+                LangStrings.of("fr-FR", "Produit logique"),
                 List.of(Reference.of("fr.insee", "cls-1", "1", "CodeListScheme")),
                 List.of(Reference.of("fr.insee", "cats-1", "1", "CategoryScheme")),
                 List.of(Reference.of("fr.insee", "vars-1", "1", "VariableScheme")),
@@ -214,14 +234,21 @@ class DDI3toDDI4ConverterServiceImplTest {
         assertEquals(1, logicalProduct.variableSchemeReference().size());
         assertEquals("vars-1", logicalProduct.variableSchemeReference().get(0).id());
         assertEquals(1, logicalProduct.managedRepresentationSchemeReference().size());
-        assertEquals("mrs-1", logicalProduct.managedRepresentationSchemeReference().get(0).id());
+        assertEquals(
+                "mrs-1",
+                logicalProduct.managedRepresentationSchemeReference().get(0).id());
     }
 
     @Test
     void shouldParseStudyUnitFromFragmentXml() {
-        Ddi4StudyUnit original = new Ddi4StudyUnit(Ddi4StudyUnit.TYPE,
-                CogsDate.ofDateTime("2026-04-03T12:00:00Z"), "urn:ddi:fr.insee:su-id:1",
-                "fr.insee", "su-id", "1", new Citation(LangStrings.of("fr-FR", "Study Unit")),
+        Ddi4StudyUnit original = new Ddi4StudyUnit(
+                Ddi4StudyUnit.TYPE,
+                CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
+                "urn:ddi:fr.insee:su-id:1",
+                "fr.insee",
+                "su-id",
+                "1",
+                new Citation(LangStrings.of("fr-FR", "Study Unit")),
                 "http://id.insee.fr/operations/operation/op1",
                 List.of(Reference.of("fr.insee", "pi-1", "1", "PhysicalInstance")),
                 List.of(Reference.of("fr.insee", "lp-1", "1", "LogicalProduct")));
@@ -292,9 +319,7 @@ class DDI3toDDI4ConverterServiceImplTest {
                         false,
                         false,
                         false,
-                        "DC337820-AF3A-4C0B-82F9-CF02535CDE83"
-                ))
-        );
+                        "DC337820-AF3A-4C0B-82F9-CF02535CDE83")));
 
         // When
         Ddi4Response result = converter.convertDdi3ToDdi4(ddi3, SCHEMA_URL);
@@ -314,7 +339,9 @@ class DDI3toDDI4ConverterServiceImplTest {
         assertNotNull(pi.citation());
         assertNotNull(pi.citation().title());
         assertEquals("fr-FR", pi.citation().title().get(0).language());
-        assertEquals("SAPHIR - Fichier Individus RP99 (.sas7bdat)", pi.citation().title().get(0).value());
+        assertEquals(
+                "SAPHIR - Fichier Individus RP99 (.sas7bdat)",
+                pi.citation().title().get(0).value());
 
         assertNotNull(pi.dataRelationshipReference());
         assertEquals(1, pi.dataRelationshipReference().size());
@@ -372,9 +399,7 @@ class DDI3toDDI4ConverterServiceImplTest {
                         false,
                         false,
                         false,
-                        "DC337820-AF3A-4C0B-82F9-CF02535CDE83"
-                ))
-        );
+                        "DC337820-AF3A-4C0B-82F9-CF02535CDE83")));
 
         // When
         Ddi4Response result = converter.convertDdi3ToDdi4(ddi3, SCHEMA_URL);
@@ -397,8 +422,21 @@ class DDI3toDDI4ConverterServiceImplTest {
         assertNotNull(dr.logicalRecord());
         assertEquals(1, dr.logicalRecord().size());
         assertNotNull(dr.logicalRecord().get(0).variablesInRecord());
-        assertEquals(1, dr.logicalRecord().get(0).variablesInRecord().variableUsedReference().size());
-        assertEquals("AGEMEN8", dr.logicalRecord().get(0).variablesInRecord().variableUsedReference().get(0).id());
+        assertEquals(
+                1,
+                dr.logicalRecord()
+                        .get(0)
+                        .variablesInRecord()
+                        .variableUsedReference()
+                        .size());
+        assertEquals(
+                "AGEMEN8",
+                dr.logicalRecord()
+                        .get(0)
+                        .variablesInRecord()
+                        .variableUsedReference()
+                        .get(0)
+                        .id());
     }
 
     @Test
@@ -449,9 +487,7 @@ class DDI3toDDI4ConverterServiceImplTest {
                         false,
                         false,
                         false,
-                        "DC337820-AF3A-4C0B-82F9-CF02535CDE83"
-                ))
-        );
+                        "DC337820-AF3A-4C0B-82F9-CF02535CDE83")));
 
         // When
         Ddi4Response result = converter.convertDdi3ToDdi4(ddi3, SCHEMA_URL);
@@ -475,13 +511,19 @@ class DDI3toDDI4ConverterServiceImplTest {
         assertEquals("Âge détaillé", var.label().get(0).value());
 
         assertNotNull(var.description());
-        assertEquals("Âge de l'individu en années révolues", var.description().get(0).value());
+        assertEquals(
+                "Âge de l'individu en années révolues", var.description().get(0).value());
 
         assertNotNull(var.variableRepresentation());
         assertEquals("Demographic", var.variableRepresentation().variableRole());
         assertNotNull(var.variableRepresentation().codeRepresentation());
         assertEquals(false, var.variableRepresentation().codeRepresentation().blankIsMissingValue());
-        assertEquals("CL_AGEMEN8", var.variableRepresentation().codeRepresentation().codeListReference().id());
+        assertEquals(
+                "CL_AGEMEN8",
+                var.variableRepresentation()
+                        .codeRepresentation()
+                        .codeListReference()
+                        .id());
     }
 
     @Test
@@ -527,9 +569,7 @@ class DDI3toDDI4ConverterServiceImplTest {
                         false,
                         false,
                         false,
-                        "DC337820-AF3A-4C0B-82F9-CF02535CDE83"
-                ))
-        );
+                        "DC337820-AF3A-4C0B-82F9-CF02535CDE83")));
 
         // When
         Ddi4Response result = converter.convertDdi3ToDdi4(ddi3, SCHEMA_URL);
@@ -609,9 +649,7 @@ class DDI3toDDI4ConverterServiceImplTest {
                         false,
                         false,
                         false,
-                        "DC337820-AF3A-4C0B-82F9-CF02535CDE83"
-                ))
-        );
+                        "DC337820-AF3A-4C0B-82F9-CF02535CDE83")));
 
         // When
         Ddi4Response result = converter.convertDdi3ToDdi4(ddi3, SCHEMA_URL);
@@ -675,9 +713,7 @@ class DDI3toDDI4ConverterServiceImplTest {
                         false,
                         false,
                         false,
-                        "DC337820-AF3A-4C0B-82F9-CF02535CDE83"
-                ))
-        );
+                        "DC337820-AF3A-4C0B-82F9-CF02535CDE83")));
 
         // When
         Ddi4Response result = converter.convertDdi3ToDdi4(ddi3, SCHEMA_URL);
@@ -701,10 +737,7 @@ class DDI3toDDI4ConverterServiceImplTest {
     @Test
     void shouldHandleEmptyDdi3Response() {
         // Given
-        Ddi3Response ddi3 = new Ddi3Response(
-                new Ddi3Response.Ddi3Options(List.of("RegisterOrReplace")),
-                List.of()
-        );
+        Ddi3Response ddi3 = new Ddi3Response(new Ddi3Response.Ddi3Options(List.of("RegisterOrReplace")), List.of());
 
         // When
         Ddi4Response result = converter.convertDdi3ToDdi4(ddi3, SCHEMA_URL);
@@ -760,9 +793,7 @@ class DDI3toDDI4ConverterServiceImplTest {
                         false,
                         false,
                         false,
-                        "DC337820-AF3A-4C0B-82F9-CF02535CDE83"
-                ))
-        );
+                        "DC337820-AF3A-4C0B-82F9-CF02535CDE83")));
 
         // When
         Ddi4Response result = converter.convertDdi3ToDdi4(ddi3, SCHEMA_URL);
@@ -828,9 +859,7 @@ class DDI3toDDI4ConverterServiceImplTest {
                         false,
                         false,
                         false,
-                        "DC337820-AF3A-4C0B-82F9-CF02535CDE83"
-                ))
-        );
+                        "DC337820-AF3A-4C0B-82F9-CF02535CDE83")));
 
         // When
         Ddi4Response result = converter.convertDdi3ToDdi4(ddi3, SCHEMA_URL);
@@ -868,9 +897,7 @@ class DDI3toDDI4ConverterServiceImplTest {
                         false,
                         false,
                         false,
-                        "DC337820-AF3A-4C0B-82F9-CF02535CDE83"
-                ))
-        );
+                        "DC337820-AF3A-4C0B-82F9-CF02535CDE83")));
 
         // When & Then
         assertThrows(RuntimeException.class, () -> converter.convertDdi3ToDdi4(ddi3, SCHEMA_URL));
@@ -907,8 +934,7 @@ class DDI3toDDI4ConverterServiceImplTest {
                                 false,
                                 false,
                                 false,
-                                "DC337820-AF3A-4C0B-82F9-CF02535CDE83"
-                        ),
+                                "DC337820-AF3A-4C0B-82F9-CF02535CDE83"),
                         // DataRelationship
                         new Ddi3Response.Ddi3Item(
                                 "f39ff278-8500-45fe-a850-3906da2d242b",
@@ -931,8 +957,7 @@ class DDI3toDDI4ConverterServiceImplTest {
                                 false,
                                 false,
                                 false,
-                                "DC337820-AF3A-4C0B-82F9-CF02535CDE83"
-                        ),
+                                "DC337820-AF3A-4C0B-82F9-CF02535CDE83"),
                         // Variable 1
                         new Ddi3Response.Ddi3Item(
                                 "683889c6-f74b-4d5e-92ed-908c0a42bb2d",
@@ -958,8 +983,7 @@ class DDI3toDDI4ConverterServiceImplTest {
                                 false,
                                 false,
                                 false,
-                                "DC337820-AF3A-4C0B-82F9-CF02535CDE83"
-                        ),
+                                "DC337820-AF3A-4C0B-82F9-CF02535CDE83"),
                         // Variable 2
                         new Ddi3Response.Ddi3Item(
                                 "683889c6-f74b-4d5e-92ed-908c0a42bb2d",
@@ -985,8 +1009,7 @@ class DDI3toDDI4ConverterServiceImplTest {
                                 false,
                                 false,
                                 false,
-                                "DC337820-AF3A-4C0B-82F9-CF02535CDE83"
-                        ),
+                                "DC337820-AF3A-4C0B-82F9-CF02535CDE83"),
                         // CodeList
                         new Ddi3Response.Ddi3Item(
                                 "8b108ef8-b642-4484-9c49-f88e4bf7cf1d",
@@ -1009,8 +1032,7 @@ class DDI3toDDI4ConverterServiceImplTest {
                                 false,
                                 false,
                                 false,
-                                "DC337820-AF3A-4C0B-82F9-CF02535CDE83"
-                        ),
+                                "DC337820-AF3A-4C0B-82F9-CF02535CDE83"),
                         // Category 1
                         new Ddi3Response.Ddi3Item(
                                 "7e47c269-bcab-40f7-a778-af7bbc4e3d00",
@@ -1036,8 +1058,7 @@ class DDI3toDDI4ConverterServiceImplTest {
                                 false,
                                 false,
                                 false,
-                                "DC337820-AF3A-4C0B-82F9-CF02535CDE83"
-                        ),
+                                "DC337820-AF3A-4C0B-82F9-CF02535CDE83"),
                         // Category 2
                         new Ddi3Response.Ddi3Item(
                                 "7e47c269-bcab-40f7-a778-af7bbc4e3d00",
@@ -1063,9 +1084,6 @@ class DDI3toDDI4ConverterServiceImplTest {
                                 false,
                                 false,
                                 false,
-                                "DC337820-AF3A-4C0B-82F9-CF02535CDE83"
-                        )
-                )
-        );
+                                "DC337820-AF3A-4C0B-82F9-CF02535CDE83")));
     }
 }

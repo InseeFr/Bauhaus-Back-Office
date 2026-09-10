@@ -1,17 +1,16 @@
 package fr.insee.rmes.modules.operations.families.infrastructure.graphdb;
 
+import static fr.insee.rmes.persistance.sparql_queries.operations.OperationsOperationQueries.OPERATIONS_GRAPH;
+
 import fr.insee.rmes.BauhausLanguagesProperties;
-import fr.insee.rmes.freemarker.FreeMarkerUtils;
 import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.freemarker.FreeMarkerUtils;
 import fr.insee.rmes.graphdb.SparqlLiterals;
 import fr.insee.rmes.modules.shared_kernel.domain.model.Language;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-
 import java.util.HashMap;
 import java.util.Map;
-
-import static fr.insee.rmes.persistance.sparql_queries.operations.OperationsOperationQueries.OPERATIONS_GRAPH;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 @Component
 public class OperationFamilyQueries {
@@ -26,8 +25,7 @@ public class OperationFamilyQueries {
     public OperationFamilyQueries(
             BauhausLanguagesProperties languages,
             @Value("${fr.insee.rmes.bauhaus.baseGraph}") String baseGraph,
-            @Value("${fr.insee.rmes.bauhaus.operations.graph}") String operationsGraph
-    ) {
+            @Value("${fr.insee.rmes.bauhaus.operations.graph}") String operationsGraph) {
         this.languages = languages;
         this.baseGraph = baseGraph;
         this.operationsGraph = operationsGraph;
@@ -37,7 +35,7 @@ public class OperationFamilyQueries {
         HashMap<String, Object> params = new HashMap<>();
         params.put(OPERATIONS_GRAPH, SparqlLiterals.iri(baseGraph + operationsGraph));
         params.put("LG1", SparqlLiterals.literal(languages.lg1()));
-        return  buildRequest("getFamilies.ftlh", params);
+        return buildRequest("getFamilies.ftlh", params);
     }
 
     private static String buildRequest(String fileName, Map<String, Object> params) throws RmesException {
@@ -51,7 +49,7 @@ public class OperationFamilyQueries {
         params.put("LG2", SparqlLiterals.literal(languages.lg2()));
         params.put("ID", SparqlLiterals.literal(id));
         params.put(FAMILY_URI_SUFFIX, SparqlLiterals.literal(FAMILY_PATH + id));
-        return  buildRequest("getFamily.ftlh", params);
+        return buildRequest("getFamily.ftlh", params);
     }
 
     public String getSeries(String idFamily) throws RmesException {
@@ -60,7 +58,7 @@ public class OperationFamilyQueries {
         params.put("LG1", SparqlLiterals.literal(languages.lg1()));
         params.put("LG2", SparqlLiterals.literal(languages.lg2()));
         params.put(FAMILY_URI_SUFFIX, SparqlLiterals.literal(FAMILY_PATH + idFamily));
-        return  buildRequest("getSeries.ftlh", params);
+        return buildRequest("getSeries.ftlh", params);
     }
 
     /**
@@ -71,7 +69,8 @@ public class OperationFamilyQueries {
     public String checkPrefLabelUnicity(String id, String label, Language language) throws RmesException {
         HashMap<String, Object> params = new HashMap<>();
         params.put(OPERATIONS_GRAPH, SparqlLiterals.iri(baseGraph + operationsGraph));
-        params.put("LABEL", SparqlLiterals.literal(label, language == Language.lg1 ? languages.lg1() : languages.lg2()));
+        params.put(
+                "LABEL", SparqlLiterals.literal(label, language == Language.lg1 ? languages.lg1() : languages.lg2()));
         params.put("URI_SUFFIX", SparqlLiterals.literal(FAMILY_PATH + id));
         params.put("TYPE", "insee:StatisticalOperationFamily");
         return FreeMarkerUtils.buildRequest("operations/", "checkFamilyPrefLabelUnicity.ftlh", params);
@@ -95,6 +94,6 @@ public class OperationFamilyQueries {
         params.put("LG1", SparqlLiterals.literal(languages.lg1()));
         params.put("LG2", SparqlLiterals.literal(languages.lg2()));
         params.put(FAMILY_URI_SUFFIX, SparqlLiterals.literal(FAMILY_PATH + idFamily));
-        return  buildRequest("getSubjects.ftlh", params);
+        return buildRequest("getSubjects.ftlh", params);
     }
 }

@@ -2,11 +2,11 @@ package fr.insee.rmes.bauhaus_services.operations.series.validation;
 
 import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.bauhaus_services.utils.OrganisationLookup;
+import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.exceptions.RmesBadRequestException;
+import fr.insee.rmes.modules.operations.series.domain.model.Series;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationSeriesQueries;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
-import fr.insee.rmes.exceptions.RmesBadRequestException;
-import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.modules.operations.series.domain.model.Series;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
@@ -23,8 +23,7 @@ public class SeriesInseeValidator implements SeriesValidator {
             RepositoryGestion repositoryGestion,
             BauhausLanguagesProperties languages,
             OperationSeriesQueries operationSeriesQueries,
-            OrganisationLookup organisationLookup
-    ) {
+            OrganisationLookup organisationLookup) {
         this.repositoryGestion = repositoryGestion;
         this.languages = languages;
         this.operationSeriesQueries = operationSeriesQueries;
@@ -33,7 +32,8 @@ public class SeriesInseeValidator implements SeriesValidator {
 
     @Override
     public void validate(Series series) throws RmesException {
-        new SeriesDefaultValidator(repositoryGestion, languages, operationSeriesQueries, organisationLookup).validate(series);
+        new SeriesDefaultValidator(repositoryGestion, languages, operationSeriesQueries, organisationLookup)
+                .validate(series);
 
         if (series.getAccrualPeriodicityCode() == null) {
             throw new RmesBadRequestException("The property accrualPeriodicityCode is required");
@@ -41,6 +41,5 @@ public class SeriesInseeValidator implements SeriesValidator {
         if (series.getTypeCode() == null) {
             throw new RmesBadRequestException("The property typeCode is required");
         }
-
     }
 }

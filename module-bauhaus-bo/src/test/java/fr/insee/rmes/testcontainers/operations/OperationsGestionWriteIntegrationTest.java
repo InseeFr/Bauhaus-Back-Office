@@ -1,11 +1,15 @@
 package fr.insee.rmes.testcontainers.operations;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.RepositoryInitiator;
 import fr.insee.rmes.graphdb.RepositoryUtils;
 import fr.insee.rmes.json.JSONUtils;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.testcontainers.WithGraphDBContainer;
+import java.util.ArrayList;
+import java.util.List;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
@@ -18,11 +22,6 @@ import org.eclipse.rdf4j.model.vocabulary.SKOS;
 import org.json.JSONArray;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Filet de sécurité sur les écritures « gestion » d'objets de type opérations/séries via
@@ -52,8 +51,7 @@ class OperationsGestionWriteIntegrationTest extends WithGraphDBContainer {
     private static final String GRAPH_DELETE = "http://rdf.insee.fr/graphes/operations-write-it/delete";
 
     private final RepositoryGestion repositoryGestion = new RepositoryGestion(
-            getRdfGestionConnectionDetails(),
-            new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED));
+            getRdfGestionConnectionDetails(), new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED));
 
     @Test
     void loadSimpleObject_persists_a_series_readable_by_sparql() throws RmesException {
@@ -91,9 +89,15 @@ class OperationsGestionWriteIntegrationTest extends WithGraphDBContainer {
 
         repositoryGestion.replaceGraph(graph, seriesModel(seriesC, "Série C", graph), null);
 
-        assertThat(labelsOf(GRAPH_REPLACE_GRAPH, seriesA)).as("série A effacée par replaceGraph").isEmpty();
-        assertThat(labelsOf(GRAPH_REPLACE_GRAPH, seriesB)).as("série B effacée par replaceGraph").isEmpty();
-        assertThat(labelsOf(GRAPH_REPLACE_GRAPH, seriesC)).as("série C présente après replaceGraph").containsExactly("Série C");
+        assertThat(labelsOf(GRAPH_REPLACE_GRAPH, seriesA))
+                .as("série A effacée par replaceGraph")
+                .isEmpty();
+        assertThat(labelsOf(GRAPH_REPLACE_GRAPH, seriesB))
+                .as("série B effacée par replaceGraph")
+                .isEmpty();
+        assertThat(labelsOf(GRAPH_REPLACE_GRAPH, seriesC))
+                .as("série C présente après replaceGraph")
+                .containsExactly("Série C");
     }
 
     @Test
@@ -101,7 +105,9 @@ class OperationsGestionWriteIntegrationTest extends WithGraphDBContainer {
         Resource graph = VF.createIRI(GRAPH_DELETE);
         IRI series = VF.createIRI("http://bauhaus/operations/serie/s-delete-it");
         repositoryGestion.loadSimpleObject(series, seriesModel(series, "À supprimer", graph));
-        assertThat(labelsOf(GRAPH_DELETE, series)).as("série présente avant suppression").containsExactly("À supprimer");
+        assertThat(labelsOf(GRAPH_DELETE, series))
+                .as("série présente avant suppression")
+                .containsExactly("À supprimer");
 
         repositoryGestion.deleteObject(series);
 
@@ -117,14 +123,12 @@ class OperationsGestionWriteIntegrationTest extends WithGraphDBContainer {
     }
 
     private List<String> labelsOf(String graph, IRI series) throws RmesException {
-        String query = "SELECT ?label WHERE { GRAPH <%s> { <%s> <%s> ?label } }"
-                .formatted(graph, series.stringValue(), LABEL);
+        String query =
+                "SELECT ?label WHERE { GRAPH <%s> { <%s> <%s> ?label } }".formatted(graph, series.stringValue(), LABEL);
         JSONArray array = repositoryGestion.getResponseAsArray(query);
         List<String> labels = new ArrayList<>();
         if (array != null) {
-            JSONUtils.stream(array)
-                    .map(row -> row.getString("label"))
-                    .forEach(labels::add);
+            JSONUtils.stream(array).map(row -> row.getString("label")).forEach(labels::add);
         }
         return labels;
     }

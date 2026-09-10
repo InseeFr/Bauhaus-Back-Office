@@ -1,5 +1,7 @@
 package fr.insee.rmes.modules.ddi.physical_instances.domain.services;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import fr.insee.ddi.lifecycle33.instance.FragmentDocument;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CogsDate;
@@ -13,12 +15,9 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.RangeValue;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.TextRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.VariableRepresentation;
+import java.util.List;
 import org.apache.xmlbeans.XmlException;
 import org.junit.jupiter.api.Test;
-
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Valeurs sentinelles (#1566) — aller-retour DDI 4 → DDI 3 → DDI 4 : la
@@ -36,10 +35,14 @@ class SentinelValuesRoundTripTest {
 
     @Test
     void missingValuesReference_survivesRoundTrip_withCodeRepresentation() throws XmlException {
-        VariableRepresentation rep = new VariableRepresentation(null,
-                new CodeRepresentation(CodeRepresentation.TYPE, false,
-                        Reference.of("fr.insee", "cl-1", "1", "CodeList")),
-                null, null, null, MMVR_REF);
+        VariableRepresentation rep = new VariableRepresentation(
+                null,
+                new CodeRepresentation(
+                        CodeRepresentation.TYPE, false, Reference.of("fr.insee", "cl-1", "1", "CodeList")),
+                null,
+                null,
+                null,
+                MMVR_REF);
 
         VariableRepresentation roundTripped = roundTrip(rep);
 
@@ -49,10 +52,16 @@ class SentinelValuesRoundTripTest {
 
     @Test
     void missingValuesReference_survivesRoundTrip_withNumericRepresentation() throws XmlException {
-        VariableRepresentation rep = new VariableRepresentation(null, null,
-                new NumericRepresentation(NumericRepresentation.TYPE, "Integer",
+        VariableRepresentation rep = new VariableRepresentation(
+                null,
+                null,
+                new NumericRepresentation(
+                        NumericRepresentation.TYPE,
+                        "Integer",
                         new NumberRange(new RangeValue(false, 0.0), new RangeValue(true, 100.0))),
-                null, null, MMVR_REF);
+                null,
+                null,
+                MMVR_REF);
 
         VariableRepresentation roundTripped = roundTrip(rep);
 
@@ -62,9 +71,13 @@ class SentinelValuesRoundTripTest {
 
     @Test
     void missingValuesReference_survivesRoundTrip_withDateTimeRepresentation() throws XmlException {
-        VariableRepresentation rep = new VariableRepresentation(null, null, null,
+        VariableRepresentation rep = new VariableRepresentation(
+                null,
+                null,
+                null,
                 new DateTimeRepresentation(DateTimeRepresentation.TYPE, "Date", "yyyy-MM-dd"),
-                null, MMVR_REF);
+                null,
+                MMVR_REF);
 
         VariableRepresentation roundTripped = roundTrip(rep);
 
@@ -74,7 +87,11 @@ class SentinelValuesRoundTripTest {
 
     @Test
     void missingValuesReference_survivesRoundTrip_withTextRepresentation() throws XmlException {
-        VariableRepresentation rep = new VariableRepresentation(null, null, null, null,
+        VariableRepresentation rep = new VariableRepresentation(
+                null,
+                null,
+                null,
+                null,
                 new TextRepresentation(TextRepresentation.TYPE, 255, 1, "[A-Z]+", true),
                 MMVR_REF);
 
@@ -90,10 +107,12 @@ class SentinelValuesRoundTripTest {
                 Ddi4ManagedMissingValuesRepresentation.TYPE,
                 CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
                 "urn:ddi:fr.insee:mmvr-1:1",
-                "fr.insee", "mmvr-1", "1",
+                "fr.insee",
+                "mmvr-1",
+                "1",
                 LangStrings.of("fr-FR", "Valeurs sentinelles NSP/REF"),
-                List.of(new CodeRepresentation(CodeRepresentation.TYPE, false,
-                        Reference.of("fr.insee", "cl-sentinelles", "1", "CodeList"))));
+                List.of(new CodeRepresentation(
+                        CodeRepresentation.TYPE, false, Reference.of("fr.insee", "cl-sentinelles", "1", "CodeList"))));
 
         String xml = writer.toManagedMissingValuesRepresentation(mmvr).xmlText();
         Ddi4ManagedMissingValuesRepresentation roundTripped =
@@ -111,25 +130,40 @@ class SentinelValuesRoundTripTest {
                 Ddi4ManagedMissingValuesRepresentation.TYPE,
                 null,
                 "urn:ddi:fr.insee:mmvr-1:1",
-                "fr.insee", "mmvr-1", "1",
+                "fr.insee",
+                "mmvr-1",
+                "1",
                 LangStrings.of("fr-FR", "Valeurs sentinelles NSP/REF"),
-                List.of(new CodeRepresentation(CodeRepresentation.TYPE, false,
-                        Reference.of("fr.insee", "cl-sentinelles", "1", "CodeList"))));
+                List.of(new CodeRepresentation(
+                        CodeRepresentation.TYPE, false, Reference.of("fr.insee", "cl-sentinelles", "1", "CodeList"))));
 
         String xml = writer.toManagedMissingValuesRepresentation(mmvr).xmlText();
         Ddi4ManagedMissingValuesRepresentation roundTripped =
                 reader.toManagedMissingValuesRepresentation(FragmentDocument.Factory.parse(xml));
 
         assertThat(roundTripped.versionDate()).isNull();
-        assertThat(roundTripped.missingCodeRepresentation().getFirst().codeListReference().id())
+        assertThat(roundTripped
+                        .missingCodeRepresentation()
+                        .getFirst()
+                        .codeListReference()
+                        .id())
                 .isEqualTo("cl-sentinelles");
     }
 
     private VariableRepresentation roundTrip(VariableRepresentation rep) throws XmlException {
-        Ddi4Variable variable = new Ddi4Variable(Ddi4Variable.TYPE,
+        Ddi4Variable variable = new Ddi4Variable(
+                Ddi4Variable.TYPE,
                 CogsDate.ofDateTime("2025-12-23T09:52:06.355Z"),
-                "urn:ddi:fr.insee:var-rt:1", "fr.insee", "var-rt", "1", null,
-                LangStrings.of("fr-FR", "VAR_RT"), null, null, rep, null);
+                "urn:ddi:fr.insee:var-rt:1",
+                "fr.insee",
+                "var-rt",
+                "1",
+                null,
+                LangStrings.of("fr-FR", "VAR_RT"),
+                null,
+                null,
+                rep,
+                null);
 
         String xml = writer.toVariable(variable).xmlText();
 

@@ -1,11 +1,18 @@
 package fr.insee.rmes.persistance.sparql_queries.structures;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.mockStatic;
+
 import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.freemarker.FreeMarkerUtils;
 import fr.insee.rmes.graphdb.ontologies.INSEE;
 import fr.insee.rmes.modules.structures.infrastructure.graphdb.StructureQueries;
+import java.util.List;
+import java.util.Map;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,50 +21,49 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.List;
-import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.mockStatic;
-
 @ExtendWith(MockitoExtension.class)
 class StructureQueriesTest {
-
 
     private StructureQueries structureQueries;
 
     @BeforeEach
     void setUp() {
-        structureQueries = new StructureQueries(new BauhausLanguagesProperties("fr", "en"), GraphsPropertiesStub.stub());
+        structureQueries =
+                new StructureQueries(new BauhausLanguagesProperties("fr", "en"), GraphsPropertiesStub.stub());
     }
 
     @Test
     void shouldGetStructures() throws RmesException {
         try (MockedStatic<FreeMarkerUtils> mockedFreeMarker = mockStatic(FreeMarkerUtils.class)) {
-            mockedFreeMarker.when(() -> FreeMarkerUtils.buildRequest(eq("structures/"), eq("getStructures.ftlh"), any(Map.class)))
+            mockedFreeMarker
+                    .when(() ->
+                            FreeMarkerUtils.buildRequest(eq("structures/"), eq("getStructures.ftlh"), any(Map.class)))
                     .thenReturn("SELECT * WHERE { ?s ?p ?o }");
 
             String result = structureQueries.getStructures();
 
             assertNotNull(result);
             assertEquals("SELECT * WHERE { ?s ?p ?o }", result);
-            mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("structures/"), eq("getStructures.ftlh"), any(Map.class)));
+            mockedFreeMarker.verify(
+                    () -> FreeMarkerUtils.buildRequest(eq("structures/"), eq("getStructures.ftlh"), any(Map.class)));
         }
     }
 
     @Test
     void shouldGetValidationStatus() throws RmesException {
         try (MockedStatic<FreeMarkerUtils> mockedFreeMarker = mockStatic(FreeMarkerUtils.class)) {
-            mockedFreeMarker.when(() -> FreeMarkerUtils.buildRequest(eq("structures/"), eq("getValidationStatus.ftlh"), any(Map.class)))
+            mockedFreeMarker
+                    .when(() -> FreeMarkerUtils.buildRequest(
+                            eq("structures/"), eq("getValidationStatus.ftlh"), any(Map.class)))
                     .thenReturn("SELECT ?status WHERE { ?s ?p ?status }");
 
             String result = structureQueries.getValidationStatus("123");
 
             assertNotNull(result);
             assertEquals("SELECT ?status WHERE { ?s ?p ?status }", result);
-            mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("structures/"), eq("getValidationStatus.ftlh"),
+            mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(
+                    eq("structures/"),
+                    eq("getValidationStatus.ftlh"),
                     argThat(params -> "\"123\"".equals(((Map<String, Object>) params).get("id")))));
         }
     }
@@ -65,17 +71,20 @@ class StructureQueriesTest {
     @Test
     void shouldGetStructuresAttachments() throws RmesException {
         try (MockedStatic<FreeMarkerUtils> mockedFreeMarker = mockStatic(FreeMarkerUtils.class)) {
-            mockedFreeMarker.when(() -> FreeMarkerUtils.buildRequest(eq("structures/"), eq("getAttachment.ftlh"), any(Map.class)))
+            mockedFreeMarker
+                    .when(() ->
+                            FreeMarkerUtils.buildRequest(eq("structures/"), eq("getAttachment.ftlh"), any(Map.class)))
                     .thenReturn("SELECT ?attachment WHERE { ?s ?p ?attachment }");
 
             String result = structureQueries.getStructuresAttachments("struct123", "comp456");
 
             assertNotNull(result);
             assertEquals("SELECT ?attachment WHERE { ?s ?p ?attachment }", result);
-            mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("structures/"), eq("getAttachment.ftlh"),
-                    argThat(params -> {
+            mockedFreeMarker.verify(() ->
+                    FreeMarkerUtils.buildRequest(eq("structures/"), eq("getAttachment.ftlh"), argThat(params -> {
                         Map<String, Object> map = (Map<String, Object>) params;
-                        return "\"struct123\"".equals(map.get("STRUCTURE_ID")) && "\"comp456\"".equals(map.get("COMPONENT_SPECIFICATION_ID"));
+                        return "\"struct123\"".equals(map.get("STRUCTURE_ID"))
+                                && "\"comp456\"".equals(map.get("COMPONENT_SPECIFICATION_ID"));
                     })));
         }
     }
@@ -83,7 +92,9 @@ class StructureQueriesTest {
     @Test
     void shouldGetComponentsForStructure() throws RmesException {
         try (MockedStatic<FreeMarkerUtils> mockedFreeMarker = mockStatic(FreeMarkerUtils.class)) {
-            mockedFreeMarker.when(() -> FreeMarkerUtils.buildRequest(eq("structures/"), eq("getComponentsForAStructure.ftlh"), any(Map.class)))
+            mockedFreeMarker
+                    .when(() -> FreeMarkerUtils.buildRequest(
+                            eq("structures/"), eq("getComponentsForAStructure.ftlh"), any(Map.class)))
                     .thenReturn("SELECT ?component WHERE { ?s ?p ?component }");
 
             String result = structureQueries.getComponentsForStructure("123");
@@ -96,7 +107,9 @@ class StructureQueriesTest {
     @Test
     void shouldGetStructureById() throws RmesException {
         try (MockedStatic<FreeMarkerUtils> mockedFreeMarker = mockStatic(FreeMarkerUtils.class)) {
-            mockedFreeMarker.when(() -> FreeMarkerUtils.buildRequest(eq("structures/"), eq("getStructure.ftlh"), any(Map.class)))
+            mockedFreeMarker
+                    .when(() ->
+                            FreeMarkerUtils.buildRequest(eq("structures/"), eq("getStructure.ftlh"), any(Map.class)))
                     .thenReturn("SELECT ?structure WHERE { ?s ?p ?structure }");
 
             String result = structureQueries.getStructureById("123");
@@ -109,21 +122,26 @@ class StructureQueriesTest {
     @Test
     void shouldCheckUnicityMutualizedComponent() throws RmesException {
         try (MockedStatic<FreeMarkerUtils> mockedFreeMarker = mockStatic(FreeMarkerUtils.class)) {
-            mockedFreeMarker.when(() -> FreeMarkerUtils.buildRequest(eq("structures/"), eq("checkUnicityMutualizedComponent.ftlh"), any(Map.class)))
+            mockedFreeMarker
+                    .when(() -> FreeMarkerUtils.buildRequest(
+                            eq("structures/"), eq("checkUnicityMutualizedComponent.ftlh"), any(Map.class)))
                     .thenReturn("ASK { ?s ?p ?o }");
 
-            String result = structureQueries.checkUnicityMutualizedComponent("comp123", "concept456",
-                    "http://bauhaus/codes/nomenclature", "http://purl.org/linked-data/cube#DimensionProperty");
+            String result = structureQueries.checkUnicityMutualizedComponent(
+                    "comp123",
+                    "concept456",
+                    "http://bauhaus/codes/nomenclature",
+                    "http://purl.org/linked-data/cube#DimensionProperty");
 
             assertNotNull(result);
             assertEquals("ASK { ?s ?p ?o }", result);
-            mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("structures/"), eq("checkUnicityMutualizedComponent.ftlh"),
-                    argThat(params -> {
+            mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(
+                    eq("structures/"), eq("checkUnicityMutualizedComponent.ftlh"), argThat(params -> {
                         Map<String, Object> map = (Map<String, Object>) params;
-                        return "\"comp123\"".equals(map.get("COMPONENT_ID")) &&
-                               ("<" + INSEE.STRUCTURE_CONCEPT + "concept456>").equals(map.get("CONCEPT_URI")) &&
-                               "<http://bauhaus/codes/nomenclature>".equals(map.get("CODE_LIST_URI")) &&
-                               "<http://purl.org/linked-data/cube#DimensionProperty>".equals(map.get("TYPE"));
+                        return "\"comp123\"".equals(map.get("COMPONENT_ID"))
+                                && ("<" + INSEE.STRUCTURE_CONCEPT + "concept456>").equals(map.get("CONCEPT_URI"))
+                                && "<http://bauhaus/codes/nomenclature>".equals(map.get("CODE_LIST_URI"))
+                                && "<http://purl.org/linked-data/cube#DimensionProperty>".equals(map.get("TYPE"));
                     })));
         }
     }
@@ -131,7 +149,9 @@ class StructureQueriesTest {
     @Test
     void shouldCheckUnicityStructure() throws RmesException {
         try (MockedStatic<FreeMarkerUtils> mockedFreeMarker = mockStatic(FreeMarkerUtils.class)) {
-            mockedFreeMarker.when(() -> FreeMarkerUtils.buildRequest(eq("structures/"), eq("checkUnicityStructure.ftlh"), any(Map.class)))
+            mockedFreeMarker
+                    .when(() -> FreeMarkerUtils.buildRequest(
+                            eq("structures/"), eq("checkUnicityStructure.ftlh"), any(Map.class)))
                     .thenReturn("ASK { ?s ?p ?o }");
 
             String[] ids = {"comp1", "comp2", "comp3"};
@@ -139,12 +159,13 @@ class StructureQueriesTest {
 
             assertNotNull(result);
             assertEquals("ASK { ?s ?p ?o }", result);
-            mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("structures/"), eq("checkUnicityStructure.ftlh"),
-                    argThat(params -> {
+            mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(
+                    eq("structures/"), eq("checkUnicityStructure.ftlh"), argThat(params -> {
                         Map<String, Object> map = (Map<String, Object>) params;
-                        return Integer.valueOf(3).equals(map.get("NB_COMPONENT")) &&
-                               "\"struct123\"".equals(map.get("STRUCTURE_ID")) &&
-                               List.of("\"comp1\"", "\"comp2\"", "\"comp3\"").equals(map.get("IDS"));
+                        return Integer.valueOf(3).equals(map.get("NB_COMPONENT"))
+                                && "\"struct123\"".equals(map.get("STRUCTURE_ID"))
+                                && List.of("\"comp1\"", "\"comp2\"", "\"comp3\"")
+                                        .equals(map.get("IDS"));
                     })));
         }
     }
@@ -152,20 +173,22 @@ class StructureQueriesTest {
     @Test
     void shouldGetComponentsWithAllTypesTrue() throws RmesException {
         try (MockedStatic<FreeMarkerUtils> mockedFreeMarker = mockStatic(FreeMarkerUtils.class)) {
-            mockedFreeMarker.when(() -> FreeMarkerUtils.buildRequest(eq("structures/"), eq("getMutualizedComponents.ftlh"), any(Map.class)))
+            mockedFreeMarker
+                    .when(() -> FreeMarkerUtils.buildRequest(
+                            eq("structures/"), eq("getMutualizedComponents.ftlh"), any(Map.class)))
                     .thenReturn("SELECT ?component WHERE { ?component ?p ?o }");
 
             String result = structureQueries.getComponents(true, true, true);
 
             assertNotNull(result);
             assertEquals("SELECT ?component WHERE { ?component ?p ?o }", result);
-            mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("structures/"), eq("getMutualizedComponents.ftlh"),
-                    argThat(params -> {
+            mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(
+                    eq("structures/"), eq("getMutualizedComponents.ftlh"), argThat(params -> {
                         Map<String, Object> map = (Map<String, Object>) params;
                         String types = (String) map.get("TYPES");
-                        return types.contains("qb:AttributeProperty") &&
-                               types.contains("qb:DimensionProperty") &&
-                               types.contains("qb:MeasureProperty");
+                        return types.contains("qb:AttributeProperty")
+                                && types.contains("qb:DimensionProperty")
+                                && types.contains("qb:MeasureProperty");
                     })));
         }
     }
@@ -173,14 +196,16 @@ class StructureQueriesTest {
     @Test
     void shouldGetComponentsWithOnlyAttributes() throws RmesException {
         try (MockedStatic<FreeMarkerUtils> mockedFreeMarker = mockStatic(FreeMarkerUtils.class)) {
-            mockedFreeMarker.when(() -> FreeMarkerUtils.buildRequest(eq("structures/"), eq("getMutualizedComponents.ftlh"), any(Map.class)))
+            mockedFreeMarker
+                    .when(() -> FreeMarkerUtils.buildRequest(
+                            eq("structures/"), eq("getMutualizedComponents.ftlh"), any(Map.class)))
                     .thenReturn("SELECT ?component WHERE { ?component ?p ?o }");
 
             String result = structureQueries.getComponents(true, false, false);
 
             assertNotNull(result);
-            mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("structures/"), eq("getMutualizedComponents.ftlh"),
-                    argThat(params -> {
+            mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(
+                    eq("structures/"), eq("getMutualizedComponents.ftlh"), argThat(params -> {
                         Map<String, Object> map = (Map<String, Object>) params;
                         String types = (String) map.get("TYPES");
                         return "qb:AttributeProperty".equals(types);
@@ -191,7 +216,9 @@ class StructureQueriesTest {
     @Test
     void shouldGetComponent() throws RmesException {
         try (MockedStatic<FreeMarkerUtils> mockedFreeMarker = mockStatic(FreeMarkerUtils.class)) {
-            mockedFreeMarker.when(() -> FreeMarkerUtils.buildRequest(eq("structures/"), eq("getMutualizedComponent.ftlh"), any(Map.class)))
+            mockedFreeMarker
+                    .when(() -> FreeMarkerUtils.buildRequest(
+                            eq("structures/"), eq("getMutualizedComponent.ftlh"), any(Map.class)))
                     .thenReturn("SELECT ?component WHERE { ?component ?p ?o }");
 
             String result = structureQueries.getComponent("123");
@@ -204,7 +231,9 @@ class StructureQueriesTest {
     @Test
     void shouldGetStructuresForComponent() throws RmesException {
         try (MockedStatic<FreeMarkerUtils> mockedFreeMarker = mockStatic(FreeMarkerUtils.class)) {
-            mockedFreeMarker.when(() -> FreeMarkerUtils.buildRequest(eq("structures/"), eq("getStructuresForMutualizedComponent.ftlh"), any(Map.class)))
+            mockedFreeMarker
+                    .when(() -> FreeMarkerUtils.buildRequest(
+                            eq("structures/"), eq("getStructuresForMutualizedComponent.ftlh"), any(Map.class)))
                     .thenReturn("SELECT ?structure WHERE { ?structure ?p ?o }");
 
             String result = structureQueries.getStructuresForComponent("123");
@@ -217,7 +246,9 @@ class StructureQueriesTest {
     @Test
     void shouldGetComponentType() throws RmesException {
         try (MockedStatic<FreeMarkerUtils> mockedFreeMarker = mockStatic(FreeMarkerUtils.class)) {
-            mockedFreeMarker.when(() -> FreeMarkerUtils.buildRequest(eq("structures/"), eq("getComponentType.ftlh"), any(Map.class)))
+            mockedFreeMarker
+                    .when(() -> FreeMarkerUtils.buildRequest(
+                            eq("structures/"), eq("getComponentType.ftlh"), any(Map.class)))
                     .thenReturn("SELECT ?type WHERE { ?component rdf:type ?type }");
 
             String result = structureQueries.getComponentType("123");
@@ -230,15 +261,17 @@ class StructureQueriesTest {
     @Test
     void shouldGetLastId() throws RmesException {
         try (MockedStatic<FreeMarkerUtils> mockedFreeMarker = mockStatic(FreeMarkerUtils.class)) {
-            mockedFreeMarker.when(() -> FreeMarkerUtils.buildRequest(eq("structures/"), eq("getLastIdByType.ftlh"), any(Map.class)))
+            mockedFreeMarker
+                    .when(() ->
+                            FreeMarkerUtils.buildRequest(eq("structures/"), eq("getLastIdByType.ftlh"), any(Map.class)))
                     .thenReturn("SELECT ?lastId WHERE { ?s ?p ?lastId }");
 
             String result = structureQueries.lastId("d", "http://purl.org/linked-data/cube#DimensionProperty");
 
             assertNotNull(result);
             assertEquals("SELECT ?lastId WHERE { ?s ?p ?lastId }", result);
-            mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("structures/"), eq("getLastIdByType.ftlh"),
-                    argThat(params -> {
+            mockedFreeMarker.verify(() ->
+                    FreeMarkerUtils.buildRequest(eq("structures/"), eq("getLastIdByType.ftlh"), argThat(params -> {
                         Map<String, Object> map = (Map<String, Object>) params;
                         return "\"^d\"".equals(map.get("ID_PREFIX_PATTERN"))
                                 && "<http://purl.org/linked-data/cube#DimensionProperty>".equals(map.get("TYPE"));
@@ -249,7 +282,9 @@ class StructureQueriesTest {
     @Test
     void shouldGetLastStructureId() throws RmesException {
         try (MockedStatic<FreeMarkerUtils> mockedFreeMarker = mockStatic(FreeMarkerUtils.class)) {
-            mockedFreeMarker.when(() -> FreeMarkerUtils.buildRequest(eq("structures/"), eq("getLastIdStructure.ftlh"), any(Map.class)))
+            mockedFreeMarker
+                    .when(() -> FreeMarkerUtils.buildRequest(
+                            eq("structures/"), eq("getLastIdStructure.ftlh"), any(Map.class)))
                     .thenReturn("SELECT ?lastId WHERE { ?s ?p ?lastId }");
 
             String result = structureQueries.lastStructureId();
@@ -262,7 +297,9 @@ class StructureQueriesTest {
     @Test
     void shouldGetUnValidatedComponent() throws RmesException {
         try (MockedStatic<FreeMarkerUtils> mockedFreeMarker = mockStatic(FreeMarkerUtils.class)) {
-            mockedFreeMarker.when(() -> FreeMarkerUtils.buildRequest(eq("structures/"), eq("getUnValidatedComponent.ftlh"), any(Map.class)))
+            mockedFreeMarker
+                    .when(() -> FreeMarkerUtils.buildRequest(
+                            eq("structures/"), eq("getUnValidatedComponent.ftlh"), any(Map.class)))
                     .thenReturn("SELECT ?component WHERE { ?component ?p ?o }");
 
             String result = structureQueries.getUnValidatedComponent("123");
@@ -275,15 +312,17 @@ class StructureQueriesTest {
     @Test
     void shouldGetUriClasseOwl() throws RmesException {
         try (MockedStatic<FreeMarkerUtils> mockedFreeMarker = mockStatic(FreeMarkerUtils.class)) {
-            mockedFreeMarker.when(() -> FreeMarkerUtils.buildRequest(eq("structures/"), eq("getUriClasseOwl.ftlh"), any(Map.class)))
+            mockedFreeMarker
+                    .when(() ->
+                            FreeMarkerUtils.buildRequest(eq("structures/"), eq("getUriClasseOwl.ftlh"), any(Map.class)))
                     .thenReturn("SELECT ?uri WHERE { ?uri rdf:type owl:Class }");
 
             String result = structureQueries.getUriClasseOwl("http://bauhaus/codes/nomenclature");
 
             assertNotNull(result);
             assertEquals("SELECT ?uri WHERE { ?uri rdf:type owl:Class }", result);
-            mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("structures/"), eq("getUriClasseOwl.ftlh"),
-                    argThat(params -> {
+            mockedFreeMarker.verify(() ->
+                    FreeMarkerUtils.buildRequest(eq("structures/"), eq("getUriClasseOwl.ftlh"), argThat(params -> {
                         Map<String, Object> map = (Map<String, Object>) params;
                         return "<http://bauhaus/codes/nomenclature>".equals(map.get("CODES_LIST"));
                     })));
@@ -293,15 +332,17 @@ class StructureQueriesTest {
     @Test
     void shouldGetContributorsByStructureUri() throws RmesException {
         try (MockedStatic<FreeMarkerUtils> mockedFreeMarker = mockStatic(FreeMarkerUtils.class)) {
-            mockedFreeMarker.when(() -> FreeMarkerUtils.buildRequest(eq("structures/"), eq("getStructureContributorsByUriQuery.ftlh"), any(Map.class)))
+            mockedFreeMarker
+                    .when(() -> FreeMarkerUtils.buildRequest(
+                            eq("structures/"), eq("getStructureContributorsByUriQuery.ftlh"), any(Map.class)))
                     .thenReturn("SELECT ?contributor WHERE { ?s dc:contributor ?contributor }");
 
             String result = structureQueries.getContributorsByStructureUri("http://example.org/structure/123");
 
             assertNotNull(result);
             assertEquals("SELECT ?contributor WHERE { ?s dc:contributor ?contributor }", result);
-            mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("structures/"), eq("getStructureContributorsByUriQuery.ftlh"),
-                    argThat(params -> {
+            mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(
+                    eq("structures/"), eq("getStructureContributorsByUriQuery.ftlh"), argThat(params -> {
                         Map<String, Object> map = (Map<String, Object>) params;
                         return "<http://example.org/structure/123>".equals(map.get("URI_STRUCTURE"));
                     })));
@@ -311,15 +352,17 @@ class StructureQueriesTest {
     @Test
     void shouldGetContributorsByComponentUri() throws RmesException {
         try (MockedStatic<FreeMarkerUtils> mockedFreeMarker = mockStatic(FreeMarkerUtils.class)) {
-            mockedFreeMarker.when(() -> FreeMarkerUtils.buildRequest(eq("structures/"), eq("getComponentContributorsByUriQuery.ftlh"), any(Map.class)))
+            mockedFreeMarker
+                    .when(() -> FreeMarkerUtils.buildRequest(
+                            eq("structures/"), eq("getComponentContributorsByUriQuery.ftlh"), any(Map.class)))
                     .thenReturn("SELECT ?contributor WHERE { ?s dc:contributor ?contributor }");
 
             String result = structureQueries.getContributorsByComponentUri("http://example.org/component/123");
 
             assertNotNull(result);
             assertEquals("SELECT ?contributor WHERE { ?s dc:contributor ?contributor }", result);
-            mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("structures/"), eq("getComponentContributorsByUriQuery.ftlh"),
-                    argThat(params -> {
+            mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(
+                    eq("structures/"), eq("getComponentContributorsByUriQuery.ftlh"), argThat(params -> {
                         Map<String, Object> map = (Map<String, Object>) params;
                         return "<http://example.org/component/123>".equals(map.get("URI_COMPONENT"));
                     })));
@@ -329,7 +372,8 @@ class StructureQueriesTest {
     @Test
     void shouldGetStructureContributors() throws RmesException {
         try (MockedStatic<FreeMarkerUtils> mockedFreeMarker = mockStatic(FreeMarkerUtils.class)) {
-            mockedFreeMarker.when(() -> FreeMarkerUtils.buildRequest(eq("common/"), eq("getContributors.ftlh"), any(Map.class)))
+            mockedFreeMarker
+                    .when(() -> FreeMarkerUtils.buildRequest(eq("common/"), eq("getContributors.ftlh"), any(Map.class)))
                     .thenReturn("SELECT ?contributor WHERE { ?s dc:contributor ?contributor }");
 
             IRI iri = SimpleValueFactory.getInstance().createIRI("http://example.org/structure/123");
@@ -337,10 +381,11 @@ class StructureQueriesTest {
 
             assertNotNull(result);
             assertEquals("SELECT ?contributor WHERE { ?s dc:contributor ?contributor }", result);
-            mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("common/"), eq("getContributors.ftlh"),
-                    argThat(params -> {
+            mockedFreeMarker.verify(() ->
+                    FreeMarkerUtils.buildRequest(eq("common/"), eq("getContributors.ftlh"), argThat(params -> {
                         Map<String, Object> map = (Map<String, Object>) params;
-                        return ("<" + iri + ">").equals(map.get("IRI")) && "dc:contributor".equals(map.get("PREDICATE"));
+                        return ("<" + iri + ">").equals(map.get("IRI"))
+                                && "dc:contributor".equals(map.get("PREDICATE"));
                     })));
         }
     }
@@ -348,17 +393,19 @@ class StructureQueriesTest {
     @Test
     void shouldGetComponentContributors() throws RmesException {
         try (MockedStatic<FreeMarkerUtils> mockedFreeMarker = mockStatic(FreeMarkerUtils.class)) {
-            mockedFreeMarker.when(() -> FreeMarkerUtils.buildRequest(eq("common/"), eq("getContributors.ftlh"), any(Map.class)))
+            mockedFreeMarker
+                    .when(() -> FreeMarkerUtils.buildRequest(eq("common/"), eq("getContributors.ftlh"), any(Map.class)))
                     .thenReturn("SELECT ?contributor WHERE { ?s dc:contributor ?contributor }");
 
             String result = structureQueries.getComponentContributors("http://example.org/component/123");
 
             assertNotNull(result);
             assertEquals("SELECT ?contributor WHERE { ?s dc:contributor ?contributor }", result);
-            mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("common/"), eq("getContributors.ftlh"),
-                    argThat(params -> {
+            mockedFreeMarker.verify(() ->
+                    FreeMarkerUtils.buildRequest(eq("common/"), eq("getContributors.ftlh"), argThat(params -> {
                         Map<String, Object> map = (Map<String, Object>) params;
-                        return "<http://example.org/component/123>".equals(map.get("IRI")) && "dc:contributor".equals(map.get("PREDICATE"));
+                        return "<http://example.org/component/123>".equals(map.get("IRI"))
+                                && "dc:contributor".equals(map.get("PREDICATE"));
                     })));
         }
     }

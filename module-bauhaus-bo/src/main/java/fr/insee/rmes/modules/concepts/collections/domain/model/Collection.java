@@ -1,16 +1,15 @@
 package fr.insee.rmes.modules.concepts.collections.domain.model;
 
-import fr.insee.rmes.modules.shared_kernel.domain.model.Lang;
-import fr.insee.rmes.modules.shared_kernel.domain.model.LocalisedLabel;
-import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import fr.insee.rmes.modules.concepts.collections.domain.exceptions.MalformedCollectionException;
 import fr.insee.rmes.modules.concepts.collections.domain.model.commands.CreateCollectionCommand;
 import fr.insee.rmes.modules.concepts.concept.domain.model.ConceptId;
-import org.jspecify.annotations.Nullable;
-
+import fr.insee.rmes.modules.shared_kernel.domain.model.Lang;
+import fr.insee.rmes.modules.shared_kernel.domain.model.LocalisedLabel;
+import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import org.jspecify.annotations.Nullable;
 
 public class Collection extends CompactCollection {
 
@@ -24,21 +23,27 @@ public class Collection extends CompactCollection {
     private final ValidationStatus validationState;
     private final List<ConceptId> conceptIds;
 
-    public Collection(CollectionId id,
-                      List<LocalisedLabel> labels,
-                      String creator,
-                      @Nullable String contributor,
-                      List<LocalisedLabel> descriptions,
-                      LocalDateTime created,
-                      @Nullable LocalDateTime modified,
-                      ValidationStatus validationState,
-                      List<ConceptId> conceptIds) {
-        var prefLabel = labels.stream().filter(l -> l.lang().equals(Lang.defaultLanguage())).findFirst();
-        var alternativeLabels = labels.stream().filter(l -> !l.lang().equals(Lang.defaultLanguage())).toList();
+    public Collection(
+            CollectionId id,
+            List<LocalisedLabel> labels,
+            String creator,
+            @Nullable String contributor,
+            List<LocalisedLabel> descriptions,
+            LocalDateTime created,
+            @Nullable LocalDateTime modified,
+            ValidationStatus validationState,
+            List<ConceptId> conceptIds) {
+        var prefLabel = labels.stream()
+                .filter(l -> l.lang().equals(Lang.defaultLanguage()))
+                .findFirst();
+        var alternativeLabels = labels.stream()
+                .filter(l -> !l.lang().equals(Lang.defaultLanguage()))
+                .toList();
 
-
-
-        super(id, prefLabel.orElseThrow(() -> new MalformedCollectionException("There is not label for default language")));
+        super(
+                id,
+                prefLabel.orElseThrow(
+                        () -> new MalformedCollectionException("There is not label for default language")));
         this.alternativeLabels = alternativeLabels;
         this.creator = creator;
         this.contributor = contributor;
@@ -53,7 +58,8 @@ public class Collection extends CompactCollection {
         return create(createCollection, collectionId, DEFAULT_VALIDATION_STATE);
     }
 
-    public static Collection create(CreateCollectionCommand createCollection, CollectionId collectionId, ValidationStatus validationState) {
+    public static Collection create(
+            CreateCollectionCommand createCollection, CollectionId collectionId, ValidationStatus validationState) {
         return new Collection(
                 collectionId,
                 createCollection.labels(),
@@ -65,10 +71,8 @@ public class Collection extends CompactCollection {
                 validationState,
                 createCollection.conceptsIdendifiers().stream()
                         .map(ConceptId::new)
-                        .toList()
-        );
+                        .toList());
     }
-
 
     public List<LocalisedLabel> alternativeLabels() {
         return alternativeLabels;

@@ -1,10 +1,10 @@
 package fr.insee.rmes.modules.concepts.concept.webservice.response;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import fr.insee.rmes.modules.concepts.concept.domain.model.ConceptId;
 import fr.insee.rmes.modules.concepts.concept.domain.model.ConceptToValidate;
 import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 class ConceptToValidateResponseTest {
 

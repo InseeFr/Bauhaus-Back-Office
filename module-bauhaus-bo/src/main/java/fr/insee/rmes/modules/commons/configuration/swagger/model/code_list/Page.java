@@ -1,11 +1,8 @@
 package fr.insee.rmes.modules.commons.configuration.swagger.model.code_list;
 
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 import fr.insee.rmes.bauhaus_services.code_list.CodeListItem;
-
 import java.util.List;
-
 
 public class Page {
     @JsonProperty
@@ -16,7 +13,6 @@ public class Page {
 
     @JsonProperty
     public List<CodeListItem> items;
-
 
     public int getPage() {
         return page;

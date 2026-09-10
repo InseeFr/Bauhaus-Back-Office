@@ -1,7 +1,6 @@
 package fr.insee.rmes.modules.ddi.physical_instances.domain.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.util.List;
 
 /**
@@ -28,8 +27,9 @@ public record Ddi4LogicalProduct(
         @JsonProperty("CodeListSchemeReference") List<Reference> codeListSchemeReference,
         @JsonProperty("CategorySchemeReference") List<Reference> categorySchemeReference,
         @JsonProperty("VariableSchemeReference") List<Reference> variableSchemeReference,
-        @JsonProperty("ManagedRepresentationSchemeReference") List<Reference> managedRepresentationSchemeReference
-) {
+
+        @JsonProperty("ManagedRepresentationSchemeReference")
+        List<Reference> managedRepresentationSchemeReference) {
 
     public static final String TYPE = "LogicalProduct";
 
@@ -37,18 +37,43 @@ public record Ddi4LogicalProduct(
      * Backward-compatible constructor for a LogicalProduct that only files a CodeListScheme
      * (no CategoryScheme, no VariableScheme, no ManagedRepresentationScheme).
      */
-    public Ddi4LogicalProduct(String type, CogsDate versionDate, String urn, String agency, String id,
-                              String version, List<LangString> label, List<Reference> codeListSchemeReference) {
+    public Ddi4LogicalProduct(
+            String type,
+            CogsDate versionDate,
+            String urn,
+            String agency,
+            String id,
+            String version,
+            List<LangString> label,
+            List<Reference> codeListSchemeReference) {
         this(type, versionDate, urn, agency, id, version, label, codeListSchemeReference, null, null, null);
     }
 
     /**
      * Backward-compatible constructor for a LogicalProduct without a ManagedRepresentationScheme.
      */
-    public Ddi4LogicalProduct(String type, CogsDate versionDate, String urn, String agency, String id,
-                              String version, List<LangString> label, List<Reference> codeListSchemeReference,
-                              List<Reference> categorySchemeReference, List<Reference> variableSchemeReference) {
-        this(type, versionDate, urn, agency, id, version, label, codeListSchemeReference,
-                categorySchemeReference, variableSchemeReference, null);
+    public Ddi4LogicalProduct(
+            String type,
+            CogsDate versionDate,
+            String urn,
+            String agency,
+            String id,
+            String version,
+            List<LangString> label,
+            List<Reference> codeListSchemeReference,
+            List<Reference> categorySchemeReference,
+            List<Reference> variableSchemeReference) {
+        this(
+                type,
+                versionDate,
+                urn,
+                agency,
+                id,
+                version,
+                label,
+                codeListSchemeReference,
+                categorySchemeReference,
+                variableSchemeReference,
+                null);
     }
 }

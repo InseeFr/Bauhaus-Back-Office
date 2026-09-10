@@ -6,10 +6,9 @@ import fr.insee.rmes.modules.commons.domain.port.serverside.ThemeRepository;
 import fr.insee.rmes.modules.commons.hexagonal.ServerSideAdaptor;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.utils.Deserializer;
-import org.springframework.stereotype.Repository;
-
 import java.util.Arrays;
 import java.util.List;
+import org.springframework.stereotype.Repository;
 
 @ServerSideAdaptor
 @Repository

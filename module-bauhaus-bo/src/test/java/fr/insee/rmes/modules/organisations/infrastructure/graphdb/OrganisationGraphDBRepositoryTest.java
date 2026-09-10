@@ -1,9 +1,16 @@
 package fr.insee.rmes.modules.organisations.infrastructure.graphdb;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.organisations.domain.model.OrganisationOption;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
+import java.util.List;
+import java.util.Map;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,14 +19,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.List;
-import java.util.Map;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class OrganisationGraphDBRepositoryTest {
@@ -36,7 +35,12 @@ class OrganisationGraphDBRepositoryTest {
 
     @BeforeEach
     void setUp() {
-        repository = new OrganisationGraphDBRepository(repositoryGestion, BASE_GRAPH, ORGANISATIONS_GRAPH, INSEE_GRAPH, new BauhausLanguagesProperties(LANGUAGE, "en"));
+        repository = new OrganisationGraphDBRepository(
+                repositoryGestion,
+                BASE_GRAPH,
+                ORGANISATIONS_GRAPH,
+                INSEE_GRAPH,
+                new BauhausLanguagesProperties(LANGUAGE, "en"));
     }
 
     @Test
@@ -158,15 +162,14 @@ class OrganisationGraphDBRepositoryTest {
         when(repositoryGestion.getResponseAsArray(anyString())).thenReturn(mockResponse);
 
         // When
-        Map<String, OrganisationOption> result = repository.getOrganisationsMap(
-                List.of("http://bauhaus/organisations/DG75-A001", "DR13-DIR"));
+        Map<String, OrganisationOption> result =
+                repository.getOrganisationsMap(List.of("http://bauhaus/organisations/DG75-A001", "DR13-DIR"));
 
         // Then: the map is keyed by the input value (IRI or stamp)
         assertThat(result).containsOnlyKeys("http://bauhaus/organisations/DG75-A001", "DR13-DIR");
         assertThat(result.get("http://bauhaus/organisations/DG75-A001").label())
                 .isEqualTo("Direction Générale 75 - Service A001");
-        assertThat(result.get("DR13-DIR").label())
-                .isEqualTo("Direction Régionale 13 - Direction");
+        assertThat(result.get("DR13-DIR").label()).isEqualTo("Direction Régionale 13 - Direction");
     }
 
     @Test
@@ -180,11 +183,10 @@ class OrganisationGraphDBRepositoryTest {
         mockResponse.put(row);
         when(repositoryGestion.getResponseAsArray(anyString())).thenReturn(mockResponse);
 
-        Map<String, OrganisationOption> result = repository.getOrganisationsMap(
-                List.of("http://bauhaus/organisations/insee/HIE2001204"));
+        Map<String, OrganisationOption> result =
+                repository.getOrganisationsMap(List.of("http://bauhaus/organisations/insee/HIE2001204"));
 
-        assertThat(result)
-                .containsKey("http://bauhaus/organisations/insee/HIE2001204");
+        assertThat(result).containsKey("http://bauhaus/organisations/insee/HIE2001204");
         assertThat(result.get("http://bauhaus/organisations/insee/HIE2001204").label())
                 .isEqualTo("Sous-direction sans stamp");
     }

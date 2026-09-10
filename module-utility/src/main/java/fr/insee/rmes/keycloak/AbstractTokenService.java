@@ -3,16 +3,15 @@ package fr.insee.rmes.keycloak;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import java.time.Instant;
+import java.util.Date;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestClient;
-
-import java.time.Instant;
-import java.util.Date;
+import org.springframework.web.client.RestClientException;
 
 public abstract class AbstractTokenService implements TokenService {
 
@@ -80,7 +79,7 @@ public abstract class AbstractTokenService implements TokenService {
         try {
             Date expiresAt = JWT.decode(token).getExpiresAt();
             return expiresAt != null
-                && expiresAt.toInstant().isAfter(Instant.now().plusSeconds(REFRESH_MARGIN_SECONDS));
+                    && expiresAt.toInstant().isAfter(Instant.now().plusSeconds(REFRESH_MARGIN_SECONDS));
         } catch (JWTDecodeException e) {
             return false;
         }
@@ -107,7 +106,8 @@ public abstract class AbstractTokenService implements TokenService {
 
         try {
             logger.debug("Sending token request to Keycloak...");
-            Token accessToken = keycloakClient.post()
+            Token accessToken = keycloakClient
+                    .post()
                     .uri(tokenUrl)
                     .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                     .body(body)

@@ -1,18 +1,19 @@
 package fr.insee.rmes;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 @SpringBootTest(classes = DocumentationsProperties.class)
-@TestPropertySource(properties = {
-        "fr.insee.rmes.bauhaus.documentation.titlePrefixLg1=Rapport qualité :",
-        "fr.insee.rmes.bauhaus.documentation.titlePrefixLg2=Quality report:",
-        "fr.insee.rmes.bauhaus.concepts.scheme=concepts/definitions/scheme"
-})
+@TestPropertySource(
+        properties = {
+            "fr.insee.rmes.bauhaus.documentation.titlePrefixLg1=Rapport qualité :",
+            "fr.insee.rmes.bauhaus.documentation.titlePrefixLg2=Quality report:",
+            "fr.insee.rmes.bauhaus.concepts.scheme=concepts/definitions/scheme"
+        })
 class DocumentationsPropertiesTest {
 
     @Autowired

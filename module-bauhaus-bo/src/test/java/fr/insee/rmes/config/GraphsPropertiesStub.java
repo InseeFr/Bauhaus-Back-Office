@@ -7,8 +7,7 @@ public class GraphsPropertiesStub {
     private static final String OPERATIONS_GRAPH_SUFFIX = "operations";
     private static final String STRUCTURES_COMPONENTS_GRAPH_SUFFIX = "composants";
 
-    private GraphsPropertiesStub() {
-    }
+    private GraphsPropertiesStub() {}
 
     public static GraphsProperties stub() {
         return stub(OPERATIONS_GRAPH_SUFFIX, STRUCTURES_COMPONENTS_GRAPH_SUFFIX);

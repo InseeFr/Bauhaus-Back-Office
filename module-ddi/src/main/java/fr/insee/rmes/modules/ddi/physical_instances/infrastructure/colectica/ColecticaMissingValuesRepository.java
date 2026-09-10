@@ -35,10 +35,9 @@ class ColecticaMissingValuesRepository {
     private final ColecticaHierarchyBrowser hierarchy;
 
     ColecticaMissingValuesRepository(
-        ColecticaClient colecticaClient,
-        DDI3toDDI4ConverterService ddi3ToDdi4Converter,
-        ColecticaHierarchyBrowser hierarchy
-    ) {
+            ColecticaClient colecticaClient,
+            DDI3toDDI4ConverterService ddi3ToDdi4Converter,
+            ColecticaHierarchyBrowser hierarchy) {
         this.colecticaClient = colecticaClient;
         this.ddi3ToDdi4Converter = ddi3ToDdi4Converter;
         this.hierarchy = hierarchy;
@@ -50,12 +49,12 @@ class ColecticaMissingValuesRepository {
      * qu'elle référence est chargée une fois pour construire l'aperçu de codes affiché par le
      * sélecteur de réutilisation.
      */
-    List<PartialMissingValuesRepresentation> getMissingValuesRepresentationsByGroup(
-        String agencyId, String groupId
-    ) {
+    List<PartialMissingValuesRepresentation> getMissingValuesRepresentationsByGroup(String agencyId, String groupId) {
         logger.info("Fetching reusable missing values representations for group {}/{}", agencyId, groupId);
-        List<ItemReference> refs = hierarchy.descendFromGroup(agencyId, groupId, List.of(
-            LOGICAL_PRODUCT, MANAGED_REPRESENTATION_SCHEME, MANAGED_MISSING_VALUES_REPRESENTATION));
+        List<ItemReference> refs = hierarchy.descendFromGroup(
+                agencyId,
+                groupId,
+                List.of(LOGICAL_PRODUCT, MANAGED_REPRESENTATION_SCHEME, MANAGED_MISSING_VALUES_REPRESENTATION));
         if (refs.isEmpty()) {
             return List.of();
         }
@@ -66,16 +65,15 @@ class ColecticaMissingValuesRepository {
             Ddi4ManagedMissingValuesRepresentation mmvr = readMissingValues(ref.agencyId(), ref.identifier());
             Reference codeListRef = firstSentinelCodeListReference(mmvr);
             result.add(new PartialMissingValuesRepresentation(
-                mmvr.id(),
-                mmvr.agency(),
-                mmvr.version(),
-                ColecticaLabels.firstValue(mmvr.label()),
-                codeListRef != null ? codeListRef.id() : null,
-                codeListRef != null
-                    ? codeValuesByCodeListKey.computeIfAbsent(
-                        codeListRef.agency() + "/" + codeListRef.id(),
-                        _ -> sentinelCodeValues(codeListRef))
-                    : List.of()));
+                    mmvr.id(),
+                    mmvr.agency(),
+                    mmvr.version(),
+                    ColecticaLabels.firstValue(mmvr.label()),
+                    codeListRef != null ? codeListRef.id() : null,
+                    codeListRef != null
+                            ? codeValuesByCodeListKey.computeIfAbsent(
+                                    codeListRef.agency() + "/" + codeListRef.id(), _ -> sentinelCodeValues(codeListRef))
+                            : List.of()));
         }
         return result;
     }
@@ -85,19 +83,19 @@ class ColecticaMissingValuesRepository {
             return null;
         }
         return mmvr.missingCodeRepresentation().stream()
-            .map(CodeRepresentation::codeListReference)
-            .filter(Objects::nonNull)
-            .findFirst()
-            .orElse(null);
+                .map(CodeRepresentation::codeListReference)
+                .filter(Objects::nonNull)
+                .findFirst()
+                .orElse(null);
     }
 
     private List<String> sentinelCodeValues(Reference codeListRef) {
         Ddi4CodeList codeList = readCodeList(new ItemReference(codeListRef.agency(), codeListRef.id()));
         return codesOf(codeList).stream()
-            .map(Code::value)
-            .filter(Objects::nonNull)
-            .map(ValueType::stringValue)
-            .toList();
+                .map(Code::value)
+                .filter(Objects::nonNull)
+                .map(ValueType::stringValue)
+                .toList();
     }
 
     private static List<Code> codesOf(Ddi4CodeList codeList) {
@@ -106,7 +104,7 @@ class ColecticaMissingValuesRepository {
 
     private Ddi4ManagedMissingValuesRepresentation readMissingValues(String agencyId, String id) {
         return ddi3ToDdi4Converter.toManagedMissingValuesRepresentation(
-            colecticaClient.getItem(agencyId, id, null).item());
+                colecticaClient.getItem(agencyId, id, null).item());
     }
 
     private Ddi4CodeList readCodeList(ItemReference ref) {
@@ -116,5 +114,4 @@ class ColecticaMissingValuesRepository {
     private String itemXml(ItemReference ref) {
         return colecticaClient.getItem(ref.agencyId(), ref.identifier(), null).item();
     }
-
 }

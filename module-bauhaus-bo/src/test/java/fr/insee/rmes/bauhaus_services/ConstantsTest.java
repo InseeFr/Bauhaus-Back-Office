@@ -1,70 +1,53 @@
 package fr.insee.rmes.bauhaus_services;
 
-import fr.insee.rmes.Constants;
-import org.junit.jupiter.api.Test;
-
-import java.util.*;
-
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import fr.insee.rmes.Constants;
+import java.util.*;
+import org.junit.jupiter.api.Test;
 
 class ConstantsTest {
 
     @Test
-
-    void shouldCheckConstantsAreNotUniqueness(){
-        List<String> startingWithTheLetterA = List.of(
-                Constants.ACCRUAL_PERIODICITY_LIST,
-                Constants.ALT_LABEL_LG1,
-                Constants.ALT_LABEL_LG2);
-
+    void shouldCheckConstantsAreNotUniqueness() {
+        List<String> startingWithTheLetterA =
+                List.of(Constants.ACCRUAL_PERIODICITY_LIST, Constants.ALT_LABEL_LG1, Constants.ALT_LABEL_LG2);
 
         List<String> startingWithTheLetterC = List.of(
-                Constants.CODELIST ,
+                Constants.CODELIST,
                 Constants.COLLECTION,
                 Constants.CONCEPT,
-                Constants.CONTRIBUTOR ,
+                Constants.CONTRIBUTOR,
                 Constants.CONTRIBUTORS,
                 Constants.CREATED,
-                Constants.CREATOR ,
+                Constants.CREATOR,
                 Constants.CREATORS);
 
         List<String> startingWithTheLetterD = List.of(
-                Constants.DATASET ,
+                Constants.DATASET,
                 Constants.DISTRIBUTION,
                 Constants.DATA_COLLECTOR,
-                Constants.DATA_COLLECTORS ,
+                Constants.DATA_COLLECTORS,
                 Constants.DEF_COURTE_LG1,
                 Constants.DEF_COURTE_LG2,
-                Constants.DEF_LONGUE_LG1 ,
+                Constants.DEF_LONGUE_LG1,
                 Constants.DEF_LONGUE_LG2,
                 Constants.DESCRIPTION_LG1,
                 Constants.DESCRIPTION_LG2,
-                Constants.DOCUMENT ,
+                Constants.DOCUMENT,
                 Constants.DOCUMENTS_LG1,
-                Constants.DOCUMENTS_LG2
-                );
+                Constants.DOCUMENTS_LG2);
 
-        List<String> startingWithTheLetterE = List.of(
-                Constants.EDITORIAL_NOTE_LG1 ,
-                Constants.EDITORIAL_NOTE_LG2
-        );
+        List<String> startingWithTheLetterE = List.of(Constants.EDITORIAL_NOTE_LG1, Constants.EDITORIAL_NOTE_LG2);
 
-        List<String> startingWithTheLetterF = List.of(
-                Constants.FAMILY
-        );
+        List<String> startingWithTheLetterF = List.of(Constants.FAMILY);
 
-        List<String> startingWithTheLetterG = List.of(
-                Constants.GOAL_COMITE_LABEL ,
-                Constants.GOAL_RMES
-        );
+        List<String> startingWithTheLetterG = List.of(Constants.GOAL_COMITE_LABEL, Constants.GOAL_RMES);
 
-        List<String> startingWithTheLetterH = List.of(
-                Constants.HAS_DOC_LG1 ,
-                Constants.HAS_DOC_LG2
-        );
+        List<String> startingWithTheLetterH = List.of(Constants.HAS_DOC_LG1, Constants.HAS_DOC_LG2);
 
         List<String> startingWithTheLetterI = List.of(
-                Constants.ID ,
+                Constants.ID,
                 Constants.ID_ATTRIBUTE,
                 Constants.ID_INDICATOR,
                 Constants.ID_OPERATION,
@@ -72,33 +55,21 @@ class ConstantsTest {
                 Constants.ID_SIMS,
                 Constants.INDICATOR_UP,
                 Constants.ISREPLACEDBY,
-                Constants.ISVALIDATED
-        );
+                Constants.ISVALIDATED);
 
+        List<String> startingWithTheLetterL =
+                List.of(Constants.LABEL, Constants.LABEL_LG1, Constants.LABEL_LG2, Constants.LANG);
 
-        List<String> startingWithTheLetterL = List.of(
-                Constants.LABEL ,
-                Constants.LABEL_LG1,
-                Constants.LABEL_LG2,
-                Constants.LANG
-        );
+        List<String> startingWithTheLetterM = List.of(Constants.MANAGER, Constants.MODIFIED);
 
-        List<String> startingWithTheLetterM = List.of(
-                Constants.MANAGER ,
-                Constants.MODIFIED
-        );
-
-        List<String> startingWithTheLetterN = List.of(
-                Constants.NOTATION
-        );
+        List<String> startingWithTheLetterN = List.of(Constants.NOTATION);
 
         List<String> startingWithTheLetterO = List.of(
                 Constants.OPERATIONS,
                 Constants.OPERATION_UP,
                 Constants.ORGANIZATIONS,
                 Constants.OUTPUT,
-                Constants.OWNER
-                );
+                Constants.OWNER);
 
         List<String> startingWithTheLetterP = List.of(
                 Constants.PARAMETERS_FILE,
@@ -106,21 +77,12 @@ class ConstantsTest {
                 Constants.PREF_LABEL_LG1,
                 Constants.PREF_LABEL_LG2,
                 Constants.PUBLISHER,
-                Constants.PUBLISHERS
-        );
+                Constants.PUBLISHERS);
 
-        List<String> startingWithTheLetterR = List.of(
-                Constants.RANGE_TYPE,
-                Constants.REPLACES,
-                Constants.REPOSITORY_EXCEPTION
-        );
+        List<String> startingWithTheLetterR =
+                List.of(Constants.RANGE_TYPE, Constants.REPLACES, Constants.REPOSITORY_EXCEPTION);
 
-        List<String> startingWithTheLetterS = List.of(
-                Constants.SEEALSO,
-                Constants.SERIES_UP,
-                Constants.STAMP
-        );
-
+        List<String> startingWithTheLetterS = List.of(Constants.SEEALSO, Constants.SERIES_UP, Constants.STAMP);
 
         List<String> startingWithTheLetterT = List.of(
                 Constants.TEXT,
@@ -128,23 +90,14 @@ class ConstantsTest {
                 Constants.TEXT_LG2,
                 Constants.TYPE_OF_OBJECT,
                 Constants.TYPE_STRING,
-                Constants.TYPELIST
-        );
+                Constants.TYPELIST);
 
-        List<String> startingWithTheLetterU = List.of(
-                Constants.UNDEFINED,
-                Constants.UPDATED_DATE,
-                Constants.URI,
-                Constants.URL
-        );
+        List<String> startingWithTheLetterU =
+                List.of(Constants.UNDEFINED, Constants.UPDATED_DATE, Constants.URI, Constants.URL);
 
-        List<String> startingWithTheLetterV = List.of(
-                Constants.VALUE
-        );
+        List<String> startingWithTheLetterV = List.of(Constants.VALUE);
 
-        List<String> startingWithTheLetterW = List.of(
-                Constants.WASGENERATEDBY
-        );
+        List<String> startingWithTheLetterW = List.of(Constants.WASGENERATEDBY);
 
         List<String> startingWithTheLetterX = List.of(
                 Constants.XML,
@@ -161,8 +114,7 @@ class ConstantsTest {
                 Constants.XML_END_INCLUDE_EMPTY_FIELDS_TAG,
                 Constants.XML_INF_REPLACEMENT,
                 Constants.XML_SUP_REPLACEMENT,
-                Constants.XML_ESPERLUETTE_REPLACEMENT
-                );
+                Constants.XML_ESPERLUETTE_REPLACEMENT);
 
         List<List<String>> allLetterLists = List.of(
                 startingWithTheLetterA,
@@ -184,8 +136,7 @@ class ConstantsTest {
                 startingWithTheLetterU,
                 startingWithTheLetterV,
                 startingWithTheLetterW,
-                startingWithTheLetterX
-        );
+                startingWithTheLetterX);
         List<String> actual = new ArrayList<>();
         for (List<String> letterList : allLetterLists) {
             actual.addAll(letterList);
@@ -193,11 +144,9 @@ class ConstantsTest {
 
         SortedSet<String> expected = new TreeSet<>(actual);
 
-        boolean isSizesDifferent = expected.size()!=actual.size();
+        boolean isSizesDifferent = expected.size() != actual.size();
         boolean isSameValue = Objects.equals(Constants.TEXT, Constants.TEXT_LG2);
 
         assertTrue(isSizesDifferent && isSameValue);
-
     }
-
-        }
+}

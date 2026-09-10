@@ -1,16 +1,15 @@
 package fr.insee.rmes.utils;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import fr.insee.rmes.Constants;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
-
 class XMLUtilsTest {
-	
-	String series = """
+
+    String series = """
             {\r
             	"prefLabelLg1": "Base permanente des équipements",\r
             	"prefLabelLg2": "Permanent database of facilities",\r
@@ -64,38 +63,41 @@ class XMLUtilsTest {
             	"validationState": "Modified"\r
             }""";
 
+    @Test
+    void givenJSon_whenSolveXml_thenResponseIsClean() {
+        String out = XMLUtils.solveSpecialXmlcharacters(series);
+        assertTrue(out.contains(Constants.XML_ESPERLUETTE_REPLACEMENT + "quot;"));
+    }
 
-	@Test
-	void givenJSon_whenSolveXml_thenResponseIsClean() {
-		String out = XMLUtils.solveSpecialXmlcharacters(series);
-		assertTrue(out.contains(Constants.XML_ESPERLUETTE_REPLACEMENT + "quot;"));
-	}
+    @Test
+    void shouldProduceResponse() {
+        Object obj =
+                "<?xml version= “1.0” encoding=“ISO-8859-1”?>\n <note date=”01/01/99”>\n <to>Bauhaus</to>\n <from>Back</from>\n </note>";
+        String notXmlActual = XMLUtils.produceResponse(obj, MediaType.APPLICATION_JSON_VALUE);
+        String xmlActual = XMLUtils.produceResponse(obj, MediaType.APPLICATION_XML_VALUE);
+        String notXmlExpected =
+                "\"<?xml version= “1.0” encoding=“ISO-8859-1”?>\\n <note date=”01/01/99”>\\n <to>Bauhaus</to>\\n <from>Back</from>\\n </note>\"";
+        String xmlExpected =
+                "<String><?xml version= “1.0” encoding=“ISO-8859-1”?>\n <note date=”01/01/99”>\n <to>Bauhaus</to>\n <from>Back</from>\n </note></String>";
+        Boolean xmlExpectedEqualsActual = (xmlExpected.equals(xmlActual));
+        Boolean notXmlExpectedEqualsActual = (notXmlExpected.equals(notXmlActual));
+        assertTrue(xmlExpectedEqualsActual && notXmlExpectedEqualsActual);
+    }
 
-	@Test
-	void shouldProduceResponse() {
-	Object obj= "<?xml version= “1.0” encoding=“ISO-8859-1”?>\n <note date=”01/01/99”>\n <to>Bauhaus</to>\n <from>Back</from>\n </note>";
-	String notXmlActual =XMLUtils.produceResponse(obj,MediaType.APPLICATION_JSON_VALUE);
-	String xmlActual =XMLUtils.produceResponse(obj,MediaType.APPLICATION_XML_VALUE);
-	String notXmlExpected ="\"<?xml version= “1.0” encoding=“ISO-8859-1”?>\\n <note date=”01/01/99”>\\n <to>Bauhaus</to>\\n <from>Back</from>\\n </note>\"";
-	String xmlExpected ="<String><?xml version= “1.0” encoding=“ISO-8859-1”?>\n <note date=”01/01/99”>\n <to>Bauhaus</to>\n <from>Back</from>\n </note></String>";
-	Boolean xmlExpectedEqualsActual = (xmlExpected.equals(xmlActual));
-	Boolean notXmlExpectedEqualsActual = (notXmlExpected.equals(notXmlActual));
-	assertTrue(xmlExpectedEqualsActual && notXmlExpectedEqualsActual);
-	}
+    @Test
+    void shouldGetTagValues() {
+        String text =
+                "<String><?xml version= “1.0” encoding=“ISO-8859-1”?>\n <note date=”01/01/99”>\n <from>Github</from>\n <to>Example</to>\n <from>Back</from>\n <to>Internet</to>\n <from>Office!</from>\n </note></String>";
+        String tag = "from";
+        List<String> tagValues = XMLUtils.getTagValues(text, tag);
+        assertEquals(List.of("Github", "Back", "Office!"), tagValues);
+    }
 
-	@Test
-	void shouldGetTagValues() {
-		String text ="<String><?xml version= “1.0” encoding=“ISO-8859-1”?>\n <note date=”01/01/99”>\n <from>Github</from>\n <to>Example</to>\n <from>Back</from>\n <to>Internet</to>\n <from>Office!</from>\n </note></String>";
-		String tag ="from";
-		List<String> tagValues = XMLUtils.getTagValues(text,tag);
-		assertEquals(List.of("Github","Back","Office!"),tagValues);
-	}
-
-	@Test
-	void shouldProduceXMLResponse(){
-		Object obj ="Bauhaus-Back";
-		String produceXMLResponseActual = XMLUtils.produceXMLResponse(obj);
-		String produceXMLResponseExpected ="<String>Bauhaus-Back</String>";
-		assertEquals(produceXMLResponseExpected,produceXMLResponseActual);
-	}
+    @Test
+    void shouldProduceXMLResponse() {
+        Object obj = "Bauhaus-Back";
+        String produceXMLResponseActual = XMLUtils.produceXMLResponse(obj);
+        String produceXMLResponseExpected = "<String>Bauhaus-Back</String>";
+        assertEquals(produceXMLResponseExpected, produceXMLResponseActual);
+    }
 }

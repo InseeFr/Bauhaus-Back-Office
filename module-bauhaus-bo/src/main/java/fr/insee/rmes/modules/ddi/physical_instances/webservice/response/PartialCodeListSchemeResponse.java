@@ -1,8 +1,8 @@
 package fr.insee.rmes.modules.ddi.physical_instances.webservice.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodeListScheme;
 import fr.insee.rmes.modules.commons.webservice.BaseResponse;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodeListScheme;
 
 public class PartialCodeListSchemeResponse extends BaseResponse<PartialCodeListSchemeResponse, PartialCodeListScheme> {
     public PartialCodeListSchemeResponse(PartialCodeListScheme codeListScheme) {

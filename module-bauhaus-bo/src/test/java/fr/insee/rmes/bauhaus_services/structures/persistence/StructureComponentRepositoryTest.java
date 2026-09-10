@@ -1,15 +1,24 @@
 package fr.insee.rmes.bauhaus_services.structures.persistence;
 
+import static fr.insee.rmes.bauhaus_services.structures.persistence.StructureComponentRepository.MODIFIED;
+import static fr.insee.rmes.bauhaus_services.structures.persistence.StructureComponentRepository.VALIDATED;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+
 import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausIriFactory;
 import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
 import fr.insee.rmes.config.GraphsPropertiesStub;
-import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.graphdb.ontologies.QB;
 import fr.insee.rmes.modules.structures.components.domain.model.MutualizedComponent;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
+import java.util.List;
+import java.util.Optional;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
@@ -27,16 +36,6 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.List;
-import java.util.Optional;
-
-import static fr.insee.rmes.bauhaus_services.structures.persistence.StructureComponentRepository.MODIFIED;
-import static fr.insee.rmes.bauhaus_services.structures.persistence.StructureComponentRepository.VALIDATED;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
-
 @ExtendWith(MockitoExtension.class)
 class StructureComponentRepositoryTest {
 
@@ -50,7 +49,6 @@ class StructureComponentRepositoryTest {
 
     @Mock
     RepositoryGestion repoGestion;
-
 
     @Mock
     ComponentPublication componentPublication;
@@ -67,63 +65,94 @@ class StructureComponentRepositoryTest {
 
     @Test
     void shouldThrowRmesExceptionWhenUpdateComponent() {
-        RmesException exception = assertThrows(RmesBadRequestException.class, () ->  structureComponentRepository.updateComponent("componentId","{\"id\":\"idExample\",\"creator\":\"creatorExample\"}"));
-        assertThat(exception.getDetails()).contains("The id of the component should be the same as the one defined in the request");
+        RmesException exception = assertThrows(
+                RmesBadRequestException.class,
+                () -> structureComponentRepository.updateComponent(
+                        "componentId", "{\"id\":\"idExample\",\"creator\":\"creatorExample\"}"));
+        assertThat(exception.getDetails())
+                .contains("The id of the component should be the same as the one defined in the request");
     }
 
     @Test
     void shouldThrowRmesExceptionWhenValidateComponentWithoutIdentifiant() {
-        RmesException exception = assertThrows(RmesBadRequestException.class, () ->  structureComponentRepository.updateComponent("idExample","{\"id\":\"idExample\",\"creator\":\"creatorExample\"}"));
+        RmesException exception = assertThrows(
+                RmesBadRequestException.class,
+                () -> structureComponentRepository.updateComponent(
+                        "idExample", "{\"id\":\"idExample\",\"creator\":\"creatorExample\"}"));
         assertThat(exception.getDetails()).contains("The property identifiant is required");
     }
 
     @Test
     void shouldThrowRmesExceptionWhenValidateComponentWithoutLabelLg1() {
-        RmesException exception = assertThrows(RmesBadRequestException.class, () ->  structureComponentRepository.updateComponent("idExample","{\"id\":\"idExample\",\"identifiant\":\"identifiantExample\",\"creator\":\"creatorExample\"}"));
+        RmesException exception = assertThrows(
+                RmesBadRequestException.class,
+                () -> structureComponentRepository.updateComponent(
+                        "idExample",
+                        "{\"id\":\"idExample\",\"identifiant\":\"identifiantExample\",\"creator\":\"creatorExample\"}"));
         assertThat(exception.getDetails()).contains("{\"message\":\"The property labelLg1 is required\"}");
     }
 
     @Test
     void shouldThrowRmesExceptionWhenValidateComponentWithoutLabelLg2() {
-        RmesException exception = assertThrows(RmesBadRequestException.class, () ->  structureComponentRepository.updateComponent("idExample","{\"id\":\"idExample\",\"identifiant\":\"identifiantExample\",\"labelLg1\":\"labelLg1Example\"}"));
+        RmesException exception = assertThrows(
+                RmesBadRequestException.class,
+                () -> structureComponentRepository.updateComponent(
+                        "idExample",
+                        "{\"id\":\"idExample\",\"identifiant\":\"identifiantExample\",\"labelLg1\":\"labelLg1Example\"}"));
         assertThat(exception.getDetails()).contains("{\"message\":\"The property labelLg2 is required\"}");
     }
 
     @Test
     void shouldThrowRmesExceptionWhenValidateComponentWithoutType() {
-        RmesException exception = assertThrows(RmesBadRequestException.class, () ->  structureComponentRepository.updateComponent("idExample","{\"id\":\"idExample\",\"identifiant\":\"identifiantExample\",\"labelLg1\":\"labelLg1Example\",\"labelLg2\":\"labelLg2Example\"}"));
+        RmesException exception = assertThrows(
+                RmesBadRequestException.class,
+                () -> structureComponentRepository.updateComponent(
+                        "idExample",
+                        "{\"id\":\"idExample\",\"identifiant\":\"identifiantExample\",\"labelLg1\":\"labelLg1Example\",\"labelLg2\":\"labelLg2Example\"}"));
         assertThat(exception.getDetails()).contains("{\"message\":\"The property type is required\"}");
     }
 
     @Test
     void shouldThrowRmesExceptionWhenValidateComponentWithInvalidateType() {
-        RmesException exception = assertThrows(RmesBadRequestException.class, () ->  structureComponentRepository.updateComponent("idExample","{\"id\":\"idExample\",\"identifiant\":\"identifiantExample\",\"labelLg1\":\"labelLg1Example\",\"labelLg2\":\"labelLg2Example\",\"type\":\"typeExample\"}"));
+        RmesException exception = assertThrows(
+                RmesBadRequestException.class,
+                () -> structureComponentRepository.updateComponent(
+                        "idExample",
+                        "{\"id\":\"idExample\",\"identifiant\":\"identifiantExample\",\"labelLg1\":\"labelLg1Example\",\"labelLg2\":\"labelLg2Example\",\"type\":\"typeExample\"}"));
         assertThat(exception.getDetails()).contains("{\"message\":\"The property type is not valid\"}");
     }
 
     @Test
     void shouldThrowRmesExceptionWhenCreateComponent() {
-        RmesException exception = assertThrows(RmesBadRequestException.class, () -> structureComponentRepository.createComponent("{\"id\":\"idExample\",\"identifiant\":\"identifiantExample\",\"labelLg1\":\"labelLg1Example\",\"labelLg2\":\"labelLg2Example\",\"type\":\"typeExample\"}"));
-        assertThat(exception.getDetails()).contains("{\"message\":\"During the creation of a new component, the id property should be null\"}");
+        RmesException exception = assertThrows(
+                RmesBadRequestException.class,
+                () -> structureComponentRepository.createComponent(
+                        "{\"id\":\"idExample\",\"identifiant\":\"identifiantExample\",\"labelLg1\":\"labelLg1Example\",\"labelLg2\":\"labelLg2Example\",\"type\":\"typeExample\"}"));
+        assertThat(exception.getDetails())
+                .contains("{\"message\":\"During the creation of a new component, the id property should be null\"}");
     }
 
     @ParameterizedTest
-    @ValueSource(strings = { VALIDATED, MODIFIED })
+    @ValueSource(strings = {VALIDATED, MODIFIED})
     void shouldThrowRmesExceptionWhenDeleteComponent(String value) {
-        JSONObject component = new JSONObject().put("validationState",value);
-        RmesException exception = assertThrows(RmesException.class, () -> structureComponentRepository.deleteComponent(component,"id","type"));
-        assertThat(exception.getDetails()).contains("{\"details\":\"[]\",\"message\":\"You cannot delete a validated component\"}");
+        JSONObject component = new JSONObject().put("validationState", value);
+        RmesException exception = assertThrows(
+                RmesException.class, () -> structureComponentRepository.deleteComponent(component, "id", "type"));
+        assertThat(exception.getDetails())
+                .contains("{\"details\":\"[]\",\"message\":\"You cannot delete a validated component\"}");
     }
 
     @Test
     void shouldThrowRmesExceptionWhenDeleteComponentWithInvalidStructures() {
-        JSONObject exampleOne = new JSONObject().put("validationState",VALIDATED);
-        JSONObject exampleTwo = new JSONObject().put("validationState","example");
+        JSONObject exampleOne = new JSONObject().put("validationState", VALIDATED);
+        JSONObject exampleTwo = new JSONObject().put("validationState", "example");
         JSONArray structures = new JSONArray().put(exampleOne).put(exampleTwo);
-        JSONObject component = new JSONObject().put("validationState","value").put("structures",structures);
+        JSONObject component = new JSONObject().put("validationState", "value").put("structures", structures);
 
-        RmesException exception = assertThrows(RmesException.class, () -> structureComponentRepository.deleteComponent(component,"id","type"));
-        assertThat(exception.getDetails()).contains("{\"details\":\"[]\",\"message\":\"You cannot delete a validated component\"}");
+        RmesException exception = assertThrows(
+                RmesException.class, () -> structureComponentRepository.deleteComponent(component, "id", "type"));
+        assertThat(exception.getDetails())
+                .contains("{\"details\":\"[]\",\"message\":\"You cannot delete a validated component\"}");
     }
 
     @Test
@@ -134,7 +163,8 @@ class StructureComponentRepositoryTest {
                 .put("disseminationStatus", "http://status")
                 .put("validationState", "Validated");
 
-        RmesException exception = assertThrows(RmesBadRequestException.class, () -> structureComponentRepository.publishComponent(component));
+        RmesException exception = assertThrows(
+                RmesBadRequestException.class, () -> structureComponentRepository.publishComponent(component));
 
         assertThat(exception.getDetails()).contains("\"code\":1301");
         assertThat(exception.getDetails()).contains("This component is already published");
@@ -143,16 +173,22 @@ class StructureComponentRepositoryTest {
 
     @Test
     void shouldThrowRmesExceptionWhenPublishComponentWithInvalidCreator() {
-        JSONObject component = new JSONObject().put(Constants.CREATOR,"");
-        RmesException exception = assertThrows(RmesException.class, () -> structureComponentRepository.publishComponent(component));
-        assertThat(exception.getDetails()).contains("{\"code\":1004,\"details\":\"[]\",\"message\":\"The creator should not be empty\"}");
+        JSONObject component = new JSONObject().put(Constants.CREATOR, "");
+        RmesException exception =
+                assertThrows(RmesException.class, () -> structureComponentRepository.publishComponent(component));
+        assertThat(exception.getDetails())
+                .contains("{\"code\":1004,\"details\":\"[]\",\"message\":\"The creator should not be empty\"}");
     }
 
     @Test
     void shouldThrowRmesExceptionWhenPublishComponentWithInvalidDisseminationStatus() {
-        JSONObject component = new JSONObject().put(Constants.CREATOR,"creatorExample").put("disseminationStatus","");
-        RmesException exception = assertThrows(RmesException.class, () -> structureComponentRepository.publishComponent(component));
-        assertThat(exception.getDetails()).contains("{\"code\":1005,\"details\":\"[]\",\"message\":\"The dissemination status should not be empty\"}");
+        JSONObject component =
+                new JSONObject().put(Constants.CREATOR, "creatorExample").put("disseminationStatus", "");
+        RmesException exception =
+                assertThrows(RmesException.class, () -> structureComponentRepository.publishComponent(component));
+        assertThat(exception.getDetails())
+                .contains(
+                        "{\"code\":1005,\"details\":\"[]\",\"message\":\"The dissemination status should not be empty\"}");
     }
 
     @Test
@@ -163,11 +199,11 @@ class StructureComponentRepositoryTest {
 
         structureComponentRepository.createComponent(component, "d1000", new JSONObject());
 
-        assertThat(storedModel()).anyMatch(stmt ->
-                stmt.getPredicate().equals(DC.CREATOR)
+        assertThat(storedModel())
+                .anyMatch(stmt -> stmt.getPredicate().equals(DC.CREATOR)
                         && stmt.getObject().equals(VF.createIRI("http://creator-uri")));
-        assertThat(storedModel()).anyMatch(stmt ->
-                stmt.getPredicate().equals(DC.CONTRIBUTOR)
+        assertThat(storedModel())
+                .anyMatch(stmt -> stmt.getPredicate().equals(DC.CONTRIBUTOR)
                         && stmt.getObject().equals(VF.createIRI("http://contributor-uri")));
     }
 
@@ -197,8 +233,8 @@ class StructureComponentRepositoryTest {
         Resource expectedGraph = VF.createIRI("http://rdf.insee.fr/graphes/composants");
 
         verify(repoGestion).loadSimpleObject(eq(expectedIri), any(Model.class), isNull());
-        assertThat(storedModel()).allMatch(stmt ->
-                stmt.getSubject().equals(expectedIri) && expectedGraph.equals(stmt.getContext()));
+        assertThat(storedModel())
+                .allMatch(stmt -> stmt.getSubject().equals(expectedIri) && expectedGraph.equals(stmt.getContext()));
     }
 
     private static MutualizedComponent dimension() throws RmesException {
@@ -215,5 +251,4 @@ class StructureComponentRepositoryTest {
         verify(repoGestion).loadSimpleObject(any(IRI.class), modelCaptor.capture(), isNull());
         return modelCaptor.getValue();
     }
-
 }

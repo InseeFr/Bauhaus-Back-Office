@@ -1,7 +1,13 @@
 package fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica;
 
+import static fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.AbstractColecticaItemRepository.generateDeterministicUuid;
+
+import fr.insee.rmes.colectica.client.ColecticaClient;
+import fr.insee.rmes.colectica.client.dto.ColecticaResponse;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.freemarker.FreeMarkerUtils;
+import fr.insee.rmes.graphdb.SparqlLiterals;
+import fr.insee.rmes.json.JSONUtils;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Citation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Code;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeRepresentation;
@@ -11,10 +17,10 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Category;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CategoryScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeListScheme;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedMissingValuesRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4DataRelationship;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4LogicalProduct;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedMissingValuesRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedRepresentationScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4PhysicalInstance;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
@@ -23,17 +29,21 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Variable;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4VariableScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LangStrings;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LogicalRecord;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.ValueType;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.ValueType;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.VariableRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.VariablesInRecord;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.GroupService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.StudyUnitService;
-import fr.insee.rmes.colectica.client.ColecticaClient;
-import fr.insee.rmes.colectica.client.dto.ColecticaResponse;
-import fr.insee.rmes.graphdb.SparqlLiterals;
-import fr.insee.rmes.json.JSONUtils;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.json.JSONArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,17 +54,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
-
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import static fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.AbstractColecticaItemRepository.generateDeterministicUuid;
 
 /**
  * Configuration activated when {@code fr.insee.rmes.bauhaus.colectica.init=true}.
@@ -103,6 +102,7 @@ public class LocalColecticaGroupInitConfiguration {
      * exposing the Group → LogicalProduct → CodeListScheme chain.
      */
     private static final String LOGICAL_PRODUCT_SEED_SUFFIX = "#logicalproduct";
+
     private static final String CODE_LIST_SCHEME_SEED_SUFFIX = "#codelistscheme";
 
     /**
@@ -123,6 +123,7 @@ public class LocalColecticaGroupInitConfiguration {
      * carries them, and the ManagedMissingValuesRepresentation that references the CodeList.
      */
     private static final String SENTINEL_CATEGORY_SEED_SUFFIX = "#sentinelcategory-";
+
     private static final String SENTINEL_CODE_SEED_SUFFIX = "#sentinelcode-";
     private static final String SENTINEL_CODE_LIST_SEED_SUFFIX = "#sentinelcodelist";
     private static final String SENTINEL_MMVR_SEED_SUFFIX = "#managedmissingvaluesrepresentation";
@@ -134,6 +135,7 @@ public class LocalColecticaGroupInitConfiguration {
      * chaîne StudyUnit → LogicalProduct → VariableScheme.
      */
     private static final String STUDY_UNIT_LOGICAL_PRODUCT_SEED_SUFFIX = "#studyunitlogicalproduct";
+
     private static final String VARIABLE_SCHEME_SEED_SUFFIX = "#variablescheme";
 
     /**
@@ -158,8 +160,7 @@ public class LocalColecticaGroupInitConfiguration {
             ColecticaConfiguration colecticaConfiguration,
             ColecticaClient colecticaClient,
             @Value("${fr.insee.rmes.bauhaus.baseGraph}") String baseGraph,
-            @Value("${fr.insee.rmes.bauhaus.operations.graph}") String operationsGraph
-    ) {
+            @Value("${fr.insee.rmes.bauhaus.operations.graph}") String operationsGraph) {
         return args -> {
             logger.info("=== Initializing Colectica groups and study units from SPARQL ===");
 
@@ -187,8 +188,10 @@ public class LocalColecticaGroupInitConfiguration {
                     .flatMap(series -> series.operations().stream())
                     .flatMap(operation -> variantUuids(operation.operationIri()).stream())
                     .collect(Collectors.toSet());
-            logger.info("Step 2: Deprecating {} manipulated group(s) and {} manipulated study unit(s)",
-                    manipulatedGroupIds.size(), manipulatedStudyUnitIds.size());
+            logger.info(
+                    "Step 2: Deprecating {} manipulated group(s) and {} manipulated study unit(s)",
+                    manipulatedGroupIds.size(),
+                    manipulatedStudyUnitIds.size());
             groupService.deprecate(manipulatedGroupIds);
             studyUnitService.deprecate(manipulatedStudyUnitIds);
 
@@ -221,8 +224,11 @@ public class LocalColecticaGroupInitConfiguration {
                             // vide), créés AVANT elle pour que Colectica ne fabrique pas de stubs vides
                             // des items référencés (même contrainte d'ordre que pour les Groups).
                             Reference studyUnitLogicalProductRef = createStudyUnitLogicalProduct(
-                                    ddiService, studyUnitSeed, operation.operationLabel() + " " + variantWord,
-                                    defaultAgencyId, defaultLang);
+                                    ddiService,
+                                    studyUnitSeed,
+                                    operation.operationLabel() + " " + variantWord,
+                                    defaultAgencyId,
+                                    defaultLang);
 
                             Ddi4StudyUnit studyUnit = new Ddi4StudyUnit(
                                     Ddi4StudyUnit.TYPE,
@@ -234,24 +240,54 @@ public class LocalColecticaGroupInitConfiguration {
                                     new Citation(LangStrings.of(defaultLang, studyUnitLabel)),
                                     operation.operationIri(),
                                     null,
-                                    List.of(studyUnitLogicalProductRef)
-                            );
+                                    List.of(studyUnitLogicalProductRef));
 
-                            logger.info("Creating study unit: operationId={}, uri={}, variant={}, generatedUuid={}, label='{}'",
-                                    operation.operationId(), operation.operationIri(), variantWord, studyUnitId, studyUnitLabel);
+                            logger.info(
+                                    "Creating study unit: operationId={}, uri={}, variant={}, generatedUuid={}, label='{}'",
+                                    operation.operationId(),
+                                    operation.operationIri(),
+                                    variantWord,
+                                    studyUnitId,
+                                    studyUnitLabel);
                             studyUnitService.createOrUpdate(studyUnit);
                             studyUnitsCreated++;
-                            logger.info("Study unit created successfully: operationId={}, variant={}", operation.operationId(), variantWord);
+                            logger.info(
+                                    "Study unit created successfully: operationId={}, variant={}",
+                                    operation.operationId(),
+                                    variantWord);
 
-                            String physicalInstanceLabel = operation.operationLabel() + " " + variantWord + " Physical Instance";
-                            logger.info("Creating physical instance: operationId={}, label='{}'", operation.operationId(), physicalInstanceLabel);
-                            Ddi4Response piResponse = ddiService.createPhysicalInstance(new CreatePhysicalInstanceRequest(physicalInstanceLabel, physicalInstanceLabel, null, null, null, null, null));
-                            Ddi4PhysicalInstance pi = piResponse.physicalInstance().getFirst();
-                            studyUnitService.addPhysicalInstance(studyUnit, Reference.of(pi.agency(), pi.id(), pi.version(), "PhysicalInstance"));
+                            String physicalInstanceLabel =
+                                    operation.operationLabel() + " " + variantWord + " Physical Instance";
+                            logger.info(
+                                    "Creating physical instance: operationId={}, label='{}'",
+                                    operation.operationId(),
+                                    physicalInstanceLabel);
+                            Ddi4Response piResponse =
+                                    ddiService.createPhysicalInstance(new CreatePhysicalInstanceRequest(
+                                            physicalInstanceLabel,
+                                            physicalInstanceLabel,
+                                            null,
+                                            null,
+                                            null,
+                                            null,
+                                            null));
+                            Ddi4PhysicalInstance pi =
+                                    piResponse.physicalInstance().getFirst();
+                            studyUnitService.addPhysicalInstance(
+                                    studyUnit, Reference.of(pi.agency(), pi.id(), pi.version(), "PhysicalInstance"));
                             physicalInstancesCreated++;
-                            logger.info("Physical instance created and linked to study unit: operationId={}, variant={}, piId={}", operation.operationId(), variantWord, pi.id());
+                            logger.info(
+                                    "Physical instance created and linked to study unit: operationId={}, variant={}, piId={}",
+                                    operation.operationId(),
+                                    variantWord,
+                                    pi.id());
                         } catch (Exception e) {
-                            logger.error("Failed to create study unit or physical instance for operation: id={}, uri={}, variant={}", operation.operationId(), operation.operationIri(), variantWord, e);
+                            logger.error(
+                                    "Failed to create study unit or physical instance for operation: id={}, uri={}, variant={}",
+                                    operation.operationId(),
+                                    operation.operationIri(),
+                                    variantWord,
+                                    e);
                         }
                     }
                 }
@@ -267,7 +303,8 @@ public class LocalColecticaGroupInitConfiguration {
                 for (int variant = 0; variant < VARIANT_LABEL_WORDS.size(); variant++) {
                     String variantWord = VARIANT_LABEL_WORDS.get(variant);
                     try {
-                        String groupId = generateDeterministicUuid(series.seriesIri() + VARIANT_SEED_SEPARATOR + variant);
+                        String groupId =
+                                generateDeterministicUuid(series.seriesIri() + VARIANT_SEED_SEPARATOR + variant);
                         String groupLabel = series.seriesLabel() + " " + variantWord + " Group";
                         String versionDate = ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
 
@@ -291,8 +328,7 @@ public class LocalColecticaGroupInitConfiguration {
                                 codeListSchemeId,
                                 "1",
                                 LangStrings.of(defaultLang, groupLabel + " Code List Scheme"),
-                                List.of(sentinelExample.codeListReference())
-                        );
+                                List.of(sentinelExample.codeListReference()));
                         logger.info("Creating code list scheme: id={}, variant={}", codeListSchemeId, variantWord);
                         ddiService.createCodeListScheme(codeListScheme);
 
@@ -306,24 +342,28 @@ public class LocalColecticaGroupInitConfiguration {
                                 categorySchemeId,
                                 "1",
                                 LangStrings.of(defaultLang, groupLabel + " Category Scheme"),
-                                sentinelExample.categoryReferences()
-                        );
+                                sentinelExample.categoryReferences());
                         logger.info("Creating category scheme: id={}, variant={}", categorySchemeId, variantWord);
                         ddiService.createCategoryScheme(categoryScheme);
 
-                        String managedRepresentationSchemeId = generateDeterministicUuid(
-                                series.seriesIri() + VARIANT_SEED_SEPARATOR + variant + MANAGED_REPRESENTATION_SCHEME_SEED_SUFFIX);
-                        Ddi4ManagedRepresentationScheme managedRepresentationScheme = new Ddi4ManagedRepresentationScheme(
-                                Ddi4ManagedRepresentationScheme.TYPE,
-                                CogsDate.ofDateTime(versionDate),
-                                "urn:ddi:%s:%s:1".formatted(defaultAgencyId, managedRepresentationSchemeId),
-                                defaultAgencyId,
+                        String managedRepresentationSchemeId = generateDeterministicUuid(series.seriesIri()
+                                + VARIANT_SEED_SEPARATOR
+                                + variant
+                                + MANAGED_REPRESENTATION_SCHEME_SEED_SUFFIX);
+                        Ddi4ManagedRepresentationScheme managedRepresentationScheme =
+                                new Ddi4ManagedRepresentationScheme(
+                                        Ddi4ManagedRepresentationScheme.TYPE,
+                                        CogsDate.ofDateTime(versionDate),
+                                        "urn:ddi:%s:%s:1".formatted(defaultAgencyId, managedRepresentationSchemeId),
+                                        defaultAgencyId,
+                                        managedRepresentationSchemeId,
+                                        "1",
+                                        LangStrings.of(defaultLang, groupLabel + " Managed Representation Scheme"),
+                                        List.of(sentinelExample.managedMissingValuesRepresentationReference()));
+                        logger.info(
+                                "Creating managed representation scheme: id={}, variant={}",
                                 managedRepresentationSchemeId,
-                                "1",
-                                LangStrings.of(defaultLang, groupLabel + " Managed Representation Scheme"),
-                                List.of(sentinelExample.managedMissingValuesRepresentationReference())
-                        );
-                        logger.info("Creating managed representation scheme: id={}, variant={}", managedRepresentationSchemeId, variantWord);
+                                variantWord);
                         ddiService.createManagedRepresentationScheme(managedRepresentationScheme);
 
                         String logicalProductId = generateDeterministicUuid(
@@ -339,20 +379,28 @@ public class LocalColecticaGroupInitConfiguration {
                                 List.of(Reference.of(defaultAgencyId, codeListSchemeId, "1", "CodeListScheme")),
                                 List.of(Reference.of(defaultAgencyId, categorySchemeId, "1", "CategoryScheme")),
                                 null,
-                                List.of(Reference.of(defaultAgencyId, managedRepresentationSchemeId, "1", "ManagedRepresentationScheme"))
-                        );
-                        logger.info("Creating logical product: id={}, variant={}, codeListScheme={}, categoryScheme={}, managedRepresentationScheme={}",
-                                logicalProductId, variantWord, codeListSchemeId, categorySchemeId, managedRepresentationSchemeId);
+                                List.of(Reference.of(
+                                        defaultAgencyId,
+                                        managedRepresentationSchemeId,
+                                        "1",
+                                        "ManagedRepresentationScheme")));
+                        logger.info(
+                                "Creating logical product: id={}, variant={}, codeListScheme={}, categoryScheme={}, managedRepresentationScheme={}",
+                                logicalProductId,
+                                variantWord,
+                                codeListSchemeId,
+                                categorySchemeId,
+                                managedRepresentationSchemeId);
                         ddiService.createLogicalProduct(logicalProduct);
 
                         final int currentVariant = variant;
                         List<Reference> studyUnitRefs = series.operations().stream()
                                 .map(op -> Reference.of(
                                         defaultAgencyId,
-                                        generateDeterministicUuid(op.operationIri() + VARIANT_SEED_SEPARATOR + currentVariant),
+                                        generateDeterministicUuid(
+                                                op.operationIri() + VARIANT_SEED_SEPARATOR + currentVariant),
                                         "1",
-                                        "StudyUnit"
-                                ))
+                                        "StudyUnit"))
                                 .toList();
 
                         Ddi4Group group = new Ddi4Group(
@@ -367,20 +415,32 @@ public class LocalColecticaGroupInitConfiguration {
                                 studyUnitRefs,
                                 List.of(series.seriesIri()),
                                 "insee:StatisticalOperationSeries",
-                                List.of(Reference.of(defaultAgencyId, logicalProductId, "1", "LogicalProduct"))
-                        );
+                                List.of(Reference.of(defaultAgencyId, logicalProductId, "1", "LogicalProduct")));
 
-                        logger.info("Creating group: id={}, uri={}, variant={}, label='{}', operations={}",
-                                series.seriesId(), series.seriesIri(), variantWord, groupLabel, series.operations().size());
+                        logger.info(
+                                "Creating group: id={}, uri={}, variant={}, label='{}', operations={}",
+                                series.seriesId(),
+                                series.seriesIri(),
+                                variantWord,
+                                groupLabel,
+                                series.operations().size());
                         groupService.createOrUpdate(group);
                         groupsCreated++;
                     } catch (Exception e) {
-                        logger.error("Failed to create group for series: id={}, variant={}", series.seriesId(), variantWord, e);
+                        logger.error(
+                                "Failed to create group for series: id={}, variant={}",
+                                series.seriesId(),
+                                variantWord,
+                                e);
                     }
                 }
             }
 
-            logger.info("=== Colectica initialization complete: {} groups, {} study units, {} physical instances created ===", groupsCreated, studyUnitsCreated, physicalInstancesCreated);
+            logger.info(
+                    "=== Colectica initialization complete: {} groups, {} study units, {} physical instances created ===",
+                    groupsCreated,
+                    studyUnitsCreated,
+                    physicalInstancesCreated);
 
             // Step 3c: Create an example PhysicalInstance whose Code variable references a code list
             // that does not exist. Ce cas ne devrait jamais arriver en conditions normales, mais il
@@ -401,11 +461,11 @@ public class LocalColecticaGroupInitConfiguration {
      * version 2, et une PhysicalInstance très basique référencée par les deux versions.
      */
     static final String VERSIONED_EXAMPLE_STUDY_UNIT_SEED = "example:studyunit:two-versions";
+
     private static final String VERSIONED_EXAMPLE_GROUP_SEED = "example:group:two-versions";
 
     /** Libellé de la PhysicalInstance basique portée par les deux versions de la StudyUnit. */
-    static final String VERSIONED_EXAMPLE_PHYSICAL_INSTANCE_LABEL =
-            "EXEMPLE - PI d'une study unit en 2 versions";
+    static final String VERSIONED_EXAMPLE_PHYSICAL_INSTANCE_LABEL = "EXEMPLE - PI d'une study unit en 2 versions";
 
     /**
      * Exemple de données volontairement versionnées : un Group → une StudyUnit enregistrée en
@@ -427,8 +487,7 @@ public class LocalColecticaGroupInitConfiguration {
             GroupService groupService,
             StudyUnitService studyUnitService,
             DDIService ddiService,
-            ColecticaConfiguration colecticaConfiguration
-    ) {
+            ColecticaConfiguration colecticaConfiguration) {
         return args -> {
             logger.info("=== Creating the example study unit in two versions with a basic physical instance ===");
 
@@ -441,14 +500,22 @@ public class LocalColecticaGroupInitConfiguration {
                 // La PhysicalInstance d'abord : les deux versions de la StudyUnit la référencent, et
                 // Colectica ne doit pas en fabriquer un stub vide.
                 Ddi4Response piResponse = ddiService.createPhysicalInstance(new CreatePhysicalInstanceRequest(
-                        VERSIONED_EXAMPLE_PHYSICAL_INSTANCE_LABEL, VERSIONED_EXAMPLE_PHYSICAL_INSTANCE_LABEL,
-                        null, null, null, null, null));
-                Ddi4PhysicalInstance physicalInstance = piResponse.physicalInstance().getFirst();
+                        VERSIONED_EXAMPLE_PHYSICAL_INSTANCE_LABEL,
+                        VERSIONED_EXAMPLE_PHYSICAL_INSTANCE_LABEL,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null));
+                Ddi4PhysicalInstance physicalInstance =
+                        piResponse.physicalInstance().getFirst();
                 Reference physicalInstanceReference = Reference.of(
-                        physicalInstance.agency(), physicalInstance.id(), physicalInstance.version(),
+                        physicalInstance.agency(),
+                        physicalInstance.id(),
+                        physicalInstance.version(),
                         "PhysicalInstance");
-                logger.info("Example physical instance created: {}/{}",
-                        physicalInstance.agency(), physicalInstance.id());
+                logger.info(
+                        "Example physical instance created: {}/{}", physicalInstance.agency(), physicalInstance.id());
 
                 String studyUnitId = generateDeterministicUuid(VERSIONED_EXAMPLE_STUDY_UNIT_SEED);
                 for (String version : List.of("1", "2")) {
@@ -459,12 +526,11 @@ public class LocalColecticaGroupInitConfiguration {
                             defaultAgencyId,
                             studyUnitId,
                             version,
-                            new Citation(LangStrings.of(defaultLang,
-                                    "EXEMPLE - study unit en 2 versions (v" + version + ")")),
+                            new Citation(LangStrings.of(
+                                    defaultLang, "EXEMPLE - study unit en 2 versions (v" + version + ")")),
                             null,
                             List.of(physicalInstanceReference),
-                            null
-                    );
+                            null);
                     logger.info("Creating the example study unit: id={}, version={}", studyUnitId, version);
                     studyUnitService.createOrUpdate(studyUnit);
                 }
@@ -484,8 +550,7 @@ public class LocalColecticaGroupInitConfiguration {
                         List.of(Reference.of(defaultAgencyId, studyUnitId, "1", "StudyUnit")),
                         List.of(),
                         "insee:StatisticalOperationSeries",
-                        null
-                );
+                        null);
                 logger.info("Creating the example group: id={}, studyUnit={}", groupId, studyUnitId);
                 groupService.createOrUpdate(group);
             } catch (Exception e) {
@@ -501,50 +566,65 @@ public class LocalColecticaGroupInitConfiguration {
         // Query Groups
         try {
             ColecticaResponse groupResponse = colecticaClient.query(List.of(groupItemType));
-                logger.info("=== VERIFICATION: Groups total={} ===", groupResponse != null ? groupResponse.totalResults() : "null");
-                if (groupResponse != null && groupResponse.results() != null) {
-                    int count = 0;
-                    int withItem = 0;
-                    int withLabel = 0;
-                    for (var group : groupResponse.results()) {
-                        if (group.item() != null) withItem++;
-                        if (group.label() != null && !group.label().isEmpty()) withLabel++;
-                        if (count < 3) {
-                            logger.info("Group[{}]: id={}, label={}, versionDate={}, itemFormat={}, hasItem={}",
-                                    count, group.identifier(), group.label(),
-                                    group.versionDate(), group.itemFormat(), group.item() != null);
-                        }
-                        count++;
+            logger.info(
+                    "=== VERIFICATION: Groups total={} ===",
+                    groupResponse != null ? groupResponse.totalResults() : "null");
+            if (groupResponse != null && groupResponse.results() != null) {
+                int count = 0;
+                int withItem = 0;
+                int withLabel = 0;
+                for (var group : groupResponse.results()) {
+                    if (group.item() != null) withItem++;
+                    if (group.label() != null && !group.label().isEmpty()) withLabel++;
+                    if (count < 3) {
+                        logger.info(
+                                "Group[{}]: id={}, label={}, versionDate={}, itemFormat={}, hasItem={}",
+                                count,
+                                group.identifier(),
+                                group.label(),
+                                group.versionDate(),
+                                group.itemFormat(),
+                                group.item() != null);
                     }
-                    logger.info("=== Groups summary: total={}, withItem={}, withLabel={} ===", count, withItem, withLabel);
+                    count++;
                 }
-            } catch (Exception e) {
-                logger.error("Failed to verify groups", e);
+                logger.info("=== Groups summary: total={}, withItem={}, withLabel={} ===", count, withItem, withLabel);
             }
+        } catch (Exception e) {
+            logger.error("Failed to verify groups", e);
+        }
 
-            // Query StudyUnits
-            try {
-                ColecticaResponse suResponse = colecticaClient.query(List.of(studyUnitItemType));
-                logger.info("=== VERIFICATION: StudyUnits total={} ===", suResponse != null ? suResponse.totalResults() : "null");
-                if (suResponse != null && suResponse.results() != null) {
-                    int count = 0;
-                    int withItem = 0;
-                    int withLabel = 0;
-                    for (var su : suResponse.results()) {
-                        if (su.item() != null) withItem++;
-                        if (su.label() != null && !su.label().isEmpty()) withLabel++;
-                        if (count < 3) {
-                            logger.info("StudyUnit[{}]: id={}, label={}, versionDate={}, itemFormat={}, hasItem={}",
-                                    count, su.identifier(), su.label(),
-                                    su.versionDate(), su.itemFormat(), su.item() != null);
-                        }
-                        count++;
+        // Query StudyUnits
+        try {
+            ColecticaResponse suResponse = colecticaClient.query(List.of(studyUnitItemType));
+            logger.info(
+                    "=== VERIFICATION: StudyUnits total={} ===",
+                    suResponse != null ? suResponse.totalResults() : "null");
+            if (suResponse != null && suResponse.results() != null) {
+                int count = 0;
+                int withItem = 0;
+                int withLabel = 0;
+                for (var su : suResponse.results()) {
+                    if (su.item() != null) withItem++;
+                    if (su.label() != null && !su.label().isEmpty()) withLabel++;
+                    if (count < 3) {
+                        logger.info(
+                                "StudyUnit[{}]: id={}, label={}, versionDate={}, itemFormat={}, hasItem={}",
+                                count,
+                                su.identifier(),
+                                su.label(),
+                                su.versionDate(),
+                                su.itemFormat(),
+                                su.item() != null);
                     }
-                    logger.info("=== StudyUnits summary: total={}, withItem={}, withLabel={} ===", count, withItem, withLabel);
+                    count++;
                 }
-            } catch (Exception e) {
-                logger.error("Failed to verify study units", e);
+                logger.info(
+                        "=== StudyUnits summary: total={}, withItem={}, withLabel={} ===", count, withItem, withLabel);
             }
+        } catch (Exception e) {
+            logger.error("Failed to verify study units", e);
+        }
     }
 
     /**
@@ -554,8 +634,12 @@ public class LocalColecticaGroupInitConfiguration {
      * la StudyUnit, pour éviter que Colectica ne fabrique des stubs vides. Comme le LogicalProduct du
      * Group, il n'est classé que par un seul conteneur.
      */
-    private Reference createStudyUnitLogicalProduct(DDIService ddiService, String studyUnitSeed, String labelPrefix,
-                                                    String defaultAgencyId, String defaultLang) {
+    private Reference createStudyUnitLogicalProduct(
+            DDIService ddiService,
+            String studyUnitSeed,
+            String labelPrefix,
+            String defaultAgencyId,
+            String defaultLang) {
         String versionDate = ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
 
         String variableSchemeId = generateDeterministicUuid(studyUnitSeed + VARIABLE_SCHEME_SEED_SUFFIX);
@@ -567,12 +651,12 @@ public class LocalColecticaGroupInitConfiguration {
                 variableSchemeId,
                 "1",
                 LangStrings.of(defaultLang, labelPrefix + " Variable Scheme"),
-                List.of()
-        );
+                List.of());
         logger.info("Creating variable scheme: id={}, studyUnitSeed={}", variableSchemeId, studyUnitSeed);
         ddiService.createVariableScheme(variableScheme);
 
-        String studyUnitLogicalProductId = generateDeterministicUuid(studyUnitSeed + STUDY_UNIT_LOGICAL_PRODUCT_SEED_SUFFIX);
+        String studyUnitLogicalProductId =
+                generateDeterministicUuid(studyUnitSeed + STUDY_UNIT_LOGICAL_PRODUCT_SEED_SUFFIX);
         Ddi4LogicalProduct studyUnitLogicalProduct = new Ddi4LogicalProduct(
                 Ddi4LogicalProduct.TYPE,
                 CogsDate.ofDateTime(versionDate),
@@ -583,10 +667,12 @@ public class LocalColecticaGroupInitConfiguration {
                 LangStrings.of(defaultLang, labelPrefix + " Study Unit Logical Product"),
                 null,
                 null,
-                List.of(Reference.of(defaultAgencyId, variableSchemeId, "1", "VariableScheme"))
-        );
-        logger.info("Creating study unit logical product: id={}, studyUnitSeed={}, variableScheme={}",
-                studyUnitLogicalProductId, studyUnitSeed, variableSchemeId);
+                List.of(Reference.of(defaultAgencyId, variableSchemeId, "1", "VariableScheme")));
+        logger.info(
+                "Creating study unit logical product: id={}, studyUnitSeed={}, variableScheme={}",
+                studyUnitLogicalProductId,
+                studyUnitSeed,
+                variableSchemeId);
         ddiService.createLogicalProduct(studyUnitLogicalProduct);
 
         return Reference.of(defaultAgencyId, studyUnitLogicalProductId, "1", "LogicalProduct");
@@ -601,8 +687,7 @@ public class LocalColecticaGroupInitConfiguration {
     private record SentinelValuesExample(
             Reference codeListReference,
             List<Reference> categoryReferences,
-            Reference managedMissingValuesRepresentationReference) {
-    }
+            Reference managedMissingValuesRepresentationReference) {}
 
     /**
      * Crée dans Colectica l'exemple de valeurs sentinelles d'une variante de groupe (cf. #1566) :
@@ -610,18 +695,22 @@ public class LocalColecticaGroupInitConfiguration {
      * ManagedMissingValuesRepresentation (type MissingCodeRepresentation) qui référence la CodeList.
      * Les ids sont déterministes (dérivés de la graine de la variante) pour que l'init soit rejouable.
      */
-    private SentinelValuesExample createSentinelValuesExample(DDIService ddiService, String variantSeed,
-            String groupLabel, String defaultAgencyId, String defaultLang, String versionDate) {
+    private SentinelValuesExample createSentinelValuesExample(
+            DDIService ddiService,
+            String variantSeed,
+            String groupLabel,
+            String defaultAgencyId,
+            String defaultLang,
+            String versionDate) {
         record SentinelCode(String value, String categoryLabel) {}
-        List<SentinelCode> sentinelCodes = List.of(
-                new SentinelCode("NSP", "Ne sait pas"),
-                new SentinelCode("REF", "Refus"));
+        List<SentinelCode> sentinelCodes =
+                List.of(new SentinelCode("NSP", "Ne sait pas"), new SentinelCode("REF", "Refus"));
 
         List<Reference> categoryReferences = new ArrayList<>();
         List<Code> codes = new ArrayList<>();
         for (SentinelCode sentinelCode : sentinelCodes) {
-            String categoryId = generateDeterministicUuid(
-                    variantSeed + SENTINEL_CATEGORY_SEED_SUFFIX + sentinelCode.value());
+            String categoryId =
+                    generateDeterministicUuid(variantSeed + SENTINEL_CATEGORY_SEED_SUFFIX + sentinelCode.value());
             Ddi4Category category = new Ddi4Category(
                     Ddi4Category.TYPE,
                     CogsDate.ofDateTime(versionDate),
@@ -634,8 +723,7 @@ public class LocalColecticaGroupInitConfiguration {
             ddiService.createCategory(category);
             categoryReferences.add(Reference.of(defaultAgencyId, categoryId, "1", "Category"));
 
-            String codeId = generateDeterministicUuid(
-                    variantSeed + SENTINEL_CODE_SEED_SUFFIX + sentinelCode.value());
+            String codeId = generateDeterministicUuid(variantSeed + SENTINEL_CODE_SEED_SUFFIX + sentinelCode.value());
             codes.add(new Code(
                     Code.TYPE,
                     "urn:ddi:%s:%s:1".formatted(defaultAgencyId, codeId),
@@ -661,8 +749,8 @@ public class LocalColecticaGroupInitConfiguration {
         logger.info("Creating sentinel code list: id={}", codeListId);
         ddiService.createCodeList(codeList);
 
-        String managedMissingValuesRepresentationId = generateDeterministicUuid(
-                variantSeed + SENTINEL_MMVR_SEED_SUFFIX);
+        String managedMissingValuesRepresentationId =
+                generateDeterministicUuid(variantSeed + SENTINEL_MMVR_SEED_SUFFIX);
         Ddi4ManagedMissingValuesRepresentation managedMissingValuesRepresentation =
                 new Ddi4ManagedMissingValuesRepresentation(
                         Ddi4ManagedMissingValuesRepresentation.TYPE,
@@ -672,16 +760,21 @@ public class LocalColecticaGroupInitConfiguration {
                         managedMissingValuesRepresentationId,
                         "1",
                         LangStrings.of(defaultLang, groupLabel + " Sentinel Values"),
-                        List.of(new CodeRepresentation(CodeRepresentation.TYPE, Boolean.FALSE,
+                        List.of(new CodeRepresentation(
+                                CodeRepresentation.TYPE,
+                                Boolean.FALSE,
                                 Reference.of(defaultAgencyId, codeListId, "1", Ddi4CodeList.TYPE))));
-        logger.info("Creating sentinel managed missing values representation: id={}",
-                managedMissingValuesRepresentationId);
+        logger.info(
+                "Creating sentinel managed missing values representation: id={}", managedMissingValuesRepresentationId);
         ddiService.createManagedMissingValuesRepresentation(managedMissingValuesRepresentation);
 
         return new SentinelValuesExample(
                 Reference.of(defaultAgencyId, codeListId, "1", Ddi4CodeList.TYPE),
                 categoryReferences,
-                Reference.of(defaultAgencyId, managedMissingValuesRepresentationId, "1",
+                Reference.of(
+                        defaultAgencyId,
+                        managedMissingValuesRepresentationId,
+                        "1",
                         "ManagedMissingValuesRepresentation"));
     }
 
@@ -709,14 +802,16 @@ public class LocalColecticaGroupInitConfiguration {
             String versionDate = ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
             String variableId = generateDeterministicUuid("example:variable:missing-code-list");
             // Liste de codes qui n'existe pas : un UUID volontairement absent de Colectica.
-            Reference missingCodeListRef = Reference.of(
-                    defaultAgencyId, "00000000-0000-0000-0000-000000000000", "1", Ddi4CodeList.TYPE);
+            Reference missingCodeListRef =
+                    Reference.of(defaultAgencyId, "00000000-0000-0000-0000-000000000000", "1", Ddi4CodeList.TYPE);
 
             Ddi4Variable variable = new Ddi4Variable(
                     Ddi4Variable.TYPE,
                     CogsDate.ofDateTime(versionDate),
                     "urn:ddi:%s:%s:1".formatted(defaultAgencyId, variableId),
-                    defaultAgencyId, variableId, "1",
+                    defaultAgencyId,
+                    variableId,
+                    "1",
                     null,
                     LangStrings.of(defaultLang, "VAR_CL_FANTOME"),
                     LangStrings.of(defaultLang, "Variable référençant une liste de codes inexistante"),
@@ -724,21 +819,31 @@ public class LocalColecticaGroupInitConfiguration {
                     new VariableRepresentation(
                             null,
                             new CodeRepresentation(CodeRepresentation.TYPE, Boolean.FALSE, missingCodeListRef),
-                            null, null, null, null),
+                            null,
+                            null,
+                            null,
+                            null),
                     null);
 
             LogicalRecord updatedLogicalRecord = new LogicalRecord(
                     LogicalRecord.TYPE,
-                    logicalRecord.urn(), logicalRecord.agency(), logicalRecord.id(),
-                    logicalRecord.version(), logicalRecord.label(),
-                    new VariablesInRecord(List.of(
-                            Reference.of(defaultAgencyId, variableId, "1", "Variable"))));
+                    logicalRecord.urn(),
+                    logicalRecord.agency(),
+                    logicalRecord.id(),
+                    logicalRecord.version(),
+                    logicalRecord.label(),
+                    new VariablesInRecord(List.of(Reference.of(defaultAgencyId, variableId, "1", "Variable"))));
 
             Ddi4DataRelationship updatedDataRelationship = new Ddi4DataRelationship(
                     Ddi4DataRelationship.TYPE,
-                    dataRelationship.versionDate(), dataRelationship.urn(), dataRelationship.agency(),
-                    dataRelationship.id(), dataRelationship.version(), dataRelationship.basedOnObject(),
-                    dataRelationship.label(), List.of(updatedLogicalRecord));
+                    dataRelationship.versionDate(),
+                    dataRelationship.urn(),
+                    dataRelationship.agency(),
+                    dataRelationship.id(),
+                    dataRelationship.version(),
+                    dataRelationship.basedOnObject(),
+                    dataRelationship.label(),
+                    List.of(updatedLogicalRecord));
 
             Ddi4Response full = new Ddi4Response(
                     Ddi4Response.SCHEMA,
@@ -746,21 +851,26 @@ public class LocalColecticaGroupInitConfiguration {
                     List.of(pi),
                     List.of(updatedDataRelationship),
                     List.of(variable),
-                    null,  // pas de CodeList : la référence de la variable pointe dans le vide
+                    null, // pas de CodeList : la référence de la variable pointe dans le vide
                     null,
                     null);
 
             ddiService.updateFullPhysicalInstance(pi.agency(), pi.id(), full);
-            logger.info("Example PhysicalInstance with a missing code list created: {}/{} (variable {} -> code list {}/00000000-0000-0000-0000-000000000000)",
-                    pi.agency(), pi.id(), variableId, defaultAgencyId);
+            logger.info(
+                    "Example PhysicalInstance with a missing code list created: {}/{} (variable {} -> code list {}/00000000-0000-0000-0000-000000000000)",
+                    pi.agency(),
+                    pi.id(),
+                    variableId,
+                    defaultAgencyId);
         } catch (Exception e) {
             logger.error("Failed to create the example PhysicalInstance with a missing code list", e);
         }
     }
 
-    List<SeriesWithOperations> querySeriesAndOperations(RepositoryPublicationReader repositoryPublicationReader, String graphUri) throws RmesException {
-        String sparql = FreeMarkerUtils.buildRequest("operations/", "getSeriesWithOperations.ftlh",
-                Map.of("GRAPH_URI", SparqlLiterals.iri(graphUri)));
+    List<SeriesWithOperations> querySeriesAndOperations(
+            RepositoryPublicationReader repositoryPublicationReader, String graphUri) throws RmesException {
+        String sparql = FreeMarkerUtils.buildRequest(
+                "operations/", "getSeriesWithOperations.ftlh", Map.of("GRAPH_URI", SparqlLiterals.iri(graphUri)));
 
         JSONArray results = repositoryPublicationReader.getResponseAsArray(sparql);
 
@@ -776,8 +886,8 @@ public class LocalColecticaGroupInitConfiguration {
             String seriesIri = row.getString("seriesIri");
             String seriesLabel = row.optString("seriesLabel", seriesId);
 
-            SeriesBuilder builder = seriesMap.computeIfAbsent(seriesId,
-                    k -> new SeriesBuilder(seriesId, seriesIri, seriesLabel));
+            SeriesBuilder builder =
+                    seriesMap.computeIfAbsent(seriesId, k -> new SeriesBuilder(seriesId, seriesIri, seriesLabel));
 
             if (row.has("operationId") && !row.isNull("operationId")) {
                 String operationId = row.getString("operationId");
@@ -789,15 +899,17 @@ public class LocalColecticaGroupInitConfiguration {
             }
         });
 
-        return seriesMap.values().stream()
-                .map(SeriesBuilder::build)
-                .toList();
+        return seriesMap.values().stream().map(SeriesBuilder::build).toList();
     }
 
-    record SeriesWithOperations(String seriesId, String seriesIri, String seriesLabel, List<OperationInfo> operations) {}
+    record SeriesWithOperations(
+            String seriesId, String seriesIri, String seriesLabel, List<OperationInfo> operations) {}
+
     record OperationInfo(String operationId, String operationIri, String operationLabel) {}
 
-    record SeriesDdiAssociation(SeriesWithOperations series, String groupId, List<OperationDdiAssociation> operations) {}
+    record SeriesDdiAssociation(
+            SeriesWithOperations series, String groupId, List<OperationDdiAssociation> operations) {}
+
     record OperationDdiAssociation(OperationInfo operation, String studyUnitId) {}
 
     /**
@@ -811,7 +923,8 @@ public class LocalColecticaGroupInitConfiguration {
                         series,
                         generateDeterministicUuid(series.seriesIri()),
                         series.operations().stream()
-                                .map(op -> new OperationDdiAssociation(op, generateDeterministicUuid(op.operationIri())))
+                                .map(op ->
+                                        new OperationDdiAssociation(op, generateDeterministicUuid(op.operationIri())))
                                 .toList()))
                 .toList();
     }
@@ -820,14 +933,23 @@ public class LocalColecticaGroupInitConfiguration {
         logger.info("=== Series and operations associated with DDI objects: {} series ===", associations.size());
         for (SeriesDdiAssociation association : associations) {
             SeriesWithOperations series = association.series();
-            logger.info("Series '{}' (id={}, iri={}) -> DDI Group {}:{} | {} operation(s)",
-                    series.seriesLabel(), series.seriesId(), series.seriesIri(),
-                    defaultAgencyId, association.groupId(), association.operations().size());
+            logger.info(
+                    "Series '{}' (id={}, iri={}) -> DDI Group {}:{} | {} operation(s)",
+                    series.seriesLabel(),
+                    series.seriesId(),
+                    series.seriesIri(),
+                    defaultAgencyId,
+                    association.groupId(),
+                    association.operations().size());
             for (OperationDdiAssociation op : association.operations()) {
                 OperationInfo operation = op.operation();
-                logger.info("    Operation '{}' (id={}, iri={}) -> DDI StudyUnit {}:{}",
-                        operation.operationLabel(), operation.operationId(), operation.operationIri(),
-                        defaultAgencyId, op.studyUnitId());
+                logger.info(
+                        "    Operation '{}' (id={}, iri={}) -> DDI StudyUnit {}:{}",
+                        operation.operationLabel(),
+                        operation.operationId(),
+                        operation.operationIri(),
+                        defaultAgencyId,
+                        op.studyUnitId());
             }
         }
     }

@@ -1,21 +1,20 @@
 package fr.insee.rmes.testcontainers.utils;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import fr.insee.rmes.AppSpringBootTest;
 import fr.insee.rmes.bauhaus_services.utils.OrganisationLookup;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.testcontainers.WithGraphDBContainer;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Integration test for {@link OrganisationLookup} backed by a real GraphDB container.
@@ -36,8 +35,12 @@ class OrganisationLookupIntegrationTest extends WithGraphDBContainer {
 
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
-        registry.add("fr.insee.rmes.bauhaus.sesame.gestion.sesameServer", () -> getRdfGestionConnectionDetails().getUrlServer());
-        registry.add("fr.insee.rmes.bauhaus.sesame.gestion.repository", () -> getRdfGestionConnectionDetails().repositoryId());
+        registry.add(
+                "fr.insee.rmes.bauhaus.sesame.gestion.sesameServer",
+                () -> getRdfGestionConnectionDetails().getUrlServer());
+        registry.add(
+                "fr.insee.rmes.bauhaus.sesame.gestion.repository",
+                () -> getRdfGestionConnectionDetails().repositoryId());
     }
 
     @BeforeAll
@@ -69,16 +72,11 @@ class OrganisationLookupIntegrationTest extends WithGraphDBContainer {
     @Test
     void findUnknown_returnsOnlyTheUnknownInputs_acrossMixedFormats() throws RmesException {
         List<String> unknown = organisationLookup.findUnknown(List.of(
-                KNOWN_IRI,
-                KNOWN_STAMP,
-                "http://bauhaus/organisations/insee/DOES_NOT_EXIST",
-                "ANOTHER-MISSING-STAMP"
-        ));
+                KNOWN_IRI, KNOWN_STAMP, "http://bauhaus/organisations/insee/DOES_NOT_EXIST", "ANOTHER-MISSING-STAMP"));
 
-        assertThat(unknown).containsExactlyInAnyOrder(
-                "http://bauhaus/organisations/insee/DOES_NOT_EXIST",
-                "ANOTHER-MISSING-STAMP"
-        );
+        assertThat(unknown)
+                .containsExactlyInAnyOrder(
+                        "http://bauhaus/organisations/insee/DOES_NOT_EXIST", "ANOTHER-MISSING-STAMP");
     }
 
     @Test

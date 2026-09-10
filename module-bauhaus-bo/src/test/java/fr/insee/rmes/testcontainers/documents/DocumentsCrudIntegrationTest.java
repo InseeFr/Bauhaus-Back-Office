@@ -1,5 +1,11 @@
 package fr.insee.rmes.testcontainers.documents;
 
+import static fr.insee.rmes.PropertiesKeys.DOCUMENTS_BASE_URI;
+import static fr.insee.rmes.PropertiesKeys.LINKS_BASE_URI;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
+
 import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.BauhausUriProperties;
 import fr.insee.rmes.Constants;
@@ -27,6 +33,12 @@ import fr.insee.rmes.persistance.sparql_queries.operations.OperationDocumentsQue
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.testcontainers.WithGraphDBContainer;
 import fr.insee.rmes.utils.IdGenerator;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.Optional;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,19 +49,6 @@ import org.junit.jupiter.api.io.TempDir;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.List;
-import java.util.Optional;
-
-import static fr.insee.rmes.PropertiesKeys.DOCUMENTS_BASE_URI;
-import static fr.insee.rmes.PropertiesKeys.LINKS_BASE_URI;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.mock;
 
 /**
  * Cycle de vie complet d'un document et d'un lien contre un vrai GraphDB et un vrai stockage
@@ -69,11 +68,11 @@ class DocumentsCrudIntegrationTest extends WithGraphDBContainer {
     private static final String BASE_URI_GESTION = "http://bauhaus/";
     /** Valeurs de bauhaus-core.properties : documents et liens ne se distinguent que par ce segment. */
     private static final String DOCUMENTS_PATH = "documents/document";
+
     private static final String LINKS_PATH = "documents/page";
 
     private final RepositoryGestion repositoryGestion = new RepositoryGestion(
-            getRdfGestionConnectionDetails(),
-            new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED));
+            getRdfGestionConnectionDetails(), new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED));
 
     @TempDir
     Path storageFolder;
@@ -83,23 +82,29 @@ class DocumentsCrudIntegrationTest extends WithGraphDBContainer {
     @BeforeEach
     void setUp() {
         RdfUtils.setGraphs(GraphsPropertiesStub.stub());
-        RdfUtils.setBauhausUriBuilder(new BauhausUriBuilder("http://id.insee.fr/", BASE_URI_GESTION, name -> switch (name) {
-            case DOCUMENTS_BASE_URI -> Optional.of(DOCUMENTS_PATH);
-            case LINKS_BASE_URI -> Optional.of(LINKS_PATH);
-            default -> Optional.empty();
-        }));
+        RdfUtils.setBauhausUriBuilder(
+                new BauhausUriBuilder("http://id.insee.fr/", BASE_URI_GESTION, name -> switch (name) {
+                    case DOCUMENTS_BASE_URI -> Optional.of(DOCUMENTS_PATH);
+                    case LINKS_BASE_URI -> Optional.of(LINKS_PATH);
+                    default -> Optional.empty();
+                }));
 
-        BauhausUriProperties uris = new BauhausUriProperties(
-                BASE_URI_GESTION, LINKS_PATH, "codes", DOCUMENTS_PATH, "produits/indicateur");
+        BauhausUriProperties uris =
+                new BauhausUriProperties(BASE_URI_GESTION, LINKS_PATH, "codes", DOCUMENTS_PATH, "produits/indicateur");
         OperationDocumentsQueries queries = new OperationDocumentsQueries(
                 uris, new BauhausLanguagesProperties("fr", "en"), GraphsPropertiesStub.stub());
 
         DocumentsUtils documentsUtils = new DocumentsUtils(
-                repositoryGestion, mock(IdGenerator.class), mock(RepositoryPublication.class),
-                new BauhausLanguagesProperties("fr", "en"), mock(PublicationUtils.class),
-                mock(OperationsParentRepository.class), new FileSystemOperation(),
+                repositoryGestion,
+                mock(IdGenerator.class),
+                mock(RepositoryPublication.class),
+                new BauhausLanguagesProperties("fr", "en"),
+                mock(PublicationUtils.class),
+                mock(OperationsParentRepository.class),
+                new FileSystemOperation(),
                 new StorageProperties(storageFolder.toString(), storageFolder.toString()),
-                queries, new DocumentsStorageProperties(storageFolder.toString(), "http://bauhaus/"));
+                queries,
+                new DocumentsStorageProperties(storageFolder.toString(), "http://bauhaus/"));
         documents = new DocumentsImpl(documentsUtils);
     }
 
@@ -107,8 +112,7 @@ class DocumentsCrudIntegrationTest extends WithGraphDBContainer {
     @DisplayName("Un document créé est relu avec ses libellés, et son fichier est déposé dans le stockage")
     void shouldCreateReadAndDownloadADocument() throws Exception {
         String id = documents.createDocument("""
-                {"labelLg1": "Note méthodologique", "labelLg2": "Methodological note", "descriptionLg1": "Une note"}""",
-                content("contenu du pdf"), "note_" + unique() + ".pdf");
+                {"labelLg1": "Note méthodologique", "labelLg2": "Methodological note", "descriptionLg1": "Une note"}""", content("contenu du pdf"), "note_" + unique() + ".pdf");
 
         JSONObject document = documents.getDocument(id);
         assertThat(document.getString(Constants.URI)).isEqualTo(BASE_URI_GESTION + DOCUMENTS_PATH + "/" + id);
@@ -156,11 +160,13 @@ class DocumentsCrudIntegrationTest extends WithGraphDBContainer {
         String suffix = unique();
         String id = documents.createDocument("""
                 {"labelLg1": "Document à remplacer"}""", content("version 1"), "fichier_" + suffix + ".pdf");
-        Path firstFile = Path.of(documents.getDocument(id).getString(Constants.URL).replace("file://", ""));
+        Path firstFile =
+                Path.of(documents.getDocument(id).getString(Constants.URL).replace("file://", ""));
 
         documents.changeDocument(id, content("version 2"), "fichier_" + suffix + "_v2.pdf");
 
-        Path secondFile = Path.of(documents.getDocument(id).getString(Constants.URL).replace("file://", ""));
+        Path secondFile =
+                Path.of(documents.getDocument(id).getString(Constants.URL).replace("file://", ""));
         assertThat(secondFile.getFileName()).hasToString("fichier_" + suffix + "_v2.pdf");
         assertThat(Files.readString(secondFile)).isEqualTo("version 2");
         assertThat(firstFile).as("l'ancien fichier est retiré du stockage").doesNotExist();
@@ -171,7 +177,8 @@ class DocumentsCrudIntegrationTest extends WithGraphDBContainer {
     void shouldDeleteADocumentAndItsFile() throws Exception {
         String id = documents.createDocument("""
                 {"labelLg1": "Document à supprimer"}""", content("x"), "suppr_" + unique() + ".pdf");
-        Path storedFile = Path.of(documents.getDocument(id).getString(Constants.URL).replace("file://", ""));
+        Path storedFile =
+                Path.of(documents.getDocument(id).getString(Constants.URL).replace("file://", ""));
 
         assertThat(documents.deleteDocument(id)).isEqualTo(HttpStatus.OK);
 
@@ -221,7 +228,8 @@ class DocumentsCrudIntegrationTest extends WithGraphDBContainer {
         documents.createDocument("""
                 {"labelLg1": "%s"}""".formatted(label), content("x"), "unicite_" + unique() + ".pdf");
 
-        assertThatThrownBy(() -> documents.createDocument("""
+        assertThatThrownBy(() ->
+                        documents.createDocument("""
                 {"labelLg1": "%s"}""".formatted(label), content("y"), "unicite_" + unique() + ".pdf"))
                 .isInstanceOf(RmesBadRequestException.class)
                 .satisfies(thrown -> assertThat(((RmesException) thrown).getDetails())
@@ -232,8 +240,7 @@ class DocumentsCrudIntegrationTest extends WithGraphDBContainer {
     @DisplayName("Un document encore rattaché à une rubrique de SIMS n'est pas supprimable")
     void shouldRefuseToDeleteADocumentAttachedToASims() throws Exception {
         String id = documents.createDocument("""
-                {"labelLg1": "Document rattaché %s"}""".formatted(unique()),
-                content("x"), "rattache_" + unique() + ".pdf");
+                {"labelLg1": "Document rattaché %s"}""".formatted(unique()), content("x"), "rattache_" + unique() + ".pdf");
         String documentIri = BASE_URI_GESTION + DOCUMENTS_PATH + "/" + id;
         String simsGraph = "http://rdf.insee.fr/graphes/documents-crud-it/sims-" + id;
         attachToSims(simsGraph, documentIri);
@@ -260,7 +267,9 @@ class DocumentsCrudIntegrationTest extends WithGraphDBContainer {
     }
 
     private static List<String> idsOf(JSONArray documents) {
-        return JSONUtils.stream(documents).map(doc -> doc.getString(Constants.ID)).toList();
+        return JSONUtils.stream(documents)
+                .map(doc -> doc.getString(Constants.ID))
+                .toList();
     }
 
     /** Le conteneur est partagé : chaque test travaille sur des libellés, URLs et noms de fichiers qui lui sont propres. */

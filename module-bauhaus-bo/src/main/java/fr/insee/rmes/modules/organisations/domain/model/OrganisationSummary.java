@@ -9,5 +9,4 @@ package fr.insee.rmes.modules.organisations.domain.model;
  * preferred label in the alternative language (falling back to the main one).
  * </p>
  */
-public record OrganisationSummary(String iri, String identifier, String stamp, String label, String labelLg2) {
-}
+public record OrganisationSummary(String iri, String identifier, String stamp, String label, String labelLg2) {}

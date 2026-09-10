@@ -8,6 +8,4 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record LangString(
         @JsonProperty("@language") String language,
-        @JsonProperty("@value") String value
-) {
-}
+        @JsonProperty("@value") String value) {}

@@ -1,15 +1,19 @@
 package fr.insee.rmes.testcontainers.queries.sparql_queries.operations.series;
 
-import fr.insee.rmes.Constants;
-import fr.insee.rmes.rdf_utils.RepositoryGestion;
-import fr.insee.rmes.graphdb.RepositoryInitiator;
-import fr.insee.rmes.graphdb.RepositoryUtils;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
+
 import fr.insee.rmes.BauhausLanguagesProperties;
+import fr.insee.rmes.Constants;
 import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.persistance.sparql_queries.operations.OperationSeriesQueries;
-import fr.insee.rmes.testcontainers.WithGraphDBContainer;
+import fr.insee.rmes.graphdb.RepositoryInitiator;
+import fr.insee.rmes.graphdb.RepositoryUtils;
 import fr.insee.rmes.json.JSONUtils;
+import fr.insee.rmes.persistance.sparql_queries.operations.OperationSeriesQueries;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.testcontainers.WithGraphDBContainer;
+import java.util.List;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -20,19 +24,15 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
-import java.util.List;
-
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
-
 @Tag("integration")
 class OperationSeriesQueriesTest extends WithGraphDBContainer {
-    RepositoryGestion repositoryGestion = new RepositoryGestion(getRdfGestionConnectionDetails(), new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED));
+    RepositoryGestion repositoryGestion = new RepositoryGestion(
+            getRdfGestionConnectionDetails(), new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED));
 
     private OperationSeriesQueries operationSeriesQueries;
 
     @BeforeAll
-    static void initData(){
+    static void initData() {
         container.withTrigFiles("all-operations-and-indicators.trig");
         container.withTrigFiles("sims-all.trig");
         container.withTrigFiles("a6-appariement-variables-it.trig");
@@ -50,18 +50,21 @@ class OperationSeriesQueriesTest extends WithGraphDBContainer {
 
     @BeforeEach
     void setUp() {
-        operationSeriesQueries = new OperationSeriesQueries(new BauhausLanguagesProperties("fr", "en"), GraphsPropertiesStub.stub());
+        operationSeriesQueries =
+                new OperationSeriesQueries(new BauhausLanguagesProperties("fr", "en"), GraphsPropertiesStub.stub());
     }
 
     @Test
     void should_return_true_if_series_if_label_exist() throws Exception {
-        boolean result = repositoryGestion.getResponseAsBoolean(operationSeriesQueries.checkPrefLabelUnicity("1", "Enquête Loyers et charges", "fr"));
+        boolean result = repositoryGestion.getResponseAsBoolean(
+                operationSeriesQueries.checkPrefLabelUnicity("1", "Enquête Loyers et charges", "fr"));
         assertTrue(result);
     }
 
     @Test
     void should_return_false_series_if_label_does_not_exist() throws Exception {
-        boolean result = repositoryGestion.getResponseAsBoolean(operationSeriesQueries.checkPrefLabelUnicity("1", "label", "fr"));
+        boolean result = repositoryGestion.getResponseAsBoolean(
+                operationSeriesQueries.checkPrefLabelUnicity("1", "label", "fr"));
         assertFalse(result);
     }
 
@@ -74,17 +77,21 @@ class OperationSeriesQueriesTest extends WithGraphDBContainer {
         assertThat(result.getString("id")).hasToString("s1226");
         assertThat(result.getString("prefLabelLg1")).hasToString("Enquête sur l'entrée dans la vie adulte");
         assertThat(result.getString("prefLabelLg2")).hasToString("Survey on entry into adult life");
-        assertThat(result.getString("abstractLg1")).hasToString("<p>L&rsquo;objectif du dispositif sur l&rsquo;entr&eacute;e dans la vie adulte (EVA ) est d&rsquo;observer l&rsquo;entr&eacute;e dans la vie adulte et l&rsquo;insertion professionnelle des jeunes, au regard de leurs &eacute;tudes.<br /><br />Il permet de mettre en regard les informations sur les d&eacute;buts de carri&egrave;re et l&rsquo;insertion professionnelle avec les cursus scolaires et universitaires d&eacute;taill&eacute;s et les projets form&eacute;s pendant l&rsquo;adolescence ou la jeunesse.</p>");
-        assertThat(result.getString("abstractLg2")).hasToString("<p>The purpose of the EVA system is to observe the entry of young people into adult life and their professional integration in the light of their studies. The EVA system allows to link and compare informations about professional career beginning and professional integration to data related to detailed school and university pathways and plans made for the future during youth ages.</p>");
-        assertThat(result.getString("historyNoteLg1")).hasToString("<p>Une premi&egrave;re s&eacute;rie d&rsquo;enqu&ecirc;tes EVA avait &eacute;t&eacute; men&eacute;e par l&rsquo;Insee de 2005 &agrave; 2012 aupr&egrave;s des jeunes du panel de la Depp d&rsquo;&eacute;l&egrave;ves du second degr&eacute; entr&eacute;s en 6e en 1995.<br />Ce dispositif se d&eacute;composait en deux volets&nbsp;: <br />- le parcours scolaire des jeunes dans le secondaire ainsi que leurs &eacute;tudes sup&eacute;rieures sont suivis par la Direction de l'&eacute;valuation, de la prospective et de la performance (Depp - Minist&egrave;re en charge de l&rsquo;&eacute;ducation)&nbsp;;<br />- et les sortants du syst&egrave;me scolaire sont interrog&eacute;s dans le cadre de l&rsquo;enqu&ecirc;te EVA de l&rsquo;Insee.<br /><br />La nouvelle s&eacute;rie d&rsquo;enqu&ecirc;tes EVA s&rsquo;appuie sur l&rsquo;&eacute;dition suivante du panel de la Depp, celle des entrants en 6e en 2007.<br />Apr&egrave;s deux enqu&ecirc;tes l&eacute;g&egrave;res en 2013 et 2014 r&eacute;alis&eacute;es par l&rsquo;Insee, les jeunes sont suivis chaque ann&eacute;e via une enqu&ecirc;te dite de tronc commun.<br />Ce dispositif se d&eacute;compose en trois volets&nbsp;:<br />&nbsp;- le parcours scolaire des jeunes dans le secondaire est suivi par la&nbsp; Direction de l'&eacute;valuation, de la prospective et de la performance (Depp - Minist&egrave;re en charge de l&rsquo;&eacute;ducation)&nbsp;;<br />- la p&eacute;riode des &eacute;tudes sup&eacute;rieures est suivie par le Syst&egrave;me d'information et d'&eacute;tudes statistiques (Sies - Minist&egrave;re en charge de l&rsquo;enseignement sup&eacute;rieur)&nbsp;;<br />- les sortants du syst&egrave;me scolaire sont interrog&eacute;s dans le cadre de l&rsquo;enqu&ecirc;te EVA de l&rsquo;Insee.</p>");
-        assertThat(result.getString("historyNoteLg2")).hasToString("<p>A first sequence of EVA surveys had been carried out by Insee from 2005 to 2012 and collected from the young people of the Depp education panel who had entered the first year of secondary education in 1995.<br />This program was consisting of two parts&nbsp;:<br />- the schooling path of young people in secondary education and their higher education studies are observed by the Ministry for Education (Depp)&nbsp;;<br />- and the data collection on young people who have left the education system is conducted by Insee, by the mean of the EVA survey.<br /><br />This new sequence of EVA surveys relies on the following edition of the Depp panel, of young people who entered the first year of secondary education in 2007.<br />After two short surveys in 2013 and 2014 conducted by Insee, the situation of these young persons is observed each year by a survey named &laquo;&nbsp;de tronc commun&nbsp;&raquo;.<br />This program consists of three parts&nbsp;:<br />- the schooling path of young people in secondary education is observed by the Ministry for Education (Depp)&nbsp;;<br />- the&nbsp; higher education studies period is observed by the Ministry in charge of Higher Education (Sies)&nbsp;;<br />- and the data collection on young people who have left the education system is conducted by Insee, by the mean of the EVA survey.</p>");
+        assertThat(result.getString("abstractLg1"))
+                .hasToString(
+                        "<p>L&rsquo;objectif du dispositif sur l&rsquo;entr&eacute;e dans la vie adulte (EVA ) est d&rsquo;observer l&rsquo;entr&eacute;e dans la vie adulte et l&rsquo;insertion professionnelle des jeunes, au regard de leurs &eacute;tudes.<br /><br />Il permet de mettre en regard les informations sur les d&eacute;buts de carri&egrave;re et l&rsquo;insertion professionnelle avec les cursus scolaires et universitaires d&eacute;taill&eacute;s et les projets form&eacute;s pendant l&rsquo;adolescence ou la jeunesse.</p>");
+        assertThat(result.getString("abstractLg2"))
+                .hasToString(
+                        "<p>The purpose of the EVA system is to observe the entry of young people into adult life and their professional integration in the light of their studies. The EVA system allows to link and compare informations about professional career beginning and professional integration to data related to detailed school and university pathways and plans made for the future during youth ages.</p>");
+        assertThat(result.getString("historyNoteLg1"))
+                .hasToString(
+                        "<p>Une premi&egrave;re s&eacute;rie d&rsquo;enqu&ecirc;tes EVA avait &eacute;t&eacute; men&eacute;e par l&rsquo;Insee de 2005 &agrave; 2012 aupr&egrave;s des jeunes du panel de la Depp d&rsquo;&eacute;l&egrave;ves du second degr&eacute; entr&eacute;s en 6e en 1995.<br />Ce dispositif se d&eacute;composait en deux volets&nbsp;: <br />- le parcours scolaire des jeunes dans le secondaire ainsi que leurs &eacute;tudes sup&eacute;rieures sont suivis par la Direction de l'&eacute;valuation, de la prospective et de la performance (Depp - Minist&egrave;re en charge de l&rsquo;&eacute;ducation)&nbsp;;<br />- et les sortants du syst&egrave;me scolaire sont interrog&eacute;s dans le cadre de l&rsquo;enqu&ecirc;te EVA de l&rsquo;Insee.<br /><br />La nouvelle s&eacute;rie d&rsquo;enqu&ecirc;tes EVA s&rsquo;appuie sur l&rsquo;&eacute;dition suivante du panel de la Depp, celle des entrants en 6e en 2007.<br />Apr&egrave;s deux enqu&ecirc;tes l&eacute;g&egrave;res en 2013 et 2014 r&eacute;alis&eacute;es par l&rsquo;Insee, les jeunes sont suivis chaque ann&eacute;e via une enqu&ecirc;te dite de tronc commun.<br />Ce dispositif se d&eacute;compose en trois volets&nbsp;:<br />&nbsp;- le parcours scolaire des jeunes dans le secondaire est suivi par la&nbsp; Direction de l'&eacute;valuation, de la prospective et de la performance (Depp - Minist&egrave;re en charge de l&rsquo;&eacute;ducation)&nbsp;;<br />- la p&eacute;riode des &eacute;tudes sup&eacute;rieures est suivie par le Syst&egrave;me d'information et d'&eacute;tudes statistiques (Sies - Minist&egrave;re en charge de l&rsquo;enseignement sup&eacute;rieur)&nbsp;;<br />- les sortants du syst&egrave;me scolaire sont interrog&eacute;s dans le cadre de l&rsquo;enqu&ecirc;te EVA de l&rsquo;Insee.</p>");
+        assertThat(result.getString("historyNoteLg2"))
+                .hasToString(
+                        "<p>A first sequence of EVA surveys had been carried out by Insee from 2005 to 2012 and collected from the young people of the Depp education panel who had entered the first year of secondary education in 1995.<br />This program was consisting of two parts&nbsp;:<br />- the schooling path of young people in secondary education and their higher education studies are observed by the Ministry for Education (Depp)&nbsp;;<br />- and the data collection on young people who have left the education system is conducted by Insee, by the mean of the EVA survey.<br /><br />This new sequence of EVA surveys relies on the following edition of the Depp panel, of young people who entered the first year of secondary education in 2007.<br />After two short surveys in 2013 and 2014 conducted by Insee, the situation of these young persons is observed each year by a survey named &laquo;&nbsp;de tronc commun&nbsp;&raquo;.<br />This program consists of three parts&nbsp;:<br />- the schooling path of young people in secondary education is observed by the Ministry for Education (Depp)&nbsp;;<br />- the&nbsp; higher education studies period is observed by the Ministry in charge of Higher Education (Sies)&nbsp;;<br />- and the data collection on young people who have left the education system is conducted by Insee, by the mean of the EVA survey.</p>");
     }
 
-    @CsvSource({
-            "'unknow_stamp', 0",
-            "'stamp', 1",
-            "'', 174"
-    })
+    @CsvSource({"'unknow_stamp', 0", "'stamp', 1", "'', 174"})
     @ParameterizedTest
     void should_series_for_search_based_on_stamp(String stamp, int expectedLength) throws RmesException {
         JSONArray result = repositoryGestion.getResponseAsArray(operationSeriesQueries.getSeriesForSearch(stamp));
@@ -101,7 +108,8 @@ class OperationSeriesQueriesTest extends WithGraphDBContainer {
 
     @Test
     void should_return_series_crators() throws RmesException {
-        JSONArray creators = repositoryGestion.getResponseAsArray(operationSeriesQueries.getCreatorsBySeriesUri("http://bauhaus/operations/serie/s1236"));
+        JSONArray creators = repositoryGestion.getResponseAsArray(
+                operationSeriesQueries.getCreatorsBySeriesUri("http://bauhaus/operations/serie/s1236"));
         assertEquals("stamp", creators.getJSONObject(0).getString("creators"));
         assertEquals(1, creators.length());
     }
@@ -138,19 +146,22 @@ class OperationSeriesQueriesTest extends WithGraphDBContainer {
 
     @Test
     void should_return_all_series_and_operators() throws Exception {
-        JSONArray result = repositoryGestion.getResponseAsArray(operationSeriesQueries.checkIfSeriesExists(List.of("http://bauhaus/operations/serie/s1028", "http://bauhaus/operations/operation/s1489")));
+        JSONArray result = repositoryGestion.getResponseAsArray(operationSeriesQueries.checkIfSeriesExists(
+                List.of("http://bauhaus/operations/serie/s1028", "http://bauhaus/operations/operation/s1489")));
         assertEquals(2, result.length());
     }
 
     @Test
     void should_return_filter_missing_objects() throws Exception {
-        JSONArray result = repositoryGestion.getResponseAsArray(operationSeriesQueries.checkIfSeriesExists(List.of("http://bauhaus/operations/serie/unknown", "http://bauhaus/operations/operation/s1489")));
+        JSONArray result = repositoryGestion.getResponseAsArray(operationSeriesQueries.checkIfSeriesExists(
+                List.of("http://bauhaus/operations/serie/unknown", "http://bauhaus/operations/operation/s1489")));
         assertEquals(1, result.length());
     }
 
     @Test
     void should_return_published_operations_for_series() throws Exception {
-        JSONArray result = repositoryGestion.getResponseAsArray(operationSeriesQueries.getPublishedOperationsForSeries("http://bauhaus/operations/serie/s1227"));
+        JSONArray result = repositoryGestion.getResponseAsArray(
+                operationSeriesQueries.getPublishedOperationsForSeries("http://bauhaus/operations/serie/s1227"));
         assertEquals(1, result.length());
     }
 }

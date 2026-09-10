@@ -1,8 +1,15 @@
 package fr.insee.rmes.modules.codeslists.codeslists.webservice;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.modules.codeslists.codeslists.domain.port.clientside.CodesListsService;
 import fr.insee.rmes.modules.commons.configuration.LogRequestFilter;
+import java.util.List;
+import java.util.stream.Stream;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -17,14 +24,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.List;
-import java.util.stream.Stream;
-
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 /**
  * Contrat du corps de requête d'une liste de codes complète : les huit champs que le front exige
  * sont refusés en 400 par Bean Validation, avant que le service ne touche au dépôt.
@@ -38,8 +37,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(
         value = CodesListsResources.class,
         excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = LogRequestFilter.class),
-        excludeAutoConfiguration = OAuth2ResourceServerAutoConfiguration.class
-)
+        excludeAutoConfiguration = OAuth2ResourceServerAutoConfiguration.class)
 @AutoConfigureMockMvc(addFilters = false)
 class CodesListsResourcesValidationTest {
 
@@ -47,9 +45,14 @@ class CodesListsResourcesValidationTest {
 
     /** Les huit champs que la validation zod du front impose déjà côté client. */
     private static final List<String> MANDATORY_FIELDS = List.of(
-            "id", "labelLg1", "labelLg2",
-            "lastListUriSegment", "lastClassUriSegment", "lastCodeUriSegment",
-            "creator", "disseminationStatus");
+            "id",
+            "labelLg1",
+            "labelLg2",
+            "lastListUriSegment",
+            "lastClassUriSegment",
+            "lastCodeUriSegment",
+            "creator",
+            "disseminationStatus");
 
     @MockitoBean
     private CodeListService codeListService;
@@ -74,10 +77,11 @@ class CodesListsResourcesValidationTest {
 
     /** Les trois formes de vide qu'un corps peut prendre : absente, chaîne vide, blancs. */
     static Stream<org.junit.jupiter.params.provider.Arguments> emptyValues() {
-        return MANDATORY_FIELDS.stream().flatMap(field -> Stream.of(
-                org.junit.jupiter.params.provider.Arguments.of(field, null),
-                org.junit.jupiter.params.provider.Arguments.of(field, ""),
-                org.junit.jupiter.params.provider.Arguments.of(field, " ")));
+        return MANDATORY_FIELDS.stream()
+                .flatMap(field -> Stream.of(
+                        org.junit.jupiter.params.provider.Arguments.of(field, null),
+                        org.junit.jupiter.params.provider.Arguments.of(field, ""),
+                        org.junit.jupiter.params.provider.Arguments.of(field, " ")));
     }
 
     private static String bodyWithout(String field, String emptyValue) {
@@ -92,7 +96,8 @@ class CodesListsResourcesValidationTest {
 
     @ParameterizedTest(name = "POST /codeList : {0} = [{1}]")
     @MethodSource("emptyValues")
-    void setCodesList_whenAMandatoryFieldIsEmpty_shouldReturnBadRequest(String field, String emptyValue) throws Exception {
+    void setCodesList_whenAMandatoryFieldIsEmpty_shouldReturnBadRequest(String field, String emptyValue)
+            throws Exception {
         mockMvc.perform(post("/codeList")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(bodyWithout(field, emptyValue)))
@@ -102,7 +107,8 @@ class CodesListsResourcesValidationTest {
 
     @ParameterizedTest(name = "PUT /codeList/ID : {0} = [{1}]")
     @MethodSource("emptyValues")
-    void updateCodesList_whenAMandatoryFieldIsEmpty_shouldReturnBadRequest(String field, String emptyValue) throws Exception {
+    void updateCodesList_whenAMandatoryFieldIsEmpty_shouldReturnBadRequest(String field, String emptyValue)
+            throws Exception {
         mockMvc.perform(put("/codeList/{id}", ID)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(bodyWithout(field, emptyValue)))
@@ -112,8 +118,9 @@ class CodesListsResourcesValidationTest {
 
     @Test
     void setCodesList_whenACarriedCodeIsIncomplete_shouldReturnBadRequest() throws Exception {
-        String body = validBody().put("codes", new org.json.JSONArray()
-                .put(new JSONObject().put("code", "A"))).toString();
+        String body = validBody()
+                .put("codes", new org.json.JSONArray().put(new JSONObject().put("code", "A")))
+                .toString();
 
         mockMvc.perform(post("/codeList")
                         .contentType(MediaType.APPLICATION_JSON)

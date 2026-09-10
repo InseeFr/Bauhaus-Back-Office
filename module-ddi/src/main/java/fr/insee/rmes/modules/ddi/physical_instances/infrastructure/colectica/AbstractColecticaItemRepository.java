@@ -3,21 +3,20 @@ package fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.ddi.lifecycle33.instance.FragmentDocument;
+import fr.insee.rmes.colectica.client.ColecticaClient;
+import fr.insee.rmes.colectica.client.dto.ColecticaCreateItemRequest;
+import fr.insee.rmes.colectica.client.dto.ColecticaItemResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Item;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.services.Ddi4ToLifecycle33;
-import fr.insee.rmes.colectica.client.ColecticaClient;
-import fr.insee.rmes.colectica.client.dto.ColecticaCreateItemRequest;
-import fr.insee.rmes.colectica.client.dto.ColecticaItemResponse;
-import org.apache.xmlbeans.XmlOptions;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
+import org.apache.xmlbeans.XmlOptions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Base class for Colectica item repositories.
@@ -40,8 +39,7 @@ public abstract class AbstractColecticaItemRepository {
     protected AbstractColecticaItemRepository(
             ColecticaClient colecticaClient,
             ColecticaConfiguration.ColecticaInstanceConfiguration instanceConfiguration,
-            Ddi4ToLifecycle33 ddi4ToLifecycle33
-    ) {
+            Ddi4ToLifecycle33 ddi4ToLifecycle33) {
         this.colecticaClient = colecticaClient;
         this.instanceConfiguration = instanceConfiguration;
         this.ddi4ToLifecycle33 = ddi4ToLifecycle33;
@@ -64,8 +62,7 @@ public abstract class AbstractColecticaItemRepository {
                 false,
                 false,
                 false,
-                itemFormat
-        );
+                itemFormat);
         ColecticaCreateItemRequest createRequest = new ColecticaCreateItemRequest(List.of(colecticaItem));
         try {
             String jsonPayload = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(createRequest);
@@ -74,7 +71,8 @@ public abstract class AbstractColecticaItemRepository {
             logger.warn("Could not serialize request for logging", e);
         }
         String response = colecticaClient.createOrUpdateItems(createRequest);
-        logger.info("Successfully created/updated item: type={}, id={}, response={}", itemTypeUuid, item.id(), response);
+        logger.info(
+                "Successfully created/updated item: type={}, id={}, response={}", itemTypeUuid, item.id(), response);
     }
 
     private String serializeToDdi3Xml(Ddi4Item item) {
@@ -87,8 +85,8 @@ public abstract class AbstractColecticaItemRepository {
             fragment = ddi4ToLifecycle33.toStudyUnit(su);
             contentNamespace = DDI_STUDY_UNIT_NS;
         } else {
-            throw new IllegalArgumentException(
-                    "Unsupported Ddi4Item subtype for Colectica serialization: " + item.getClass().getName());
+            throw new IllegalArgumentException("Unsupported Ddi4Item subtype for Colectica serialization: "
+                    + item.getClass().getName());
         }
         return fragment.xmlText(fragmentXmlOptions(contentNamespace));
     }

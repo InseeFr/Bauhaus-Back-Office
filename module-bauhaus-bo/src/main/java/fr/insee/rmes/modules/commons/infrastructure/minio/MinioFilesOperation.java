@@ -6,11 +6,10 @@ import fr.insee.rmes.modules.commons.domain.port.serverside.FilesOperations;
 import fr.insee.rmes.modules.commons.hexagonal.ServerSideAdaptor;
 import io.minio.*;
 import io.minio.errors.MinioException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.io.InputStream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @ServerSideAdaptor
 public record MinioFilesOperation(MinioClient minioClient, String bucketName) implements FilesOperations {
@@ -21,8 +20,8 @@ public record MinioFilesOperation(MinioClient minioClient, String bucketName) im
     static final Logger logger = LoggerFactory.getLogger(MinioFilesOperation.class);
 
     @Override
-    public InputStream read(Document document){
-        //String objectName = directoryGestion + "/" + filename;
+    public InputStream read(Document document) {
+        // String objectName = directoryGestion + "/" + filename;
 
         logger.debug("Reading file from path {} in bucket {}", document.getFullPath(), bucketName);
 
@@ -32,31 +31,41 @@ public record MinioFilesOperation(MinioClient minioClient, String bucketName) im
                     .object(document.getFullPath())
                     .build());
         } catch (MinioException e) {
-            throw new RmesFileException(document.name(), "Error reading file: " + document.getFullPath()+"  in bucket "+bucketName, e);
+            throw new RmesFileException(
+                    document.name(), "Error reading file: " + document.getFullPath() + "  in bucket " + bucketName, e);
         }
     }
 
     @Override
     public void write(InputStream content, Document targetDocument) {
-        logger.debug("Writing to file with name {} from path {} in bucket {}", targetDocument.name(), targetDocument.getFullPath(), bucketName);
+        logger.debug(
+                "Writing to file with name {} from path {} in bucket {}",
+                targetDocument.name(),
+                targetDocument.getFullPath(),
+                bucketName);
         try {
-            minioClient.putObject(PutObjectArgs.builder()
-                    .bucket(bucketName)
-                    .object(targetDocument.getFullPath())
-                    .stream(content, (long) content.available(), -1L)
-                    .build());
+            minioClient.putObject(
+                    PutObjectArgs.builder().bucket(bucketName).object(targetDocument.getFullPath()).stream(
+                                    content, (long) content.available(), -1L)
+                            .build());
         } catch (MinioException | IOException e) {
-            throw new RmesFileException(targetDocument.name(), "Error writing file: " + targetDocument.name()+ " in bucket "+bucketName, e);
+            throw new RmesFileException(
+                    targetDocument.name(),
+                    "Error writing file: " + targetDocument.name() + " in bucket " + bucketName,
+                    e);
         }
     }
 
     @Override
-    public void copy(Document srcDocument, Document targetDocument)  {
+    public void copy(Document srcDocument, Document targetDocument) {
         String srcFullPath = srcDocument.getFullPath();
         String targetFullPath = targetDocument.getFullPath();
 
-
-        logger.debug("Copy from source {} as object {} to destination {} in bucket {}", srcFullPath, targetFullPath, bucketName);
+        logger.debug(
+                "Copy from source {} as object {} to destination {} in bucket {}",
+                srcFullPath,
+                targetFullPath,
+                bucketName);
 
         try {
             SourceObject source = SourceObject.builder()
@@ -70,32 +79,36 @@ public record MinioFilesOperation(MinioClient minioClient, String bucketName) im
                     .source(source)
                     .build());
         } catch (MinioException e) {
-            throw new RmesFileException(srcFullPath,"Error copying file from `" + srcFullPath + "` to `" + targetFullPath+"` in bucket "+bucketName, e);
+            throw new RmesFileException(
+                    srcFullPath,
+                    "Error copying file from `" + srcFullPath + "` to `" + targetFullPath + "` in bucket " + bucketName,
+                    e);
         }
     }
 
-
     @Override
     public boolean exists(Document document) {
-        //String objectName = directoryGestion + "/" + filename;
+        // String objectName = directoryGestion + "/" + filename;
         logger.debug("Check existence of file with name {} in bucket {}", document.getFullPath(), bucketName);
         try {
-            return minioClient.statObject(StatObjectArgs.builder()
-                    .bucket(bucketName)
-                    .object(document.getFullPath())
-                    .build()).size() > 0;
+            return minioClient
+                            .statObject(StatObjectArgs.builder()
+                                    .bucket(bucketName)
+                                    .object(document.getFullPath())
+                                    .build())
+                            .size()
+                    > 0;
         } catch (MinioException _) {
             return false;
         }
     }
-
 
     @Override
     public boolean exists(String path) {
         return true;
     }
 
-     @Override
+    @Override
     public void delete(Document document) {
         String objectName = document.getFullPath();
 
@@ -107,9 +120,8 @@ public record MinioFilesOperation(MinioClient minioClient, String bucketName) im
                     .object(objectName)
                     .build());
         } catch (MinioException e) {
-            throw new RmesFileException(objectName,"Error deleting file: " + objectName+" in bucket "+bucketName, e);
+            throw new RmesFileException(
+                    objectName, "Error deleting file: " + objectName + " in bucket " + bucketName, e);
         }
     }
-
 }
-

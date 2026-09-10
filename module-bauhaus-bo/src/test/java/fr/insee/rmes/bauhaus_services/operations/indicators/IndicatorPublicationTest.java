@@ -1,12 +1,20 @@
 package fr.insee.rmes.bauhaus_services.operations.indicators;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
+
 import fr.insee.rmes.bauhaus_services.operations.OperationsParentRepository;
-import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.exceptions.RmesBadRequestException;
+import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.model.links.OperationsLink;
 import fr.insee.rmes.model.operations.Indicator;
+import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
+import java.util.List;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,15 +24,6 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
-
-import java.util.List;
-
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class IndicatorPublicationTest {
@@ -43,17 +42,17 @@ class IndicatorPublicationTest {
         indicator.setId("123");
     }
 
-
-
     @Test
     void validate_ShouldThrowBadRequestException_WhenIndicatorIsAlreadyPublished() throws RmesException {
         OperationsLink link = new OperationsLink();
         link.id = "series-1";
         indicator.wasGeneratedBy = List.of(link);
 
-        when(operationsParentRepository.getIndicatorsValidationStatus("123")).thenReturn(ValidationStatus.VALIDATED.getValue());
+        when(operationsParentRepository.getIndicatorsValidationStatus("123"))
+                .thenReturn(ValidationStatus.VALIDATED.getValue());
 
-        RmesBadRequestException exception = assertThrows(RmesBadRequestException.class, () -> indicatorPublication.validate(indicator));
+        RmesBadRequestException exception =
+                assertThrows(RmesBadRequestException.class, () -> indicatorPublication.validate(indicator));
         assertThat(exception.getDetails()).contains("\"code\":1301");
         assertThat(exception.getDetails()).contains("Indicator: 123");
     }
@@ -63,13 +62,18 @@ class IndicatorPublicationTest {
         try (MockedStatic<RdfUtils> mockedFactory = Mockito.mockStatic(RdfUtils.class)) {
             OperationsLink link = new OperationsLink();
             link.id = "series-1";
-            when(operationsParentRepository.getValidationStatus("series-1")).thenReturn(ValidationStatus.UNPUBLISHED.toString());
+            when(operationsParentRepository.getValidationStatus("series-1"))
+                    .thenReturn(ValidationStatus.UNPUBLISHED.toString());
             indicator.wasGeneratedBy = List.of(link);
 
-            mockedFactory.when(() -> RdfUtils.objectIRI(eq(ObjectType.INDICATOR), eq("123"))).thenReturn(SimpleValueFactory.getInstance().createIRI("http://indicator/1"));
+            mockedFactory
+                    .when(() -> RdfUtils.objectIRI(eq(ObjectType.INDICATOR), eq("123")))
+                    .thenReturn(SimpleValueFactory.getInstance().createIRI("http://indicator/1"));
 
-            RmesBadRequestException exception = assertThrows(RmesBadRequestException.class, () -> indicatorPublication.validate(indicator));
-            assertThat(exception.getDetails()).contains("An indicator can be published if and only if all parent series have been published.");
+            RmesBadRequestException exception =
+                    assertThrows(RmesBadRequestException.class, () -> indicatorPublication.validate(indicator));
+            assertThat(exception.getDetails())
+                    .contains("An indicator can be published if and only if all parent series have been published.");
         }
     }
 
@@ -78,10 +82,13 @@ class IndicatorPublicationTest {
         try (MockedStatic<RdfUtils> mockedFactory = Mockito.mockStatic(RdfUtils.class)) {
             OperationsLink link = new OperationsLink();
             link.id = "series-1";
-            when(operationsParentRepository.getValidationStatus("series-1")).thenReturn(ValidationStatus.VALIDATED.toString());
+            when(operationsParentRepository.getValidationStatus("series-1"))
+                    .thenReturn(ValidationStatus.VALIDATED.toString());
             indicator.wasGeneratedBy = List.of(link);
 
-            mockedFactory.when(() -> RdfUtils.objectIRI(eq(ObjectType.INDICATOR), eq("123"))).thenReturn(SimpleValueFactory.getInstance().createIRI("http://indicator/1"));
+            mockedFactory
+                    .when(() -> RdfUtils.objectIRI(eq(ObjectType.INDICATOR), eq("123")))
+                    .thenReturn(SimpleValueFactory.getInstance().createIRI("http://indicator/1"));
 
             assertDoesNotThrow(() -> indicatorPublication.validate(indicator));
         }

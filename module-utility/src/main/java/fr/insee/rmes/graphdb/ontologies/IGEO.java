@@ -7,30 +7,26 @@ import org.eclipse.rdf4j.model.impl.SimpleNamespace;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 
 public class IGEO {
-	
-	  private IGEO() {
-		    throw new IllegalStateException("Utility class");
-	}
 
+    private IGEO() {
+        throw new IllegalStateException("Utility class");
+    }
 
     public static final String NAMESPACE = "http://rdf.insee.fr/def/geo#";
 
-	public static final String PREFIX = "igeo";
-	
-	public static final Namespace NS = new SimpleNamespace(PREFIX, NAMESPACE);
-	
-	public static final IRI NOM;
-	public static final IRI CODE_INSEE;
-	public static final IRI TERRITOIRE_STATISTIQUE;
+    public static final String PREFIX = "igeo";
 
-	
-	static {
-		final ValueFactory f = SimpleValueFactory.getInstance();
+    public static final Namespace NS = new SimpleNamespace(PREFIX, NAMESPACE);
 
-		NOM = f.createIRI(NAMESPACE, "nom");
-		CODE_INSEE = f.createIRI(NAMESPACE, "codeINSEE");
-		TERRITOIRE_STATISTIQUE = f.createIRI(NAMESPACE, "TerritoireStatistique");
+    public static final IRI NOM;
+    public static final IRI CODE_INSEE;
+    public static final IRI TERRITOIRE_STATISTIQUE;
 
-	}
+    static {
+        final ValueFactory f = SimpleValueFactory.getInstance();
 
+        NOM = f.createIRI(NAMESPACE, "nom");
+        CODE_INSEE = f.createIRI(NAMESPACE, "codeINSEE");
+        TERRITOIRE_STATISTIQUE = f.createIRI(NAMESPACE, "TerritoireStatistique");
+    }
 }

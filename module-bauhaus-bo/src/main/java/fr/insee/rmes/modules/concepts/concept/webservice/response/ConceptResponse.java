@@ -4,10 +4,9 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import fr.insee.rmes.modules.concepts.concept.domain.model.Concept;
 import fr.insee.rmes.modules.shared_kernel.domain.model.Lang;
 import fr.insee.rmes.modules.shared_kernel.domain.model.LocalisedLabel;
-import org.jspecify.annotations.Nullable;
-
 import java.time.LocalDateTime;
 import java.util.List;
+import org.jspecify.annotations.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record ConceptResponse(
@@ -25,8 +24,7 @@ public record ConceptResponse(
         String validationState,
         @Nullable List<String> altLabelLg1,
         @Nullable List<String> altLabelLg2,
-        List<String> collections
-) {
+        List<String> collections) {
 
     public static ConceptResponse fromDomain(Concept concept) {
         String prefLabelLg2 = concept.alternativeLabels().stream()
@@ -50,7 +48,6 @@ public record ConceptResponse(
                 concept.validationState().getValue(),
                 null,
                 null,
-                concept.collectionIds()
-        );
+                concept.collectionIds());
     }
 }
