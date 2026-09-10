@@ -267,17 +267,15 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         List<String> lg1 = new ArrayList<>();
         List<String> lg2 = new ArrayList<>();
 
-        if (keywords != null) {
-            keywords.forEach(k -> {
-                JSONObject keyword = (JSONObject) k;
-                if (keyword.getString("lang").equalsIgnoreCase(languages.lg1())) {
-                    lg1.add(keyword.getString("keyword"));
-                }
-                if (keyword.getString("lang").equalsIgnoreCase(languages.lg2())) {
-                    lg2.add(keyword.getString("keyword"));
-                }
-            });
-        }
+        keywords.forEach(k -> {
+            JSONObject keyword = (JSONObject) k;
+            if (keyword.getString("lang").equalsIgnoreCase(languages.lg1())) {
+                lg1.add(keyword.getString("keyword"));
+            }
+            if (keyword.getString("lang").equalsIgnoreCase(languages.lg2())) {
+                lg2.add(keyword.getString("keyword"));
+            }
+        });
 
         JSONObject formattedKeywords = new JSONObject();
         formattedKeywords.put("lg1", lg1);

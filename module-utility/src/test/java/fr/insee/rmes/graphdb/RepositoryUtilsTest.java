@@ -65,6 +65,13 @@ class RepositoryUtilsTest {
         connection.close();
     }
 
+    /* `initRepository` rend `null` quand la configuration RDF est incomplète : la connexion
+    doit alors échouer explicitement, pas sur un NullPointerException. */
+    @Test
+    void shouldThrowRmesExceptionWhenTheRepositoryIsNull() {
+        assertThrows(RmesException.class, () -> repositoryUtils.getConnection(null));
+    }
+
     @Test
     void shouldThrowRmesExceptionWhenRepositoryConnectionFails() {
         Repository mockRepo = mock(Repository.class);
@@ -213,12 +220,16 @@ class RepositoryUtilsTest {
         assertEquals("http://example.org/subject", result.getJSONObject(0).getString("s"));
     }
 
+    /* Le tableau vide plutôt que `null` : les appelants enchaînent sur le résultat
+    (`.toString()`, `.length()`) sans le tester, une réponse sans `results` ne doit pas
+    leur exploser à la figure. */
     @Test
-    void shouldReturnNullForEmptySparqlResults() {
+    void shouldReturnAnEmptyArrayForEmptySparqlResults() {
         JSONObject sparqlResult = new JSONObject();
 
         JSONArray result = RepositoryUtils.sparqlJSONToResultArrayValues(sparqlResult);
-        assertNull(result);
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
     }
 
     @Test
@@ -244,11 +255,12 @@ class RepositoryUtilsTest {
     }
 
     @Test
-    void shouldReturnNullForEmptySparqlResultsList() {
+    void shouldReturnAnEmptyArrayForEmptySparqlResultsList() {
         JSONObject sparqlResult = new JSONObject();
 
         JSONArray result = RepositoryUtils.sparqlJSONToResultListValues(sparqlResult);
-        assertNull(result);
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
     }
 
     @Test

@@ -874,10 +874,6 @@ public class LocalColecticaGroupInitConfiguration {
 
         JSONArray results = repositoryPublicationReader.getResponseAsArray(sparql);
 
-        if (results == null) {
-            return List.of();
-        }
-
         // Group operations by series
         Map<String, SeriesBuilder> seriesMap = new HashMap<>();
 

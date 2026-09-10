@@ -60,7 +60,6 @@ public class GraphDBConceptsRepository implements ConceptsRepository {
         try {
             JSONArray results = repositoryGestion.getResponseAsArray(
                     conceptCollectionsQueries.getCollectionsByConceptId(conceptId));
-            if (results == null) return List.of();
             return IntStream.range(0, results.length())
                     .mapToObj(i -> results.getJSONObject(i).getString("id"))
                     .toList();
@@ -89,7 +88,6 @@ public class GraphDBConceptsRepository implements ConceptsRepository {
 
     private JSONArray extractAltLabels(String query) throws RmesException {
         JSONArray result = repositoryGestion.getResponseAsArray(query);
-        if (result == null) return new JSONArray();
         JSONArray out = new JSONArray();
         JSONUtils.stream(result)
                 .map(altLabel -> altLabel.optString("altLabel"))
@@ -102,7 +100,6 @@ public class GraphDBConceptsRepository implements ConceptsRepository {
     public List<PartialConcept> getConcepts() throws ConceptsFetchException {
         try {
             JSONArray rows = repositoryGestion.getResponseAsArray(conceptConceptsQueries.conceptsQuery());
-            if (rows == null) return List.of();
             GraphDBPartialConcept[] mapped = Deserializer.deserializeJSONArray(rows, GraphDBPartialConcept[].class);
             Map<String, GraphDBPartialConcept> byId = new LinkedHashMap<>();
             for (GraphDBPartialConcept row : mapped) {
@@ -118,7 +115,6 @@ public class GraphDBConceptsRepository implements ConceptsRepository {
     public List<ConceptToValidate> getConceptsToValidate() throws ConceptsFetchException {
         try {
             JSONArray rows = repositoryGestion.getResponseAsArray(conceptConceptsQueries.conceptsToValidateQuery());
-            if (rows == null) return List.of();
             GraphDBConceptToValidate[] mapped =
                     Deserializer.deserializeJSONArray(rows, GraphDBConceptToValidate[].class);
             return Arrays.stream(mapped).map(GraphDBConceptToValidate::toDomain).toList();
@@ -204,7 +200,6 @@ public class GraphDBConceptsRepository implements ConceptsRepository {
         try {
             JSONArray results =
                     repositoryGestion.getResponseAsArray(conceptConceptsQueries.findExistingConceptIds(ids));
-            if (results == null) return Set.of();
             return IntStream.range(0, results.length())
                     .mapToObj(i -> results.getJSONObject(i).getString("id"))
                     .collect(Collectors.toSet());
@@ -219,7 +214,6 @@ public class GraphDBConceptsRepository implements ConceptsRepository {
         try {
             JSONArray results =
                     repositoryGestion.getResponseAsArray(conceptConceptsQueries.findValidatedConceptIds(ids));
-            if (results == null) return Set.of();
             return IntStream.range(0, results.length())
                     .mapToObj(i -> results.getJSONObject(i).getString("id"))
                     .collect(Collectors.toSet());

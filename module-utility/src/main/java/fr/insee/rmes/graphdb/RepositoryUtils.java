@@ -73,6 +73,14 @@ public class RepositoryUtils {
     }
 
     public RepositoryConnection getConnection(Repository repository) throws RmesException {
+        if (repository == null) {
+            // initRepository rend null quand la configuration RDF est incomplète ou que
+            // l'initialisation a échoué : sans ce garde, l'appelant part en NullPointerException.
+            throw new RmesException(
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    "Le dépôt RDF n'a pas pu être initialisé",
+                    "Connection au repository impossible : dépôt non initialisé");
+        }
         RepositoryConnection con;
         try {
             con = repository.getConnection();
@@ -233,7 +241,7 @@ public class RepositoryUtils {
     public JSONArray getResponseAsArray(String query, Repository repository) throws RmesException {
         String response = getResponse(query, repository);
         if (response.isEmpty()) {
-            return null;
+            return new JSONArray();
         }
         JSONObject res = new JSONObject(response);
         return sparqlJSONToResultArrayValues(res);
@@ -249,7 +257,7 @@ public class RepositoryUtils {
     public JSONArray getResponseAsJSONList(String query, Repository repository) throws RmesException {
         String response = getResponse(query, repository);
         if (response.isEmpty()) {
-            return null;
+            return new JSONArray();
         }
         JSONObject res = new JSONObject(response);
         return sparqlJSONToResultListValues(res);
@@ -264,7 +272,7 @@ public class RepositoryUtils {
      */
     public JSONObject getResponseAsObject(String query, Repository repository) throws RmesException {
         JSONArray resArray = getResponseAsArray(query, repository);
-        if (resArray == null || resArray.isEmpty()) {
+        if (resArray.isEmpty()) {
             return new JSONObject();
         }
         return (JSONObject) resArray.get(0);
@@ -278,7 +286,7 @@ public class RepositoryUtils {
     public static JSONArray sparqlJSONToResultArrayValues(JSONObject jsonSparql) {
         JSONArray arrayRes = new JSONArray();
         if (!jsonSparql.has(RESULTS) || jsonSparql.get(RESULTS) == null) {
-            return null;
+            return arrayRes;
         }
 
         int nbRes = ((JSONArray) ((JSONObject) jsonSparql.get(RESULTS)).get(BINDINGS)).length();
@@ -309,7 +317,7 @@ public class RepositoryUtils {
     public static JSONArray sparqlJSONToResultListValues(JSONObject jsonSparql) {
         JSONArray arrayRes = new JSONArray();
         if (!jsonSparql.has(RESULTS) || jsonSparql.get(RESULTS) == null) {
-            return null;
+            return arrayRes;
         }
 
         int nbRes = ((JSONArray) ((JSONObject) jsonSparql.get(RESULTS)).get(BINDINGS)).length();

@@ -309,6 +309,30 @@ class Lifecycle33ToDdi4Test {
                 .isEqualTo("cl-id");
     }
 
+    /** Une variable peut déclarer un rôle sans aucune ValueRepresentation : aucun lecteur ne s'applique. */
+    @Test
+    void shouldParseVariableWithoutValueRepresentation() throws XmlException {
+        FragmentDocument doc = FragmentDocument.Factory.parse("""
+            <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
+                <Variable xmlns="ddi:logicalproduct:3_3" isUniversallyUnique="true" versionDate="2025-12-23T09:52:06.355Z">
+                    <r:URN>urn:ddi:fr.insee:var:1</r:URN>
+                    <r:Agency>fr.insee</r:Agency><r:ID>var</r:ID><r:Version>1</r:Version>
+                    <VariableRepresentation>
+                        <VariableRole>Identifier</VariableRole>
+                    </VariableRepresentation>
+                </Variable>
+            </Fragment>
+            """);
+
+        Ddi4Variable variable = converter.toVariable(doc);
+
+        assertThat(variable.variableRepresentation().variableRole()).isEqualTo("Identifier");
+        assertThat(variable.variableRepresentation().codeRepresentation()).isNull();
+        assertThat(variable.variableRepresentation().numericRepresentation()).isNull();
+        assertThat(variable.variableRepresentation().dateTimeRepresentation()).isNull();
+        assertThat(variable.variableRepresentation().textRepresentation()).isNull();
+    }
+
     @Test
     void shouldParseVariableWithNumericRepresentation() throws XmlException {
         FragmentDocument doc = FragmentDocument.Factory.parse("""

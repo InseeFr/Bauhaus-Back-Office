@@ -176,6 +176,18 @@ class RepositoryGestionTest {
         verify(connection).getStatements(subject, null, null, false);
     }
 
+    /* Configuration RDF incomplète : `initRepository` rend `null`. Ouvrir la connexion doit
+    remonter une RmesException, pas un NullPointerException déguisé en 401 par les filtres. */
+    @Test
+    void shouldThrowRmesExceptionWhenTheGestionRepositoryCannotBeInitialised() {
+        IRI subject = valueFactory.createIRI("http://example.org/subject");
+        IRI object = valueFactory.createIRI("http://example.org/object");
+        doReturn(null).when(repositoryUtils).initRepository(anyString(), anyString());
+
+        assertThrows(RmesException.class, () -> repositoryGestion.getStatements(null, subject));
+        assertThrows(RmesException.class, () -> repositoryGestion.getHasPartStatements(null, object));
+    }
+
     @Test
     void shouldThrowExceptionWhenGetStatementsThrowsRepositoryException() throws RmesException {
         IRI subject = valueFactory.createIRI("http://example.org/subject");

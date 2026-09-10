@@ -439,6 +439,8 @@ public class Lifecycle33ToDdi4 {
 
     private static VariableRepresentation readVariableRepresentation(VariableRepresentationType vr) {
         if (vr == null) return null;
+        /* Une VariableRepresentation peut ne porter aucune ValueRepresentation : chaque lecteur
+        rend alors null, comme le nom local de l'élément qui les départage. */
         RepresentationType rep = vr.isSetValueRepresentation() ? vr.getValueRepresentation() : null;
         String repName = elementLocalName(rep);
         return new VariableRepresentation(
@@ -460,6 +462,7 @@ public class Lifecycle33ToDdi4 {
     }
 
     private static CodeRepresentation readCodeRepresentation(RepresentationType rep) {
+        if (rep == null) return null;
         CodeRepresentationBaseType codeRep =
                 (CodeRepresentationBaseType) rep.changeType(CodeRepresentationBaseType.type);
         Reference clRef = codeRep.isSetCodeListReference() ? readReference(codeRep.getCodeListReference()) : null;
@@ -476,6 +479,7 @@ public class Lifecycle33ToDdi4 {
     }
 
     private static NumericRepresentation readNumericRepresentation(RepresentationType rep) {
+        if (rep == null) return null;
         NumericRepresentationBaseType numRep =
                 (NumericRepresentationBaseType) rep.changeType(NumericRepresentationBaseType.type);
         NumberRange numberRange = null;
@@ -498,6 +502,7 @@ public class Lifecycle33ToDdi4 {
     }
 
     private static DateTimeRepresentation readDateTimeRepresentation(RepresentationType rep) {
+        if (rep == null) return null;
         DateTimeRepresentationBaseType dt =
                 (DateTimeRepresentationBaseType) rep.changeType(DateTimeRepresentationBaseType.type);
         String typeCode = dt.getDateTypeCode() != null ? dt.getDateTypeCode().getStringValue() : null;
@@ -508,6 +513,7 @@ public class Lifecycle33ToDdi4 {
     }
 
     private static TextRepresentation readTextRepresentation(RepresentationType rep) {
+        if (rep == null) return null;
         TextRepresentationBaseType txt = (TextRepresentationBaseType) rep.changeType(TextRepresentationBaseType.type);
         Integer minLength = txt.isSetMinLength() && txt.getMinLength() != null
                 ? txt.getMinLength().intValueExact()

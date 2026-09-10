@@ -58,11 +58,14 @@ class DatasetServiceImplTest {
     private static final String QUASI_EMPTY_OBJECT = "{\"uri\":\"\"}";
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws RmesException {
         seriesRepository = mock(SeriesRepository.class);
         idGenerator = mock(IdGenerator.class);
         publicationUtils = mock(PublicationUtils.class);
         repositoryGestion = mock(RepositoryGestion.class);
+        // Contrat de RepositoryGestion : une requête sans résultat rend un tableau vide, jamais
+        // null. Le défaut du mock (null) mentirait sur ce contrat et masquerait les NPE réels.
+        when(repositoryGestion.getResponseAsArray(any())).thenReturn(new JSONArray());
         datasetQueries = mock(DatasetQueries.class);
         datasetDistributionQueries = mock(DatasetDistributionQueries.class);
         organizationsService = mock(OrganizationsService.class);
@@ -160,7 +163,7 @@ class DatasetServiceImplTest {
         Dataset response = datasetService.getDatasetByID("1");
         String responseJson = objectMapper.writeValueAsString(response);
         Assertions.assertEquals(
-                "{\"creators\":[\"creator-1\"],\"keywords\":{\"lg1\":[\"keyword 1\"],\"lg2\":[\"keyword 2\"]},\"statisticalUnit\":[\"statisticalUnit-1\"],\"spacialResolutions\":[\"spacialResolutions-1\"],\"id\":\"1\",\"themes\":[\"theme2\",\"theme1\"],\"catalogRecord\":{\"creator\":null,\"contributor\":null,\"created\":null,\"updated\":null}}",
+                "{\"creators\":[\"creator-1\"],\"linkedDocuments\":[],\"keywords\":{\"lg1\":[\"keyword 1\"],\"lg2\":[\"keyword 2\"]},\"statisticalUnit\":[\"statisticalUnit-1\"],\"spacialResolutions\":[\"spacialResolutions-1\"],\"id\":\"1\",\"wasGeneratedIRIs\":[],\"themes\":[\"theme2\",\"theme1\"],\"catalogRecord\":{\"creator\":null,\"contributor\":[],\"created\":null,\"updated\":null}}",
                 responseJson);
     }
 
@@ -890,7 +893,10 @@ class DatasetServiceImplTest {
 
     @Test
     void shouldStoreTheKeywordsAndTheLinkedDocumentsOfTheDataset() throws RmesException {
-        givenExistingDataset(datasetJson("jd1001").put("linkedDocuments", List.of("http://document")));
+        givenExistingDataset(datasetJson("jd1001"));
+        when(datasetQueries.getLinkedDocuments(eq("jd1001"), any())).thenReturn("linked-documents-query");
+        when(repositoryGestion.getResponseAsArray("linked-documents-query"))
+                .thenReturn(new JSONArray().put(new JSONObject().put("linkedDocument", "http://document")));
         when(datasetQueries.getKeywords(eq("jd1001"), any())).thenReturn("keywords-query");
         when(repositoryGestion.getResponseAsArray("keywords-query"))
                 .thenReturn(new JSONArray()

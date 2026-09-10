@@ -235,7 +235,6 @@ public class GraphDBCollectionsRepository implements CollectionsRepository {
         try {
             var results =
                     repositoryGestion.getResponseAsArray(conceptCollectionsQueries.findExistingCollectionIds(ids));
-            if (results == null) return Set.of();
             return IntStream.range(0, results.length())
                     .mapToObj(i -> results.getJSONObject(i).getString("id"))
                     .collect(Collectors.toSet());
@@ -250,7 +249,6 @@ public class GraphDBCollectionsRepository implements CollectionsRepository {
         try {
             var results =
                     repositoryGestion.getResponseAsArray(conceptCollectionsQueries.findValidatedCollectionIds(ids));
-            if (results == null) return Set.of();
             return IntStream.range(0, results.length())
                     .mapToObj(i -> results.getJSONObject(i).getString("id"))
                     .collect(Collectors.toSet());
@@ -264,7 +262,6 @@ public class GraphDBCollectionsRepository implements CollectionsRepository {
         try {
             var results = repositoryGestion.getResponseAsArray(
                     conceptCollectionsQueries.getCollectionsByConceptId(conceptId));
-            if (results == null) return List.of();
             return IntStream.range(0, results.length())
                     .mapToObj(i -> results.getJSONObject(i).getString("id"))
                     .toList();

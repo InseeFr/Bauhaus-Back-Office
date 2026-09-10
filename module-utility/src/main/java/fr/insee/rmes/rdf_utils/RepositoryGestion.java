@@ -51,6 +51,17 @@ public class RepositoryGestion {
     }
 
     /**
+     * Ouvre une connexion sur la base de gestion. {@link RepositoryUtils#initRepository} rend
+     * {@code null} quand la configuration RDF est incomplète : passer par
+     * {@link RepositoryUtils#getConnection} transforme ce cas en RmesException explicite plutôt
+     * qu'en NullPointerException au premier usage de la connexion.
+     */
+    private RepositoryConnection gestionConnection() throws RmesException {
+        return repositoryUtils.getConnection(
+                repositoryUtils.initRepository(rdfGestion.getUrlServer(), rdfGestion.repositoryId()));
+    }
+
+    /**
      * Method which aims to produce response from a sparql query
      *
      * @param query
@@ -112,9 +123,7 @@ public class RepositoryGestion {
     public RepositoryResult<Statement> getStatements(RepositoryConnection con, Resource subject) throws RmesException {
         RepositoryResult<Statement> statements = null;
         if (con == null) {
-            con = repositoryUtils
-                    .initRepository(rdfGestion.getUrlServer(), rdfGestion.repositoryId())
-                    .getConnection();
+            con = gestionConnection();
         }
 
         try {
@@ -144,9 +153,7 @@ public class RepositoryGestion {
             RepositoryConnection con, IRI predicate, Resource object) throws RmesException {
 
         if (con == null) {
-            con = repositoryUtils
-                    .initRepository(rdfGestion.getUrlServer(), rdfGestion.repositoryId())
-                    .getConnection();
+            con = gestionConnection();
         }
 
         RepositoryResult<Statement> statements = null;
@@ -167,9 +174,7 @@ public class RepositoryGestion {
     }
 
     public void loadConcept(IRI concept, Model model, List<List<IRI>> notesToDeleteAndUpdate) throws RmesException {
-        try (RepositoryConnection conn = repositoryUtils
-                .initRepository(rdfGestion.getUrlServer(), rdfGestion.repositoryId())
-                .getConnection()) {
+        try (RepositoryConnection conn = gestionConnection()) {
             // notes to delete
             for (IRI note : notesToDeleteAndUpdate.get(0)) {
                 conn.remove(note, null, null);
@@ -198,9 +203,7 @@ public class RepositoryGestion {
 
     public void deleteTripletByPredicateAndValue(Resource object, IRI predicate, Resource graph, Value value)
             throws RmesException {
-        try (RepositoryConnection conn = repositoryUtils
-                .initRepository(rdfGestion.getUrlServer(), rdfGestion.repositoryId())
-                .getConnection()) {
+        try (RepositoryConnection conn = gestionConnection()) {
             conn.remove(object, predicate, value, graph);
         } catch (RepositoryException e) {
             logger.error(FAILURE_LOAD_OBJECT, object);
@@ -273,11 +276,7 @@ public class RepositoryGestion {
     private void processConnection(
             Consumer<RepositoryConnection> processor, RepositoryConnection initialConnection, String message)
             throws RmesException {
-        try (RepositoryConnection conn = (initialConnection != null)
-                ? initialConnection
-                : repositoryUtils
-                        .initRepository(rdfGestion.getUrlServer(), rdfGestion.repositoryId())
-                        .getConnection()) {
+        try (RepositoryConnection conn = (initialConnection != null) ? initialConnection : gestionConnection()) {
             processor.accept(conn);
         } catch (RepositoryException e) {
             throw new RmesException("Failure while " + message, e);
@@ -286,9 +285,7 @@ public class RepositoryGestion {
 
     public void loadObjectWithReplaceLinks(IRI object, Model model) throws RmesException {
 
-        try (RepositoryConnection conn = repositoryUtils
-                .initRepository(rdfGestion.getUrlServer(), rdfGestion.repositoryId())
-                .getConnection()) {
+        try (RepositoryConnection conn = gestionConnection()) {
             clearReplaceLinks(object);
             loadSimpleObject(object, model, conn);
         } catch (RepositoryException e) {
@@ -297,9 +294,7 @@ public class RepositoryGestion {
     }
 
     public void objectsValidation(List<IRI> collectionsToValidateList, Model model) throws RmesException {
-        try (RepositoryConnection conn = repositoryUtils
-                .initRepository(rdfGestion.getUrlServer(), rdfGestion.repositoryId())
-                .getConnection()) {
+        try (RepositoryConnection conn = gestionConnection()) {
             for (IRI item : collectionsToValidateList) {
                 conn.remove(item, INSEE.VALIDATION_STATE, null);
                 conn.remove(item, INSEE.IS_VALIDATED, null);
@@ -311,9 +306,7 @@ public class RepositoryGestion {
     }
 
     public void objectValidation(IRI ressourceURI, Model model) throws RmesException {
-        try (RepositoryConnection conn = repositoryUtils
-                .initRepository(rdfGestion.getUrlServer(), rdfGestion.repositoryId())
-                .getConnection()) {
+        try (RepositoryConnection conn = gestionConnection()) {
             conn.remove(ressourceURI, INSEE.VALIDATION_STATE, null);
             conn.remove(ressourceURI, INSEE.IS_VALIDATED, null);
             conn.add(model);
@@ -334,9 +327,7 @@ public class RepositoryGestion {
 
     private void getStatementsAndRemove(Resource object, List<IRI> typeOfLink) throws RmesException {
         String exceptionCirucmstances = "";
-        try (RepositoryConnection conn = repositoryUtils
-                .initRepository(rdfGestion.getUrlServer(), rdfGestion.repositoryId())
-                .getConnection()) {
+        try (RepositoryConnection conn = gestionConnection()) {
             for (IRI predicat : typeOfLink) {
                 exceptionCirucmstances = "get " + predicat + " links from " + object;
                 try (RepositoryResult<Statement> statements = conn.getStatements(null, predicat, object, false)) {
@@ -361,9 +352,7 @@ public class RepositoryGestion {
 
     private void getHierarchicalOperationLinksModel(Resource object, Model model, List<IRI> typeOfLink)
             throws RmesException {
-        try (RepositoryConnection conn = repositoryUtils
-                .initRepository(rdfGestion.getUrlServer(), rdfGestion.repositoryId())
-                .getConnection()) {
+        try (RepositoryConnection conn = gestionConnection()) {
             for (IRI predicat : typeOfLink) {
                 try {
                     try (RepositoryResult<Statement> statements = conn.getStatements(null, predicat, object, false)) {
@@ -404,9 +393,7 @@ public class RepositoryGestion {
     }
 
     public void overrideTriplets(IRI simsUri, Model model, Resource graph) throws RmesException {
-        try (RepositoryConnection connection = repositoryUtils
-                .initRepository(rdfGestion.getUrlServer(), rdfGestion.repositoryId())
-                .getConnection()) {
+        try (RepositoryConnection connection = gestionConnection()) {
             model.predicates().forEach(predicate -> connection.remove(simsUri, predicate, null, graph));
             connection.add(model);
         } catch (RepositoryException e) {
@@ -416,9 +403,7 @@ public class RepositoryGestion {
 
     public void bulkOverrideTriplets(List<SubjectModelGraph> updates) throws RmesException {
         Model combinedModel = new LinkedHashModel();
-        try (RepositoryConnection connection = repositoryUtils
-                .initRepository(rdfGestion.getUrlServer(), rdfGestion.repositoryId())
-                .getConnection()) {
+        try (RepositoryConnection connection = gestionConnection()) {
             connection.begin();
             for (SubjectModelGraph update : updates) {
                 update.model()
@@ -442,9 +427,6 @@ public class RepositoryGestion {
             throws RmesException {
         JSONArray array = this.getResponseAsArray(query);
         List<String> results = new ArrayList<>();
-        if (array == null) {
-            return;
-        }
         array.iterator().forEachRemaining(r -> results.add(((JSONObject) r).getString(queryKey)));
         object.put(objectKey, results);
     }
