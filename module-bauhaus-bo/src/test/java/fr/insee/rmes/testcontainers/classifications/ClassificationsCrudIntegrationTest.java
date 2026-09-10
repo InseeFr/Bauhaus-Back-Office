@@ -1,5 +1,7 @@
 package fr.insee.rmes.testcontainers.classifications;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
@@ -9,6 +11,8 @@ import fr.insee.rmes.json.JSONUtils;
 import fr.insee.rmes.persistance.sparql_queries.classifications.ClassificationsQueries;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.testcontainers.WithGraphDBContainer;
+import java.util.ArrayList;
+import java.util.List;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
@@ -21,11 +25,6 @@ import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Filet de sécurité « CRUD nomenclatures » du lot A de la migration GraphDB → Fuseki.
@@ -60,8 +59,7 @@ class ClassificationsCrudIntegrationTest extends WithGraphDBContainer {
     private static final IRI LEVEL = VF.createIRI("http://rdf.insee.fr/codes/" + CLASSIF_ID + "/niveau/1");
 
     private final RepositoryGestion repositoryGestion = new RepositoryGestion(
-            getRdfGestionConnectionDetails(),
-            new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED));
+            getRdfGestionConnectionDetails(), new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED));
     private final ClassificationsQueries classificationsQueries =
             new ClassificationsQueries(new BauhausLanguagesProperties("fr", "en"), GraphsPropertiesStub.stub());
 
@@ -72,7 +70,8 @@ class ClassificationsCrudIntegrationTest extends WithGraphDBContainer {
 
     @Test
     void classificationQuery_returns_the_seeded_classification_with_its_validation_state() throws RmesException {
-        JSONObject result = repositoryGestion.getResponseAsObject(classificationsQueries.classificationQuery(CLASSIF_ID));
+        JSONObject result =
+                repositoryGestion.getResponseAsObject(classificationsQueries.classificationQuery(CLASSIF_ID));
 
         assertThat(result.getString("id")).isEqualTo(CLASSIF_ID);
         assertThat(result.getString("prefLabelLg1")).isEqualTo("NAF rév. 2 (test)");
@@ -90,7 +89,8 @@ class ClassificationsCrudIntegrationTest extends WithGraphDBContainer {
 
     @Test
     void classificationItemsQuery_returns_the_seeded_item() throws RmesException {
-        JSONArray items = repositoryGestion.getResponseAsArray(classificationsQueries.classificationItemsQuery(CLASSIF_ID));
+        JSONArray items =
+                repositoryGestion.getResponseAsArray(classificationsQueries.classificationItemsQuery(CLASSIF_ID));
 
         assertThat(items).isNotNull();
         assertThat(valuesOf(items, "id")).contains("01");
@@ -110,7 +110,8 @@ class ClassificationsCrudIntegrationTest extends WithGraphDBContainer {
 
         repositoryGestion.loadSimpleObjectWithoutDeletion(newItem, model, null);
 
-        JSONArray items = repositoryGestion.getResponseAsArray(classificationsQueries.classificationItemsQuery(CLASSIF_ID));
+        JSONArray items =
+                repositoryGestion.getResponseAsArray(classificationsQueries.classificationItemsQuery(CLASSIF_ID));
         assertThat(valuesOf(items, "id"))
                 .as("le poste ajouté est lu par la requête des items")
                 .contains("01", "02");

@@ -1,10 +1,10 @@
 package fr.insee.rmes.modules.ddi.physical_instances.domain.services.converters;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class GroupDDIItemConverterTest {
 
@@ -62,7 +62,9 @@ class GroupDDIItemConverterTest {
     void convert_mapsVersionableFields() {
         JsonNode result = converter.convert(GROUP_XML);
 
-        assertEquals("urn:ddi:fr.insee:7cebe742-1257-3286-9f02-6977a0989809:1", result.get("URN").asText());
+        assertEquals(
+                "urn:ddi:fr.insee:7cebe742-1257-3286-9f02-6977a0989809:1",
+                result.get("URN").asText());
         assertEquals("fr.insee", result.get("Agency").asText());
         assertEquals("7cebe742-1257-3286-9f02-6977a0989809", result.get("ID").asText());
         assertEquals("1", result.get("Version").asText());
@@ -74,7 +76,8 @@ class GroupDDIItemConverterTest {
 
         JsonNode versionDate = result.get("VersionDate");
         assertNotNull(versionDate);
-        assertEquals("2026-04-05T17:25:23.503755+01:00", versionDate.get("DateTime").asText());
+        assertEquals(
+                "2026-04-05T17:25:23.503755+01:00", versionDate.get("DateTime").asText());
     }
 
     @Test
@@ -86,7 +89,9 @@ class GroupDDIItemConverterTest {
         assertEquals(1, userIds.size());
 
         JsonNode userId = userIds.get(0);
-        assertEquals("http://bauhaus/operations/serie/s1002", userId.get("StringValue").asText());
+        assertEquals(
+                "http://bauhaus/operations/serie/s1002",
+                userId.get("StringValue").asText());
         assertEquals("URI", userId.get("TypeOfUserID").get("StringValue").asText());
     }
 
@@ -96,7 +101,9 @@ class GroupDDIItemConverterTest {
 
         JsonNode typeOfGroup = result.get("TypeOfGroup");
         assertNotNull(typeOfGroup);
-        assertEquals("insee:StatisticalOperationSeries", typeOfGroup.get("StringValue").asText());
+        assertEquals(
+                "insee:StatisticalOperationSeries",
+                typeOfGroup.get("StringValue").asText());
     }
 
     @Test
@@ -112,7 +119,9 @@ class GroupDDIItemConverterTest {
 
         JsonNode langString = titleStrings.get(0);
         assertEquals("fr-FR", langString.get("@language").asText());
-        assertEquals("Enquête auprès des sans-domicile Group", langString.get("@value").asText());
+        assertEquals(
+                "Enquête auprès des sans-domicile Group",
+                langString.get("@value").asText());
     }
 
     @Test
@@ -125,14 +134,18 @@ class GroupDDIItemConverterTest {
 
         JsonNode ref1 = refs.get(0);
         assertEquals("StudyUnit", ref1.get("$type").asText());
-        assertEquals("urn:ddi:fr.insee:c2acc8ab-f73e-3bd7-a387-1aab8db15efb:1", ref1.get("URN").asText());
+        assertEquals(
+                "urn:ddi:fr.insee:c2acc8ab-f73e-3bd7-a387-1aab8db15efb:1",
+                ref1.get("URN").asText());
         assertEquals("fr.insee", ref1.get("Agency").asText());
         assertEquals("c2acc8ab-f73e-3bd7-a387-1aab8db15efb", ref1.get("ID").asText());
         assertEquals("1", ref1.get("Version").asText());
 
         JsonNode ref2 = refs.get(1);
         assertEquals("StudyUnit", ref2.get("$type").asText());
-        assertEquals("urn:ddi:fr.insee:cf6da9a8-066a-3a1d-a759-8a029085c0a9:1", ref2.get("URN").asText());
+        assertEquals(
+                "urn:ddi:fr.insee:cf6da9a8-066a-3a1d-a759-8a029085c0a9:1",
+                ref2.get("URN").asText());
         assertEquals("fr.insee", ref2.get("Agency").asText());
         assertEquals("cf6da9a8-066a-3a1d-a759-8a029085c0a9", ref2.get("ID").asText());
         assertEquals("1", ref2.get("Version").asText());

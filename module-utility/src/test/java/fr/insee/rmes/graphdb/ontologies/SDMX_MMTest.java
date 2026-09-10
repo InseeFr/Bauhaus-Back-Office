@@ -1,9 +1,9 @@
 package fr.insee.rmes.graphdb.ontologies;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import org.eclipse.rdf4j.model.Namespace;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class SDMX_MMTest {
 
@@ -48,5 +48,4 @@ class SDMX_MMTest {
         assertNotNull(SDMX_MM.TARGET);
         assertEquals("http://www.w3.org/ns/sdmx-mm#target", SDMX_MM.TARGET.toString());
     }
-
 }

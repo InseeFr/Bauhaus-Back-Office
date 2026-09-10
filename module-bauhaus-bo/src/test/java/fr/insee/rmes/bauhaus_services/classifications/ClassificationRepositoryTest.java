@@ -1,5 +1,10 @@
 package fr.insee.rmes.bauhaus_services.classifications;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.config.GraphsPropertiesStub;
@@ -18,11 +23,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ClassificationRepositoryTest {
@@ -44,8 +44,14 @@ class ClassificationRepositoryTest {
     void setUp() {
         RdfUtils.setGraphs(GraphsPropertiesStub.stub());
         classificationRepository = new ClassificationRepository(
-                repoGestion, null, null, new BauhausLanguagesProperties("fr", "en"), null,
-                classificationNoteService, classificationsQueries, GraphsPropertiesStub.stub());
+                repoGestion,
+                null,
+                null,
+                new BauhausLanguagesProperties("fr", "en"),
+                null,
+                classificationNoteService,
+                classificationsQueries,
+                GraphsPropertiesStub.stub());
     }
 
     @Test

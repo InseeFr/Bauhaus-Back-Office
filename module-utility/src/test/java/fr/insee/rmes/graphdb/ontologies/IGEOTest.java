@@ -1,9 +1,9 @@
 package fr.insee.rmes.graphdb.ontologies;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import org.eclipse.rdf4j.model.Namespace;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class IGEOTest {
 
@@ -42,5 +42,4 @@ class IGEOTest {
         assertNotNull(IGEO.TERRITOIRE_STATISTIQUE);
         assertEquals("http://rdf.insee.fr/def/geo#TerritoireStatistique", IGEO.TERRITOIRE_STATISTIQUE.toString());
     }
-
 }

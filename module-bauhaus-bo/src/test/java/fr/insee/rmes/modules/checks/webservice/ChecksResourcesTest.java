@@ -1,7 +1,11 @@
 package fr.insee.rmes.modules.checks.webservice;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
+
 import fr.insee.rmes.modules.checks.domain.model.CheckResult;
 import fr.insee.rmes.modules.checks.domain.port.clientside.CheckerService;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -9,11 +13,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ChecksResourcesTest {
@@ -34,7 +33,7 @@ class ChecksResourcesTest {
         CheckResult result1 = new CheckResult("check1", "value1");
         CheckResult result2 = new CheckResult("check2", "value2");
         List<CheckResult> expectedResults = List.of(result1, result2);
-        
+
         when(checkerService.checks()).thenReturn(expectedResults);
 
         // When
@@ -70,7 +69,7 @@ class ChecksResourcesTest {
         // Then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
         assertThat(response.getBody()).hasSize(1);
-        
+
         CheckResult errorResult = response.getBody().get(0);
         assertThat(errorResult.getName()).isEqualTo("system_error");
         assertThat(errorResult.getValue()).asString().contains("Failed to execute checks: Service error");
@@ -87,7 +86,7 @@ class ChecksResourcesTest {
         // Then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
         assertThat(response.getBody()).hasSize(1);
-        
+
         CheckResult errorResult = response.getBody().get(0);
         assertThat(errorResult.getName()).isEqualTo("system_error");
         assertThat(errorResult.getValue()).asString().contains("Null pointer");

@@ -1,5 +1,10 @@
 package fr.insee.rmes.modules.commons.webservice;
 
+import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import fr.insee.rmes.bauhaus_services.datasets.DatasetService;
 import fr.insee.rmes.modules.commons.configuration.LogRequestFilter;
 import fr.insee.rmes.modules.datasets.datasets.webservice.DatasetResources;
@@ -12,11 +17,6 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-
-import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
  * Contrat d'erreur de validation, commun à tous les modules : un corps de requête refusé
@@ -31,10 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         value = DatasetResources.class,
         excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = LogRequestFilter.class),
         excludeAutoConfiguration = OAuth2ResourceServerAutoConfiguration.class,
-        properties = {
-                "fr.insee.rmes.bauhaus.modules[0].identifier=datasets"
-        }
-)
+        properties = {"fr.insee.rmes.bauhaus.modules.datasets.enabled=true"})
 @AutoConfigureMockMvc(addFilters = false)
 class ValidationErrorContractTest {
 

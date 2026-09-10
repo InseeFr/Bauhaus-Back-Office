@@ -9,9 +9,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * {@code StringValue}; further fields can be added if the schema grows.
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public record ValueType(
-        @JsonProperty("StringValue") String stringValue
-) {
+public record ValueType(@JsonProperty("StringValue") String stringValue) {
 
     public static ValueType of(String stringValue) {
         return stringValue == null ? null : new ValueType(stringValue);

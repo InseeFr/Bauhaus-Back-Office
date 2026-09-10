@@ -12,35 +12,37 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class XhtmlToMarkdownUtils {
-	
-	private static FlexmarkHtmlConverter converter;
 
-	private static void init(){
-		if (converter == null) {
-			var options = new MutableDataSet();
-			options.set(FlexmarkHtmlConverter.SKIP_CHAR_ESCAPE, true);
-			options.set(FlexmarkHtmlConverter.TYPOGRAPHIC_QUOTES, false);
-			options.set(FlexmarkHtmlConverter.TYPOGRAPHIC_SMARTS, false);
-			converter = FlexmarkHtmlConverter.builder(options).build();
-		}
-	}
-	
-	public static String xhtmlToMarkdown(String xhtml) {
-		init();
-      	String md = converter.convert(xhtml);
-		if (md.endsWith("\n")){
-			return md.substring(0,md.length()-1);
-		}
-		return md;
-	}
-	
+    private static FlexmarkHtmlConverter converter;
+
+    private static void init() {
+        if (converter == null) {
+            var options = new MutableDataSet();
+            options.set(FlexmarkHtmlConverter.SKIP_CHAR_ESCAPE, true);
+            options.set(FlexmarkHtmlConverter.TYPOGRAPHIC_QUOTES, false);
+            options.set(FlexmarkHtmlConverter.TYPOGRAPHIC_SMARTS, false);
+            converter = FlexmarkHtmlConverter.builder(options).build();
+        }
+    }
+
+    public static String xhtmlToMarkdown(String xhtml) {
+        init();
+        String md = converter.convert(xhtml);
+        if (md.endsWith("\n")) {
+            return md.substring(0, md.length() - 1);
+        }
+        return md;
+    }
+
     public static String markdownToXhtml(String md) {
-    	if (StringUtils.isEmpty(md)) { return md;}
+        if (StringUtils.isEmpty(md)) {
+            return md;
+        }
         MutableDataSet options = new MutableDataSet();
-        options.set(FlexmarkHtmlConverter.LISTS_END_ON_DOUBLE_BLANK,true);
+        options.set(FlexmarkHtmlConverter.LISTS_END_ON_DOUBLE_BLANK, true);
         options.setFrom(ParserEmulationProfile.MARKDOWN);
-        
-        //convert soft-breaks to hard breaks
+
+        // convert soft-breaks to hard breaks
         options.set(HtmlRenderer.SOFT_BREAK, "<br />\n");
 
         Parser parser = Parser.builder(options).build();
@@ -48,32 +50,30 @@ public class XhtmlToMarkdownUtils {
 
         // You can re-use parser and renderer instances
         Node document = parser.parse(md);
-        return renderer.render(document); 
+        return renderer.render(document);
     }
-    
+
     private XhtmlToMarkdownUtils() {
-    	throw new IllegalStateException("Utility class");
+        throw new IllegalStateException("Utility class");
     }
-    
-	public static void convertJSONObject(JSONObject jsonObj) {
-		jsonObj.keySet().forEach(keyStr ->
-		{
-			Object keyvalue = jsonObj.get(keyStr);
-			if (keyvalue instanceof JSONObject  ) {
-				convertJSONObject((JSONObject)keyvalue);
-			} else if (keyvalue instanceof JSONArray ) {
-				convertJSONArray((JSONArray)keyvalue);
-			} else {
-				jsonObj.put(keyStr, XhtmlToMarkdownUtils.xhtmlToMarkdown((String) keyvalue));
-			}
-		});
-	}
 
-	public static void convertJSONArray(JSONArray jsonArr) {
-		JSONUtils.streamValues(jsonArr)
-				.filter(JSONObject.class::isInstance)
-				.map(JSONObject.class::cast)
-				.forEach(XhtmlToMarkdownUtils::convertJSONObject);
-	}
+    public static void convertJSONObject(JSONObject jsonObj) {
+        jsonObj.keySet().forEach(keyStr -> {
+            Object keyvalue = jsonObj.get(keyStr);
+            if (keyvalue instanceof JSONObject) {
+                convertJSONObject((JSONObject) keyvalue);
+            } else if (keyvalue instanceof JSONArray) {
+                convertJSONArray((JSONArray) keyvalue);
+            } else {
+                jsonObj.put(keyStr, XhtmlToMarkdownUtils.xhtmlToMarkdown((String) keyvalue));
+            }
+        });
+    }
 
+    public static void convertJSONArray(JSONArray jsonArr) {
+        JSONUtils.streamValues(jsonArr)
+                .filter(JSONObject.class::isInstance)
+                .map(JSONObject.class::cast)
+                .forEach(XhtmlToMarkdownUtils::convertJSONObject);
+    }
 }

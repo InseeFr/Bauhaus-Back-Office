@@ -1,4 +1,5 @@
 package fr.insee.rmes.modules.structures.structures.domain.model;
+
 public record PartialStructureComponent(
         String iri,
         String id,
@@ -9,6 +10,4 @@ public record PartialStructureComponent(
         String codeList,
         String validationState,
         String creator,
-        String range
-) {
-}
+        String range) {}

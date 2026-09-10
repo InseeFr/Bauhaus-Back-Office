@@ -16,5 +16,4 @@ public record CodeRequest(
         @NotBlank(message = "labelLg1 is required") String labelLg1,
         @NotBlank(message = "labelLg2 is required") String labelLg2,
         String descriptionLg1,
-        String descriptionLg2) {
-}
+        String descriptionLg2) {}

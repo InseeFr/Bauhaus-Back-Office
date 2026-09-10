@@ -1,16 +1,16 @@
 package fr.insee.rmes.bauhaus_services.rdf_utils;
 
+import static fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils.stringEndsWithItemFromList;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import fr.insee.rmes.Constants;
+import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.base.InternedIRI;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
-
-import static fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils.stringEndsWithItemFromList;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class PublicationUtilsTest {
 
@@ -20,16 +20,18 @@ class PublicationUtilsTest {
     @Mock
     RepositoryPublication repositoryPublication;
 
-
     @Test
     void shouldTranformBaseURIToPublishWithoutConvertToUriFormat() {
 
         Resource myResource1 = new InternedIRI("myNamespace", "mylocalName");
         Resource myResource2 = new InternedIRI("gestion.baseURI", ".mylocalName");
-        PublicationUtils myPublicationUtils = new PublicationUtils("gestion.baseURI.", "publication.baseURI.",repositoryGestion,repositoryPublication);
+        PublicationUtils myPublicationUtils = new PublicationUtils(
+                "gestion.baseURI.", "publication.baseURI.", repositoryGestion, repositoryPublication);
 
-        boolean myResponse1=!myResource1.toString().contains(myPublicationUtils.baseUriGestion());
-        String myResponse2 = myResource2.toString().replace(myPublicationUtils.baseUriGestion(), myPublicationUtils.baseUriPublication());
+        boolean myResponse1 = !myResource1.toString().contains(myPublicationUtils.baseUriGestion());
+        String myResponse2 = myResource2
+                .toString()
+                .replace(myPublicationUtils.baseUriGestion(), myPublicationUtils.baseUriPublication());
 
         assertTrue(myResponse1 && ("publication.baseURI.mylocalName").equals(myResponse2));
     }
@@ -37,12 +39,11 @@ class PublicationUtilsTest {
     @Test
     void shouldTVerifyStringEndsWithItemFromList() {
         String inputStr = "Bauhaus-Back-Office";
-        String[] items1 = { "Office", "pdf", "fr" };
-        String[] items2 = { "en", "pdf", "fr" };
-        boolean response1= stringEndsWithItemFromList(inputStr, items1);
-        boolean response2= !stringEndsWithItemFromList(inputStr, items2);
+        String[] items1 = {"Office", "pdf", "fr"};
+        String[] items2 = {"en", "pdf", "fr"};
+        boolean response1 = stringEndsWithItemFromList(inputStr, items1);
+        boolean response2 = !stringEndsWithItemFromList(inputStr, items2);
         assertTrue(response1 && response2);
-
     }
 
     @Test

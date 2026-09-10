@@ -1,8 +1,7 @@
 package fr.insee.rmes.modules.clientconfig.webservice;
 
-import fr.insee.rmes.modules.clientconfig.domain.model.ModuleConfig;
 import fr.insee.rmes.modules.clientconfig.domain.model.ClientConfigProperties;
-
+import fr.insee.rmes.modules.clientconfig.domain.model.ModuleConfig;
 import java.util.List;
 
 public record ClientConfigResponse(
@@ -17,8 +16,7 @@ public record ClientConfigResponse(
         List<String> extraMandatoryFields,
         String defaultAgencyId,
         List<String> colecticaLangs,
-        boolean enableDevTools
-) {
+        boolean enableDevTools) {
     public static ClientConfigResponse fromDomain(ClientConfigProperties properties) {
         return new ClientConfigResponse(
                 properties.appHost(),
@@ -32,7 +30,6 @@ public record ClientConfigResponse(
                 properties.extraMandatoryFields(),
                 properties.defaultAgencyId(),
                 properties.colecticaLangs(),
-                properties.enableDevTools()
-        );
+                properties.enableDevTools());
     }
 }

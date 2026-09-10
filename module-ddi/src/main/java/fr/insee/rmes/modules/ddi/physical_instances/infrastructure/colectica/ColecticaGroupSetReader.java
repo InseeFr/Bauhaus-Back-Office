@@ -31,6 +31,9 @@ class ColecticaGroupSetReader {
 
     private static final Logger logger = LoggerFactory.getLogger(ColecticaGroupSetReader.class);
 
+    private static final String AGENCY = "Agency";
+    private static final String VERSION = "Version";
+
     private final ColecticaClient colecticaClient;
     private final String defaultLang;
 
@@ -58,8 +61,7 @@ class ColecticaGroupSetReader {
 
             return parseGroupXml(ColecticaXml.stripLeadingGarbage(ddisetXml));
         } catch (Exception e) {
-            logger.error(
-                "Error processing Colectica API response for Group agencyId: {}, id: {}", agencyId, id, e);
+            logger.error("Error processing Colectica API response for Group agencyId: {}, id: {}", agencyId, id, e);
             throw new RuntimeException("Failed to process DDI Group response", e);
         }
     }
@@ -76,8 +78,7 @@ class ColecticaGroupSetReader {
         for (int i = 0; i < groupNodes.getLength(); i++) {
             Ddi4Group group = parseGroupElement((Element) groupNodes.item(i));
             groups.add(group);
-            topLevelReferences.add(
-                Reference.of(group.agency(), group.id(), group.version(), "Group"));
+            topLevelReferences.add(Reference.of(group.agency(), group.id(), group.version(), "Group"));
         }
 
         NodeList studyUnitNodes = doc.getElementsByTagNameNS(STUDY_UNIT_NS, "StudyUnit");
@@ -95,17 +96,17 @@ class ColecticaGroupSetReader {
         String typeOfGroup = ColecticaXml.textContent(groupElement, GROUP_NS, "TypeOfGroup");
 
         return new Ddi4Group(
-            Ddi4Group.TYPE,
-            versionDate.isEmpty() ? null : CogsDate.ofDateTime(versionDate),
-            ColecticaXml.textContent(groupElement, REUSABLE_NS, "URN"),
-            ColecticaXml.textContent(groupElement, REUSABLE_NS, "Agency"),
-            ColecticaXml.textContent(groupElement, REUSABLE_NS, "ID"),
-            ColecticaXml.textContent(groupElement, REUSABLE_NS, "Version"),
-            ColecticaXml.textContent(groupElement, REUSABLE_NS, "VersionResponsibility"),
-            parseCitation(groupElement),
-            parseStudyUnitReferences(groupElement),
-            seriesIris.isEmpty() ? null : seriesIris,
-            (typeOfGroup == null || typeOfGroup.isEmpty()) ? null : typeOfGroup);
+                Ddi4Group.TYPE,
+                versionDate.isEmpty() ? null : CogsDate.ofDateTime(versionDate),
+                ColecticaXml.textContent(groupElement, REUSABLE_NS, "URN"),
+                ColecticaXml.textContent(groupElement, REUSABLE_NS, AGENCY),
+                ColecticaXml.textContent(groupElement, REUSABLE_NS, "ID"),
+                ColecticaXml.textContent(groupElement, REUSABLE_NS, VERSION),
+                ColecticaXml.textContent(groupElement, REUSABLE_NS, "VersionResponsibility"),
+                parseCitation(groupElement),
+                parseStudyUnitReferences(groupElement),
+                seriesIris.isEmpty() ? null : seriesIris,
+                (typeOfGroup == null || typeOfGroup.isEmpty()) ? null : typeOfGroup);
     }
 
     private Ddi4StudyUnit parseStudyUnitElement(Element studyUnitElement) {
@@ -113,15 +114,15 @@ class ColecticaGroupSetReader {
         String operationIri = ColecticaXml.textContent(studyUnitElement, REUSABLE_NS, "UserID");
 
         return new Ddi4StudyUnit(
-            Ddi4StudyUnit.TYPE,
-            (versionDate == null || versionDate.isEmpty()) ? null : CogsDate.ofDateTime(versionDate),
-            ColecticaXml.textContent(studyUnitElement, REUSABLE_NS, "URN"),
-            ColecticaXml.textContent(studyUnitElement, REUSABLE_NS, "Agency"),
-            ColecticaXml.textContent(studyUnitElement, REUSABLE_NS, "ID"),
-            ColecticaXml.textContent(studyUnitElement, REUSABLE_NS, "Version"),
-            parseCitation(studyUnitElement),
-            (operationIri == null || operationIri.isEmpty()) ? null : operationIri,
-            null);
+                Ddi4StudyUnit.TYPE,
+                (versionDate == null || versionDate.isEmpty()) ? null : CogsDate.ofDateTime(versionDate),
+                ColecticaXml.textContent(studyUnitElement, REUSABLE_NS, "URN"),
+                ColecticaXml.textContent(studyUnitElement, REUSABLE_NS, AGENCY),
+                ColecticaXml.textContent(studyUnitElement, REUSABLE_NS, "ID"),
+                ColecticaXml.textContent(studyUnitElement, REUSABLE_NS, VERSION),
+                parseCitation(studyUnitElement),
+                (operationIri == null || operationIri.isEmpty()) ? null : operationIri,
+                null);
     }
 
     private Citation parseCitation(Element parentElement) {
@@ -129,21 +130,18 @@ class ColecticaGroupSetReader {
         if (citationNodes.getLength() == 0) {
             return null;
         }
-        NodeList titleNodes =
-            ((Element) citationNodes.item(0)).getElementsByTagNameNS(REUSABLE_NS, "Title");
+        NodeList titleNodes = ((Element) citationNodes.item(0)).getElementsByTagNameNS(REUSABLE_NS, "Title");
         if (titleNodes.getLength() == 0) {
             return null;
         }
-        NodeList stringNodes =
-            ((Element) titleNodes.item(0)).getElementsByTagNameNS(REUSABLE_NS, "String");
+        NodeList stringNodes = ((Element) titleNodes.item(0)).getElementsByTagNameNS(REUSABLE_NS, "String");
         if (stringNodes.getLength() == 0) {
             return null;
         }
 
         Element stringElement = (Element) stringNodes.item(0);
         String lang = stringElement.getAttributeNS(XML_NS, "lang");
-        return new Citation(
-            LangStrings.of(lang.isEmpty() ? defaultLang : lang, stringElement.getTextContent()));
+        return new Citation(LangStrings.of(lang.isEmpty() ? defaultLang : lang, stringElement.getTextContent()));
     }
 
     private List<Reference> parseStudyUnitReferences(Element groupElement) {
@@ -152,10 +150,10 @@ class ColecticaGroupSetReader {
         for (int i = 0; i < refNodes.getLength(); i++) {
             Element refElement = (Element) refNodes.item(i);
             references.add(Reference.of(
-                ColecticaXml.textContent(refElement, REUSABLE_NS, "Agency"),
-                ColecticaXml.textContent(refElement, REUSABLE_NS, "ID"),
-                ColecticaXml.textContent(refElement, REUSABLE_NS, "Version"),
-                ColecticaXml.textContent(refElement, REUSABLE_NS, "TypeOfObject")));
+                    ColecticaXml.textContent(refElement, REUSABLE_NS, AGENCY),
+                    ColecticaXml.textContent(refElement, REUSABLE_NS, "ID"),
+                    ColecticaXml.textContent(refElement, REUSABLE_NS, VERSION),
+                    ColecticaXml.textContent(refElement, REUSABLE_NS, "TypeOfObject")));
         }
         return references;
     }

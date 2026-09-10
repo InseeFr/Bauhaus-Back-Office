@@ -14,10 +14,8 @@ public class DocumentId {
     public String getString() {
         if (id != null && !id.isEmpty()) {
             return id;
-        }
-        else{
-            return null;                //without this it might cause some trouble to test with new DocumentID(null)
+        } else {
+            return null; // without this it might cause some trouble to test with new DocumentID(null)
         }
     }
-
 }

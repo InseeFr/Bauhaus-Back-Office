@@ -1,9 +1,9 @@
 package fr.insee.rmes.graphdb.ontologies;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import org.eclipse.rdf4j.model.Namespace;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class DCMITYPETest {
 
@@ -30,5 +30,4 @@ class DCMITYPETest {
         assertNotNull(DCMITYPE.TEXT);
         assertEquals("http://purl.org/dc/dcmitype/Text", DCMITYPE.TEXT.toString());
     }
-
 }

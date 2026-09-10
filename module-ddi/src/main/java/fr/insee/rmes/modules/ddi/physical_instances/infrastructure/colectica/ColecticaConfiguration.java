@@ -1,11 +1,10 @@
 package fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica;
 
 import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.exceptions.InvalidColecticaConfigurationException;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
  * Configuration properties for Colectica API integration.
@@ -49,8 +48,7 @@ public record ColecticaConfiguration(
         List<String> langs,
         ColecticaInstanceConfiguration server,
         PackageRef mutualizedCodesPackage,
-        Duration mutualizedCacheTtl
-) {
+        Duration mutualizedCacheTtl) {
     /** Default TTL applied to the mutualized code lists cache when none is configured. */
     public static final Duration DEFAULT_MUTUALIZED_CACHE_TTL = Duration.ofHours(24);
 
@@ -66,8 +64,7 @@ public record ColecticaConfiguration(
         langs.forEach(lang -> {
             if (!lang.matches("[a-z]{2}-[A-Z]{2}")) {
                 throw new InvalidColecticaConfigurationException(
-                    "Invalid language code: '%s'. Expected format: xx-XX (e.g., fr-FR, en-GB)".formatted(lang)
-                );
+                        "Invalid language code: '%s'. Expected format: xx-XX (e.g., fr-FR, en-GB)".formatted(lang));
             }
         });
     }
@@ -84,8 +81,7 @@ public record ColecticaConfiguration(
             String authenticationMode,
             String username,
             String password,
-            String defaultAgencyId
-    ) {
+            String defaultAgencyId) {
         public ColecticaInstanceConfiguration {
             if (apiPath == null || apiPath.isBlank()) {
                 apiPath = "/api/v1/";
@@ -118,9 +114,5 @@ public record ColecticaConfiguration(
      * @param identifier Identifier of the item (UUID)
      * @param version Version of the item
      */
-    public record PackageRef(
-            String agencyId,
-            String identifier,
-            int version
-    ) {}
+    public record PackageRef(String agencyId, String identifier, int version) {}
 }

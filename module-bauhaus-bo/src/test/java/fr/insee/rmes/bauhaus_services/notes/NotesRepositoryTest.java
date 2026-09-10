@@ -1,16 +1,21 @@
 package fr.insee.rmes.bauhaus_services.notes;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.model.concepts.Concept;
-import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptNotesQueries;
-import fr.insee.rmes.rdf_utils.RepositoryGestion;
-import fr.insee.rmes.modules.concepts.concept.domain.model.notes.DatableNote;
-import fr.insee.rmes.modules.concepts.concept.domain.model.notes.VersionableNote;
 import fr.insee.rmes.graphdb.ontologies.EVOC;
 import fr.insee.rmes.graphdb.ontologies.INSEE;
 import fr.insee.rmes.graphdb.ontologies.XKOS;
+import fr.insee.rmes.model.concepts.Concept;
+import fr.insee.rmes.modules.concepts.concept.domain.model.notes.DatableNote;
+import fr.insee.rmes.modules.concepts.concept.domain.model.notes.VersionableNote;
+import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptNotesQueries;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
+import java.io.IOException;
+import java.time.Instant;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Model;
@@ -18,32 +23,25 @@ import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
-import org.junit.jupiter.api.Test;
 import org.json.JSONObject;
+import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
-
-import java.io.IOException;
-import java.time.Instant;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
 class NotesRepositoryTest {
 
     @Test
     void shouldGetVersion() throws RmesException {
-        Concept concept = new Concept("id",true);
+        Concept concept = new Concept("id", true);
         VersionableNote versionableNote = new VersionableNote();
         String defaultBVersion = "defaultVersion";
         NotesRepository notesRepository = new NotesRepository(null, null, null, null, null);
-        String result= notesRepository.getVersion(concept,versionableNote,defaultBVersion);
-        assertEquals("1",result);
+        String result = notesRepository.getVersion(concept, versionableNote, defaultBVersion);
+        assertEquals("1", result);
     }
 
     @Test
     void createRdfDatableNote_shouldAddExpectedStatements() {
         NotesRepository notesRepository = new NotesRepository(null, null, null, null, null);
-
 
         ValueFactory vf = SimpleValueFactory.getInstance();
 

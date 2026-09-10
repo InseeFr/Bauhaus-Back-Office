@@ -1,5 +1,8 @@
 package fr.insee.rmes.graphdb;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.keycloak.TokenService;
 import org.eclipse.rdf4j.model.Resource;
@@ -17,9 +20,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.http.HttpStatus;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
 class RepositoryUtilsTest {
 
@@ -41,7 +41,7 @@ class RepositoryUtilsTest {
     void shouldInitRepositoryWithValidParameters() {
         String rdfServer = "http://localhost:8080/rdf";
         String repositoryID = "test-repo";
-        
+
         Repository result = repositoryUtils.initRepository(rdfServer, repositoryID);
         assertNotNull(result);
     }
@@ -79,7 +79,7 @@ class RepositoryUtilsTest {
     @Test
     void shouldExecuteUpdateSuccessfully() throws RmesException {
         String updateQuery = "INSERT DATA { <http://example.org/subject> <http://example.org/predicate> \"object\" . }";
-        
+
         HttpStatus result = repositoryUtils.executeUpdate(updateQuery, testRepository);
         assertEquals(HttpStatus.OK, result);
     }
@@ -87,7 +87,7 @@ class RepositoryUtilsTest {
     @Test
     void shouldReturnExpectationFailedForNullRepository() throws RmesException {
         String updateQuery = "INSERT DATA { <http://example.org/subject> <http://example.org/predicate> \"object\" . }";
-        
+
         HttpStatus result = repositoryUtils.executeUpdate(updateQuery, null);
         assertEquals(HttpStatus.EXPECTATION_FAILED, result);
     }
@@ -96,10 +96,10 @@ class RepositoryUtilsTest {
     void shouldGetCompleteGraph() throws RmesException {
         try (RepositoryConnection conn = testRepository.getConnection()) {
             Resource context = SimpleValueFactory.getInstance().createIRI("http://example.org/graph");
-            
-            RepositoryResult<org.eclipse.rdf4j.model.Statement> result = 
-                repositoryUtils.getCompleteGraph(conn, context);
-            
+
+            RepositoryResult<org.eclipse.rdf4j.model.Statement> result =
+                    repositoryUtils.getCompleteGraph(conn, context);
+
             assertNotNull(result);
             result.close();
         }
@@ -125,8 +125,7 @@ class RepositoryUtilsTest {
             conn.add(
                     SimpleValueFactory.getInstance().createIRI("http://example.org/s1001"),
                     SimpleValueFactory.getInstance().createIRI("http://example.org/label"),
-                    SimpleValueFactory.getInstance().createLiteral("Enquête capacité à innover et stratégie")
-            );
+                    SimpleValueFactory.getInstance().createLiteral("Enquête capacité à innover et stratégie"));
 
             String query = "SELECT ?label WHERE { ?s <http://example.org/label> ?label }";
             String result = repositoryUtils.executeQuery(conn, query);
@@ -134,8 +133,7 @@ class RepositoryUtilsTest {
             assertNotNull(result);
             assertTrue(
                     result.contains("Enquête capacité à innover et stratégie"),
-                    "Accented characters should survive the SPARQL JSON serialization round-trip; got: " + result
-            );
+                    "Accented characters should survive the SPARQL JSON serialization round-trip; got: " + result);
         }
     }
 
@@ -143,7 +141,7 @@ class RepositoryUtilsTest {
     void shouldExecuteAskQuery() throws RmesException {
         try (RepositoryConnection conn = testRepository.getConnection()) {
             String askQuery = "ASK { ?s ?p ?o }";
-            
+
             boolean result = repositoryUtils.executeAskQuery(conn, askQuery);
             // Should return false for empty repository
             assertFalse(result);
@@ -153,7 +151,7 @@ class RepositoryUtilsTest {
     @Test
     void shouldGetResponse() throws RmesException {
         String query = "SELECT ?s ?p ?o WHERE { ?s ?p ?o } LIMIT 10";
-        
+
         String response = repositoryUtils.getResponse(query, testRepository);
         assertNotNull(response);
         assertTrue(response.contains("results"));
@@ -162,7 +160,7 @@ class RepositoryUtilsTest {
     @Test
     void shouldGetResponseForAskQuery() throws RmesException {
         String askQuery = "ASK { ?s ?p ?o }";
-        
+
         boolean response = repositoryUtils.getResponseForAskQuery(askQuery, testRepository);
         assertFalse(response); // Empty repository
     }
@@ -170,7 +168,7 @@ class RepositoryUtilsTest {
     @Test
     void shouldGetResponseAsArray() throws RmesException {
         String query = "SELECT ?s WHERE { ?s ?p ?o } LIMIT 10";
-        
+
         JSONArray response = repositoryUtils.getResponseAsArray(query, testRepository);
         // Should return empty array for empty repository
         assertTrue(response == null || response.isEmpty());
@@ -179,7 +177,7 @@ class RepositoryUtilsTest {
     @Test
     void shouldGetResponseAsJSONList() throws RmesException {
         String query = "SELECT ?s WHERE { ?s ?p ?o } LIMIT 10";
-        
+
         JSONArray response = repositoryUtils.getResponseAsJSONList(query, testRepository);
         // Should return empty array for empty repository
         assertTrue(response == null || response.isEmpty());
@@ -188,7 +186,7 @@ class RepositoryUtilsTest {
     @Test
     void shouldGetResponseAsObject() throws RmesException {
         String query = "SELECT ?s WHERE { ?s ?p ?o } LIMIT 1";
-        
+
         JSONObject response = repositoryUtils.getResponseAsObject(query, testRepository);
         assertNotNull(response);
     }
@@ -198,18 +196,18 @@ class RepositoryUtilsTest {
         JSONObject sparqlResult = new JSONObject();
         JSONObject results = new JSONObject();
         JSONArray bindings = new JSONArray();
-        
+
         JSONObject binding = new JSONObject();
         JSONObject subject = new JSONObject();
         subject.put("value", "http://example.org/subject");
         binding.put("s", subject);
-        
+
         bindings.put(binding);
         results.put("bindings", bindings);
         sparqlResult.put("results", results);
-        
+
         JSONArray result = RepositoryUtils.sparqlJSONToResultArrayValues(sparqlResult);
-        
+
         assertNotNull(result);
         assertEquals(1, result.length());
         assertEquals("http://example.org/subject", result.getJSONObject(0).getString("s"));
@@ -218,7 +216,7 @@ class RepositoryUtilsTest {
     @Test
     void shouldReturnNullForEmptySparqlResults() {
         JSONObject sparqlResult = new JSONObject();
-        
+
         JSONArray result = RepositoryUtils.sparqlJSONToResultArrayValues(sparqlResult);
         assertNull(result);
     }
@@ -228,18 +226,18 @@ class RepositoryUtilsTest {
         JSONObject sparqlResult = new JSONObject();
         JSONObject results = new JSONObject();
         JSONArray bindings = new JSONArray();
-        
+
         JSONObject binding = new JSONObject();
         JSONObject subject = new JSONObject();
         subject.put("value", "http://example.org/subject");
         binding.put("s", subject);
-        
+
         bindings.put(binding);
         results.put("bindings", bindings);
         sparqlResult.put("results", results);
-        
+
         JSONArray result = RepositoryUtils.sparqlJSONToResultListValues(sparqlResult);
-        
+
         assertNotNull(result);
         assertEquals(1, result.length());
         assertEquals("http://example.org/subject", result.getString(0));
@@ -248,7 +246,7 @@ class RepositoryUtilsTest {
     @Test
     void shouldReturnNullForEmptySparqlResultsList() {
         JSONObject sparqlResult = new JSONObject();
-        
+
         JSONArray result = RepositoryUtils.sparqlJSONToResultListValues(sparqlResult);
         assertNull(result);
     }
@@ -256,7 +254,7 @@ class RepositoryUtilsTest {
     @Test
     void shouldClearStructureAndComponents() throws RmesException {
         Resource structure = SimpleValueFactory.getInstance().createIRI("http://example.org/structure");
-        
+
         assertDoesNotThrow(() -> {
             repositoryUtils.clearStructureAndComponents(structure, testRepository);
         });
@@ -267,26 +265,26 @@ class RepositoryUtilsTest {
         JSONObject sparqlResult = new JSONObject();
         JSONObject results = new JSONObject();
         JSONArray bindings = new JSONArray();
-        
+
         // First binding
         JSONObject binding1 = new JSONObject();
         JSONObject subject1 = new JSONObject();
         subject1.put("value", "http://example.org/subject1");
         binding1.put("s", subject1);
-        
+
         // Second binding
         JSONObject binding2 = new JSONObject();
         JSONObject subject2 = new JSONObject();
         subject2.put("value", "http://example.org/subject2");
         binding2.put("s", subject2);
-        
+
         bindings.put(binding1);
         bindings.put(binding2);
         results.put("bindings", bindings);
         sparqlResult.put("results", results);
-        
+
         JSONArray result = RepositoryUtils.sparqlJSONToResultArrayValues(sparqlResult);
-        
+
         assertNotNull(result);
         assertEquals(2, result.length());
         assertEquals("http://example.org/subject1", result.getJSONObject(0).getString("s"));

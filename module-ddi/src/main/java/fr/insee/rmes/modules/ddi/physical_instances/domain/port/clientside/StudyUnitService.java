@@ -3,7 +3,6 @@ package fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialStudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
-
 import java.util.Collection;
 import java.util.List;
 

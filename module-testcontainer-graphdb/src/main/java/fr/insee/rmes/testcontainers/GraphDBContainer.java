@@ -1,9 +1,6 @@
 package fr.insee.rmes.testcontainers;
 
-import org.testcontainers.containers.Container;
-import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.wait.strategy.Wait;
-import org.testcontainers.utility.MountableFile;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -18,8 +15,10 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.testcontainers.containers.Container;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.utility.MountableFile;
 
 /**
  * Conteneur GraphDB partagé par toute la suite d'intégration (voir {@link WithGraphDBContainer}).
@@ -45,7 +44,8 @@ public class GraphDBContainer extends GenericContainer<GraphDBContainer> impleme
     /** Extrait l'identifiant du dépôt d'un fichier de configuration RDF4J, pour pouvoir le purger ensuite. */
     private static final Pattern REPOSITORY_ID = Pattern.compile("repository#repositoryID>\\s*\"([^\"]+)\"");
 
-    private final HttpClient httpClient = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
+    private final HttpClient httpClient =
+            HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
 
     /** Dépôts déjà créés dans ce conteneur : sert à la fois à ne pas les recréer et à savoir quoi purger. */
     private final Set<String> repositories = new LinkedHashSet<>();
@@ -71,7 +71,7 @@ public class GraphDBContainer extends GenericContainer<GraphDBContainer> impleme
     }
 
     @Override
-    public GraphDBContainer withInitFolder(String folder){
+    public GraphDBContainer withInitFolder(String folder) {
         this.folder = folder;
         return this;
     }
@@ -88,7 +88,15 @@ public class GraphDBContainer extends GenericContainer<GraphDBContainer> impleme
         }
         try {
             String path = copyFile(ttlFile);
-            execInContainer("curl", "-X", "POST", "-H", "Content-Type:multipart/form-data", "-F", "config=@" + path, "http://localhost:7200/rest/repositories");
+            execInContainer(
+                    "curl",
+                    "-X",
+                    "POST",
+                    "-H",
+                    "Content-Type:multipart/form-data",
+                    "-F",
+                    "config=@" + path,
+                    "http://localhost:7200/rest/repositories");
         } catch (IOException | InterruptedException _) {
             throw new AssertionError("The TTL file was not loaded");
         }
@@ -97,7 +105,8 @@ public class GraphDBContainer extends GenericContainer<GraphDBContainer> impleme
 
     @Override
     public GraphDBContainer withTrigFiles(String file) {
-        post("/repositories/" + GESTION_REPOSITORY + "/statements",
+        post(
+                "/repositories/" + GESTION_REPOSITORY + "/statements",
                 "application/x-trig",
                 readFixture(file),
                 "The Trig file was not loaded");
@@ -110,11 +119,11 @@ public class GraphDBContainer extends GenericContainer<GraphDBContainer> impleme
      */
     public void resetTestData() {
         withInitFolder(DEFAULT_INIT_FOLDER);
-        repositories.forEach(repository ->
-                post("/repositories/" + repository + "/statements",
-                        "application/sparql-update",
-                        "CLEAR ALL".getBytes(StandardCharsets.UTF_8),
-                        "The repository " + repository + " was not cleared"));
+        repositories.forEach(repository -> post(
+                "/repositories/" + repository + "/statements",
+                "application/sparql-update",
+                "CLEAR ALL".getBytes(StandardCharsets.UTF_8),
+                "The repository " + repository + " was not cleared"));
     }
 
     private void post(String path, String contentType, byte[] body, String failureMessage) {
@@ -134,7 +143,8 @@ public class GraphDBContainer extends GenericContainer<GraphDBContainer> impleme
             throw new AssertionError(failureMessage, e);
         }
         if (response.statusCode() >= 300) {
-            throw new AssertionError(failureMessage + " (HTTP " + response.statusCode() + " : " + response.body() + ")");
+            throw new AssertionError(
+                    failureMessage + " (HTTP " + response.statusCode() + " : " + response.body() + ")");
         }
     }
 
@@ -165,7 +175,7 @@ public class GraphDBContainer extends GenericContainer<GraphDBContainer> impleme
     }
 
     private String copyFile(String file) throws IOException, InterruptedException {
-        String fullPath = DOCKER_ENTRYPOINT_INITDB  + "/" + file;
+        String fullPath = DOCKER_ENTRYPOINT_INITDB + "/" + file;
         copyFileToContainer(MountableFile.forClasspathResource(this.folder + "/" + file), fullPath);
         assertThatFileExists(file);
         return fullPath;
@@ -174,6 +184,9 @@ public class GraphDBContainer extends GenericContainer<GraphDBContainer> impleme
     private void assertThatFileExists(String file) throws IOException, InterruptedException {
         Container.ExecResult lsResult = execInContainer("ls", "-al", DOCKER_ENTRYPOINT_INITDB);
         String stdout = lsResult.getStdout();
-        assertThat(stdout).withFailMessage("Expecting file %1$s to be in folder %2$s of container", file, DOCKER_ENTRYPOINT_INITDB).contains(file);
+        assertThat(stdout)
+                .withFailMessage(
+                        "Expecting file %1$s to be in folder %2$s of container", file, DOCKER_ENTRYPOINT_INITDB)
+                .contains(file);
     }
 }

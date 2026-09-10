@@ -3,130 +3,124 @@ package fr.insee.rmes.model.concepts;
 import fr.insee.rmes.model.links.Link;
 import fr.insee.rmes.modules.concepts.concept.domain.model.notes.DatableNote;
 import fr.insee.rmes.modules.concepts.concept.domain.model.notes.VersionableNote;
-
 import java.time.LocalDateTime;
 import java.util.List;
 
 public class Concept {
 
-	private String id;
-	private String prefLabelLg1;
-	private String prefLabelLg2;
-	private List<String> altLabelLg1;
-	private List<String> altLabelLg2;
-	private String creator;
-	private String contributor;
-	private String disseminationStatus;
-	private String additionalMaterial;
-	private String valid;
-	private List<VersionableNote> versionableNotes;
-	private List<DatableNote> datableNotes;
-	private List<Link> links;
-	private String created;
-	private String modified;
-	private Boolean creation;
-	private Boolean versioning;
-	private List<String> collections;
+    private String id;
+    private String prefLabelLg1;
+    private String prefLabelLg2;
+    private List<String> altLabelLg1;
+    private List<String> altLabelLg2;
+    private String creator;
+    private String contributor;
+    private String disseminationStatus;
+    private String additionalMaterial;
+    private String valid;
+    private List<VersionableNote> versionableNotes;
+    private List<DatableNote> datableNotes;
+    private List<Link> links;
+    private String created;
+    private String modified;
+    private Boolean creation;
+    private Boolean versioning;
+    private List<String> collections;
 
+    public Concept(String id, boolean isNew) {
+        this.id = id;
+        this.modified = LocalDateTime.now().toString();
 
-	public Concept(String id, boolean isNew) {
-		this.id = id;
-		this.modified = LocalDateTime.now().toString();
+        if (isNew) {
+            this.created = LocalDateTime.now().toString();
+            this.creation = true;
+            this.versioning = false;
+        } else {
+            this.creation = false;
+        }
+    }
 
-		if (isNew) {
-			this.created = LocalDateTime.now().toString();
-			this.creation = true;
-			this.versioning = false;
-		}else {
-			this.creation = false;
-		}
-	}
-	
-	
-	
+    public String getCreated() {
+        return created;
+    }
 
-	public String getCreated() {
-		return created;
-	}
+    public void setCreated(String created) {
+        this.created = created;
+    }
 
-	public void setCreated(String created) {
-		this.created = created;
-	}
+    public String getModified() {
+        return modified;
+    }
 
-	public String getModified() {
-		return modified;
-	}
+    public String getId() {
+        return id;
+    }
 
-	public String getId() {
-		return id;
-	}
+    public void setId(String id) {
+        this.id = id;
+    }
 
-	public void setId(String id) {
-		this.id = id;
-	}
+    public String getPrefLabelLg1() {
+        return prefLabelLg1;
+    }
 
-	public String getPrefLabelLg1() {
-		return prefLabelLg1;
-	}
+    public String getPrefLabelLg2() {
+        return prefLabelLg2;
+    }
 
-	public String getPrefLabelLg2() {
-		return prefLabelLg2;
-	}
+    public List<String> getAltLabelLg1() {
+        return altLabelLg1;
+    }
 
-	public List<String> getAltLabelLg1() {
-		return altLabelLg1;
-	}
+    public List<String> getAltLabelLg2() {
+        return altLabelLg2;
+    }
 
-	public List<String> getAltLabelLg2() {
-		return altLabelLg2;
-	}
+    public String getCreator() {
+        return creator;
+    }
 
-	public String getCreator() {
-		return creator;
-	}
+    public String getContributor() {
+        return contributor;
+    }
 
-	public String getContributor() {
-		return contributor;
-	}
+    public String getDisseminationStatus() {
+        return disseminationStatus;
+    }
 
-	public String getDisseminationStatus() {
-		return disseminationStatus;
-	}
+    public String getAdditionalMaterial() {
+        return additionalMaterial;
+    }
 
-	public String getAdditionalMaterial() {
-		return additionalMaterial;
-	}
+    public String getValid() {
+        return valid;
+    }
 
-	public String getValid() {
-		return valid;
-	}
+    public List<VersionableNote> getVersionableNotes() {
+        return versionableNotes;
+    }
 
-	public List<VersionableNote> getVersionableNotes() {
-		return versionableNotes;
-	}
-	
-	public List<DatableNote> getDatableNotes() {
-		return datableNotes;
-	}
-	
-	public List<Link> getLinks() {
-		return links;
-	}
-	
-	public Boolean getCreation() {
-		return creation;
-	}
-	
-	public Boolean getVersioning() {
-		return versioning;
-	}
+    public List<DatableNote> getDatableNotes() {
+        return datableNotes;
+    }
 
-	public List<String> getCollections() {
-		return collections;
-	}
+    public List<Link> getLinks() {
+        return links;
+    }
 
-	public void setCollections(List<String> collections) {
-		this.collections = collections;
-	}
+    public Boolean getCreation() {
+        return creation;
+    }
 
+    public Boolean getVersioning() {
+        return versioning;
+    }
+
+    public List<String> getCollections() {
+        return collections;
+    }
+
+    public void setCollections(List<String> collections) {
+        this.collections = collections;
+    }
 }

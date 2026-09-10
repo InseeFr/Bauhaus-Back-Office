@@ -3,14 +3,13 @@ package fr.insee.rmes.modules.ddi.config;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.ColecticaCacheNames;
 import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.ColecticaConfiguration;
+import java.time.Duration;
+import java.util.Objects;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cache.caffeine.CaffeineCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import java.time.Duration;
-import java.util.Objects;
 
 /**
  * Enables Spring's caching abstraction and provides a Caffeine-backed {@link CacheManager} for the
@@ -32,14 +31,11 @@ public class ColecticaCacheConfiguration {
     @Bean
     public CacheManager colecticaCacheManager(ColecticaConfiguration colecticaConfiguration) {
         Duration ttl = Objects.requireNonNullElse(
-            colecticaConfiguration.mutualizedCacheTtl(),
-            ColecticaConfiguration.DEFAULT_MUTUALIZED_CACHE_TTL
-        );
+                colecticaConfiguration.mutualizedCacheTtl(), ColecticaConfiguration.DEFAULT_MUTUALIZED_CACHE_TTL);
         CaffeineCacheManager cacheManager = new CaffeineCacheManager(
-            ColecticaCacheNames.MUTUALIZED_CODES_LISTS,
-            ColecticaCacheNames.MUTUALIZED_PACKAGE_CODE_LIST_REFS,
-            ColecticaCacheNames.PHYSICAL_INSTANCE_SEARCH_ROWS
-        );
+                ColecticaCacheNames.MUTUALIZED_CODES_LISTS,
+                ColecticaCacheNames.MUTUALIZED_PACKAGE_CODE_LIST_REFS,
+                ColecticaCacheNames.PHYSICAL_INSTANCE_SEARCH_ROWS);
         cacheManager.setCaffeine(Caffeine.newBuilder().expireAfterWrite(ttl));
         return cacheManager;
     }

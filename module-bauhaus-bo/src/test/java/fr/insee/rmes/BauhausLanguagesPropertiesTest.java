@@ -1,5 +1,10 @@
 package fr.insee.rmes;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import fr.insee.rmes.modules.shared_kernel.domain.model.ConfiguredLanguages;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -10,16 +15,8 @@ import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.TestPropertySource;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-
 @SpringBootTest(classes = BauhausLanguagesPropertiesTest.TestConfig.class)
-@TestPropertySource(properties = {
-        "fr.insee.rmes.bauhaus.lg1=fr",
-        "fr.insee.rmes.bauhaus.lg2=en"
-})
+@TestPropertySource(properties = {"fr.insee.rmes.bauhaus.lg1=fr", "fr.insee.rmes.bauhaus.lg2=en"})
 class BauhausLanguagesPropertiesTest {
 
     @Autowired
@@ -89,16 +86,14 @@ class BauhausLanguagesPropertiesTest {
     void ok_when_starting_with_a_complete_configuration() {
         new ApplicationContextRunner()
                 .withUserConfiguration(TestConfig.class)
-                .withPropertyValues(
-                        "fr.insee.rmes.bauhaus.lg1=fr",
-                        "fr.insee.rmes.bauhaus.lg2=en")
-                .run(context -> assertThat(context).hasNotFailed()
+                .withPropertyValues("fr.insee.rmes.bauhaus.lg1=fr", "fr.insee.rmes.bauhaus.lg2=en")
+                .run(context -> assertThat(context)
+                        .hasNotFailed()
                         .getBean(BauhausLanguagesProperties.class)
                         .isEqualTo(new BauhausLanguagesProperties("fr", "en")));
     }
 
     @Configuration
     @EnableConfigurationProperties(BauhausLanguagesProperties.class)
-    static class TestConfig {
-    }
+    static class TestConfig {}
 }

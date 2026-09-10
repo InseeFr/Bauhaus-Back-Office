@@ -1,10 +1,13 @@
 package fr.insee.rmes.testcontainers.queries.bauhaus_services.distribution;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import fr.insee.rmes.AppSpringBootTest;
 import fr.insee.rmes.bauhaus_services.distribution.DistributionService;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.modules.datasets.distributions.model.Distribution;
+import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import fr.insee.rmes.testcontainers.WithGraphDBContainer;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -12,13 +15,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 
-import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
-
-import static org.junit.jupiter.api.Assertions.*;
-
 @Tag("integration")
 @AppSpringBootTest
-class DistributionServiceImplTest extends WithGraphDBContainer  {
+class DistributionServiceImplTest extends WithGraphDBContainer {
     @Autowired
     DistributionService distributionService;
 
@@ -29,7 +28,7 @@ class DistributionServiceImplTest extends WithGraphDBContainer  {
         registry.add("fr.insee.rmes.bauhaus.sesame.gestion.repository", () -> "bauhaus-test");
     }
 
-    private void assertDistribution(Distribution distribution){
+    private void assertDistribution(Distribution distribution) {
         assertEquals("label lg1", distribution.getLabelLg1());
         assertEquals("label lg2", distribution.getLabelLg2());
         assertEquals(ValidationStatus.UNPUBLISHED.toString(), distribution.getValidationState());
@@ -85,5 +84,4 @@ class DistributionServiceImplTest extends WithGraphDBContainer  {
         distributionService.deleteDistributionId(id);
         assertThrows(RmesNotFoundException.class, () -> distributionService.getDistributionByID(id));
     }
-
 }

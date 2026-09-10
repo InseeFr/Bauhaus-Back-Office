@@ -1,15 +1,14 @@
 package fr.insee.rmes.persistance.sparql_queries.datasets;
 
 import fr.insee.rmes.BauhausLanguagesProperties;
-import fr.insee.rmes.freemarker.FreeMarkerUtils;
 import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.freemarker.FreeMarkerUtils;
 import fr.insee.rmes.graphdb.SparqlLiterals;
-import org.eclipse.rdf4j.model.IRI;
-import org.springframework.stereotype.Component;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import org.eclipse.rdf4j.model.IRI;
+import org.springframework.stereotype.Component;
 
 @Component("sparqlDatasetQueries")
 public class DatasetQueries {
@@ -33,7 +32,7 @@ public class DatasetQueries {
         params.put(DATASET_GRAPH, SparqlLiterals.iri(datasetsGraph));
         params.put("LG1", SparqlLiterals.literal(languages.lg1()));
 
-        if(stamps != null && !stamps.isEmpty()){
+        if (stamps != null && !stamps.isEmpty()) {
             params.put("STAMP", stamps.stream().map(SparqlLiterals::literal).toList());
         }
         return FreeMarkerUtils.buildRequest(ROOT_DIRECTORY, "getDatasets.ftlh", params);
@@ -92,7 +91,13 @@ public class DatasetQueries {
     }
 
     public String getDatasetContributors(IRI iri, String datasetsGraph) throws RmesException {
-        Map<String, Object> params = Map.of("GRAPH", SparqlLiterals.iri(datasetsGraph), "IRI", SparqlLiterals.iri(iri.stringValue()), "PREDICATE", "dc:contributor");
+        Map<String, Object> params = Map.of(
+                "GRAPH",
+                SparqlLiterals.iri(datasetsGraph),
+                "IRI",
+                SparqlLiterals.iri(iri.stringValue()),
+                "PREDICATE",
+                "dc:contributor");
         return FreeMarkerUtils.buildRequest("common/", "getContributors.ftlh", params);
     }
 

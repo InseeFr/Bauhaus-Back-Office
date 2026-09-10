@@ -1,11 +1,15 @@
 package fr.insee.rmes.modules.structures.components.webservice;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.*;
+
 import fr.insee.rmes.bauhaus_services.structures.StructureComponent;
 import fr.insee.rmes.bauhaus_services.structures.StructureService;
 import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.modules.structures.components.webservice.ComponentResources;
-import fr.insee.rmes.modules.structures.components.webservice.PartialStructureComponentResponse;
 import fr.insee.rmes.modules.structures.structures.domain.model.PartialStructureComponent;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,13 +22,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ComponentResourcesTest {
@@ -76,13 +73,27 @@ class ComponentResourcesTest {
     void shouldGetComponents() throws RmesException {
         // Given
         PartialStructureComponent component1 = new PartialStructureComponent(
-                "http://example.com/component1", "c1", "comp1", "Label 1",
-                "concept1", "type1", "codeList1", "Validated", "creator1", "range1"
-        );
+                "http://example.com/component1",
+                "c1",
+                "comp1",
+                "Label 1",
+                "concept1",
+                "type1",
+                "codeList1",
+                "Validated",
+                "creator1",
+                "range1");
         PartialStructureComponent component2 = new PartialStructureComponent(
-                "http://example.com/component2", "c2", "comp2", "Label 2",
-                "concept2", "type2", "codeList2", "Unpublished", "creator2", "range2"
-        );
+                "http://example.com/component2",
+                "c2",
+                "comp2",
+                "Label 2",
+                "concept2",
+                "type2",
+                "codeList2",
+                "Unpublished",
+                "creator2",
+                "range2");
         List<PartialStructureComponent> expectedComponents = Arrays.asList(component1, component2);
         when(structureComponentService.getComponents()).thenReturn(expectedComponents);
 
@@ -102,9 +113,16 @@ class ComponentResourcesTest {
     void should_get_components_with_hateoas_links() throws RmesException {
         // Given
         PartialStructureComponent component1 = new PartialStructureComponent(
-                "http://example.com/component1", "c1", "comp1", "Label 1",
-                "concept1", "type1", "codeList1", "Validated", "creator1", "range1"
-        );
+                "http://example.com/component1",
+                "c1",
+                "comp1",
+                "Label 1",
+                "concept1",
+                "type1",
+                "codeList1",
+                "Validated",
+                "creator1",
+                "range1");
         List<PartialStructureComponent> expectedComponents = List.of(component1);
         when(structureComponentService.getComponents()).thenReturn(expectedComponents);
 
@@ -223,8 +241,7 @@ class ComponentResourcesTest {
         assertEquals(expectedId, result.getBody());
         assertEquals(
                 "/structures/components/" + expectedId,
-                Objects.requireNonNull(result.getHeaders().getLocation()).getPath()
-        );
+                Objects.requireNonNull(result.getHeaders().getLocation()).getPath());
         verify(structureComponentService, times(1)).createComponent(body);
     }
 }

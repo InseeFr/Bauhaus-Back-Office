@@ -5,9 +5,9 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.utils.IdGenerator;
-import fr.insee.rmes.domain.exceptions.RmesException;
 import org.apache.http.HttpStatus;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
@@ -21,57 +21,61 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class StructurePublication extends RdfService {
 
-	public StructurePublication(RepositoryGestion repoGestion, IdGenerator idGenerator,
-								RepositoryPublication repositoryPublication,
-								PublicationUtils publicationUtils) {
-		super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
-	}
+    public StructurePublication(
+            RepositoryGestion repoGestion,
+            IdGenerator idGenerator,
+            RepositoryPublication repositoryPublication,
+            PublicationUtils publicationUtils) {
+        super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
+    }
 
-	private void copyTriplet(Resource structure, Model model, RepositoryConnection con, String[] denyList) throws RmesException {
-		try (RepositoryResult<Statement> statements = repoGestion.getStatements(con, structure)) {
-			while (statements.hasNext()) {
-				Statement st = statements.next();
-				String pred = RdfUtils.toString(st.getPredicate());
-				if (PublicationUtils.stringEndsWithItemFromList(pred,denyList)) {
-					// nothing, wouldn't copy this attr
-				} else if(pred.endsWith("component")){
-					model.add(publicationUtils.tranformBaseURIToPublish(st.getSubject()),
-							st.getPredicate(),
-							publicationUtils.tranformBaseURIToPublish((Resource) st.getObject()),
-							st.getContext());
+    private void copyTriplet(Resource structure, Model model, RepositoryConnection con, String[] denyList)
+            throws RmesException {
+        try (RepositoryResult<Statement> statements = repoGestion.getStatements(con, structure)) {
+            while (statements.hasNext()) {
+                Statement st = statements.next();
+                String pred = RdfUtils.toString(st.getPredicate());
+                if (PublicationUtils.stringEndsWithItemFromList(pred, denyList)) {
+                    // nothing, wouldn't copy this attr
+                } else if (pred.endsWith("component")) {
+                    model.add(
+                            publicationUtils.tranformBaseURIToPublish(st.getSubject()),
+                            st.getPredicate(),
+                            publicationUtils.tranformBaseURIToPublish((Resource) st.getObject()),
+                            st.getContext());
 
-					copyTriplet((Resource) st.getObject(), model, con, new String[]{"identifier", "created", "modified"});
-				} else if(pred.endsWith("attribute") || pred.endsWith("measure") || pred.endsWith("dimension")){
-					model.add(publicationUtils.tranformBaseURIToPublish(st.getSubject()),
-							st.getPredicate(),
-							publicationUtils.tranformBaseURIToPublish((Resource) st.getObject()),
-							st.getContext());
-				}
-				else {
-					model.add(publicationUtils.tranformBaseURIToPublish(st.getSubject()),
-							st.getPredicate(),
-							st.getObject(),
-							st.getContext());
-				}
+                    copyTriplet(
+                            (Resource) st.getObject(), model, con, new String[] {"identifier", "created", "modified"});
+                } else if (pred.endsWith("attribute") || pred.endsWith("measure") || pred.endsWith("dimension")) {
+                    model.add(
+                            publicationUtils.tranformBaseURIToPublish(st.getSubject()),
+                            st.getPredicate(),
+                            publicationUtils.tranformBaseURIToPublish((Resource) st.getObject()),
+                            st.getContext());
+                } else {
+                    model.add(
+                            publicationUtils.tranformBaseURIToPublish(st.getSubject()),
+                            st.getPredicate(),
+                            st.getObject(),
+                            st.getContext());
+                }
+            }
+        } catch (RepositoryException e) {
+            throw new RmesException(
+                    HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), Constants.REPOSITORY_EXCEPTION);
+        }
+    }
 
-			}
-		} catch (RepositoryException e) {
-			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), Constants.REPOSITORY_EXCEPTION);
-		}
-	}
+    public void publish(Resource structure) throws RmesException {
 
-	public void publish(Resource structure) throws RmesException {
+        Model model = new LinkedHashModel();
+        try (RepositoryConnection con = repoGestion.getConnection()) {
+            this.copyTriplet(
+                    structure, model, con, new String[] {"validationState", Constants.CREATOR, Constants.CONTRIBUTOR});
+        }
+        Resource structureToPublish = publicationUtils.tranformBaseURIToPublish(structure);
 
-		Model model = new LinkedHashModel();
-		try (RepositoryConnection con = repoGestion.getConnection()) {
-			this.copyTriplet(structure, model, con, new String[]{"validationState", Constants.CREATOR, Constants.CONTRIBUTOR});
-		}
-		Resource structureToPublish = publicationUtils.tranformBaseURIToPublish(structure);
-
-		repositoryPublication.clearStructureAndComponentForAllRepositories(structureToPublish);
-		repositoryPublication.publishResource(structureToPublish, model, "Structure");
-
-	}
-
+        repositoryPublication.clearStructureAndComponentForAllRepositories(structureToPublish);
+        repositoryPublication.publishResource(structureToPublish, model, "Structure");
+    }
 }
-

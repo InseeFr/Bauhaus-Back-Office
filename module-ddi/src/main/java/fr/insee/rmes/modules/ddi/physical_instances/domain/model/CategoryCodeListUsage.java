@@ -10,12 +10,7 @@ package fr.insee.rmes.modules.ddi.physical_instances.domain.model;
  * no variable or when that parent cannot be resolved — only {@link #codeList()} is always present.
  */
 public record CategoryCodeListUsage(
-        UsageItem group,
-        UsageItem studyUnit,
-        UsageItem physicalInstance,
-        UsageItem variable,
-        UsageItem codeList
-) {
+        UsageItem group, UsageItem studyUnit, UsageItem physicalInstance, UsageItem variable, UsageItem codeList) {
 
     /** Une liste qu'aucune variable n'utilise : seule la liste elle-même est connue. */
     public static CategoryCodeListUsage ofCodeListAlone(UsageItem codeList) {

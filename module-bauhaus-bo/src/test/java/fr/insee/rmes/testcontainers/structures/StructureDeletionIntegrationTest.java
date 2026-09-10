@@ -1,5 +1,7 @@
 package fr.insee.rmes.testcontainers.structures;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.RepositoryInitiator;
 import fr.insee.rmes.graphdb.RepositoryUtils;
@@ -9,8 +11,6 @@ import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Filet de sécurité sur la suppression structurée d'une {@code qb:DataStructureDefinition}
@@ -40,8 +40,7 @@ class StructureDeletionIntegrationTest extends WithGraphDBContainer {
     private static final String COMPONENT_2 = "http://bauhaus/structures/struct-delete-it/cs2";
 
     private final RepositoryGestion repositoryGestion = new RepositoryGestion(
-            getRdfGestionConnectionDetails(),
-            new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED));
+            getRdfGestionConnectionDetails(), new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED));
 
     @BeforeAll
     static void initData() {
@@ -51,15 +50,23 @@ class StructureDeletionIntegrationTest extends WithGraphDBContainer {
     @Test
     void clearStructureNodeAndComponents_removes_components_and_nested_nodes() throws RmesException {
         // Garde-fou : les composants et le nœud imbriqué existent avant la suppression.
-        assertThat(componentExists(COMPONENT_1)).as("composant 1 présent avant suppression").isTrue();
-        assertThat(componentExists(NESTED_DIMENSION)).as("dimension imbriquée présente avant suppression").isTrue();
-        assertThat(componentExists(COMPONENT_2)).as("composant 2 présent avant suppression").isTrue();
+        assertThat(componentExists(COMPONENT_1))
+                .as("composant 1 présent avant suppression")
+                .isTrue();
+        assertThat(componentExists(NESTED_DIMENSION))
+                .as("dimension imbriquée présente avant suppression")
+                .isTrue();
+        assertThat(componentExists(COMPONENT_2))
+                .as("composant 2 présent avant suppression")
+                .isTrue();
 
         repositoryGestion.clearStructureNodeAndComponents(VF.createIRI(STRUCTURE));
 
         // Les nœuds de composants et leurs triplets sortants ont disparu (récursion incluse).
         assertThat(componentExists(COMPONENT_1)).as("composant 1 supprimé").isFalse();
-        assertThat(componentExists(NESTED_DIMENSION)).as("dimension imbriquée supprimée").isFalse();
+        assertThat(componentExists(NESTED_DIMENSION))
+                .as("dimension imbriquée supprimée")
+                .isFalse();
         assertThat(componentExists(COMPONENT_2)).as("composant 2 supprimé").isFalse();
     }
 

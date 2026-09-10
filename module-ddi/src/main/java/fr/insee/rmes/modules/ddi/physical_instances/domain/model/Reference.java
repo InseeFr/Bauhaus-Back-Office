@@ -17,8 +17,7 @@ public record Reference(
         @JsonProperty("URN") String urn,
         @JsonProperty("Agency") String agency,
         @JsonProperty("ID") String id,
-        @JsonProperty("Version") String version
-) {
+        @JsonProperty("Version") String version) {
 
     public static Reference of(String agency, String id, String version, String type) {
         return new Reference(type, synthesizeUrn(agency, id, version), agency, id, version);

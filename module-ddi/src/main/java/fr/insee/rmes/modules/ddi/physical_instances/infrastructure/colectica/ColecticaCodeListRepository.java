@@ -37,14 +37,13 @@ class ColecticaCodeListRepository {
     private final MutualizedCodeListRefsStrategy mutualizedCodeListRefsProvider;
 
     ColecticaCodeListRepository(
-        ColecticaConfiguration.ColecticaInstanceConfiguration instanceConfiguration,
-        ColecticaClient colecticaClient,
-        DDI3toDDI4ConverterService ddi3ToDdi4Converter,
-        ColecticaSetReader setReader,
-        ColecticaVersionDates versionDates,
-        ColecticaLabels labels,
-        MutualizedCodeListRefsStrategy mutualizedCodeListRefsProvider
-    ) {
+            ColecticaConfiguration.ColecticaInstanceConfiguration instanceConfiguration,
+            ColecticaClient colecticaClient,
+            DDI3toDDI4ConverterService ddi3ToDdi4Converter,
+            ColecticaSetReader setReader,
+            ColecticaVersionDates versionDates,
+            ColecticaLabels labels,
+            MutualizedCodeListRefsStrategy mutualizedCodeListRefsProvider) {
         this.instanceConfiguration = instanceConfiguration;
         this.colecticaClient = colecticaClient;
         this.ddi3ToDdi4Converter = ddi3ToDdi4Converter;
@@ -67,12 +66,11 @@ class ColecticaCodeListRepository {
                 return null;
             }
             Ddi4Response response = ddi3ToDdi4Converter.convertDdi3ToDdi4(
-                new Ddi3Response(null, ColecticaItems.toDdi3Items(itemResponses)), Ddi4Response.SCHEMA);
+                    new Ddi3Response(null, ColecticaItems.toDdi3Items(itemResponses)), Ddi4Response.SCHEMA);
             return ColecticaSetReader.withTopLevelReference(
-                response, setReader.findTopLevelReference(itemResponses, CODE_LIST));
+                    response, setReader.findTopLevelReference(itemResponses, CODE_LIST));
         } catch (Exception e) {
-            throw new RuntimeException(
-                "Failed to fetch code list " + agencyId + "/" + id + "/" + version, e);
+            throw new RuntimeException("Failed to fetch code list " + agencyId + "/" + id + "/" + version, e);
         }
     }
 
@@ -88,10 +86,9 @@ class ColecticaCodeListRepository {
                 return null;
             }
             return ColecticaXml.assembleFragmentInstance(
-                ColecticaItems.fragmentXmls(Arrays.stream(itemResponses).toList()));
+                    ColecticaItems.fragmentXmls(Arrays.stream(itemResponses).toList()));
         } catch (Exception e) {
-            throw new RuntimeException(
-                "Failed to fetch code list XML " + agencyId + "/" + id + "/" + version, e);
+            throw new RuntimeException("Failed to fetch code list XML " + agencyId + "/" + id + "/" + version, e);
         }
     }
 
@@ -128,8 +125,10 @@ class ColecticaCodeListRepository {
             // Nom technique (itemName) conservé à part du libellé : il sert à la recherche dans le
             // sélecteur côté front, où seul le libellé est affiché.
             String name = labels.firstNonBlank(item.itemName()).orElse(null);
-            collected.putIfAbsent(key, new PartialCodesList(
-                item.identifier(), label.get(), versionDateByKey.get(key), item.agencyId(), name));
+            collected.putIfAbsent(
+                    key,
+                    new PartialCodesList(
+                            item.identifier(), label.get(), versionDateByKey.get(key), item.agencyId(), name));
         }
         logger.info("{} mutualized CodeList(s) kept", collected.size());
 
@@ -144,8 +143,8 @@ class ColecticaCodeListRepository {
      */
     List<PartialCodesList> resolveCodeListsMetadata(Set<String> codeListIds) {
         List<ColecticaItem> keptItems = allCodeLists().stream()
-            .filter(item -> item != null && codeListIds.contains(item.identifier()))
-            .toList();
+                .filter(item -> item != null && codeListIds.contains(item.identifier()))
+                .toList();
         if (keptItems.isEmpty()) {
             return List.of();
         }
@@ -159,12 +158,12 @@ class ColecticaCodeListRepository {
         Map<String, Date> versionDateByKey = versionDates.byKey(refs, itemsByKey);
 
         return keptItems.stream()
-            .map(item -> new PartialCodesList(
-                item.identifier(),
-                labels.of(item),
-                versionDateByKey.get(item.agencyId() + "/" + item.identifier()),
-                item.agencyId()))
-            .toList();
+                .map(item -> new PartialCodesList(
+                        item.identifier(),
+                        labels.of(item),
+                        versionDateByKey.get(item.agencyId() + "/" + item.identifier()),
+                        item.agencyId()))
+                .toList();
     }
 
     private Map<String, ColecticaItem> allCodeListsByKey() {
@@ -178,8 +177,8 @@ class ColecticaCodeListRepository {
     }
 
     private List<ColecticaItem> allCodeLists() {
-        ColecticaResponse response = colecticaClient.query(
-            List.of(instanceConfiguration.itemTypes().get(CODE_LIST)));
+        ColecticaResponse response =
+                colecticaClient.query(List.of(instanceConfiguration.itemTypes().get(CODE_LIST)));
         return (response == null || response.results() == null) ? List.of() : response.results();
     }
 }

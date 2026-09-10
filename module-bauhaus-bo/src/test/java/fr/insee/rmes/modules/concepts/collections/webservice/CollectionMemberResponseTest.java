@@ -1,9 +1,9 @@
 package fr.insee.rmes.modules.concepts.collections.webservice;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionMember;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class CollectionMemberResponseTest {
 

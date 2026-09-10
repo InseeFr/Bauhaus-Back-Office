@@ -1,5 +1,8 @@
 package fr.insee.rmes.modules.concepts.concept.infrastructure.graphdb;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
+
 import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.bauhaus_services.concepts.concepts.LegacyConceptsRepository;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptCollectionsQueries;
@@ -11,9 +14,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class GraphDBConceptsRepositoryTest {
@@ -52,8 +52,10 @@ class GraphDBConceptsRepositoryTest {
 
         var concepts = repository.getConcepts();
 
-        assertThat(concepts).singleElement()
-                .satisfies(concept -> assertThat(concept.alternativeLabel().value()).isEqualTo("RNIPP"));
+        assertThat(concepts)
+                .singleElement()
+                .satisfies(concept ->
+                        assertThat(concept.alternativeLabel().value()).isEqualTo("RNIPP"));
     }
 
     @Test
@@ -67,9 +69,10 @@ class GraphDBConceptsRepositoryTest {
 
         var concepts = repository.getConcepts();
 
-        assertThat(concepts).singleElement()
-                .satisfies(concept -> assertThat(concept.alternativeLabel().value())
-                        .isEqualTo("RNIPP || Répertoire national"));
+        assertThat(concepts)
+                .singleElement()
+                .satisfies(concept ->
+                        assertThat(concept.alternativeLabel().value()).isEqualTo("RNIPP || Répertoire national"));
     }
 
     @Test
@@ -82,7 +85,8 @@ class GraphDBConceptsRepositoryTest {
 
         var concepts = repository.getConcepts();
 
-        assertThat(concepts).singleElement()
+        assertThat(concepts)
+                .singleElement()
                 .satisfies(concept -> assertThat(concept.alternativeLabel()).isNull());
     }
 
@@ -98,8 +102,7 @@ class GraphDBConceptsRepositoryTest {
 
         var concepts = repository.getConcepts();
 
-        assertThat(concepts).extracting(concept -> concept.id().value())
-                .containsExactly("c00002", "c00001");
+        assertThat(concepts).extracting(concept -> concept.id().value()).containsExactly("c00002", "c00001");
     }
 
     @Test

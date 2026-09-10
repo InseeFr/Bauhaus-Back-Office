@@ -11,10 +11,10 @@ import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.exceptions.errors.IndicatorErrorCode;
 import fr.insee.rmes.graphdb.ObjectType;
-import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
-import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.model.links.OperationsLink;
 import fr.insee.rmes.model.operations.Indicator;
+import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.utils.ObjectPublication;
 import org.apache.http.HttpStatus;
 import org.eclipse.rdf4j.model.Model;
@@ -28,79 +28,91 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public class IndicatorPublication implements ObjectPublication<Indicator> {
-	final OperationsParentRepository operationsParentRepository;
-	final RepositoryGestion repoGestion;
-	final RepositoryPublication repositoryPublication;
-	final PublicationUtils publicationUtils;
+    final OperationsParentRepository operationsParentRepository;
+    final RepositoryGestion repoGestion;
+    final RepositoryPublication repositoryPublication;
+    final PublicationUtils publicationUtils;
 
-	public IndicatorPublication(OperationsParentRepository operationsParentRepository, RepositoryGestion repoGestion, RepositoryPublication repositoryPublication, PublicationUtils publicationUtils) {
-		this.operationsParentRepository = operationsParentRepository;
-		this.repoGestion = repoGestion;
-		this.repositoryPublication = repositoryPublication;
-		this.publicationUtils = publicationUtils;
-	}
+    public IndicatorPublication(
+            OperationsParentRepository operationsParentRepository,
+            RepositoryGestion repoGestion,
+            RepositoryPublication repositoryPublication,
+            PublicationUtils publicationUtils) {
+        this.operationsParentRepository = operationsParentRepository;
+        this.repoGestion = repoGestion;
+        this.repositoryPublication = repositoryPublication;
+        this.publicationUtils = publicationUtils;
+    }
 
-	@Override
-	public void validate(Indicator indicator) throws RmesException {
+    @Override
+    public void validate(Indicator indicator) throws RmesException {
 
-		PublicationUtils.rejectIfAlreadyPublished("Indicator", indicator.getId(), operationsParentRepository.getIndicatorsValidationStatus(indicator.getId()));
+        PublicationUtils.rejectIfAlreadyPublished(
+                "Indicator",
+                indicator.getId(),
+                operationsParentRepository.getIndicatorsValidationStatus(indicator.getId()));
 
-		if(indicator.isWasGeneratedByEmpty()){
-			throw new RmesBadRequestException(IndicatorErrorCode.EMPTY_WAS_GENERATED_BY, "An indicator should be linked to a series.");
-		}
+        if (indicator.isWasGeneratedByEmpty()) {
+            throw new RmesBadRequestException(
+                    IndicatorErrorCode.EMPTY_WAS_GENERATED_BY, "An indicator should be linked to a series.");
+        }
 
-		for (OperationsLink link : indicator.wasGeneratedBy) {
-			var status = operationsParentRepository.getValidationStatus(link.getId());
-			if (!status.equalsIgnoreCase(ValidationStatus.VALIDATED.toString())) {
-				throw new RmesBadRequestException(IndicatorErrorCode.VALIDATION_UNVALIDATED_SERIES, "An indicator can be published if and only if all parent series have been published.");
-			}
-		}
-	}
+        for (OperationsLink link : indicator.wasGeneratedBy) {
+            var status = operationsParentRepository.getValidationStatus(link.getId());
+            if (!status.equalsIgnoreCase(ValidationStatus.VALIDATED.toString())) {
+                throw new RmesBadRequestException(
+                        IndicatorErrorCode.VALIDATION_UNVALIDATED_SERIES,
+                        "An indicator can be published if and only if all parent series have been published.");
+            }
+        }
+    }
 
-	@Override
-	public void publish(String indicatorId) throws RmesException {
+    @Override
+    public void publish(String indicatorId) throws RmesException {
 
-		Model model = new LinkedHashModel();
-		Resource indicator = RdfUtils.objectIRI(ObjectType.INDICATOR, indicatorId);
+        Model model = new LinkedHashModel();
+        Resource indicator = RdfUtils.objectIRI(ObjectType.INDICATOR, indicatorId);
 
-		try (RepositoryConnection con = repoGestion.getConnection();
-			 RepositoryResult<Statement> statements = repoGestion.getStatements(con, indicator)) {
-			if (!statements.hasNext()) {
-				throw new RmesNotFoundException(ErrorCodes.INDICATOR_UNKNOWN_ID, "Indicator not found", indicatorId);
-			}
-			while (statements.hasNext()) {
-				Statement st = statements.next();
-				// Triplets that don't get published
-				String pred = RdfUtils.toString(st.getPredicate());
+        try (RepositoryConnection con = repoGestion.getConnection();
+                RepositoryResult<Statement> statements = repoGestion.getStatements(con, indicator)) {
+            if (!statements.hasNext()) {
+                throw new RmesNotFoundException(ErrorCodes.INDICATOR_UNKNOWN_ID, "Indicator not found", indicatorId);
+            }
+            while (statements.hasNext()) {
+                Statement st = statements.next();
+                // Triplets that don't get published
+                String pred = RdfUtils.toString(st.getPredicate());
 
-				if (pred.endsWith("isValidated")
-						|| pred.endsWith("validationState")) {
-					// nothing, wouldn't copy this attr
-				} else if (pred.endsWith(Constants.WASGENERATEDBY)
-						|| pred.endsWith(Constants.SEEALSO)
-						|| pred.endsWith(Constants.REPLACES)
-						|| pred.endsWith(Constants.ISREPLACEDBY)
-						|| pred.endsWith(Constants.CONTRIBUTOR)
-						|| pred.endsWith(Constants.PUBLISHER)
-						|| pred.endsWith("accrualPeriodicity")) {
-					model.add(publicationUtils.tranformBaseURIToPublish(st.getSubject()), st.getPredicate(),
-							publicationUtils.tranformBaseURIToPublish((Resource) st.getObject()), st.getContext());
-				}
-				// Literals
-				else {
-					model.add(publicationUtils.tranformBaseURIToPublish(st.getSubject()), st.getPredicate(),
-							st.getObject(), st.getContext());
-				}
-				// Other URI to transform : none
-			}
-		} catch (RepositoryException e) {
-			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(),
-					Constants.REPOSITORY_EXCEPTION);
-		}
-		Resource indicatorToPublishRessource = publicationUtils.tranformBaseURIToPublish(indicator);
-		repositoryPublication.publishResource(indicatorToPublishRessource, model, "indicator");
-
-	}
-
-
+                if (pred.endsWith("isValidated") || pred.endsWith("validationState")) {
+                    // nothing, wouldn't copy this attr
+                } else if (pred.endsWith(Constants.WASGENERATEDBY)
+                        || pred.endsWith(Constants.SEEALSO)
+                        || pred.endsWith(Constants.REPLACES)
+                        || pred.endsWith(Constants.ISREPLACEDBY)
+                        || pred.endsWith(Constants.CONTRIBUTOR)
+                        || pred.endsWith(Constants.PUBLISHER)
+                        || pred.endsWith("accrualPeriodicity")) {
+                    model.add(
+                            publicationUtils.tranformBaseURIToPublish(st.getSubject()),
+                            st.getPredicate(),
+                            publicationUtils.tranformBaseURIToPublish((Resource) st.getObject()),
+                            st.getContext());
+                }
+                // Literals
+                else {
+                    model.add(
+                            publicationUtils.tranformBaseURIToPublish(st.getSubject()),
+                            st.getPredicate(),
+                            st.getObject(),
+                            st.getContext());
+                }
+                // Other URI to transform : none
+            }
+        } catch (RepositoryException e) {
+            throw new RmesException(
+                    HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), Constants.REPOSITORY_EXCEPTION);
+        }
+        Resource indicatorToPublishRessource = publicationUtils.tranformBaseURIToPublish(indicator);
+        repositoryPublication.publishResource(indicatorToPublishRessource, model, "indicator");
+    }
 }

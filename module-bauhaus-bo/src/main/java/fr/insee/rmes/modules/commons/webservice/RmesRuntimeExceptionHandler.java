@@ -12,5 +12,4 @@ public class RmesRuntimeExceptionHandler {
     public ResponseEntity<String> handleBadRequestException(RmesRuntimeBadRequestException ex) {
         return ResponseEntity.badRequest().body(ex.getMessage());
     }
-
 }

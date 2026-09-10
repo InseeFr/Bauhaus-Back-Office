@@ -1,9 +1,9 @@
 package fr.insee.rmes.utils;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.env.MockEnvironment;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class PropertiesUtilsTest {
 
@@ -15,8 +15,7 @@ class PropertiesUtilsTest {
 
         PropertiesUtils propertiesUtils = new PropertiesUtils(mockEnvironment);
 
-        String response =propertiesUtils.findByName("myKey").toString();
-        assertEquals("Optional[myProperties]",response);
+        String response = propertiesUtils.findByName("myKey").toString();
+        assertEquals("Optional[myProperties]", response);
     }
-    
 }

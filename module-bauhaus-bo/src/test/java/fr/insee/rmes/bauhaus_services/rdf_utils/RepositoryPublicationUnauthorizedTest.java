@@ -1,18 +1,5 @@
 package fr.insee.rmes.bauhaus_services.rdf_utils;
 
-import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.graphdb.RepositoryUtils;
-import org.eclipse.rdf4j.model.IRI;
-import org.eclipse.rdf4j.model.Model;
-import org.eclipse.rdf4j.model.Resource;
-import org.eclipse.rdf4j.model.impl.LinkedHashModel;
-import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
-import org.eclipse.rdf4j.http.protocol.UnauthorizedException;
-import org.eclipse.rdf4j.repository.Repository;
-import org.eclipse.rdf4j.repository.RepositoryConnection;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import static fr.insee.rmes.graphdb.RepositoryInitiator.Type.DISABLED;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -20,6 +7,19 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
+import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.graphdb.RepositoryUtils;
+import org.eclipse.rdf4j.http.protocol.UnauthorizedException;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.impl.LinkedHashModel;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
+import org.eclipse.rdf4j.repository.Repository;
+import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * Les écritures en base de publication passent par leurs propres blocs {@code catch} :
@@ -66,9 +66,13 @@ class RepositoryPublicationUnauthorizedTest {
 
     @Test
     void shouldExplainThatRdfAuthIsDisabledWhenOverridingTriplets() {
-        model.add(graph, SimpleValueFactory.getInstance().createIRI("http://example.org/p"),
+        model.add(
+                graph,
+                SimpleValueFactory.getInstance().createIRI("http://example.org/p"),
                 SimpleValueFactory.getInstance().createLiteral("o"));
-        doThrow(new UnauthorizedException()).when(connection).remove(any(Resource.class), any(), any(), any(Resource.class));
+        doThrow(new UnauthorizedException())
+                .when(connection)
+                .remove(any(Resource.class), any(), any(), any(Resource.class));
 
         assertThatThrownBy(() -> repositoryPublication.overrideTriplets(graph, model, graph))
                 .isInstanceOf(RmesException.class)

@@ -1,5 +1,15 @@
 package fr.insee.rmes.bauhaus_services.operations.documentations.documents;
 
+import static fr.insee.rmes.PropertiesKeys.DOCUMENTS_BASE_URI;
+import static fr.insee.rmes.PropertiesKeys.LINKS_BASE_URI;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.DocumentsStorageProperties;
@@ -19,6 +29,11 @@ import fr.insee.rmes.modules.commons.domain.port.serverside.FilesOperations;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationDocumentsQueries;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.utils.IdGenerator;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
+import java.util.Optional;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,22 +54,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.nio.file.NoSuchFileException;
-import java.nio.file.Path;
-import java.util.Optional;
-
-import static fr.insee.rmes.PropertiesKeys.DOCUMENTS_BASE_URI;
-import static fr.insee.rmes.PropertiesKeys.LINKS_BASE_URI;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 /**
  * Gestion du fichier attaché à un document : remplacement, téléchargement, contrôle du nom,
  * et génération de l'identifiant partagé entre documents et liens.
@@ -66,15 +65,32 @@ class DocumentsUtilsFileTest {
     private static final String ID = "1000";
     private static final String DOCUMENT_IRI = "http://bauhaus/documents/document/" + ID;
 
-    @Mock RepositoryGestion repoGestion;
-    @Mock IdGenerator idGenerator;
-    @Mock RepositoryPublication repositoryPublication;
-    @Mock PublicationUtils publicationUtils;
-    @Mock OperationsParentRepository operationsParentRepository;
-    @Mock FilesOperations filesOperations;
-    @Mock StorageProperties storageProperties;
-    @Mock OperationDocumentsQueries operationDocumentsQueries;
-    @Mock DocumentsStorageProperties documentsStorage;
+    @Mock
+    RepositoryGestion repoGestion;
+
+    @Mock
+    IdGenerator idGenerator;
+
+    @Mock
+    RepositoryPublication repositoryPublication;
+
+    @Mock
+    PublicationUtils publicationUtils;
+
+    @Mock
+    OperationsParentRepository operationsParentRepository;
+
+    @Mock
+    FilesOperations filesOperations;
+
+    @Mock
+    StorageProperties storageProperties;
+
+    @Mock
+    OperationDocumentsQueries operationDocumentsQueries;
+
+    @Mock
+    DocumentsStorageProperties documentsStorage;
 
     @TempDir
     Path storageFolder;
@@ -84,15 +100,24 @@ class DocumentsUtilsFileTest {
     @BeforeEach
     void setUp() throws RmesException {
         RdfUtils.setGraphs(GraphsPropertiesStub.stub());
-        RdfUtils.setBauhausUriBuilder(new BauhausUriBuilder("http://id.insee.fr/", "http://bauhaus/", name -> switch (name) {
-            case DOCUMENTS_BASE_URI -> Optional.of("documents/document");
-            case LINKS_BASE_URI -> Optional.of("documents/page");
-            default -> Optional.empty();
-        }));
+        RdfUtils.setBauhausUriBuilder(
+                new BauhausUriBuilder("http://id.insee.fr/", "http://bauhaus/", name -> switch (name) {
+                    case DOCUMENTS_BASE_URI -> Optional.of("documents/document");
+                    case LINKS_BASE_URI -> Optional.of("documents/page");
+                    default -> Optional.empty();
+                }));
 
-        documentsUtils = new DocumentsUtils(repoGestion, idGenerator, repositoryPublication,
-                new BauhausLanguagesProperties("fr", "en"), publicationUtils, operationsParentRepository,
-                filesOperations, storageProperties, operationDocumentsQueries, documentsStorage);
+        documentsUtils = new DocumentsUtils(
+                repoGestion,
+                idGenerator,
+                repositoryPublication,
+                new BauhausLanguagesProperties("fr", "en"),
+                publicationUtils,
+                operationsParentRepository,
+                filesOperations,
+                storageProperties,
+                operationDocumentsQueries,
+                documentsStorage);
 
         when(documentsStorage.storageGestion()).thenReturn(storageFolder.toString());
         when(storageProperties.directoryGestion()).thenReturn(storageFolder.toString());
@@ -108,7 +133,9 @@ class DocumentsUtilsFileTest {
 
         String newUrl = documentsUtils.changeFile(ID, content("nouveau contenu"), "note.pdf");
 
-        assertThat(newUrl).as("aucune nouvelle URL puisque l'ancienne est réutilisée").isNull();
+        assertThat(newUrl)
+                .as("aucune nouvelle URL puisque l'ancienne est réutilisée")
+                .isNull();
         verify(filesOperations, never()).delete(any());
         verify(repoGestion, never()).executeUpdate(any());
         verify(filesOperations).write(any(InputStream.class), any(Document.class));
@@ -118,7 +145,8 @@ class DocumentsUtilsFileTest {
     @DisplayName("Remplacer un fichier par un fichier d'un autre nom supprime l'ancien et réécrit l'URL")
     void shouldReplaceTheFileAndTheUrlWhenTheFileNameChanges() throws RmesException {
         givenDocumentWithFile("note.pdf");
-        when(operationDocumentsQueries.changeDocumentUrlQuery(any(), any(), any())).thenReturn("change-url-query");
+        when(operationDocumentsQueries.changeDocumentUrlQuery(any(), any(), any()))
+                .thenReturn("change-url-query");
 
         String newUrl = documentsUtils.changeFile(ID, content("nouveau contenu"), "note-v2.pdf");
 
@@ -139,8 +167,8 @@ class DocumentsUtilsFileTest {
 
         assertThatThrownBy(() -> documentsUtils.changeFile(ID, content("x"), "note.pdf"))
                 .isInstanceOf(RmesException.class)
-                .satisfies(thrown -> assertThat(((RmesException) thrown).getStatus())
-                        .isEqualTo(HttpStatus.NOT_ACCEPTABLE.value()));
+                .satisfies(thrown ->
+                        assertThat(((RmesException) thrown).getStatus()).isEqualTo(HttpStatus.NOT_ACCEPTABLE.value()));
     }
 
     @Test
@@ -167,15 +195,15 @@ class DocumentsUtilsFileTest {
         // réellement plutôt qu'un 404 attendu mais jamais renvoyé.
         givenDocumentWithFile("note.pdf");
         when(filesOperations.read(any(Document.class)))
-                .thenThrow(new RmesFileException("note.pdf", "Failed to read file", new NoSuchFileException("note.pdf")));
+                .thenThrow(
+                        new RmesFileException("note.pdf", "Failed to read file", new NoSuchFileException("note.pdf")));
 
-        assertThatThrownBy(() -> documentsUtils.downloadDocumentFile(ID))
-                .isInstanceOf(RmesFileException.class);
+        assertThatThrownBy(() -> documentsUtils.downloadDocumentFile(ID)).isInstanceOf(RmesFileException.class);
     }
 
     @ParameterizedTest
     @NullAndEmptySource
-    @ValueSource(strings = { "   " })
+    @ValueSource(strings = {"   "})
     @DisplayName("Un nom de fichier vide est refusé")
     void shouldRejectAnEmptyFileName(String fileName) {
         assertThatThrownBy(() -> documentsUtils.checkFileNameValidity(fileName))
@@ -185,7 +213,8 @@ class DocumentsUtilsFileTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = { "sans-extension", "espace dans le nom.pdf", "accentué.pdf", "../evasion.pdf", "note.pdf.exe" })
+    @ValueSource(
+            strings = {"sans-extension", "espace dans le nom.pdf", "accentué.pdf", "../evasion.pdf", "note.pdf.exe"})
     @DisplayName("Un nom de fichier hors alphanumérique, tiret et souligné est refusé")
     void shouldRejectAForbiddenFileName(String fileName) {
         assertThatThrownBy(() -> documentsUtils.checkFileNameValidity(fileName))
@@ -195,7 +224,7 @@ class DocumentsUtilsFileTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = { "note.pdf", "note_v2.odt", "note-v2.PDF", "NOTE2.pdf" })
+    @ValueSource(strings = {"note.pdf", "note_v2.odt", "note-v2.PDF", "NOTE2.pdf"})
     @DisplayName("Un nom de fichier alphanumérique avec extension est accepté")
     void shouldAcceptAValidFileName(String fileName) {
         assertThatCode(() -> documentsUtils.checkFileNameValidity(fileName)).doesNotThrowAnyException();
@@ -226,9 +255,12 @@ class DocumentsUtilsFileTest {
     @DisplayName("Un identifiant non renseigné dans la base est traité comme absent")
     void shouldTreatUndefinedIdsAsMissing() {
         assertThat(documentsUtils.getIdFromJson(new JSONObject())).isNull();
-        assertThat(documentsUtils.getIdFromJson(new JSONObject().put(Constants.ID, Constants.UNDEFINED))).isNull();
-        assertThat(documentsUtils.getIdFromJson(new JSONObject().put(Constants.ID, ""))).isNull();
-        assertThat(documentsUtils.getIdFromJson(new JSONObject().put(Constants.ID, "42"))).isEqualTo(42);
+        assertThat(documentsUtils.getIdFromJson(new JSONObject().put(Constants.ID, Constants.UNDEFINED)))
+                .isNull();
+        assertThat(documentsUtils.getIdFromJson(new JSONObject().put(Constants.ID, "")))
+                .isNull();
+        assertThat(documentsUtils.getIdFromJson(new JSONObject().put(Constants.ID, "42")))
+                .isEqualTo(42);
     }
 
     @Test
@@ -237,14 +269,16 @@ class DocumentsUtilsFileTest {
         JSONObject document = new JSONObject().put(Constants.URL, "file:///mnt/documents/note.pdf");
 
         assertThat(DocumentsUtils.getDocumentUrlFromDocument(document)).isEqualTo("/mnt/documents/note.pdf");
-        assertThat(DocumentsUtils.getDocumentNameFromUrl("/mnt/documents/note.pdf")).isEqualTo("note.pdf");
+        assertThat(DocumentsUtils.getDocumentNameFromUrl("/mnt/documents/note.pdf"))
+                .isEqualTo("note.pdf");
     }
 
     private void givenDocumentWithFile(String fileName) throws RmesException {
         when(operationDocumentsQueries.getDocumentQuery(ID, false)).thenReturn("document-query");
-        when(repoGestion.getResponseAsObject("document-query")).thenReturn(new JSONObject()
-                .put(Constants.URI, DOCUMENT_IRI)
-                .put(Constants.URL, "file://" + storageFolder.resolve(fileName)));
+        when(repoGestion.getResponseAsObject("document-query"))
+                .thenReturn(new JSONObject()
+                        .put(Constants.URI, DOCUMENT_IRI)
+                        .put(Constants.URL, "file://" + storageFolder.resolve(fileName)));
     }
 
     private static InputStream content(String content) {

@@ -1,13 +1,12 @@
 package fr.insee.rmes.modules.concepts.collections.domain.model.commands;
 
-import fr.insee.rmes.modules.shared_kernel.domain.model.LocalisedLabel;
-import fr.insee.rmes.modules.concepts.collections.domain.exceptions.InvalidCreateCollectionCommandException;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
+import fr.insee.rmes.modules.concepts.collections.domain.exceptions.InvalidCreateCollectionCommandException;
+import fr.insee.rmes.modules.shared_kernel.domain.model.LocalisedLabel;
 import java.util.Collections;
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
 
 class CreateCollectionRequestCommandTest {
 
@@ -17,13 +16,7 @@ class CreateCollectionRequestCommandTest {
     void should_throw_exception_if_labels_is_empty() throws InvalidCreateCollectionCommandException {
         var exception = assertThrows(InvalidCreateCollectionCommandException.class, () -> {
             new CreateCollectionCommand(
-                    VALID_ID,
-                    Collections.emptyList(),
-                    Collections.emptyList(),
-                    "HIE000000",
-                    null,
-                    List.of("c01011")
-            );
+                    VALID_ID, Collections.emptyList(), Collections.emptyList(), "HIE000000", null, List.of("c01011"));
         });
 
         assertEquals("There are no labels", exception.getMessage());
@@ -38,8 +31,7 @@ class CreateCollectionRequestCommandTest {
                     Collections.emptyList(),
                     "HIE000000",
                     null,
-                    List.of("c01011")
-            );
+                    List.of("c01011"));
         });
 
         assertEquals("The default label is not provided", exception.getMessage());
@@ -54,8 +46,7 @@ class CreateCollectionRequestCommandTest {
                     Collections.emptyList(),
                     "",
                     null,
-                    Collections.emptyList()
-            );
+                    Collections.emptyList());
         });
 
         assertEquals("The creator is blank", exception.getMessage());
@@ -70,8 +61,7 @@ class CreateCollectionRequestCommandTest {
                     Collections.emptyList(),
                     "HIE000000",
                     null,
-                    List.of("c01011","")
-            );
+                    List.of("c01011", ""));
         });
 
         assertEquals("At least one concept is blank", exception.getMessage());
@@ -86,8 +76,7 @@ class CreateCollectionRequestCommandTest {
                     Collections.emptyList(),
                     "HIE000000",
                     null,
-                    List.of("c01011")
-            );
+                    List.of("c01011"));
         });
 
         assertEquals("The identifier is blank", exception.getMessage());
@@ -102,8 +91,7 @@ class CreateCollectionRequestCommandTest {
                     Collections.emptyList(),
                     "HIE000000",
                     null,
-                    List.of("c01011")
-            );
+                    List.of("c01011"));
         });
     }
 }

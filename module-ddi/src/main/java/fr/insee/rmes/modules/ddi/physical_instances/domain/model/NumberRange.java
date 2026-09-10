@@ -6,7 +6,4 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record NumberRange(
         @JsonProperty("Low") RangeValue low,
-        @JsonProperty("High") RangeValue high
-) {
-}
-
+        @JsonProperty("High") RangeValue high) {}

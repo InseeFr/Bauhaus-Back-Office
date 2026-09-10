@@ -7,28 +7,25 @@ import org.eclipse.rdf4j.model.impl.SimpleNamespace;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 
 public class SCHEMA {
-	
-	  private SCHEMA() {
-		    throw new IllegalStateException("Utility class");
-	}
 
-	
-	public static final String NAMESPACE = "http://schema.org/";
+    private SCHEMA() {
+        throw new IllegalStateException("Utility class");
+    }
 
-	/**
-	 * The recommended prefix for the SCHEMA namespace: "schema"
-	 */
-	public static final String PREFIX = "schema";
-	
-	public static final Namespace NS = new SimpleNamespace(PREFIX, NAMESPACE);
-	
-	public static final IRI URL;
-		
-	static {
-		final ValueFactory f = SimpleValueFactory.getInstance();
+    public static final String NAMESPACE = "http://schema.org/";
 
-		URL = f.createIRI(NAMESPACE, "url");
-	}
-	
+    /**
+     * The recommended prefix for the SCHEMA namespace: "schema"
+     */
+    public static final String PREFIX = "schema";
 
+    public static final Namespace NS = new SimpleNamespace(PREFIX, NAMESPACE);
+
+    public static final IRI URL;
+
+    static {
+        final ValueFactory f = SimpleValueFactory.getInstance();
+
+        URL = f.createIRI(NAMESPACE, "url");
+    }
 }

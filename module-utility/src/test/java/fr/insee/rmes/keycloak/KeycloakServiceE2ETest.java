@@ -1,5 +1,7 @@
 package fr.insee.rmes.keycloak;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import dasniko.testcontainers.keycloak.KeycloakContainer;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
@@ -9,8 +11,6 @@ import org.keycloak.representations.idm.ClientRepresentation;
 import org.keycloak.representations.idm.RealmRepresentation;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 @Tag("integration")
 @Testcontainers()
@@ -31,8 +31,7 @@ class KeycloakServiceE2ETest {
         var properties = new KeycloakProperties(
                 new KeycloakProperties.Server(keycloak.getAuthServerUrl()),
                 new KeycloakProperties.RealmConfig(REALM_NAME, CLIENT_ID, CLIENT_SECRET),
-                new KeycloakProperties.RealmConfig("colectica", "colectica-client", "colectica-secret")
-        );
+                new KeycloakProperties.RealmConfig("colectica", "colectica-client", "colectica-secret"));
         keycloakService = new KeycloakService(properties);
     }
 
@@ -76,8 +75,7 @@ class KeycloakServiceE2ETest {
         var invalidProperties = new KeycloakProperties(
                 new KeycloakProperties.Server(keycloak.getAuthServerUrl()),
                 new KeycloakProperties.RealmConfig(REALM_NAME, CLIENT_ID, "wrong-secret"),
-                new KeycloakProperties.RealmConfig("colectica", "colectica-client", "colectica-secret")
-        );
+                new KeycloakProperties.RealmConfig("colectica", "colectica-client", "colectica-secret"));
         KeycloakService invalidService = new KeycloakService(invalidProperties);
 
         assertThrows(UnreachableKeycloakException.class, invalidService::getAccessToken);

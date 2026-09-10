@@ -9,6 +9,4 @@ public record ConceptDashboardItem(
         String created,
         @Nullable String modified,
         ValidationStatus validationState,
-        @Nullable String creator
-) {
-}
+        @Nullable String creator) {}

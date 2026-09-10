@@ -1,5 +1,8 @@
 package fr.insee.rmes.modules.ddi.physical_instances.domain.services;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
+
 import fr.insee.ddi.lifecycle33.instance.FragmentDocument;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Code;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Category;
@@ -17,9 +20,6 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Level;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import org.apache.xmlbeans.XmlException;
 import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.tuple;
 
 class Lifecycle33ToDdi4Test {
 
@@ -154,8 +154,15 @@ class Lifecycle33ToDdi4Test {
         assertThat(dr.logicalRecord()).hasSize(1);
         assertThat(dr.logicalRecord().get(0).id()).isEqualTo("lr-id");
         assertThat(dr.logicalRecord().get(0).label().get(0).value()).isEqualTo("LR Label");
-        assertThat(dr.logicalRecord().get(0).variablesInRecord().variableUsedReference()).hasSize(1);
-        assertThat(dr.logicalRecord().get(0).variablesInRecord().variableUsedReference().get(0).id()).isEqualTo("var-1");
+        assertThat(dr.logicalRecord().get(0).variablesInRecord().variableUsedReference())
+                .hasSize(1);
+        assertThat(dr.logicalRecord()
+                        .get(0)
+                        .variablesInRecord()
+                        .variableUsedReference()
+                        .get(0)
+                        .id())
+                .isEqualTo("var-1");
     }
 
     @Test
@@ -177,12 +184,12 @@ class Lifecycle33ToDdi4Test {
             </Fragment>
             """);
 
-        Ddi4Variable var = converter.toVariable(doc);
+        Ddi4Variable variable = converter.toVariable(doc);
 
-        assertThat(var.basedOnObject().basedOnReferences().get(0).id()).isEqualTo("original-var");
-        assertThat(var.variableName().get(0).value()).isEqualTo("VAR_NAME");
-        assertThat(var.label().get(0).value()).isEqualTo("Variable Label");
-        assertThat(var.description()).isNull();
+        assertThat(variable.basedOnObject().basedOnReferences().get(0).id()).isEqualTo("original-var");
+        assertThat(variable.variableName().get(0).value()).isEqualTo("VAR_NAME");
+        assertThat(variable.label().get(0).value()).isEqualTo("Variable Label");
+        assertThat(variable.description()).isNull();
     }
 
     @Test
@@ -200,13 +207,11 @@ class Lifecycle33ToDdi4Test {
             </Fragment>
             """);
 
-        Ddi4Variable var = converter.toVariable(doc);
+        Ddi4Variable variable = converter.toVariable(doc);
 
-        assertThat(var.description())
+        assertThat(variable.description())
                 .extracting(LangString::language, LangString::value)
-                .containsExactly(
-                        tuple("en-IE", "English description"),
-                        tuple("fr-FR", "Description française"));
+                .containsExactly(tuple("en-IE", "English description"), tuple("fr-FR", "Description française"));
     }
 
     @Test
@@ -228,11 +233,16 @@ class Lifecycle33ToDdi4Test {
             </Fragment>
             """);
 
-        Ddi4Variable var = converter.toVariable(doc);
+        Ddi4Variable variable = converter.toVariable(doc);
 
-        assertThat(var.variableRepresentation().codeRepresentation().blankIsMissingValue()).isEqualTo(true);
-        assertThat(var.variableRepresentation().codeRepresentation().codeListReference().id()).isEqualTo("cl-id");
-        assertThat(var.variableRepresentation().numericRepresentation()).isNull();
+        assertThat(variable.variableRepresentation().codeRepresentation().blankIsMissingValue())
+                .isEqualTo(true);
+        assertThat(variable.variableRepresentation()
+                        .codeRepresentation()
+                        .codeListReference()
+                        .id())
+                .isEqualTo("cl-id");
+        assertThat(variable.variableRepresentation().numericRepresentation()).isNull();
     }
 
     /**
@@ -262,11 +272,15 @@ class Lifecycle33ToDdi4Test {
             </Fragment>
             """);
 
-        Ddi4Variable var = converter.toVariable(doc);
+        Ddi4Variable variable = converter.toVariable(doc);
 
-        assertThat(var.variableRepresentation().missingValuesReference())
+        assertThat(variable.variableRepresentation().missingValuesReference())
                 .isEqualTo(Reference.of("fr.insee", "mmvr-1", "1", "ManagedMissingValuesRepresentation"));
-        assertThat(var.variableRepresentation().codeRepresentation().codeListReference().id()).isEqualTo("cl-id");
+        assertThat(variable.variableRepresentation()
+                        .codeRepresentation()
+                        .codeListReference()
+                        .id())
+                .isEqualTo("cl-id");
     }
 
     @Test
@@ -289,13 +303,34 @@ class Lifecycle33ToDdi4Test {
             </Fragment>
             """);
 
-        Ddi4Variable var = converter.toVariable(doc);
+        Ddi4Variable variable = converter.toVariable(doc);
 
-        assertThat(var.variableRepresentation().numericRepresentation().numericTypeCode()).isEqualTo("Integer");
-        assertThat(var.variableRepresentation().numericRepresentation().numberRange().low().isInclusive()).isEqualTo(false);
-        assertThat(var.variableRepresentation().numericRepresentation().numberRange().low().value()).isEqualTo(0.0);
-        assertThat(var.variableRepresentation().numericRepresentation().numberRange().high().isInclusive()).isEqualTo(true);
-        assertThat(var.variableRepresentation().numericRepresentation().numberRange().high().value()).isEqualTo(100.0);
+        assertThat(variable.variableRepresentation().numericRepresentation().numericTypeCode())
+                .isEqualTo("Integer");
+        assertThat(variable.variableRepresentation()
+                        .numericRepresentation()
+                        .numberRange()
+                        .low()
+                        .isInclusive())
+                .isEqualTo(false);
+        assertThat(variable.variableRepresentation()
+                        .numericRepresentation()
+                        .numberRange()
+                        .low()
+                        .value())
+                .isEqualTo(0.0);
+        assertThat(variable.variableRepresentation()
+                        .numericRepresentation()
+                        .numberRange()
+                        .high()
+                        .isInclusive())
+                .isEqualTo(true);
+        assertThat(variable.variableRepresentation()
+                        .numericRepresentation()
+                        .numberRange()
+                        .high()
+                        .value())
+                .isEqualTo(100.0);
     }
 
     @Test
@@ -318,10 +353,20 @@ class Lifecycle33ToDdi4Test {
             </Fragment>
             """);
 
-        Ddi4Variable var = converter.toVariable(doc);
+        Ddi4Variable variable = converter.toVariable(doc);
 
-        assertThat(var.variableRepresentation().numericRepresentation().numberRange().low().value()).isEqualTo(0.0001);
-        assertThat(var.variableRepresentation().numericRepresentation().numberRange().high().value()).isEqualTo(12345678.5);
+        assertThat(variable.variableRepresentation()
+                        .numericRepresentation()
+                        .numberRange()
+                        .low()
+                        .value())
+                .isEqualTo(0.0001);
+        assertThat(variable.variableRepresentation()
+                        .numericRepresentation()
+                        .numberRange()
+                        .high()
+                        .value())
+                .isEqualTo(12345678.5);
     }
 
     @Test
@@ -341,10 +386,12 @@ class Lifecycle33ToDdi4Test {
             </Fragment>
             """);
 
-        Ddi4Variable var = converter.toVariable(doc);
+        Ddi4Variable variable = converter.toVariable(doc);
 
-        assertThat(var.variableRepresentation().dateTimeRepresentation().dateTypeCode()).isEqualTo("Date");
-        assertThat(var.variableRepresentation().dateTimeRepresentation().dateFieldFormat()).isEqualTo("yyyy-MM-dd");
+        assertThat(variable.variableRepresentation().dateTimeRepresentation().dateTypeCode())
+                .isEqualTo("Date");
+        assertThat(variable.variableRepresentation().dateTimeRepresentation().dateFieldFormat())
+                .isEqualTo("yyyy-MM-dd");
     }
 
     @Test
@@ -361,12 +408,16 @@ class Lifecycle33ToDdi4Test {
             </Fragment>
             """);
 
-        Ddi4Variable var = converter.toVariable(doc);
+        Ddi4Variable variable = converter.toVariable(doc);
 
-        assertThat(var.variableRepresentation().textRepresentation().minLength()).isEqualTo(1);
-        assertThat(var.variableRepresentation().textRepresentation().maxLength()).isEqualTo(255);
-        assertThat(var.variableRepresentation().textRepresentation().regExp()).isEqualTo("[A-Z]+");
-        assertThat(var.variableRepresentation().textRepresentation().blankIsMissingValue()).isEqualTo(true);
+        assertThat(variable.variableRepresentation().textRepresentation().minLength())
+                .isEqualTo(1);
+        assertThat(variable.variableRepresentation().textRepresentation().maxLength())
+                .isEqualTo(255);
+        assertThat(variable.variableRepresentation().textRepresentation().regExp())
+                .isEqualTo("[A-Z]+");
+        assertThat(variable.variableRepresentation().textRepresentation().blankIsMissingValue())
+                .isEqualTo(true);
     }
 
     @Test
@@ -689,8 +740,7 @@ class Lifecycle33ToDdi4Test {
         assertThat(cat.label())
                 .extracting(LangString::language, LangString::value)
                 .containsExactly(
-                        tuple("en-IE", "Growing of non-perennial crops"),
-                        tuple("fr-FR", "Cultures non permanentes"));
+                        tuple("en-IE", "Growing of non-perennial crops"), tuple("fr-FR", "Cultures non permanentes"));
     }
 
     @Test

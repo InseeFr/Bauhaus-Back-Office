@@ -24,8 +24,7 @@ public class DomainDocumentationExportService implements DocumentationExportServ
     @Override
     public ExportedFile exportMetadataReportForLabel(String id) throws RmesException {
         return gateway.exportMetadataReport(
-                new MetadataExportRequest(id, true, true, false, false),
-                ExportGoal.COMITE_LABEL);
+                new MetadataExportRequest(id, true, true, false, false), ExportGoal.COMITE_LABEL);
     }
 
     @Override

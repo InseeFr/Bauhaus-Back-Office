@@ -34,12 +34,12 @@ import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.schema.Networ
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.ValidationResponse;
 import fr.insee.rmes.modules.users.domain.port.serverside.RbacFetcher;
 import fr.insee.rmes.modules.users.infrastructure.UserProvider;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -82,8 +82,7 @@ class DdiResourcesSchemaValidationTest {
      * L'ancienne sérialisation Colectica, groupée par type. Conservée pour verrouiller son
      * rejet : elle ne doit plus circuler.
      */
-    private static final String COLECTICA_FRAGMENT_SET =
-            """
+    private static final String COLECTICA_FRAGMENT_SET = """
             {
               "$schema": "ddi:4.0",
               "TopLevelReference": [
@@ -167,10 +166,15 @@ class DdiResourcesSchemaValidationTest {
     void setUp() {
         // Le vrai schéma livré, confronté au vrai validateur : c'est tout l'objet de ces tests.
         Ddi4SchemaRepository schemaRepository = new ClasspathDdi4SchemaRepository();
-        ddiResources = new DdiResources(ddiService, ddi4toDdi3ConverterService,
-                ddi3toDdi4ConverterService, ddiItemConvertService, userProvider, rbacFetcher,
-                bauhausUriBuilder, new DomainDdi4SchemaService(schemaRepository,
-                        new NetworkntDdi4SchemaValidator(schemaRepository)));
+        ddiResources = new DdiResources(
+                ddiService,
+                ddi4toDdi3ConverterService,
+                ddi3toDdi4ConverterService,
+                ddiItemConvertService,
+                userProvider,
+                rbacFetcher,
+                bauhausUriBuilder,
+                new DomainDdi4SchemaService(schemaRepository, new NetworkntDdi4SchemaValidator(schemaRepository)));
     }
 
     @Test
@@ -178,15 +182,15 @@ class DdiResourcesSchemaValidationTest {
         ResponseEntity<ValidationResponse> result = ddiResources.validateDdi4(COLECTICA_FRAGMENT_SET);
 
         assertNotNull(result.getBody());
-        assertFalse(result.getBody().valid(),
+        assertFalse(
+                result.getBody().valid(),
                 "Le format groupé par type ne circule plus : il doit être refusé, pas rattrapé");
         assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
     }
 
     @Test
     void shouldAcceptTheSchemaEnvelope() {
-        String envelope =
-                """
+        String envelope = """
                 {
                   "topLevelReferences": [
                     {"$type": "Category", "URN": "urn:ddi:fr.insee:cat-1:1", "Agency": "fr.insee", "ID": "cat-1", "Version": "1"}
@@ -204,15 +208,16 @@ class DdiResourcesSchemaValidationTest {
         ResponseEntity<ValidationResponse> result = ddiResources.validateDdi4(envelope);
 
         assertNotNull(result.getBody());
-        assertTrue(result.getBody().valid(),
-                "L'enveloppe du schéma doit être acceptée, erreurs : " + result.getBody().errors());
+        assertTrue(
+                result.getBody().valid(),
+                "L'enveloppe du schéma doit être acceptée, erreurs : "
+                        + result.getBody().errors());
         assertEquals(HttpStatus.OK, result.getStatusCode());
     }
 
     @Test
     void shouldReportUnknownTopLevelKey() {
-        String withUnknownKey =
-                """
+        String withUnknownKey = """
                 {
                   "topLevelReferences": [],
                   "items": [],
@@ -224,8 +229,10 @@ class DdiResourcesSchemaValidationTest {
 
         assertNotNull(result.getBody());
         assertFalse(result.getBody().valid());
-        assertTrue(result.getBody().errors().stream().anyMatch(e -> e.contains("Variabel")),
-                "La clé inconnue doit être signalée, erreurs : " + result.getBody().errors());
+        assertTrue(
+                result.getBody().errors().stream().anyMatch(e -> e.contains("Variabel")),
+                "La clé inconnue doit être signalée, erreurs : "
+                        + result.getBody().errors());
     }
 
     /**
@@ -242,26 +249,38 @@ class DdiResourcesSchemaValidationTest {
                 List.of(new Ddi4PhysicalInstance(
                         Ddi4PhysicalInstance.TYPE,
                         CogsDate.ofDateTime("2026-08-06T13:28:10.283854228+01:00"),
-                        "urn:ddi:fr.insee:pi-1:1", "fr.insee", "pi-1", "1",
+                        "urn:ddi:fr.insee:pi-1:1",
+                        "fr.insee",
+                        "pi-1",
+                        "1",
                         null,
                         new Citation(LangStrings.of("fr-FR", "20260804")),
                         List.of(Reference.of("fr.insee", "dr-1", "1", Ddi4DataRelationship.TYPE)))),
                 List.of(new Ddi4DataRelationship(
                         Ddi4DataRelationship.TYPE,
                         CogsDate.ofDateTime("2026-08-06T13:28:10.283854228+01:00"),
-                        "urn:ddi:fr.insee:dr-1:1", "fr.insee", "dr-1", "1",
+                        "urn:ddi:fr.insee:dr-1:1",
+                        "fr.insee",
+                        "dr-1",
+                        "1",
                         null,
                         LangStrings.of("fr-FR", "Structure"),
                         List.of(new LogicalRecord(
                                 LogicalRecord.TYPE,
-                                "urn:ddi:fr.insee:lr-1:1", "fr.insee", "lr-1", "1",
+                                "urn:ddi:fr.insee:lr-1:1",
+                                "fr.insee",
+                                "lr-1",
+                                "1",
                                 LangStrings.of("fr-FR", "Enregistrement logique"),
-                                new VariablesInRecord(List.of(
-                                        Reference.of("fr.insee", "var-1", "1", Ddi4Variable.TYPE))))))),
+                                new VariablesInRecord(
+                                        List.of(Reference.of("fr.insee", "var-1", "1", Ddi4Variable.TYPE))))))),
                 List.of(new Ddi4Variable(
                         Ddi4Variable.TYPE,
                         CogsDate.ofDateTime("2026-08-06T10:27:45.371360683+01:00"),
-                        "urn:ddi:fr.insee:var-1:1", "fr.insee", "var-1", "1",
+                        "urn:ddi:fr.insee:var-1:1",
+                        "fr.insee",
+                        "var-1",
+                        "1",
                         null,
                         LangStrings.of("fr-FR", "copy"),
                         LangStrings.of("fr-FR", "cocpy"),
@@ -272,24 +291,36 @@ class DdiResourcesSchemaValidationTest {
                                         CodeRepresentation.TYPE,
                                         false,
                                         Reference.of("fr.insee", "cl-1", "1", Ddi4CodeList.TYPE)),
-                                null, null, null, null),
+                                null,
+                                null,
+                                null,
+                                null),
                         null)),
                 List.of(new Ddi4CodeList(
                         Ddi4CodeList.TYPE,
                         CogsDate.ofDateTime("2026-08-06T10:27:45.371360683+01:00"),
-                        "urn:ddi:fr.insee:cl-1:1", "fr.insee", "cl-1", "1",
+                        "urn:ddi:fr.insee:cl-1:1",
+                        "fr.insee",
+                        "cl-1",
+                        "1",
                         LangStrings.of("fr-FR", "Liste"),
                         null,
                         List.of(new Code(
                                 Code.TYPE,
-                                "urn:ddi:fr.insee:code-1:1", "fr.insee", "code-1", "1",
+                                "urn:ddi:fr.insee:code-1:1",
+                                "fr.insee",
+                                "code-1",
+                                "1",
                                 Reference.of("fr.insee", "cat-1", "1", Ddi4Category.TYPE),
                                 ValueType.of("1"),
                                 null)))),
                 List.of(new Ddi4Category(
                         Ddi4Category.TYPE,
                         CogsDate.ofDateTime("2026-08-06T10:27:45.371360683+01:00"),
-                        "urn:ddi:fr.insee:cat-1:1", "fr.insee", "cat-1", "1",
+                        "urn:ddi:fr.insee:cat-1:1",
+                        "fr.insee",
+                        "cat-1",
+                        "1",
                         LangStrings.of("fr-FR", "Oui"))),
                 null);
 
@@ -299,14 +330,15 @@ class DdiResourcesSchemaValidationTest {
         ResponseEntity<ValidationResponse> result = ddiResources.validateDdi4(asServedByTheGet);
 
         assertNotNull(result.getBody());
-        assertTrue(result.getBody().valid(),
-                "La réponse du GET doit valider telle quelle, erreurs : " + result.getBody().errors());
+        assertTrue(
+                result.getBody().valid(),
+                "La réponse du GET doit valider telle quelle, erreurs : "
+                        + result.getBody().errors());
     }
 
     @Test
     void shouldReportInvalidItemInsideTheEnvelope() {
-        String withInvalidVariable =
-                """
+        String withInvalidVariable = """
                 {
                   "items": [
                     {"$type": "Variable", "URN": "urn:ddi:fr.insee:var-1:1", "Agency": "fr.insee", "ID": "var-1", "Version": "1", "Description": null}
@@ -317,7 +349,6 @@ class DdiResourcesSchemaValidationTest {
         ResponseEntity<ValidationResponse> result = ddiResources.validateDdi4(withInvalidVariable);
 
         assertNotNull(result.getBody());
-        assertFalse(result.getBody().valid(),
-                "Un item non conforme doit être vu : plus aucune enveloppe ne le masque");
+        assertFalse(result.getBody().valid(), "Un item non conforme doit être vu : plus aucune enveloppe ne le masque");
     }
 }

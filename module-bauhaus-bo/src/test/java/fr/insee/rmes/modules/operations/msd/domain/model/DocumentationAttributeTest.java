@@ -1,9 +1,9 @@
 package fr.insee.rmes.modules.operations.msd.domain.model;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class DocumentationAttributeTest {
 
@@ -167,15 +167,12 @@ class DocumentationAttributeTest {
     @Test
     void testRecordEquality() {
         // Given
-        DocumentationAttribute attr1 = new DocumentationAttribute(
-            "STRING", "Label FR", "Label EN", "attr-123", "1", true, false, "", null
-        );
-        DocumentationAttribute attr2 = new DocumentationAttribute(
-            "STRING", "Label FR", "Label EN", "attr-123", "1", true, false, "", null
-        );
-        DocumentationAttribute attr3 = new DocumentationAttribute(
-            "INTEGER", "Label FR", "Label EN", "attr-123", "1", true, false, "", null
-        );
+        DocumentationAttribute attr1 =
+                new DocumentationAttribute("STRING", "Label FR", "Label EN", "attr-123", "1", true, false, "", null);
+        DocumentationAttribute attr2 =
+                new DocumentationAttribute("STRING", "Label FR", "Label EN", "attr-123", "1", true, false, "", null);
+        DocumentationAttribute attr3 =
+                new DocumentationAttribute("INTEGER", "Label FR", "Label EN", "attr-123", "1", true, false, "", null);
 
         // Then
         assertEquals(attr1, attr2);
@@ -187,9 +184,8 @@ class DocumentationAttributeTest {
     @Test
     void testRecordToString() {
         // Given
-        DocumentationAttribute attr = new DocumentationAttribute(
-            "STRING", "Label FR", "Label EN", "attr-123", "1", true, false, "", null
-        );
+        DocumentationAttribute attr =
+                new DocumentationAttribute("STRING", "Label FR", "Label EN", "attr-123", "1", true, false, "", null);
 
         // When
         String toString = attr.toString();

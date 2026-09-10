@@ -1,15 +1,20 @@
 package fr.insee.rmes.bauhaus_services.classifications.item;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.*;
+
+import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.bauhaus_services.classifications.ClassificationNoteService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.config.GraphsPropertiesStub;
-import fr.insee.rmes.graphdb.ontologies.INSEE;
-import fr.insee.rmes.rdf_utils.RepositoryGestion;
-import fr.insee.rmes.BauhausLanguagesProperties;
-import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.exceptions.RmesBadRequestException;
+import fr.insee.rmes.graphdb.ontologies.INSEE;
 import fr.insee.rmes.modules.classifications.nomenclatures.model.ClassificationItem;
 import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import fr.insee.rmes.persistance.sparql_queries.classifications.ClassificationItemsQueries;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Statement;
 import org.json.JSONObject;
@@ -22,13 +27,8 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.*;
-
 @ExtendWith(MockitoExtension.class)
 class ClassificationItemRepositoryTest {
-
 
     @Mock
     RepositoryGestion repositoryGestion;
@@ -60,9 +60,10 @@ class ClassificationItemRepositoryTest {
         item.setDefinitionLg1("<p>Definition Lg1</p>");
         item.setDefinitionLg1Uri("http://definition-lg1");
 
-        RmesException exception = assertThrows(RmesBadRequestException.class, () -> classificationItemRepository.updateClassificationItem(item, "http://uri", "1"));
+        RmesException exception = assertThrows(
+                RmesBadRequestException.class,
+                () -> classificationItemRepository.updateClassificationItem(item, "http://uri", "1"));
         assertThat(exception.getDetails()).contains("The property prefLabelLg1 is required");
-
     }
 
     @Test
@@ -74,9 +75,10 @@ class ClassificationItemRepositoryTest {
         item.setDefinitionLg1("<p>Definition Lg1</p>");
         item.setDefinitionLg1Uri("http://definition-lg1");
 
-        RmesException exception = assertThrows(RmesBadRequestException.class, () -> classificationItemRepository.updateClassificationItem(item, "http://uri", "1"));
+        RmesException exception = assertThrows(
+                RmesBadRequestException.class,
+                () -> classificationItemRepository.updateClassificationItem(item, "http://uri", "1"));
         assertThat(exception.getDetails()).contains("The property prefLabelLg2 is required");
-
     }
 
     @Test

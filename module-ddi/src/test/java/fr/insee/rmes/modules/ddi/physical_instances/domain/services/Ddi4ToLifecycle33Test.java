@@ -1,11 +1,12 @@
 package fr.insee.rmes.modules.ddi.physical_instances.domain.services;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.BasedOnObject;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Citation;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CogsDate;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Code;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeRepresentation;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CogsDate;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.DateTimeRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Category;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CategoryScheme;
@@ -26,18 +27,16 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LogicalRecord;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.NumberRange;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.NumericRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.RangeValue;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.TextRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.ValueType;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.VariableRepresentation;
-import org.apache.xmlbeans.XmlOptions;
-import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.Test;
-
 import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.apache.xmlbeans.XmlOptions;
+import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 class Ddi4ToLifecycle33Test {
 
@@ -49,9 +48,13 @@ class Ddi4ToLifecycle33Test {
 
     @Test
     void shouldBuildPhysicalInstanceWithoutBasedOnObject() {
-        Ddi4PhysicalInstance pi = new Ddi4PhysicalInstance(Ddi4PhysicalInstance.TYPE,
+        Ddi4PhysicalInstance pi = new Ddi4PhysicalInstance(
+                Ddi4PhysicalInstance.TYPE,
                 CogsDate.ofDateTime("2025-12-23T09:52:06.355Z"),
-                "urn:ddi:fr.insee:new-pi-id:1", "fr.insee", "new-pi-id", "1",
+                "urn:ddi:fr.insee:new-pi-id:1",
+                "fr.insee",
+                "new-pi-id",
+                "1",
                 null,
                 new Citation(LangStrings.of("fr-FR", "Test Instance")),
                 null);
@@ -72,9 +75,13 @@ class Ddi4ToLifecycle33Test {
 
     @Test
     void shouldBuildPhysicalInstanceWithBasedOnObjectAndDataRelationshipReference() {
-        Ddi4PhysicalInstance pi = new Ddi4PhysicalInstance(Ddi4PhysicalInstance.TYPE,
+        Ddi4PhysicalInstance pi = new Ddi4PhysicalInstance(
+                Ddi4PhysicalInstance.TYPE,
                 CogsDate.ofDateTime("2025-12-23T09:52:06.355Z"),
-                "urn:ddi:fr.insee:new-pi-id:1", "fr.insee", "new-pi-id", "1",
+                "urn:ddi:fr.insee:new-pi-id:1",
+                "fr.insee",
+                "new-pi-id",
+                "1",
                 BasedOnObject.of(List.of(Reference.of("fr.insee", "original-pi-id", "1", "PhysicalInstance"))),
                 new Citation(LangStrings.of("fr-FR", "Test Instance")),
                 List.of(Reference.of("fr.insee", "dr-id", "1", "DataRelationship")));
@@ -91,10 +98,16 @@ class Ddi4ToLifecycle33Test {
 
     @Test
     void shouldBuildDataRelationshipMinimal() {
-        Ddi4DataRelationship dr = new Ddi4DataRelationship(Ddi4DataRelationship.TYPE,
+        Ddi4DataRelationship dr = new Ddi4DataRelationship(
+                Ddi4DataRelationship.TYPE,
                 CogsDate.ofDateTime("2025-12-23T09:52:06.355Z"),
-                "urn:ddi:fr.insee:dr-id:1", "fr.insee", "dr-id", "1",
-                null, null, null);
+                "urn:ddi:fr.insee:dr-id:1",
+                "fr.insee",
+                "dr-id",
+                "1",
+                null,
+                null,
+                null);
 
         String xml = converter.toDataRelationship(dr).xmlText(logicalProductXmlOptions());
 
@@ -107,13 +120,23 @@ class Ddi4ToLifecycle33Test {
 
     @Test
     void shouldBuildDataRelationshipWithLabelAndLogicalRecord() {
-        Ddi4DataRelationship dr = new Ddi4DataRelationship(Ddi4DataRelationship.TYPE,
+        Ddi4DataRelationship dr = new Ddi4DataRelationship(
+                Ddi4DataRelationship.TYPE,
                 CogsDate.ofDateTime("2025-12-23T09:52:06.355Z"),
-                "urn:ddi:fr.insee:dr-id:1", "fr.insee", "dr-id", "1",
+                "urn:ddi:fr.insee:dr-id:1",
+                "fr.insee",
+                "dr-id",
+                "1",
                 BasedOnObject.of(List.of(Reference.of("fr.insee", "original-dr", "1", "DataRelationship"))),
                 LangStrings.of("fr-FR", "DR Label"),
-                List.of(new LogicalRecord(LogicalRecord.TYPE,"urn:ddi:fr.insee:lr-id:1", "fr.insee", "lr-id", "1",
-                        LangStrings.of("fr-FR", "LR Label"), null)));
+                List.of(new LogicalRecord(
+                        LogicalRecord.TYPE,
+                        "urn:ddi:fr.insee:lr-id:1",
+                        "fr.insee",
+                        "lr-id",
+                        "1",
+                        LangStrings.of("fr-FR", "LR Label"),
+                        null)));
 
         String xml = converter.toDataRelationship(dr).xmlText(logicalProductXmlOptions());
 
@@ -129,15 +152,21 @@ class Ddi4ToLifecycle33Test {
 
     @Test
     void shouldBuildVariableWithBasedOnObjectAndLabel() {
-        Ddi4Variable var = new Ddi4Variable(Ddi4Variable.TYPE,
+        Ddi4Variable variable = new Ddi4Variable(
+                Ddi4Variable.TYPE,
                 CogsDate.ofDateTime("2025-12-23T09:52:06.355Z"),
-                "urn:ddi:fr.insee:var-id:1", "fr.insee", "var-id", "1",
+                "urn:ddi:fr.insee:var-id:1",
+                "fr.insee",
+                "var-id",
+                "1",
                 BasedOnObject.of(List.of(Reference.of("fr.insee", "original-var", "1", "Variable"))),
                 LangStrings.of("fr-FR", "TEST_VAR"),
                 LangStrings.of("fr-FR", "Test Variable"),
-                null, null, null);
+                null,
+                null,
+                null);
 
-        String xml = converter.toVariable(var).xmlText(logicalProductXmlOptions());
+        String xml = converter.toVariable(variable).xmlText(logicalProductXmlOptions());
 
         Assertions.assertThat(xml)
                 .contains("<ddi:Variable")
@@ -152,13 +181,16 @@ class Ddi4ToLifecycle33Test {
 
     @Test
     void shouldBuildVariableWithCodeRepresentation() {
-        Ddi4Variable var = variableWithRepresentation(new VariableRepresentation(
+        Ddi4Variable variable = variableWithRepresentation(new VariableRepresentation(
                 null,
-                new CodeRepresentation(CodeRepresentation.TYPE,true,
-                        Reference.of("fr.insee", "cl-id", "1", "CodeList")),
-                null, null, null, null));
+                new CodeRepresentation(
+                        CodeRepresentation.TYPE, true, Reference.of("fr.insee", "cl-id", "1", "CodeList")),
+                null,
+                null,
+                null,
+                null));
 
-        String xml = converter.toVariable(var).xmlText(logicalProductXmlOptions());
+        String xml = converter.toVariable(variable).xmlText(logicalProductXmlOptions());
 
         Assertions.assertThat(xml)
                 .contains("<r:CodeRepresentation")
@@ -175,14 +207,16 @@ class Ddi4ToLifecycle33Test {
      */
     @Test
     void shouldWriteMissingValuesReferenceOnVariableRepresentation() {
-        Ddi4Variable var = variableWithRepresentation(new VariableRepresentation(
+        Ddi4Variable variable = variableWithRepresentation(new VariableRepresentation(
                 null,
-                new CodeRepresentation(CodeRepresentation.TYPE, false,
-                        Reference.of("fr.insee", "cl-id", "1", "CodeList")),
-                null, null, null,
+                new CodeRepresentation(
+                        CodeRepresentation.TYPE, false, Reference.of("fr.insee", "cl-id", "1", "CodeList")),
+                null,
+                null,
+                null,
                 Reference.of("fr.insee", "mmvr-1", "1", "ManagedMissingValuesRepresentation")));
 
-        String xml = converter.toVariable(var).xmlText(logicalProductXmlOptions());
+        String xml = converter.toVariable(variable).xmlText(logicalProductXmlOptions());
 
         Assertions.assertThat(xml)
                 .contains("<ddi:MissingValuesReference")
@@ -192,13 +226,18 @@ class Ddi4ToLifecycle33Test {
 
     @Test
     void shouldBuildVariableWithNumericRepresentation() {
-        Ddi4Variable var = variableWithRepresentation(new VariableRepresentation(
-                null, null,
-                new NumericRepresentation(NumericRepresentation.TYPE,"Integer",
+        Ddi4Variable variable = variableWithRepresentation(new VariableRepresentation(
+                null,
+                null,
+                new NumericRepresentation(
+                        NumericRepresentation.TYPE,
+                        "Integer",
                         new NumberRange(new RangeValue(false, 0.0), new RangeValue(true, 100.0))),
-                null, null, null));
+                null,
+                null,
+                null));
 
-        String xml = converter.toVariable(var).xmlText(logicalProductXmlOptions());
+        String xml = converter.toVariable(variable).xmlText(logicalProductXmlOptions());
 
         Assertions.assertThat(xml)
                 .contains("<r:NumericRepresentation")
@@ -210,13 +249,18 @@ class Ddi4ToLifecycle33Test {
 
     @Test
     void shouldBuildVariableWithDecimalNumericBounds() {
-        Ddi4Variable var = variableWithRepresentation(new VariableRepresentation(
-                null, null,
-                new NumericRepresentation(NumericRepresentation.TYPE, "Decimal",
+        Ddi4Variable variable = variableWithRepresentation(new VariableRepresentation(
+                null,
+                null,
+                new NumericRepresentation(
+                        NumericRepresentation.TYPE,
+                        "Decimal",
                         new NumberRange(new RangeValue(true, 0.0001), new RangeValue(true, 12345678.5))),
-                null, null, null));
+                null,
+                null,
+                null));
 
-        String xml = converter.toVariable(var).xmlText(logicalProductXmlOptions());
+        String xml = converter.toVariable(variable).xmlText(logicalProductXmlOptions());
 
         Assertions.assertThat(xml)
                 .contains("<r:Low isInclusive=\"true\">0.0001</r:Low>")
@@ -225,12 +269,15 @@ class Ddi4ToLifecycle33Test {
 
     @Test
     void shouldBuildVariableWithDateTimeRepresentation() {
-        Ddi4Variable var = variableWithRepresentation(new VariableRepresentation(
-                null, null, null,
-                new DateTimeRepresentation(DateTimeRepresentation.TYPE,"Date", "yyyy-MM-dd"),
-                null, null));
+        Ddi4Variable variable = variableWithRepresentation(new VariableRepresentation(
+                null,
+                null,
+                null,
+                new DateTimeRepresentation(DateTimeRepresentation.TYPE, "Date", "yyyy-MM-dd"),
+                null,
+                null));
 
-        String xml = converter.toVariable(var).xmlText(logicalProductXmlOptions());
+        String xml = converter.toVariable(variable).xmlText(logicalProductXmlOptions());
 
         Assertions.assertThat(xml)
                 .contains("<r:DateTimeRepresentation")
@@ -240,11 +287,10 @@ class Ddi4ToLifecycle33Test {
 
     @Test
     void shouldBuildVariableWithTextRepresentation() {
-        Ddi4Variable var = variableWithRepresentation(new VariableRepresentation(
-                null, null, null, null,
-                new TextRepresentation(TextRepresentation.TYPE,255, 1, "[A-Z]+", true), null));
+        Ddi4Variable variable = variableWithRepresentation(new VariableRepresentation(
+                null, null, null, null, new TextRepresentation(TextRepresentation.TYPE, 255, 1, "[A-Z]+", true), null));
 
-        String xml = converter.toVariable(var).xmlText(logicalProductXmlOptions());
+        String xml = converter.toVariable(variable).xmlText(logicalProductXmlOptions());
 
         Assertions.assertThat(xml)
                 .contains("<r:TextRepresentation")
@@ -260,11 +306,10 @@ class Ddi4ToLifecycle33Test {
      */
     @Test
     void shouldBuildTextRepresentationWithoutAnyAttribute() {
-        Ddi4Variable var = variableWithRepresentation(new VariableRepresentation(
-                null, null, null, null,
-                new TextRepresentation(TextRepresentation.TYPE, null, null, null, null), null));
+        Ddi4Variable variable = variableWithRepresentation(new VariableRepresentation(
+                null, null, null, null, new TextRepresentation(TextRepresentation.TYPE, null, null, null, null), null));
 
-        String xml = converter.toVariable(var).xmlText(logicalProductXmlOptions());
+        String xml = converter.toVariable(variable).xmlText(logicalProductXmlOptions());
 
         Assertions.assertThat(xml).contains("<r:TextRepresentation");
     }
@@ -276,24 +321,33 @@ class Ddi4ToLifecycle33Test {
      */
     @Test
     void shouldFallBackToTextRepresentationWhenNoValueRepresentation() {
-        Ddi4Variable var = variableWithRepresentation(null);
+        Ddi4Variable variable = variableWithRepresentation(null);
 
-        String xml = converter.toVariable(var).xmlText(logicalProductXmlOptions());
+        String xml = converter.toVariable(variable).xmlText(logicalProductXmlOptions());
 
         Assertions.assertThat(xml).contains("<r:TextRepresentation");
     }
 
     @Test
     void shouldBuildCodeListWithCodes() {
-        Ddi4CodeList cl = new Ddi4CodeList(Ddi4CodeList.TYPE,
+        Ddi4CodeList cl = new Ddi4CodeList(
+                Ddi4CodeList.TYPE,
                 CogsDate.ofDateTime("2025-12-23T09:52:06.355Z"),
-                "urn:ddi:fr.insee:cl-id:1", "fr.insee", "cl-id", "1",
+                "urn:ddi:fr.insee:cl-id:1",
+                "fr.insee",
+                "cl-id",
+                "1",
                 LangStrings.of("fr-FR", "CodeList Label"),
                 null,
-                List.of(new Code(Code.TYPE,
-                        "urn:ddi:fr.insee:code-id:1", "fr.insee", "code-id", "1",
+                List.of(new Code(
+                        Code.TYPE,
+                        "urn:ddi:fr.insee:code-id:1",
+                        "fr.insee",
+                        "code-id",
+                        "1",
                         Reference.of("fr.insee", "cat-id", "1", "Category"),
-                        ValueType.of("01"), null)));
+                        ValueType.of("01"),
+                        null)));
 
         String xml = converter.toCodeList(cl).xmlText(logicalProductXmlOptions());
 
@@ -311,9 +365,13 @@ class Ddi4ToLifecycle33Test {
     @Test
     void shouldBuildCategoryWithBasedOnObject() {
         // Variante d'une categorie partagee : l'attribut DDI BasedOn reference la categorie source.
-        Ddi4Category cat = new Ddi4Category(Ddi4Category.TYPE,
+        Ddi4Category cat = new Ddi4Category(
+                Ddi4Category.TYPE,
                 CogsDate.ofDateTime("2025-12-23T09:52:06.355Z"),
-                "urn:ddi:fr.insee:variant-cat:1", "fr.insee", "variant-cat", "1",
+                "urn:ddi:fr.insee:variant-cat:1",
+                "fr.insee",
+                "variant-cat",
+                "1",
                 BasedOnObject.of(List.of(Reference.of("fr.insee", "original-cat", "3", "Category"))),
                 LangStrings.of("fr-FR", "Europe variante"));
 
@@ -329,12 +387,17 @@ class Ddi4ToLifecycle33Test {
     @Test
     void shouldBuildCodeListWithBasedOnObject() {
         // Variante d'une liste partagée : l'attribut DDI BasedOn référence la liste d'origine.
-        Ddi4CodeList cl = new Ddi4CodeList(Ddi4CodeList.TYPE,
+        Ddi4CodeList cl = new Ddi4CodeList(
+                Ddi4CodeList.TYPE,
                 CogsDate.ofDateTime("2025-12-23T09:52:06.355Z"),
-                "urn:ddi:fr.insee:variant-id:1", "fr.insee", "variant-id", "1",
+                "urn:ddi:fr.insee:variant-id:1",
+                "fr.insee",
+                "variant-id",
+                "1",
                 BasedOnObject.of(List.of(Reference.of("fr.insee", "original-cl-id", "2", "CodeList"))),
                 LangStrings.of("fr-FR", "Variante"),
-                null, null);
+                null,
+                null);
 
         String xml = converter.toCodeList(cl).xmlText(logicalProductXmlOptions());
 
@@ -352,28 +415,39 @@ class Ddi4ToLifecycle33Test {
      */
     @Test
     void shouldSynthesizeCodeListUrnWhenAbsent() {
-        Ddi4CodeList cl = new Ddi4CodeList(Ddi4CodeList.TYPE,
+        Ddi4CodeList cl = new Ddi4CodeList(
+                Ddi4CodeList.TYPE,
                 CogsDate.ofDateTime("2025-12-23T09:52:06.355Z"),
-                null, "fr.insee", "variant-id", "1",
+                null,
+                "fr.insee",
+                "variant-id",
+                "1",
                 LangStrings.of("fr-FR", "Variante"),
                 null,
-                List.of(new Code(Code.TYPE,
-                        null, "fr.insee", "code-id", "1",
+                List.of(new Code(
+                        Code.TYPE,
+                        null,
+                        "fr.insee",
+                        "code-id",
+                        "1",
                         Reference.of("fr.insee", "cat-id", "1", "Category"),
-                        ValueType.of("01"), null)));
+                        ValueType.of("01"),
+                        null)));
 
         String xml = converter.toCodeList(cl).xmlText(logicalProductXmlOptions());
 
-        Assertions.assertThat(xml)
-                .contains(">urn:ddi:fr.insee:variant-id:1<")
-                .contains(">urn:ddi:fr.insee:code-id:1<");
+        Assertions.assertThat(xml).contains(">urn:ddi:fr.insee:variant-id:1<").contains(">urn:ddi:fr.insee:code-id:1<");
     }
 
     @Test
     void shouldSynthesizeCategoryUrnWhenAbsent() {
-        Ddi4Category cat = new Ddi4Category(Ddi4Category.TYPE,
+        Ddi4Category cat = new Ddi4Category(
+                Ddi4Category.TYPE,
                 CogsDate.ofDateTime("2025-12-23T09:52:06.355Z"),
-                null, "fr.insee", "variant-cat", "1",
+                null,
+                "fr.insee",
+                "variant-cat",
+                "1",
                 LangStrings.of("fr-FR", "Europe variante"));
 
         String xml = converter.toCategory(cat).xmlText(logicalProductXmlOptions());
@@ -383,9 +457,13 @@ class Ddi4ToLifecycle33Test {
 
     @Test
     void shouldBuildCodeListWithLevels() {
-        Ddi4CodeList cl = new Ddi4CodeList(Ddi4CodeList.TYPE,
+        Ddi4CodeList cl = new Ddi4CodeList(
+                Ddi4CodeList.TYPE,
                 CogsDate.ofDateTime("2025-12-23T09:52:06.355Z"),
-                "urn:ddi:fr.insee:cl-id:1", "fr.insee", "cl-id", "1",
+                "urn:ddi:fr.insee:cl-id:1",
+                "fr.insee",
+                "cl-id",
+                "1",
                 LangStrings.of("fr-FR", "NUTS"),
                 List.of(
                         new Level(Level.TYPE, 0, LangStrings.of("fr-FR", "NUTS 0"), "Nominal"),
@@ -397,8 +475,10 @@ class Ddi4ToLifecycle33Test {
         Assertions.assertThat(codeList.getLevelArray()).hasSize(2);
         var level0 = codeList.getLevelArray(0);
         Assertions.assertThat(level0.getLevelNumber()).isEqualTo(BigInteger.ZERO);
-        Assertions.assertThat(level0.getLevelNameArray(0).getStringArray(0).getStringValue()).isEqualTo("NUTS 0");
-        Assertions.assertThat(level0.getLevelNameArray(0).getStringArray(0).getLang()).isEqualTo("fr-FR");
+        Assertions.assertThat(level0.getLevelNameArray(0).getStringArray(0).getStringValue())
+                .isEqualTo("NUTS 0");
+        Assertions.assertThat(level0.getLevelNameArray(0).getStringArray(0).getLang())
+                .isEqualTo("fr-FR");
         Assertions.assertThat(level0.getCategoryRelationship().toString()).isEqualTo("Nominal");
         var level1 = codeList.getLevelArray(1);
         Assertions.assertThat(level1.getLevelNumber()).isEqualTo(BigInteger.ONE);
@@ -407,19 +487,32 @@ class Ddi4ToLifecycle33Test {
 
     @Test
     void shouldBuildHierarchicalCodeListWithNestedCodes() {
-        Ddi4CodeList cl = new Ddi4CodeList(Ddi4CodeList.TYPE,
+        Ddi4CodeList cl = new Ddi4CodeList(
+                Ddi4CodeList.TYPE,
                 CogsDate.ofDateTime("2025-12-23T09:52:06.355Z"),
-                "urn:ddi:fr.insee:cl-id:1", "fr.insee", "cl-id", "1",
+                "urn:ddi:fr.insee:cl-id:1",
+                "fr.insee",
+                "cl-id",
+                "1",
                 LangStrings.of("fr-FR", "NUTS"),
                 null,
-                List.of(new Code(Code.TYPE,
-                        "urn:ddi:fr.insee:code-at:1", "fr.insee", "code-at", "1",
+                List.of(new Code(
+                        Code.TYPE,
+                        "urn:ddi:fr.insee:code-at:1",
+                        "fr.insee",
+                        "code-at",
+                        "1",
                         Reference.of("fr.insee", "cat-at", "1", "Category"),
                         ValueType.of("AT"),
-                        List.of(new Code(Code.TYPE,
-                                "urn:ddi:fr.insee:code-at2:1", "fr.insee", "code-at2", "1",
+                        List.of(new Code(
+                                Code.TYPE,
+                                "urn:ddi:fr.insee:code-at2:1",
+                                "fr.insee",
+                                "code-at2",
+                                "1",
                                 Reference.of("fr.insee", "cat-at2", "1", "Category"),
-                                ValueType.of("AT2"), null)))));
+                                ValueType.of("AT2"),
+                                null)))));
 
         var codeList = converter.toCodeList(cl).getFragment().getCodeList();
 
@@ -430,15 +523,20 @@ class Ddi4ToLifecycle33Test {
         var at2 = at.getCodeArray(0);
         Assertions.assertThat(at2.getIDArray(0).getStringValue()).isEqualTo("code-at2");
         Assertions.assertThat(at2.getValue().getStringValue()).isEqualTo("AT2");
-        Assertions.assertThat(at2.getCategoryReference().getIDArray(0).getStringValue()).isEqualTo("cat-at2");
+        Assertions.assertThat(at2.getCategoryReference().getIDArray(0).getStringValue())
+                .isEqualTo("cat-at2");
         Assertions.assertThat(at2.getCodeArray()).isEmpty();
     }
 
     @Test
     void shouldBuildCodeListSchemeWithCodeListReferences() {
-        Ddi4CodeListScheme scheme = new Ddi4CodeListScheme(Ddi4CodeListScheme.TYPE,
+        Ddi4CodeListScheme scheme = new Ddi4CodeListScheme(
+                Ddi4CodeListScheme.TYPE,
                 CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
-                "urn:ddi:fr.insee:cls-id:1", "fr.insee", "cls-id", "1",
+                "urn:ddi:fr.insee:cls-id:1",
+                "fr.insee",
+                "cls-id",
+                "1",
                 LangStrings.of("fr-FR", "CodeListScheme Label"),
                 List.of(
                         Reference.of("fr.insee", "cl-1", "1", "CodeList"),
@@ -458,9 +556,13 @@ class Ddi4ToLifecycle33Test {
 
     @Test
     void shouldBuildLogicalProductWithCodeListSchemeReferences() {
-        Ddi4LogicalProduct logicalProduct = new Ddi4LogicalProduct(Ddi4LogicalProduct.TYPE,
+        Ddi4LogicalProduct logicalProduct = new Ddi4LogicalProduct(
+                Ddi4LogicalProduct.TYPE,
                 CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
-                "urn:ddi:fr.insee:lp-id:1", "fr.insee", "lp-id", "1",
+                "urn:ddi:fr.insee:lp-id:1",
+                "fr.insee",
+                "lp-id",
+                "1",
                 LangStrings.of("fr-FR", "LogicalProduct Label"),
                 List.of(Reference.of("fr.insee", "cls-1", "1", "CodeListScheme")));
 
@@ -477,9 +579,13 @@ class Ddi4ToLifecycle33Test {
 
     @Test
     void shouldBuildCategorySchemeWithCategoryReferences() {
-        Ddi4CategoryScheme scheme = new Ddi4CategoryScheme(Ddi4CategoryScheme.TYPE,
+        Ddi4CategoryScheme scheme = new Ddi4CategoryScheme(
+                Ddi4CategoryScheme.TYPE,
                 CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
-                "urn:ddi:fr.insee:cats-id:1", "fr.insee", "cats-id", "1",
+                "urn:ddi:fr.insee:cats-id:1",
+                "fr.insee",
+                "cats-id",
+                "1",
                 LangStrings.of("fr-FR", "CategoryScheme Label"),
                 List.of(
                         Reference.of("fr.insee", "cat-1", "1", "Category"),
@@ -499,9 +605,13 @@ class Ddi4ToLifecycle33Test {
 
     @Test
     void shouldBuildVariableSchemeWithVariableReferences() {
-        Ddi4VariableScheme scheme = new Ddi4VariableScheme(Ddi4VariableScheme.TYPE,
+        Ddi4VariableScheme scheme = new Ddi4VariableScheme(
+                Ddi4VariableScheme.TYPE,
                 CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
-                "urn:ddi:fr.insee:vars-id:1", "fr.insee", "vars-id", "1",
+                "urn:ddi:fr.insee:vars-id:1",
+                "fr.insee",
+                "vars-id",
+                "1",
                 LangStrings.of("fr-FR", "VariableScheme Label"),
                 List.of(
                         Reference.of("fr.insee", "var-1", "1", "Variable"),
@@ -521,24 +631,30 @@ class Ddi4ToLifecycle33Test {
 
     @Test
     void shouldBuildEmptyCategoryAndVariableSchemes() {
-        Ddi4CategoryScheme categoryScheme = new Ddi4CategoryScheme(Ddi4CategoryScheme.TYPE,
+        Ddi4CategoryScheme categoryScheme = new Ddi4CategoryScheme(
+                Ddi4CategoryScheme.TYPE,
                 CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
-                "urn:ddi:fr.insee:cats-id:1", "fr.insee", "cats-id", "1",
-                LangStrings.of("fr-FR", "Empty CategoryScheme"), List.of());
-        Ddi4VariableScheme variableScheme = new Ddi4VariableScheme(Ddi4VariableScheme.TYPE,
+                "urn:ddi:fr.insee:cats-id:1",
+                "fr.insee",
+                "cats-id",
+                "1",
+                LangStrings.of("fr-FR", "Empty CategoryScheme"),
+                List.of());
+        Ddi4VariableScheme variableScheme = new Ddi4VariableScheme(
+                Ddi4VariableScheme.TYPE,
                 CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
-                "urn:ddi:fr.insee:vars-id:1", "fr.insee", "vars-id", "1",
-                LangStrings.of("fr-FR", "Empty VariableScheme"), List.of());
+                "urn:ddi:fr.insee:vars-id:1",
+                "fr.insee",
+                "vars-id",
+                "1",
+                LangStrings.of("fr-FR", "Empty VariableScheme"),
+                List.of());
 
         String categoryXml = converter.toCategoryScheme(categoryScheme).xmlText(logicalProductXmlOptions());
         String variableXml = converter.toVariableScheme(variableScheme).xmlText(logicalProductXmlOptions());
 
-        Assertions.assertThat(categoryXml)
-                .contains("<ddi:CategoryScheme")
-                .doesNotContain("CategoryReference");
-        Assertions.assertThat(variableXml)
-                .contains("<ddi:VariableScheme")
-                .doesNotContain("VariableReference");
+        Assertions.assertThat(categoryXml).contains("<ddi:CategoryScheme").doesNotContain("CategoryReference");
+        Assertions.assertThat(variableXml).contains("<ddi:VariableScheme").doesNotContain("VariableReference");
     }
 
     @Test
@@ -546,9 +662,13 @@ class Ddi4ToLifecycle33Test {
         // L'élément générique ManagedRepresentationReference est une tête de groupe de substitution
         // abstraite : Colectica ignore la référence (ni indexée, ni affichée) si elle n'est pas
         // écrite avec l'élément concret correspondant au type visé.
-        Ddi4ManagedRepresentationScheme scheme = new Ddi4ManagedRepresentationScheme(Ddi4ManagedRepresentationScheme.TYPE,
+        Ddi4ManagedRepresentationScheme scheme = new Ddi4ManagedRepresentationScheme(
+                Ddi4ManagedRepresentationScheme.TYPE,
                 CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
-                "urn:ddi:fr.insee:mrs-id:1", "fr.insee", "mrs-id", "1",
+                "urn:ddi:fr.insee:mrs-id:1",
+                "fr.insee",
+                "mrs-id",
+                "1",
                 LangStrings.of("fr-FR", "ManagedRepresentationScheme Label"),
                 List.of(
                         Reference.of("fr.insee", "mr-1", "1", "ManagedTextRepresentation"),
@@ -576,9 +696,14 @@ class Ddi4ToLifecycle33Test {
         Ddi4ManagedMissingValuesRepresentation mmvr = new Ddi4ManagedMissingValuesRepresentation(
                 Ddi4ManagedMissingValuesRepresentation.TYPE,
                 CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
-                "urn:ddi:fr.insee:mmvr-id:1", "fr.insee", "mmvr-id", "1",
+                "urn:ddi:fr.insee:mmvr-id:1",
+                "fr.insee",
+                "mmvr-id",
+                "1",
                 LangStrings.of("fr-FR", "Valeurs manquantes standard"),
-                List.of(new CodeRepresentation(CodeRepresentation.TYPE, Boolean.FALSE,
+                List.of(new CodeRepresentation(
+                        CodeRepresentation.TYPE,
+                        Boolean.FALSE,
                         Reference.of("fr.insee", "cl-sentinel", "1", "CodeList"))));
 
         String xml = converter.toManagedMissingValuesRepresentation(mmvr).xmlText(logicalProductXmlOptions());
@@ -595,10 +720,15 @@ class Ddi4ToLifecycle33Test {
 
     @Test
     void shouldBuildEmptyManagedRepresentationScheme() {
-        Ddi4ManagedRepresentationScheme scheme = new Ddi4ManagedRepresentationScheme(Ddi4ManagedRepresentationScheme.TYPE,
+        Ddi4ManagedRepresentationScheme scheme = new Ddi4ManagedRepresentationScheme(
+                Ddi4ManagedRepresentationScheme.TYPE,
                 CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
-                "urn:ddi:fr.insee:mrs-id:1", "fr.insee", "mrs-id", "1",
-                LangStrings.of("fr-FR", "Empty ManagedRepresentationScheme"), List.of());
+                "urn:ddi:fr.insee:mrs-id:1",
+                "fr.insee",
+                "mrs-id",
+                "1",
+                LangStrings.of("fr-FR", "Empty ManagedRepresentationScheme"),
+                List.of());
 
         String xml = converter.toManagedRepresentationScheme(scheme).xmlText(logicalProductXmlOptions());
 
@@ -609,9 +739,13 @@ class Ddi4ToLifecycle33Test {
 
     @Test
     void shouldBuildLogicalProductWithCategoryVariableAndManagedRepresentationSchemeReferences() {
-        Ddi4LogicalProduct logicalProduct = new Ddi4LogicalProduct(Ddi4LogicalProduct.TYPE,
+        Ddi4LogicalProduct logicalProduct = new Ddi4LogicalProduct(
+                Ddi4LogicalProduct.TYPE,
                 CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
-                "urn:ddi:fr.insee:lp-id:1", "fr.insee", "lp-id", "1",
+                "urn:ddi:fr.insee:lp-id:1",
+                "fr.insee",
+                "lp-id",
+                "1",
                 LangStrings.of("fr-FR", "LogicalProduct Label"),
                 List.of(Reference.of("fr.insee", "cls-1", "1", "CodeListScheme")),
                 List.of(Reference.of("fr.insee", "cats-1", "1", "CategoryScheme")),
@@ -633,9 +767,13 @@ class Ddi4ToLifecycle33Test {
 
     @Test
     void shouldBuildGroupWithLogicalProductReference() {
-        Ddi4Group group = new Ddi4Group(Ddi4Group.TYPE,
+        Ddi4Group group = new Ddi4Group(
+                Ddi4Group.TYPE,
                 CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
-                "urn:ddi:fr.insee:group-id:1", "fr.insee", "group-id", "1",
+                "urn:ddi:fr.insee:group-id:1",
+                "fr.insee",
+                "group-id",
+                "1",
                 "bauhaus",
                 new Citation(LangStrings.of("fr-FR", "Test Group")),
                 List.of(Reference.of("fr.insee", "su-id-1", "1", "StudyUnit")),
@@ -645,16 +783,18 @@ class Ddi4ToLifecycle33Test {
 
         String xml = converter.toGroup(group).xmlText(groupXmlOptions());
 
-        Assertions.assertThat(xml)
-                .contains("<r:LogicalProductReference")
-                .contains(">lp-id-1<");
+        Assertions.assertThat(xml).contains("<r:LogicalProductReference").contains(">lp-id-1<");
     }
 
     @Test
     void shouldBuildCategory() {
-        Ddi4Category cat = new Ddi4Category(Ddi4Category.TYPE,
+        Ddi4Category cat = new Ddi4Category(
+                Ddi4Category.TYPE,
                 CogsDate.ofDateTime("2025-12-23T09:52:06.355Z"),
-                "urn:ddi:fr.insee:cat-id:1", "fr.insee", "cat-id", "1",
+                "urn:ddi:fr.insee:cat-id:1",
+                "fr.insee",
+                "cat-id",
+                "1",
                 LangStrings.of("fr-FR", "Category Label"));
 
         String xml = converter.toCategory(cat).xmlText(logicalProductXmlOptions());
@@ -668,9 +808,13 @@ class Ddi4ToLifecycle33Test {
 
     @Test
     void shouldBuildGroupWithAllFields() {
-        Ddi4Group group = new Ddi4Group(Ddi4Group.TYPE,
+        Ddi4Group group = new Ddi4Group(
+                Ddi4Group.TYPE,
                 CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
-                "urn:ddi:fr.insee:group-id:1", "fr.insee", "group-id", "1",
+                "urn:ddi:fr.insee:group-id:1",
+                "fr.insee",
+                "group-id",
+                "1",
                 "bauhaus",
                 new Citation(LangStrings.of("fr-FR", "Test Group")),
                 List.of(Reference.of("fr.insee", "su-id-1", "1", "StudyUnit")),
@@ -690,12 +834,18 @@ class Ddi4ToLifecycle33Test {
 
     @Test
     void shouldBuildGroupWithoutOptionalFields() {
-        Ddi4Group group = new Ddi4Group(Ddi4Group.TYPE,
+        Ddi4Group group = new Ddi4Group(
+                Ddi4Group.TYPE,
                 CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
-                "urn:ddi:fr.insee:group-id:1", "fr.insee", "group-id", "1",
+                "urn:ddi:fr.insee:group-id:1",
+                "fr.insee",
+                "group-id",
+                "1",
                 "bauhaus",
                 new Citation(LangStrings.of("fr-FR", "Test")),
-                List.of(), null, null);
+                List.of(),
+                null,
+                null);
 
         String xml = converter.toGroup(group).xmlText(groupXmlOptions());
 
@@ -707,9 +857,13 @@ class Ddi4ToLifecycle33Test {
 
     @Test
     void shouldBuildStudyUnitWithOperationIri() {
-        Ddi4StudyUnit su = new Ddi4StudyUnit(Ddi4StudyUnit.TYPE,
+        Ddi4StudyUnit su = new Ddi4StudyUnit(
+                Ddi4StudyUnit.TYPE,
                 CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
-                "urn:ddi:fr.insee:su-id:1", "fr.insee", "su-id", "1",
+                "urn:ddi:fr.insee:su-id:1",
+                "fr.insee",
+                "su-id",
+                "1",
                 new Citation(LangStrings.of("fr-FR", "Test SU")),
                 "http://id.insee.fr/operations/operation/op1",
                 List.of(Reference.of("fr.insee", "pi-id", "1", "PhysicalInstance")));
@@ -727,9 +881,13 @@ class Ddi4ToLifecycle33Test {
 
     @Test
     void shouldBuildStudyUnitWithLogicalProductReference() {
-        Ddi4StudyUnit su = new Ddi4StudyUnit(Ddi4StudyUnit.TYPE,
+        Ddi4StudyUnit su = new Ddi4StudyUnit(
+                Ddi4StudyUnit.TYPE,
                 CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
-                "urn:ddi:fr.insee:su-id:1", "fr.insee", "su-id", "1",
+                "urn:ddi:fr.insee:su-id:1",
+                "fr.insee",
+                "su-id",
+                "1",
                 new Citation(LangStrings.of("fr-FR", "Test SU")),
                 "http://id.insee.fr/operations/operation/op1",
                 List.of(Reference.of("fr.insee", "pi-id", "1", "PhysicalInstance")),
@@ -737,34 +895,41 @@ class Ddi4ToLifecycle33Test {
 
         String xml = converter.toStudyUnit(su).xmlText(studyUnitXmlOptions());
 
-        Assertions.assertThat(xml)
-                .contains("<r:LogicalProductReference")
-                .contains(">lp-id<");
+        Assertions.assertThat(xml).contains("<r:LogicalProductReference").contains(">lp-id<");
     }
 
     @Test
     void shouldBuildStudyUnitWithoutOperationIri() {
-        Ddi4StudyUnit su = new Ddi4StudyUnit(Ddi4StudyUnit.TYPE,
+        Ddi4StudyUnit su = new Ddi4StudyUnit(
+                Ddi4StudyUnit.TYPE,
                 CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
-                "urn:ddi:fr.insee:su-id:1", "fr.insee", "su-id", "1",
+                "urn:ddi:fr.insee:su-id:1",
+                "fr.insee",
+                "su-id",
+                "1",
                 new Citation(LangStrings.of("fr-FR", "Test SU")),
-                null, null);
+                null,
+                null);
 
         String xml = converter.toStudyUnit(su).xmlText(studyUnitXmlOptions());
 
-        Assertions.assertThat(xml)
-                .contains(">Test SU<")
-                .doesNotContain("typeOfUserID");
+        Assertions.assertThat(xml).contains(">Test SU<").doesNotContain("typeOfUserID");
     }
 
     private static Ddi4Variable variableWithRepresentation(VariableRepresentation rep) {
-        return new Ddi4Variable(Ddi4Variable.TYPE,
+        return new Ddi4Variable(
+                Ddi4Variable.TYPE,
                 CogsDate.ofDateTime("2025-12-23T09:52:06.355Z"),
-                "urn:ddi:fr.insee:var-rep:1", "fr.insee", "var-rep", "1",
+                "urn:ddi:fr.insee:var-rep:1",
+                "fr.insee",
+                "var-rep",
+                "1",
                 null,
                 LangStrings.of("fr-FR", "VAR_REP"),
                 LangStrings.of("fr-FR", "Variable avec representation"),
-                null, rep, null);
+                null,
+                rep,
+                null);
     }
 
     private static XmlOptions physicalInstanceXmlOptions() {

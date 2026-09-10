@@ -1,8 +1,15 @@
 package fr.insee.rmes.modules.operations.documents.webservice;
 
+import static org.hamcrest.Matchers.containsString;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import fr.insee.rmes.bauhaus_services.DocumentsService;
-import fr.insee.rmes.modules.commons.configuration.LogRequestFilter;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
+import fr.insee.rmes.modules.commons.configuration.LogRequestFilter;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,19 +26,11 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import static org.hamcrest.Matchers.containsString;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 @WebMvcTest(
-    value = DocumentsResources.class,
-    excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = LogRequestFilter.class),
-    excludeAutoConfiguration = OAuth2ResourceServerAutoConfiguration.class,
-    properties = "fr.insee.rmes.bauhaus.extensions=pdf,odt"
-)
+        value = DocumentsResources.class,
+        excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = LogRequestFilter.class),
+        excludeAutoConfiguration = OAuth2ResourceServerAutoConfiguration.class,
+        properties = "fr.insee.rmes.bauhaus.extensions=pdf,odt")
 @AutoConfigureMockMvc(addFilters = false)
 class DocumentsResourcesIntegrationTest {
 
@@ -40,7 +39,6 @@ class DocumentsResourcesIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
-
 
     @Test
     void shouldServeTheDocumentAsJson() throws Exception {
@@ -76,9 +74,11 @@ class DocumentsResourcesIntegrationTest {
     void shouldRejectAFileWhoseExtensionIsNotAllowed() throws Exception {
         // fr.insee.rmes.bauhaus.extensions liste les extensions déposables : tout le reste
         // est refusé avant même d'atteindre le service.
-        MockMultipartFile file = new MockMultipartFile("file", "charge.exe", MediaType.APPLICATION_OCTET_STREAM_VALUE, "x".getBytes());
+        MockMultipartFile file =
+                new MockMultipartFile("file", "charge.exe", MediaType.APPLICATION_OCTET_STREAM_VALUE, "x".getBytes());
 
-        mockMvc.perform(MockMvcRequestBuilders.multipart(HttpMethod.PUT, "/documents/document/1000/file").file(file))
+        mockMvc.perform(MockMvcRequestBuilders.multipart(HttpMethod.PUT, "/documents/document/1000/file")
+                        .file(file))
                 .andExpect(content().string(containsString("Invalid File Extension")));
 
         verifyNoInteractions(documentsService);
@@ -86,9 +86,11 @@ class DocumentsResourcesIntegrationTest {
 
     @Test
     void shouldRejectAFileWithoutAnyExtension() throws Exception {
-        MockMultipartFile file = new MockMultipartFile("file", "sansextension", MediaType.APPLICATION_OCTET_STREAM_VALUE, "x".getBytes());
+        MockMultipartFile file = new MockMultipartFile(
+                "file", "sansextension", MediaType.APPLICATION_OCTET_STREAM_VALUE, "x".getBytes());
 
-        mockMvc.perform(MockMvcRequestBuilders.multipart(HttpMethod.PUT, "/documents/document/1000/file").file(file))
+        mockMvc.perform(MockMvcRequestBuilders.multipart(HttpMethod.PUT, "/documents/document/1000/file")
+                        .file(file))
                 .andExpect(content().string(containsString("Invalid File Extension")));
 
         verifyNoInteractions(documentsService);
@@ -96,7 +98,8 @@ class DocumentsResourcesIntegrationTest {
 
     @Test
     void shouldReturnNotFoundException() throws Exception {
-    	when(documentsService.downloadDocument(anyString())).thenThrow(new RmesNotFoundException(HttpStatus.NOT_FOUND.value(), "id not found", "id not found"));
+        when(documentsService.downloadDocument(anyString()))
+                .thenThrow(new RmesNotFoundException(HttpStatus.NOT_FOUND.value(), "id not found", "id not found"));
 
         mockMvc.perform(MockMvcRequestBuilders.get("/documents/document/id/file"))
                 .andExpect(status().isNotFound())

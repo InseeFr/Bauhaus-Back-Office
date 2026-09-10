@@ -1,19 +1,25 @@
 package fr.insee.rmes.bauhaus_services.operations.series;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.*;
+
 import fr.insee.rmes.AppSpringBootTest;
 import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.OperationsObjectMapper;
 import fr.insee.rmes.bauhaus_services.operations.series.validation.SeriesValidator;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.utils.OrganisationLookup;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotAcceptableException;
 import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.graphdb.ontologies.ADMS;
 import fr.insee.rmes.model.links.OperationsLink;
+import fr.insee.rmes.modules.operations.series.domain.model.Series;
 import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
-import fr.insee.rmes.modules.operations.series.domain.model.Series;
-import fr.insee.rmes.domain.exceptions.RmesException;
+import java.util.List;
+import java.util.Optional;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Statement;
@@ -30,13 +36,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.List;
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.fail;
-import static org.mockito.Mockito.*;
-
 @AppSpringBootTest
 @ExtendWith(MockitoExtension.class)
 class SeriesRepositoryTest {
@@ -48,7 +47,19 @@ class SeriesRepositoryTest {
 
     @Test
     void shouldAddAbstractPropertyAsPlainMarkdownLiterals() {
-        SeriesRepository seriesRepository = new SeriesRepository(new BauhausLanguagesProperties("fr", "en"), repositoryGestion, null, null, operationsObjectMapper, null, null, null, null, null, null, null);
+        SeriesRepository seriesRepository = new SeriesRepository(
+                new BauhausLanguagesProperties("fr", "en"),
+                repositoryGestion,
+                null,
+                null,
+                operationsObjectMapper,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null);
 
         var series = new Series();
         series.setId("1");
@@ -60,12 +71,19 @@ class SeriesRepositoryTest {
 
         SimpleValueFactory simpleValueFactory = SimpleValueFactory.getInstance();
 
-        seriesRepository.addMulltiLangValues(model, seriesIri, simpleValueFactory.createIRI("http://purl.org/dc/dcmitype/"), "fr", "en", DCTERMS.ABSTRACT);
+        seriesRepository.addMulltiLangValues(
+                model,
+                seriesIri,
+                simpleValueFactory.createIRI("http://purl.org/dc/dcmitype/"),
+                "fr",
+                "en",
+                DCTERMS.ABSTRACT);
 
+        Assertions.assertEquals(
+                model.subjects().toArray()[0], simpleValueFactory.createIRI("http://purl.org/dc/dcmitype/1"));
 
-        Assertions.assertEquals(model.subjects().toArray()[0], simpleValueFactory.createIRI("http://purl.org/dc/dcmitype/1"));
-
-        Assertions.assertEquals(model.predicates().toArray()[0], simpleValueFactory.createIRI(DCTERMS.ABSTRACT.toString()));
+        Assertions.assertEquals(
+                model.predicates().toArray()[0], simpleValueFactory.createIRI(DCTERMS.ABSTRACT.toString()));
 
         Assertions.assertEquals("\"<p>fr</p>\"@fr", model.objects().toArray()[0].toString());
         Assertions.assertEquals("\"<p>en</p>\"@en", model.objects().toArray()[1].toString());
@@ -76,7 +94,19 @@ class SeriesRepositoryTest {
     @Test
     void createRdfSeries_addsAdmsIdentifierTriple() throws RmesException {
         SeriesValidator validator = mock(SeriesValidator.class);
-        SeriesRepository seriesRepository = new SeriesRepository(new BauhausLanguagesProperties("fr", "en"), repositoryGestion, null, null, operationsObjectMapper, null, null, null, null, validator, null, null);
+        SeriesRepository seriesRepository = new SeriesRepository(
+                new BauhausLanguagesProperties("fr", "en"),
+                repositoryGestion,
+                null,
+                null,
+                operationsObjectMapper,
+                null,
+                null,
+                null,
+                null,
+                validator,
+                null,
+                null);
         Series series = new Series();
         series.setId("s2000");
         series.setPrefLabelLg1("Série de test");
@@ -86,7 +116,9 @@ class SeriesRepositoryTest {
         ArgumentCaptor<Model> captor = ArgumentCaptor.forClass(Model.class);
         verify(repositoryGestion).loadObjectWithReplaceLinks(any(), captor.capture());
         IRI seriesURI = RdfUtils.objectIRI(ObjectType.SERIES, "s2000");
-        assertThat(captor.getValue().filter(seriesURI, ADMS.HAS_IDENTIFIER, null).objects())
+        assertThat(captor.getValue()
+                        .filter(seriesURI, ADMS.HAS_IDENTIFIER, null)
+                        .objects())
                 .containsExactly(SimpleValueFactory.getInstance().createLiteral("s2000"));
     }
 
@@ -95,7 +127,19 @@ class SeriesRepositoryTest {
         OrganisationLookup lookup = mock(OrganisationLookup.class);
         when(lookup.resolve("http://bauhaus/organisations/DG75-A001"))
                 .thenReturn(Optional.of("http://bauhaus/organisations/DG75-A001"));
-        SeriesRepository seriesRepository = new SeriesRepository(new BauhausLanguagesProperties("fr", "en"), repositoryGestion, null, null, operationsObjectMapper, null, null, null, null, null, null, lookup);
+        SeriesRepository seriesRepository = new SeriesRepository(
+                new BauhausLanguagesProperties("fr", "en"),
+                repositoryGestion,
+                null,
+                null,
+                operationsObjectMapper,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                lookup);
         SimpleValueFactory vf = SimpleValueFactory.getInstance();
         IRI seriesURI = vf.createIRI("http://bauhaus/series/s1");
         Model model = new LinkedHashModel();
@@ -116,16 +160,28 @@ class SeriesRepositoryTest {
     @Test
     void addOperationLinksOrganization_resolvesLegacyIdViaLookup() throws RmesException {
         OrganisationLookup lookup = mock(OrganisationLookup.class);
-        when(lookup.resolve("DG75-A001"))
-                .thenReturn(Optional.of("http://bauhaus/organisations/DG75-A001"));
-        SeriesRepository seriesRepository = new SeriesRepository(new BauhausLanguagesProperties("fr", "en"), repositoryGestion, null, null, operationsObjectMapper, null, null, null, null, null, null, lookup);
+        when(lookup.resolve("DG75-A001")).thenReturn(Optional.of("http://bauhaus/organisations/DG75-A001"));
+        SeriesRepository seriesRepository = new SeriesRepository(
+                new BauhausLanguagesProperties("fr", "en"),
+                repositoryGestion,
+                null,
+                null,
+                operationsObjectMapper,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                lookup);
         SimpleValueFactory vf = SimpleValueFactory.getInstance();
         IRI seriesURI = vf.createIRI("http://bauhaus/series/s1");
         Model model = new LinkedHashModel();
         OperationsLink link = new OperationsLink();
         link.id = "DG75-A001";
 
-        seriesRepository.addOperationLinksOrganization(List.of(link), DCTERMS.CONTRIBUTOR, model, seriesURI, TEST_GRAPH);
+        seriesRepository.addOperationLinksOrganization(
+                List.of(link), DCTERMS.CONTRIBUTOR, model, seriesURI, TEST_GRAPH);
 
         IRI contributor = vf.createIRI(DCTERMS.CONTRIBUTOR.toString());
         List<Value> contributors = model.filter(seriesURI, contributor, null).stream()
@@ -138,42 +194,68 @@ class SeriesRepositoryTest {
 
     @Test
     void setSeries_shouldNotRejectWith406_whenBodyContainsBothIdSimsAndOperations() {
-        SeriesRepository seriesRepository = new SeriesRepository(new BauhausLanguagesProperties("fr", "en"), repositoryGestion, null, null, operationsObjectMapper, null, null, null, null, null, null, null);
-        String body = "{\"idSims\":\"sims-1\",\"operations\":[{\"id\":\"op1\",\"labelLg1\":\"L1\",\"labelLg2\":\"L2\"}]}";
+        SeriesRepository seriesRepository = new SeriesRepository(
+                new BauhausLanguagesProperties("fr", "en"),
+                repositoryGestion,
+                null,
+                null,
+                operationsObjectMapper,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null);
+        String body =
+                "{\"idSims\":\"sims-1\",\"operations\":[{\"id\":\"op1\",\"labelLg1\":\"L1\",\"labelLg2\":\"L2\"}]}";
 
         try {
             seriesRepository.setSeries("1", body);
         } catch (RmesNotAcceptableException e) {
             if (e.getDetails().contains("A series cannot have both a Sims and Operation(s)")) {
-                fail("La mise à jour d'une série combinant idSims et operations ne devrait plus lever 406 : " + e.getDetails());
+                fail("La mise à jour d'une série combinant idSims et operations ne devrait plus lever 406 : "
+                        + e.getDetails());
             }
-        } catch (Exception ignored) {
+        } catch (Exception _) {
             // d'autres exceptions sont attendues car les mocks ne couvrent pas tout le flow
         }
     }
 
     @Test
     void addCreators_writesEachCreatorAsAnIriTriple() {
-        SeriesRepository seriesRepository = new SeriesRepository(new BauhausLanguagesProperties("fr", "en"), repositoryGestion, null, null, operationsObjectMapper, null, null, null, null, null, null, null);
+        SeriesRepository seriesRepository = new SeriesRepository(
+                new BauhausLanguagesProperties("fr", "en"),
+                repositoryGestion,
+                null,
+                null,
+                operationsObjectMapper,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null);
         SimpleValueFactory vf = SimpleValueFactory.getInstance();
         IRI seriesURI = vf.createIRI("http://bauhaus/series/s1");
         Model model = new LinkedHashModel();
 
-        seriesRepository.addCreators(model, seriesURI, List.of(
-                "http://bauhaus/organisations/DG75-A001",
-                "http://bauhaus/organisations/DG75-B002"), TEST_GRAPH);
+        seriesRepository.addCreators(
+                model,
+                seriesURI,
+                List.of("http://bauhaus/organisations/DG75-A001", "http://bauhaus/organisations/DG75-B002"),
+                TEST_GRAPH);
 
         IRI dcCreator = vf.createIRI(DC.CREATOR.toString());
         List<Value> creators = model.filter(seriesURI, dcCreator, null).stream()
                 .map(Statement::getObject)
                 .toList();
         assertThat(creators).hasSize(2);
-        assertThat(creators).allMatch(value -> value instanceof IRI,
-                "every dc:creator object must be an IRI, not a literal");
-        assertThat(creators).extracting(Value::stringValue)
+        assertThat(creators).allMatch(IRI.class::isInstance, "every dc:creator object must be an IRI, not a literal");
+        assertThat(creators)
+                .extracting(Value::stringValue)
                 .containsExactlyInAnyOrder(
-                        "http://bauhaus/organisations/DG75-A001",
-                        "http://bauhaus/organisations/DG75-B002");
+                        "http://bauhaus/organisations/DG75-A001", "http://bauhaus/organisations/DG75-B002");
     }
-
 }

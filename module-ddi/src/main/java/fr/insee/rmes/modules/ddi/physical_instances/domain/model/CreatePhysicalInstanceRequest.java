@@ -7,6 +7,4 @@ public record CreatePhysicalInstanceRequest(
         String studyUnitId,
         String studyUnitAgency,
         String groupId,
-        String groupAgency
-) {
-}
+        String groupAgency) {}

@@ -7,10 +7,4 @@ package fr.insee.rmes.modules.operations.families.domain.model.commands;
  * famille, la date de création doit donc être renvoyée par le client pour ne pas être perdue.
  */
 public record UpdateFamilyCommand(
-        String id,
-        String prefLabelLg1,
-        String prefLabelLg2,
-        String abstractLg1,
-        String abstractLg2,
-        String created) {
-}
+        String id, String prefLabelLg1, String prefLabelLg2, String abstractLg1, String abstractLg2, String created) {}

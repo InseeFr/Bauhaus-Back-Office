@@ -3,7 +3,6 @@ package fr.insee.rmes.testcontainers;
 import fr.insee.rmes.graphdb.RdfConnectionDetails;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-
 /**
  * Base des tests d'intégration qui ont besoin d'un triplestore.
  *
@@ -60,5 +59,4 @@ public class WithGraphDBContainer {
     protected static SparqlFixtureLoader fixtureLoader() {
         return container;
     }
-
 }

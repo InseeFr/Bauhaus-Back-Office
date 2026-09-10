@@ -7,72 +7,64 @@ import org.eclipse.rdf4j.model.impl.SimpleNamespace;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 
 public class QB {
-	
-	  private QB() {
-		    throw new IllegalStateException("Utility class");
-	}
 
-	
-	public static final String NAMESPACE = "http://purl.org/linked-data/cube#";
+    private QB() {
+        throw new IllegalStateException("Utility class");
+    }
 
-	/**
-	 * The recommended prefix for the Data Cube namespace: "qb"
-	 */
-	public static final String PREFIX = "qb";
-	
-	public static final Namespace NS = new SimpleNamespace(PREFIX, NAMESPACE);
-	
-	public static final IRI DATA_STRUCTURE_DEFINITION;
-	
+    public static final String NAMESPACE = "http://purl.org/linked-data/cube#";
 
-	public static final IRI COMPONENT;
-	public static final IRI COMPONENT_REQUIRED;
-	public static final IRI COMPONENT_SPECIFICATION;
-	public static final IRI COMPONENT_ATTACHMENT;
-	public static final IRI MEASURE;
-	public static final IRI MEASURE_PROPERTY;
-	public static final IRI ATTRIBUTE;
-	public static final IRI ATTRIBUTE_PROPERTY;
-	public static final IRI DIMENSION;
-	public static final IRI DIMENSION_PROPERTY;
+    /**
+     * The recommended prefix for the Data Cube namespace: "qb"
+     */
+    public static final String PREFIX = "qb";
 
-	public static final IRI CODE_LIST;
-	public static final IRI CODED_PROPERTY;
-	
+    public static final Namespace NS = new SimpleNamespace(PREFIX, NAMESPACE);
 
-	public static final IRI CONCEPT;
-	public static final IRI ORDER;
+    public static final IRI DATA_STRUCTURE_DEFINITION;
 
+    public static final IRI COMPONENT;
+    public static final IRI COMPONENT_REQUIRED;
+    public static final IRI COMPONENT_SPECIFICATION;
+    public static final IRI COMPONENT_ATTACHMENT;
+    public static final IRI MEASURE;
+    public static final IRI MEASURE_PROPERTY;
+    public static final IRI ATTRIBUTE;
+    public static final IRI ATTRIBUTE_PROPERTY;
+    public static final IRI DIMENSION;
+    public static final IRI DIMENSION_PROPERTY;
 
-	static {
-		final ValueFactory f = SimpleValueFactory.getInstance();
+    public static final IRI CODE_LIST;
+    public static final IRI CODED_PROPERTY;
 
-		DATA_STRUCTURE_DEFINITION = f.createIRI(NAMESPACE, "DataStructureDefinition");
-		
+    public static final IRI CONCEPT;
+    public static final IRI ORDER;
 
-		COMPONENT = f.createIRI(NAMESPACE, "component");
-		COMPONENT_SPECIFICATION = f.createIRI(NAMESPACE, "ComponentSpecification"); 
-		COMPONENT_ATTACHMENT = f.createIRI(NAMESPACE, "componentAttachment");
-		COMPONENT_REQUIRED = f.createIRI(NAMESPACE, "componentRequired");
+    static {
+        final ValueFactory f = SimpleValueFactory.getInstance();
 
-		MEASURE = f.createIRI(NAMESPACE, "measure");
-		MEASURE_PROPERTY = f.createIRI(NAMESPACE, "MeasureProperty");
-		ATTRIBUTE = f.createIRI(NAMESPACE, "attribute");
-		ATTRIBUTE_PROPERTY = f.createIRI(NAMESPACE, "AttributeProperty");
-		DIMENSION = f.createIRI(NAMESPACE, "dimension");
-		DIMENSION_PROPERTY = f.createIRI(NAMESPACE, "DimensionProperty");
+        DATA_STRUCTURE_DEFINITION = f.createIRI(NAMESPACE, "DataStructureDefinition");
 
-		CODE_LIST = f.createIRI(NAMESPACE, "codeList");
-		CODED_PROPERTY = f.createIRI(NAMESPACE, "CodedProperty");
-		
-		CONCEPT = f.createIRI(NAMESPACE, "concept");
-		ORDER = f.createIRI(NAMESPACE, "order");
+        COMPONENT = f.createIRI(NAMESPACE, "component");
+        COMPONENT_SPECIFICATION = f.createIRI(NAMESPACE, "ComponentSpecification");
+        COMPONENT_ATTACHMENT = f.createIRI(NAMESPACE, "componentAttachment");
+        COMPONENT_REQUIRED = f.createIRI(NAMESPACE, "componentRequired");
 
-	}
+        MEASURE = f.createIRI(NAMESPACE, "measure");
+        MEASURE_PROPERTY = f.createIRI(NAMESPACE, "MeasureProperty");
+        ATTRIBUTE = f.createIRI(NAMESPACE, "attribute");
+        ATTRIBUTE_PROPERTY = f.createIRI(NAMESPACE, "AttributeProperty");
+        DIMENSION = f.createIRI(NAMESPACE, "dimension");
+        DIMENSION_PROPERTY = f.createIRI(NAMESPACE, "DimensionProperty");
 
-	public static String[] getURIForComponent(){
-		return new String[]{MEASURE_PROPERTY.toString(), ATTRIBUTE_PROPERTY.toString(), DIMENSION_PROPERTY.toString()};
+        CODE_LIST = f.createIRI(NAMESPACE, "codeList");
+        CODED_PROPERTY = f.createIRI(NAMESPACE, "CodedProperty");
 
-	}
+        CONCEPT = f.createIRI(NAMESPACE, "concept");
+        ORDER = f.createIRI(NAMESPACE, "order");
+    }
 
+    public static String[] getURIForComponent() {
+        return new String[] {MEASURE_PROPERTY.toString(), ATTRIBUTE_PROPERTY.toString(), DIMENSION_PROPERTY.toString()};
+    }
 }

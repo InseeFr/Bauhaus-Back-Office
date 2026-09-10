@@ -1,7 +1,6 @@
 package fr.insee.rmes.colectica.client.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.util.List;
 
 /**
@@ -10,12 +9,8 @@ import java.util.List;
  * {@code TotalResults} count.
  */
 public record ColecticaAdvancedResponse(
-    @JsonProperty("Results")
-    List<ColecticaAdvancedItem> results,
+        @JsonProperty("Results") List<ColecticaAdvancedItem> results,
 
-    @JsonProperty("ReturnedResults")
-    int returnedResults,
+        @JsonProperty("ReturnedResults") int returnedResults,
 
-    @JsonProperty("NextResult")
-    String nextResult
-) {}
+        @JsonProperty("NextResult") String nextResult) {}

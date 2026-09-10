@@ -1,5 +1,7 @@
 package fr.insee.rmes.modules.structures.components.webservice;
 
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.structures.StructureComponent;
 import fr.insee.rmes.bauhaus_services.structures.StructureService;
@@ -7,6 +9,8 @@ import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.commons.configuration.ConditionalOnModule;
 import fr.insee.rmes.modules.users.domain.model.RBAC;
 import fr.insee.rmes.modules.users.webservice.HasAccess;
+import java.net.URI;
+import java.util.List;
 import org.apache.http.HttpStatus;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.MediaType;
@@ -14,28 +18,19 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import java.net.URI;
-import java.util.List;
-
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-
 @RestController
 @RequestMapping("/structures/components")
 @ConditionalOnModule("structures")
 public class ComponentResources {
 
+    final StructureService structureService;
 
-    final
-    StructureService structureService;
-
-    final
-    StructureComponent structureComponentService;
+    final StructureComponent structureComponentService;
 
     public ComponentResources(StructureService structureService, StructureComponent structureComponentService) {
         this.structureService = structureService;
         this.structureComponentService = structureComponentService;
     }
-
 
     @HasAccess(module = RBAC.Module.STRUCTURE_COMPONENT, privilege = RBAC.Privilege.READ)
     @GetMapping(value = "/search", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -57,14 +52,14 @@ public class ComponentResources {
         List<PartialStructureComponentResponse> responses = this.structureComponentService.getComponents().stream()
                 .map(component -> {
                     var response = PartialStructureComponentResponse.fromDomain(component);
-                    response.add(linkTo(ComponentResources.class).slash(component.id()).withSelfRel());
+                    response.add(linkTo(ComponentResources.class)
+                            .slash(component.id())
+                            .withSelfRel());
                     return response;
                 })
                 .toList();
 
-        return ResponseEntity.ok()
-                .contentType(MediaTypes.HAL_JSON)
-                .body(responses);
+        return ResponseEntity.ok().contentType(MediaTypes.HAL_JSON).body(responses);
     }
 
     @HasAccess(module = RBAC.Module.STRUCTURE_COMPONENT, privilege = RBAC.Privilege.READ)
@@ -90,9 +85,8 @@ public class ComponentResources {
 
     @HasAccess(module = RBAC.Module.STRUCTURE_COMPONENT, privilege = RBAC.Privilege.UPDATE)
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> updateComponentById(
-            @PathVariable(Constants.ID) String id,
-    		@RequestBody String body) throws RmesException {
+    public ResponseEntity<Object> updateComponentById(@PathVariable(Constants.ID) String id, @RequestBody String body)
+            throws RmesException {
         return ResponseEntity.status(HttpStatus.SC_OK).body(structureComponentService.updateComponent(id, body));
     }
 
@@ -101,8 +95,7 @@ public class ComponentResources {
     public ResponseEntity<Object> createComponent(@RequestBody String body) throws RmesException {
         String id = structureComponentService.createComponent(body);
 
-        URI location = ServletUriComponentsBuilder
-                .fromCurrentRequest()
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}")
                 .buildAndExpand(id)
                 .toUri();

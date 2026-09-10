@@ -1,8 +1,7 @@
 package fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
-
 import java.util.List;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
  * Sélection de la stratégie de récupération des code lists mutualisées, et configuration associée.
@@ -23,10 +22,7 @@ import java.util.List;
  *                              liste vide par défaut.
  */
 @ConfigurationProperties(prefix = "fr.insee.rmes.bauhaus.colectica")
-public record MutualizedCodesProperties(
-        Strategy mutualizedCodesStrategy,
-        List<GroupRef> mutualizedCodesGroups
-) {
+public record MutualizedCodesProperties(Strategy mutualizedCodesStrategy, List<GroupRef> mutualizedCodesGroups) {
     public MutualizedCodesProperties {
         if (mutualizedCodesStrategy == null) {
             mutualizedCodesStrategy = Strategy.PACKAGE_WALK;

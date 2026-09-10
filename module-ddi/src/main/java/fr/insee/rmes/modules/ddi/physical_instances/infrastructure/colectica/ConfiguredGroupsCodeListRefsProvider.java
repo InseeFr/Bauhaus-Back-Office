@@ -3,13 +3,12 @@ package fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica;
 import fr.insee.rmes.colectica.client.ColecticaClient;
 import fr.insee.rmes.colectica.client.ItemReference;
 import fr.insee.rmes.colectica.client.RelationshipDirection;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.cache.annotation.Cacheable;
-
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.Cacheable;
 
 /**
  * Alternative à {@link MutualizedCodeListRefsProvider} : au lieu de parcourir l'arbre complet
@@ -33,8 +32,7 @@ public class ConfiguredGroupsCodeListRefsProvider implements MutualizedCodeListR
     public ConfiguredGroupsCodeListRefsProvider(
             ColecticaConfiguration.ColecticaInstanceConfiguration instanceConfiguration,
             List<ItemReference> groupRefs,
-            ColecticaClient colecticaClient
-    ) {
+            ColecticaClient colecticaClient) {
         this.instanceConfiguration = instanceConfiguration;
         this.groupRefs = List.copyOf(groupRefs);
         this.colecticaClient = colecticaClient;
@@ -53,8 +51,11 @@ public class ConfiguredGroupsCodeListRefsProvider implements MutualizedCodeListR
         for (ItemReference group : groupRefs) {
             codeListRefs.addAll(childrenOfType(group.agencyId(), group.identifier(), codeListType));
         }
-        logger.info("Resolved {} configured CodeListGroup(s) → {} CodeList reference(s) in {} ms",
-                groupRefs.size(), codeListRefs.size(), System.currentTimeMillis() - t0);
+        logger.info(
+                "Resolved {} configured CodeListGroup(s) → {} CodeList reference(s) in {} ms",
+                groupRefs.size(),
+                codeListRefs.size(),
+                System.currentTimeMillis() - t0);
         return List.copyOf(codeListRefs);
     }
 
@@ -65,9 +66,7 @@ public class ConfiguredGroupsCodeListRefsProvider implements MutualizedCodeListR
     private List<ItemReference> childrenOfType(String agencyId, String identifier, String childType) {
         try {
             return colecticaClient.findRelatedDescriptions(
-                    RelationshipDirection.BY_SUBJECT,
-                    new ItemReference(agencyId, identifier),
-                    List.of(childType));
+                    RelationshipDirection.BY_SUBJECT, new ItemReference(agencyId, identifier), List.of(childType));
         } catch (RuntimeException e) {
             logger.warn("bysubject lookup failed for group {}/{}: {}", agencyId, identifier, e.getMessage());
             return List.of();

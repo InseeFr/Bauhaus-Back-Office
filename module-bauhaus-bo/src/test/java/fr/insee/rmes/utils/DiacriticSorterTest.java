@@ -1,15 +1,13 @@
 package fr.insee.rmes.utils;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import fr.insee.rmes.domain.exceptions.RmesException;
+import java.util.List;
 import org.json.JSONArray;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
-
 class DiacriticSorterTest {
-
 
     // Simple test object for testing
     public static class TestObject {
@@ -23,18 +21,29 @@ class DiacriticSorterTest {
             this.name = name;
         }
 
-        public String getId() { return id; }
-        public void setId(String id) { this.id = id; }
-        public String getName() { return name; }
-        public void setName(String name) { this.name = name; }
+        public String getId() {
+            return id;
+        }
+
+        public void setId(String id) {
+            this.id = id;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
     }
 
     @Test
     void shouldSortEmptyArray() throws RmesException {
         JSONArray emptyArray = new JSONArray();
-        
+
         List<TestObject> result = DiacriticSorter.sort(emptyArray, TestObject[].class, TestObject::getName);
-        
+
         assertNotNull(result);
         assertTrue(result.isEmpty());
     }
@@ -45,15 +54,13 @@ class DiacriticSorterTest {
         jsonArray.put(new JSONArray().put("1").put("Zebra"));
         jsonArray.put(new JSONArray().put("2").put("Apple"));
         jsonArray.put(new JSONArray().put("3").put("Banana"));
-        
+
         // Note: This test might fail due to JSON deserialization complexity
         // In a real scenario, you'd need proper JSON structure matching TestObject
         assertThrows(RmesException.class, () -> {
             DiacriticSorter.sort(jsonArray, TestObject[].class, TestObject::getName);
         });
     }
-
-
 
     // Test implementation of AppendableLabels for testing
     public static class TestAppendableLabels implements DiacriticSorter.AppendableLabels<TestAppendableLabels> {
@@ -130,7 +137,7 @@ class DiacriticSorterTest {
     @Test
     void shouldTestAppendableLabelsDefaultMethods() {
         TestAppendableLabels obj = new TestAppendableLabels("test", "alt labels");
-        
+
         assertEquals("alt labels", obj.appendedAttribute());
         assertEquals("test", obj.id());
     }
@@ -138,7 +145,7 @@ class DiacriticSorterTest {
     @Test
     void shouldTestAppendableLabelDefaultMethods() {
         TestAppendableLabel obj = new TestAppendableLabel("test", "alt label");
-        
+
         assertEquals("alt label", obj.appendedAttribute());
         assertEquals("test", obj.id());
     }

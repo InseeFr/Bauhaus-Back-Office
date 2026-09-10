@@ -1,7 +1,6 @@
 package fr.insee.rmes.modules.ddi.physical_instances.domain.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.util.List;
 
 /**
@@ -25,18 +24,38 @@ public record Ddi4Group(
         @JsonProperty("StudyUnitReference") List<Reference> studyUnitReference,
         List<String> seriesIris,
         String typeOfGroup,
-        @JsonProperty("LogicalProductReference") List<Reference> logicalProductReference
-) implements Ddi4Item {
+        @JsonProperty("LogicalProductReference") List<Reference> logicalProductReference)
+        implements Ddi4Item {
 
     public static final String TYPE = "Group";
 
     /**
      * Backward-compatible constructor for groups that carry no LogicalProductReference.
      */
-    public Ddi4Group(String type, CogsDate versionDate, String urn, String agency, String id,
-                     String version, String versionResponsibility, Citation citation,
-                     List<Reference> studyUnitReference, List<String> seriesIris, String typeOfGroup) {
-        this(type, versionDate, urn, agency, id, version, versionResponsibility, citation,
-                studyUnitReference, seriesIris, typeOfGroup, null);
+    public Ddi4Group(
+            String type,
+            CogsDate versionDate,
+            String urn,
+            String agency,
+            String id,
+            String version,
+            String versionResponsibility,
+            Citation citation,
+            List<Reference> studyUnitReference,
+            List<String> seriesIris,
+            String typeOfGroup) {
+        this(
+                type,
+                versionDate,
+                urn,
+                agency,
+                id,
+                version,
+                versionResponsibility,
+                citation,
+                studyUnitReference,
+                seriesIris,
+                typeOfGroup,
+                null);
     }
 }

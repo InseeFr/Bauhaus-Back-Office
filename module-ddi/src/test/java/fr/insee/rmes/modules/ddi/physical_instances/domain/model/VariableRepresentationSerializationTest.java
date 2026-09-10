@@ -1,10 +1,10 @@
 package fr.insee.rmes.modules.ddi.physical_instances.domain.model;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Valeurs sentinelles (#1566) : une {@code VariableRepresentation} porte une référence optionnelle
@@ -13,8 +13,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class VariableRepresentationSerializationTest {
 
-    private final ObjectMapper mapper = new ObjectMapper()
-            .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+    private final ObjectMapper mapper = new ObjectMapper().disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
 
     @Test
     void missingValuesReference_survivesJacksonRoundTrip() throws Exception {

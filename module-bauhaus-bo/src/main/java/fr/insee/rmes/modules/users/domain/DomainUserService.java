@@ -2,16 +2,15 @@ package fr.insee.rmes.modules.users.domain;
 
 import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
 import fr.insee.rmes.modules.users.domain.model.ModuleAccessPrivileges;
-import fr.insee.rmes.modules.users.domain.port.serverside.RbacFetcher;
-import fr.insee.rmes.modules.users.domain.port.serverside.UserDecoder;
 import fr.insee.rmes.modules.users.domain.model.Stamp;
 import fr.insee.rmes.modules.users.domain.model.User;
 import fr.insee.rmes.modules.users.domain.port.clientside.UserService;
-
+import fr.insee.rmes.modules.users.domain.port.serverside.RbacFetcher;
+import fr.insee.rmes.modules.users.domain.port.serverside.UserDecoder;
 import java.util.Set;
 
 public class DomainUserService implements UserService {
-    private final  UserDecoder userDecoder;
+    private final UserDecoder userDecoder;
     private final RbacFetcher rbacFetcher;
 
     public DomainUserService(UserDecoder userDecoder, RbacFetcher rbacFetcher) {

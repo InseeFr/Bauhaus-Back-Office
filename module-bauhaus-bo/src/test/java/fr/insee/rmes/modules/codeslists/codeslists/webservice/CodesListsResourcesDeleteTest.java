@@ -1,9 +1,14 @@
 package fr.insee.rmes.modules.codeslists.codeslists.webservice;
 
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import fr.insee.rmes.bauhaus_services.CodeListService;
-import fr.insee.rmes.modules.codeslists.codeslists.domain.port.clientside.CodesListsService;
 import fr.insee.rmes.bauhaus_services.code_list.CodeListKind;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
+import fr.insee.rmes.modules.codeslists.codeslists.domain.port.clientside.CodesListsService;
 import fr.insee.rmes.modules.codeslists.partialcodeslists.webservice.PartialCodeListsResources;
 import fr.insee.rmes.modules.commons.configuration.LogRequestFilter;
 import org.junit.jupiter.api.Test;
@@ -16,19 +21,13 @@ import org.springframework.context.annotation.FilterType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 /**
  * Contrat HTTP des DELETE de listes de codes : un identifiant inconnu doit donner 404, pas 500.
  */
 @WebMvcTest(
-        value = { CodesListsResources.class, PartialCodeListsResources.class },
+        value = {CodesListsResources.class, PartialCodeListsResources.class},
         excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = LogRequestFilter.class),
-        excludeAutoConfiguration = OAuth2ResourceServerAutoConfiguration.class
-)
+        excludeAutoConfiguration = OAuth2ResourceServerAutoConfiguration.class)
 @AutoConfigureMockMvc(addFilters = false)
 class CodesListsResourcesDeleteTest {
 
@@ -44,19 +43,19 @@ class CodesListsResourcesDeleteTest {
     @Test
     void deleteCodeList_whenCodeListDoesNotExist_shouldReturnNotFound() throws Exception {
         doThrow(new RmesNotFoundException("CodeList not found", "unknown"))
-                .when(codeListService).deleteCodeList("unknown", CodeListKind.FULL);
+                .when(codeListService)
+                .deleteCodeList("unknown", CodeListKind.FULL);
 
-        mockMvc.perform(delete("/codeList/{id}", "unknown"))
-                .andExpect(status().isNotFound());
+        mockMvc.perform(delete("/codeList/{id}", "unknown")).andExpect(status().isNotFound());
     }
 
     @Test
     void deletePartialCodeList_whenCodeListDoesNotExist_shouldReturnNotFound() throws Exception {
         doThrow(new RmesNotFoundException("CodeList not found", "unknown"))
-                .when(codeListService).deleteCodeList("unknown", CodeListKind.PARTIAL);
+                .when(codeListService)
+                .deleteCodeList("unknown", CodeListKind.PARTIAL);
 
-        mockMvc.perform(delete("/codeList/partial/{id}", "unknown"))
-                .andExpect(status().isNotFound());
+        mockMvc.perform(delete("/codeList/partial/{id}", "unknown")).andExpect(status().isNotFound());
     }
 
     @Test

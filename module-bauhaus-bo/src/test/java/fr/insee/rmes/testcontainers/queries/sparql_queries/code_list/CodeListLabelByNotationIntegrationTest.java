@@ -1,5 +1,7 @@
 package fr.insee.rmes.testcontainers.queries.sparql_queries.code_list;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.PaginationProperties;
 import fr.insee.rmes.config.BauhausUriPropertiesStub;
@@ -14,8 +16,6 @@ import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * {@code CodeListsQueries.getCodeListLabelByNotation} ({@code codes-list/getCodeListLabelByNotation.ftlh})
@@ -32,8 +32,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class CodeListLabelByNotationIntegrationTest extends WithGraphDBContainer {
 
     private final RepositoryGestion repositoryGestion = new RepositoryGestion(
-            getRdfGestionConnectionDetails(),
-            new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED));
+            getRdfGestionConnectionDetails(), new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED));
 
     private final CodeListsQueries queries = new CodeListsQueries(
             BauhausUriPropertiesStub.stub(),
@@ -48,8 +47,8 @@ class CodeListLabelByNotationIntegrationTest extends WithGraphDBContainer {
 
     @Test
     void getCodeListLabelByNotation_returns_both_labels_of_the_code_list() throws RmesException {
-        JSONObject result = repositoryGestion.getResponseAsObject(
-                queries.getCodeListLabelByNotation("CL_LBL_BILINGUE"));
+        JSONObject result =
+                repositoryGestion.getResponseAsObject(queries.getCodeListLabelByNotation("CL_LBL_BILINGUE"));
 
         assertThat(result.getString("labelLg1")).isEqualTo("Liste de codes bilingue (test)");
         assertThat(result.getString("labelLg2")).isEqualTo("Bilingual code list (test)");
@@ -57,8 +56,7 @@ class CodeListLabelByNotationIntegrationTest extends WithGraphDBContainer {
 
     @Test
     void getCodeListLabelByNotation_returns_nothing_when_the_code_list_has_no_label_in_lg2() throws RmesException {
-        JSONObject result = repositoryGestion.getResponseAsObject(
-                queries.getCodeListLabelByNotation("CL_LBL_FR_SEUL"));
+        JSONObject result = repositoryGestion.getResponseAsObject(queries.getCodeListLabelByNotation("CL_LBL_FR_SEUL"));
 
         assertThat(result.isEmpty())
                 .as("les deux FILTER lang() sont conjonctifs : sans libellé lg2, aucune ligne n'est rendue")
@@ -67,8 +65,7 @@ class CodeListLabelByNotationIntegrationTest extends WithGraphDBContainer {
 
     @Test
     void getCodeListLabelByNotation_ignores_a_code_carrying_the_requested_notation() throws RmesException {
-        JSONObject result = repositoryGestion.getResponseAsObject(
-                queries.getCodeListLabelByNotation("CL_LBL_CODE"));
+        JSONObject result = repositoryGestion.getResponseAsObject(queries.getCodeListLabelByNotation("CL_LBL_CODE"));
 
         assertThat(result.isEmpty())
                 .as("seules les ressources de type skos:ConceptScheme sont des listes de codes")
@@ -77,8 +74,8 @@ class CodeListLabelByNotationIntegrationTest extends WithGraphDBContainer {
 
     @Test
     void getCodeListLabelByNotation_returns_nothing_for_an_unknown_notation() throws RmesException {
-        JSONObject result = repositoryGestion.getResponseAsObject(
-                queries.getCodeListLabelByNotation("CL_LBL_INCONNUE"));
+        JSONObject result =
+                repositoryGestion.getResponseAsObject(queries.getCodeListLabelByNotation("CL_LBL_INCONNUE"));
 
         assertThat(result.isEmpty()).isTrue();
     }

@@ -1,29 +1,28 @@
 package fr.insee.rmes.modules.organisations.domain.model;
 
-
 public class Organization {
-	
-	private static final String classLink = "fr.insee.rmes.model.organizations.Organization";
 
-	public String id;
+    private static final String classLink = "fr.insee.rmes.model.organizations.Organization";
 
-	public String identifier;
+    public String id;
 
-	public String labelLg1;
+    public String identifier;
 
-	public String labelLg2;
+    public String labelLg1;
 
-	public String altLabel;
+    public String labelLg2;
 
-	public String type;
+    public String altLabel;
 
-	public String motherOrganization;
+    public String type;
 
-	public String linkedTo;
+    public String motherOrganization;
 
-	public String seeAlso;
+    public String linkedTo;
 
-	public static String getClassOperationsLink() {
-		return classLink;
-	}
+    public String seeAlso;
+
+    public static String getClassOperationsLink() {
+        return classLink;
+    }
 }

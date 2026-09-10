@@ -1,5 +1,7 @@
 package fr.insee.rmes.testcontainers.queries.sparql_queries.concepts;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
@@ -12,8 +14,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 /**
  * Non-régression de {@code ConceptConceptsQueries.checkIfExists} après sa migration vers
  * {@code concepts/checkIfConceptExists.ftlh}.
@@ -25,11 +25,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 class ConceptConceptsQueriesIntegrationTest extends WithGraphDBContainer {
 
     private final RepositoryGestion repositoryGestion = new RepositoryGestion(
-            getRdfGestionConnectionDetails(),
-            new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED));
+            getRdfGestionConnectionDetails(), new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED));
 
-    private final ConceptConceptsQueries queries = new ConceptConceptsQueries(
-            new BauhausLanguagesProperties("fr", "en"), GraphsPropertiesStub.stub());
+    private final ConceptConceptsQueries queries =
+            new ConceptConceptsQueries(new BauhausLanguagesProperties("fr", "en"), GraphsPropertiesStub.stub());
 
     @BeforeAll
     static void initData() {

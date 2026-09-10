@@ -4,14 +4,13 @@ import fr.insee.rmes.colectica.client.ColecticaClient;
 import fr.insee.rmes.colectica.client.ItemReference;
 import fr.insee.rmes.colectica.client.RelationshipDirection;
 import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.ColecticaConfiguration.PackageRef;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.cache.annotation.Cacheable;
-
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.Cacheable;
 
 /**
  * Single source of truth for "what is mutualized": every CodeList reference (agency/identifier)
@@ -35,10 +34,9 @@ public class MutualizedCodeListRefsProvider implements MutualizedCodeListRefsStr
     private final ColecticaClient colecticaClient;
 
     public MutualizedCodeListRefsProvider(
-        ColecticaConfiguration.ColecticaInstanceConfiguration instanceConfiguration,
-        ColecticaConfiguration colecticaConfiguration,
-        ColecticaClient colecticaClient
-    ) {
+            ColecticaConfiguration.ColecticaInstanceConfiguration instanceConfiguration,
+            ColecticaConfiguration colecticaConfiguration,
+            ColecticaClient colecticaClient) {
         this.instanceConfiguration = instanceConfiguration;
         this.colecticaConfiguration = colecticaConfiguration;
         this.colecticaClient = colecticaClient;
@@ -64,13 +62,17 @@ public class MutualizedCodeListRefsProvider implements MutualizedCodeListRefsStr
 
         long t0 = System.currentTimeMillis();
         Set<ItemReference> codeListRefs = new LinkedHashSet<>();
-        for (ItemReference scheme : childrenOfType(rootPackage.agencyId(), rootPackage.identifier(), codeListSchemeType)) {
+        for (ItemReference scheme :
+                childrenOfType(rootPackage.agencyId(), rootPackage.identifier(), codeListSchemeType)) {
             for (ItemReference group : childrenOfType(scheme.agencyId(), scheme.identifier(), codeListGroupType)) {
                 codeListRefs.addAll(childrenOfType(group.agencyId(), group.identifier(), codeListType));
             }
         }
-        logger.info("Walked package {} tree → {} CodeList reference(s) in {} ms",
-            packageKey, codeListRefs.size(), System.currentTimeMillis() - t0);
+        logger.info(
+                "Walked package {} tree → {} CodeList reference(s) in {} ms",
+                packageKey,
+                codeListRefs.size(),
+                System.currentTimeMillis() - t0);
         return List.copyOf(codeListRefs);
     }
 
@@ -82,9 +84,7 @@ public class MutualizedCodeListRefsProvider implements MutualizedCodeListRefsStr
     private List<ItemReference> childrenOfType(String agencyId, String identifier, String childType) {
         try {
             return colecticaClient.findRelatedDescriptions(
-                RelationshipDirection.BY_SUBJECT,
-                new ItemReference(agencyId, identifier),
-                List.of(childType));
+                    RelationshipDirection.BY_SUBJECT, new ItemReference(agencyId, identifier), List.of(childType));
         } catch (RuntimeException e) {
             logger.warn("bysubject lookup failed for {}/{}: {}", agencyId, identifier, e.getMessage());
             return List.of();

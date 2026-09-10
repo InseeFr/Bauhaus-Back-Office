@@ -1,10 +1,10 @@
 package fr.insee.rmes.bauhaus_services.classifications;
 
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.ontologies.EVOC;
 import fr.insee.rmes.graphdb.ontologies.XKOS;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.rdf4j.model.IRI;
@@ -30,7 +30,12 @@ public class ClassificationNoteServiceImpl implements ClassificationNoteService 
             if (StringUtils.isNotEmpty(value)) {
                 String html = XhtmlToMarkdownUtils.markdownToXhtml(value);
                 String raw = html.replaceAll("<[^>]*>", "");
-                model.add(noteIri, EVOC.NOTE_LITERAL, RdfUtils.setLiteralString("<div xmlns=\"http://www.w3.org/1999/xhtml\">" + html.trim() + "</div>"), graph);
+                model.add(
+                        noteIri,
+                        EVOC.NOTE_LITERAL,
+                        RdfUtils.setLiteralString(
+                                "<div xmlns=\"http://www.w3.org/1999/xhtml\">" + html.trim() + "</div>"),
+                        graph);
                 model.add(noteIri, XKOS.PLAIN_TEXT, RdfUtils.setLiteralString(raw), graph);
                 model.add(noteIri, RDF.VALUE, RdfUtils.setLiteralString(value), graph);
             }

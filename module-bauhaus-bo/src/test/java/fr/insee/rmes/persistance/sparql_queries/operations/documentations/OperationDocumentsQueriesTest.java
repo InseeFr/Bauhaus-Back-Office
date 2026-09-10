@@ -1,24 +1,23 @@
 package fr.insee.rmes.persistance.sparql_queries.operations.documentations;
 
+import static fr.insee.rmes.persistance.sparql_queries.SparqlQueryNormalizer.normalize;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.mockStatic;
+
 import fr.insee.rmes.BauhausLanguagesProperties;
-import fr.insee.rmes.config.GraphsPropertiesStub;
-import fr.insee.rmes.config.BauhausUriPropertiesStub;
 import fr.insee.rmes.Constants;
+import fr.insee.rmes.config.BauhausUriPropertiesStub;
+import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.freemarker.FreeMarkerUtils;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationDocumentsQueries;
+import java.util.Map;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
-
-import java.util.Map;
-
-import static fr.insee.rmes.persistance.sparql_queries.SparqlQueryNormalizer.normalize;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.mockStatic;
 
 class OperationDocumentsQueriesTest {
 
@@ -26,26 +25,32 @@ class OperationDocumentsQueriesTest {
 
     @BeforeEach
     void setUp() {
-        operationDocumentsQueries = new OperationDocumentsQueries(BauhausUriPropertiesStub.stub(), new BauhausLanguagesProperties("fr", "en"), GraphsPropertiesStub.stub());
+        operationDocumentsQueries = new OperationDocumentsQueries(
+                BauhausUriPropertiesStub.stub(),
+                new BauhausLanguagesProperties("fr", "en"),
+                GraphsPropertiesStub.stub());
     }
 
     @Test
     void shouldCheckLabelUnicity() throws RmesException {
         try (MockedStatic<FreeMarkerUtils> mockedFreeMarker = mockStatic(FreeMarkerUtils.class)) {
-            mockedFreeMarker.when(() -> FreeMarkerUtils.buildRequest(eq("operations/"), eq("checkFamilyPrefLabelUnicity.ftlh"), any(Map.class)))
+            mockedFreeMarker
+                    .when(() -> FreeMarkerUtils.buildRequest(
+                            eq("operations/"), eq("checkFamilyPrefLabelUnicity.ftlh"), any(Map.class)))
                     .thenReturn("ASK { ?s foaf:name 'Test Document'@en }");
 
             String result = operationDocumentsQueries.checkLabelUnicity("doc123", "Test Document", "en");
 
             assertNotNull(result);
             assertEquals("ASK { ?s foaf:name 'Test Document'@en }", result);
-            mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("operations/"), eq("checkFamilyPrefLabelUnicity.ftlh"), 
-                    argThat(params -> {
+            mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(
+                    eq("operations/"), eq("checkFamilyPrefLabelUnicity.ftlh"), argThat(params -> {
                         Map<String, Object> map = (Map<String, Object>) params;
-                        return "\"Test Document\"@en".equals(map.get("LABEL")) &&
-                               "\"doc123\"".equals(map.get("URI_SUFFIX")) &&
-                               "foaf:Document".equals(map.get("TYPE")) &&
-                               ("<" + GraphsPropertiesStub.stub().documentsGraph() + ">").equals(map.get("OPERATIONS_GRAPH"));
+                        return "\"Test Document\"@en".equals(map.get("LABEL"))
+                                && "\"doc123\"".equals(map.get("URI_SUFFIX"))
+                                && "foaf:Document".equals(map.get("TYPE"))
+                                && ("<" + GraphsPropertiesStub.stub().documentsGraph() + ">")
+                                        .equals(map.get("OPERATIONS_GRAPH"));
                     })));
         }
     }
@@ -53,7 +58,9 @@ class OperationDocumentsQueriesTest {
     @Test
     void shouldDeleteDocument() throws RmesException {
         try (MockedStatic<FreeMarkerUtils> mockedFreeMarker = mockStatic(FreeMarkerUtils.class)) {
-            mockedFreeMarker.when(() -> FreeMarkerUtils.buildRequest(eq("operations/documentations/documents/"), eq("deleteDocumentQuery.ftlh"), any(Map.class)))
+            mockedFreeMarker
+                    .when(() -> FreeMarkerUtils.buildRequest(
+                            eq("operations/documentations/documents/"), eq("deleteDocumentQuery.ftlh"), any(Map.class)))
                     .thenReturn("DELETE WHERE { <http://example.org/doc/123> ?p ?o }");
 
             IRI uri = SimpleValueFactory.getInstance().createIRI("http://example.org/doc/123");
@@ -61,8 +68,8 @@ class OperationDocumentsQueriesTest {
 
             assertNotNull(result);
             assertEquals("DELETE WHERE { <http://example.org/doc/123> ?p ?o }", result);
-            mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("operations/documentations/documents/"), eq("deleteDocumentQuery.ftlh"), 
-                    argThat(params -> {
+            mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(
+                    eq("operations/documentations/documents/"), eq("deleteDocumentQuery.ftlh"), argThat(params -> {
                         Map<String, Object> map = (Map<String, Object>) params;
                         return ("<" + uri + ">").equals(map.get(Constants.URI));
                     })));
@@ -72,14 +79,20 @@ class OperationDocumentsQueriesTest {
     @Test
     void shouldGetDocumentUri() throws RmesException {
         try (MockedStatic<FreeMarkerUtils> mockedFreeMarker = mockStatic(FreeMarkerUtils.class)) {
-            mockedFreeMarker.when(() -> FreeMarkerUtils.buildRequest(eq("operations/documentations/documents/"), eq("getDocumentUriFromUrlQuery.ftlh"), any(Map.class)))
+            mockedFreeMarker
+                    .when(() -> FreeMarkerUtils.buildRequest(
+                            eq("operations/documentations/documents/"),
+                            eq("getDocumentUriFromUrlQuery.ftlh"),
+                            any(Map.class)))
                     .thenReturn("SELECT ?uri WHERE { ?uri foaf:page 'test.pdf' }");
 
             String result = operationDocumentsQueries.getDocumentUriQuery("Test.PDF");
 
             assertNotNull(result);
             assertEquals("SELECT ?uri WHERE { ?uri foaf:page 'test.pdf' }", result);
-            mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("operations/documentations/documents/"), eq("getDocumentUriFromUrlQuery.ftlh"), 
+            mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(
+                    eq("operations/documentations/documents/"),
+                    eq("getDocumentUriFromUrlQuery.ftlh"),
                     argThat(params -> {
                         Map<String, Object> map = (Map<String, Object>) params;
                         return "\"test.pdf\"".equals(map.get(Constants.URL));
@@ -90,20 +103,23 @@ class OperationDocumentsQueriesTest {
     @Test
     void shouldGetDocumentsForSimsRubric() throws RmesException {
         try (MockedStatic<FreeMarkerUtils> mockedFreeMarker = mockStatic(FreeMarkerUtils.class)) {
-            mockedFreeMarker.when(() -> FreeMarkerUtils.buildRequest(eq("operations/documentations/documents/"), eq("getDocumentQuery.ftlh"), any(Map.class)))
+            mockedFreeMarker
+                    .when(() -> FreeMarkerUtils.buildRequest(
+                            eq("operations/documentations/documents/"), eq("getDocumentQuery.ftlh"), any(Map.class)))
                     .thenReturn("SELECT ?document WHERE { ?document ?p ?o }");
 
-            String result = operationDocumentsQueries.getDocumentsForSimsRubricQuery("sims123", "rubric456", "http://bauhaus/codes/langue/fr");
+            String result = operationDocumentsQueries.getDocumentsForSimsRubricQuery(
+                    "sims123", "rubric456", "http://bauhaus/codes/langue/fr");
 
             assertNotNull(result);
             assertEquals("SELECT ?document WHERE { ?document ?p ?o }", result);
-            mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("operations/documentations/documents/"), eq("getDocumentQuery.ftlh"), 
-                    argThat(params -> {
+            mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(
+                    eq("operations/documentations/documents/"), eq("getDocumentQuery.ftlh"), argThat(params -> {
                         Map<String, Object> map = (Map<String, Object>) params;
-                        return map.get(Constants.ID) == null &&
-                               "\"sims123\"".equals(map.get(Constants.ID_SIMS)) &&
-                               "\"rubric456\"".equals(map.get("idRubric")) &&
-                               "<http://bauhaus/codes/langue/fr>".equals(map.get("LANG"));
+                        return map.get(Constants.ID) == null
+                                && "\"sims123\"".equals(map.get(Constants.ID_SIMS))
+                                && "\"rubric456\"".equals(map.get("idRubric"))
+                                && "<http://bauhaus/codes/langue/fr>".equals(map.get("LANG"));
                     })));
         }
     }
@@ -111,21 +127,23 @@ class OperationDocumentsQueriesTest {
     @Test
     void shouldGetDocumentsForSims() throws RmesException {
         try (MockedStatic<FreeMarkerUtils> mockedFreeMarker = mockStatic(FreeMarkerUtils.class)) {
-            mockedFreeMarker.when(() -> FreeMarkerUtils.buildRequest(eq("operations/documentations/documents/"), eq("getDocumentQuery.ftlh"), any(Map.class)))
+            mockedFreeMarker
+                    .when(() -> FreeMarkerUtils.buildRequest(
+                            eq("operations/documentations/documents/"), eq("getDocumentQuery.ftlh"), any(Map.class)))
                     .thenReturn("SELECT ?document WHERE { ?document ?p ?o }");
 
             String result = operationDocumentsQueries.getDocumentsForSimsQuery("sims123");
 
             assertNotNull(result);
             assertEquals("SELECT ?document WHERE { ?document ?p ?o }", result);
-            mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("operations/documentations/documents/"), eq("getDocumentQuery.ftlh"), 
-                    argThat(params -> {
+            mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(
+                    eq("operations/documentations/documents/"), eq("getDocumentQuery.ftlh"), argThat(params -> {
                         Map<String, Object> map = (Map<String, Object>) params;
                         String expectedType = BauhausUriPropertiesStub.stub().documentsBaseUri();
-                        return map.get(Constants.ID) == null &&
-                               "\"sims123\"".equals(map.get(Constants.ID_SIMS)) &&
-                               map.get("idRubric") == null &&
-                               ("\"" + expectedType + "\"").equals(map.get("type"));
+                        return map.get(Constants.ID) == null
+                                && "\"sims123\"".equals(map.get(Constants.ID_SIMS))
+                                && map.get("idRubric") == null
+                                && ("\"" + expectedType + "\"").equals(map.get("type"));
                     })));
         }
     }
@@ -133,7 +151,9 @@ class OperationDocumentsQueriesTest {
     @Test
     void shouldGetLinksForSims() throws RmesException {
         try (MockedStatic<FreeMarkerUtils> mockedFreeMarker = mockStatic(FreeMarkerUtils.class)) {
-            mockedFreeMarker.when(() -> FreeMarkerUtils.buildRequest(eq("operations/documentations/documents/"), eq("getDocumentQuery.ftlh"), any(Map.class)))
+            mockedFreeMarker
+                    .when(() -> FreeMarkerUtils.buildRequest(
+                            eq("operations/documentations/documents/"), eq("getDocumentQuery.ftlh"), any(Map.class)))
                     .thenReturn("SELECT ?link WHERE { ?link ?p ?o }");
 
             String result = operationDocumentsQueries.getLinksForSimsQuery("sims123");
@@ -141,14 +161,14 @@ class OperationDocumentsQueriesTest {
             assertNotNull(result);
             assertEquals("SELECT ?link WHERE { ?link ?p ?o }", result);
 
-            mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("operations/documentations/documents/"), eq("getDocumentQuery.ftlh"),
-                    argThat(params -> {
+            mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(
+                    eq("operations/documentations/documents/"), eq("getDocumentQuery.ftlh"), argThat(params -> {
                         Map<String, Object> map = (Map<String, Object>) params;
                         String expectedType = BauhausUriPropertiesStub.stub().linksBaseUri();
-                        return map.get(Constants.ID) == null &&
-                               "\"sims123\"".equals(map.get(Constants.ID_SIMS)) &&
-                               map.get("idRubric") == null &&
-                               ("\"" + expectedType + "\"").equals(map.get("type"));
+                        return map.get(Constants.ID) == null
+                                && "\"sims123\"".equals(map.get(Constants.ID_SIMS))
+                                && map.get("idRubric") == null
+                                && ("\"" + expectedType + "\"").equals(map.get("type"));
                     })));
         }
     }
@@ -156,19 +176,21 @@ class OperationDocumentsQueriesTest {
     @Test
     void shouldGetDocumentForDocument() throws RmesException {
         try (MockedStatic<FreeMarkerUtils> mockedFreeMarker = mockStatic(FreeMarkerUtils.class)) {
-            mockedFreeMarker.when(() -> FreeMarkerUtils.buildRequest(eq("operations/documentations/documents/"), eq("getDocumentQuery.ftlh"), any(Map.class)))
+            mockedFreeMarker
+                    .when(() -> FreeMarkerUtils.buildRequest(
+                            eq("operations/documentations/documents/"), eq("getDocumentQuery.ftlh"), any(Map.class)))
                     .thenReturn("SELECT ?document WHERE { ?document dcterms:identifier 'doc123' }");
 
             String result = operationDocumentsQueries.getDocumentQuery("doc123", false);
 
             assertNotNull(result);
             assertEquals("SELECT ?document WHERE { ?document dcterms:identifier 'doc123' }", result);
-            mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("operations/documentations/documents/"), eq("getDocumentQuery.ftlh"), 
-                    argThat(params -> {
+            mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(
+                    eq("operations/documentations/documents/"), eq("getDocumentQuery.ftlh"), argThat(params -> {
                         Map<String, Object> map = (Map<String, Object>) params;
                         String expectedType = BauhausUriPropertiesStub.stub().documentsBaseUri();
-                        return "\"doc123\"".equals(map.get(Constants.ID)) &&
-                               ("\"" + expectedType + "\"").equals(map.get("type"));
+                        return "\"doc123\"".equals(map.get(Constants.ID))
+                                && ("\"" + expectedType + "\"").equals(map.get("type"));
                     })));
         }
     }
@@ -176,41 +198,44 @@ class OperationDocumentsQueriesTest {
     @Test
     void shouldGetDocumentForLink() throws RmesException {
         try (MockedStatic<FreeMarkerUtils> mockedFreeMarker = mockStatic(FreeMarkerUtils.class)) {
-            mockedFreeMarker.when(() -> FreeMarkerUtils.buildRequest(eq("operations/documentations/documents/"), eq("getDocumentQuery.ftlh"), any(Map.class)))
+            mockedFreeMarker
+                    .when(() -> FreeMarkerUtils.buildRequest(
+                            eq("operations/documentations/documents/"), eq("getDocumentQuery.ftlh"), any(Map.class)))
                     .thenReturn("SELECT ?link WHERE { ?link dcterms:identifier 'link123' }");
 
             String result = operationDocumentsQueries.getDocumentQuery("link123", true);
 
             assertNotNull(result);
             assertEquals("SELECT ?link WHERE { ?link dcterms:identifier 'link123' }", result);
-            mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("operations/documentations/documents/"), eq("getDocumentQuery.ftlh"), 
-                    argThat(params -> {
+            mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(
+                    eq("operations/documentations/documents/"), eq("getDocumentQuery.ftlh"), argThat(params -> {
                         Map<String, Object> map = (Map<String, Object>) params;
                         String expectedType = BauhausUriPropertiesStub.stub().linksBaseUri();
-                        return "\"link123\"".equals(map.get(Constants.ID)) &&
-                               ("\"" + expectedType + "\"").equals(map.get("type"));
+                        return "\"link123\"".equals(map.get(Constants.ID))
+                                && ("\"" + expectedType + "\"").equals(map.get("type"));
                     })));
         }
     }
 
-
     @Test
     void shouldGetAllDocuments() throws RmesException {
         try (MockedStatic<FreeMarkerUtils> mockedFreeMarker = mockStatic(FreeMarkerUtils.class)) {
-            mockedFreeMarker.when(() -> FreeMarkerUtils.buildRequest(eq("operations/documentations/documents/"), eq("getDocumentQuery.ftlh"), any(Map.class)))
+            mockedFreeMarker
+                    .when(() -> FreeMarkerUtils.buildRequest(
+                            eq("operations/documentations/documents/"), eq("getDocumentQuery.ftlh"), any(Map.class)))
                     .thenReturn("SELECT ?document WHERE { ?document a foaf:Document }");
 
             String result = operationDocumentsQueries.getAllDocumentsQuery();
 
             assertNotNull(result);
             assertEquals("SELECT ?document WHERE { ?document a foaf:Document }", result);
-            mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("operations/documentations/documents/"), eq("getDocumentQuery.ftlh"), 
-                    argThat(params -> {
+            mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(
+                    eq("operations/documentations/documents/"), eq("getDocumentQuery.ftlh"), argThat(params -> {
                         Map<String, Object> map = (Map<String, Object>) params;
-                        return map.get(Constants.ID) == null &&
-                               map.get(Constants.ID_SIMS) == null &&
-                               map.get("idRubric") == null &&
-                               map.get("type") == null;
+                        return map.get(Constants.ID) == null
+                                && map.get(Constants.ID_SIMS) == null
+                                && map.get("idRubric") == null
+                                && map.get("type") == null;
                     })));
         }
     }
@@ -218,15 +243,19 @@ class OperationDocumentsQueriesTest {
     @Test
     void shouldGetLinksToDocument() throws RmesException {
         try (MockedStatic<FreeMarkerUtils> mockedFreeMarker = mockStatic(FreeMarkerUtils.class)) {
-            mockedFreeMarker.when(() -> FreeMarkerUtils.buildRequest(eq("operations/documentations/documents/"), eq("getLinksToDocumentQuery.ftlh"), any(Map.class)))
+            mockedFreeMarker
+                    .when(() -> FreeMarkerUtils.buildRequest(
+                            eq("operations/documentations/documents/"),
+                            eq("getLinksToDocumentQuery.ftlh"),
+                            any(Map.class)))
                     .thenReturn("SELECT ?link WHERE { ?link ?p ?document }");
 
             String result = operationDocumentsQueries.getLinksToDocumentQuery("doc123");
 
             assertNotNull(result);
             assertEquals("SELECT ?link WHERE { ?link ?p ?document }", result);
-            mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("operations/documentations/documents/"), eq("getLinksToDocumentQuery.ftlh"), 
-                    argThat(params -> {
+            mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(
+                    eq("operations/documentations/documents/"), eq("getLinksToDocumentQuery.ftlh"), argThat(params -> {
                         Map<String, Object> map = (Map<String, Object>) params;
                         return "\"doc123\"".equals(map.get(Constants.ID));
                     })));
@@ -236,19 +265,24 @@ class OperationDocumentsQueriesTest {
     @Test
     void shouldChangeDocumentUrl() throws RmesException {
         try (MockedStatic<FreeMarkerUtils> mockedFreeMarker = mockStatic(FreeMarkerUtils.class)) {
-            mockedFreeMarker.when(() -> FreeMarkerUtils.buildRequest(eq("operations/documentations/documents/"), eq("changeDocumentUrlQuery.ftlh"), any(Map.class)))
+            mockedFreeMarker
+                    .when(() -> FreeMarkerUtils.buildRequest(
+                            eq("operations/documentations/documents/"),
+                            eq("changeDocumentUrlQuery.ftlh"),
+                            any(Map.class)))
                     .thenReturn("DELETE/INSERT query");
 
-            String result = operationDocumentsQueries.changeDocumentUrlQuery("http://example.org/doc/123", "http://old.example.org/doc.pdf", "http://new.example.org/doc.pdf");
+            String result = operationDocumentsQueries.changeDocumentUrlQuery(
+                    "http://example.org/doc/123", "http://old.example.org/doc.pdf", "http://new.example.org/doc.pdf");
 
             assertNotNull(result);
             assertEquals("DELETE/INSERT query", result);
-            mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("operations/documentations/documents/"), eq("changeDocumentUrlQuery.ftlh"), 
-                    argThat(params -> {
+            mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(
+                    eq("operations/documentations/documents/"), eq("changeDocumentUrlQuery.ftlh"), argThat(params -> {
                         Map<String, Object> map = (Map<String, Object>) params;
-                        return "\"http://example.org/doc/123\"".equals(map.get("iri")) &&
-                               "<http://old.example.org/doc.pdf>".equals(map.get("oldUrl")) &&
-                               "<http://new.example.org/doc.pdf>".equals(map.get("newUrl"));
+                        return "\"http://example.org/doc/123\"".equals(map.get("iri"))
+                                && "<http://old.example.org/doc.pdf>".equals(map.get("oldUrl"))
+                                && "<http://new.example.org/doc.pdf>".equals(map.get("newUrl"));
                     })));
         }
     }
@@ -256,42 +290,54 @@ class OperationDocumentsQueriesTest {
     @Test
     void shouldGetLastDocumentID() throws RmesException {
         try (MockedStatic<FreeMarkerUtils> mockedFreeMarker = mockStatic(FreeMarkerUtils.class)) {
-            mockedFreeMarker.when(() -> FreeMarkerUtils.buildRequest(eq("operations/documentations/documents/"), eq("lastDocumentIdQuery.ftlh"), isNull()))
+            mockedFreeMarker
+                    .when(() -> FreeMarkerUtils.buildRequest(
+                            eq("operations/documentations/documents/"), eq("lastDocumentIdQuery.ftlh"), isNull()))
                     .thenReturn("SELECT ?lastId WHERE { ?doc dcterms:identifier ?lastId }");
 
             String result = operationDocumentsQueries.lastDocumentID();
 
             assertNotNull(result);
             assertEquals("SELECT ?lastId WHERE { ?doc dcterms:identifier ?lastId }", result);
-            mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("operations/documentations/documents/"), eq("lastDocumentIdQuery.ftlh"), isNull()));
+            mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(
+                    eq("operations/documentations/documents/"), eq("lastDocumentIdQuery.ftlh"), isNull()));
         }
     }
 
     @Test
     void shouldGetLastLinkID() throws RmesException {
         try (MockedStatic<FreeMarkerUtils> mockedFreeMarker = mockStatic(FreeMarkerUtils.class)) {
-            mockedFreeMarker.when(() -> FreeMarkerUtils.buildRequest(eq("operations/documentations/documents/"), eq("lastLinkIdQuery.ftlh"), isNull()))
+            mockedFreeMarker
+                    .when(() -> FreeMarkerUtils.buildRequest(
+                            eq("operations/documentations/documents/"), eq("lastLinkIdQuery.ftlh"), isNull()))
                     .thenReturn("SELECT ?lastId WHERE { ?link dcterms:identifier ?lastId }");
 
             String result = operationDocumentsQueries.lastLinkID();
 
             assertNotNull(result);
             assertEquals("SELECT ?lastId WHERE { ?link dcterms:identifier ?lastId }", result);
-            mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("operations/documentations/documents/"), eq("lastLinkIdQuery.ftlh"), isNull()));
+            mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(
+                    eq("operations/documentations/documents/"), eq("lastLinkIdQuery.ftlh"), isNull()));
         }
     }
 
     @Test
     void shouldGetDocumentsUriAndUrlForSims() throws RmesException {
         try (MockedStatic<FreeMarkerUtils> mockedFreeMarker = mockStatic(FreeMarkerUtils.class)) {
-            mockedFreeMarker.when(() -> FreeMarkerUtils.buildRequest(eq("operations/documentations/documents/"), eq("getDocumentsUriAndUrlForSims.ftlh"), any(Map.class)))
+            mockedFreeMarker
+                    .when(() -> FreeMarkerUtils.buildRequest(
+                            eq("operations/documentations/documents/"),
+                            eq("getDocumentsUriAndUrlForSims.ftlh"),
+                            any(Map.class)))
                     .thenReturn("SELECT ?uri ?url WHERE { ?uri foaf:page ?url }");
 
             String result = operationDocumentsQueries.getDocumentsUriAndUrlForSims("sims123");
 
             assertNotNull(result);
             assertEquals("SELECT ?uri ?url WHERE { ?uri foaf:page ?url }", result);
-            mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("operations/documentations/documents/"), eq("getDocumentsUriAndUrlForSims.ftlh"), 
+            mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(
+                    eq("operations/documentations/documents/"),
+                    eq("getDocumentsUriAndUrlForSims.ftlh"),
                     argThat(params -> {
                         Map<String, Object> map = (Map<String, Object>) params;
                         return ("<" + GraphsPropertiesStub.stub().documentationsGraph() + "/sims123>")
@@ -304,12 +350,13 @@ class OperationDocumentsQueriesTest {
     void shouldPropagateRmesExceptionFromFreeMarkerUtils() {
         try (MockedStatic<FreeMarkerUtils> mockedFreeMarker = mockStatic(FreeMarkerUtils.class)) {
             RmesException testException = new RmesException(500, "Test error", "Test error message");
-            mockedFreeMarker.when(() -> FreeMarkerUtils.buildRequest(eq("operations/documentations/documents/"), eq("getDocumentQuery.ftlh"), any(Map.class)))
+            mockedFreeMarker
+                    .when(() -> FreeMarkerUtils.buildRequest(
+                            eq("operations/documentations/documents/"), eq("getDocumentQuery.ftlh"), any(Map.class)))
                     .thenThrow(testException);
 
-            RmesException exception = assertThrows(RmesException.class, () -> 
-                operationDocumentsQueries.getDocumentQuery("test", false)
-            );
+            RmesException exception =
+                    assertThrows(RmesException.class, () -> operationDocumentsQueries.getDocumentQuery("test", false));
 
             assertEquals(testException, exception);
         }

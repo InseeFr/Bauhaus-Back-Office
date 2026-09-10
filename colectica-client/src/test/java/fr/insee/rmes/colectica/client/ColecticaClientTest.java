@@ -1,5 +1,13 @@
 package fr.insee.rmes.colectica.client;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.header;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.jsonPath;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
+
 import fr.insee.rmes.colectica.client.auth.ColecticaCredentials;
 import fr.insee.rmes.colectica.client.dto.ColecticaAdvancedItem;
 import fr.insee.rmes.colectica.client.dto.ColecticaAdvancedResponse;
@@ -10,25 +18,16 @@ import fr.insee.rmes.colectica.client.dto.ColecticaResponse;
 import fr.insee.rmes.colectica.client.dto.ColecticaSetItem;
 import fr.insee.rmes.colectica.client.dto.GetDescriptionsRequest;
 import fr.insee.rmes.colectica.client.dto.UpdateItemStateRequest;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestClient;
-
-import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Supplier;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.header;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.jsonPath;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
-import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
-import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
 class ColecticaClientTest {
 
@@ -48,22 +47,22 @@ class ColecticaClientTest {
     private Fixture newFixture(ColecticaCredentials credentials) {
         RestClient.Builder builder = RestClient.builder();
         MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();
-        return new Fixture(
-            new ColecticaClient(builder.build(), BASE_API_URL, BASE_SERVER_URL, credentials), server);
+        return new Fixture(new ColecticaClient(builder.build(), BASE_API_URL, BASE_SERVER_URL, credentials), server);
     }
 
     @Test
     void query_postsItemTypesWithBearerTokenAndMapsResponse() {
         Fixture f = newFixture();
-        f.server.expect(requestTo(BASE_API_URL + "_query"))
-            .andExpect(method(HttpMethod.POST))
-            .andExpect(header("Authorization", "Bearer " + TOKEN))
-            .andExpect(jsonPath("$.itemTypes[0]").value(LOGICAL_PRODUCT_TYPE))
-            .andExpect(jsonPath("$.searchLatestVersion").value(true))
-            .andRespond(withSuccess(
-                "{\"Results\":[{\"Identifier\":\"lp-1\",\"AgencyId\":\"fr.insee\"}],"
-                    + "\"TotalResults\":1,\"ReturnedResults\":1}",
-                MediaType.APPLICATION_JSON));
+        f.server
+                .expect(requestTo(BASE_API_URL + "_query"))
+                .andExpect(method(HttpMethod.POST))
+                .andExpect(header("Authorization", "Bearer " + TOKEN))
+                .andExpect(jsonPath("$.itemTypes[0]").value(LOGICAL_PRODUCT_TYPE))
+                .andExpect(jsonPath("$.searchLatestVersion").value(true))
+                .andRespond(withSuccess(
+                        "{\"Results\":[{\"Identifier\":\"lp-1\",\"AgencyId\":\"fr.insee\"}],"
+                                + "\"TotalResults\":1,\"ReturnedResults\":1}",
+                        MediaType.APPLICATION_JSON));
 
         ColecticaResponse response = f.client.query(List.of(LOGICAL_PRODUCT_TYPE));
 
@@ -75,14 +74,14 @@ class ColecticaClientTest {
     @Test
     void queryAdvanced_postsAdvancedQueryWithResultsIncludeAllAndMapsPropertyBags() {
         Fixture f = newFixture();
-        f.server.expect(requestTo(BASE_API_URL + "_query/advanced"))
-            .andExpect(method(HttpMethod.POST))
-            .andExpect(header("Authorization", "Bearer " + TOKEN))
-            .andExpect(jsonPath("$.itemTypes[0]").value(PHYSICAL_INSTANCE_TYPE))
-            .andExpect(jsonPath("$.searchLatestVersion").value(true))
-            .andExpect(jsonPath("$.resultsIncludeAll").value(true))
-            .andRespond(withSuccess(
-                """
+        f.server
+                .expect(requestTo(BASE_API_URL + "_query/advanced"))
+                .andExpect(method(HttpMethod.POST))
+                .andExpect(header("Authorization", "Bearer " + TOKEN))
+                .andExpect(jsonPath("$.itemTypes[0]").value(PHYSICAL_INSTANCE_TYPE))
+                .andExpect(jsonPath("$.searchLatestVersion").value(true))
+                .andExpect(jsonPath("$.resultsIncludeAll").value(true))
+                .andRespond(withSuccess("""
                 {
                   "Results": [
                     {
@@ -102,8 +101,7 @@ class ColecticaClientTest {
                   "ReturnedResults": 1,
                   "NextResult": null
                 }
-                """,
-                MediaType.APPLICATION_JSON));
+                """, MediaType.APPLICATION_JSON));
 
         ColecticaAdvancedResponse response = f.client.queryAdvanced(List.of(PHYSICAL_INSTANCE_TYPE));
 
@@ -112,8 +110,7 @@ class ColecticaClientTest {
         ColecticaAdvancedItem item = response.results().get(0);
         assertThat(item.identifier()).isEqualTo("2ded665b-f513-489a-8c7a-8778f5ffc7de");
         assertThat(item.agencyId()).isEqualTo("fr.insee");
-        assertThat(item.dateProperties().get("versionDate"))
-            .containsExactly("2026-06-29T14:26:32.961778");
+        assertThat(item.dateProperties().get("versionDate")).containsExactly("2026-06-29T14:26:32.961778");
         assertThat(item.textProperties().get("label").get(0).value()).isEqualTo("20260625 EDE");
         assertThat(item.booleanProperties().get("isPublished")).isFalse();
     }
@@ -121,17 +118,18 @@ class ColecticaClientTest {
     @Test
     void getDescriptions_postsIdentifiersAndMapsItems() {
         Fixture f = newFixture();
-        f.server.expect(requestTo(BASE_API_URL + "item/_getList"))
-            .andExpect(method(HttpMethod.POST))
-            .andExpect(header("Authorization", "Bearer " + TOKEN))
-            .andExpect(jsonPath("$.identifiers[0].identifier").value("pi-1"))
-            .andRespond(withSuccess(
-                "[{\"Identifier\":\"pi-1\",\"AgencyId\":\"fr.insee\",\"Version\":1,\"Item\":\"<x/>\","
-                    + "\"IsPublished\":true,\"IsDeprecated\":false,\"IsProvisional\":false}]",
-                MediaType.APPLICATION_JSON));
+        f.server
+                .expect(requestTo(BASE_API_URL + "item/_getList"))
+                .andExpect(method(HttpMethod.POST))
+                .andExpect(header("Authorization", "Bearer " + TOKEN))
+                .andExpect(jsonPath("$.identifiers[0].identifier").value("pi-1"))
+                .andRespond(withSuccess(
+                        "[{\"Identifier\":\"pi-1\",\"AgencyId\":\"fr.insee\",\"Version\":1,\"Item\":\"<x/>\","
+                                + "\"IsPublished\":true,\"IsDeprecated\":false,\"IsProvisional\":false}]",
+                        MediaType.APPLICATION_JSON));
 
-        ColecticaItemResponse[] items = f.client.getDescriptions(
-            List.of(new GetDescriptionsRequest.IdentifierRef("fr.insee", "pi-1", 1)));
+        ColecticaItemResponse[] items =
+                f.client.getDescriptions(List.of(new GetDescriptionsRequest.IdentifierRef("fr.insee", "pi-1", 1)));
 
         f.server.verify();
         assertThat(items).hasSize(1);
@@ -142,13 +140,14 @@ class ColecticaClientTest {
     @Test
     void getItem_getsUrlEncodedItemWithOptionalVersion() {
         Fixture f = newFixture();
-        f.server.expect(requestTo(BASE_API_URL + "item/fr.insee/pi-1/2"))
-            .andExpect(method(HttpMethod.GET))
-            .andExpect(header("Authorization", "Bearer " + TOKEN))
-            .andRespond(withSuccess(
-                "{\"Identifier\":\"pi-1\",\"AgencyId\":\"fr.insee\",\"Version\":2,"
-                    + "\"IsPublished\":true,\"IsDeprecated\":false,\"IsProvisional\":false}",
-                MediaType.APPLICATION_JSON));
+        f.server
+                .expect(requestTo(BASE_API_URL + "item/fr.insee/pi-1/2"))
+                .andExpect(method(HttpMethod.GET))
+                .andExpect(header("Authorization", "Bearer " + TOKEN))
+                .andRespond(withSuccess(
+                        "{\"Identifier\":\"pi-1\",\"AgencyId\":\"fr.insee\",\"Version\":2,"
+                                + "\"IsPublished\":true,\"IsDeprecated\":false,\"IsProvisional\":false}",
+                        MediaType.APPLICATION_JSON));
 
         ColecticaItemResponse item = f.client.getItem("fr.insee", "pi-1", "2");
 
@@ -160,12 +159,12 @@ class ColecticaClientTest {
     @Test
     void getSet_getsSetReferencesWithoutVersion() {
         Fixture f = newFixture();
-        f.server.expect(requestTo(BASE_API_URL + "set/fr.insee/su-1"))
-            .andExpect(method(HttpMethod.GET))
-            .andExpect(header("Authorization", "Bearer " + TOKEN))
-            .andRespond(withSuccess(
-                "[{\"Item1\":\"lp-1\",\"Item2\":1,\"Item3\":\"fr.insee\"}]",
-                MediaType.APPLICATION_JSON));
+        f.server
+                .expect(requestTo(BASE_API_URL + "set/fr.insee/su-1"))
+                .andExpect(method(HttpMethod.GET))
+                .andExpect(header("Authorization", "Bearer " + TOKEN))
+                .andRespond(withSuccess(
+                        "[{\"Item1\":\"lp-1\",\"Item2\":1,\"Item3\":\"fr.insee\"}]", MediaType.APPLICATION_JSON));
 
         ColecticaSetItem[] set = f.client.getSet("fr.insee", "su-1", null);
 
@@ -177,11 +176,12 @@ class ColecticaClientTest {
     @Test
     void getDdiSet_returnsRawBytes() {
         Fixture f = newFixture();
-        f.server.expect(requestTo(BASE_API_URL + "ddiset/fr.insee/g-1"))
-            .andExpect(method(HttpMethod.GET))
-            .andExpect(header("Authorization", "Bearer " + TOKEN))
-            .andRespond(withSuccess("<FragmentInstance/>".getBytes(StandardCharsets.UTF_8),
-                MediaType.APPLICATION_OCTET_STREAM));
+        f.server
+                .expect(requestTo(BASE_API_URL + "ddiset/fr.insee/g-1"))
+                .andExpect(method(HttpMethod.GET))
+                .andExpect(header("Authorization", "Bearer " + TOKEN))
+                .andRespond(withSuccess(
+                        "<FragmentInstance/>".getBytes(StandardCharsets.UTF_8), MediaType.APPLICATION_OCTET_STREAM));
 
         byte[] bytes = f.client.getDdiSet("fr.insee", "g-1");
 
@@ -192,15 +192,16 @@ class ColecticaClientTest {
     @Test
     void createOrUpdateItems_postsRequestToItemEndpoint() {
         Fixture f = newFixture();
-        f.server.expect(requestTo(BASE_API_URL + "item"))
-            .andExpect(method(HttpMethod.POST))
-            .andExpect(header("Authorization", "Bearer " + TOKEN))
-            .andExpect(jsonPath("$.Items[0].Identifier").value("pi-1"))
-            .andExpect(jsonPath("$.options.namedOptions[0]").value("RegisterOrReplace"))
-            .andRespond(withSuccess("ok", MediaType.TEXT_PLAIN));
+        f.server
+                .expect(requestTo(BASE_API_URL + "item"))
+                .andExpect(method(HttpMethod.POST))
+                .andExpect(header("Authorization", "Bearer " + TOKEN))
+                .andExpect(jsonPath("$.Items[0].Identifier").value("pi-1"))
+                .andExpect(jsonPath("$.options.namedOptions[0]").value("RegisterOrReplace"))
+                .andRespond(withSuccess("ok", MediaType.TEXT_PLAIN));
 
-        ColecticaItemResponse item = new ColecticaItemResponse(
-            "type", "fr.insee", 1, "pi-1", "<x/>", null, null, false, false, false, null);
+        ColecticaItemResponse item =
+                new ColecticaItemResponse("type", "fr.insee", 1, "pi-1", "<x/>", null, null, false, false, false, null);
         String response = f.client.createOrUpdateItems(new ColecticaCreateItemRequest(List.of(item)));
 
         f.server.verify();
@@ -210,15 +211,16 @@ class ColecticaClientTest {
     @Test
     void updateItemState_postsStateToUpdateStateEndpoint() {
         Fixture f = newFixture();
-        f.server.expect(requestTo(BASE_API_URL + "item/_updateState"))
-            .andExpect(method(HttpMethod.POST))
-            .andExpect(header("Authorization", "Bearer " + TOKEN))
-            .andExpect(jsonPath("$.state").value(true))
-            .andExpect(jsonPath("$.ids[0].identifier").value("g-1"))
-            .andRespond(withSuccess("ok", MediaType.TEXT_PLAIN));
+        f.server
+                .expect(requestTo(BASE_API_URL + "item/_updateState"))
+                .andExpect(method(HttpMethod.POST))
+                .andExpect(header("Authorization", "Bearer " + TOKEN))
+                .andExpect(jsonPath("$.state").value(true))
+                .andExpect(jsonPath("$.ids[0].identifier").value("g-1"))
+                .andRespond(withSuccess("ok", MediaType.TEXT_PLAIN));
 
         UpdateItemStateRequest request = new UpdateItemStateRequest(
-            List.of(new UpdateItemStateRequest.ItemIdentifier("fr.insee", "g-1", 1)), true, true);
+                List.of(new UpdateItemStateRequest.ItemIdentifier("fr.insee", "g-1", 1)), true, true);
         String response = f.client.updateItemState(request);
 
         f.server.verify();
@@ -228,19 +230,17 @@ class ColecticaClientTest {
     @Test
     void findRelatedDescriptions_postsFilteredQueryAndMapsResponse() {
         Fixture f = newFixture();
-        f.server.expect(requestTo(BASE_API_URL + "_query/relationship/bysubject/descriptions"))
-            .andExpect(method(HttpMethod.POST))
-            .andExpect(header("Authorization", "Bearer " + TOKEN))
-            .andExpect(jsonPath("$.itemTypes[0]").value(LOGICAL_PRODUCT_TYPE))
-            .andExpect(jsonPath("$.targetItem.identifier").value("su-1"))
-            .andRespond(withSuccess(
-                "[{\"AgencyId\":\"fr.insee\",\"Identifier\":\"lp-1\"}]",
-                MediaType.APPLICATION_JSON));
+        f.server
+                .expect(requestTo(BASE_API_URL + "_query/relationship/bysubject/descriptions"))
+                .andExpect(method(HttpMethod.POST))
+                .andExpect(header("Authorization", "Bearer " + TOKEN))
+                .andExpect(jsonPath("$.itemTypes[0]").value(LOGICAL_PRODUCT_TYPE))
+                .andExpect(jsonPath("$.targetItem.identifier").value("su-1"))
+                .andRespond(withSuccess(
+                        "[{\"AgencyId\":\"fr.insee\",\"Identifier\":\"lp-1\"}]", MediaType.APPLICATION_JSON));
 
         List<ItemReference> result = f.client.findRelatedDescriptions(
-            RelationshipDirection.BY_SUBJECT,
-            new ItemReference("fr.insee", "su-1"),
-            List.of(LOGICAL_PRODUCT_TYPE));
+                RelationshipDirection.BY_SUBJECT, new ItemReference("fr.insee", "su-1"), List.of(LOGICAL_PRODUCT_TYPE));
 
         f.server.verify();
         assertThat(result).containsExactly(new ItemReference("fr.insee", "lp-1"));
@@ -249,20 +249,19 @@ class ColecticaClientTest {
     @Test
     void findRelatedItems_postsFilteredQueryAndMapsLabelsFromDescriptions() {
         Fixture f = newFixture();
-        f.server.expect(requestTo(BASE_API_URL + "_query/relationship/byobject/descriptions"))
-            .andExpect(method(HttpMethod.POST))
-            .andExpect(header("Authorization", "Bearer " + TOKEN))
-            .andExpect(jsonPath("$.itemTypes[0]").value(LOGICAL_PRODUCT_TYPE))
-            .andExpect(jsonPath("$.targetItem.identifier").value("cl-1"))
-            .andRespond(withSuccess(
-                "[{\"AgencyId\":\"fr.insee\",\"Identifier\":\"var-1\","
-                    + "\"ItemName\":{\"fr-FR\":\"Sexe\"},\"Label\":{\"fr-FR\":\"Sexe label\"}}]",
-                MediaType.APPLICATION_JSON));
+        f.server
+                .expect(requestTo(BASE_API_URL + "_query/relationship/byobject/descriptions"))
+                .andExpect(method(HttpMethod.POST))
+                .andExpect(header("Authorization", "Bearer " + TOKEN))
+                .andExpect(jsonPath("$.itemTypes[0]").value(LOGICAL_PRODUCT_TYPE))
+                .andExpect(jsonPath("$.targetItem.identifier").value("cl-1"))
+                .andRespond(withSuccess(
+                        "[{\"AgencyId\":\"fr.insee\",\"Identifier\":\"var-1\","
+                                + "\"ItemName\":{\"fr-FR\":\"Sexe\"},\"Label\":{\"fr-FR\":\"Sexe label\"}}]",
+                        MediaType.APPLICATION_JSON));
 
         List<ColecticaItem> result = f.client.findRelatedItems(
-            RelationshipDirection.BY_OBJECT,
-            new ItemReference("fr.insee", "cl-1"),
-            List.of(LOGICAL_PRODUCT_TYPE));
+                RelationshipDirection.BY_OBJECT, new ItemReference("fr.insee", "cl-1"), List.of(LOGICAL_PRODUCT_TYPE));
 
         f.server.verify();
         assertThat(result).hasSize(1);
@@ -274,12 +273,14 @@ class ColecticaClientTest {
     @Test
     void findRelatedItems_returnsEmptyListWhenNoRelatedItem() {
         Fixture f = newFixture();
-        f.server.expect(requestTo(BASE_API_URL + "_query/relationship/byobject/descriptions"))
-            .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON));
+        f.server
+                .expect(requestTo(BASE_API_URL + "_query/relationship/byobject/descriptions"))
+                .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON));
 
         List<ColecticaItem> result = f.client.findRelatedItems(
-            RelationshipDirection.BY_OBJECT, new ItemReference("fr.insee", "cl-empty"),
-            List.of(LOGICAL_PRODUCT_TYPE));
+                RelationshipDirection.BY_OBJECT,
+                new ItemReference("fr.insee", "cl-empty"),
+                List.of(LOGICAL_PRODUCT_TYPE));
 
         f.server.verify();
         assertThat(result).isEmpty();
@@ -288,12 +289,14 @@ class ColecticaClientTest {
     @Test
     void findRelatedDescriptions_returnsEmptyListWhenNoRelatedItem() {
         Fixture f = newFixture();
-        f.server.expect(requestTo(BASE_API_URL + "_query/relationship/bysubject/descriptions"))
-            .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON));
+        f.server
+                .expect(requestTo(BASE_API_URL + "_query/relationship/bysubject/descriptions"))
+                .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON));
 
         List<ItemReference> result = f.client.findRelatedDescriptions(
-            RelationshipDirection.BY_SUBJECT, new ItemReference("fr.insee", "su-empty"),
-            List.of(LOGICAL_PRODUCT_TYPE));
+                RelationshipDirection.BY_SUBJECT,
+                new ItemReference("fr.insee", "su-empty"),
+                List.of(LOGICAL_PRODUCT_TYPE));
 
         assertThat(result).isEmpty();
     }
@@ -304,15 +307,17 @@ class ColecticaClientTest {
     void userPassword_obtainsTokenFromCreateTokenThenCallsApi() {
         Fixture f = newFixture(new ColecticaCredentials.UserPassword("user", "secret"));
 
-        f.server.expect(requestTo(BASE_SERVER_URL + "/token/createtoken"))
-            .andExpect(method(HttpMethod.POST))
-            .andExpect(jsonPath("$.username").value("user"))
-            .andExpect(jsonPath("$.password").value("secret"))
-            .andRespond(withSuccess("{\"access_token\":\"jwt-abc\"}", MediaType.APPLICATION_JSON));
-        f.server.expect(requestTo(BASE_API_URL + "_query"))
-            .andExpect(header("Authorization", "Bearer jwt-abc"))
-            .andRespond(withSuccess("{\"TotalResults\":0,\"ReturnedResults\":0,\"Results\":[]}",
-                MediaType.APPLICATION_JSON));
+        f.server
+                .expect(requestTo(BASE_SERVER_URL + "/token/createtoken"))
+                .andExpect(method(HttpMethod.POST))
+                .andExpect(jsonPath("$.username").value("user"))
+                .andExpect(jsonPath("$.password").value("secret"))
+                .andRespond(withSuccess("{\"access_token\":\"jwt-abc\"}", MediaType.APPLICATION_JSON));
+        f.server
+                .expect(requestTo(BASE_API_URL + "_query"))
+                .andExpect(header("Authorization", "Bearer jwt-abc"))
+                .andRespond(withSuccess(
+                        "{\"TotalResults\":0,\"ReturnedResults\":0,\"Results\":[]}", MediaType.APPLICATION_JSON));
 
         f.client.query(List.of(LOGICAL_PRODUCT_TYPE));
 
@@ -324,20 +329,24 @@ class ColecticaClientTest {
         Fixture f = newFixture(new ColecticaCredentials.UserPassword("user", "secret"));
 
         // 1) initial token
-        f.server.expect(requestTo(BASE_SERVER_URL + "/token/createtoken"))
-            .andRespond(withSuccess("{\"access_token\":\"expired\"}", MediaType.APPLICATION_JSON));
+        f.server
+                .expect(requestTo(BASE_SERVER_URL + "/token/createtoken"))
+                .andRespond(withSuccess("{\"access_token\":\"expired\"}", MediaType.APPLICATION_JSON));
         // 2) API call rejected with the expired token
-        f.server.expect(requestTo(BASE_API_URL + "_query"))
-            .andExpect(header("Authorization", "Bearer expired"))
-            .andRespond(withStatus(HttpStatus.UNAUTHORIZED));
+        f.server
+                .expect(requestTo(BASE_API_URL + "_query"))
+                .andExpect(header("Authorization", "Bearer expired"))
+                .andRespond(withStatus(HttpStatus.UNAUTHORIZED));
         // 3) re-authentication
-        f.server.expect(requestTo(BASE_SERVER_URL + "/token/createtoken"))
-            .andRespond(withSuccess("{\"access_token\":\"fresh\"}", MediaType.APPLICATION_JSON));
+        f.server
+                .expect(requestTo(BASE_SERVER_URL + "/token/createtoken"))
+                .andRespond(withSuccess("{\"access_token\":\"fresh\"}", MediaType.APPLICATION_JSON));
         // 4) retry succeeds with the fresh token
-        f.server.expect(requestTo(BASE_API_URL + "_query"))
-            .andExpect(header("Authorization", "Bearer fresh"))
-            .andRespond(withSuccess("{\"TotalResults\":0,\"ReturnedResults\":0,\"Results\":[]}",
-                MediaType.APPLICATION_JSON));
+        f.server
+                .expect(requestTo(BASE_API_URL + "_query"))
+                .andExpect(header("Authorization", "Bearer fresh"))
+                .andRespond(withSuccess(
+                        "{\"TotalResults\":0,\"ReturnedResults\":0,\"Results\":[]}", MediaType.APPLICATION_JSON));
 
         ColecticaResponse response = f.client.query(List.of(LOGICAL_PRODUCT_TYPE));
 
@@ -349,16 +358,19 @@ class ColecticaClientTest {
     void userPassword_cachesTokenAcrossCalls() {
         Fixture f = newFixture(new ColecticaCredentials.UserPassword("user", "secret"));
 
-        f.server.expect(requestTo(BASE_SERVER_URL + "/token/createtoken"))
-            .andRespond(withSuccess("{\"access_token\":\"jwt-abc\"}", MediaType.APPLICATION_JSON));
-        f.server.expect(requestTo(BASE_API_URL + "_query"))
-            .andExpect(header("Authorization", "Bearer jwt-abc"))
-            .andRespond(withSuccess("{\"TotalResults\":0,\"ReturnedResults\":0,\"Results\":[]}",
-                MediaType.APPLICATION_JSON));
-        f.server.expect(requestTo(BASE_API_URL + "_query"))
-            .andExpect(header("Authorization", "Bearer jwt-abc"))
-            .andRespond(withSuccess("{\"TotalResults\":0,\"ReturnedResults\":0,\"Results\":[]}",
-                MediaType.APPLICATION_JSON));
+        f.server
+                .expect(requestTo(BASE_SERVER_URL + "/token/createtoken"))
+                .andRespond(withSuccess("{\"access_token\":\"jwt-abc\"}", MediaType.APPLICATION_JSON));
+        f.server
+                .expect(requestTo(BASE_API_URL + "_query"))
+                .andExpect(header("Authorization", "Bearer jwt-abc"))
+                .andRespond(withSuccess(
+                        "{\"TotalResults\":0,\"ReturnedResults\":0,\"Results\":[]}", MediaType.APPLICATION_JSON));
+        f.server
+                .expect(requestTo(BASE_API_URL + "_query"))
+                .andExpect(header("Authorization", "Bearer jwt-abc"))
+                .andRespond(withSuccess(
+                        "{\"TotalResults\":0,\"ReturnedResults\":0,\"Results\":[]}", MediaType.APPLICATION_JSON));
 
         f.client.query(List.of(LOGICAL_PRODUCT_TYPE));
         f.client.query(List.of(LOGICAL_PRODUCT_TYPE));
@@ -373,13 +385,15 @@ class ColecticaClientTest {
         Supplier<String> supplier = () -> "tok-" + calls.incrementAndGet();
         Fixture f = newFixture(new ColecticaCredentials.BearerToken(supplier));
 
-        f.server.expect(requestTo(BASE_API_URL + "_query"))
-            .andExpect(header("Authorization", "Bearer tok-1"))
-            .andRespond(withStatus(HttpStatus.UNAUTHORIZED));
-        f.server.expect(requestTo(BASE_API_URL + "_query"))
-            .andExpect(header("Authorization", "Bearer tok-2"))
-            .andRespond(withSuccess("{\"TotalResults\":0,\"ReturnedResults\":0,\"Results\":[]}",
-                MediaType.APPLICATION_JSON));
+        f.server
+                .expect(requestTo(BASE_API_URL + "_query"))
+                .andExpect(header("Authorization", "Bearer tok-1"))
+                .andRespond(withStatus(HttpStatus.UNAUTHORIZED));
+        f.server
+                .expect(requestTo(BASE_API_URL + "_query"))
+                .andExpect(header("Authorization", "Bearer tok-2"))
+                .andRespond(withSuccess(
+                        "{\"TotalResults\":0,\"ReturnedResults\":0,\"Results\":[]}", MediaType.APPLICATION_JSON));
 
         f.client.query(List.of(LOGICAL_PRODUCT_TYPE));
 
@@ -399,13 +413,15 @@ class ColecticaClientTest {
         };
         Fixture f = newFixture(new ColecticaCredentials.BearerToken(supplier, onInvalidate));
 
-        f.server.expect(requestTo(BASE_API_URL + "_query"))
-            .andExpect(header("Authorization", "Bearer tok-1"))
-            .andRespond(withStatus(HttpStatus.UNAUTHORIZED));
-        f.server.expect(requestTo(BASE_API_URL + "_query"))
-            .andExpect(header("Authorization", "Bearer tok-2"))
-            .andRespond(withSuccess("{\"TotalResults\":0,\"ReturnedResults\":0,\"Results\":[]}",
-                MediaType.APPLICATION_JSON));
+        f.server
+                .expect(requestTo(BASE_API_URL + "_query"))
+                .andExpect(header("Authorization", "Bearer tok-1"))
+                .andRespond(withStatus(HttpStatus.UNAUTHORIZED));
+        f.server
+                .expect(requestTo(BASE_API_URL + "_query"))
+                .andExpect(header("Authorization", "Bearer tok-2"))
+                .andRespond(withSuccess(
+                        "{\"TotalResults\":0,\"ReturnedResults\":0,\"Results\":[]}", MediaType.APPLICATION_JSON));
 
         f.client.query(List.of(LOGICAL_PRODUCT_TYPE));
 

@@ -1,9 +1,9 @@
 package fr.insee.rmes.modules.concepts.concept.domain.model;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 class ConceptDashboardItemTest {
 
@@ -15,8 +15,7 @@ class ConceptDashboardItemTest {
                 "2026-01-01T10:00:00",
                 "2026-01-02T11:00:00",
                 ValidationStatus.VALIDATED,
-                "HIE000000"
-        );
+                "HIE000000");
 
         assertThat(item.id()).isEqualTo(new ConceptId("c00001"));
         assertThat(item.label()).isEqualTo("Mon concept");
@@ -34,8 +33,7 @@ class ConceptDashboardItemTest {
                 "2026-01-01T10:00:00",
                 null,
                 ValidationStatus.UNPUBLISHED,
-                null
-        );
+                null);
 
         assertThat(item.modified()).isNull();
         assertThat(item.creator()).isNull();

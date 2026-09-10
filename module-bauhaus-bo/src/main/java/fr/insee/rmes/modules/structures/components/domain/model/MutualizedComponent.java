@@ -2,7 +2,6 @@ package fr.insee.rmes.modules.structures.components.domain.model;
 
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.structures.structures.domain.model.Structure;
-
 import java.util.List;
 
 public class MutualizedComponent {
@@ -39,7 +38,7 @@ public class MutualizedComponent {
     private String pattern;
 
     public MutualizedComponent() throws RmesException {
-        //nothing to do
+        // nothing to do
     }
 
     public String getId() {

@@ -1,21 +1,20 @@
 package fr.insee.rmes.bauhaus_services.operations.operations;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.when;
+
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.operations.OperationsParentRepository;
-import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.exceptions.RmesBadRequestException;
+import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
-
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class OperationPublicationTest {
@@ -31,12 +30,11 @@ class OperationPublicationTest {
         JSONObject operation = new JSONObject();
         operation.put(Constants.ID, "1");
 
-        when(operationsParentRepository.getFamOpSerValidationStatus("1")).thenReturn(ValidationStatus.VALIDATED.getValue());
+        when(operationsParentRepository.getFamOpSerValidationStatus("1"))
+                .thenReturn(ValidationStatus.VALIDATED.getValue());
 
         var exception = assertThrows(
-                RmesBadRequestException.class,
-                () -> operationPublication.publishOperation("1", operation)
-        );
+                RmesBadRequestException.class, () -> operationPublication.publishOperation("1", operation));
         assertThat(exception.getDetails()).contains("\"code\":1301");
         assertThat(exception.getDetails()).contains("Operation: 1");
     }
@@ -51,10 +49,9 @@ class OperationPublicationTest {
 
         when(operationsParentRepository.getValidationStatus("2")).thenReturn(ValidationStatus.UNPUBLISHED.toString());
         var exception = assertThrows(
-                RmesBadRequestException.class,
-                () -> operationPublication.publishOperation("1", operation)
-        );
-        assertThat(exception.getDetails()).contains("This operation cannot be published before its series is published");
+                RmesBadRequestException.class, () -> operationPublication.publishOperation("1", operation));
+        assertThat(exception.getDetails())
+                .contains("This operation cannot be published before its series is published");
     }
 
     @Test
@@ -67,9 +64,7 @@ class OperationPublicationTest {
 
         when(operationsParentRepository.getValidationStatus("2")).thenReturn(ValidationStatus.UNPUBLISHED.toString());
         var exception = assertThrows(
-                RmesBadRequestException.class,
-                () -> operationPublication.publishOperation("1", operation)
-        );
+                RmesBadRequestException.class, () -> operationPublication.publishOperation("1", operation));
         assertThat(exception.getDetails()).contains("\"code\":704");
     }
 }

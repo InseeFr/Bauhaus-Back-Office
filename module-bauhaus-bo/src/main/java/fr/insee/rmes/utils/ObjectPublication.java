@@ -9,5 +9,6 @@ import fr.insee.rmes.domain.exceptions.RmesException;
  */
 public interface ObjectPublication<T> {
     void validate(T object) throws RmesException;
+
     void publish(String id) throws RmesException;
 }

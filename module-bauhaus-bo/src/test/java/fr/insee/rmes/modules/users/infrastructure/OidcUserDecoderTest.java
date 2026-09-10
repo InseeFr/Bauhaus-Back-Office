@@ -1,24 +1,23 @@
 package fr.insee.rmes.modules.users.infrastructure;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.when;
+
 import fr.insee.rmes.modules.organisations.domain.exceptions.OrganisationFetchException;
 import fr.insee.rmes.modules.organisations.domain.port.clientside.OrganisationsService;
 import fr.insee.rmes.modules.users.domain.exceptions.EmptyUserInformationException;
 import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
 import fr.insee.rmes.modules.users.domain.model.User;
+import java.util.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.oauth2.jwt.Jwt;
-
-import java.util.*;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class OidcUserDecoderTest {
@@ -106,11 +105,8 @@ class OidcUserDecoderTest {
     void should_throw_exception_when_claims_are_empty() {
         when(jwt.getClaims()).thenReturn(Map.of());
 
-        assertThatThrownBy(() -> userDecoder.fromPrincipal(jwt))
-            .isInstanceOf(EmptyUserInformationException.class);
+        assertThatThrownBy(() -> userDecoder.fromPrincipal(jwt)).isInstanceOf(EmptyUserInformationException.class);
     }
-
-
 
     @Test
     void should_extract_stamp_from_insee_groups() throws MissingUserInformationException {
@@ -197,8 +193,6 @@ class OidcUserDecoderTest {
         assertThat(result.get().roles()).containsExactly("ADMIN", "USER", "MODERATOR");
     }
 
-
-
     @Test
     void should_extract_first_matching_group_from_insee_groups() throws MissingUserInformationException {
         when(jwtProperties.getInseeGroupClaim()).thenReturn("groups");
@@ -220,7 +214,8 @@ class OidcUserDecoderTest {
     }
 
     @Test
-    void should_add_adms_identifier_when_stamp_claim_present() throws MissingUserInformationException, OrganisationFetchException {
+    void should_add_adms_identifier_when_stamp_claim_present()
+            throws MissingUserInformationException, OrganisationFetchException {
         when(organisationsService.getAdmsIdentifier("DG75-F601")).thenReturn(Optional.of("HIE3000165"));
 
         Map<String, Object> claims = new HashMap<>();
@@ -238,7 +233,8 @@ class OidcUserDecoderTest {
     }
 
     @Test
-    void should_add_dcterms_identifier_when_insee_group_present() throws MissingUserInformationException, OrganisationFetchException {
+    void should_add_dcterms_identifier_when_insee_group_present()
+            throws MissingUserInformationException, OrganisationFetchException {
         when(jwtProperties.getInseeGroupClaim()).thenReturn("groups");
         when(jwtProperties.getHieApplicationPrefix()).thenReturn("APP");
         // The application suffix must be stripped before looking up the organisation:
@@ -260,7 +256,8 @@ class OidcUserDecoderTest {
     }
 
     @Test
-    void should_handle_organisation_service_exception_gracefully() throws MissingUserInformationException, OrganisationFetchException {
+    void should_handle_organisation_service_exception_gracefully()
+            throws MissingUserInformationException, OrganisationFetchException {
         when(organisationsService.getAdmsIdentifier("STAMP-01")).thenThrow(new OrganisationFetchException());
 
         Map<String, Object> claims = new HashMap<>();

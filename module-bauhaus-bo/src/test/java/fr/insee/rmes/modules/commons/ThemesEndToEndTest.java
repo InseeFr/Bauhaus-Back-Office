@@ -23,8 +23,7 @@ class ThemesEndToEndTest extends WithGraphDBContainer {
         String sesameServer = "http://" + container.getHost() + ":" + container.getMappedPort(7200);
         registry.add("fr.insee.rmes.bauhaus.sesame.gestion.sesameServer", () -> sesameServer);
         registry.add("fr.insee.rmes.bauhaus.sesame.gestion.repository", () -> BAUHAUS_TEST_REPOSITORY);
-        container.withInitFolder("fr/insee/rmes/modules/commons")
-                .withTrigFiles("themes-end-to-end-test.trig");
+        container.withInitFolder("fr/insee/rmes/modules/commons").withTrigFiles("themes-end-to-end-test.trig");
     }
 
     @Test
@@ -32,7 +31,9 @@ class ThemesEndToEndTest extends WithGraphDBContainer {
     void ok_when_fetching_themes() throws JSONException {
         RestClient restClient = RestClient.create("http://localhost:" + serverPort + "/api");
 
-        var response = restClient.get().uri("/themes")
+        var response = restClient
+                .get()
+                .uri("/themes")
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
                 .body(String.class);

@@ -7,28 +7,25 @@ import org.eclipse.rdf4j.model.impl.SimpleNamespace;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 
 public class DCMITYPE {
-	
-	private DCMITYPE() {
-		    throw new IllegalStateException("Utility class");
-	}
 
-	
-	public static final String NAMESPACE = "http://purl.org/dc/dcmitype/";
+    private DCMITYPE() {
+        throw new IllegalStateException("Utility class");
+    }
 
-	/**
-	 * The recommended prefix for the INSEE namespace: "insee"
-	 */
-	public static final String PREFIX = "dcmitype";
-	
-	public static final Namespace NS = new SimpleNamespace(PREFIX, NAMESPACE);
-	
-	public static final IRI TEXT;
-		
-	static {
-		final ValueFactory f = SimpleValueFactory.getInstance();
+    public static final String NAMESPACE = "http://purl.org/dc/dcmitype/";
 
-		TEXT = f.createIRI(NAMESPACE, "Text");
-	}
-	
+    /**
+     * The recommended prefix for the INSEE namespace: "insee"
+     */
+    public static final String PREFIX = "dcmitype";
 
+    public static final Namespace NS = new SimpleNamespace(PREFIX, NAMESPACE);
+
+    public static final IRI TEXT;
+
+    static {
+        final ValueFactory f = SimpleValueFactory.getInstance();
+
+        TEXT = f.createIRI(NAMESPACE, "Text");
+    }
 }

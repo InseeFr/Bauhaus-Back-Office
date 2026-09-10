@@ -1,15 +1,14 @@
 package fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica;
 
-import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.exceptions.InvalidColecticaConfigurationException;
-import org.junit.jupiter.api.Test;
-
-import java.time.Duration;
-import java.util.Collections;
-import java.util.List;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+
+import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.exceptions.InvalidColecticaConfigurationException;
+import java.time.Duration;
+import java.util.Collections;
+import java.util.List;
+import org.junit.jupiter.api.Test;
 
 class ColecticaConfigurationTest {
 
@@ -23,47 +22,25 @@ class ColecticaConfigurationTest {
                     "password",
                     "user",
                     "pass",
-                    "fr.insee"
-            );
+                    "fr.insee");
 
     @Test
     void should_throw_exception_when_langs_is_null() {
-        assertThatThrownBy(() ->
-                new ColecticaConfiguration(
-                        null,
-                        VALID_SERVER,
-                        null,
-                        null
-                )
-        )
+        assertThatThrownBy(() -> new ColecticaConfiguration(null, VALID_SERVER, null, null))
                 .isInstanceOf(InvalidColecticaConfigurationException.class)
                 .hasMessage("langs cannot be null or empty");
     }
 
     @Test
     void should_throw_exception_when_langs_is_empty() {
-        assertThatThrownBy(() ->
-                new ColecticaConfiguration(
-                        null,
-                        VALID_SERVER,
-                        null,
-                        null
-                )
-        )
+        assertThatThrownBy(() -> new ColecticaConfiguration(null, VALID_SERVER, null, null))
                 .isInstanceOf(InvalidColecticaConfigurationException.class)
                 .hasMessage("langs cannot be null or empty");
     }
 
     @Test
     void should_throw_exception_when_lang_code_is_invalid() {
-        assertThatThrownBy(() ->
-                new ColecticaConfiguration(
-                        List.of("invalid-code"),
-                        VALID_SERVER,
-                        null,
-                        null
-                )
-        )
+        assertThatThrownBy(() -> new ColecticaConfiguration(List.of("invalid-code"), VALID_SERVER, null, null))
                 .isInstanceOf(InvalidColecticaConfigurationException.class)
                 .hasMessageContaining("Invalid language code: 'invalid-code'")
                 .hasMessageContaining("Expected format: xx-XX");
@@ -71,62 +48,33 @@ class ColecticaConfigurationTest {
 
     @Test
     void should_throw_exception_when_lang_code_has_wrong_case() {
-        assertThatThrownBy(() ->
-                new ColecticaConfiguration(
-                        List.of("FR-fr"),
-                        VALID_SERVER,
-                        null,
-                        null
-                )
-        )
+        assertThatThrownBy(() -> new ColecticaConfiguration(List.of("FR-fr"), VALID_SERVER, null, null))
                 .isInstanceOf(InvalidColecticaConfigurationException.class)
                 .hasMessageContaining("Invalid language code: 'FR-fr'");
     }
 
     @Test
     void should_accept_valid_language_codes() {
-        assertDoesNotThrow(() ->
-                new ColecticaConfiguration(
-                        List.of("fr-FR", "en-GB", "de-DE"),
-                        VALID_SERVER,
-                        null,
-                        null
-                )
-        );
+        assertDoesNotThrow(
+                () -> new ColecticaConfiguration(List.of("fr-FR", "en-GB", "de-DE"), VALID_SERVER, null, null));
     }
 
     @Test
     void should_accept_single_valid_language_code() {
-        assertDoesNotThrow(() ->
-                new ColecticaConfiguration(
-                        List.of("fr-FR"),
-                        VALID_SERVER,
-                        null,
-                        null
-                )
-        );
+        assertDoesNotThrow(() -> new ColecticaConfiguration(List.of("fr-FR"), VALID_SERVER, null, null));
     }
 
     @Test
     void should_default_mutualized_cache_ttl_to_24h_when_not_configured() {
-        ColecticaConfiguration config = new ColecticaConfiguration(
-                List.of("fr-FR"),
-                VALID_SERVER,
-                null,
-                null
-        );
+        ColecticaConfiguration config = new ColecticaConfiguration(List.of("fr-FR"), VALID_SERVER, null, null);
 
         assertThat(config.mutualizedCacheTtl()).isEqualTo(Duration.ofHours(24));
     }
 
     @Test
     void should_keep_configured_mutualized_cache_ttl() {
-        ColecticaConfiguration config = new ColecticaConfiguration(
-                List.of("fr-FR"),
-                VALID_SERVER,
-                null,
-                Duration.ofMinutes(30)
-        );
+        ColecticaConfiguration config =
+                new ColecticaConfiguration(List.of("fr-FR"), VALID_SERVER, null, Duration.ofMinutes(30));
 
         assertThat(config.mutualizedCacheTtl()).isEqualTo(Duration.ofMinutes(30));
     }

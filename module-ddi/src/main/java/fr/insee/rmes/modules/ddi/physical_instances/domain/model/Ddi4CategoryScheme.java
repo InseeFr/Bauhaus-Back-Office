@@ -1,7 +1,6 @@
 package fr.insee.rmes.modules.ddi.physical_instances.domain.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.util.List;
 
 /**
@@ -21,8 +20,7 @@ public record Ddi4CategoryScheme(
         @JsonProperty("ID") String id,
         @JsonProperty("Version") String version,
         @JsonProperty("Label") List<LangString> label,
-        @JsonProperty("CategoryReference") List<Reference> categoryReference
-) {
+        @JsonProperty("CategoryReference") List<Reference> categoryReference) {
 
     public static final String TYPE = "CategoryScheme";
 }

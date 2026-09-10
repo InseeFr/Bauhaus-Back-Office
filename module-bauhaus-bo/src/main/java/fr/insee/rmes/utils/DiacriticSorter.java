@@ -1,8 +1,9 @@
 package fr.insee.rmes.utils;
 
-import fr.insee.rmes.domain.exceptions.RmesException;
-import org.json.JSONArray;
+import static fr.insee.rmes.utils.MethodHandleUtils.findMethodHandle;
+import static fr.insee.rmes.utils.MethodHandleUtils.safeInvokeMethodHandle;
 
+import fr.insee.rmes.domain.exceptions.RmesException;
 import java.lang.invoke.MethodHandle;
 import java.text.Collator;
 import java.util.*;
@@ -10,9 +11,7 @@ import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import static fr.insee.rmes.utils.MethodHandleUtils.findMethodHandle;
-import static fr.insee.rmes.utils.MethodHandleUtils.safeInvokeMethodHandle;
+import org.json.JSONArray;
 
 public class DiacriticSorter {
 
@@ -27,26 +26,29 @@ public class DiacriticSorter {
      * @return a sorted list of objects
      * @throws RmesException if the JSON cannot be deserialized or an error occurs during processing
      */
-    private static <T> List<T> sort(JSONArray jsonArray, Class<T[]> targetArrayClass, Function<T, String> keyExtractor, Optional<UnaryOperator<Stream<T>>> businessProcessor) throws RmesException {
+    private static <T> List<T> sort(
+            JSONArray jsonArray,
+            Class<T[]> targetArrayClass,
+            Function<T, String> keyExtractor,
+            Optional<UnaryOperator<Stream<T>>> businessProcessor)
+            throws RmesException {
         var stream = Arrays.stream(Deserializer.deserializeJSONArray(jsonArray, targetArrayClass));
         stream = businessProcessor.orElse(UnaryOperator.identity()).apply(stream);
         return stream.sorted(getComparator(keyExtractor)).toList();
-
     }
 
     private static <T extends AppendableObject<T>> UnaryOperator<Stream<T>> businessProcessor() {
-        return stream -> stream.collect(Collectors.toMap(
-                T::id,
-                Function.identity(),
-                T::appendObject
-        )).values().stream();
+        return stream ->
+                stream.collect(Collectors.toMap(T::id, Function.identity(), T::appendObject)).values().stream();
     }
 
-    public static <T extends AppendableObject<T>> List<T> sortGroupingByIdConcatenatingAltLabels(JSONArray jsonArray, Class<T[]> targetArrayClass, Function<T, String> keyExtractor) throws RmesException {
+    public static <T extends AppendableObject<T>> List<T> sortGroupingByIdConcatenatingAltLabels(
+            JSONArray jsonArray, Class<T[]> targetArrayClass, Function<T, String> keyExtractor) throws RmesException {
         return sort(jsonArray, targetArrayClass, keyExtractor, Optional.of(businessProcessor()));
     }
 
-    public static <T> List<T> sort(JSONArray jsonArray, Class<T[]> targetArrayClass, Function<T, String> keyExtractor) throws RmesException {
+    public static <T> List<T> sort(JSONArray jsonArray, Class<T[]> targetArrayClass, Function<T, String> keyExtractor)
+            throws RmesException {
         return sort(jsonArray, targetArrayClass, keyExtractor, Optional.empty());
     }
 
@@ -65,17 +67,23 @@ public class DiacriticSorter {
         return object == null ? null : object.getClass();
     }
 
-    private static <R extends AppendableObject<R>> R withNewValue(R instance, String witherMethodName, String newValue) {
+    private static <R extends AppendableObject<R>> R withNewValue(
+            R instance, String witherMethodName, String newValue) {
         var classR = instance.getClass();
 
         Optional<MethodHandle> wither = findMethodHandle(classR, witherMethodName, classR, String.class);
 
         if (wither.isEmpty()) {
-            throw new IllegalStateException("Method 'public " + classR + " " + witherMethodName + "(String)' not found for '" + classR + "'. The class should implements XBuilder.With from @RecordBuilder");
+            throw new IllegalStateException(
+                    "Method 'public " + classR + " " + witherMethodName + "(String)' not found for '" + classR
+                            + "'. The class should implements XBuilder.With from @RecordBuilder");
         }
         var instanceWithNewAltLabel = safeInvokeMethodHandle(wither.get(), instance, newValue);
         if (!classR.isInstance(instanceWithNewAltLabel)) {
-            throw new IllegalStateException("Method 'public " + classR + " " + witherMethodName + "(String)' for '" + classR + "' should return a type of " + classR + " instead of " + getClassSafe(instanceWithNewAltLabel) + ". Check that it implements XBuilder.With from @RecordBuilder");
+            throw new IllegalStateException("Method 'public " + classR + " " + witherMethodName + "(String)' for '"
+                    + classR + "' should return a type of " + classR + " instead of "
+                    + getClassSafe(instanceWithNewAltLabel)
+                    + ". Check that it implements XBuilder.With from @RecordBuilder");
         }
         return (R) instanceWithNewAltLabel;
     }
@@ -120,7 +128,5 @@ public class DiacriticSorter {
         }
 
         String altLabel();
-
     }
-
 }

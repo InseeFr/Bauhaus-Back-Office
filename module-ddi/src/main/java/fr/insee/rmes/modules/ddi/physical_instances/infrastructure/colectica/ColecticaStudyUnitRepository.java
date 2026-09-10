@@ -1,19 +1,18 @@
 package fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica;
 
+import fr.insee.rmes.colectica.client.ColecticaClient;
+import fr.insee.rmes.colectica.client.dto.UpdateItemStateRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialStudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.DDIRepository;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.StudyUnitRepository;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.services.Ddi4ToLifecycle33;
-import fr.insee.rmes.colectica.client.ColecticaClient;
-import fr.insee.rmes.colectica.client.dto.UpdateItemStateRequest;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ColecticaStudyUnitRepository extends AbstractColecticaItemRepository implements StudyUnitRepository {
 
@@ -26,8 +25,7 @@ public class ColecticaStudyUnitRepository extends AbstractColecticaItemRepositor
             ColecticaClient colecticaClient,
             ColecticaConfiguration.ColecticaInstanceConfiguration instanceConfiguration,
             Ddi4ToLifecycle33 ddi4ToLifecycle33,
-            DDIRepository ddiRepository
-    ) {
+            DDIRepository ddiRepository) {
         super(colecticaClient, instanceConfiguration, ddi4ToLifecycle33);
         this.ddiRepository = ddiRepository;
     }
@@ -47,25 +45,29 @@ public class ColecticaStudyUnitRepository extends AbstractColecticaItemRepositor
         List<UpdateItemStateRequest.ItemIdentifier> ids = ddiRepository.getStudyUnits().stream()
                 .filter(studyUnit -> studyUnitIds.contains(studyUnit.id()))
                 .map(studyUnit -> {
-                    String agency = studyUnit.agency() != null ? studyUnit.agency() : instanceConfiguration.defaultAgencyId();
+                    String agency =
+                            studyUnit.agency() != null ? studyUnit.agency() : instanceConfiguration.defaultAgencyId();
                     return new UpdateItemStateRequest.ItemIdentifier(agency, studyUnit.id(), 1);
                 })
                 .toList();
         if (ids.isEmpty()) {
-            logger.info("None of the {} requested study unit id(s) exist in Colectica: nothing to deprecate", studyUnitIds.size());
+            logger.info(
+                    "None of the {} requested study unit id(s) exist in Colectica: nothing to deprecate",
+                    studyUnitIds.size());
             return;
         }
-        colecticaClient.updateItemState(
-                new UpdateItemStateRequest(ids, true, true));
+        colecticaClient.updateItemState(new UpdateItemStateRequest(ids, true, true));
         logger.info("Deprecated {} study unit(s) from Colectica", ids.size());
     }
 
     @Override
     public void addPhysicalInstance(Ddi4StudyUnit studyUnit, Reference physicalInstanceReference) {
-        logger.info("Linking physical instance piId={} to study unit id={}", physicalInstanceReference.id(), studyUnit.id());
+        logger.info(
+                "Linking physical instance piId={} to study unit id={}",
+                physicalInstanceReference.id(),
+                studyUnit.id());
         List<Reference> refs = new ArrayList<>(
-                studyUnit.physicalInstanceReferences() != null ? studyUnit.physicalInstanceReferences() : List.of()
-        );
+                studyUnit.physicalInstanceReferences() != null ? studyUnit.physicalInstanceReferences() : List.of());
         refs.add(physicalInstanceReference);
         Ddi4StudyUnit updated = new Ddi4StudyUnit(
                 Ddi4StudyUnit.TYPE,
@@ -77,14 +79,17 @@ public class ColecticaStudyUnitRepository extends AbstractColecticaItemRepositor
                 studyUnit.citation(),
                 studyUnit.operationIri(),
                 refs,
-                studyUnit.logicalProductReferences()
-        );
+                studyUnit.logicalProductReferences());
         createOrUpdate(updated);
     }
 
     @Override
     public void createOrUpdate(Ddi4StudyUnit studyUnit) {
-        logger.info("Creating/updating study unit in Colectica: id={}, agency={}, urn={}", studyUnit.id(), studyUnit.agency(), studyUnit.urn());
+        logger.info(
+                "Creating/updating study unit in Colectica: id={}, agency={}, urn={}",
+                studyUnit.id(),
+                studyUnit.agency(),
+                studyUnit.urn());
         try {
             createOrUpdateItem(STUDY_UNIT_ITEM_TYPE, studyUnit);
             logger.info("Study unit successfully sent to Colectica: id={}", studyUnit.id());

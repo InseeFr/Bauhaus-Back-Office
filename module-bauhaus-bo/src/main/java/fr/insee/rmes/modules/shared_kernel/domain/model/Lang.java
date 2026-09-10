@@ -11,5 +11,4 @@ public enum Lang {
     public static Lang alternativeLanguage() {
         return Lang.EN;
     }
-
 }

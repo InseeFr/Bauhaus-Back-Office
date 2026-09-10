@@ -25,6 +25,8 @@ import fr.insee.rmes.persistance.sparql_queries.operations.OperationQueries;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.utils.DiacriticSorter;
 import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
+import java.util.ArrayList;
+import java.util.List;
 import org.apache.http.HttpStatus;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -38,9 +40,6 @@ import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.springframework.stereotype.Repository;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @ServerSideAdaptor
 @Repository
@@ -59,8 +58,7 @@ public class GraphDBOperationFamilyRepository implements OperationFamilyReposito
             OperationQueries operationQueries,
             RepositoryPublication repositoryPublication,
             PublicationUtils publicationUtils,
-            BauhausLanguagesProperties languages
-    ) {
+            BauhausLanguagesProperties languages) {
         this.repositoryGestion = repositoryGestion;
         this.operationFamilyQueries = operationFamilyQueries;
         this.operationQueries = operationQueries;
@@ -73,22 +71,19 @@ public class GraphDBOperationFamilyRepository implements OperationFamilyReposito
     public List<PartialOperationFamily> getFamilies() throws RmesException {
         var families = this.repositoryGestion.getResponseAsArray(operationFamilyQueries.familiesQuery());
 
-        return DiacriticSorter.sort(families,
-                PartialOperationFamily[].class,
-                PartialOperationFamily::label);
+        return DiacriticSorter.sort(families, PartialOperationFamily[].class, PartialOperationFamily::label);
     }
-
 
     @Override
     public OperationFamily getFullFamily(String id) throws RmesException {
         var family = getFamily(id);
         var series = getFamilySeries(id);
-        if(!series.isEmpty()){
+        if (!series.isEmpty()) {
             family = family.withSeries(series);
         }
 
         var subjects = getFamilySubjects(id);
-        if(!subjects.isEmpty()){
+        if (!subjects.isEmpty()) {
             family = family.withSubject(subjects);
         }
 
@@ -113,9 +108,7 @@ public class GraphDBOperationFamilyRepository implements OperationFamilyReposito
         List<OperationFamilySeries> series = new ArrayList<>();
 
         if (!array.isEmpty()) {
-            JSONUtils.stream(array).forEach(attribute -> {
-                series.add(OperationFamilySeries.fromJSON(attribute));
-            });
+            JSONUtils.stream(array).forEach(attribute -> series.add(OperationFamilySeries.fromJSON(attribute)));
         }
         return series;
     }
@@ -126,9 +119,7 @@ public class GraphDBOperationFamilyRepository implements OperationFamilyReposito
         List<OperationFamilySubject> subjects = new ArrayList<>();
 
         if (!array.isEmpty()) {
-            JSONUtils.stream(array).forEach(attribute -> {
-                subjects.add(OperationFamilySubject.fromJSON(attribute));
-            });
+            JSONUtils.stream(array).forEach(attribute -> subjects.add(OperationFamilySubject.fromJSON(attribute)));
         }
         return subjects;
     }
@@ -207,8 +198,8 @@ public class GraphDBOperationFamilyRepository implements OperationFamilyReposito
     @Override
     public void publish(String id) throws RmesException {
         IRI familyURI = familyIRI(id);
-        repositoryPublication.publishResource(publicationUtils.tranformBaseURIToPublish(familyURI),
-                triplesToPublish(familyURI), Constants.FAMILY);
+        repositoryPublication.publishResource(
+                publicationUtils.tranformBaseURIToPublish(familyURI), triplesToPublish(familyURI), Constants.FAMILY);
 
         Model model = new LinkedHashModel();
         Resource graph = RdfUtils.operationsGraph();
@@ -226,22 +217,25 @@ public class GraphDBOperationFamilyRepository implements OperationFamilyReposito
     private Model triplesToPublish(IRI familyURI) throws RmesException {
         Model model = new LinkedHashModel();
         try (RepositoryConnection connection = repositoryGestion.getConnection();
-             RepositoryResult<Statement> statements = repositoryGestion.getStatements(connection, familyURI)) {
+                RepositoryResult<Statement> statements = repositoryGestion.getStatements(connection, familyURI)) {
             if (!statements.hasNext()) {
-                throw new RmesNotFoundException(ErrorCodes.FAMILY_UNKNOWN_ID, "Family not found", familyURI.getLocalName());
+                throw new RmesNotFoundException(
+                        ErrorCodes.FAMILY_UNKNOWN_ID, "Family not found", familyURI.getLocalName());
             }
             while (statements.hasNext()) {
                 Statement statement = statements.next();
                 String predicate = RdfUtils.toString(statement.getPredicate());
                 if (isPublished(predicate)) {
-                    model.add(publicationUtils.tranformBaseURIToPublish(statement.getSubject()),
+                    model.add(
+                            publicationUtils.tranformBaseURIToPublish(statement.getSubject()),
                             statement.getPredicate(),
                             statement.getObject(),
                             statement.getContext());
                 }
             }
         } catch (RepositoryException e) {
-            throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), Constants.REPOSITORY_EXCEPTION);
+            throw new RmesException(
+                    HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), Constants.REPOSITORY_EXCEPTION);
         }
         return model;
     }

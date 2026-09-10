@@ -1,11 +1,18 @@
 package fr.insee.rmes.modules.ddi.physical_instances.webservice;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Citation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CogsDate;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialStudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LangStrings;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialStudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.StudyUnitService;
+import java.util.Date;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -13,14 +20,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-
-import java.util.Date;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class StudyUnitResourcesTest {
@@ -35,8 +34,7 @@ class StudyUnitResourcesTest {
     void getStudyUnits_shouldReturn200WithList() {
         List<PartialStudyUnit> studyUnits = List.of(
                 new PartialStudyUnit("su-1", "StudyUnit 1", new Date(), "fr.insee"),
-                new PartialStudyUnit("su-2", "StudyUnit 2", new Date(), "fr.insee")
-        );
+                new PartialStudyUnit("su-2", "StudyUnit 2", new Date(), "fr.insee"));
         when(studyUnitService.getAll()).thenReturn(studyUnits);
 
         ResponseEntity<List<PartialStudyUnit>> response = studyUnitResources.getStudyUnits();
@@ -58,13 +56,16 @@ class StudyUnitResourcesTest {
 
     @Test
     void createOrUpdateStudyUnit_shouldReturn201() {
-        Ddi4StudyUnit studyUnit = new Ddi4StudyUnit(Ddi4StudyUnit.TYPE,
+        Ddi4StudyUnit studyUnit = new Ddi4StudyUnit(
+                Ddi4StudyUnit.TYPE,
                 CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
-                "urn:ddi:fr.insee:su-id:1", "fr.insee", "su-id", "1",
+                "urn:ddi:fr.insee:su-id:1",
+                "fr.insee",
+                "su-id",
+                "1",
                 new Citation(LangStrings.of("fr-FR", "Test StudyUnit")),
                 "http://id.insee.fr/operations/operation/op1",
-                null
-        );
+                null);
 
         ResponseEntity<Void> response = studyUnitResources.createOrUpdateStudyUnit(studyUnit);
 
@@ -74,13 +75,16 @@ class StudyUnitResourcesTest {
 
     @Test
     void createOrUpdateStudyUnit_shouldReturn500OnError() {
-        Ddi4StudyUnit studyUnit = new Ddi4StudyUnit(Ddi4StudyUnit.TYPE,
+        Ddi4StudyUnit studyUnit = new Ddi4StudyUnit(
+                Ddi4StudyUnit.TYPE,
                 CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
-                "urn:ddi:fr.insee:su-id:1", "fr.insee", "su-id", "1",
+                "urn:ddi:fr.insee:su-id:1",
+                "fr.insee",
+                "su-id",
+                "1",
                 new Citation(LangStrings.of("fr-FR", "Test StudyUnit")),
                 "http://id.insee.fr/operations/operation/op1",
-                null
-        );
+                null);
 
         doThrow(new RuntimeException("Colectica error")).when(studyUnitService).createOrUpdate(studyUnit);
 

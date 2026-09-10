@@ -1,44 +1,40 @@
 package fr.insee.rmes.modules.ddi.physical_instances.domain.services;
 
-
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Citation;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.InvalidSentinelValuesException;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CategoryCodeListUsage;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Citation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeListVariableUsage;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CogsDate;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CreatePhysicalInstanceRequest;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnitResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Category;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeList;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedMissingValuesRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CategoryScheme;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeListScheme;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Variable;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4VariableScheme;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LangString;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4GroupResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4LogicalProduct;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedMissingValuesRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedRepresentationScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnitResponse;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Variable;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4VariableScheme;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LangString;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodesList;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialMissingValuesRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialGroup;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialLogicalProduct;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialMissingValuesRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialPhysicalInstance;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceParents;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceSearchRow;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UpdatePhysicalInstanceRequest;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.InvalidSentinelValuesException;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UpdatePhysicalInstanceRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.DDIRepository;
 import fr.insee.rmes.modules.operation.series.domain.port.serverside.SeriesCreatorsPort;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.time.Clock;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -50,6 +46,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DDIServiceImpl implements DDIService {
     static final Logger logger = LoggerFactory.getLogger(DDIServiceImpl.class);
@@ -93,9 +91,8 @@ public class DDIServiceImpl implements DDIService {
         }
 
         return allInstances.stream()
-                .filter(instance -> stampsByGroupKey
-                        .getOrDefault(groupKeyByInstance.get(instance), List.of())
-                        .stream().anyMatch(userStamps::contains))
+                .filter(instance -> stampsByGroupKey.getOrDefault(groupKeyByInstance.get(instance), List.of()).stream()
+                        .anyMatch(userStamps::contains))
                 .sorted(LabelComparators.byLabelAscending(PartialPhysicalInstance::label))
                 .toList();
     }
@@ -119,8 +116,8 @@ public class DDIServiceImpl implements DDIService {
                         return false;
                     }
                     String groupKey = row.groupAgency() + "|" + row.groupId();
-                    List<String> stamps = stampsByGroupKey.computeIfAbsent(groupKey,
-                            _ -> resolveGroupCreatorStamps(row.groupAgency(), row.groupId()));
+                    List<String> stamps = stampsByGroupKey.computeIfAbsent(
+                            groupKey, _ -> resolveGroupCreatorStamps(row.groupAgency(), row.groupId()));
                     return stamps.stream().anyMatch(userStamps::contains);
                 })
                 .toList();
@@ -158,13 +155,18 @@ public class DDIServiceImpl implements DDIService {
 
     @Override
     public List<PartialCodesList> getCodeListsByGroup(String agencyId, String groupId) {
-        logger.info("Starting to get all code lists for group {}/{} (all logical products / code list schemes)", agencyId, groupId);
+        logger.info(
+                "Starting to get all code lists for group {}/{} (all logical products / code list schemes)",
+                agencyId,
+                groupId);
 
         // Group -> LogicalProduct -> CodeListScheme -> CodeList, agrégé et dédupliqué par agency/id.
         Map<String, PartialCodesList> codeListsByKey = new LinkedHashMap<>();
         for (PartialLogicalProduct logicalProduct : ddiRepository.getLogicalProductsByGroup(agencyId, groupId)) {
-            for (PartialCodeListScheme scheme : ddiRepository.getCodeListSchemesByLogicalProduct(logicalProduct.agency(), logicalProduct.id())) {
-                for (PartialCodesList codeList : ddiRepository.getCodeListsByCodeListScheme(scheme.agency(), scheme.id())) {
+            for (PartialCodeListScheme scheme :
+                    ddiRepository.getCodeListSchemesByLogicalProduct(logicalProduct.agency(), logicalProduct.id())) {
+                for (PartialCodesList codeList :
+                        ddiRepository.getCodeListsByCodeListScheme(scheme.agency(), scheme.id())) {
                     codeListsByKey.putIfAbsent(codeList.agency() + "|" + codeList.id(), codeList);
                 }
             }
@@ -186,8 +188,7 @@ public class DDIServiceImpl implements DDIService {
     @Override
     public List<PartialMissingValuesRepresentation> getMissingValuesRepresentationsByGroup(
             String agencyId, String groupId) {
-        logger.info("Starting to get reusable missing values representations for group {}/{}",
-            agencyId, groupId);
+        logger.info("Starting to get reusable missing values representations for group {}/{}", agencyId, groupId);
         return ddiRepository.getMissingValuesRepresentationsByGroup(agencyId, groupId);
     }
 
@@ -204,10 +205,8 @@ public class DDIServiceImpl implements DDIService {
     }
 
     @Override
-    public List<CodeListVariableUsage> getVariablesUsingMissingValuesRepresentation(
-            String agencyId, String mmvrId) {
-        logger.info("Starting to get variables using missing values representation {}/{}",
-            agencyId, mmvrId);
+    public List<CodeListVariableUsage> getVariablesUsingMissingValuesRepresentation(String agencyId, String mmvrId) {
+        logger.info("Starting to get variables using missing values representation {}/{}", agencyId, mmvrId);
         return ddiRepository.getVariablesUsingMissingValuesRepresentation(agencyId, mmvrId);
     }
 
@@ -224,18 +223,16 @@ public class DDIServiceImpl implements DDIService {
         logger.info("Starting to get groups filtered by stamp");
         List<PartialGroup> allGroups = ddiRepository.getGroups();
 
-        Set<String> allSeriesIris = allGroups.stream()
-                .flatMap(g -> g.seriesIris().stream())
-                .collect(Collectors.toSet());
+        Set<String> allSeriesIris =
+                allGroups.stream().flatMap(g -> g.seriesIris().stream()).collect(Collectors.toSet());
 
         Map<String, List<String>> creatorsByIri = seriesCreatorsPort.getCreatorsForSeries(allSeriesIris);
 
         return allGroups.stream()
-                .filter(group -> group.seriesIris().stream()
-                        .anyMatch(iri -> {
-                            List<String> creators = creatorsByIri.getOrDefault(iri, List.of());
-                            return creators.stream().anyMatch(userStamps::contains);
-                        }))
+                .filter(group -> group.seriesIris().stream().anyMatch(iri -> {
+                    List<String> creators = creatorsByIri.getOrDefault(iri, List.of());
+                    return creators.stream().anyMatch(userStamps::contains);
+                }))
                 .sorted(LabelComparators.byLabelAscending(PartialGroup::label))
                 .toList();
     }
@@ -249,8 +246,8 @@ public class DDIServiceImpl implements DDIService {
         List<Ddi4StudyUnit> sortedStudyUnits = response.studyUnit().stream()
                 .sorted(LabelComparators.byLabelDescending(DDIServiceImpl::studyUnitLabel))
                 .toList();
-        return new Ddi4GroupResponse(response.schema(), response.topLevelReference(),
-                response.group(), sortedStudyUnits);
+        return new Ddi4GroupResponse(
+                response.schema(), response.topLevelReference(), response.group(), sortedStudyUnits);
     }
 
     private static String studyUnitLabel(Ddi4StudyUnit studyUnit) {
@@ -271,9 +268,14 @@ public class DDIServiceImpl implements DDIService {
         List<Ddi4Variable> sortedVariables = response.variable().stream()
                 .sorted(LabelComparators.byLabelAscending(DDIServiceImpl::variableName))
                 .toList();
-        return new Ddi4Response(response.schema(), response.topLevelReference(),
-                response.physicalInstance(), response.dataRelationship(), sortedVariables,
-                response.codeList(), response.category(),
+        return new Ddi4Response(
+                response.schema(),
+                response.topLevelReference(),
+                response.physicalInstance(),
+                response.dataRelationship(),
+                sortedVariables,
+                response.codeList(),
+                response.category(),
                 response.managedMissingValuesRepresentation());
     }
 
@@ -304,7 +306,9 @@ public class DDIServiceImpl implements DDIService {
         // Lecture complète (listes de codes et catégories comprises) : sur le GET allégé, elles
         // passeraient pour nouvelles et redateraient les variables qui les référencent.
         Ddi4Response current = ddiRepository.getFullPhysicalInstance(agencyId, id);
-        Ddi4Response reconciled = VersionDateReconciler.reconcile(current, ddi4Response,
+        Ddi4Response reconciled = VersionDateReconciler.reconcile(
+                current,
+                ddi4Response,
                 CogsDate.ofDateTime(ZonedDateTime.now(clock).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)));
         ddiRepository.updateFullPhysicalInstance(agencyId, id, reconciled);
         return ddiRepository.getPhysicalInstance(agencyId, id);
@@ -315,13 +319,13 @@ public class DDIServiceImpl implements DDIService {
      * CodeList de sentinelles — un payload qui les omet est rejeté avant toute écriture.
      */
     private static void validateSentinelValues(Ddi4Response ddi4Response) {
-        List<Ddi4ManagedMissingValuesRepresentation> mmvrs =
-                ddi4Response.managedMissingValuesRepresentation();
+        List<Ddi4ManagedMissingValuesRepresentation> mmvrs = ddi4Response.managedMissingValuesRepresentation();
         if (mmvrs == null) {
             return;
         }
         Map<String, Ddi4CodeList> codeListsByKey = new HashMap<>();
-        for (Ddi4CodeList codeList : ddi4Response.codeList() != null ? ddi4Response.codeList() : List.<Ddi4CodeList>of()) {
+        for (Ddi4CodeList codeList :
+                ddi4Response.codeList() != null ? ddi4Response.codeList() : List.<Ddi4CodeList>of()) {
             codeListsByKey.put(codeList.agency() + "/" + codeList.id(), codeList);
         }
         for (Ddi4ManagedMissingValuesRepresentation mmvr : mmvrs) {
@@ -331,13 +335,13 @@ public class DDIServiceImpl implements DDIService {
                                 .formatted(mmvr.agency(), mmvr.id()));
             }
             for (CodeRepresentation rep : mmvr.missingCodeRepresentation() != null
-                    ? mmvr.missingCodeRepresentation() : List.<CodeRepresentation>of()) {
+                    ? mmvr.missingCodeRepresentation()
+                    : List.<CodeRepresentation>of()) {
                 Reference codeListRef = rep.codeListReference();
                 if (codeListRef == null) {
                     continue;
                 }
-                Ddi4CodeList sentinelCodeList =
-                        codeListsByKey.get(codeListRef.agency() + "/" + codeListRef.id());
+                Ddi4CodeList sentinelCodeList = codeListsByKey.get(codeListRef.agency() + "/" + codeListRef.id());
                 if (sentinelCodeList != null && hasNoLabel(sentinelCodeList.label())) {
                     throw new InvalidSentinelValuesException(
                             "Le label de la liste de codes de valeurs sentinelles %s/%s est obligatoire"
@@ -348,8 +352,10 @@ public class DDIServiceImpl implements DDIService {
     }
 
     private static boolean hasNoLabel(List<LangString> label) {
-        return label == null || label.stream()
-                .noneMatch(entry -> entry.value() != null && !entry.value().isBlank());
+        return label == null
+                || label.stream()
+                        .noneMatch(
+                                entry -> entry.value() != null && !entry.value().isBlank());
     }
 
     @Override
@@ -384,15 +390,20 @@ public class DDIServiceImpl implements DDIService {
 
     @Override
     public void createManagedRepresentationScheme(Ddi4ManagedRepresentationScheme managedRepresentationScheme) {
-        logger.info("Creating managed representation scheme: {}/{}",
-                managedRepresentationScheme.agency(), managedRepresentationScheme.id());
+        logger.info(
+                "Creating managed representation scheme: {}/{}",
+                managedRepresentationScheme.agency(),
+                managedRepresentationScheme.id());
         ddiRepository.createManagedRepresentationScheme(managedRepresentationScheme);
     }
 
     @Override
-    public void createManagedMissingValuesRepresentation(Ddi4ManagedMissingValuesRepresentation managedMissingValuesRepresentation) {
-        logger.info("Creating managed missing values representation: {}/{}",
-                managedMissingValuesRepresentation.agency(), managedMissingValuesRepresentation.id());
+    public void createManagedMissingValuesRepresentation(
+            Ddi4ManagedMissingValuesRepresentation managedMissingValuesRepresentation) {
+        logger.info(
+                "Creating managed missing values representation: {}/{}",
+                managedMissingValuesRepresentation.agency(),
+                managedMissingValuesRepresentation.id());
         ddiRepository.createManagedMissingValuesRepresentation(managedMissingValuesRepresentation);
     }
 
@@ -418,6 +429,12 @@ public class DDIServiceImpl implements DDIService {
     public void evictMutualizedCodesListsCache() {
         logger.info("Evicting mutualized codes lists cache");
         ddiRepository.evictMutualizedCodesListsCache();
+    }
+
+    @Override
+    public void evictPhysicalInstanceSearchRowsCache() {
+        logger.info("Evicting physical instance search rows cache");
+        ddiRepository.evictPhysicalInstanceSearchRowsCache();
     }
 
     @Override
@@ -469,8 +486,7 @@ public class DDIServiceImpl implements DDIService {
         // Un seul appel Colectica pour le groupe parent : il sert à la fois au label
         // affiché (section « groupe » du sélecteur de listes de codes) et aux stamps créateurs.
         Ddi4GroupResponse groupResponse = ddiRepository.getGroup(parents.groupAgency(), parents.groupId());
-        return parents
-                .withGroupLabel(extractGroupLabel(groupResponse))
+        return parents.withGroupLabel(extractGroupLabel(groupResponse))
                 .withStudyUnitLabel(extractStudyUnitLabel(groupResponse, parents.studyUnitId()))
                 .withStamps(resolveGroupCreatorStamps(groupResponse));
     }
@@ -502,7 +518,9 @@ public class DDIServiceImpl implements DDIService {
         }
         return groupResponse.group().stream()
                 .map(Ddi4Group::citation)
-                .filter(citation -> citation != null && citation.title() != null && !citation.title().isEmpty())
+                .filter(citation -> citation != null
+                        && citation.title() != null
+                        && !citation.title().isEmpty())
                 .map(citation -> citation.title().getFirst().value())
                 .filter(value -> value != null && !value.isBlank())
                 .findFirst()

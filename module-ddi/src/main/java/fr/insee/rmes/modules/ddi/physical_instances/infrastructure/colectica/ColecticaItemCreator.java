@@ -33,52 +33,65 @@ class ColecticaItemCreator {
     }
 
     void createLogicalProduct(Ddi4LogicalProduct logicalProduct) {
-        create("logical product", logicalProduct.agency(), logicalProduct.id(),
-            ddi4ToDdi3Converter.toLogicalProductItem(logicalProduct));
+        create(
+                "logical product",
+                logicalProduct.agency(),
+                logicalProduct.id(),
+                ddi4ToDdi3Converter.toLogicalProductItem(logicalProduct));
     }
 
     void createCodeListScheme(Ddi4CodeListScheme codeListScheme) {
-        create("code list scheme", codeListScheme.agency(), codeListScheme.id(),
-            ddi4ToDdi3Converter.toCodeListSchemeItem(codeListScheme));
+        create(
+                "code list scheme",
+                codeListScheme.agency(),
+                codeListScheme.id(),
+                ddi4ToDdi3Converter.toCodeListSchemeItem(codeListScheme));
     }
 
     void createCategoryScheme(Ddi4CategoryScheme categoryScheme) {
-        create("category scheme", categoryScheme.agency(), categoryScheme.id(),
-            ddi4ToDdi3Converter.toCategorySchemeItem(categoryScheme));
+        create(
+                "category scheme",
+                categoryScheme.agency(),
+                categoryScheme.id(),
+                ddi4ToDdi3Converter.toCategorySchemeItem(categoryScheme));
     }
 
     void createVariableScheme(Ddi4VariableScheme variableScheme) {
-        create("variable scheme", variableScheme.agency(), variableScheme.id(),
-            ddi4ToDdi3Converter.toVariableSchemeItem(variableScheme));
+        create(
+                "variable scheme",
+                variableScheme.agency(),
+                variableScheme.id(),
+                ddi4ToDdi3Converter.toVariableSchemeItem(variableScheme));
     }
 
     void createManagedRepresentationScheme(Ddi4ManagedRepresentationScheme managedRepresentationScheme) {
-        create("managed representation scheme", managedRepresentationScheme.agency(),
-            managedRepresentationScheme.id(),
-            ddi4ToDdi3Converter.toManagedRepresentationSchemeItem(managedRepresentationScheme));
+        create(
+                "managed representation scheme",
+                managedRepresentationScheme.agency(),
+                managedRepresentationScheme.id(),
+                ddi4ToDdi3Converter.toManagedRepresentationSchemeItem(managedRepresentationScheme));
     }
 
     void createManagedMissingValuesRepresentation(
-        Ddi4ManagedMissingValuesRepresentation managedMissingValuesRepresentation
-    ) {
-        create("managed missing values representation", managedMissingValuesRepresentation.agency(),
-            managedMissingValuesRepresentation.id(),
-            ddi4ToDdi3Converter.toManagedMissingValuesRepresentationItem(managedMissingValuesRepresentation));
+            Ddi4ManagedMissingValuesRepresentation managedMissingValuesRepresentation) {
+        create(
+                "managed missing values representation",
+                managedMissingValuesRepresentation.agency(),
+                managedMissingValuesRepresentation.id(),
+                ddi4ToDdi3Converter.toManagedMissingValuesRepresentationItem(managedMissingValuesRepresentation));
     }
 
     void createCodeList(Ddi4CodeList codeList) {
-        create("code list", codeList.agency(), codeList.id(),
-            ddi4ToDdi3Converter.toCodeListItem(codeList));
+        create("code list", codeList.agency(), codeList.id(), ddi4ToDdi3Converter.toCodeListItem(codeList));
     }
 
     void createCategory(Ddi4Category category) {
-        create("category", category.agency(), category.id(),
-            ddi4ToDdi3Converter.toCategoryItem(category));
+        create("category", category.agency(), category.id(), ddi4ToDdi3Converter.toCategoryItem(category));
     }
 
     private void create(String what, String agency, String id, Ddi3Response.Ddi3Item item) {
         logger.info("Creating {} in Colectica: {}/{}", what, agency, id);
         colecticaClient.createOrUpdateItems(
-            new ColecticaCreateItemRequest(List.of(ColecticaItems.toColecticaItem(item))));
+                new ColecticaCreateItemRequest(List.of(ColecticaItems.toColecticaItem(item))));
     }
 }

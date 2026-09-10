@@ -1,28 +1,27 @@
 package fr.insee.rmes.modules.checks.domain;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
+
 import fr.insee.rmes.modules.checks.domain.model.CheckResult;
 import fr.insee.rmes.modules.checks.domain.port.serverside.RuleChecker;
+import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.List;
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
-
 @ExtendWith(MockitoExtension.class)
 class DomainCheckerServiceTest {
 
     @Mock
     private RuleChecker checker1;
-    
+
     @Mock
     private RuleChecker checker2;
-    
+
     @Mock
     private RuleChecker checker3;
 
@@ -39,7 +38,7 @@ class DomainCheckerServiceTest {
         CheckResult result1 = new CheckResult("check1", "value1");
         CheckResult result2 = new CheckResult("check2", "value2");
         CheckResult result3 = new CheckResult("check3", "value3");
-        
+
         when(checker1.check()).thenReturn(Optional.of(result1));
         when(checker2.check()).thenReturn(Optional.of(result2));
         when(checker3.check()).thenReturn(Optional.of(result3));
@@ -56,7 +55,7 @@ class DomainCheckerServiceTest {
         // Given
         CheckResult result1 = new CheckResult("check1", "value1");
         CheckResult result3 = new CheckResult("check3", "value3");
-        
+
         when(checker1.check()).thenReturn(Optional.of(result1));
         when(checker2.check()).thenReturn(Optional.empty());
         when(checker3.check()).thenReturn(Optional.of(result3));
@@ -72,7 +71,7 @@ class DomainCheckerServiceTest {
     void checks_shouldHandleExceptions_andReturnErrorResults() {
         // Given
         CheckResult result1 = new CheckResult("check1", "value1");
-        
+
         when(checker1.check()).thenReturn(Optional.of(result1));
         when(checker2.check()).thenThrow(new RuntimeException("Test exception"));
         when(checker3.check()).thenReturn(Optional.empty());
@@ -83,7 +82,7 @@ class DomainCheckerServiceTest {
         // Then
         assertThat(results).hasSize(2);
         assertThat(results.get(0)).isEqualTo(result1);
-        
+
         CheckResult errorResult = results.get(1);
         assertThat(errorResult.getName()).startsWith("error_");
         assertThat(errorResult.getName()).containsIgnoringCase("rulechecker");

@@ -1,10 +1,10 @@
 package fr.insee.rmes.modules.ddi.physical_instances.domain.services.converters;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class StudyUnitDDIItemConverterTest {
 
@@ -54,7 +54,9 @@ class StudyUnitDDIItemConverterTest {
     void convert_mapsVersionableFields() {
         JsonNode result = converter.convert(STUDY_UNIT_XML);
 
-        assertEquals("urn:ddi:fr.insee:c2acc8ab-f73e-3bd7-a387-1aab8db15efb:1", result.get("URN").asText());
+        assertEquals(
+                "urn:ddi:fr.insee:c2acc8ab-f73e-3bd7-a387-1aab8db15efb:1",
+                result.get("URN").asText());
         assertEquals("fr.insee", result.get("Agency").asText());
         assertEquals("c2acc8ab-f73e-3bd7-a387-1aab8db15efb", result.get("ID").asText());
         assertEquals("1", result.get("Version").asText());
@@ -64,7 +66,9 @@ class StudyUnitDDIItemConverterTest {
     void convert_mapsVersionDate() {
         JsonNode result = converter.convert(STUDY_UNIT_XML);
 
-        assertEquals("2026-04-05T17:25:20.909165+01:00", result.get("VersionDate").get("DateTime").asText());
+        assertEquals(
+                "2026-04-05T17:25:20.909165+01:00",
+                result.get("VersionDate").get("DateTime").asText());
     }
 
     @Test
@@ -74,8 +78,11 @@ class StudyUnitDDIItemConverterTest {
         JsonNode userIds = result.get("UserID");
         assertNotNull(userIds);
         assertEquals(1, userIds.size());
-        assertEquals("http://bauhaus/operations/operation/s1268", userIds.get(0).get("StringValue").asText());
-        assertEquals("URI", userIds.get(0).get("TypeOfUserID").get("StringValue").asText());
+        assertEquals(
+                "http://bauhaus/operations/operation/s1268",
+                userIds.get(0).get("StringValue").asText());
+        assertEquals(
+                "URI", userIds.get(0).get("TypeOfUserID").get("StringValue").asText());
     }
 
     @Test
@@ -97,9 +104,12 @@ class StudyUnitDDIItemConverterTest {
         assertNotNull(refs);
         assertEquals(1, refs.size());
         assertEquals("PhysicalInstance", refs.get(0).get("$type").asText());
-        assertEquals("urn:ddi:fr.insee:c05c0443-fc56-4069-9bea-a9c7300ae0a0:1", refs.get(0).get("URN").asText());
+        assertEquals(
+                "urn:ddi:fr.insee:c05c0443-fc56-4069-9bea-a9c7300ae0a0:1",
+                refs.get(0).get("URN").asText());
         assertEquals("fr.insee", refs.get(0).get("Agency").asText());
-        assertEquals("c05c0443-fc56-4069-9bea-a9c7300ae0a0", refs.get(0).get("ID").asText());
+        assertEquals(
+                "c05c0443-fc56-4069-9bea-a9c7300ae0a0", refs.get(0).get("ID").asText());
         assertEquals("1", refs.get(0).get("Version").asText());
     }
 }

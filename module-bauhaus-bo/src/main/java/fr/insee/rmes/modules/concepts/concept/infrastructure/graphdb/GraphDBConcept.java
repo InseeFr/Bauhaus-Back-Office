@@ -6,8 +6,6 @@ import fr.insee.rmes.modules.concepts.concept.domain.model.ConceptVersion;
 import fr.insee.rmes.modules.shared_kernel.domain.model.Lang;
 import fr.insee.rmes.modules.shared_kernel.domain.model.LocalisedLabel;
 import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
-import org.jspecify.annotations.Nullable;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -15,6 +13,7 @@ import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import org.jspecify.annotations.Nullable;
 
 public record GraphDBConcept(
         String id,
@@ -31,8 +30,7 @@ public record GraphDBConcept(
         @Nullable String validationState,
         List<String> altLabelLg1,
         List<String> altLabelLg2,
-        List<String> collectionIds
-) {
+        List<String> collectionIds) {
 
     public GraphDBConcept {
         altLabelLg1 = (altLabelLg1 == null) ? List.of() : altLabelLg1;
@@ -47,12 +45,12 @@ public record GraphDBConcept(
                 Objects.requireNonNullElse(creator, ""),
                 contributor,
                 Objects.requireNonNullElse(disseminationStatus, ""),
-                parseDateTime(Objects.requireNonNullElse(created, LocalDateTime.now().toString())),
+                parseDateTime(
+                        Objects.requireNonNullElse(created, LocalDateTime.now().toString())),
                 modified == null ? null : parseDateTime(modified),
                 ValidationStatus.fromValue(validationState),
                 new ConceptVersion(Math.max(conceptVersion, 1)),
-                collectionIds
-        );
+                collectionIds);
     }
 
     private List<LocalisedLabel> buildLabels() {

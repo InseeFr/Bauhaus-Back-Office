@@ -1,5 +1,13 @@
+
 rbac:
   config:
+    Gestionnaire_variables_RMESGNCS:
+      ddi_physicalinstance:
+        create: STAMP
+        read: STAMP
+        update: STAMP
+        delete: STAMP
+        publish: STAMP
     Betatest_OeDDIp_RMESGNCS:
       ddi_physicalinstance:
         create: ALL

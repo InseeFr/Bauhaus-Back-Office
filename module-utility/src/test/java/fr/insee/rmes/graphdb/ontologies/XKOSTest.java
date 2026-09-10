@@ -1,9 +1,9 @@
 package fr.insee.rmes.graphdb.ontologies;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import org.eclipse.rdf4j.model.Namespace;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class XKOSTest {
 
@@ -18,10 +18,12 @@ class XKOSTest {
     @Test
     void shouldHaveValidClassConstants() {
         assertNotNull(XKOS.CLASSIFICATION_LEVEL);
-        assertEquals("http://rdf-vocabulary.ddialliance.org/xkos#ClassificationLevel", XKOS.CLASSIFICATION_LEVEL.toString());
+        assertEquals(
+                "http://rdf-vocabulary.ddialliance.org/xkos#ClassificationLevel", XKOS.CLASSIFICATION_LEVEL.toString());
 
         assertNotNull(XKOS.CONCEPT_ASSOCIATION);
-        assertEquals("http://rdf-vocabulary.ddialliance.org/xkos#ConceptAssociation", XKOS.CONCEPT_ASSOCIATION.toString());
+        assertEquals(
+                "http://rdf-vocabulary.ddialliance.org/xkos#ConceptAssociation", XKOS.CONCEPT_ASSOCIATION.toString());
 
         assertNotNull(XKOS.CORRESPONDENCE);
         assertEquals("http://rdf-vocabulary.ddialliance.org/xkos#Correspondence", XKOS.CORRESPONDENCE.toString());
@@ -48,7 +50,9 @@ class XKOSTest {
         assertEquals("http://rdf-vocabulary.ddialliance.org/xkos#coreContentNote", XKOS.CORE_CONTENT_NOTE.toString());
 
         assertNotNull(XKOS.ADDITIONAL_CONTENT_NOTE);
-        assertEquals("http://rdf-vocabulary.ddialliance.org/xkos#additionalContentNote", XKOS.ADDITIONAL_CONTENT_NOTE.toString());
+        assertEquals(
+                "http://rdf-vocabulary.ddialliance.org/xkos#additionalContentNote",
+                XKOS.ADDITIONAL_CONTENT_NOTE.toString());
 
         assertNotNull(XKOS.EXCLUSION_NOTE);
         assertEquals("http://rdf-vocabulary.ddialliance.org/xkos#exclusionNote", XKOS.EXCLUSION_NOTE.toString());
@@ -89,5 +93,4 @@ class XKOSTest {
         assertNotNull(XKOS.AFTER);
         assertEquals("http://rdf-vocabulary.ddialliance.org/xkos#after", XKOS.AFTER.toString());
     }
-
 }

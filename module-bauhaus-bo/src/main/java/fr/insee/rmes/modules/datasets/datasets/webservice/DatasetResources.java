@@ -1,5 +1,7 @@
 package fr.insee.rmes.modules.datasets.datasets.webservice;
 
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.datasets.DatasetService;
 import fr.insee.rmes.domain.exceptions.RmesException;
@@ -11,15 +13,12 @@ import fr.insee.rmes.modules.datasets.datasets.model.PatchDataset;
 import fr.insee.rmes.modules.users.domain.model.RBAC;
 import fr.insee.rmes.modules.users.webservice.HasAccess;
 import jakarta.validation.Valid;
+import java.net.URI;
+import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-
-import java.net.URI;
-import java.util.List;
-
-import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @RestController
 @RequestMapping("/datasets")
@@ -56,14 +55,12 @@ public class DatasetResources {
         return this.datasetService.getDatasetsForSearch();
     }
 
-
     @PostMapping(value = "", consumes = APPLICATION_JSON_VALUE)
     @HasAccess(module = RBAC.Module.DATASET_DATASET, privilege = RBAC.Privilege.CREATE)
     public ResponseEntity<String> setDataset(@RequestBody String body) throws RmesException {
         String id = this.datasetService.create(body);
 
-        URI location = ServletUriComponentsBuilder
-                .fromCurrentRequest()
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}")
                 .buildAndExpand(id)
                 .toUri();
@@ -72,9 +69,7 @@ public class DatasetResources {
 
     @HasAccess(module = RBAC.Module.DATASET_DATASET, privilege = RBAC.Privilege.UPDATE)
     @PutMapping(value = "/{id}", consumes = APPLICATION_JSON_VALUE)
-    public void setDataset(
-            @PathVariable("id") String id,
-            @RequestBody String body) throws RmesException {
+    public void setDataset(@PathVariable("id") String id, @RequestBody String body) throws RmesException {
         this.datasetService.update(id, body);
     }
 
@@ -92,10 +87,8 @@ public class DatasetResources {
 
     @PatchMapping(value = "/{id}", consumes = APPLICATION_JSON_VALUE)
     @HasAccess(module = RBAC.Module.DATASET_DATASET, privilege = RBAC.Privilege.UPDATE)
-    public void patchDataset(
-            @PathVariable("id") String id,
-            @Valid @RequestBody PatchDataset dataset
-    ) throws RmesException {
+    public void patchDataset(@PathVariable("id") String id, @Valid @RequestBody PatchDataset dataset)
+            throws RmesException {
         this.datasetService.patchDataset(id, dataset);
     }
 

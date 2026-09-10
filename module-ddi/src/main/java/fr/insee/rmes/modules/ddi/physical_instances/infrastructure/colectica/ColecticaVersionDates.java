@@ -33,12 +33,12 @@ class ColecticaVersionDates {
      */
     Map<String, Date> byKey(List<ItemReference> refs, Map<String, ColecticaItem> itemsByKey) {
         List<GetDescriptionsRequest.IdentifierRef> identifiers = refs.stream()
-            .map(ref -> itemsByKey.get(ref.agencyId() + "/" + ref.identifier()))
-            .filter(Objects::nonNull)
-            .map(item -> new GetDescriptionsRequest.IdentifierRef(
-                item.agencyId(), item.identifier(), item.version()))
-            .distinct()
-            .toList();
+                .map(ref -> itemsByKey.get(ref.agencyId() + "/" + ref.identifier()))
+                .filter(Objects::nonNull)
+                .map(item ->
+                        new GetDescriptionsRequest.IdentifierRef(item.agencyId(), item.identifier(), item.version()))
+                .distinct()
+                .toList();
         if (identifiers.isEmpty()) {
             return Map.of();
         }
@@ -54,8 +54,7 @@ class ColecticaVersionDates {
                 continue;
             }
             versionDateByKey.put(
-                response.agencyId() + "/" + response.identifier(),
-                ColecticaXml.versionDate(response.item()));
+                    response.agencyId() + "/" + response.identifier(), ColecticaXml.versionDate(response.item()));
         }
         return versionDateByKey;
     }

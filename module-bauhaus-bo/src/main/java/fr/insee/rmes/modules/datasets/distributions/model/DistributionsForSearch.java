@@ -14,5 +14,4 @@ public record DistributionsForSearch(
         String validationStatus,
         String wasGeneratedIRIs,
         String created,
-        String updated
-) {}
+        String updated) {}

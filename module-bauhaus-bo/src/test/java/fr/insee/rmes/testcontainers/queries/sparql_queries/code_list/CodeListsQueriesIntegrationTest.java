@@ -1,5 +1,7 @@
 package fr.insee.rmes.testcontainers.queries.sparql_queries.code_list;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.PaginationProperties;
 import fr.insee.rmes.config.BauhausUriPropertiesStub;
@@ -15,8 +17,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 /**
  * Non-régression de {@code CodeListsQueries.getCodeUriByNotation} après sa migration vers
  * {@code codes-list/getCodeUriByNotation.ftlh}.
@@ -29,8 +29,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class CodeListsQueriesIntegrationTest extends WithGraphDBContainer {
 
     private final RepositoryGestion repositoryGestion = new RepositoryGestion(
-            getRdfGestionConnectionDetails(),
-            new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED));
+            getRdfGestionConnectionDetails(), new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED));
 
     private final CodeListsQueries queries = new CodeListsQueries(
             BauhausUriPropertiesStub.stub(),
@@ -45,16 +44,16 @@ class CodeListsQueriesIntegrationTest extends WithGraphDBContainer {
 
     @Test
     void getCodeUriByNotation_returns_the_uri_of_the_code_of_the_given_code_list() throws RmesException {
-        JSONObject result = repositoryGestion.getResponseAsObject(
-                queries.getCodeUriByNotation("CL_MIG_TEST", "CODE_MIG_1"));
+        JSONObject result =
+                repositoryGestion.getResponseAsObject(queries.getCodeUriByNotation("CL_MIG_TEST", "CODE_MIG_1"));
 
         assertThat(result.getString("uri")).isEqualTo("http://codelist/CL_MIG_TEST/CODE_MIG_1");
     }
 
     @Test
     void getCodeUriByNotation_returns_nothing_when_the_code_belongs_to_another_code_list() throws RmesException {
-        JSONObject result = repositoryGestion.getResponseAsObject(
-                queries.getCodeUriByNotation("CL_MIG_AUTRE", "CODE_MIG_1"));
+        JSONObject result =
+                repositoryGestion.getResponseAsObject(queries.getCodeUriByNotation("CL_MIG_AUTRE", "CODE_MIG_1"));
 
         assertThat(result.isEmpty())
                 .as("le code n'est résolu que dans la liste passée en paramètre")
@@ -63,8 +62,8 @@ class CodeListsQueriesIntegrationTest extends WithGraphDBContainer {
 
     @Test
     void getCodeUriByNotation_returns_nothing_for_an_unknown_code() throws RmesException {
-        JSONObject result = repositoryGestion.getResponseAsObject(
-                queries.getCodeUriByNotation("CL_MIG_TEST", "CODE_MIG_INCONNU"));
+        JSONObject result =
+                repositoryGestion.getResponseAsObject(queries.getCodeUriByNotation("CL_MIG_TEST", "CODE_MIG_INCONNU"));
 
         assertThat(result.isEmpty()).isTrue();
     }

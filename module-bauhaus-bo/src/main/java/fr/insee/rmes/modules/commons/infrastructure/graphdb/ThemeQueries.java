@@ -6,9 +6,8 @@ import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.freemarker.FreeMarkerUtils;
 import fr.insee.rmes.graphdb.SparqlLiterals;
 import fr.insee.rmes.modules.commons.configuration.ThemeProperties;
-import org.springframework.stereotype.Component;
-
 import java.util.HashMap;
+import org.springframework.stereotype.Component;
 
 @Component
 public class ThemeQueries {

@@ -1,5 +1,7 @@
 package fr.insee.rmes.modules.operations.series.webservice;
 
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.OperationsDocumentationsService;
 import fr.insee.rmes.bauhaus_services.OperationsService;
@@ -9,6 +11,7 @@ import fr.insee.rmes.modules.operations.families.webservice.FamilyResources;
 import fr.insee.rmes.modules.users.domain.model.RBAC;
 import fr.insee.rmes.modules.users.webservice.HasAccess;
 import fr.insee.rmes.utils.XMLUtils;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.HttpStatus;
@@ -16,129 +19,120 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-
-
 @Qualifier("Series")
 @RestController
 @RequestMapping("/operations")
 @ConditionalOnModule("operations")
-public class SeriesResources  {
+public class SeriesResources {
 
-	protected final OperationsService operationsService;
+    protected final OperationsService operationsService;
 
-	protected final OperationsDocumentationsService documentationsService;
+    protected final OperationsDocumentationsService documentationsService;
 
-	public SeriesResources(OperationsService operationsService, OperationsDocumentationsService documentationsService) {
-		this.operationsService = operationsService;
-		this.documentationsService = documentationsService;
-	}
+    public SeriesResources(OperationsService operationsService, OperationsDocumentationsService documentationsService) {
+        this.operationsService = operationsService;
+        this.documentationsService = documentationsService;
+    }
 
-
-	@HasAccess(module = RBAC.Module.OPERATION_SERIES, privilege = RBAC.Privilege.READ)
-	@GetMapping(value = "/series", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<List<PartialSeriesResponse>> getSeries() throws RmesException {
+    @HasAccess(module = RBAC.Module.OPERATION_SERIES, privilege = RBAC.Privilege.READ)
+    @GetMapping(value = "/series", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<PartialSeriesResponse>> getSeries() throws RmesException {
         List<PartialSeriesResponse> responses = operationsService.getSeries().stream()
                 .map(series -> {
                     var response = PartialSeriesResponse.fromDomain(series);
-                    response.add(linkTo(FamilyResources.class).slash("series").slash(series.id()).withSelfRel());
+                    response.add(linkTo(FamilyResources.class)
+                            .slash("series")
+                            .slash(series.id())
+                            .withSelfRel());
                     return response;
                 })
                 .toList();
 
-        return ResponseEntity.ok()
-                .contentType(MediaTypes.HAL_JSON)
-                .body(responses);
-	}
+        return ResponseEntity.ok().contentType(MediaTypes.HAL_JSON).body(responses);
+    }
 
-	@HasAccess(module = RBAC.Module.OPERATION_SERIES, privilege = RBAC.Privilege.READ)
-	@GetMapping(value = "/series/withSims", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Object> getSeriesWIthSims() throws RmesException {
-		String series = operationsService.getSeriesWithSims();
-		return ResponseEntity.status(HttpStatus.OK).body(series);
-	}
+    @HasAccess(module = RBAC.Module.OPERATION_SERIES, privilege = RBAC.Privilege.READ)
+    @GetMapping(value = "/series/withSims", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Object> getSeriesWIthSims() throws RmesException {
+        String series = operationsService.getSeriesWithSims();
+        return ResponseEntity.status(HttpStatus.OK).body(series);
+    }
 
-	@HasAccess(module = RBAC.Module.OPERATION_SERIES, privilege = RBAC.Privilege.READ)
-	@GetMapping(value = "/series/{id}", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-	public ResponseEntity<Object> getSeriesByID(@PathVariable(Constants.ID) String id,
-			@RequestHeader(required=false) String accept) throws RmesException {
-		if (accept != null && accept.equals(MediaType.APPLICATION_XML_VALUE)) {
-			return ResponseEntity.status(HttpStatus.OK).body(XMLUtils.produceXMLResponse(operationsService.getSeriesByID(id)));
-		} else {
-			return ResponseEntity.status(HttpStatus.OK).body(operationsService.getSeriesJsonByID(id));
-		}
-	}
+    @HasAccess(module = RBAC.Module.OPERATION_SERIES, privilege = RBAC.Privilege.READ)
+    @GetMapping(
+            value = "/series/{id}",
+            produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+    public ResponseEntity<Object> getSeriesByID(
+            @PathVariable(Constants.ID) String id, @RequestHeader(required = false) String accept)
+            throws RmesException {
+        if (accept != null && accept.equals(MediaType.APPLICATION_XML_VALUE)) {
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(XMLUtils.produceXMLResponse(operationsService.getSeriesByID(id)));
+        } else {
+            return ResponseEntity.status(HttpStatus.OK).body(operationsService.getSeriesJsonByID(id));
+        }
+    }
 
-	@HasAccess(module = RBAC.Module.OPERATION_SERIES, privilege = RBAC.Privilege.READ)
-	@GetMapping(value = "/series/advanced-search", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Object> getSeriesForSearch() throws RmesException {
-		String series = operationsService.getSeriesForSearch();
-		return ResponseEntity.status(HttpStatus.OK).body(series);
-	}
-	
-	/**
-	 * Get series where stamp is the creator
-	 * If only id, value, altlabel are needed, prefere /series/seriesWithStamp/{stamp}
-	 */
-	@HasAccess(module = RBAC.Module.OPERATION_SERIES, privilege = RBAC.Privilege.READ)
-	@GetMapping(value = "/series/advanced-search/{stamp}", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Object> getSeriesForSearchWithStamps(@PathVariable(Constants.STAMP) String stamp
-			) throws RmesException {
-		String series = operationsService.getSeriesForSearchWithStamp(stamp);
-		return ResponseEntity.status(HttpStatus.OK).body(series);
-	}
+    @HasAccess(module = RBAC.Module.OPERATION_SERIES, privilege = RBAC.Privilege.READ)
+    @GetMapping(value = "/series/advanced-search", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Object> getSeriesForSearch() throws RmesException {
+        String series = operationsService.getSeriesForSearch();
+        return ResponseEntity.status(HttpStatus.OK).body(series);
+    }
 
-	@HasAccess(module = RBAC.Module.OPERATION_SERIES, privilege = RBAC.Privilege.UPDATE)
-	@PutMapping(value = "/series/{id}",
-		consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Object> setSeriesById(
-			@PathVariable(Constants.ID) String id,
-			@RequestBody String body) throws RmesException {
-		operationsService.setSeries(id, body);
-		return ResponseEntity.ok(id);
-	}
+    /**
+     * Get series where stamp is the creator
+     * If only id, value, altlabel are needed, prefere /series/seriesWithStamp/{stamp}
+     */
+    @HasAccess(module = RBAC.Module.OPERATION_SERIES, privilege = RBAC.Privilege.READ)
+    @GetMapping(value = "/series/advanced-search/{stamp}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Object> getSeriesForSearchWithStamps(@PathVariable(Constants.STAMP) String stamp)
+            throws RmesException {
+        String series = operationsService.getSeriesForSearchWithStamp(stamp);
+        return ResponseEntity.status(HttpStatus.OK).body(series);
+    }
 
-	@HasAccess(module = RBAC.Module.OPERATION_SERIES, privilege = RBAC.Privilege.READ)
-	@GetMapping(value = "/series/{id}/operationsWithoutReport", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Object> getOperationsWithoutReport(@PathVariable(Constants.ID) String id) throws RmesException {
-		String operations  = operationsService.getOperationsWithoutReport(id);
-		return ResponseEntity.status(HttpStatus.OK).body(operations);
-	}
+    @HasAccess(module = RBAC.Module.OPERATION_SERIES, privilege = RBAC.Privilege.UPDATE)
+    @PutMapping(value = "/series/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Object> setSeriesById(@PathVariable(Constants.ID) String id, @RequestBody String body)
+            throws RmesException {
+        operationsService.setSeries(id, body);
+        return ResponseEntity.ok(id);
+    }
 
-	@HasAccess(module = RBAC.Module.OPERATION_SERIES, privilege = RBAC.Privilege.READ)
-	@GetMapping(value = "/series/{id}/operationsWithReport", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Object> getOperationsWithReport(@PathVariable(Constants.ID) String id) throws RmesException {
-		String operations  = operationsService.getOperationsWithReport(id);
-		return ResponseEntity.status(HttpStatus.OK).body(operations);
-	}
+    @HasAccess(module = RBAC.Module.OPERATION_SERIES, privilege = RBAC.Privilege.READ)
+    @GetMapping(value = "/series/{id}/operationsWithoutReport", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Object> getOperationsWithoutReport(@PathVariable(Constants.ID) String id)
+            throws RmesException {
+        String operations = operationsService.getOperationsWithoutReport(id);
+        return ResponseEntity.status(HttpStatus.OK).body(operations);
+    }
 
+    @HasAccess(module = RBAC.Module.OPERATION_SERIES, privilege = RBAC.Privilege.READ)
+    @GetMapping(value = "/series/{id}/operationsWithReport", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Object> getOperationsWithReport(@PathVariable(Constants.ID) String id) throws RmesException {
+        String operations = operationsService.getOperationsWithReport(id);
+        return ResponseEntity.status(HttpStatus.OK).body(operations);
+    }
 
-	@HasAccess(module = RBAC.Module.OPERATION_SERIES, privilege = RBAC.Privilege.CREATE)
-	@PostMapping(value = "/series",
-			consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Object> createSeries(@RequestBody String body) throws RmesException {
-		String id = operationsService.createSeries(body);
-		return ResponseEntity.status(HttpStatus.OK).body(id);
-	}
+    @HasAccess(module = RBAC.Module.OPERATION_SERIES, privilege = RBAC.Privilege.CREATE)
+    @PostMapping(value = "/series", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Object> createSeries(@RequestBody String body) throws RmesException {
+        String id = operationsService.createSeries(body);
+        return ResponseEntity.status(HttpStatus.OK).body(id);
+    }
 
-	@HasAccess(module = RBAC.Module.OPERATION_SERIES, privilege = RBAC.Privilege.PUBLISH)
-	@PutMapping(value = "/series/{id}/validate",
-			consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Object> setSeriesValidation(
-			@PathVariable(Constants.ID) String id) throws RmesException {
-		operationsService.setSeriesValidation(id);
-		return ResponseEntity.status(HttpStatus.OK).body(id);
-	}
+    @HasAccess(module = RBAC.Module.OPERATION_SERIES, privilege = RBAC.Privilege.PUBLISH)
+    @PutMapping(value = "/series/{id}/validate", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Object> setSeriesValidation(@PathVariable(Constants.ID) String id) throws RmesException {
+        operationsService.setSeriesValidation(id);
+        return ResponseEntity.status(HttpStatus.OK).body(id);
+    }
 
-
-
-	@GetMapping(value = "/series/seriesWithStamp", produces = MediaType.APPLICATION_JSON_VALUE)
-	@HasAccess(module = RBAC.Module.OPERATION_SERIES, privilege = RBAC.Privilege.READ)
-	public ResponseEntity<Object> getSeriesWithStamp() throws RmesException {
-		String series = operationsService.getSeriesWithStamp();
-		return ResponseEntity.status(HttpStatus.OK).body(series);
-	}
-	
+    @GetMapping(value = "/series/seriesWithStamp", produces = MediaType.APPLICATION_JSON_VALUE)
+    @HasAccess(module = RBAC.Module.OPERATION_SERIES, privilege = RBAC.Privilege.READ)
+    public ResponseEntity<Object> getSeriesWithStamp() throws RmesException {
+        String series = operationsService.getSeriesWithStamp();
+        return ResponseEntity.status(HttpStatus.OK).body(series);
+    }
 }

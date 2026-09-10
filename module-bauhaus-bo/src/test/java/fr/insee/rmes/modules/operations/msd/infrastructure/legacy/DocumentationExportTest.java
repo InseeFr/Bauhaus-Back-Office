@@ -1,5 +1,10 @@
 package fr.insee.rmes.modules.operations.msd.infrastructure.legacy;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.OrganizationsService;
@@ -10,13 +15,18 @@ import fr.insee.rmes.bauhaus_services.operations.documentations.documents.Docume
 import fr.insee.rmes.bauhaus_services.operations.indicators.IndicatorsRepository;
 import fr.insee.rmes.bauhaus_services.operations.operations.OperationsRepository;
 import fr.insee.rmes.bauhaus_services.operations.series.SeriesRepository;
-import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.model.links.OperationsLink;
 import fr.insee.rmes.model.operations.documentations.Documentation;
 import fr.insee.rmes.modules.operations.series.domain.model.Series;
 import fr.insee.rmes.utils.ExportUtils;
 import fr.insee.rmes.utils.FilesUtils;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
@@ -27,18 +37,6 @@ import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class DocumentationExportTest {
@@ -90,15 +88,27 @@ class DocumentationExportTest {
         var zip = "zip";
         var objectType = "objectType";
 
-        DocumentationExport documentationExport = new DocumentationExport(50, documentsUtils, exportUtils, seriesRepository, operationsRepository, indicatorsRepository, operationsParentRepository, codeListService, organizationsService, organisationService, documentationsUtils );
-
+        DocumentationExport documentationExport = new DocumentationExport(
+                50,
+                documentsUtils,
+                exportUtils,
+                seriesRepository,
+                operationsRepository,
+                indicatorsRepository,
+                operationsParentRepository,
+                codeListService,
+                organizationsService,
+                organisationService,
+                documentationsUtils);
 
         InputStream inputStreamMock = mock(InputStream.class);
-        when(exportUtils.exportAsInputStream("simslabel", xmlContent, xslFile, xmlPattern, zip, objectType, FilesUtils.ODT_EXTENSION))
+        when(exportUtils.exportAsInputStream(
+                        "simslabel", xmlContent, xslFile, xmlPattern, zip, objectType, FilesUtils.ODT_EXTENSION))
                 .thenReturn(inputStreamMock);
         when(inputStreamMock.readAllBytes()).thenReturn(new byte[0]);
 
-        ResponseEntity<Resource> response = documentationExport.exportAsZip(sims, xmlContent, xslFile, xmlPattern, zip, objectType, 50);
+        ResponseEntity<Resource> response =
+                documentationExport.exportAsZip(sims, xmlContent, xslFile, xmlPattern, zip, objectType, 50);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
@@ -114,21 +124,45 @@ class DocumentationExportTest {
         sims.put("labelLg1", "Rapport qualité : Enquête « Emploi » 2022");
 
         var xmlContent = new HashMap<String, String>();
-        DocumentationExport documentationExport = new DocumentationExport(50, documentsUtils, exportUtils, seriesRepository, operationsRepository, indicatorsRepository, operationsParentRepository, codeListService, organizationsService, organisationService, documentationsUtils);
+        DocumentationExport documentationExport = new DocumentationExport(
+                50,
+                documentsUtils,
+                exportUtils,
+                seriesRepository,
+                operationsRepository,
+                indicatorsRepository,
+                operationsParentRepository,
+                codeListService,
+                organizationsService,
+                organisationService,
+                documentationsUtils);
 
         InputStream inputStreamMock = mock(InputStream.class);
-        when(exportUtils.exportAsInputStream(any(), any(), any(), any(), any(), any(), any())).thenReturn(inputStreamMock);
+        when(exportUtils.exportAsInputStream(any(), any(), any(), any(), any(), any(), any()))
+                .thenReturn(inputStreamMock);
         when(inputStreamMock.readAllBytes()).thenReturn(new byte[0]);
 
-        ResponseEntity<Resource> response = documentationExport.exportAsZip(sims, xmlContent, "xslFile", "xmlPattern", "zip", "objectType", 50);
+        ResponseEntity<Resource> response =
+                documentationExport.exportAsZip(sims, xmlContent, "xslFile", "xmlPattern", "zip", "objectType", 50);
 
         assertThat(response.getHeaders().getContentDisposition().getFilename())
                 .isEqualTo("rapportQualiteEnqueteEmploi2022.zip");
     }
 
     @Test
-    void  testExportMetadataReport_Success_WithoutDocuments_Label() throws RmesException {
-        DocumentationExport documentationExport = new DocumentationExport(50, documentsUtils, exportUtils, seriesRepository, operationsRepository, indicatorsRepository, operationsParentRepository, codeListService, organizationsService, organisationService, documentationsUtils );
+    void testExportMetadataReport_Success_WithoutDocuments_Label() throws RmesException {
+        DocumentationExport documentationExport = new DocumentationExport(
+                50,
+                documentsUtils,
+                exportUtils,
+                seriesRepository,
+                operationsRepository,
+                indicatorsRepository,
+                operationsParentRepository,
+                codeListService,
+                organizationsService,
+                organisationService,
+                documentationsUtils);
 
         String id = "1234";
         boolean includeEmptyMas = true;
@@ -141,17 +175,31 @@ class DocumentationExportTest {
         Resource resource = new ByteArrayResource("Mocked Document Content".getBytes());
 
         when(documentationsUtils.getDocumentationByIdSims(id)).thenReturn(new JSONObject().put("labelLg1", "labelLg1"));
-        when(operationsParentRepository.getDocumentationTargetTypeAndId(id)).thenReturn(new String[]{targetType, "someId"});
+        when(operationsParentRepository.getDocumentationTargetTypeAndId(id))
+                .thenReturn(new String[] {targetType, "someId"});
         when(documentationsUtils.getFullSimsForXml(id)).thenReturn(new Documentation());
-        when(exportUtils.exportAsODT(any(), any(), any(), any(), any(), any())).thenReturn(ResponseEntity.ok().body(resource));
+        when(exportUtils.exportAsODT(any(), any(), any(), any(), any(), any()))
+                .thenReturn(ResponseEntity.ok().body(resource));
 
-        ResponseEntity<Resource> response = documentationExport.exportMetadataReport(id, includeEmptyMas, lg1, lg2, document, goal, 100);
+        ResponseEntity<Resource> response =
+                documentationExport.exportMetadataReport(id, includeEmptyMas, lg1, lg2, document, goal, 100);
         assertEquals(ResponseEntity.ok().body(resource), response);
     }
 
     @Test
     void testExportMetadataReport_Failure_UnknownGoal() throws RmesException {
-        DocumentationExport documentationExport = new DocumentationExport(50, documentsUtils, exportUtils, seriesRepository, operationsRepository, indicatorsRepository, operationsParentRepository, codeListService, organizationsService, organisationService, documentationsUtils );
+        DocumentationExport documentationExport = new DocumentationExport(
+                50,
+                documentsUtils,
+                exportUtils,
+                seriesRepository,
+                operationsRepository,
+                indicatorsRepository,
+                operationsParentRepository,
+                codeListService,
+                organizationsService,
+                organisationService,
+                documentationsUtils);
 
         String id = "1234";
         boolean includeEmptyMas = true;
@@ -160,19 +208,31 @@ class DocumentationExportTest {
         boolean document = true;
         String goal = "unknownGoal";
 
-        when(operationsParentRepository.getDocumentationTargetTypeAndId(id)).thenReturn(new String[]{"someTargetType", "someId"});
+        when(operationsParentRepository.getDocumentationTargetTypeAndId(id))
+                .thenReturn(new String[] {"someTargetType", "someId"});
         when(documentationsUtils.getFullSimsForXml(id)).thenReturn(new Documentation());
 
-        RmesBadRequestException exception = assertThrows(RmesBadRequestException.class,
-                () -> documentationExport.exportMetadataReport(id, includeEmptyMas, lg1, lg2, document, goal, 100)
-        );
+        RmesBadRequestException exception = assertThrows(
+                RmesBadRequestException.class,
+                () -> documentationExport.exportMetadataReport(id, includeEmptyMas, lg1, lg2, document, goal, 100));
 
         assertEquals("{\"message\":\"The goal is unknown\"}", exception.getDetails());
     }
 
     @Test
     void testExportXmlFiles_Success() throws RmesException {
-        DocumentationExport documentationExport = new DocumentationExport(50, documentsUtils, exportUtils, seriesRepository, operationsRepository, indicatorsRepository, operationsParentRepository, codeListService, organizationsService, organisationService, documentationsUtils );
+        DocumentationExport documentationExport = new DocumentationExport(
+                50,
+                documentsUtils,
+                exportUtils,
+                seriesRepository,
+                operationsRepository,
+                indicatorsRepository,
+                operationsParentRepository,
+                codeListService,
+                organizationsService,
+                organisationService,
+                documentationsUtils);
 
         Map<String, String> xmlContent = new HashMap<>();
         boolean includeEmptyMas = true;
@@ -180,9 +240,11 @@ class DocumentationExportTest {
         boolean lg2 = false;
         String targetType = "someTargetType";
 
-        when(exportUtils.exportFilesAsResponse(any())).thenReturn(ResponseEntity.ok().body("Mocked File Content"));
+        when(exportUtils.exportFilesAsResponse(any()))
+                .thenReturn(ResponseEntity.ok().body("Mocked File Content"));
 
-        ResponseEntity<Object> response = documentationExport.exportXmlFiles(xmlContent, targetType, includeEmptyMas, lg1, lg2);
+        ResponseEntity<Object> response =
+                documentationExport.exportXmlFiles(xmlContent, targetType, includeEmptyMas, lg1, lg2);
         assertEquals(ResponseEntity.ok().body("Mocked File Content"), response);
     }
 
@@ -200,8 +262,7 @@ class DocumentationExportTest {
                 codeListService,
                 organizationsService,
                 organisationService,
-                documentationsUtils
-        );
+                documentationsUtils);
 
         String id = "2179";
         String idDatabase = "s2144";
@@ -209,7 +270,7 @@ class DocumentationExportTest {
 
         // Mock operationsParentRepository to return SERIES targetType
         when(operationsParentRepository.getDocumentationTargetTypeAndId(id))
-                .thenReturn(new String[]{Constants.SERIES_UP, idDatabase});
+                .thenReturn(new String[] {Constants.SERIES_UP, idDatabase});
 
         // Mock seriesRepository to return a series
         Series series = createSeriesForTest();
@@ -222,23 +283,24 @@ class DocumentationExportTest {
         // Mock batch organization lookups for creators using OrganisationService from module-domain
         when(organisationService.getOrganisationsMap(List.of("HIE2004993", "DG75-G401", "DG75-G450")))
                 .thenReturn(Map.of(
-                        "HIE2004993", new fr.insee.rmes.modules.organisations.domain.model.OrganisationOption("HIE2004993", "Organisation HIE2004993"),
-                        "DG75-G401", new fr.insee.rmes.modules.organisations.domain.model.OrganisationOption("DG75-G401", "Organisation DG75-G401"),
-                        "DG75-G450", new fr.insee.rmes.modules.organisations.domain.model.OrganisationOption("DG75-G450", "Organisation DG75-G450")
-                ));
+                        "HIE2004993",
+                                new fr.insee.rmes.modules.organisations.domain.model.OrganisationOption(
+                                        "HIE2004993", "Organisation HIE2004993"),
+                        "DG75-G401",
+                                new fr.insee.rmes.modules.organisations.domain.model.OrganisationOption(
+                                        "DG75-G401", "Organisation DG75-G401"),
+                        "DG75-G450",
+                                new fr.insee.rmes.modules.organisations.domain.model.OrganisationOption(
+                                        "DG75-G450", "Organisation DG75-G450")));
 
         // Mock documentation
-        when(documentationsUtils.getFullSimsForXml(id)).thenReturn(new fr.insee.rmes.model.operations.documentations.Documentation());
+        when(documentationsUtils.getFullSimsForXml(id))
+                .thenReturn(new fr.insee.rmes.model.operations.documentations.Documentation());
 
         // Mock code lists (empty for simplicity)
-        when(codeListService.exportCodesList(any())).thenReturn(
-                new fr.insee.rmes.bauhaus_services.code_list.export.ExportedCodesList(
-                        "CL_SOURCE_CATEGORY",
-                        "Catégorie de source",
-                        "Source category",
-                        new ArrayList<>()
-                )
-        );
+        when(codeListService.exportCodesList(any()))
+                .thenReturn(new fr.insee.rmes.bauhaus_services.code_list.export.ExportedCodesList(
+                        "CL_SOURCE_CATEGORY", "Catégorie de source", "Source category", new ArrayList<>()));
 
         // When
         String targetType = documentationExport.getXmlContent(id, xmlContent);
@@ -313,10 +375,12 @@ class DocumentationExportTest {
         series.setId("s2144");
         series.setPrefLabelLg1("Comptes nationaux annuels (base 2020)");
         series.setPrefLabelLg2("Annual national accounts (2020 Base)");
-        series.setAbstractLg1("<p>La comptabilité nationale est une représentation globale, détaillée et chiffrée de l'activité économique d'un pays dans un cadre comptable équilibré. Elle décrit les ressources et les emplois à un niveau fin pour chaque type de bien ou de service. L'un des principaux agrégats des comptes nationaux est le produit intérieur brut (PIB) qui reflète l'activité économique interne du pays.</p>\n" +
-                "<p>Le 26 mars 2024, les comptes des administrations publiques sont publiées en base 2020.</p>\n" +
-                "<p>À partir du 31 mai 2024, les comptes nationaux sont publiés en base 2020.</p>");
-        series.setHistoryNoteLg1("<p>Les origines de la comptabilité nationale remontent à l'entre-deux-guerres : l'objectif à l'époque était de construire un indicateur qui donne une évaluation de la richesse produite chaque année et de son évolution. En France, la comptabilité nationale s'est surtout développée dans les années cinquante, pour répondre aux besoins de la planification et des budgets économiques. Adopté en 1996 par le conseil de l'union européenne, le système européen des comptes (SEC95) a le statut de règlement européen. Il s'impose à tous les pays de l'Union. Révisé en 2010, le SEC 2010 est mis en place dans l'Union européenne à partir de 2014.</p>");
+        series.setAbstractLg1(
+                "<p>La comptabilité nationale est une représentation globale, détaillée et chiffrée de l'activité économique d'un pays dans un cadre comptable équilibré. Elle décrit les ressources et les emplois à un niveau fin pour chaque type de bien ou de service. L'un des principaux agrégats des comptes nationaux est le produit intérieur brut (PIB) qui reflète l'activité économique interne du pays.</p>\n"
+                        + "<p>Le 26 mars 2024, les comptes des administrations publiques sont publiées en base 2020.</p>\n"
+                        + "<p>À partir du 31 mai 2024, les comptes nationaux sont publiés en base 2020.</p>");
+        series.setHistoryNoteLg1(
+                "<p>Les origines de la comptabilité nationale remontent à l'entre-deux-guerres : l'objectif à l'époque était de construire un indicateur qui donne une évaluation de la richesse produite chaque année et de son évolution. En France, la comptabilité nationale s'est surtout développée dans les années cinquante, pour répondre aux besoins de la planification et des budgets économiques. Adopté en 1996 par le conseil de l'union européenne, le système européen des comptes (SEC95) a le statut de règlement européen. Il s'impose à tous les pays de l'Union. Révisé en 2010, le SEC 2010 est mis en place dans l'Union européenne à partir de 2014.</p>");
         series.setTypeCode("C");
         series.setTypeList("CL_SOURCE_CATEGORY");
         series.setAccrualPeriodicityCode("A");
@@ -325,19 +389,16 @@ class DocumentationExportTest {
         series.setCreated("2023-11-28T09:18:46.114042714");
 
         // Set family
-        fr.insee.rmes.modules.commons.configuration.swagger.model.IdLabelTwoLangs family = new fr.insee.rmes.modules.commons.configuration.swagger.model.IdLabelTwoLangs();
+        fr.insee.rmes.modules.commons.configuration.swagger.model.IdLabelTwoLangs family =
+                new fr.insee.rmes.modules.commons.configuration.swagger.model.IdLabelTwoLangs();
         family.setId("s30");
         family.setLabelLg1("Comptes nationaux");
         family.setLabelLg2("National accounts");
         series.setFamily(family);
 
         // Set publishers
-        OperationsLink publisher = OperationsLink.of(
-                "HIE2000007",
-                null,
-                "Direction des études et synthèses économiques (DESE)",
-                null
-        );
+        OperationsLink publisher =
+                OperationsLink.of("HIE2000007", null, "Direction des études et synthèses économiques (DESE)", null);
         series.setPublishers(List.of(publisher));
 
         // Set creators
@@ -345,11 +406,7 @@ class DocumentationExportTest {
 
         // Set replaces
         OperationsLink replaces = OperationsLink.of(
-                "s1030",
-                "series",
-                "Comptes nationaux annuels (base 2014)",
-                "Annual national accounts (2014 Base)"
-        );
+                "s1030", "series", "Comptes nationaux annuels (base 2014)", "Annual national accounts (2014 Base)");
         series.setReplaces(List.of(replaces));
 
         return series;
@@ -369,8 +426,7 @@ class DocumentationExportTest {
                 codeListService,
                 organizationsService,
                 organisationService,
-                documentationsUtils
-        );
+                documentationsUtils);
 
         String id = "2167";
         String idDatabase = "p1723";
@@ -378,12 +434,11 @@ class DocumentationExportTest {
 
         // Mock operationsParentRepository to return INDICATOR targetType
         when(operationsParentRepository.getDocumentationTargetTypeAndId(id))
-                .thenReturn(new String[]{Constants.INDICATOR_UP, idDatabase});
+                .thenReturn(new String[] {Constants.INDICATOR_UP, idDatabase});
 
         // Mock indicatorsRepository to return an indicator
         fr.insee.rmes.model.operations.Indicator indicator = createIndicatorForTest();
-        when(indicatorsRepository.getIndicatorById(idDatabase, true))
-                .thenReturn(indicator);
+        when(indicatorsRepository.getIndicatorById(idDatabase, true)).thenReturn(indicator);
 
         // Mock seriesRepository for the series referenced by the indicator
         Series series = new Series();
@@ -400,16 +455,19 @@ class DocumentationExportTest {
         // Mock batch organization lookups for creators using OrganisationService from module-domain
         when(organisationService.getOrganisationsMap(List.of("HIE2004993")))
                 .thenReturn(Map.of(
-                        "HIE2004993", new fr.insee.rmes.modules.organisations.domain.model.OrganisationOption("HIE2004993", "Organisation HIE2004993")
-                ));
+                        "HIE2004993",
+                        new fr.insee.rmes.modules.organisations.domain.model.OrganisationOption(
+                                "HIE2004993", "Organisation HIE2004993")));
         // Mock batch organization lookup for contributors (now resolved to labels like creators)
         when(organisationService.getOrganisationsMap(List.of("DG75-L002")))
                 .thenReturn(Map.of(
-                        "DG75-L002", new fr.insee.rmes.modules.organisations.domain.model.OrganisationOption("DG75-L002", "Administration du comité du Label")
-                ));
+                        "DG75-L002",
+                        new fr.insee.rmes.modules.organisations.domain.model.OrganisationOption(
+                                "DG75-L002", "Administration du comité du Label")));
 
         // Mock documentation
-        when(documentationsUtils.getFullSimsForXml(id)).thenReturn(new fr.insee.rmes.model.operations.documentations.Documentation());
+        when(documentationsUtils.getFullSimsForXml(id))
+                .thenReturn(new fr.insee.rmes.model.operations.documentations.Documentation());
 
         // When
         String targetType = documentationExport.getXmlContent(id, xmlContent);
@@ -429,8 +487,7 @@ class DocumentationExportTest {
         assertThat(indicatorFile).contains("<abstractLg1>L'Indicateur 17.i2");
 
         // Verify contributors (now serialized as labels, like creators)
-        assertThat(indicatorFile)
-                .contains("<contributors>Administration du comité du Label</contributors>");
+        assertThat(indicatorFile).contains("<contributors>Administration du comité du Label</contributors>");
 
         // Verify creators (should contain organization value instead of stamp)
         assertThat(indicatorFile).contains("<creators>");
@@ -457,12 +514,14 @@ class DocumentationExportTest {
         indicator.setPrefLabelLg1("Aide publique au développement (APD) bilatérale");
         indicator.setPrefLabelLg2("Bilateral Official Development Assistance (ODA)");
         indicator.setAltLabelLg1("ODD 17.i2");
-        indicator.setAbstractLg1("L'Indicateur 17.i2 **Aide publique au développement (APD)** bilatérale brute comprend deux sous-indicateurs :\n\n" +
-                "1. Montant de l'APD bilatérale brute par secteur ou sous-secteur ;\n" +
-                "2. Engagements d'APD bilatérale par marqueur.");
-        indicator.setAbstractLg2("Indicator 17.i2 **Gross bilateral official development assistance (ODA)** includes two sub-indicators:\n\n" +
-                "1. Gross bilateral ODA by sector or sub-sector;\n" +
-                "2. Bilateral ODA commitments by marker.");
+        indicator.setAbstractLg1(
+                "L'Indicateur 17.i2 **Aide publique au développement (APD)** bilatérale brute comprend deux sous-indicateurs :\n\n"
+                        + "1. Montant de l'APD bilatérale brute par secteur ou sous-secteur ;\n"
+                        + "2. Engagements d'APD bilatérale par marqueur.");
+        indicator.setAbstractLg2(
+                "Indicator 17.i2 **Gross bilateral official development assistance (ODA)** includes two sub-indicators:\n\n"
+                        + "1. Gross bilateral ODA by sector or sub-sector;\n"
+                        + "2. Bilateral ODA commitments by marker.");
         indicator.setIdSims("2167");
         indicator.setCreated("2023-12-13T18:42:05.461209844");
         indicator.setUpdated("2025-11-05T10:11:04.793047");
@@ -475,18 +534,8 @@ class DocumentationExportTest {
         indicator.setCreators(List.of("HIE2004993"));
 
         // Set wasGeneratedBy
-        OperationsLink wasGeneratedBy1 = OperationsLink.of(
-                "s1034",
-                "series",
-                "Autres indicateurs",
-                "Other indexes"
-        );
-        OperationsLink wasGeneratedBy2 = OperationsLink.of(
-                "s1034",
-                "undefined",
-                "Autres indicateurs",
-                "Other indexes"
-        );
+        OperationsLink wasGeneratedBy1 = OperationsLink.of("s1034", "series", "Autres indicateurs", "Other indexes");
+        OperationsLink wasGeneratedBy2 = OperationsLink.of("s1034", "undefined", "Autres indicateurs", "Other indexes");
         indicator.setWasGeneratedBy(List.of(wasGeneratedBy1, wasGeneratedBy2));
 
         return indicator;

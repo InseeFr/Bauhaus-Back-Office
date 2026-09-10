@@ -1,14 +1,17 @@
 package fr.insee.rmes.testcontainers.queries.sparql_queries.operations.indicators.series;
 
-import fr.insee.rmes.json.JSONUtils;
-import fr.insee.rmes.rdf_utils.RepositoryGestion;
+import static org.junit.jupiter.api.Assertions.*;
+
+import fr.insee.rmes.BauhausLanguagesProperties;
+import fr.insee.rmes.config.BauhausUriPropertiesStub;
+import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.graphdb.RepositoryInitiator;
 import fr.insee.rmes.graphdb.RepositoryUtils;
-import fr.insee.rmes.BauhausLanguagesProperties;
-import fr.insee.rmes.config.GraphsPropertiesStub;
-import fr.insee.rmes.config.BauhausUriPropertiesStub;
+import fr.insee.rmes.json.JSONUtils;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationIndicatorsQueries;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.testcontainers.WithGraphDBContainer;
+import java.util.List;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.json.JSONArray;
@@ -17,30 +20,30 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
-
 @Tag("integration")
 class OpIndicatorQueriesTest extends WithGraphDBContainer {
-    RepositoryGestion repositoryGestion = new RepositoryGestion(getRdfGestionConnectionDetails(), new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED));
-    OperationIndicatorsQueries operationIndicatorsQueries = new OperationIndicatorsQueries(BauhausUriPropertiesStub.stub(), new BauhausLanguagesProperties("fr", "en"), GraphsPropertiesStub.stub());
+    RepositoryGestion repositoryGestion = new RepositoryGestion(
+            getRdfGestionConnectionDetails(), new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED));
+    OperationIndicatorsQueries operationIndicatorsQueries = new OperationIndicatorsQueries(
+            BauhausUriPropertiesStub.stub(), new BauhausLanguagesProperties("fr", "en"), GraphsPropertiesStub.stub());
 
     @BeforeAll
-    static void initData(){
+    static void initData() {
         container.withTrigFiles("all-operations-and-indicators.trig");
         container.withTrigFiles("sims-all.trig");
     }
 
     @Test
     void should_return_true_if_label_exist() throws Exception {
-        boolean result = repositoryGestion.getResponseAsBoolean(operationIndicatorsQueries.checkPrefLabelUnicity("1", "Indice de prix des travaux d'entretien et d'amélioration de bâtiments", "fr"));
+        boolean result = repositoryGestion.getResponseAsBoolean(operationIndicatorsQueries.checkPrefLabelUnicity(
+                "1", "Indice de prix des travaux d'entretien et d'amélioration de bâtiments", "fr"));
         assertTrue(result);
     }
 
     @Test
     void should_return_false_if_label_does_not_exist() throws Exception {
-        boolean result = repositoryGestion.getResponseAsBoolean(operationIndicatorsQueries.checkPrefLabelUnicity("1", "label", "fr"));
+        boolean result = repositoryGestion.getResponseAsBoolean(
+                operationIndicatorsQueries.checkPrefLabelUnicity("1", "label", "fr"));
         assertFalse(result);
     }
 
@@ -56,12 +59,11 @@ class OpIndicatorQueriesTest extends WithGraphDBContainer {
 
         JSONObject serie = results.getJSONObject(0);
         assertEquals("s1032", serie.getString("id"));
-        assertEquals("Élaboration des index BT/TP et divers et des indices de coûts de production dans la construction",
-                     serie.getString("labelLg1"));
-        assertEquals("Computation of BT/TP and production cost indexes in construction",
-                     serie.getString("labelLg2"));
-        assertEquals("http://rdf.insee.fr/def/base#StatisticalOperationSeries",
-                     serie.getString("typeOfObject"));
+        assertEquals(
+                "Élaboration des index BT/TP et divers et des indices de coûts de production dans la construction",
+                serie.getString("labelLg1"));
+        assertEquals("Computation of BT/TP and production cost indexes in construction", serie.getString("labelLg2"));
+        assertEquals("http://rdf.insee.fr/def/base#StatisticalOperationSeries", serie.getString("typeOfObject"));
     }
 
     @Test
@@ -76,12 +78,11 @@ class OpIndicatorQueriesTest extends WithGraphDBContainer {
 
         JSONUtils.stream(results)
                 .filter(serie -> "s1221".equals(serie.getString("id")) || "s1189".equals(serie.getString("id")))
-                .forEach(serie -> assertEquals("http://rdf.insee.fr/def/base#StatisticalOperationSeries",
-                                               serie.getString("typeOfObject")));
+                .forEach(serie -> assertEquals(
+                        "http://rdf.insee.fr/def/base#StatisticalOperationSeries", serie.getString("typeOfObject")));
 
-        List<String> serieIds = JSONUtils.stream(results)
-                .map(serie -> serie.getString("id"))
-                .toList();
+        List<String> serieIds =
+                JSONUtils.stream(results).map(serie -> serie.getString("id")).toList();
 
         assertTrue(serieIds.contains("s1221"), "Should contain serie s1221");
         assertTrue(serieIds.contains("s1189"), "Should contain serie s1189");
@@ -143,8 +144,9 @@ class OpIndicatorQueriesTest extends WithGraphDBContainer {
             assertEquals("p1651", result.getString("id"));
         }
 
-        assertTrue(result.has("prefLabelLg1") || result.has("prefLabelLg2") || result.length() > 0,
-                   "Result should have indicator properties");
+        assertTrue(
+                result.has("prefLabelLg1") || result.has("prefLabelLg2") || result.length() > 0,
+                "Result should have indicator properties");
     }
 
     @Test
@@ -242,8 +244,7 @@ class OpIndicatorQueriesTest extends WithGraphDBContainer {
 
     @Test
     void should_return_empty_for_non_existent_link_predicate() throws Exception {
-        IRI nonExistentPredicate = SimpleValueFactory.getInstance()
-                .createIRI("http://example.org/nonExistent");
+        IRI nonExistentPredicate = SimpleValueFactory.getInstance().createIRI("http://example.org/nonExistent");
 
         String query = operationIndicatorsQueries.indicatorLinks("p1651", nonExistentPredicate);
         JSONArray results = repositoryGestion.getResponseAsArray(query);

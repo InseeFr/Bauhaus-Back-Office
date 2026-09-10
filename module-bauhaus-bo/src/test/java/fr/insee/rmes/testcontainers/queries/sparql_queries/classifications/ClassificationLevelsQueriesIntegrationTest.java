@@ -1,5 +1,7 @@
 package fr.insee.rmes.testcontainers.queries.sparql_queries.classifications;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.RepositoryInitiator;
@@ -8,16 +10,13 @@ import fr.insee.rmes.json.JSONUtils;
 import fr.insee.rmes.persistance.sparql_queries.classifications.ClassificationLevelsQueries;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.testcontainers.WithGraphDBContainer;
+import java.util.ArrayList;
+import java.util.List;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Non-régression des requêtes de niveaux de nomenclature après leur migration vers
@@ -35,8 +34,7 @@ class ClassificationLevelsQueriesIntegrationTest extends WithGraphDBContainer {
     private static final String CLASSIFICATION_ID = "clsMig";
 
     private final RepositoryGestion repositoryGestion = new RepositoryGestion(
-            getRdfGestionConnectionDetails(),
-            new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED));
+            getRdfGestionConnectionDetails(), new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED));
 
     private final ClassificationLevelsQueries queries =
             new ClassificationLevelsQueries(new BauhausLanguagesProperties("fr", "en"));
@@ -93,7 +91,8 @@ class ClassificationLevelsQueriesIntegrationTest extends WithGraphDBContainer {
 
     @Test
     void levelMembersQuery_returns_the_items_of_the_level_ordered_by_id() throws RmesException {
-        JSONArray members = repositoryGestion.getResponseAsArray(queries.levelMembersQuery(CLASSIFICATION_ID, "lvlMig1"));
+        JSONArray members =
+                repositoryGestion.getResponseAsArray(queries.levelMembersQuery(CLASSIFICATION_ID, "lvlMig1"));
 
         assertThat(valuesOf(members, "id")).containsExactly("01MIG", "02MIG");
         assertThat(members.getJSONObject(0).getString("labelLg1")).isEqualTo("Poste 1 migration (test)");
@@ -102,16 +101,15 @@ class ClassificationLevelsQueriesIntegrationTest extends WithGraphDBContainer {
 
     @Test
     void levelMembersQuery_returns_nothing_for_a_level_without_member() throws RmesException {
-        JSONArray members = repositoryGestion.getResponseAsArray(queries.levelMembersQuery(CLASSIFICATION_ID, "lvlMig2"));
+        JSONArray members =
+                repositoryGestion.getResponseAsArray(queries.levelMembersQuery(CLASSIFICATION_ID, "lvlMig2"));
 
         assertThat(members.length()).isZero();
     }
 
     private static List<String> valuesOf(JSONArray array, String key) {
         List<String> values = new ArrayList<>();
-        JSONUtils.stream(array)
-                .map(row -> row.getString(key))
-                .forEach(values::add);
+        JSONUtils.stream(array).map(row -> row.getString(key)).forEach(values::add);
         return values;
     }
 }

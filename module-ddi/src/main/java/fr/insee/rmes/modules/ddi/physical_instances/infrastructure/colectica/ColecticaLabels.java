@@ -61,8 +61,8 @@ final class ColecticaLabels {
             return Optional.of(english);
         }
         return languageMap.values().stream()
-            .filter(v -> v != null && !v.isBlank())
-            .findFirst();
+                .filter(v -> v != null && !v.isBlank())
+                .findFirst();
     }
 
     String fromLanguageMap(Map<String, String> languageMap) {
@@ -86,8 +86,8 @@ final class ColecticaLabels {
      */
     String ofAdvanced(ColecticaAdvancedItem item) {
         return firstNonBlankLocalized(item, "label")
-            .or(() -> firstNonBlankLocalized(item, "dcTitle"))
-            .orElseGet(item::identifier);
+                .or(() -> firstNonBlankLocalized(item, "dcTitle"))
+                .orElseGet(item::identifier);
     }
 
     private Optional<String> firstNonBlankLocalized(ColecticaAdvancedItem item, String propertyKey) {
@@ -99,14 +99,14 @@ final class ColecticaLabels {
             return Optional.empty();
         }
         Optional<String> preferred = values.stream()
-            .filter(v -> defaultLang.equals(v.languageTag()))
-            .map(LocalizedText::value)
-            .filter(v -> v != null && !v.isBlank())
-            .findFirst();
+                .filter(v -> defaultLang.equals(v.languageTag()))
+                .map(LocalizedText::value)
+                .filter(v -> v != null && !v.isBlank())
+                .findFirst();
         return preferred.or(() -> values.stream()
-            .map(LocalizedText::value)
-            .filter(v -> v != null && !v.isBlank())
-            .findFirst());
+                .map(LocalizedText::value)
+                .filter(v -> v != null && !v.isBlank())
+                .findFirst());
     }
 
     /**
@@ -119,8 +119,8 @@ final class ColecticaLabels {
             return existingLabel;
         }
         String lang = existingLabel != null && !existingLabel.isEmpty()
-            ? existingLabel.get(0).language()
-            : defaultLang;
+                ? existingLabel.get(0).language()
+                : defaultLang;
         return LangStrings.of(lang, newText);
     }
 

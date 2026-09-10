@@ -2,12 +2,11 @@ package fr.insee.rmes.modules.commons.domain.port.serverside;
 
 import fr.insee.rmes.modules.commons.domain.model.Document;
 import fr.insee.rmes.modules.commons.hexagonal.ServerSidePort;
-
 import java.io.InputStream;
 
 @ServerSidePort
 public interface FilesOperations {
-    default void delete(Document document){
+    default void delete(Document document) {
         throw new UnsupportedOperationException("Not implemented yet.");
     }
 

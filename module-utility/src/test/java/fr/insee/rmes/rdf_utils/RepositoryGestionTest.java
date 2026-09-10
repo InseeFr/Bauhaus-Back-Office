@@ -1,10 +1,17 @@
 package fr.insee.rmes.rdf_utils;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.lenient;
+
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.RdfConnectionDetails;
 import fr.insee.rmes.graphdb.RepositoryInitiator;
 import fr.insee.rmes.graphdb.RepositoryUtils;
 import fr.insee.rmes.graphdb.ontologies.INSEE;
+import java.util.Arrays;
+import java.util.List;
 import org.eclipse.rdf4j.model.*;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.impl.TreeModel;
@@ -24,14 +31,6 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
-
-import java.util.Arrays;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.lenient;
 
 @ExtendWith(MockitoExtension.class)
 class RepositoryGestionTest {
@@ -60,7 +59,7 @@ class RepositoryGestionTest {
     void setUp() {
         repositoryGestion = new RepositoryGestion(rdfConnectionDetails, repositoryUtils);
         valueFactory = SimpleValueFactory.getInstance();
-        
+
         lenient().when(rdfConnectionDetails.getUrlServer()).thenReturn("http://localhost:8080");
         lenient().when(rdfConnectionDetails.repositoryId()).thenReturn("test-repo");
         lenient().doReturn(repository).when(repositoryUtils).initRepository(anyString(), anyString());
@@ -70,7 +69,7 @@ class RepositoryGestionTest {
     @Test
     void shouldGetResponse() throws RmesException {
         String query = "SELECT * WHERE { ?s ?p ?o }";
-        
+
         Repository memoryRepo = new SailRepository(new MemoryStore());
         memoryRepo.init();
         doReturn(memoryRepo).when(repositoryUtils).initRepository(anyString(), anyString());
@@ -83,8 +82,9 @@ class RepositoryGestionTest {
 
     @Test
     void shouldExecuteUpdate() throws RmesException {
-        String updateQuery = "INSERT { <http://example.org/s> <http://example.org/p> <http://example.org/o> } WHERE { }";
-        
+        String updateQuery =
+                "INSERT { <http://example.org/s> <http://example.org/p> <http://example.org/o> } WHERE { }";
+
         Repository memoryRepo = new SailRepository(new MemoryStore());
         memoryRepo.init();
         doReturn(memoryRepo).when(repositoryUtils).initRepository(anyString(), anyString());
@@ -98,7 +98,7 @@ class RepositoryGestionTest {
     @Test
     void shouldGetResponseAsObject() throws RmesException {
         String query = "SELECT * WHERE { ?s ?p ?o }";
-        
+
         Repository memoryRepo = new SailRepository(new MemoryStore());
         memoryRepo.init();
         doReturn(memoryRepo).when(repositoryUtils).initRepository(anyString(), anyString());
@@ -112,21 +112,21 @@ class RepositoryGestionTest {
     @Test
     void shouldGetResponseAsArray() throws RmesException {
         String query = "SELECT * WHERE { ?s ?p ?o }";
-        
+
         Repository memoryRepo = new SailRepository(new MemoryStore());
         memoryRepo.init();
         doReturn(memoryRepo).when(repositoryUtils).initRepository(anyString(), anyString());
 
         JSONArray result = repositoryGestion.getResponseAsArray(query);
 
-        assertTrue( result.isEmpty());
+        assertTrue(result.isEmpty());
         verify(repositoryUtils).initRepository("http://localhost:8080", "test-repo");
     }
 
     @Test
     void shouldGetResponseAsJSONList() throws RmesException {
         String query = "SELECT * WHERE { ?s ?p ?o }";
-        
+
         Repository memoryRepo = new SailRepository(new MemoryStore());
         memoryRepo.init();
         doReturn(memoryRepo).when(repositoryUtils).initRepository(anyString(), anyString());
@@ -140,7 +140,7 @@ class RepositoryGestionTest {
     @Test
     void shouldGetResponseAsBoolean() throws RmesException {
         String query = "ASK { ?s ?p ?o }";
-        
+
         Repository memoryRepo = new SailRepository(new MemoryStore());
         memoryRepo.init();
         doReturn(memoryRepo).when(repositoryUtils).initRepository(anyString(), anyString());
@@ -214,7 +214,8 @@ class RepositoryGestionTest {
     void shouldGetIsReplacedByStatements() throws RmesException {
         IRI object = valueFactory.createIRI("http://example.org/object");
 
-        when(connection.getStatements(null, DCTERMS.IS_REPLACED_BY, object, false)).thenReturn(repositoryResult);
+        when(connection.getStatements(null, DCTERMS.IS_REPLACED_BY, object, false))
+                .thenReturn(repositoryResult);
 
         RepositoryResult<Statement> result = repositoryGestion.getIsReplacedByStatements(connection, object);
 
@@ -236,8 +237,6 @@ class RepositoryGestionTest {
 
         assertThrows(RmesException.class, () -> repositoryGestion.closeStatements(repositoryResult));
     }
-
-
 
     @Test
     void shouldDeleteTripletByPredicateAndValueWithConnection() throws RmesException {
@@ -338,9 +337,8 @@ class RepositoryGestionTest {
     @Test
     void shouldObjectsValidation() throws RmesException {
         List<IRI> collectionsToValidate = Arrays.asList(
-            valueFactory.createIRI("http://example.org/resource1"),
-            valueFactory.createIRI("http://example.org/resource2")
-        );
+                valueFactory.createIRI("http://example.org/resource1"),
+                valueFactory.createIRI("http://example.org/resource2"));
         Model model = new TreeModel();
 
         repositoryGestion.objectsValidation(collectionsToValidate, model);

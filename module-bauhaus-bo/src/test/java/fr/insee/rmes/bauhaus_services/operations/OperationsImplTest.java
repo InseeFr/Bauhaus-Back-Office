@@ -1,12 +1,22 @@
 package fr.insee.rmes.bauhaus_services.operations;
 
-import fr.insee.rmes.rdf_utils.RepositoryGestion;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.Mockito.when;
+
 import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.persistance.sparql_queries.operations.OperationIndicatorsQueries;
-import fr.insee.rmes.persistance.sparql_queries.operations.OperationsOperationQueries;
 import fr.insee.rmes.modules.users.domain.model.User;
 import fr.insee.rmes.modules.users.domain.port.serverside.UserDecoder;
+import fr.insee.rmes.persistance.sparql_queries.operations.OperationIndicatorsQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationSeriesQueries;
+import fr.insee.rmes.persistance.sparql_queries.operations.OperationsOperationQueries;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
@@ -16,17 +26,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class OperationsImplTest {
@@ -53,8 +52,7 @@ class OperationsImplTest {
     void shouldSortSeriesWithStampIgnoringCaseAndDiacritics() throws Throwable {
         SecurityContextHolder.getContext()
                 .setAuthentication(new TestingAuthenticationToken("principal", "credentials"));
-        when(userDecoder.fromPrincipal(any()))
-                .thenReturn(Optional.of(new User("id", List.of(), Set.of("stamp"))));
+        when(userDecoder.fromPrincipal(any())).thenReturn(Optional.of(new User("id", List.of(), Set.of("stamp"))));
         when(operationSeriesQueries.seriesWithStampQuery(any(), anyBoolean())).thenReturn("query");
 
         JSONArray array = new JSONArray();
@@ -63,9 +61,10 @@ class OperationsImplTest {
         array.put(new JSONObject().put("id", "3").put("label", "éb"));
         when(repoGestion.getResponseAsArray("query")).thenReturn(array);
 
-        List<String> labels = new JSONArray(operationsImpl.getSeriesWithStamp()).toList().stream()
-                .map(o -> (String) ((Map<?, ?>) o).get("label"))
-                .toList();
+        List<String> labels = new JSONArray(operationsImpl.getSeriesWithStamp())
+                .toList().stream()
+                        .map(o -> (String) ((Map<?, ?>) o).get("label"))
+                        .toList();
 
         assertThat(labels).containsExactly("ea", "éb", "Ez");
     }
@@ -134,8 +133,6 @@ class OperationsImplTest {
         assertEquals("latLabel1 || latLabel2", series.get(3).altLabel());
     }
 
-
-
     @Test
     void shouldGetIndicatorsList() throws RmesException {
         when(operationIndicatorsQueries.indicatorsQuery()).thenReturn("query");
@@ -173,16 +170,18 @@ class OperationsImplTest {
         when(operationSeriesQueries.seriesWithSimsQuery()).thenReturn("query");
         when(repoGestion.getResponseAsArray("query")).thenReturn(new JSONArray().put("mockedExample"));
         String actual = operationsImpl.getSeriesWithSims();
-        assertEquals("[\"mockedExample\"]",actual);
+        assertEquals("[\"mockedExample\"]", actual);
     }
 
     @Test
     void shouldGetOperationsWithoutReportWithoutCondition() throws RmesException {
-        JSONObject firstJsonObject = new JSONObject().put("firstExample","mockedFirstExample");
-        JSONObject secondJsonObject = new JSONObject().put("secondExample","mockedSecondExample");
+        JSONObject firstJsonObject = new JSONObject().put("firstExample", "mockedFirstExample");
+        JSONObject secondJsonObject = new JSONObject().put("secondExample", "mockedSecondExample");
         JSONArray jsonArrayTwoElements = new JSONArray().put(firstJsonObject).put(secondJsonObject);
         when(operationsOperationQueries.operationsWithoutSimsQuery("2025")).thenReturn("query");
         when(repoGestion.getResponseAsArray("query")).thenReturn(jsonArrayTwoElements);
-        assertEquals("[{\"firstExample\":\"mockedFirstExample\"},{\"secondExample\":\"mockedSecondExample\"}]",operationsImpl.getOperationsWithoutReport("2025"));
+        assertEquals(
+                "[{\"firstExample\":\"mockedFirstExample\"},{\"secondExample\":\"mockedSecondExample\"}]",
+                operationsImpl.getOperationsWithoutReport("2025"));
     }
 }

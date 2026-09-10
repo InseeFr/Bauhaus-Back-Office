@@ -10,24 +10,23 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Category;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CategoryScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeListScheme;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedMissingValuesRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4LogicalProduct;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedMissingValuesRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedRepresentationScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4VariableScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI4toDDI3ConverterService;
-import org.apache.xmlbeans.XmlException;
-import org.apache.xmlbeans.XmlOptions;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.apache.xmlbeans.XmlException;
+import org.apache.xmlbeans.XmlOptions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DDI4toDDI3ConverterServiceImpl implements DDI4toDDI3ConverterService {
     static final Logger logger = LoggerFactory.getLogger(DDI4toDDI3ConverterServiceImpl.class);
@@ -54,12 +53,20 @@ public class DDI4toDDI3ConverterServiceImpl implements DDI4toDDI3ConverterServic
         this.ddi4ToLifecycle33 = ddi4ToLifecycle33;
     }
 
-    private Ddi3Response.Ddi3Item createDdi3Item(String typeId, String agency, String version,
-                                                 String id, String xmlFragment, String versionDate) {
+    private Ddi3Response.Ddi3Item createDdi3Item(
+            String typeId, String agency, String version, String id, String xmlFragment, String versionDate) {
         return new Ddi3Response.Ddi3Item(
-                typeId, agency, version, id, xmlFragment, versionDate,
-                DEFAULT_VERSION_RESPONSIBILITY, false, false, false, DEFAULT_ITEM_FORMAT
-        );
+                typeId,
+                agency,
+                version,
+                id,
+                xmlFragment,
+                versionDate,
+                DEFAULT_VERSION_RESPONSIBILITY,
+                false,
+                false,
+                false,
+                DEFAULT_ITEM_FORMAT);
     }
 
     private static String dateTimeOf(CogsDate versionDate) {
@@ -74,42 +81,67 @@ public class DDI4toDDI3ConverterServiceImpl implements DDI4toDDI3ConverterServic
 
         if (ddi4.physicalInstance() != null) {
             ddi4.physicalInstance().forEach(pi -> {
-                String xmlFragment = ddi4ToLifecycle33.toPhysicalInstance(pi)
-                        .xmlText(fragmentXmlOptions(DDI_PHYSICAL_INSTANCE_NS));
-                items.add(createDdi3Item(itemTypes.get("PhysicalInstance"), pi.agency(), pi.version(),
-                        pi.id(), xmlFragment, dateTimeOf(pi.versionDate())));
+                String xmlFragment =
+                        ddi4ToLifecycle33.toPhysicalInstance(pi).xmlText(fragmentXmlOptions(DDI_PHYSICAL_INSTANCE_NS));
+                items.add(createDdi3Item(
+                        itemTypes.get("PhysicalInstance"),
+                        pi.agency(),
+                        pi.version(),
+                        pi.id(),
+                        xmlFragment,
+                        dateTimeOf(pi.versionDate())));
             });
         }
         if (ddi4.dataRelationship() != null) {
             ddi4.dataRelationship().forEach(dr -> {
-                String xmlFragment = ddi4ToLifecycle33.toDataRelationship(dr)
-                        .xmlText(fragmentXmlOptions(DDI_LOGICAL_PRODUCT_NS));
-                items.add(createDdi3Item(itemTypes.get("DataRelationship"), dr.agency(), dr.version(),
-                        dr.id(), xmlFragment, dateTimeOf(dr.versionDate())));
+                String xmlFragment =
+                        ddi4ToLifecycle33.toDataRelationship(dr).xmlText(fragmentXmlOptions(DDI_LOGICAL_PRODUCT_NS));
+                items.add(createDdi3Item(
+                        itemTypes.get("DataRelationship"),
+                        dr.agency(),
+                        dr.version(),
+                        dr.id(),
+                        xmlFragment,
+                        dateTimeOf(dr.versionDate())));
             });
         }
         if (ddi4.variable() != null) {
             ddi4.variable().forEach(var -> {
-                String xmlFragment = ddi4ToLifecycle33.toVariable(var)
-                        .xmlText(fragmentXmlOptions(DDI_LOGICAL_PRODUCT_NS));
-                items.add(createDdi3Item(itemTypes.get("Variable"), var.agency(), var.version(),
-                        var.id(), xmlFragment, dateTimeOf(var.versionDate())));
+                String xmlFragment =
+                        ddi4ToLifecycle33.toVariable(var).xmlText(fragmentXmlOptions(DDI_LOGICAL_PRODUCT_NS));
+                items.add(createDdi3Item(
+                        itemTypes.get("Variable"),
+                        var.agency(),
+                        var.version(),
+                        var.id(),
+                        xmlFragment,
+                        dateTimeOf(var.versionDate())));
             });
         }
         if (ddi4.codeList() != null) {
             ddi4.codeList().forEach(cl -> {
-                String xmlFragment = ddi4ToLifecycle33.toCodeList(cl)
-                        .xmlText(fragmentXmlOptions(DDI_LOGICAL_PRODUCT_NS));
-                items.add(createDdi3Item(itemTypes.get("CodeList"), cl.agency(), cl.version(),
-                        cl.id(), xmlFragment, dateTimeOf(cl.versionDate())));
+                String xmlFragment =
+                        ddi4ToLifecycle33.toCodeList(cl).xmlText(fragmentXmlOptions(DDI_LOGICAL_PRODUCT_NS));
+                items.add(createDdi3Item(
+                        itemTypes.get("CodeList"),
+                        cl.agency(),
+                        cl.version(),
+                        cl.id(),
+                        xmlFragment,
+                        dateTimeOf(cl.versionDate())));
             });
         }
         if (ddi4.category() != null) {
             ddi4.category().forEach(cat -> {
-                String xmlFragment = ddi4ToLifecycle33.toCategory(cat)
-                        .xmlText(fragmentXmlOptions(DDI_LOGICAL_PRODUCT_NS));
-                items.add(createDdi3Item(itemTypes.get("Category"), cat.agency(), cat.version(),
-                        cat.id(), xmlFragment, dateTimeOf(cat.versionDate())));
+                String xmlFragment =
+                        ddi4ToLifecycle33.toCategory(cat).xmlText(fragmentXmlOptions(DDI_LOGICAL_PRODUCT_NS));
+                items.add(createDdi3Item(
+                        itemTypes.get("Category"),
+                        cat.agency(),
+                        cat.version(),
+                        cat.id(),
+                        xmlFragment,
+                        dateTimeOf(cat.versionDate())));
             });
         }
         if (ddi4.managedMissingValuesRepresentation() != null) {
@@ -123,99 +155,148 @@ public class DDI4toDDI3ConverterServiceImpl implements DDI4toDDI3ConverterServic
 
     @Override
     public Ddi3Response.Ddi3Item toCodeListSchemeItem(Ddi4CodeListScheme scheme) {
-        String xmlFragment = ddi4ToLifecycle33.toCodeListScheme(scheme)
-                .xmlText(fragmentXmlOptions(DDI_LOGICAL_PRODUCT_NS));
-        return createDdi3Item(itemTypes.get("CodeListScheme"), scheme.agency(), scheme.version(),
-                scheme.id(), xmlFragment, dateTimeOf(scheme.versionDate()));
+        String xmlFragment =
+                ddi4ToLifecycle33.toCodeListScheme(scheme).xmlText(fragmentXmlOptions(DDI_LOGICAL_PRODUCT_NS));
+        return createDdi3Item(
+                itemTypes.get("CodeListScheme"),
+                scheme.agency(),
+                scheme.version(),
+                scheme.id(),
+                xmlFragment,
+                dateTimeOf(scheme.versionDate()));
     }
 
     @Override
     public Ddi3Response.Ddi3Item toCategorySchemeItem(Ddi4CategoryScheme scheme) {
-        String xmlFragment = ddi4ToLifecycle33.toCategoryScheme(scheme)
-                .xmlText(fragmentXmlOptions(DDI_LOGICAL_PRODUCT_NS));
-        return createDdi3Item(itemTypes.get("CategoryScheme"), scheme.agency(), scheme.version(),
-                scheme.id(), xmlFragment, dateTimeOf(scheme.versionDate()));
+        String xmlFragment =
+                ddi4ToLifecycle33.toCategoryScheme(scheme).xmlText(fragmentXmlOptions(DDI_LOGICAL_PRODUCT_NS));
+        return createDdi3Item(
+                itemTypes.get("CategoryScheme"),
+                scheme.agency(),
+                scheme.version(),
+                scheme.id(),
+                xmlFragment,
+                dateTimeOf(scheme.versionDate()));
     }
 
     @Override
     public Ddi3Response.Ddi3Item toVariableSchemeItem(Ddi4VariableScheme scheme) {
-        String xmlFragment = ddi4ToLifecycle33.toVariableScheme(scheme)
-                .xmlText(fragmentXmlOptions(DDI_LOGICAL_PRODUCT_NS));
-        return createDdi3Item(itemTypes.get("VariableScheme"), scheme.agency(), scheme.version(),
-                scheme.id(), xmlFragment, dateTimeOf(scheme.versionDate()));
+        String xmlFragment =
+                ddi4ToLifecycle33.toVariableScheme(scheme).xmlText(fragmentXmlOptions(DDI_LOGICAL_PRODUCT_NS));
+        return createDdi3Item(
+                itemTypes.get("VariableScheme"),
+                scheme.agency(),
+                scheme.version(),
+                scheme.id(),
+                xmlFragment,
+                dateTimeOf(scheme.versionDate()));
     }
 
     @Override
     public Ddi3Response.Ddi3Item toManagedRepresentationSchemeItem(Ddi4ManagedRepresentationScheme scheme) {
-        String xmlFragment = ddi4ToLifecycle33.toManagedRepresentationScheme(scheme)
+        String xmlFragment = ddi4ToLifecycle33
+                .toManagedRepresentationScheme(scheme)
                 .xmlText(fragmentXmlOptions(DDI_LOGICAL_PRODUCT_NS));
-        return createDdi3Item(itemTypes.get("ManagedRepresentationScheme"), scheme.agency(), scheme.version(),
-                scheme.id(), xmlFragment, dateTimeOf(scheme.versionDate()));
+        return createDdi3Item(
+                itemTypes.get("ManagedRepresentationScheme"),
+                scheme.agency(),
+                scheme.version(),
+                scheme.id(),
+                xmlFragment,
+                dateTimeOf(scheme.versionDate()));
     }
 
     @Override
     public Ddi3Response.Ddi3Item toManagedMissingValuesRepresentationItem(
             Ddi4ManagedMissingValuesRepresentation managedMissingValuesRepresentation) {
-        String xmlFragment = ddi4ToLifecycle33.toManagedMissingValuesRepresentation(managedMissingValuesRepresentation)
+        String xmlFragment = ddi4ToLifecycle33
+                .toManagedMissingValuesRepresentation(managedMissingValuesRepresentation)
                 .xmlText(fragmentXmlOptions(DDI_LOGICAL_PRODUCT_NS));
-        return createDdi3Item(itemTypes.get("ManagedMissingValuesRepresentation"),
-                managedMissingValuesRepresentation.agency(), managedMissingValuesRepresentation.version(),
-                managedMissingValuesRepresentation.id(), xmlFragment,
+        return createDdi3Item(
+                itemTypes.get("ManagedMissingValuesRepresentation"),
+                managedMissingValuesRepresentation.agency(),
+                managedMissingValuesRepresentation.version(),
+                managedMissingValuesRepresentation.id(),
+                xmlFragment,
                 dateTimeOf(managedMissingValuesRepresentation.versionDate()));
     }
 
     @Override
     public Ddi3Response.Ddi3Item toCodeListItem(Ddi4CodeList codeList) {
-        String xmlFragment = ddi4ToLifecycle33.toCodeList(codeList)
-                .xmlText(fragmentXmlOptions(DDI_LOGICAL_PRODUCT_NS));
-        return createDdi3Item(itemTypes.get("CodeList"), codeList.agency(), codeList.version(),
-                codeList.id(), xmlFragment, dateTimeOf(codeList.versionDate()));
+        String xmlFragment = ddi4ToLifecycle33.toCodeList(codeList).xmlText(fragmentXmlOptions(DDI_LOGICAL_PRODUCT_NS));
+        return createDdi3Item(
+                itemTypes.get("CodeList"),
+                codeList.agency(),
+                codeList.version(),
+                codeList.id(),
+                xmlFragment,
+                dateTimeOf(codeList.versionDate()));
     }
 
     @Override
     public Ddi3Response.Ddi3Item toCategoryItem(Ddi4Category category) {
-        String xmlFragment = ddi4ToLifecycle33.toCategory(category)
-                .xmlText(fragmentXmlOptions(DDI_LOGICAL_PRODUCT_NS));
-        return createDdi3Item(itemTypes.get("Category"), category.agency(), category.version(),
-                category.id(), xmlFragment, dateTimeOf(category.versionDate()));
+        String xmlFragment = ddi4ToLifecycle33.toCategory(category).xmlText(fragmentXmlOptions(DDI_LOGICAL_PRODUCT_NS));
+        return createDdi3Item(
+                itemTypes.get("Category"),
+                category.agency(),
+                category.version(),
+                category.id(),
+                xmlFragment,
+                dateTimeOf(category.versionDate()));
     }
 
     @Override
     public Ddi3Response.Ddi3Item toLogicalProductItem(Ddi4LogicalProduct logicalProduct) {
-        String xmlFragment = ddi4ToLifecycle33.toLogicalProduct(logicalProduct)
-                .xmlText(fragmentXmlOptions(DDI_LOGICAL_PRODUCT_NS));
-        return createDdi3Item(itemTypes.get("LogicalProduct"), logicalProduct.agency(), logicalProduct.version(),
-                logicalProduct.id(), xmlFragment, dateTimeOf(logicalProduct.versionDate()));
+        String xmlFragment =
+                ddi4ToLifecycle33.toLogicalProduct(logicalProduct).xmlText(fragmentXmlOptions(DDI_LOGICAL_PRODUCT_NS));
+        return createDdi3Item(
+                itemTypes.get("LogicalProduct"),
+                logicalProduct.agency(),
+                logicalProduct.version(),
+                logicalProduct.id(),
+                xmlFragment,
+                dateTimeOf(logicalProduct.versionDate()));
     }
 
     @Override
     public Ddi3Response.Ddi3Item toGroupItem(Ddi4Group group, String groupItemType) {
-        String xmlFragment = ddi4ToLifecycle33.toGroup(group)
-                .xmlText(fragmentXmlOptions(DDI_GROUP_NS));
-        return createDdi3Item(groupItemType, group.agency(), group.version(),
-                group.id(), xmlFragment, dateTimeOf(group.versionDate()));
+        String xmlFragment = ddi4ToLifecycle33.toGroup(group).xmlText(fragmentXmlOptions(DDI_GROUP_NS));
+        return createDdi3Item(
+                groupItemType,
+                group.agency(),
+                group.version(),
+                group.id(),
+                xmlFragment,
+                dateTimeOf(group.versionDate()));
     }
 
     @Override
     public Ddi3Response.Ddi3Item toStudyUnitItem(Ddi4StudyUnit studyUnit, String studyUnitItemType) {
-        String xmlFragment = ddi4ToLifecycle33.toStudyUnit(studyUnit)
-                .xmlText(fragmentXmlOptions(DDI_STUDY_UNIT_NS));
-        return createDdi3Item(studyUnitItemType, studyUnit.agency(), studyUnit.version(),
-                studyUnit.id(), xmlFragment, dateTimeOf(studyUnit.versionDate()));
+        String xmlFragment = ddi4ToLifecycle33.toStudyUnit(studyUnit).xmlText(fragmentXmlOptions(DDI_STUDY_UNIT_NS));
+        return createDdi3Item(
+                studyUnitItemType,
+                studyUnit.agency(),
+                studyUnit.version(),
+                studyUnit.id(),
+                xmlFragment,
+                dateTimeOf(studyUnit.versionDate()));
     }
 
     @Override
     public String convertDdi4ToDdi3Xml(Ddi4Response ddi4) {
         logger.info("Converting DDI4 to DDI3 XML");
         Ddi3Response ddi3Response = convertDdi4ToDdi3(ddi4);
-        Reference topLevelReference = (ddi4.topLevelReference() != null && !ddi4.topLevelReference().isEmpty())
-                ? ddi4.topLevelReference().get(0)
-                : null;
+        Reference topLevelReference =
+                (ddi4.topLevelReference() != null && !ddi4.topLevelReference().isEmpty())
+                        ? ddi4.topLevelReference().get(0)
+                        : null;
         return buildFragmentInstanceDocument(ddi3Response, topLevelReference);
     }
 
     private String buildFragmentInstanceDocument(Ddi3Response ddi3Response, Reference topLevelReference) {
-        if (ddi3Response == null || ddi3Response.items() == null || ddi3Response.items().isEmpty()) {
+        if (ddi3Response == null
+                || ddi3Response.items() == null
+                || ddi3Response.items().isEmpty()) {
             throw new IllegalArgumentException("Ddi3Response must contain at least one item");
         }
 
@@ -249,7 +330,8 @@ public class DDI4toDDI3ConverterServiceImpl implements DDI4toDDI3ConverterServic
         for (Ddi3Response.Ddi3Item item : ddi3Response.items()) {
             if (item.item() != null && !item.item().isEmpty()) {
                 try {
-                    fiType.addNewFragment().set(FragmentDocument.Factory.parse(item.item()).getFragment());
+                    fiType.addNewFragment()
+                            .set(FragmentDocument.Factory.parse(item.item()).getFragment());
                 } catch (XmlException e) {
                     throw new IllegalArgumentException("Failed to parse fragment XML for item " + item.identifier(), e);
                 }

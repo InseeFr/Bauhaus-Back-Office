@@ -1,7 +1,7 @@
 package fr.insee.rmes.modules.commons.configuration;
 
-import fr.insee.rmes.modules.commons.infrastructure.filessystem.FileSystemOperation;
 import fr.insee.rmes.modules.commons.domain.port.serverside.FilesOperations;
+import fr.insee.rmes.modules.commons.infrastructure.filessystem.FileSystemOperation;
 import fr.insee.rmes.modules.commons.infrastructure.minio.MinioFilesOperation;
 import fr.insee.rmes.modules.commons.infrastructure.minio.MinioProperties;
 import io.minio.MinioClient;

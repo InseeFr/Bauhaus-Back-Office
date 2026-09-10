@@ -12,15 +12,11 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-@SpringBootTest(
-    classes = DdiResourcesDisabledIntegrationTest.TestConfiguration.class
-)
+@SpringBootTest(classes = DdiResourcesDisabledIntegrationTest.TestConfiguration.class)
 @TestPropertySource(
-    properties = {
-        "fr.insee.rmes.bauhaus.modules[0].identifier=concepts",
-        "fr.insee.rmes.bauhaus.modules[6].disabled=true",
-    }
-)
+        properties = {
+            "fr.insee.rmes.bauhaus.modules.ddi.enabled=false",
+        })
 class DdiResourcesDisabledIntegrationTest {
 
     @Configuration

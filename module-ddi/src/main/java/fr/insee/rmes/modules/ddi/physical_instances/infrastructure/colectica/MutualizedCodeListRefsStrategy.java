@@ -1,7 +1,6 @@
 package fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica;
 
 import fr.insee.rmes.colectica.client.ItemReference;
-
 import java.util.List;
 
 /**

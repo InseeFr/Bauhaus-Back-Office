@@ -1,7 +1,6 @@
 package fr.insee.rmes.colectica.client;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.util.List;
 
 /**
@@ -11,11 +10,9 @@ import java.util.List;
  * @param targetItem the item whose relationships are queried.
  */
 public record RelationshipQuery(
-    @JsonProperty("itemTypes") List<String> itemTypes,
-    @JsonProperty("targetItem") TargetItem targetItem
-) {
+        @JsonProperty("itemTypes") List<String> itemTypes,
+        @JsonProperty("targetItem") TargetItem targetItem) {
     public record TargetItem(
-        @JsonProperty("agencyId") String agencyId,
-        @JsonProperty("identifier") String identifier
-    ) {}
+            @JsonProperty("agencyId") String agencyId,
+            @JsonProperty("identifier") String identifier) {}
 }

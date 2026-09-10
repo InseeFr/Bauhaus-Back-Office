@@ -1,7 +1,10 @@
 package fr.insee.rmes.bauhaus_services.concepts.publication;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.domain.exceptions.RmesException;
+import java.util.ArrayList;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Statement;
@@ -10,10 +13,6 @@ import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.util.ArrayList;
-
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ConceptsPublicationTest {
 
@@ -40,9 +39,11 @@ class ConceptsPublicationTest {
         conceptsPublication.prepareOneTripleToPublicationAndCheckIfHasBroader(
                 model, new ArrayList<>(), new ArrayList<>(), null, statement, false);
 
-        assertTrue(model.contains(a, DCTERMS.REPLACES, b),
+        assertTrue(
+                model.contains(a, DCTERMS.REPLACES, b),
                 "expected published model to contain <c1> dcterms:replaces <c2>");
-        assertTrue(model.contains(b, DCTERMS.IS_REPLACED_BY, a),
+        assertTrue(
+                model.contains(b, DCTERMS.IS_REPLACED_BY, a),
                 "expected published model to contain symmetric <c2> dcterms:isReplacedBy <c1>");
     }
 
@@ -56,9 +57,11 @@ class ConceptsPublicationTest {
         conceptsPublication.prepareOneTripleToPublicationAndCheckIfHasBroader(
                 model, new ArrayList<>(), new ArrayList<>(), null, statement, false);
 
-        assertTrue(model.contains(a, DCTERMS.IS_REPLACED_BY, b),
+        assertTrue(
+                model.contains(a, DCTERMS.IS_REPLACED_BY, b),
                 "expected published model to contain <c1> dcterms:isReplacedBy <c2>");
-        assertTrue(model.contains(b, DCTERMS.REPLACES, a),
+        assertTrue(
+                model.contains(b, DCTERMS.REPLACES, a),
                 "expected published model to contain symmetric <c2> dcterms:replaces <c1> (#1450)");
     }
 }

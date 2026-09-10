@@ -5,12 +5,14 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
-import fr.insee.rmes.modules.concepts.collections.infrastructure.graphdb.GraphDBCollectionProperties;
-import fr.insee.rmes.rdf_utils.RepositoryGestion;
-import fr.insee.rmes.utils.IdGenerator;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.ontologies.XKOS;
+import fr.insee.rmes.modules.concepts.collections.infrastructure.graphdb.GraphDBCollectionProperties;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptConceptsQueries;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.utils.IdGenerator;
+import java.util.ArrayList;
+import java.util.List;
 import org.apache.http.HttpStatus;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Model;
@@ -26,210 +28,260 @@ import org.json.JSONArray;
 import org.jsoup.Jsoup;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @Component
-public class ConceptsPublication extends RdfService{
+public class ConceptsPublication extends RdfService {
 
-	private final ConceptConceptsQueries conceptConceptsQueries;
-	private final GraphDBCollectionProperties collectionProperties;
+    private final ConceptConceptsQueries conceptConceptsQueries;
+    private final GraphDBCollectionProperties collectionProperties;
 
-	public ConceptsPublication(RepositoryGestion repoGestion, IdGenerator idGenerator,
-							   RepositoryPublication repositoryPublication,
-							   PublicationUtils publicationUtils,
-							   ConceptConceptsQueries conceptConceptsQueries,
-							   GraphDBCollectionProperties collectionProperties) {
-		super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
-		this.conceptConceptsQueries = conceptConceptsQueries;
-		this.collectionProperties = collectionProperties;
-	}
+    public ConceptsPublication(
+            RepositoryGestion repoGestion,
+            IdGenerator idGenerator,
+            RepositoryPublication repositoryPublication,
+            PublicationUtils publicationUtils,
+            ConceptConceptsQueries conceptConceptsQueries,
+            GraphDBCollectionProperties collectionProperties) {
+        super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
+        this.conceptConceptsQueries = conceptConceptsQueries;
+        this.collectionProperties = collectionProperties;
+    }
 
-	String[] notes = {"scopeNote","definition","editorialNote"} ;
-	String[] links = {"inScheme","disseminationStatus","references"};
-	String[] ignoredAttrs = {"validationState","changeNote",Constants.CREATOR,Constants.CONTRIBUTOR};
+    String[] notes = {"scopeNote", "definition", "editorialNote"};
+    String[] links = {"inScheme", "disseminationStatus", "references"};
+    String[] ignoredAttrs = {"validationState", "changeNote", Constants.CREATOR, Constants.CONTRIBUTOR};
 
-	public void publishConcepts(JSONArray conceptsToPublish) throws RmesException {
-		for (int i = 0; i < conceptsToPublish.length(); ++i) {
-			String conceptId = conceptsToPublish.getString(i);
-			Model model = new LinkedHashModel();
-			List<Resource> noteToClear = new ArrayList<>();
-			List<Resource> topConceptOfToDelete = new ArrayList<>();
-			checkTopConceptOf(conceptId, model);
-			Resource concept = RdfUtils.conceptIRI(conceptId);
+    public void publishConcepts(JSONArray conceptsToPublish) throws RmesException {
+        for (int i = 0; i < conceptsToPublish.length(); ++i) {
+            String conceptId = conceptsToPublish.getString(i);
+            Model model = new LinkedHashModel();
+            List<Resource> noteToClear = new ArrayList<>();
+            List<Resource> topConceptOfToDelete = new ArrayList<>();
+            checkTopConceptOf(conceptId, model);
+            Resource concept = RdfUtils.conceptIRI(conceptId);
 
-			try (RepositoryConnection con = repoGestion.getConnection()) {
-				try (RepositoryResult<Statement> statements = repoGestion.getStatements(con, concept)) {
-					boolean hasBroader = false;
-					while (statements.hasNext()) {
-						Statement st = statements.next();
+            try (RepositoryConnection con = repoGestion.getConnection()) {
+                try (RepositoryResult<Statement> statements = repoGestion.getStatements(con, concept)) {
+                    boolean hasBroader = false;
+                    while (statements.hasNext()) {
+                        Statement st = statements.next();
 
-						// Notes, transform URI and get attributs
-						hasBroader = prepareOneTripleToPublicationAndCheckIfHasBroader(model, noteToClear, topConceptOfToDelete, con, st, hasBroader);
-					}
-					if (!hasBroader) {
-						model.add(publicationUtils.tranformBaseURIToPublish(concept), SKOS.TOP_CONCEPT_OF, publicationUtils.tranformBaseURIToPublish(RdfUtils.conceptScheme()),
-								RdfUtils.conceptGraph());
-					}
-				} catch (RepositoryException e) {
-					throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), Constants.REPOSITORY_EXCEPTION);
-				}
+                        // Notes, transform URI and get attributs
+                        hasBroader = prepareOneTripleToPublicationAndCheckIfHasBroader(
+                                model, noteToClear, topConceptOfToDelete, con, st, hasBroader);
+                    }
+                    if (!hasBroader) {
+                        model.add(
+                                publicationUtils.tranformBaseURIToPublish(concept),
+                                SKOS.TOP_CONCEPT_OF,
+                                publicationUtils.tranformBaseURIToPublish(RdfUtils.conceptScheme()),
+                                RdfUtils.conceptGraph());
+                    }
+                } catch (RepositoryException e) {
+                    throw new RmesException(
+                            HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), Constants.REPOSITORY_EXCEPTION);
+                }
 
-				publishMemberLinks(concept, model, con);
-			}
+                publishMemberLinks(concept, model, con);
+            }
 
-			Resource conceptToPublish = publicationUtils.tranformBaseURIToPublish(concept);
-			repositoryPublication.publishConcept(conceptToPublish, model, noteToClear, topConceptOfToDelete);
-		}
+            Resource conceptToPublish = publicationUtils.tranformBaseURIToPublish(concept);
+            repositoryPublication.publishConcept(conceptToPublish, model, noteToClear, topConceptOfToDelete);
+        }
+    }
 
-	}
+    Boolean prepareOneTripleToPublicationAndCheckIfHasBroader(
+            Model model,
+            List<Resource> noteToClear,
+            List<Resource> topConceptOfToDelete,
+            RepositoryConnection con,
+            Statement st,
+            boolean hasBroader)
+            throws RmesException {
 
+        Resource subject = publicationUtils.tranformBaseURIToPublish(st.getSubject());
+        Resource graph = st.getContext();
+        String predicat = RdfUtils.toString(st.getPredicate());
 
+        if (PublicationUtils.stringEndsWithItemFromList(predicat, notes)) {
+            model.add(
+                    subject,
+                    st.getPredicate(),
+                    publicationUtils.tranformBaseURIToPublish((Resource) st.getObject()),
+                    graph);
+            publishExplanatoryNotes(con, RdfUtils.toURI(st.getObject().toString()), model);
+            noteToClear.add(publicationUtils.tranformBaseURIToPublish((Resource) st.getObject()));
+        }
+        // Other URI to transform
+        else if (PublicationUtils.stringEndsWithItemFromList(predicat, links)) {
+            model.add(
+                    subject,
+                    st.getPredicate(),
+                    publicationUtils.tranformBaseURIToPublish((Resource) st.getObject()),
+                    graph);
+        } else if (predicat.endsWith("related")) {
+            model.add(
+                    subject,
+                    st.getPredicate(),
+                    publicationUtils.tranformBaseURIToPublish((Resource) st.getObject()),
+                    graph);
+            model.add(
+                    publicationUtils.tranformBaseURIToPublish((Resource) st.getObject()), SKOS.RELATED, subject, graph);
+        } else if (predicat.endsWith(Constants.REPLACES)) {
+            model.add(
+                    subject,
+                    st.getPredicate(),
+                    publicationUtils.tranformBaseURIToPublish((Resource) st.getObject()),
+                    graph);
+            model.add(
+                    publicationUtils.tranformBaseURIToPublish((Resource) st.getObject()),
+                    DCTERMS.IS_REPLACED_BY,
+                    subject,
+                    graph);
+        } else if (predicat.endsWith(Constants.ISREPLACEDBY)) {
+            model.add(
+                    subject,
+                    st.getPredicate(),
+                    publicationUtils.tranformBaseURIToPublish((Resource) st.getObject()),
+                    graph);
+            model.add(
+                    publicationUtils.tranformBaseURIToPublish((Resource) st.getObject()),
+                    DCTERMS.REPLACES,
+                    subject,
+                    graph);
+        } else if (predicat.endsWith("broader")) {
+            hasBroader = true;
+            model.add(
+                    subject,
+                    st.getPredicate(),
+                    publicationUtils.tranformBaseURIToPublish((Resource) st.getObject()),
+                    graph);
+            model.add(
+                    publicationUtils.tranformBaseURIToPublish((Resource) st.getObject()),
+                    SKOS.NARROWER,
+                    subject,
+                    graph);
+        }
+        // Narrower links
+        else if (predicat.endsWith("narrower")) {
+            Resource object = publicationUtils.tranformBaseURIToPublish((Resource) st.getObject());
+            topConceptOfToDelete.add(object);
+            model.add(subject, st.getPredicate(), object, graph);
+            model.add(object, SKOS.BROADER, subject, graph);
+        } else if (PublicationUtils.stringEndsWithItemFromList(predicat, ignoredAttrs)) {
+            // nothing, wouldn't copy this attr
+        }
+        // Literals
+        else {
+            model.add(subject, st.getPredicate(), st.getObject(), graph);
+        }
 
-	Boolean prepareOneTripleToPublicationAndCheckIfHasBroader(Model model, List<Resource> noteToClear,
-			List<Resource> topConceptOfToDelete, RepositoryConnection con, Statement st, boolean hasBroader)
-			throws RmesException {
-		
-		Resource subject =  publicationUtils.tranformBaseURIToPublish(st.getSubject());
-		Resource graph = st.getContext();
-		String predicat = RdfUtils.toString(st.getPredicate());
-		
-		if (PublicationUtils.stringEndsWithItemFromList(predicat,notes)) {
-			model.add(subject, st.getPredicate(), publicationUtils.tranformBaseURIToPublish((Resource) st.getObject()),
-					graph);
-			publishExplanatoryNotes(con, RdfUtils.toURI(st.getObject().toString()), model);
-			noteToClear.add(publicationUtils.tranformBaseURIToPublish((Resource) st.getObject()));
-		}
-		// Other URI to transform	
-		else if (PublicationUtils.stringEndsWithItemFromList(predicat,links)) {
-			model.add(subject, st.getPredicate(), publicationUtils.tranformBaseURIToPublish((Resource) st.getObject()),
-					graph);
-		}
-		else if (predicat.endsWith("related")) {
-			model.add(subject, st.getPredicate(), publicationUtils.tranformBaseURIToPublish((Resource) st.getObject()),
-					graph);
-			model.add(publicationUtils.tranformBaseURIToPublish((Resource) st.getObject()), SKOS.RELATED, subject, graph);
-		} else if (predicat.endsWith(Constants.REPLACES)) {
-			model.add(subject, st.getPredicate(), publicationUtils.tranformBaseURIToPublish((Resource) st.getObject()),
-					graph);
-			model.add(publicationUtils.tranformBaseURIToPublish((Resource) st.getObject()), DCTERMS.IS_REPLACED_BY, subject, graph);
-		} else if (predicat.endsWith(Constants.ISREPLACEDBY)) {
-			model.add(subject, st.getPredicate(), publicationUtils.tranformBaseURIToPublish((Resource) st.getObject()),
-					graph);
-			model.add(publicationUtils.tranformBaseURIToPublish((Resource) st.getObject()), DCTERMS.REPLACES, subject, graph);
-		} else if (predicat.endsWith("broader")) {
-			hasBroader = true;
-			model.add(subject, st.getPredicate(), publicationUtils.tranformBaseURIToPublish((Resource) st.getObject()),
-					graph);
-			model.add(publicationUtils.tranformBaseURIToPublish((Resource) st.getObject()), SKOS.NARROWER, subject, graph);
-		}
-		// Narrower links
-		else if (predicat.endsWith("narrower")) {
-			Resource object = publicationUtils.tranformBaseURIToPublish((Resource) st.getObject());
-			topConceptOfToDelete.add(object);
-			model.add(subject, st.getPredicate(), object, graph);
-			model.add(object, SKOS.BROADER, subject, graph);
-		} else if (PublicationUtils.stringEndsWithItemFromList(predicat,ignoredAttrs)) {
-			// nothing, wouldn't copy this attr
-		}
-		// Literals
-		else {
-			model.add(subject, st.getPredicate(), st.getObject(), graph);
-		}
-		
-		return hasBroader;
-	}
-	
+        return hasBroader;
+    }
 
+    private void checkTopConceptOf(String conceptId, Model model) throws RmesException {
+        JSONArray conceptsToCheck =
+                repositoryPublication.getResponseAsArray(conceptConceptsQueries.getNarrowers(conceptId));
+        for (int i = 0; i < conceptsToCheck.length(); i++) {
+            String id = conceptsToCheck.getJSONObject(i).getString("narrowerId");
+            if (!repoGestion.getResponseAsBoolean(conceptConceptsQueries.hasBroader(id))) {
+                model.add(
+                        publicationUtils.tranformBaseURIToPublish(RdfUtils.conceptIRI(id)),
+                        SKOS.TOP_CONCEPT_OF,
+                        publicationUtils.tranformBaseURIToPublish(RdfUtils.conceptScheme()),
+                        RdfUtils.conceptGraph());
+            }
+        }
+    }
 
-	private void checkTopConceptOf(String conceptId, Model model)  throws RmesException {
-		JSONArray conceptsToCheck = repositoryPublication.getResponseAsArray(conceptConceptsQueries.getNarrowers(conceptId));
-		for (int i = 0; i < conceptsToCheck.length(); i++) {
-			String id = conceptsToCheck.getJSONObject(i).getString("narrowerId");
-			if (!repoGestion.getResponseAsBoolean(conceptConceptsQueries.hasBroader(id))) {
-				model.add(publicationUtils.tranformBaseURIToPublish(RdfUtils.conceptIRI(id)),
-						SKOS.TOP_CONCEPT_OF, publicationUtils.tranformBaseURIToPublish(RdfUtils.conceptScheme()),
-						RdfUtils.conceptGraph());
-			}
-		}
-	}
+    private void publishExplanatoryNotes(RepositoryConnection con, Resource note, Model model) throws RmesException {
+        try (RepositoryResult<Statement> statements = repoGestion.getStatements(con, note)) {
+            String lg = "";
+            String xhtml = "";
+            Resource subject = null;
+            Resource graph = null;
+            while (statements.hasNext()) {
+                Statement st = statements.next();
+                String predicat = RdfUtils.toString(st.getPredicate());
+                subject = publicationUtils.tranformBaseURIToPublish(st.getSubject());
+                graph = st.getContext();
+                if (predicat.endsWith("conceptVersion")) {
+                    // nothing, wouldn't copy this attr
+                }
+                // Literals
+                else {
+                    if (predicat.endsWith("language")) {
+                        lg = st.getObject().toString().substring(1, 3);
+                    }
+                    if (predicat.endsWith("noteLiteral")) {
+                        xhtml = st.getObject()
+                                .toString()
+                                .substring(1)
+                                .replace("\"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#XMLLiteral>", "");
+                    }
+                    model.add(subject, st.getPredicate(), st.getObject(), st.getContext());
+                }
+            }
+            Literal plainText = RdfUtils.setLiteralString(Jsoup.parse(xhtml).text(), lg);
+            if (subject == null) {
+                throw new RmesException(HttpStatus.SC_NO_CONTENT, "subject can't be null", "");
+            }
+            model.add(publicationUtils.tranformBaseURIToPublish(subject), XKOS.PLAIN_TEXT, plainText, graph);
+        } catch (RepositoryException e) {
+            throw new RmesException(
+                    HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), Constants.REPOSITORY_EXCEPTION);
+        }
+    }
 
-	private void publishExplanatoryNotes(RepositoryConnection con, Resource note, Model model) throws RmesException {
-		try (RepositoryResult<Statement> statements = repoGestion.getStatements(con, note)) {
-			String lg = "";
-			String xhtml = "";
-			Resource subject = null;
-			Resource graph = null;
-			while (statements.hasNext()) {
-				Statement st = statements.next();
-				String predicat = RdfUtils.toString(st.getPredicate());
-				subject = publicationUtils.tranformBaseURIToPublish(st.getSubject());
-				graph = st.getContext();
-				if (predicat.endsWith("conceptVersion")) {
-					// nothing, wouldn't copy this attr
-				}
-				// Literals
-				else {
-					if (predicat.endsWith("language")) {
-						lg = st.getObject().toString().substring(1, 3);
-					}
-					if (predicat.endsWith("noteLiteral")) {
-						xhtml = st.getObject().toString().substring(1)
-								.replace("\"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#XMLLiteral>", "");
-					}
-					model.add(subject, st.getPredicate(), st.getObject(), st.getContext());
-				}
-			}
-			Literal plainText = RdfUtils.setLiteralString(Jsoup.parse(xhtml).text(), lg);
-			if (subject == null) {
-				throw new RmesException(HttpStatus.SC_NO_CONTENT, "subject can't be null", "");
-			}
-			model.add(publicationUtils.tranformBaseURIToPublish(subject), XKOS.PLAIN_TEXT, plainText, graph);
-		} catch (RepositoryException e) {
-			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), Constants.REPOSITORY_EXCEPTION);
-		}
-	}
+    private void publishMemberLinks(Resource concept, Model model, RepositoryConnection conn) throws RmesException {
+        try (RepositoryResult<Statement> statements = conn.getStatements(null, SKOS.MEMBER, concept, false)) {
+            while (statements.hasNext()) {
+                Statement st = statements.next();
+                model.add(
+                        publicationUtils.tranformBaseURIToPublish(st.getSubject()),
+                        st.getPredicate(),
+                        publicationUtils.tranformBaseURIToPublish((Resource) st.getObject()),
+                        st.getContext());
+            }
+        } catch (RepositoryException e) {
+            throw new RmesException(
+                    HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), Constants.REPOSITORY_EXCEPTION);
+        }
+    }
 
-	private void publishMemberLinks(Resource concept, Model model, RepositoryConnection conn) throws RmesException {
-		try (RepositoryResult<Statement> statements = conn.getStatements(null, SKOS.MEMBER, concept, false)) {
-			while (statements.hasNext()) {
-				Statement st = statements.next();
-				model.add(publicationUtils.tranformBaseURIToPublish(st.getSubject()), st.getPredicate(),
-						publicationUtils.tranformBaseURIToPublish((Resource) st.getObject()), st.getContext());
-			}
-		} catch (RepositoryException e) {
-			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), Constants.REPOSITORY_EXCEPTION);
-		}
-	}
+    public void publishCollection(JSONArray collectionsToValidate) throws RmesException {
 
-	public void publishCollection(JSONArray collectionsToValidate) throws RmesException {
-
-		for (int i = 0; i < collectionsToValidate.length(); ++i) {
-			String collectionId = collectionsToValidate.getString(i);
-			Model model = new LinkedHashModel();
-			Resource collection = collectionProperties.getResourceIRI(collectionId);
-			try (RepositoryConnection con = repoGestion.getConnection();
-				 RepositoryResult<Statement> statements = repoGestion.getStatements(con, collection)) {
-				while (statements.hasNext()) {
-					Statement st = statements.next();
-					String predicate = RdfUtils.toString(st.getPredicate());
-					if (predicate.endsWith("member")) {
-						model.add(publicationUtils.tranformBaseURIToPublish(st.getSubject()), st.getPredicate(),
-								publicationUtils.tranformBaseURIToPublish((Resource) st.getObject()), st.getContext());
-					} else if (predicate.endsWith(Constants.CREATOR) || predicate.endsWith(Constants.CONTRIBUTOR)) {
-						// not copied: gestion-only metadata
-					} else {
-						// Literals (incl. isValidated which has just been set to true upstream)
-						model.add(publicationUtils.tranformBaseURIToPublish(st.getSubject()), st.getPredicate(), st.getObject(),
-								st.getContext());
-					}
-				}
-			} catch (RepositoryException e) {
-				throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), Constants.REPOSITORY_EXCEPTION);
-			}
-			Resource collectionToPublish = publicationUtils.tranformBaseURIToPublish(collection);
-			repositoryPublication.publishResource(collectionToPublish, model, Constants.COLLECTION);
-		}
-	}
-
+        for (int i = 0; i < collectionsToValidate.length(); ++i) {
+            String collectionId = collectionsToValidate.getString(i);
+            Model model = new LinkedHashModel();
+            Resource collection = collectionProperties.getResourceIRI(collectionId);
+            try (RepositoryConnection con = repoGestion.getConnection();
+                    RepositoryResult<Statement> statements = repoGestion.getStatements(con, collection)) {
+                while (statements.hasNext()) {
+                    Statement st = statements.next();
+                    String predicate = RdfUtils.toString(st.getPredicate());
+                    if (predicate.endsWith("member")) {
+                        model.add(
+                                publicationUtils.tranformBaseURIToPublish(st.getSubject()),
+                                st.getPredicate(),
+                                publicationUtils.tranformBaseURIToPublish((Resource) st.getObject()),
+                                st.getContext());
+                    } else if (predicate.endsWith(Constants.CREATOR) || predicate.endsWith(Constants.CONTRIBUTOR)) {
+                        // not copied: gestion-only metadata
+                    } else {
+                        // Literals (incl. isValidated which has just been set to true upstream)
+                        model.add(
+                                publicationUtils.tranformBaseURIToPublish(st.getSubject()),
+                                st.getPredicate(),
+                                st.getObject(),
+                                st.getContext());
+                    }
+                }
+            } catch (RepositoryException e) {
+                throw new RmesException(
+                        HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), Constants.REPOSITORY_EXCEPTION);
+            }
+            Resource collectionToPublish = publicationUtils.tranformBaseURIToPublish(collection);
+            repositoryPublication.publishResource(collectionToPublish, model, Constants.COLLECTION);
+        }
+    }
 }

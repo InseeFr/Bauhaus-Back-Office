@@ -1,5 +1,7 @@
 package fr.insee.rmes.modules.commons.webservice;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import fr.insee.rmes.testcontainers.WithGraphDBContainer;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -11,12 +13,10 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.web.client.RestClient;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class DisseminationStatusEndToEndTest extends WithGraphDBContainer {
 
-    final static String EXPECTED_DISSEMINATION_STATUS_JSON = """
+    static final String EXPECTED_DISSEMINATION_STATUS_JSON = """
             [
               {
                 "label": "Privé",
@@ -49,11 +49,8 @@ class DisseminationStatusEndToEndTest extends WithGraphDBContainer {
         String disseminationStatusEndpoint = "http://localhost:" + serverPort + "/api/disseminationStatus";
         RestClient restClient = RestClient.create(disseminationStatusEndpoint);
 
-        var fetchedDisseminationStatus = restClient
-                .get()
-                .accept(MediaType.APPLICATION_JSON)
-                .retrieve()
-                .body(String.class);
+        var fetchedDisseminationStatus =
+                restClient.get().accept(MediaType.APPLICATION_JSON).retrieve().body(String.class);
 
         assertThat(fetchedDisseminationStatus).isNotNull();
         JSONAssert.assertEquals(EXPECTED_DISSEMINATION_STATUS_JSON, fetchedDisseminationStatus, true);

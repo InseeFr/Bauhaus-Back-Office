@@ -1,5 +1,7 @@
 package fr.insee.rmes.modules.concepts.collections.webservice;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,25 +12,23 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.TestPropertySource;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
-
 @SpringBootTest(classes = CollectionsResourcesDisabledIntegrationTest.TestConfiguration.class)
-@TestPropertySource(properties = "fr.insee.rmes.bauhaus.modules[0].identifier=operations")
+@TestPropertySource(properties = "fr.insee.rmes.bauhaus.modules.concepts.enabled=false")
 class CollectionsResourcesDisabledIntegrationTest {
 
     @Configuration
     @EnableAutoConfiguration
     @Import(CollectionsResources.class)
-    static class TestConfiguration {
-    }
+    static class TestConfiguration {}
 
     @Autowired
     private ApplicationContext applicationContext;
 
     @Test
     void should_not_load_controller_when_concepts_module_is_not_active() {
-        assertThrows(NoSuchBeanDefinitionException.class,
-            () -> applicationContext.getBean(CollectionsResources.class),
-            "CollectionsResources should not be loaded when activeModules does not contain 'concepts'");
+        assertThrows(
+                NoSuchBeanDefinitionException.class,
+                () -> applicationContext.getBean(CollectionsResources.class),
+                "CollectionsResources should not be loaded when activeModules does not contain 'concepts'");
     }
 }
