@@ -603,6 +603,59 @@ class DDIRepositoryImplTest {
     }
 
     @Test
+    void shouldStampConfiguredVersionResponsibilityOnCreatedItems() {
+        CreatePhysicalInstanceRequest request =
+                new CreatePhysicalInstanceRequest("New PI", "New DR", "New LR", null, null, null, null);
+
+        when(instanceConfiguration.defaultAgencyId()).thenReturn("fr.insee");
+        when(instanceConfiguration.itemTypes())
+                .thenReturn(Map.of(
+                        "PhysicalInstance", "a51e85bb-6259-4488-8df2-f08cb43485f8",
+                        "DataRelationship", "f39ff278-8500-45fe-a850-3906da2d242b"));
+        when(instanceConfiguration.itemFormat()).thenReturn("dc337820-af3a-4c0b-82f9-cf02535cde83");
+        when(instanceConfiguration.versionResponsibility()).thenReturn("responsable-configure");
+
+        when(colecticaClient.createOrUpdateItems(any())).thenReturn("{}");
+        when(colecticaClient.getSet(anyString(), anyString(), any())).thenReturn(new ColecticaSetItem[0]);
+
+        ddiRepository.createPhysicalInstance(request);
+
+        ArgumentCaptor<ColecticaCreateItemRequest> bodyCaptor =
+                ArgumentCaptor.forClass(ColecticaCreateItemRequest.class);
+        verify(colecticaClient).createOrUpdateItems(bodyCaptor.capture());
+        assertThat(bodyCaptor.getValue().items())
+                .isNotEmpty()
+                .allSatisfy(item -> assertThat(item.versionResponsibility()).isEqualTo("responsable-configure"));
+    }
+
+    @Test
+    void shouldWriteConfiguredVersionResponsibilityInTheXmlOfCreatedItems() {
+        CreatePhysicalInstanceRequest request =
+                new CreatePhysicalInstanceRequest("New PI", "New DR", "New LR", null, null, null, null);
+
+        when(instanceConfiguration.defaultAgencyId()).thenReturn("fr.insee");
+        when(instanceConfiguration.itemTypes())
+                .thenReturn(Map.of(
+                        "PhysicalInstance", "a51e85bb-6259-4488-8df2-f08cb43485f8",
+                        "DataRelationship", "f39ff278-8500-45fe-a850-3906da2d242b"));
+        when(instanceConfiguration.itemFormat()).thenReturn("dc337820-af3a-4c0b-82f9-cf02535cde83");
+        when(instanceConfiguration.versionResponsibility()).thenReturn("responsable-configure");
+
+        when(colecticaClient.createOrUpdateItems(any())).thenReturn("{}");
+        when(colecticaClient.getSet(anyString(), anyString(), any())).thenReturn(new ColecticaSetItem[0]);
+
+        ddiRepository.createPhysicalInstance(request);
+
+        ArgumentCaptor<ColecticaCreateItemRequest> bodyCaptor =
+                ArgumentCaptor.forClass(ColecticaCreateItemRequest.class);
+        verify(colecticaClient).createOrUpdateItems(bodyCaptor.capture());
+        assertThat(bodyCaptor.getValue().items())
+                .isNotEmpty()
+                .allSatisfy(item -> assertThat(item.item())
+                        .contains("<r:VersionResponsibility>responsable-configure</r:VersionResponsibility>"));
+    }
+
+    @Test
     void shouldUpdatePhysicalInstance() {
         // Given
         String instanceId = "test-pi-id";

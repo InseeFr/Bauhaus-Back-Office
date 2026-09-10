@@ -36,6 +36,8 @@ class DDI4toDDI3ConverterServiceImplTest {
 
     private DDI4toDDI3ConverterServiceImpl converter;
 
+    private static final String VERSION_RESPONSIBILITY = "abcde";
+
     private static final Map<String, String> ITEM_TYPES = Map.ofEntries(
             Map.entry("PhysicalInstance", "a51e85bb-6259-4488-8df2-f08cb43485f8"),
             Map.entry("DataRelationship", "f39ff278-8500-45fe-a850-3906da2d242b"),
@@ -51,7 +53,29 @@ class DDI4toDDI3ConverterServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        converter = new DDI4toDDI3ConverterServiceImpl(ITEM_TYPES);
+        converter = new DDI4toDDI3ConverterServiceImpl(ITEM_TYPES, VERSION_RESPONSIBILITY);
+    }
+
+    @Test
+    void shouldWriteConfiguredVersionResponsibilityInTheDdi3Fragment() {
+        Ddi4PhysicalInstance pi = new Ddi4PhysicalInstance(
+                Ddi4PhysicalInstance.TYPE,
+                CogsDate.ofDateTime("2026-01-21T13:48:46.363"),
+                "urn:ddi:fr.insee:PhysicalInstance.saphir-rp99-sas:1",
+                "fr.insee",
+                "saphir-rp99-sas",
+                "1",
+                null,
+                new Citation(LangStrings.of("fr-FR", "SAPHIR")),
+                null);
+        Ddi4Response ddi4 = new Ddi4Response("file:/jsonSchema.json", null, List.of(pi), null, null, null, null, null);
+
+        Ddi3Response result = converter.convertDdi4ToDdi3(ddi4);
+
+        // XmlBeans déclare le préfixe sur l'élément lui-même selon le fragment : le motif l'ignore.
+        assertThat(result.items().get(0).item())
+                .containsPattern(
+                        "<r:VersionResponsibility[^>]*>" + VERSION_RESPONSIBILITY + "</r:VersionResponsibility>");
     }
 
     @Test

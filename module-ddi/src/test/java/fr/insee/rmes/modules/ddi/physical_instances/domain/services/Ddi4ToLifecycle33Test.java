@@ -40,11 +40,13 @@ import org.junit.jupiter.api.Test;
 
 class Ddi4ToLifecycle33Test {
 
+    private static final String VERSION_RESPONSIBILITY = "abcde";
+
     private static final String DDI_INSTANCE_NS = "ddi:instance:3_3";
     private static final String DDI_REUSABLE_NS = "ddi:reusable:3_3";
     private static final String DDI_PHYSICAL_INSTANCE_NS = "ddi:physicalinstance:3_3";
 
-    private final Ddi4ToLifecycle33 converter = new Ddi4ToLifecycle33();
+    private final Ddi4ToLifecycle33 converter = new Ddi4ToLifecycle33(VERSION_RESPONSIBILITY);
 
     @Test
     void shouldBuildPhysicalInstanceWithoutBasedOnObject() {
@@ -68,6 +70,8 @@ class Ddi4ToLifecycle33Test {
                         + "<r:Agency xmlns:r=\"ddi:reusable:3_3\">fr.insee</r:Agency>"
                         + "<r:ID xmlns:r=\"ddi:reusable:3_3\">new-pi-id</r:ID>"
                         + "<r:Version xmlns:r=\"ddi:reusable:3_3\">1</r:Version>"
+                        + "<r:VersionResponsibility xmlns:r=\"ddi:reusable:3_3\">" + VERSION_RESPONSIBILITY
+                        + "</r:VersionResponsibility>"
                         + "<r:Citation xmlns:r=\"ddi:reusable:3_3\"><r:Title><r:String xml:lang=\"fr-FR\">Test Instance</r:String></r:Title></r:Citation>"
                         + "</ddi:PhysicalInstance></Fragment>",
                 xml);

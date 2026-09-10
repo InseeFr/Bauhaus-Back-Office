@@ -47,17 +47,28 @@ public final class VersionDateReconciler {
                 rewrite(incoming.managedMissingValuesRepresentation(), dirty, storedByKey, now));
     }
 
-    /** Items modifiés ou nouveaux : comparaison à l'état stocké en neutralisant la {@code VersionDate}. */
+    /** Items modifiés ou nouveaux : comparaison à l'état stocké, champs estampillés neutralisés. */
     private static Set<String> directlyDirtyKeys(
             List<Ddi4VersionedItem> incomingItems, Map<String, Ddi4VersionedItem> storedByKey) {
         Set<String> dirty = new HashSet<>();
         for (Ddi4VersionedItem item : incomingItems) {
             Ddi4VersionedItem stored = storedByKey.get(key(item));
-            if (stored == null || !item.withVersionDate(null).equals(stored.withVersionDate(null))) {
+            if (stored == null || !content(item).equals(content(stored))) {
                 dirty.add(key(item));
             }
         }
         return dirty;
+    }
+
+    /**
+     * Copie réduite au contenu rédigé. {@code VersionDate} et {@code VersionResponsibility} sont
+     * estampillés à l'écriture — la première par ce réconciliateur, le second depuis
+     * {@code colectica.yml} — et une divergence sur l'un d'eux ne dit rien d'un changement de
+     * contenu : les comparer ferait passer pour modifié un item que personne n'a touché, et
+     * redaterait toute sa chaîne de parents.
+     */
+    private static Ddi4VersionedItem content(Ddi4VersionedItem item) {
+        return item.withVersionDate(null).withVersionResponsibility(null);
     }
 
     /**

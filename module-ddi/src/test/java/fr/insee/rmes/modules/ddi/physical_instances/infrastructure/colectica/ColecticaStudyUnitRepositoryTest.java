@@ -33,7 +33,10 @@ class ColecticaStudyUnitRepositoryTest {
                 null,
                 "fr.insee");
         return spy(new ColecticaStudyUnitRepository(
-                mock(ColecticaClient.class), instanceConfig, new Ddi4ToLifecycle33(), mock(DDIRepository.class)));
+                mock(ColecticaClient.class),
+                instanceConfig,
+                new Ddi4ToLifecycle33("abcde"),
+                mock(DDIRepository.class)));
     }
 
     @Test

@@ -13,10 +13,27 @@ public record Ddi4Category(
         @JsonProperty("ID") String id,
         @JsonProperty("Version") String version,
         @JsonProperty("BasedOnObject") BasedOnObject basedOnObject,
-        @JsonProperty("Label") List<LangString> label)
+        @JsonProperty("Label") List<LangString> label,
+        @JsonProperty("VersionResponsibility") String versionResponsibility)
         implements Ddi4VersionedItem {
 
     public static final String TYPE = "Category";
+
+    /**
+     * Constructeur de compatibilité (sans {@code VersionResponsibility}) : le champ est estampillé
+     * à l'écriture depuis {@code colectica.yml}, les constructions internes ne le renseignent pas.
+     */
+    public Ddi4Category(
+            String type,
+            CogsDate versionDate,
+            String urn,
+            String agency,
+            String id,
+            String version,
+            BasedOnObject basedOnObject,
+            List<LangString> label) {
+        this(type, versionDate, urn, agency, id, version, basedOnObject, label, null);
+    }
 
     /**
      * Constructeur de compatibilité (sans {@code BasedOnObject}) : seule une catégorie forkée en
@@ -35,6 +52,13 @@ public record Ddi4Category(
 
     @Override
     public Ddi4Category withVersionDate(CogsDate versionDate) {
-        return new Ddi4Category(type, versionDate, urn, agency, id, version, basedOnObject, label);
+        return new Ddi4Category(
+                type, versionDate, urn, agency, id, version, basedOnObject, label, versionResponsibility);
+    }
+
+    @Override
+    public Ddi4Category withVersionResponsibility(String versionResponsibility) {
+        return new Ddi4Category(
+                type, versionDate, urn, agency, id, version, basedOnObject, label, versionResponsibility);
     }
 }

@@ -61,7 +61,8 @@ public class PhysicalInstanceConfiguration {
     @Bean
     DDI4toDDI3ConverterService ddi4toDdi3ConverterService(ColecticaConfiguration colecticaConfiguration) {
         return new DDI4toDDI3ConverterServiceImpl(
-                colecticaConfiguration.server().itemTypes());
+                colecticaConfiguration.server().itemTypes(),
+                colecticaConfiguration.server().versionResponsibility());
     }
 
     @Bean
@@ -71,8 +72,8 @@ public class PhysicalInstanceConfiguration {
     }
 
     @Bean
-    Ddi4ToLifecycle33 ddi4ToLifecycle33() {
-        return new Ddi4ToLifecycle33();
+    Ddi4ToLifecycle33 ddi4ToLifecycle33(ColecticaConfiguration colecticaConfiguration) {
+        return new Ddi4ToLifecycle33(colecticaConfiguration.server().versionResponsibility());
     }
 
     @Bean

@@ -32,7 +32,7 @@ class DDIRepositoryImplGroupTest {
     @Mock
     private ColecticaConfiguration.ColecticaInstanceConfiguration instanceConfiguration;
 
-    private final Ddi4ToLifecycle33 ddi4ToLifecycle33 = new Ddi4ToLifecycle33();
+    private final Ddi4ToLifecycle33 ddi4ToLifecycle33 = new Ddi4ToLifecycle33("bauhaus");
 
     @Mock
     private DDIRepository ddiRepository;

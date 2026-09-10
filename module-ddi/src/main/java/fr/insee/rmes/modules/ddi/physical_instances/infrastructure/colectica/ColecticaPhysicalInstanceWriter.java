@@ -37,8 +37,6 @@ class ColecticaPhysicalInstanceWriter {
 
     private static final Logger logger = LoggerFactory.getLogger(ColecticaPhysicalInstanceWriter.class);
 
-    private static final String BAUHAUS_API = "bauhaus-api";
-
     private final ColecticaConfiguration.ColecticaInstanceConfiguration instanceConfiguration;
     private final ColecticaClient colecticaClient;
     private final DDI4toDDI3ConverterService ddi4ToDdi3Converter;
@@ -109,7 +107,7 @@ class ColecticaPhysicalInstanceWriter {
                 id,
                 xml,
                 versionDate,
-                BAUHAUS_API,
+                instanceConfiguration.versionResponsibility(),
                 false,
                 false,
                 false,
@@ -308,6 +306,19 @@ class ColecticaPhysicalInstanceWriter {
         parent.appendChild(element);
     }
 
+    /**
+     * {@code r:VersionResponsibility} issu de {@code colectica.yml}, à insérer juste après
+     * {@code r:Version} — l'ordre des éléments de {@code VersionableType} est imposé par le schéma.
+     * Chaîne vide quand la propriété n'est pas renseignée.
+     */
+    private String versionResponsibilityXml() {
+        String versionResponsibility = instanceConfiguration.versionResponsibility();
+        if (versionResponsibility == null || versionResponsibility.isBlank()) {
+            return "";
+        }
+        return "<r:VersionResponsibility>" + ColecticaXml.escape(versionResponsibility) + "</r:VersionResponsibility>";
+    }
+
     private String buildPhysicalInstanceXml(
             String agencyId, String id, int version, String label, String dataRelationshipId, String versionDate) {
         return String.format(
@@ -318,6 +329,7 @@ class ColecticaPhysicalInstanceWriter {
                 <r:Agency>%s</r:Agency>
                 <r:ID>%s</r:ID>
                 <r:Version>%d</r:Version>
+                %s
                 <r:Citation>
                   <r:Title>
                     <r:String xml:lang="%s">%s</r:String>
@@ -333,6 +345,7 @@ class ColecticaPhysicalInstanceWriter {
                 ColecticaXml.escape(agencyId),
                 ColecticaXml.escape(id),
                 version,
+                versionResponsibilityXml(),
                 labels.defaultLang(),
                 ColecticaXml.escape(label),
                 dataRelationshipReferenceXml(agencyId, dataRelationshipId, version));
@@ -364,6 +377,7 @@ class ColecticaPhysicalInstanceWriter {
                 <r:Agency>%s</r:Agency>
                 <r:ID>%s</r:ID>
                 <r:Version>%d</r:Version>
+                %s
                 <r:Label>
                   <r:Content xml:lang="%s">%s</r:Content>
                 </r:Label>
@@ -385,6 +399,7 @@ class ColecticaPhysicalInstanceWriter {
                 ColecticaXml.escape(agencyId),
                 ColecticaXml.escape(dataRelationshipId),
                 version,
+                versionResponsibilityXml(),
                 labels.defaultLang(),
                 ColecticaXml.escape(dataRelationshipLabel),
                 ColecticaXml.escape(agencyId),

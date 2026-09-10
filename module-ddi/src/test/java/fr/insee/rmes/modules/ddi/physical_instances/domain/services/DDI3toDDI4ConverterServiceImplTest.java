@@ -149,7 +149,7 @@ class DDI3toDDI4ConverterServiceImplTest {
         prefixes.put("ddi:reusable:3_3", "r");
         org.apache.xmlbeans.XmlOptions opts = new org.apache.xmlbeans.XmlOptions();
         opts.setSaveSuggestedPrefixes(prefixes);
-        String groupXml = new Ddi4ToLifecycle33().toGroup(original).xmlText(opts);
+        String groupXml = new Ddi4ToLifecycle33("abcde").toGroup(original).xmlText(opts);
 
         Ddi4Group group = converter.toGroup(groupXml);
 
@@ -173,7 +173,7 @@ class DDI3toDDI4ConverterServiceImplTest {
                 "1",
                 LangStrings.of("fr-FR", "Schéma catégories"),
                 List.of(Reference.of("fr.insee", "cat-1", "1", "Category")));
-        String xml = new Ddi4ToLifecycle33().toCategoryScheme(original).xmlText(logicalProductFragmentOptions());
+        String xml = new Ddi4ToLifecycle33("abcde").toCategoryScheme(original).xmlText(logicalProductFragmentOptions());
 
         Ddi4CategoryScheme scheme = converter.toCategoryScheme(xml);
 
@@ -194,7 +194,7 @@ class DDI3toDDI4ConverterServiceImplTest {
                 "1",
                 LangStrings.of("fr-FR", "Schéma variables"),
                 List.of(Reference.of("fr.insee", "var-1", "1", "Variable")));
-        String xml = new Ddi4ToLifecycle33().toVariableScheme(original).xmlText(logicalProductFragmentOptions());
+        String xml = new Ddi4ToLifecycle33("abcde").toVariableScheme(original).xmlText(logicalProductFragmentOptions());
 
         Ddi4VariableScheme scheme = converter.toVariableScheme(xml);
 
@@ -220,7 +220,7 @@ class DDI3toDDI4ConverterServiceImplTest {
                 List.of(Reference.of("fr.insee", "cats-1", "1", "CategoryScheme")),
                 List.of(Reference.of("fr.insee", "vars-1", "1", "VariableScheme")),
                 List.of(Reference.of("fr.insee", "mrs-1", "1", "ManagedRepresentationScheme")));
-        String xml = new Ddi4ToLifecycle33().toLogicalProduct(original).xmlText(logicalProductFragmentOptions());
+        String xml = new Ddi4ToLifecycle33("abcde").toLogicalProduct(original).xmlText(logicalProductFragmentOptions());
 
         Ddi4LogicalProduct logicalProduct = converter.toLogicalProduct(xml);
 
@@ -252,7 +252,7 @@ class DDI3toDDI4ConverterServiceImplTest {
                 "http://id.insee.fr/operations/operation/op1",
                 List.of(Reference.of("fr.insee", "pi-1", "1", "PhysicalInstance")),
                 List.of(Reference.of("fr.insee", "lp-1", "1", "LogicalProduct")));
-        String xml = new Ddi4ToLifecycle33().toStudyUnit(original).xmlText(studyUnitFragmentOptions());
+        String xml = new Ddi4ToLifecycle33("abcde").toStudyUnit(original).xmlText(studyUnitFragmentOptions());
 
         Ddi4StudyUnit studyUnit = converter.toStudyUnit(xml);
 

@@ -17,6 +17,7 @@ import fr.insee.ddi.lifecycle33.logicalproduct.VariableSchemeType;
 import fr.insee.ddi.lifecycle33.logicalproduct.VariableType;
 import fr.insee.ddi.lifecycle33.logicalproduct.VariablesInRecordType;
 import fr.insee.ddi.lifecycle33.physicalinstance.PhysicalInstanceType;
+import fr.insee.ddi.lifecycle33.reusable.AbstractVersionableType;
 import fr.insee.ddi.lifecycle33.reusable.BasedOnObjectType;
 import fr.insee.ddi.lifecycle33.reusable.CitationType;
 import fr.insee.ddi.lifecycle33.reusable.CodeRepresentationBaseType;
@@ -78,6 +79,11 @@ public class Lifecycle33ToDdi4 {
 
     private static final String DDI_REUSABLE_NS = "ddi:reusable:3_3";
 
+    /** {@code r:VersionResponsibility} de l'item, absent des fragments écrits avant sa prise en charge. */
+    private static String readVersionResponsibility(AbstractVersionableType item) {
+        return item.isSetVersionResponsibility() ? item.getVersionResponsibility() : null;
+    }
+
     public Ddi4PhysicalInstance toPhysicalInstance(FragmentDocument doc) {
         PhysicalInstanceType pi = doc.getFragment().getPhysicalInstance();
         if (pi == null) {
@@ -92,7 +98,8 @@ public class Lifecycle33ToDdi4 {
                 pi.getVersionArray(0),
                 readBasedOnObject(pi.isSetBasedOnObject() ? pi.getBasedOnObject() : null),
                 readCitation(pi.getCitation()),
-                readDataRelationshipReferences(pi.getDataRelationshipReferenceArray()));
+                readDataRelationshipReferences(pi.getDataRelationshipReferenceArray()),
+                readVersionResponsibility(pi));
     }
 
     public Ddi4DataRelationship toDataRelationship(FragmentDocument doc) {
@@ -111,7 +118,8 @@ public class Lifecycle33ToDdi4 {
                 readLabelOrName(
                         dr.sizeOfLabelArray() > 0 ? dr.getLabelArray(0) : null,
                         dr.sizeOfDataRelationshipNameArray() > 0 ? dr.getDataRelationshipNameArray(0) : null),
-                readLogicalRecords(dr.getLogicalRecordArray()));
+                readLogicalRecords(dr.getLogicalRecordArray()),
+                readVersionResponsibility(dr));
     }
 
     public Ddi4Variable toVariable(FragmentDocument doc) {
@@ -131,7 +139,8 @@ public class Lifecycle33ToDdi4 {
                 var.sizeOfLabelArray() > 0 ? readLabel(var.getLabelArray(0)) : null,
                 var.isSetDescription() ? readStructuredString(var.getDescription()) : null,
                 readVariableRepresentation(var.getVariableRepresentation()),
-                var.isSetIsGeographic() ? var.getIsGeographic() : null);
+                var.isSetIsGeographic() ? var.getIsGeographic() : null,
+                readVersionResponsibility(var));
     }
 
     public Ddi4CodeList toCodeList(FragmentDocument doc) {
@@ -161,7 +170,8 @@ public class Lifecycle33ToDdi4 {
                 readBasedOnObject(cl.getBasedOnObject()),
                 cl.sizeOfLabelArray() > 0 ? readLabel(cl.getLabelArray(0)) : null,
                 levels.isEmpty() ? null : levels,
-                codes.isEmpty() ? null : codes);
+                codes.isEmpty() ? null : codes,
+                readVersionResponsibility(cl));
     }
 
     private Code toCode(CodeType c) {
@@ -258,7 +268,8 @@ public class Lifecycle33ToDdi4 {
                 mmvr.getIDArray(0).getStringValue(),
                 mmvr.getVersionArray(0),
                 mmvr.sizeOfLabelArray() > 0 ? readLabel(mmvr.getLabelArray(0)) : null,
-                missingCodeRepresentations.isEmpty() ? null : missingCodeRepresentations);
+                missingCodeRepresentations.isEmpty() ? null : missingCodeRepresentations,
+                readVersionResponsibility(mmvr));
     }
 
     public Ddi4CategoryScheme toCategoryScheme(FragmentDocument doc) {
@@ -348,7 +359,8 @@ public class Lifecycle33ToDdi4 {
                 cat.getIDArray(0).getStringValue(),
                 cat.getVersionArray(0),
                 readBasedOnObject(cat.getBasedOnObject()),
-                cat.sizeOfLabelArray() > 0 ? readLabel(cat.getLabelArray(0)) : null);
+                cat.sizeOfLabelArray() > 0 ? readLabel(cat.getLabelArray(0)) : null,
+                readVersionResponsibility(cat));
     }
 
     public Ddi4Group toGroup(FragmentDocument doc) {
@@ -371,7 +383,7 @@ public class Lifecycle33ToDdi4 {
                 group.getAgencyArray(0),
                 group.getIDArray(0).getStringValue(),
                 group.getVersionArray(0),
-                null,
+                readVersionResponsibility(group),
                 readCitation(group.getCitation()),
                 suRefs,
                 seriesIris.isEmpty() ? null : seriesIris,
@@ -397,7 +409,9 @@ public class Lifecycle33ToDdi4 {
                 su.getVersionArray(0),
                 readCitation(su.getCitation()),
                 operationIri,
-                piRefs.isEmpty() ? null : piRefs);
+                piRefs.isEmpty() ? null : piRefs,
+                null,
+                readVersionResponsibility(su));
     }
 
     private static BasedOnObject readBasedOnObject(BasedOnObjectType source) {

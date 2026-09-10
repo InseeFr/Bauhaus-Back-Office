@@ -31,7 +31,6 @@ import org.slf4j.LoggerFactory;
 public class DDI4toDDI3ConverterServiceImpl implements DDI4toDDI3ConverterService {
     static final Logger logger = LoggerFactory.getLogger(DDI4toDDI3ConverterServiceImpl.class);
 
-    private static final String DEFAULT_VERSION_RESPONSIBILITY = "abcde";
     private static final String DEFAULT_ITEM_FORMAT = "DC337820-AF3A-4C0B-82F9-CF02535CDE83";
 
     private static final String DDI_INSTANCE_NS = "ddi:instance:3_3";
@@ -42,14 +41,19 @@ public class DDI4toDDI3ConverterServiceImpl implements DDI4toDDI3ConverterServic
     private static final String DDI_STUDY_UNIT_NS = "ddi:studyunit:3_3";
 
     private final Map<String, String> itemTypes;
+    /** Valeur du {@code VersionResponsibility} des items écrits, issue de {@code colectica.yml}. */
+    private final String versionResponsibility;
+
     private final Ddi4ToLifecycle33 ddi4ToLifecycle33;
 
-    public DDI4toDDI3ConverterServiceImpl(Map<String, String> itemTypes) {
-        this(itemTypes, new Ddi4ToLifecycle33());
+    public DDI4toDDI3ConverterServiceImpl(Map<String, String> itemTypes, String versionResponsibility) {
+        this(itemTypes, versionResponsibility, new Ddi4ToLifecycle33(versionResponsibility));
     }
 
-    DDI4toDDI3ConverterServiceImpl(Map<String, String> itemTypes, Ddi4ToLifecycle33 ddi4ToLifecycle33) {
+    DDI4toDDI3ConverterServiceImpl(
+            Map<String, String> itemTypes, String versionResponsibility, Ddi4ToLifecycle33 ddi4ToLifecycle33) {
         this.itemTypes = itemTypes;
+        this.versionResponsibility = versionResponsibility;
         this.ddi4ToLifecycle33 = ddi4ToLifecycle33;
     }
 
@@ -62,7 +66,7 @@ public class DDI4toDDI3ConverterServiceImpl implements DDI4toDDI3ConverterServic
                 id,
                 xmlFragment,
                 versionDate,
-                DEFAULT_VERSION_RESPONSIBILITY,
+                versionResponsibility,
                 false,
                 false,
                 false,

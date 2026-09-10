@@ -30,7 +30,9 @@ class SentinelValuesRoundTripTest {
     private static final Reference MMVR_REF =
             Reference.of("fr.insee", "mmvr-1", "1", "ManagedMissingValuesRepresentation");
 
-    private final Ddi4ToLifecycle33 writer = new Ddi4ToLifecycle33();
+    private static final String VERSION_RESPONSIBILITY = "abcde";
+
+    private final Ddi4ToLifecycle33 writer = new Ddi4ToLifecycle33(VERSION_RESPONSIBILITY);
     private final Lifecycle33ToDdi4 reader = new Lifecycle33ToDdi4();
 
     @Test
@@ -118,7 +120,9 @@ class SentinelValuesRoundTripTest {
         Ddi4ManagedMissingValuesRepresentation roundTripped =
                 reader.toManagedMissingValuesRepresentation(FragmentDocument.Factory.parse(xml));
 
-        assertThat(roundTripped).isEqualTo(mmvr);
+        // Le writer estampille le VersionResponsibility depuis la configuration : il n'est pas
+        // rédigé par l'appelant, l'aller-retour le fait donc apparaître.
+        assertThat(roundTripped).isEqualTo(mmvr.withVersionResponsibility(VERSION_RESPONSIBILITY));
     }
 
     @Test

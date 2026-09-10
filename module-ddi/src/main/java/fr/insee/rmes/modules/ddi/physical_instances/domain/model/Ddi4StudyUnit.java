@@ -22,10 +22,40 @@ public record Ddi4StudyUnit(
         @JsonProperty("Citation") Citation citation,
         String operationIri,
         @JsonProperty("PhysicalInstanceReference") List<Reference> physicalInstanceReferences,
-        @JsonProperty("LogicalProductReference") List<Reference> logicalProductReferences)
+        @JsonProperty("LogicalProductReference") List<Reference> logicalProductReferences,
+        @JsonProperty("VersionResponsibility") String versionResponsibility)
         implements Ddi4Item {
 
     public static final String TYPE = "StudyUnit";
+
+    /**
+     * Constructeur de compatibilité (sans {@code VersionResponsibility}) : le champ est estampillé
+     * à l'écriture depuis {@code colectica.yml}, les constructions internes ne le renseignent pas.
+     */
+    public Ddi4StudyUnit(
+            String type,
+            CogsDate versionDate,
+            String urn,
+            String agency,
+            String id,
+            String version,
+            Citation citation,
+            String operationIri,
+            List<Reference> physicalInstanceReferences,
+            List<Reference> logicalProductReferences) {
+        this(
+                type,
+                versionDate,
+                urn,
+                agency,
+                id,
+                version,
+                citation,
+                operationIri,
+                physicalInstanceReferences,
+                logicalProductReferences,
+                null);
+    }
 
     /**
      * Backward-compatible constructor for a StudyUnit that files no LogicalProduct.

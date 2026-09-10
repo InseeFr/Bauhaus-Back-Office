@@ -3,6 +3,7 @@ package fr.insee.rmes.modules.ddi.physical_instances.domain.services;
 import fr.insee.ddi.lifecycle33.instance.FragmentDocument;
 import fr.insee.ddi.lifecycle33.logicalproduct.CodeType;
 import fr.insee.ddi.lifecycle33.logicalproduct.LogicalProductType;
+import fr.insee.ddi.lifecycle33.reusable.AbstractVersionableType;
 import fr.insee.ddi.lifecycle33.reusable.BasedOnObjectType;
 import fr.insee.ddi.lifecycle33.reusable.CategoryRelationCodeType;
 import fr.insee.ddi.lifecycle33.reusable.CodeRepresentationBaseType;
@@ -49,6 +50,24 @@ import org.apache.xmlbeans.XmlCursor;
 
 public class Ddi4ToLifecycle33 {
 
+    /**
+     * Valeur du {@code r:VersionResponsibility} estampillé sur chaque item écrit, issue de
+     * {@code colectica.yml}. Le champ n'est pas rédigé par l'appelant : Bauhaus est l'agent
+     * responsable de toute version qu'il enregistre.
+     */
+    private final String versionResponsibility;
+
+    public Ddi4ToLifecycle33(String versionResponsibility) {
+        this.versionResponsibility = versionResponsibility;
+    }
+
+    /** Estampille l'item de tête d'un fragment ; sans valeur configurée, l'élément est omis. */
+    private void stampVersionResponsibility(AbstractVersionableType item) {
+        if (versionResponsibility != null && !versionResponsibility.isBlank()) {
+            item.setVersionResponsibility(versionResponsibility);
+        }
+    }
+
     private static final String DDI_REUSABLE_NS = "ddi:reusable:3_3";
     private static final String DDI_LOGICAL_PRODUCT_NS = "ddi:logicalproduct:3_3";
 
@@ -66,6 +85,7 @@ public class Ddi4ToLifecycle33 {
         piType.addAgency(pi.agency());
         piType.addNewID().setStringValue(pi.id());
         piType.addVersion(pi.version());
+        stampVersionResponsibility(piType);
 
         if (pi.basedOnObject() != null) {
             populateBasedOnObject(piType.addNewBasedOnObject(), pi.basedOnObject());
@@ -98,6 +118,7 @@ public class Ddi4ToLifecycle33 {
         drType.addAgency(dr.agency());
         drType.addNewID().setStringValue(dr.id());
         drType.addVersion(dr.version());
+        stampVersionResponsibility(drType);
 
         if (dr.basedOnObject() != null) {
             populateBasedOnObject(drType.addNewBasedOnObject(), dr.basedOnObject());
@@ -153,6 +174,7 @@ public class Ddi4ToLifecycle33 {
         varType.addAgency(var.agency());
         varType.addNewID().setStringValue(var.id());
         varType.addVersion(var.version());
+        stampVersionResponsibility(varType);
 
         if (var.basedOnObject() != null) {
             populateBasedOnObject(varType.addNewBasedOnObject(), var.basedOnObject());
@@ -222,6 +244,7 @@ public class Ddi4ToLifecycle33 {
         clType.addAgency(cl.agency());
         clType.addNewID().setStringValue(cl.id());
         clType.addVersion(cl.version());
+        stampVersionResponsibility(clType);
 
         // Variante d'une liste partagée : référence DDI vers la liste d'origine.
         if (cl.basedOnObject() != null) {
@@ -295,6 +318,7 @@ public class Ddi4ToLifecycle33 {
         schemeType.addAgency(scheme.agency());
         schemeType.addNewID().setStringValue(scheme.id());
         schemeType.addVersion(scheme.version());
+        stampVersionResponsibility(schemeType);
 
         if (scheme.label() != null && !scheme.label().isEmpty()) {
             writeLabelContent(
@@ -321,6 +345,7 @@ public class Ddi4ToLifecycle33 {
         schemeType.addAgency(scheme.agency());
         schemeType.addNewID().setStringValue(scheme.id());
         schemeType.addVersion(scheme.version());
+        stampVersionResponsibility(schemeType);
 
         if (scheme.label() != null && !scheme.label().isEmpty()) {
             writeLabelContent(
@@ -347,6 +372,7 @@ public class Ddi4ToLifecycle33 {
         schemeType.addAgency(scheme.agency());
         schemeType.addNewID().setStringValue(scheme.id());
         schemeType.addVersion(scheme.version());
+        stampVersionResponsibility(schemeType);
 
         if (scheme.label() != null && !scheme.label().isEmpty()) {
             writeLabelContent(
@@ -373,6 +399,7 @@ public class Ddi4ToLifecycle33 {
         schemeType.addAgency(scheme.agency());
         schemeType.addNewID().setStringValue(scheme.id());
         schemeType.addVersion(scheme.version());
+        stampVersionResponsibility(schemeType);
 
         if (scheme.label() != null && !scheme.label().isEmpty()) {
             writeLabelContent(
@@ -437,6 +464,7 @@ public class Ddi4ToLifecycle33 {
         mmvrType.addAgency(mmvr.agency());
         mmvrType.addNewID().setStringValue(mmvr.id());
         mmvrType.addVersion(mmvr.version());
+        stampVersionResponsibility(mmvrType);
 
         if (mmvr.label() != null && !mmvr.label().isEmpty()) {
             writeLabelContent(
@@ -467,6 +495,7 @@ public class Ddi4ToLifecycle33 {
         catType.addAgency(cat.agency());
         catType.addNewID().setStringValue(cat.id());
         catType.addVersion(cat.version());
+        stampVersionResponsibility(catType);
 
         // Variante d'une catégorie partagée : référence DDI vers la catégorie d'origine.
         if (cat.basedOnObject() != null) {
@@ -491,6 +520,7 @@ public class Ddi4ToLifecycle33 {
         groupType.addAgency(group.agency());
         groupType.addNewID().setStringValue(group.id());
         groupType.addVersion(group.version());
+        stampVersionResponsibility(groupType);
 
         if (group.seriesIris() != null) {
             for (String seriesIri : group.seriesIris()) {
@@ -552,6 +582,7 @@ public class Ddi4ToLifecycle33 {
         lpType.addAgency(logicalProduct.agency());
         lpType.addNewID().setStringValue(logicalProduct.id());
         lpType.addVersion(logicalProduct.version());
+        stampVersionResponsibility(lpType);
 
         if (logicalProduct.label() != null && !logicalProduct.label().isEmpty()) {
             LangString first = logicalProduct.label().get(0);
@@ -599,6 +630,7 @@ public class Ddi4ToLifecycle33 {
         suType.addAgency(studyUnit.agency());
         suType.addNewID().setStringValue(studyUnit.id());
         suType.addVersion(studyUnit.version());
+        stampVersionResponsibility(suType);
 
         if (studyUnit.operationIri() != null && !studyUnit.operationIri().isEmpty()) {
             var userId = suType.addNewUserID();

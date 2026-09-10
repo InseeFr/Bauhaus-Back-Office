@@ -56,6 +56,42 @@ class VersionDateReconcilerTest {
         assertEquals(CAT2_DATE, categoryDate(reconciled, "cat-2"));
     }
 
+    /**
+     * Le {@code VersionResponsibility} est estampillé à l'écriture depuis {@code colectica.yml} :
+     * ce n'est pas du contenu rédigé. Une divergence sur ce seul champ — un front qui ne le
+     * réémet pas, un item enregistré avant sa prise en charge — ne doit pas faire passer l'item
+     * pour modifié et redater toute sa chaîne de parents.
+     */
+    @Test
+    void keepsStoredDatesWhenOnlyVersionResponsibilityDiffers() {
+        Ddi4Response stored = storedResponse();
+        Ddi4Response incoming = responseWithSameDateEverywhere(FRONT_DATE);
+        Ddi4PhysicalInstance pi = incoming.physicalInstance().getFirst();
+        Ddi4Response incomingWithoutResponsibility = new Ddi4Response(
+                incoming.schema(),
+                incoming.topLevelReference(),
+                List.of(new Ddi4PhysicalInstance(
+                        pi.type(),
+                        pi.versionDate(),
+                        pi.urn(),
+                        pi.agency(),
+                        pi.id(),
+                        pi.version(),
+                        pi.basedOnObject(),
+                        pi.citation(),
+                        pi.dataRelationshipReference(),
+                        "un-autre-responsable")),
+                incoming.dataRelationship(),
+                incoming.variable(),
+                incoming.codeList(),
+                incoming.category(),
+                incoming.managedMissingValuesRepresentation());
+
+        Ddi4Response reconciled = VersionDateReconciler.reconcile(stored, incomingWithoutResponsibility, NOW);
+
+        assertEquals(PI_DATE, reconciled.physicalInstance().getFirst().versionDate());
+    }
+
     @Test
     void refreshesCodeListAndItsAncestorsWhenACodeChanges() {
         Ddi4Response stored = storedResponse();

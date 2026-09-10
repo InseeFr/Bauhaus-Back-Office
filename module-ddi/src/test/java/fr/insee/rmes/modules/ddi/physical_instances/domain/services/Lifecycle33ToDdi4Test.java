@@ -3,6 +3,7 @@ package fr.insee.rmes.modules.ddi.physical_instances.domain.services;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.ddi.lifecycle33.instance.FragmentDocument;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Code;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Category;
@@ -24,6 +25,31 @@ import org.junit.jupiter.api.Test;
 class Lifecycle33ToDdi4Test {
 
     private final Lifecycle33ToDdi4 converter = new Lifecycle33ToDdi4();
+
+    /**
+     * Le {@code VersionResponsibility} du fragment DDI 3.3 doit ressortir dans le JSON DDI 4 :
+     * c'est là que le front le lit.
+     */
+    @Test
+    void shouldExposeVersionResponsibilityInTheDdi4Json() throws Exception {
+        FragmentDocument doc = FragmentDocument.Factory.parse("""
+            <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
+                <PhysicalInstance xmlns="ddi:physicalinstance:3_3" isUniversallyUnique="true" versionDate="2026-12-23T09:52:06.355Z">
+                    <r:URN>urn:ddi:fr.insee:pi-id:1</r:URN>
+                    <r:Agency>fr.insee</r:Agency>
+                    <r:ID>pi-id</r:ID>
+                    <r:Version>1</r:Version>
+                    <r:VersionResponsibility>responsable-configure</r:VersionResponsibility>
+                    <r:Citation><r:Title><r:String xml:lang="fr-FR">Test Instance</r:String></r:Title></r:Citation>
+                </PhysicalInstance>
+            </Fragment>
+            """);
+
+        Ddi4PhysicalInstance pi = converter.toPhysicalInstance(doc);
+
+        assertThat(new ObjectMapper().writeValueAsString(pi))
+                .contains("\"VersionResponsibility\":\"responsable-configure\"");
+    }
 
     @Test
     void shouldParsePhysicalInstanceWithoutBasedOnObject() throws XmlException {

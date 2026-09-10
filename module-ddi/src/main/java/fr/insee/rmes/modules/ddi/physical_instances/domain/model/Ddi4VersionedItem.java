@@ -39,4 +39,7 @@ public interface Ddi4VersionedItem {
 
     /** Copie de l'item avec la {@code VersionDate} donnée, le reste inchangé. */
     Ddi4VersionedItem withVersionDate(CogsDate versionDate);
+
+    /** Copie de l'item avec le {@code VersionResponsibility} donné, le reste inchangé. */
+    Ddi4VersionedItem withVersionResponsibility(String versionResponsibility);
 }
