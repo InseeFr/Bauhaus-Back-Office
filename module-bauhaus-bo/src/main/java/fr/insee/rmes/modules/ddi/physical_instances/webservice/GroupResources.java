@@ -1,5 +1,6 @@
 package fr.insee.rmes.modules.ddi.physical_instances.webservice;
 
+import static fr.insee.rmes.domain.logging.LogSanitizer.forLog;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
 import fr.insee.rmes.Constants;
@@ -76,12 +77,12 @@ public class GroupResources {
 
     @PostMapping(value = "/groups", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> createOrUpdateGroup(@RequestBody Ddi4Group group) {
-        logger.info("POST /ddi/groups - Creating/updating group: id={}", group.id());
+        logger.info("POST /ddi/groups - Creating/updating group: id={}", forLog(group.id()));
         try {
             groupService.createOrUpdate(group);
             return ResponseEntity.status(201).build();
         } catch (Exception e) {
-            logger.error("Failed to create/update group: id={}", group.id(), e);
+            logger.error("Failed to create/update group: id={}", forLog(group.id()), e);
             return ResponseEntity.internalServerError().build();
         }
     }
@@ -118,12 +119,16 @@ public class GroupResources {
     @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.READ)
     public ResponseEntity<List<PartialLogicalProduct>> getGroupLogicalProducts(
             @PathVariable String agencyId, @PathVariable String id) {
-        logger.info("GET /ddi/groups/{}/{}/logical-products - Getting logical products of group", agencyId, id);
+        logger.info(
+                "GET /ddi/groups/{}/{}/logical-products - Getting logical products of group",
+                forLog(agencyId),
+                forLog(id));
         try {
             List<PartialLogicalProduct> logicalProducts = ddiService.getLogicalProductsByGroup(agencyId, id);
             return ResponseEntity.ok(logicalProducts);
         } catch (Exception e) {
-            logger.error("Failed to get logical products for group: agencyId={}, id={}", agencyId, id, e);
+            logger.error(
+                    "Failed to get logical products for group: agencyId={}, id={}", forLog(agencyId), forLog(id), e);
             return ResponseEntity.internalServerError().build();
         }
     }
@@ -138,10 +143,10 @@ public class GroupResources {
             @PathVariable String logicalProductId) {
         logger.info(
                 "GET /ddi/groups/{}/{}/logical-products/{}/{}/code-list-scheme - Getting code list schemes of logical product",
-                groupAgencyId,
-                groupId,
-                logicalProductAgencyId,
-                logicalProductId);
+                forLog(groupAgencyId),
+                forLog(groupId),
+                forLog(logicalProductAgencyId),
+                forLog(logicalProductId));
         try {
             List<PartialCodeListScheme> codeListSchemes =
                     ddiService.getCodeListSchemesByLogicalProduct(logicalProductAgencyId, logicalProductId);
@@ -149,8 +154,8 @@ public class GroupResources {
         } catch (Exception e) {
             logger.error(
                     "Failed to get code list schemes for logical product: agencyId={}, logicalProductId={}",
-                    logicalProductAgencyId,
-                    logicalProductId,
+                    forLog(logicalProductAgencyId),
+                    forLog(logicalProductId),
                     e);
             return ResponseEntity.internalServerError().build();
         }
@@ -168,12 +173,12 @@ public class GroupResources {
             @PathVariable String codeListSchemeId) {
         logger.info(
                 "GET /ddi/groups/{}/{}/logical-products/{}/{}/code-list-scheme/{}/{}/codes-list - Getting code lists of code list scheme",
-                groupAgencyId,
-                groupId,
-                logicalProductAgencyId,
-                logicalProductId,
-                codeListSchemeAgencyId,
-                codeListSchemeId);
+                forLog(groupAgencyId),
+                forLog(groupId),
+                forLog(logicalProductAgencyId),
+                forLog(logicalProductId),
+                forLog(codeListSchemeAgencyId),
+                forLog(codeListSchemeId));
         try {
             List<PartialCodesList> codeLists =
                     ddiService.getCodeListsByCodeListScheme(codeListSchemeAgencyId, codeListSchemeId);
@@ -181,8 +186,8 @@ public class GroupResources {
         } catch (Exception e) {
             logger.error(
                     "Failed to get code lists for code list scheme: agencyId={}, codeListSchemeId={}",
-                    codeListSchemeAgencyId,
-                    codeListSchemeId,
+                    forLog(codeListSchemeAgencyId),
+                    forLog(codeListSchemeId),
                     e);
             return ResponseEntity.internalServerError().build();
         }
@@ -194,13 +199,13 @@ public class GroupResources {
             @PathVariable String agencyId, @PathVariable(Constants.ID) String id) {
         logger.info(
                 "GET /ddi/groups/{}/{}/codes-list - Getting all code lists of group (all logical products / code list schemes)",
-                agencyId,
-                id);
+                forLog(agencyId),
+                forLog(id));
         try {
             List<PartialCodesList> codeLists = ddiService.getCodeListsByGroup(agencyId, id);
             return ResponseEntity.ok(codeLists);
         } catch (Exception e) {
-            logger.error("Failed to get code lists for group: agencyId={}, id={}", agencyId, id, e);
+            logger.error("Failed to get code lists for group: agencyId={}, id={}", forLog(agencyId), forLog(id), e);
             return ResponseEntity.internalServerError().build();
         }
     }
@@ -215,12 +220,18 @@ public class GroupResources {
     public ResponseEntity<List<PartialCodesList>> getGroupMissingCodesLists(
             @PathVariable String agencyId, @PathVariable(Constants.ID) String id) {
         logger.info(
-                "GET /ddi/groups/{}/{}/missing-codes-list - Getting sentinel-value code lists of group", agencyId, id);
+                "GET /ddi/groups/{}/{}/missing-codes-list - Getting sentinel-value code lists of group",
+                forLog(agencyId),
+                forLog(id));
         try {
             List<PartialCodesList> codeLists = ddiService.getMissingCodesListsByGroup(agencyId, id);
             return ResponseEntity.ok(codeLists);
         } catch (Exception e) {
-            logger.error("Failed to get sentinel-value code lists for group: agencyId={}, id={}", agencyId, id, e);
+            logger.error(
+                    "Failed to get sentinel-value code lists for group: agencyId={}, id={}",
+                    forLog(agencyId),
+                    forLog(id),
+                    e);
             return ResponseEntity.internalServerError().build();
         }
     }
@@ -236,14 +247,18 @@ public class GroupResources {
             @PathVariable String agencyId, @PathVariable(Constants.ID) String id) {
         logger.info(
                 "GET /ddi/groups/{}/{}/missing-values-representations - Getting reusable missing values representations of group",
-                agencyId,
-                id);
+                forLog(agencyId),
+                forLog(id));
         try {
             List<PartialMissingValuesRepresentation> representations =
                     ddiService.getMissingValuesRepresentationsByGroup(agencyId, id);
             return ResponseEntity.ok(representations);
         } catch (Exception e) {
-            logger.error("Failed to get missing values representations for group: agencyId={}, id={}", agencyId, id, e);
+            logger.error(
+                    "Failed to get missing values representations for group: agencyId={}, id={}",
+                    forLog(agencyId),
+                    forLog(id),
+                    e);
             return ResponseEntity.internalServerError().build();
         }
     }

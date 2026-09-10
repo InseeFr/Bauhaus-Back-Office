@@ -1,5 +1,6 @@
 package fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica;
 
+import static fr.insee.rmes.domain.logging.LogSanitizer.forLog;
 import static fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.ColecticaItemTypes.DATA_RELATIONSHIP;
 import static fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.ColecticaItemTypes.PHYSICAL_INSTANCE;
 import static fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.ColecticaItemTypes.STUDY_UNIT;
@@ -227,7 +228,10 @@ class ColecticaPhysicalInstanceWriter {
             Ddi4Response ddi4Response,
             List<ColecticaItemResponse> additionalItems,
             PhysicalInstanceParents knownParents) {
-        logger.info("Updating full physical instance {}/{} with all DDI objects in Colectica", agencyId, id);
+        logger.info(
+                "Updating full physical instance {}/{} with all DDI objects in Colectica",
+                forLog(agencyId),
+                forLog(id));
 
         Ddi3Response ddi3Response = ddi4ToDdi3Converter.convertDdi4ToDdi3(ddi4Response);
 
@@ -253,7 +257,9 @@ class ColecticaPhysicalInstanceWriter {
         colecticaClient.createOrUpdateItems(new ColecticaCreateItemRequest(colecticaItems));
 
         logger.info(
-                "Successfully updated full physical instance with id: {} ({} items saved)", id, colecticaItems.size());
+                "Successfully updated full physical instance with id: {} ({} items saved)",
+                forLog(id),
+                colecticaItems.size());
     }
 
     /**
