@@ -125,11 +125,7 @@ public class Ddi4ToLifecycle33 {
         }
 
         if (dr.label() != null && !dr.label().isEmpty()) {
-            LangString first = dr.label().get(0);
-            var nameString = drType.addNewDataRelationshipName().addNewString();
-            nameString.setLang(first.language());
-            nameString.setStringValue(first.value());
-            writeLabelContent(drType.addNewLabel().addNewContent(), first);
+            writeLabelContent(drType.addNewLabel().addNewContent(), dr.label().get(0));
         }
 
         if (dr.logicalRecord() != null) {
@@ -142,11 +138,8 @@ public class Ddi4ToLifecycle33 {
                 lrType.addVersion(lr.version());
 
                 if (lr.label() != null && !lr.label().isEmpty()) {
-                    LangString firstLrLabel = lr.label().get(0);
-                    var nameString = lrType.addNewLogicalRecordName().addNewString();
-                    nameString.setLang(firstLrLabel.language());
-                    nameString.setStringValue(firstLrLabel.value());
-                    writeLabelContent(lrType.addNewLabel().addNewContent(), firstLrLabel);
+                    writeLabelContent(
+                            lrType.addNewLabel().addNewContent(), lr.label().get(0));
                 }
 
                 if (lr.variablesInRecord() != null && lr.variablesInRecord().variableUsedReference() != null) {
@@ -585,11 +578,8 @@ public class Ddi4ToLifecycle33 {
         stampVersionResponsibility(lpType);
 
         if (logicalProduct.label() != null && !logicalProduct.label().isEmpty()) {
-            LangString first = logicalProduct.label().get(0);
-            var nameString = lpType.addNewLogicalProductName().addNewString();
-            nameString.setLang(first.language());
-            nameString.setStringValue(first.value());
-            writeLabelContent(lpType.addNewLabel().addNewContent(), first);
+            writeLabelContent(
+                    lpType.addNewLabel().addNewContent(), logicalProduct.label().get(0));
         }
 
         if (logicalProduct.codeListSchemeReference() != null) {

@@ -147,11 +147,13 @@ class Ddi4ToLifecycle33Test {
         Assertions.assertThat(xml)
                 .contains("<r:BasedOnObject")
                 .contains(">original-dr<")
-                .contains("<ddi:DataRelationshipName")
+                .contains("<r:Label")
                 .contains(">DR Label<")
                 .contains("<ddi:LogicalRecord")
                 .contains(">urn:ddi:fr.insee:lr-id:1<")
-                .contains(">LR Label<");
+                .contains(">LR Label<")
+                .doesNotContain("DataRelationshipName")
+                .doesNotContain("LogicalRecordName");
     }
 
     @Test
@@ -578,7 +580,8 @@ class Ddi4ToLifecycle33Test {
                 .contains("<r:Label")
                 .contains(">LogicalProduct Label<")
                 .contains("<r:CodeListSchemeReference")
-                .contains(">cls-1<");
+                .contains(">cls-1<")
+                .doesNotContain("LogicalProductName");
     }
 
     @Test
