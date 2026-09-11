@@ -30,6 +30,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialGroup;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialLogicalProduct;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialMissingValuesRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialPhysicalInstance;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceIds;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceParents;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceSearchRow;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
@@ -374,6 +375,15 @@ public class DDIServiceImpl implements DDIService {
     public Ddi4Response createPhysicalInstance(CreatePhysicalInstanceRequest request) {
         logger.info("Creating new physical instance with label: {}", forLog(request.physicalInstanceLabel()));
         return ddiRepository.createPhysicalInstance(request);
+    }
+
+    @Override
+    public Ddi4Response createPhysicalInstance(CreatePhysicalInstanceRequest request, PhysicalInstanceIds ids) {
+        logger.info(
+                "Creating new physical instance with label: {} and imposed id: {}",
+                forLog(request.physicalInstanceLabel()),
+                forLog(ids.physicalInstance()));
+        return ddiRepository.createPhysicalInstance(request, ids);
     }
 
     @Override

@@ -20,6 +20,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialGroup;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialLogicalProduct;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialMissingValuesRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialPhysicalInstance;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceIds;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceParents;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceSearchRow;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UpdatePhysicalInstanceRequest;
@@ -53,6 +54,9 @@ public interface DDIService {
     Ddi4Response updateFullPhysicalInstance(String agencyId, String id, Ddi4Response ddi4Response);
 
     Ddi4Response createPhysicalInstance(CreatePhysicalInstanceRequest request);
+
+    /** Même création, mais avec les identifiants imposés par l'appelant (init local idempotent). */
+    Ddi4Response createPhysicalInstance(CreatePhysicalInstanceRequest request, PhysicalInstanceIds ids);
 
     void createLogicalProduct(Ddi4LogicalProduct logicalProduct);
 

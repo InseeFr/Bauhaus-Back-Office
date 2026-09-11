@@ -656,6 +656,38 @@ class DDIRepositoryImplTest {
     }
 
     @Test
+    void shouldUseTheIdentifiersProvidedByTheCallerInsteadOfGeneratingThem() {
+        CreatePhysicalInstanceRequest request =
+                new CreatePhysicalInstanceRequest("New PI", "New DR", "New LR", null, null, null, null);
+        PhysicalInstanceIds imposedIds = new PhysicalInstanceIds("pi-impose", "dr-impose", "lr-impose");
+
+        when(instanceConfiguration.defaultAgencyId()).thenReturn("fr.insee");
+        when(instanceConfiguration.itemTypes())
+                .thenReturn(Map.of(
+                        "PhysicalInstance", "a51e85bb-6259-4488-8df2-f08cb43485f8",
+                        "DataRelationship", "f39ff278-8500-45fe-a850-3906da2d242b"));
+        when(instanceConfiguration.itemFormat()).thenReturn("dc337820-af3a-4c0b-82f9-cf02535cde83");
+
+        when(colecticaClient.createOrUpdateItems(any())).thenReturn("{}");
+        when(colecticaClient.getSet(anyString(), anyString(), any())).thenReturn(new ColecticaSetItem[0]);
+
+        ddiRepository.createPhysicalInstance(request, imposedIds);
+
+        ArgumentCaptor<ColecticaCreateItemRequest> bodyCaptor =
+                ArgumentCaptor.forClass(ColecticaCreateItemRequest.class);
+        verify(colecticaClient).createOrUpdateItems(bodyCaptor.capture());
+        List<ColecticaItemResponse> items = bodyCaptor.getValue().items();
+
+        ColecticaItemResponse physicalInstance = items.get(0);
+        ColecticaItemResponse dataRelationship = items.get(1);
+        assertThat(physicalInstance.identifier()).isEqualTo("pi-impose");
+        assertThat(dataRelationship.identifier()).isEqualTo("dr-impose");
+        // La PhysicalInstance référence la DataRelationship, qui porte elle-même le LogicalRecord.
+        assertThat(physicalInstance.item()).contains("dr-impose");
+        assertThat(dataRelationship.item()).contains("lr-impose");
+    }
+
+    @Test
     void shouldUpdatePhysicalInstance() {
         // Given
         String instanceId = "test-pi-id";

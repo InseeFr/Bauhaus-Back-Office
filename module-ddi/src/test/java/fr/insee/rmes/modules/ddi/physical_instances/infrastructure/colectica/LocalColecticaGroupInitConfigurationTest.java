@@ -12,6 +12,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Category;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CategoryScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeListScheme;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4DataRelationship;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4LogicalProduct;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedMissingValuesRepresentation;
@@ -20,6 +21,8 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4PhysicalIns
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4VariableScheme;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LogicalRecord;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceIds;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.GroupService;
@@ -69,6 +72,25 @@ class LocalColecticaGroupInitConfigurationTest {
         return new Ddi4Response(null, null, List.of(pi), null, null, null, null, null);
     }
 
+    /** Réponse de création complète : la PI, sa DataRelationship et le LogicalRecord de celle-ci. */
+    private Ddi4Response fullPiResponse(String agency, String id) {
+        LogicalRecord logicalRecord = new LogicalRecord(
+                LogicalRecord.TYPE, "urn:ddi:%s:lr:1".formatted(agency), agency, "lr", "1", null, null);
+        Ddi4DataRelationship dataRelationship = new Ddi4DataRelationship(
+                Ddi4DataRelationship.TYPE,
+                CogsDate.ofDateTime("2026-01-01T00:00:00Z"),
+                "urn:ddi:%s:dr:1".formatted(agency),
+                agency,
+                "dr",
+                "1",
+                null,
+                null,
+                List.of(logicalRecord));
+        Ddi4Response created = piResponse(agency, id);
+        return new Ddi4Response(
+                null, null, created.physicalInstance(), List.of(dataRelationship), null, null, null, null);
+    }
+
     private ColecticaConfiguration createColecticaConfig() {
         var instanceConfig = new ColecticaConfiguration.ColecticaInstanceConfiguration(
                 "http://localhost:8082",
@@ -103,7 +125,7 @@ class LocalColecticaGroupInitConfigurationTest {
                 .put("operationLabel", "Enquête innovation 2021"));
 
         when(repositoryPublicationReader.getResponseAsArray(anyString())).thenReturn(sparqlResults);
-        when(ddiService.createPhysicalInstance(any()))
+        when(ddiService.createPhysicalInstance(any(), any()))
                 .thenReturn(piResponse("fr.insee", "pi-uuid-1"))
                 .thenReturn(piResponse("fr.insee", "pi-uuid-2"));
 
@@ -474,7 +496,7 @@ class LocalColecticaGroupInitConfigurationTest {
                 .put("operationLabel", "Enquête innovation 2020"));
 
         when(repositoryPublicationReader.getResponseAsArray(anyString())).thenReturn(sparqlResults);
-        when(ddiService.createPhysicalInstance(any())).thenReturn(piResponse("fr.insee", "pi-uuid-1"));
+        when(ddiService.createPhysicalInstance(any(), any())).thenReturn(piResponse("fr.insee", "pi-uuid-1"));
 
         LocalColecticaGroupInitConfiguration config = new LocalColecticaGroupInitConfiguration();
         CommandLineRunner runner = config.initColecticaGroups(
@@ -538,6 +560,86 @@ class LocalColecticaGroupInitConfigurationTest {
         inOrder.verify(ddiService).createVariableScheme(any());
         inOrder.verify(ddiService).createLogicalProduct(any());
         inOrder.verify(studyUnitService).createOrUpdate(any());
+    }
+
+    @Test
+    void shouldDerivePhysicalInstanceIdsFromTheStudyUnitSeedSoThatARerunOverwritesThem() throws Exception {
+        // Given: 1 series with 1 operation
+        JSONArray sparqlResults = new JSONArray();
+        sparqlResults.put(new JSONObject()
+                .put("seriesId", "s1001")
+                .put("seriesIri", "http://id.insee.fr/operations/serie/s1001")
+                .put("seriesLabel", "Enquête innovation")
+                .put("operationId", "op1")
+                .put("operationIri", "http://id.insee.fr/operations/operation/op1")
+                .put("operationLabel", "Enquête innovation 2020"));
+
+        when(repositoryPublicationReader.getResponseAsArray(anyString())).thenReturn(sparqlResults);
+        when(ddiService.createPhysicalInstance(any(), any())).thenReturn(piResponse("fr.insee", "pi-uuid-1"));
+
+        LocalColecticaGroupInitConfiguration config = new LocalColecticaGroupInitConfiguration();
+        CommandLineRunner runner = config.initColecticaGroups(
+                groupService,
+                studyUnitService,
+                ddiService,
+                repositoryPublicationReader,
+                createColecticaConfig(),
+                colecticaClient,
+                "http://rdf.insee.fr/graphes/",
+                "operations");
+
+        // When
+        runner.run();
+
+        // Then: une PhysicalInstance par variante, chacune avec des ids dérivés du seed de sa StudyUnit
+        int variants = LocalColecticaGroupInitConfiguration.VARIANT_LABEL_WORDS.size();
+        ArgumentCaptor<PhysicalInstanceIds> idsCaptor = ArgumentCaptor.forClass(PhysicalInstanceIds.class);
+        // variants PI de StudyUnit, puis la PI d'exemple « liste de codes inexistante » (step 3c)
+        verify(ddiService, times(variants + 1)).createPhysicalInstance(any(), idsCaptor.capture());
+        List<PhysicalInstanceIds> ids = idsCaptor.getAllValues().subList(0, variants);
+
+        String studyUnitSeed = "http://id.insee.fr/operations/operation/op1#variant-0";
+        assertThat(ids.get(0).physicalInstance())
+                .isEqualTo(generateDeterministicUuid(studyUnitSeed + "#physicalinstance"));
+        assertThat(ids.get(0).dataRelationship())
+                .isEqualTo(generateDeterministicUuid(studyUnitSeed + "#datarelationship"));
+        assertThat(ids.get(0).logicalRecord()).isEqualTo(generateDeterministicUuid(studyUnitSeed + "#logicalrecord"));
+
+        // Deux variantes ne partagent jamais les mêmes ids
+        assertThat(ids).extracting(PhysicalInstanceIds::physicalInstance).doesNotHaveDuplicates();
+        assertThat(ids).extracting(PhysicalInstanceIds::dataRelationship).doesNotHaveDuplicates();
+        assertThat(ids).extracting(PhysicalInstanceIds::logicalRecord).doesNotHaveDuplicates();
+    }
+
+    @Test
+    void missingCodeListExample_usesDeterministicIdsSoThatARerunOverwritesIt() throws Exception {
+        // Given: aucune série — seule la PI d'exemple du step 3c est créée
+        when(repositoryPublicationReader.getResponseAsArray(anyString())).thenReturn(new JSONArray());
+        when(ddiService.createPhysicalInstance(any(), any())).thenReturn(fullPiResponse("fr.insee", "pi-example"));
+
+        LocalColecticaGroupInitConfiguration config = new LocalColecticaGroupInitConfiguration();
+        CommandLineRunner runner = config.initColecticaGroups(
+                groupService,
+                studyUnitService,
+                ddiService,
+                repositoryPublicationReader,
+                createColecticaConfig(),
+                colecticaClient,
+                "http://rdf.insee.fr/graphes/",
+                "operations");
+
+        // When
+        runner.run();
+
+        // Then
+        ArgumentCaptor<PhysicalInstanceIds> idsCaptor = ArgumentCaptor.forClass(PhysicalInstanceIds.class);
+        verify(ddiService).createPhysicalInstance(any(), idsCaptor.capture());
+        String seed = LocalColecticaGroupInitConfiguration.MISSING_CODE_LIST_EXAMPLE_SEED;
+        assertThat(idsCaptor.getValue().physicalInstance())
+                .isEqualTo(generateDeterministicUuid(seed + "#physicalinstance"));
+        assertThat(idsCaptor.getValue().dataRelationship())
+                .isEqualTo(generateDeterministicUuid(seed + "#datarelationship"));
+        assertThat(idsCaptor.getValue().logicalRecord()).isEqualTo(generateDeterministicUuid(seed + "#logicalrecord"));
     }
 
     @Test
@@ -608,7 +710,7 @@ class LocalColecticaGroupInitConfigurationTest {
 
         when(repositoryPublicationReader.getResponseAsArray(anyString())).thenReturn(sparqlResults);
 
-        when(ddiService.createPhysicalInstance(any())).thenReturn(piResponse("fr.insee", "pi-uuid-1"));
+        when(ddiService.createPhysicalInstance(any(), any())).thenReturn(piResponse("fr.insee", "pi-uuid-1"));
 
         // First study unit creation fails
         doThrow(new RuntimeException("API error"))
@@ -715,7 +817,7 @@ class LocalColecticaGroupInitConfigurationTest {
     @Test
     void versionedStudyUnitExample_createsAStudyUnitInTwoVersionsBothCarryingTheSameBasicPhysicalInstance()
             throws Exception {
-        when(ddiService.createPhysicalInstance(any())).thenReturn(piResponse("fr.insee", "pi-two-versions"));
+        when(ddiService.createPhysicalInstance(any(), any())).thenReturn(piResponse("fr.insee", "pi-two-versions"));
 
         LocalColecticaGroupInitConfiguration config = new LocalColecticaGroupInitConfiguration();
         CommandLineRunner runner = config.initColecticaVersionedStudyUnitExample(
@@ -726,9 +828,14 @@ class LocalColecticaGroupInitConfigurationTest {
         // Une seule PhysicalInstance, très basique (libellé seul).
         ArgumentCaptor<CreatePhysicalInstanceRequest> piCaptor =
                 ArgumentCaptor.forClass(CreatePhysicalInstanceRequest.class);
-        verify(ddiService).createPhysicalInstance(piCaptor.capture());
+        ArgumentCaptor<PhysicalInstanceIds> idsCaptor = ArgumentCaptor.forClass(PhysicalInstanceIds.class);
+        verify(ddiService).createPhysicalInstance(piCaptor.capture(), idsCaptor.capture());
         assertThat(piCaptor.getValue().physicalInstanceLabel())
                 .isEqualTo(LocalColecticaGroupInitConfiguration.VERSIONED_EXAMPLE_PHYSICAL_INSTANCE_LABEL);
+        // Ids déterministes : une relance réécrit cette PI au lieu d'en créer une nouvelle
+        assertThat(idsCaptor.getValue().physicalInstance())
+                .isEqualTo(generateDeterministicUuid(
+                        LocalColecticaGroupInitConfiguration.VERSIONED_EXAMPLE_STUDY_UNIT_SEED + "#physicalinstance"));
 
         // La MÊME StudyUnit enregistrée en version 1 puis en version 2, les deux référençant la PI.
         ArgumentCaptor<Ddi4StudyUnit> suCaptor = ArgumentCaptor.forClass(Ddi4StudyUnit.class);

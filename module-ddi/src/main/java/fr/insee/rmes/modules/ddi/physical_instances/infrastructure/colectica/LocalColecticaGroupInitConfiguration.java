@@ -29,6 +29,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Variable;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4VariableScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LangStrings;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LogicalRecord;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceIds;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.ValueType;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.VariableRepresentation;
@@ -69,6 +70,12 @@ import org.springframework.core.annotation.Order;
  *       with StudyUnitReferences (pointing to existing StudyUnits) and a LogicalProductReference,
  *       so each Group exposes the Group → LogicalProduct → schemes chain</li>
  * </ol>
+ * <p>
+ * Tous les items créés portent des ids déterministes, dérivés de l'IRI de la série / de l'opération :
+ * une relance de l'init réécrit donc les mêmes items (RegisterOrReplace) au lieu d'en créer de
+ * nouveaux. Cela vaut aussi pour les PhysicalInstances — dont les ids sont imposés via
+ * {@link #physicalInstanceIds(String)} — sans quoi chaque relance laisserait les PI du tour
+ * précédent en base, orphelines de StudyUnit et donc en double dans la recherche avancée.
  * <p>
  * For each operation it creates {@link #VARIANT_LABEL_WORDS}.size() StudyUnit variants (and one
  * PhysicalInstance each), and for each series the same number of Group variants — every variant
@@ -135,6 +142,18 @@ public class LocalColecticaGroupInitConfiguration {
      * chaîne StudyUnit → LogicalProduct → VariableScheme.
      */
     private static final String STUDY_UNIT_LOGICAL_PRODUCT_SEED_SUFFIX = "#studyunitlogicalproduct";
+
+    /**
+     * Suffixes appended to a <em>study unit</em> seed pour dériver les ids déterministes de sa
+     * PhysicalInstance, de la DataRelationship de celle-ci et de son LogicalRecord. Sans ces ids
+     * imposés, {@code createPhysicalInstance} tire des UUID aléatoires : une relance de l'init
+     * créerait alors de nouvelles PhysicalInstances et laisserait les précédentes en base, orphelines
+     * (plus aucune StudyUnit ne les référence) — c'est-à-dire en double dans les écrans de recherche.
+     */
+    private static final String PHYSICAL_INSTANCE_SEED_SUFFIX = "#physicalinstance";
+
+    private static final String DATA_RELATIONSHIP_SEED_SUFFIX = "#datarelationship";
+    private static final String LOGICAL_RECORD_SEED_SUFFIX = "#logicalrecord";
 
     private static final String VARIABLE_SCHEME_SEED_SUFFIX = "#variablescheme";
 
@@ -262,15 +281,10 @@ public class LocalColecticaGroupInitConfiguration {
                                     "Creating physical instance: operationId={}, label='{}'",
                                     operation.operationId(),
                                     physicalInstanceLabel);
-                            Ddi4Response piResponse =
-                                    ddiService.createPhysicalInstance(new CreatePhysicalInstanceRequest(
-                                            physicalInstanceLabel,
-                                            physicalInstanceLabel,
-                                            null,
-                                            null,
-                                            null,
-                                            null,
-                                            null));
+                            Ddi4Response piResponse = ddiService.createPhysicalInstance(
+                                    new CreatePhysicalInstanceRequest(
+                                            physicalInstanceLabel, physicalInstanceLabel, null, null, null, null, null),
+                                    physicalInstanceIds(studyUnitSeed));
                             Ddi4PhysicalInstance pi =
                                     piResponse.physicalInstance().getFirst();
                             studyUnitService.addPhysicalInstance(
@@ -467,6 +481,9 @@ public class LocalColecticaGroupInitConfiguration {
     /** Libellé de la PhysicalInstance basique portée par les deux versions de la StudyUnit. */
     static final String VERSIONED_EXAMPLE_PHYSICAL_INSTANCE_LABEL = "EXEMPLE - PI d'une study unit en 2 versions";
 
+    /** Graine des ids déterministes de la PhysicalInstance d'exemple « liste de codes inexistante ». */
+    static final String MISSING_CODE_LIST_EXAMPLE_SEED = "example:physicalinstance:missing-code-list";
+
     /**
      * Exemple de données volontairement versionnées : un Group → une StudyUnit enregistrée en
      * version 1 <em>puis</em> en version 2 → une PhysicalInstance très basique, référencée à
@@ -499,14 +516,16 @@ public class LocalColecticaGroupInitConfiguration {
             try {
                 // La PhysicalInstance d'abord : les deux versions de la StudyUnit la référencent, et
                 // Colectica ne doit pas en fabriquer un stub vide.
-                Ddi4Response piResponse = ddiService.createPhysicalInstance(new CreatePhysicalInstanceRequest(
-                        VERSIONED_EXAMPLE_PHYSICAL_INSTANCE_LABEL,
-                        VERSIONED_EXAMPLE_PHYSICAL_INSTANCE_LABEL,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null));
+                Ddi4Response piResponse = ddiService.createPhysicalInstance(
+                        new CreatePhysicalInstanceRequest(
+                                VERSIONED_EXAMPLE_PHYSICAL_INSTANCE_LABEL,
+                                VERSIONED_EXAMPLE_PHYSICAL_INSTANCE_LABEL,
+                                null,
+                                null,
+                                null,
+                                null,
+                                null),
+                        physicalInstanceIds(VERSIONED_EXAMPLE_STUDY_UNIT_SEED));
                 Ddi4PhysicalInstance physicalInstance =
                         piResponse.physicalInstance().getFirst();
                 Reference physicalInstanceReference = Reference.of(
@@ -634,6 +653,14 @@ public class LocalColecticaGroupInitConfiguration {
      * la StudyUnit, pour éviter que Colectica ne fabrique des stubs vides. Comme le LogicalProduct du
      * Group, il n'est classé que par un seul conteneur.
      */
+    /** Ids déterministes de la PhysicalInstance d'une StudyUnit, dérivés du seed de cette StudyUnit. */
+    private static PhysicalInstanceIds physicalInstanceIds(String studyUnitSeed) {
+        return new PhysicalInstanceIds(
+                generateDeterministicUuid(studyUnitSeed + PHYSICAL_INSTANCE_SEED_SUFFIX),
+                generateDeterministicUuid(studyUnitSeed + DATA_RELATIONSHIP_SEED_SUFFIX),
+                generateDeterministicUuid(studyUnitSeed + LOGICAL_RECORD_SEED_SUFFIX));
+    }
+
     private Reference createStudyUnitLogicalProduct(
             DDIService ddiService,
             String studyUnitSeed,
@@ -793,7 +820,8 @@ public class LocalColecticaGroupInitConfiguration {
         try {
             String label = "EXEMPLE - variable avec liste de codes inexistante";
             Ddi4Response created = ddiService.createPhysicalInstance(
-                    new CreatePhysicalInstanceRequest(label, label, null, null, null, null, null));
+                    new CreatePhysicalInstanceRequest(label, label, null, null, null, null, null),
+                    physicalInstanceIds(MISSING_CODE_LIST_EXAMPLE_SEED));
 
             Ddi4PhysicalInstance pi = created.physicalInstance().getFirst();
             Ddi4DataRelationship dataRelationship = created.dataRelationship().getFirst();

@@ -20,6 +20,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LangString;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LangStrings;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LogicalRecord;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceIds;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceParents;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UpdatePhysicalInstanceRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI4toDDI3ConverterService;
@@ -61,9 +62,18 @@ class ColecticaPhysicalInstanceWriter {
     }
 
     Ddi4Response createPhysicalInstance(CreatePhysicalInstanceRequest request) {
-        String physicalInstanceId = UUID.randomUUID().toString();
-        String dataRelationshipId = UUID.randomUUID().toString();
-        String logicalRecordId = UUID.randomUUID().toString();
+        return createPhysicalInstance(
+                request,
+                new PhysicalInstanceIds(
+                        UUID.randomUUID().toString(),
+                        UUID.randomUUID().toString(),
+                        UUID.randomUUID().toString()));
+    }
+
+    Ddi4Response createPhysicalInstance(CreatePhysicalInstanceRequest request, PhysicalInstanceIds ids) {
+        String physicalInstanceId = ids.physicalInstance();
+        String dataRelationshipId = ids.dataRelationship();
+        String logicalRecordId = ids.logicalRecord();
         String agencyId = instanceConfiguration.defaultAgencyId();
         int version = 1;
         String versionDate = ColecticaDates.nowIso();
