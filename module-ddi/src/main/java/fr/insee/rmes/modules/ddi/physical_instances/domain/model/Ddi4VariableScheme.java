@@ -20,7 +20,21 @@ public record Ddi4VariableScheme(
         @JsonProperty("ID") String id,
         @JsonProperty("Version") String version,
         @JsonProperty("Label") List<LangString> label,
-        @JsonProperty("VariableReference") List<Reference> variableReference) {
+        @JsonProperty("VariableReference") List<Reference> variableReference,
+        @JsonProperty("Name") String name) {
 
     public static final String TYPE = "VariableScheme";
+
+    /** Une VariableScheme sans {@code Name} propre — le DDI 3.3 n'écrit alors pas l'élément. */
+    public Ddi4VariableScheme(
+            String type,
+            CogsDate versionDate,
+            String urn,
+            String agency,
+            String id,
+            String version,
+            List<LangString> label,
+            List<Reference> variableReference) {
+        this(type, versionDate, urn, agency, id, version, label, variableReference, null);
+    }
 }

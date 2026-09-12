@@ -6,6 +6,7 @@ import fr.insee.ddi.lifecycle33.logicalproduct.LogicalProductType;
 import fr.insee.ddi.lifecycle33.reusable.AbstractVersionableType;
 import fr.insee.ddi.lifecycle33.reusable.BasedOnObjectType;
 import fr.insee.ddi.lifecycle33.reusable.CategoryRelationCodeType;
+import fr.insee.ddi.lifecycle33.reusable.CitationType;
 import fr.insee.ddi.lifecycle33.reusable.CodeRepresentationBaseType;
 import fr.insee.ddi.lifecycle33.reusable.ContentType;
 import fr.insee.ddi.lifecycle33.reusable.DateTimeRepresentationBaseType;
@@ -367,6 +368,10 @@ public class Ddi4ToLifecycle33 {
         schemeType.addVersion(scheme.version());
         stampVersionResponsibility(schemeType);
 
+        if (scheme.name() != null) {
+            schemeType.addNewVariableSchemeName().addNewString().setStringValue(scheme.name());
+        }
+
         if (scheme.label() != null && !scheme.label().isEmpty()) {
             writeLabelContent(
                     schemeType.addNewLabel().addNewContent(), scheme.label().get(0));
@@ -527,11 +532,8 @@ public class Ddi4ToLifecycle33 {
             groupType.addNewTypeOfGroup().setStringValue(group.typeOfGroup());
         }
 
-        if (group.citation() != null && group.citation().title() != null) {
-            LangString first = group.citation().title().get(0);
-            var titleString = groupType.addNewCitation().addNewTitle().addNewString();
-            titleString.setLang(first.language());
-            titleString.setStringValue(first.value());
+        if (group.citation() != null) {
+            populateCitation(groupType.addNewCitation(), group.citation());
         }
 
         if (group.studyUnitReference() != null) {
@@ -576,6 +578,10 @@ public class Ddi4ToLifecycle33 {
         lpType.addNewID().setStringValue(logicalProduct.id());
         lpType.addVersion(logicalProduct.version());
         stampVersionResponsibility(lpType);
+
+        if (logicalProduct.name() != null) {
+            lpType.addNewLogicalProductName().addNewString().setStringValue(logicalProduct.name());
+        }
 
         if (logicalProduct.label() != null && !logicalProduct.label().isEmpty()) {
             writeLabelContent(
@@ -628,11 +634,8 @@ public class Ddi4ToLifecycle33 {
             userId.setStringValue(studyUnit.operationIri());
         }
 
-        if (studyUnit.citation() != null && studyUnit.citation().title() != null) {
-            LangString first = studyUnit.citation().title().get(0);
-            var titleString = suType.addNewCitation().addNewTitle().addNewString();
-            titleString.setLang(first.language());
-            titleString.setStringValue(first.value());
+        if (studyUnit.citation() != null) {
+            populateCitation(suType.addNewCitation(), studyUnit.citation());
         }
 
         if (studyUnit.logicalProductReferences() != null) {
@@ -648,6 +651,29 @@ public class Ddi4ToLifecycle33 {
         }
 
         return doc;
+    }
+
+    /**
+     * Writes a {@code r:Citation}: every title, then every alternate title, each as one
+     * {@code r:String} tagged with its language — a series has a label in each configured language,
+     * and the DDI citation carries them all rather than only the first.
+     */
+    private static void populateCitation(CitationType target, Citation citation) {
+        if (citation.title() != null) {
+            var title = target.addNewTitle();
+            for (LangString value : citation.title()) {
+                var string = title.addNewString();
+                string.setLang(value.language());
+                string.setStringValue(value.value());
+            }
+        }
+        if (citation.alternateTitle() != null) {
+            for (LangString value : citation.alternateTitle()) {
+                var string = target.addNewAlternateTitle().addNewString();
+                string.setLang(value.language());
+                string.setStringValue(value.value());
+            }
+        }
     }
 
     private static void writeLabelContent(ContentType target, LangString value) {

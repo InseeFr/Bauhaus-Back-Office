@@ -15,6 +15,8 @@ import fr.insee.rmes.exceptions.RmesNotAcceptableException;
 import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.graphdb.ontologies.ADMS;
 import fr.insee.rmes.model.operations.Operation;
+import fr.insee.rmes.modules.operation.domain.event.BilingualLabel;
+import fr.insee.rmes.modules.operation.domain.event.OperationSaved;
 import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationsOperationQueries;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
@@ -30,6 +32,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 @ExtendWith(MockitoExtension.class)
 class OperationsRepositoryTest {
@@ -50,6 +53,13 @@ class OperationsRepositoryTest {
 
     @Mock
     OperationsOperationQueries operationsOperationQueries;
+
+    @Mock
+    ApplicationEventPublisher events;
+
+    @Spy
+    BauhausUriBuilder bauhausUriBuilder =
+            new BauhausUriBuilder("http://id.insee.fr", "http://bauhaus", p -> Optional.of("/operations/operation"));
 
     @BeforeAll
     static void initRdfUtils() {
@@ -184,5 +194,31 @@ class OperationsRepositoryTest {
                 // d'autres exceptions sont attendues car les mocks ne couvrent pas tout le flow
             }
         }
+    }
+
+    @Test
+    void setOperation_publishesOperationSavedCarryingItsSeriesIri() throws RmesException {
+        when(repositoryGestion.getResponseAsBoolean(any())).thenReturn(false);
+        when(operationsObjectMapper.createId()).thenReturn("o1500");
+        when(operationsObjectMapper.checkIfObjectExists(ObjectType.SERIES, "s1001"))
+                .thenReturn(true);
+        JSONObject body = new JSONObject()
+                .put("prefLabelLg1", "Enquête emploi")
+                .put("prefLabelLg2", "Labour survey")
+                .put("altLabelLg1", "EEC")
+                .put("altLabelLg2", "LFS")
+                .put("series", new JSONObject().put("id", "s1001"));
+
+        operationsRepository.setOperation(body.toString());
+
+        ArgumentCaptor<OperationSaved> captor = ArgumentCaptor.forClass(OperationSaved.class);
+        verify(events).publishEvent(captor.capture());
+        assertThat(captor.getValue())
+                .isEqualTo(new OperationSaved(
+                        "http://id.insee.fr/operations/operation/o1500",
+                        "o1500",
+                        "http://id.insee.fr/operations/operation/s1001",
+                        new BilingualLabel("Enquête emploi", "Labour survey"),
+                        new BilingualLabel("EEC", "LFS")));
     }
 }

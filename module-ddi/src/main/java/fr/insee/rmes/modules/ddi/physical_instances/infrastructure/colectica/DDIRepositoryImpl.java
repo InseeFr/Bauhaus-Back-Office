@@ -8,11 +8,13 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Category;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CategoryScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeListScheme;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4GroupResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4LogicalProduct;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedMissingValuesRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedRepresentationScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnitResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4VariableScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodeListScheme;
@@ -70,6 +72,7 @@ public class DDIRepositoryImpl implements DDIRepository {
     private final ColecticaUsageRepository usages;
     private final ColecticaMissingValuesRepository missingValues;
     private final ColecticaItemCreator itemCreator;
+    private final ColecticaItemByIdReader itemByIdReader;
 
     public DDIRepositoryImpl(
             ColecticaConfiguration.ColecticaInstanceConfiguration instanceConfiguration,
@@ -88,6 +91,7 @@ public class DDIRepositoryImpl implements DDIRepository {
         this.physicalInstanceReader =
                 new ColecticaPhysicalInstanceReader(instanceConfiguration, ddi3ToDdi4Converter, setReader);
         this.groupReader = new ColecticaGroupSetReader(colecticaClient, defaultLang);
+        this.itemByIdReader = new ColecticaItemByIdReader(colecticaClient, ddi3ToDdi4Converter);
         this.codeLists = new ColecticaCodeListRepository(
                 instanceConfiguration,
                 colecticaClient,
@@ -250,6 +254,16 @@ public class DDIRepositoryImpl implements DDIRepository {
     @Override
     public Ddi4GroupResponse getGroup(String agencyId, String id) {
         return groupReader.getGroup(agencyId, id);
+    }
+
+    @Override
+    public Optional<Ddi4Group> findGroup(String agencyId, String id) {
+        return groupReader.findGroup(agencyId, id);
+    }
+
+    @Override
+    public Optional<Ddi4StudyUnit> findStudyUnit(String agencyId, String id) {
+        return itemByIdReader.findStudyUnit(agencyId, id);
     }
 
     // --- Listes de codes et navigation ------------------------------------------------------------

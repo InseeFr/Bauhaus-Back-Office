@@ -4,6 +4,14 @@ fr.insee.rmes.bauhaus.colectica:
     - en-GB
   init: false
 
+  # Miroir DDI des séries et opérations statistiques : à true, chaque création ou modification d'une
+  # série (resp. d'une opération) dans le dépôt RDF est rejouée côté Colectica sur le Group
+  # correspondant (resp. la StudyUnit, son LogicalProduct et sa VariableScheme). Absent ou false :
+  # rien n'est écouté, le chemin d'écriture RDF est inchangé.
+  # La synchronisation est synchrone et bloquante : si Colectica refuse l'écriture, la requête échoue.
+  operations-mirror:
+    enabled: false
+
   server:
     # Primary Colectica Instance
     itemTypes:

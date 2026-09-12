@@ -7,11 +7,13 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Category;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CategoryScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeListScheme;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4GroupResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4LogicalProduct;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedMissingValuesRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedRepresentationScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnitResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4VariableScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodeListScheme;
@@ -63,6 +65,12 @@ public interface DDIRepository {
     Ddi4Response getFullPhysicalInstance(String agencyId, String id);
 
     Ddi4GroupResponse getGroup(String agencyId, String id);
+
+    /** Le Group d'identifiant {@code id}, ou {@link Optional#empty()} s'il n'existe pas encore. */
+    Optional<Ddi4Group> findGroup(String agencyId, String id);
+
+    /** La StudyUnit d'identifiant {@code id}, ou {@link Optional#empty()} si elle n'existe pas encore. */
+    Optional<Ddi4StudyUnit> findStudyUnit(String agencyId, String id);
 
     void updatePhysicalInstance(String agencyId, String id, UpdatePhysicalInstanceRequest request);
 

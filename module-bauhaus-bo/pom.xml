@@ -40,6 +40,11 @@
     </dependency>
     <dependency>
       <groupId>fr.insee.rmes</groupId>
+      <artifactId>module-operation</artifactId>
+      <version>1.0.0</version>
+    </dependency>
+    <dependency>
+      <groupId>fr.insee.rmes</groupId>
       <artifactId>module-ddi</artifactId>
       <version>1.0.0</version>
     </dependency>

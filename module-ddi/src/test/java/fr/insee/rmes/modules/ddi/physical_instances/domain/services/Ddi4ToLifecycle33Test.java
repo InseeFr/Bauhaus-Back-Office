@@ -21,6 +21,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4PhysicalIns
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Variable;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4VariableScheme;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LangString;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LangStrings;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Level;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LogicalRecord;
@@ -637,6 +638,51 @@ class Ddi4ToLifecycle33Test {
     }
 
     @Test
+    void shouldBuildVariableSchemeWithItsOwnName() {
+        Ddi4VariableScheme scheme = new Ddi4VariableScheme(
+                Ddi4VariableScheme.TYPE,
+                CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
+                "urn:ddi:fr.insee:vars-id:1",
+                "fr.insee",
+                "vars-id",
+                "1",
+                LangStrings.of("fr-FR", "Ensemble de variables EEC"),
+                List.of(),
+                "VS-EEC");
+
+        String xml = converter.toVariableScheme(scheme).xmlText(logicalProductXmlOptions());
+
+        Assertions.assertThat(xml)
+                .contains("<ddi:VariableSchemeName")
+                .contains(">VS-EEC</r:String>")
+                .contains(">Ensemble de variables EEC<");
+    }
+
+    @Test
+    void shouldBuildLogicalProductWithItsOwnName() {
+        Ddi4LogicalProduct logicalProduct = new Ddi4LogicalProduct(
+                Ddi4LogicalProduct.TYPE,
+                CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
+                "urn:ddi:fr.insee:lp-id:1",
+                "fr.insee",
+                "lp-id",
+                "1",
+                LangStrings.of("fr-FR", "EEC"),
+                null,
+                null,
+                List.of(Reference.of("fr.insee", "vars-id", "1", "VariableScheme")),
+                null,
+                "LP-EEC");
+
+        String xml = converter.toLogicalProduct(logicalProduct).xmlText(logicalProductXmlOptions());
+
+        Assertions.assertThat(xml)
+                .contains("<ddi:LogicalProductName")
+                .contains(">LP-EEC</r:String>")
+                .contains(">EEC<");
+    }
+
+    @Test
     void shouldBuildEmptyCategoryAndVariableSchemes() {
         Ddi4CategoryScheme categoryScheme = new Ddi4CategoryScheme(
                 Ddi4CategoryScheme.TYPE,
@@ -794,6 +840,33 @@ class Ddi4ToLifecycle33Test {
     }
 
     @Test
+    void shouldBuildGroupWithTitlesInBothLanguagesAndAlternateTitles() {
+        Ddi4Group group = new Ddi4Group(
+                Ddi4Group.TYPE,
+                CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
+                "urn:ddi:fr.insee:group-id:1",
+                "fr.insee",
+                "group-id",
+                "1",
+                "bauhaus",
+                new Citation(
+                        List.of(new LangString("fr-FR", "Recensement"), new LangString("en-GB", "Census")),
+                        List.of(new LangString("fr-FR", "RP"), new LangString("en-GB", "CENS"))),
+                List.of(),
+                List.of("http://id.insee.fr/operations/serie/s1001"),
+                "insee:StatisticalOperationSeries");
+
+        String xml = converter.toGroup(group).xmlText(groupXmlOptions());
+
+        Assertions.assertThat(xml)
+                .contains("<r:String xml:lang=\"fr-FR\">Recensement</r:String>")
+                .contains("<r:String xml:lang=\"en-GB\">Census</r:String>")
+                .contains("<r:AlternateTitle")
+                .contains("<r:String xml:lang=\"fr-FR\">RP</r:String>")
+                .contains("<r:String xml:lang=\"en-GB\">CENS</r:String>");
+    }
+
+    @Test
     void shouldBuildCategory() {
         Ddi4Category cat = new Ddi4Category(
                 Ddi4Category.TYPE,
@@ -860,6 +933,27 @@ class Ddi4ToLifecycle33Test {
                 .contains(">Test<")
                 .doesNotContain("typeOfUserID")
                 .doesNotContain("TypeOfGroup");
+    }
+
+    @Test
+    void shouldBuildStudyUnitWithTitlesInBothLanguages() {
+        Ddi4StudyUnit su = new Ddi4StudyUnit(
+                Ddi4StudyUnit.TYPE,
+                CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
+                "urn:ddi:fr.insee:su-id:1",
+                "fr.insee",
+                "su-id",
+                "1",
+                new Citation(List.of(
+                        new LangString("fr-FR", "Enqu\u00eate emploi"), new LangString("en-GB", "Labour survey"))),
+                "http://id.insee.fr/operations/operation/s1001",
+                null);
+
+        String xml = converter.toStudyUnit(su).xmlText(studyUnitXmlOptions());
+
+        Assertions.assertThat(xml)
+                .contains("<r:String xml:lang=\"fr-FR\">Enqu\u00eate emploi</r:String>")
+                .contains("<r:String xml:lang=\"en-GB\">Labour survey</r:String>");
     }
 
     @Test

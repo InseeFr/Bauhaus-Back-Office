@@ -24,6 +24,8 @@ import fr.insee.rmes.graphdb.ontologies.INSEE;
 import fr.insee.rmes.json.JSONUtils;
 import fr.insee.rmes.model.links.OperationsLink;
 import fr.insee.rmes.modules.commons.configuration.swagger.model.IdLabelTwoLangs;
+import fr.insee.rmes.modules.operation.domain.event.BilingualLabel;
+import fr.insee.rmes.modules.operation.domain.event.SeriesSaved;
 import fr.insee.rmes.modules.operations.series.domain.model.Series;
 import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationSeriesQueries;
@@ -42,6 +44,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -73,6 +76,8 @@ public class SeriesRepository {
 
     private final OperationSeriesQueries operationSeriesQueries;
 
+    private final ApplicationEventPublisher events;
+
     public SeriesRepository(
             BauhausLanguagesProperties languages,
             RepositoryGestion repositoryGestion,
@@ -85,7 +90,8 @@ public class SeriesRepository {
             BauhausUriBuilder bauhausUriBuilder,
             SeriesValidator validator,
             OperationSeriesQueries operationSeriesQueries,
-            OrganisationLookup organisationLookup) {
+            OrganisationLookup organisationLookup,
+            ApplicationEventPublisher events) {
         this.languages = languages;
         this.repositoryGestion = repositoryGestion;
         this.codeListService = codeListService;
@@ -98,6 +104,7 @@ public class SeriesRepository {
         this.validator = validator;
         this.operationSeriesQueries = operationSeriesQueries;
         this.organisationLookup = organisationLookup;
+        this.events = events;
     }
 
     /*READ*/
@@ -464,6 +471,7 @@ public class SeriesRepository {
 
         createRdfSeries(series, familyURI, ValidationStatus.UNPUBLISHED);
         logger.info("Create series : {} - {}", series.getId(), series.getPrefLabelLg1());
+        publishSeriesSaved(series);
 
         return series.getId();
     }
@@ -493,6 +501,20 @@ public class SeriesRepository {
             createRdfSeries(series, null, ValidationStatus.MODIFIED);
         }
         logger.info("Update series : {} - {}", series.getId(), series.getPrefLabelLg1());
+        publishSeriesSaved(series);
+    }
+
+    /**
+     * Signale que la série vient d'être écrite en RDF. L'événement porte l'IRI de publication,
+     * identifiant canonique de la série hors de Bauhaus ; ce que ses consommateurs en font ne
+     * regarde pas ce dépôt.
+     */
+    private void publishSeriesSaved(Series series) {
+        events.publishEvent(new SeriesSaved(
+                bauhausUriBuilder.getCompleteUriPublication(ObjectType.SERIES.labelType(), series.getId()),
+                series.getId(),
+                new BilingualLabel(series.getPrefLabelLg1(), series.getPrefLabelLg2()),
+                new BilingualLabel(series.getAltLabelLg1(), series.getAltLabelLg2())));
     }
 
     public void setSeriesValidation(String id) throws RmesException {

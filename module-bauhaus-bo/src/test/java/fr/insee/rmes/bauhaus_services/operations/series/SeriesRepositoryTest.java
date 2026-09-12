@@ -6,8 +6,11 @@ import static org.mockito.Mockito.*;
 
 import fr.insee.rmes.AppSpringBootTest;
 import fr.insee.rmes.BauhausLanguagesProperties;
+import fr.insee.rmes.bauhaus_services.operations.OperationsParentRepository;
+import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationsUtils;
 import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.OperationsObjectMapper;
 import fr.insee.rmes.bauhaus_services.operations.series.validation.SeriesValidator;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.utils.OrganisationLookup;
 import fr.insee.rmes.domain.exceptions.RmesException;
@@ -15,6 +18,8 @@ import fr.insee.rmes.exceptions.RmesNotAcceptableException;
 import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.graphdb.ontologies.ADMS;
 import fr.insee.rmes.model.links.OperationsLink;
+import fr.insee.rmes.modules.operation.domain.event.BilingualLabel;
+import fr.insee.rmes.modules.operation.domain.event.SeriesSaved;
 import fr.insee.rmes.modules.operations.series.domain.model.Series;
 import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
@@ -35,6 +40,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 
 @AppSpringBootTest
 @ExtendWith(MockitoExtension.class)
@@ -53,6 +59,7 @@ class SeriesRepositoryTest {
                 null,
                 null,
                 operationsObjectMapper,
+                null,
                 null,
                 null,
                 null,
@@ -106,6 +113,7 @@ class SeriesRepositoryTest {
                 null,
                 validator,
                 null,
+                null,
                 null);
         Series series = new Series();
         series.setId("s2000");
@@ -139,7 +147,8 @@ class SeriesRepositoryTest {
                 null,
                 null,
                 null,
-                lookup);
+                lookup,
+                null);
         SimpleValueFactory vf = SimpleValueFactory.getInstance();
         IRI seriesURI = vf.createIRI("http://bauhaus/series/s1");
         Model model = new LinkedHashModel();
@@ -173,7 +182,8 @@ class SeriesRepositoryTest {
                 null,
                 null,
                 null,
-                lookup);
+                lookup,
+                null);
         SimpleValueFactory vf = SimpleValueFactory.getInstance();
         IRI seriesURI = vf.createIRI("http://bauhaus/series/s1");
         Model model = new LinkedHashModel();
@@ -200,6 +210,7 @@ class SeriesRepositoryTest {
                 null,
                 null,
                 operationsObjectMapper,
+                null,
                 null,
                 null,
                 null,
@@ -236,6 +247,7 @@ class SeriesRepositoryTest {
                 null,
                 null,
                 null,
+                null,
                 null);
         SimpleValueFactory vf = SimpleValueFactory.getInstance();
         IRI seriesURI = vf.createIRI("http://bauhaus/series/s1");
@@ -257,5 +269,73 @@ class SeriesRepositoryTest {
                 .extracting(Value::stringValue)
                 .containsExactlyInAnyOrder(
                         "http://bauhaus/organisations/DG75-A001", "http://bauhaus/organisations/DG75-B002");
+    }
+
+    @Test
+    void setSeries_publishesSeriesSavedWithThePublicationIriAndBothLabels() throws RmesException {
+        ApplicationEventPublisher events = mock(ApplicationEventPublisher.class);
+        BauhausUriBuilder uriBuilder = mock(BauhausUriBuilder.class);
+        when(uriBuilder.getCompleteUriPublication("series", "s1001"))
+                .thenReturn("http://id.insee.fr/operations/serie/s1001");
+        OperationsParentRepository parents = mock(OperationsParentRepository.class);
+        when(parents.getFamOpSerValidationStatus("s1001")).thenReturn(ValidationStatus.UNPUBLISHED.getValue());
+        SeriesRepository seriesRepository = new SeriesRepository(
+                new BauhausLanguagesProperties("fr", "en"),
+                repositoryGestion,
+                null,
+                null,
+                operationsObjectMapper,
+                parents,
+                null,
+                mock(DocumentationsUtils.class),
+                uriBuilder,
+                mock(SeriesValidator.class),
+                null,
+                null,
+                events);
+
+        seriesRepository.setSeries("s1001", """
+                {"id":"s1001","prefLabelLg1":"Recensement","prefLabelLg2":"Census",                "altLabelLg1":"RP","altLabelLg2":"CENS"}""");
+
+        ArgumentCaptor<SeriesSaved> captor = ArgumentCaptor.forClass(SeriesSaved.class);
+        verify(events).publishEvent(captor.capture());
+        assertThat(captor.getValue())
+                .isEqualTo(new SeriesSaved(
+                        "http://id.insee.fr/operations/serie/s1001",
+                        "s1001",
+                        new BilingualLabel("Recensement", "Census"),
+                        new BilingualLabel("RP", "CENS")));
+    }
+
+    @Test
+    void createSeries_publishesSeriesSaved() throws RmesException {
+        ApplicationEventPublisher events = mock(ApplicationEventPublisher.class);
+        BauhausUriBuilder uriBuilder = mock(BauhausUriBuilder.class);
+        when(uriBuilder.getCompleteUriPublication("series", "s1001"))
+                .thenReturn("http://id.insee.fr/operations/serie/s1001");
+        OperationsObjectMapper objectMapper = mock(OperationsObjectMapper.class);
+        when(objectMapper.checkIfObjectExists(ObjectType.FAMILY, "f1")).thenReturn(true);
+        SeriesRepository seriesRepository = new SeriesRepository(
+                new BauhausLanguagesProperties("fr", "en"),
+                repositoryGestion,
+                null,
+                null,
+                objectMapper,
+                null,
+                null,
+                null,
+                uriBuilder,
+                mock(SeriesValidator.class),
+                null,
+                null,
+                events);
+
+        seriesRepository.createSeries("""
+                {"id":"s1001","prefLabelLg1":"Recensement","family":{"id":"f1"}}""");
+
+        ArgumentCaptor<SeriesSaved> captor = ArgumentCaptor.forClass(SeriesSaved.class);
+        verify(events).publishEvent(captor.capture());
+        assertThat(captor.getValue().iri()).isEqualTo("http://id.insee.fr/operations/serie/s1001");
+        assertThat(captor.getValue().prefLabel()).isEqualTo(new BilingualLabel("Recensement", null));
     }
 }

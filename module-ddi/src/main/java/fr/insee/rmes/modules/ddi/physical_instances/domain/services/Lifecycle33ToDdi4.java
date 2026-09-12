@@ -23,6 +23,7 @@ import fr.insee.ddi.lifecycle33.reusable.CitationType;
 import fr.insee.ddi.lifecycle33.reusable.CodeRepresentationBaseType;
 import fr.insee.ddi.lifecycle33.reusable.ContentType;
 import fr.insee.ddi.lifecycle33.reusable.DateTimeRepresentationBaseType;
+import fr.insee.ddi.lifecycle33.reusable.InternationalStringType;
 import fr.insee.ddi.lifecycle33.reusable.LabelType;
 import fr.insee.ddi.lifecycle33.reusable.ManagedMissingValuesRepresentationType;
 import fr.insee.ddi.lifecycle33.reusable.NameType;
@@ -595,12 +596,26 @@ public class Lifecycle33ToDdi4 {
         }
     }
 
+    /**
+     * Titre et titres alternatifs, chacun dans toutes ses langues. Un item relu ici peut être
+     * réenregistré tel quel ({@code RegisterOrReplace} à version égale) : ce que cette lecture
+     * laisse tomber est effacé de l'item à la réécriture.
+     */
     private static Citation readCitation(CitationType citation) {
-        if (citation == null || !citation.isSetTitle()) return null;
+        if (citation == null) return null;
         List<LangString> titles = new ArrayList<>();
-        for (StringType s : citation.getTitle().getStringList()) {
-            titles.add(new LangString(s.getLang(), s.getStringValue()));
+        if (citation.isSetTitle()) {
+            for (StringType s : citation.getTitle().getStringList()) {
+                titles.add(new LangString(s.getLang(), s.getStringValue()));
+            }
         }
-        return titles.isEmpty() ? null : new Citation(titles);
+        List<LangString> alternateTitles = new ArrayList<>();
+        for (InternationalStringType alternateTitle : citation.getAlternateTitleList()) {
+            for (StringType s : alternateTitle.getStringList()) {
+                alternateTitles.add(new LangString(s.getLang(), s.getStringValue()));
+            }
+        }
+        if (titles.isEmpty() && alternateTitles.isEmpty()) return null;
+        return new Citation(titles.isEmpty() ? null : titles, alternateTitles.isEmpty() ? null : alternateTitles);
     }
 }

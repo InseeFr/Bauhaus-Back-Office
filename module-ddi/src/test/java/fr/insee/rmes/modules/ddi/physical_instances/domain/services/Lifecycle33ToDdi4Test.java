@@ -822,6 +822,36 @@ class Lifecycle33ToDdi4Test {
     }
 
     @Test
+    void shouldParseGroupAlternateTitles() throws XmlException {
+        FragmentDocument doc = FragmentDocument.Factory.parse("""
+            <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
+                <Group xmlns="ddi:group:3_3" isUniversallyUnique="true" versionDate="2026-04-03T12:00:00Z">
+                    <r:URN>urn:ddi:fr.insee:group-id:1</r:URN>
+                    <r:Agency>fr.insee</r:Agency><r:ID>group-id</r:ID><r:Version>1</r:Version>
+                    <r:Citation>
+                        <r:Title>
+                            <r:String xml:lang="fr-FR">Recensement</r:String>
+                            <r:String xml:lang="en-GB">Census</r:String>
+                        </r:Title>
+                        <r:AlternateTitle><r:String xml:lang="fr-FR">RP</r:String></r:AlternateTitle>
+                        <r:AlternateTitle><r:String xml:lang="en-GB">CENS</r:String></r:AlternateTitle>
+                    </r:Citation>
+                </Group>
+            </Fragment>
+            """);
+
+        Ddi4Group group = converter.toGroup(doc);
+
+        assertThat(group.citation().title())
+                .extracting(LangString::language, LangString::value)
+                .containsExactly(tuple("fr-FR", "Recensement"), tuple("en-GB", "Census"));
+        assertThat(group.citation().alternateTitle())
+                .as("un réenregistrement du groupe repart de cette citation : ce qui n'est pas relu est perdu")
+                .extracting(LangString::language, LangString::value)
+                .containsExactly(tuple("fr-FR", "RP"), tuple("en-GB", "CENS"));
+    }
+
+    @Test
     void shouldParseStudyUnitWithOperationIri() throws XmlException {
         FragmentDocument doc = FragmentDocument.Factory.parse("""
             <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">

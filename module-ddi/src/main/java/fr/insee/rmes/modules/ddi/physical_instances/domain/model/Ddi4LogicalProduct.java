@@ -29,9 +29,39 @@ public record Ddi4LogicalProduct(
         @JsonProperty("VariableSchemeReference") List<Reference> variableSchemeReference,
 
         @JsonProperty("ManagedRepresentationSchemeReference")
-        List<Reference> managedRepresentationSchemeReference) {
+        List<Reference> managedRepresentationSchemeReference,
+
+        @JsonProperty("Name") String name) {
 
     public static final String TYPE = "LogicalProduct";
+
+    /** Un LogicalProduct sans {@code Name} propre — le DDI 3.3 n'écrit alors pas l'élément. */
+    public Ddi4LogicalProduct(
+            String type,
+            CogsDate versionDate,
+            String urn,
+            String agency,
+            String id,
+            String version,
+            List<LangString> label,
+            List<Reference> codeListSchemeReference,
+            List<Reference> categorySchemeReference,
+            List<Reference> variableSchemeReference,
+            List<Reference> managedRepresentationSchemeReference) {
+        this(
+                type,
+                versionDate,
+                urn,
+                agency,
+                id,
+                version,
+                label,
+                codeListSchemeReference,
+                categorySchemeReference,
+                variableSchemeReference,
+                managedRepresentationSchemeReference,
+                null);
+    }
 
     /**
      * Backward-compatible constructor for a LogicalProduct that only files a CodeListScheme
@@ -46,7 +76,7 @@ public record Ddi4LogicalProduct(
             String version,
             List<LangString> label,
             List<Reference> codeListSchemeReference) {
-        this(type, versionDate, urn, agency, id, version, label, codeListSchemeReference, null, null, null);
+        this(type, versionDate, urn, agency, id, version, label, codeListSchemeReference, null, null, null, null);
     }
 
     /**
@@ -74,6 +104,7 @@ public record Ddi4LogicalProduct(
                 codeListSchemeReference,
                 categorySchemeReference,
                 variableSchemeReference,
+                null,
                 null);
     }
 }

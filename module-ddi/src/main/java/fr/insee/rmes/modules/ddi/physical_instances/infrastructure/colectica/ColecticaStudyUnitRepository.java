@@ -11,6 +11,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.services.Ddi4ToLifecy
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,6 +35,11 @@ public class ColecticaStudyUnitRepository extends AbstractColecticaItemRepositor
     public List<PartialStudyUnit> getAll() {
         logger.info("Getting all study units from Colectica");
         return ddiRepository.getStudyUnits();
+    }
+
+    @Override
+    public Optional<Ddi4StudyUnit> find(String agencyId, String id) {
+        return ddiRepository.findStudyUnit(agencyId, id);
     }
 
     @Override

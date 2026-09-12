@@ -9,6 +9,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.Group
 import fr.insee.rmes.modules.ddi.physical_instances.domain.services.Ddi4ToLifecycle33;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,6 +52,11 @@ public class ColecticaGroupRepository extends AbstractColecticaItemRepository im
     public List<PartialGroup> getAll() {
         logger.info("Getting all groups from Colectica");
         return ddiRepository.getGroups();
+    }
+
+    @Override
+    public Optional<Ddi4Group> find(String agencyId, String id) {
+        return ddiRepository.findGroup(agencyId, id);
     }
 
     @Override

@@ -7,6 +7,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.Study
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.StudyUnitRepository;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,6 +33,11 @@ public class StudyUnitServiceImpl extends AbstractDdiItemService<Ddi4StudyUnit> 
         return studyUnitRepository.getAll().stream()
                 .sorted(LabelComparators.byLabelDescending(PartialStudyUnit::label))
                 .toList();
+    }
+
+    @Override
+    public Optional<Ddi4StudyUnit> find(String agencyId, String id) {
+        return studyUnitRepository.find(agencyId, id);
     }
 
     @Override

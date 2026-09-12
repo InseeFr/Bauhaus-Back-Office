@@ -5,6 +5,7 @@ import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.operations.OperationsParentRepository;
 import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationsUtils;
 import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.OperationsObjectMapper;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
@@ -16,6 +17,8 @@ import fr.insee.rmes.graphdb.ontologies.ADMS;
 import fr.insee.rmes.graphdb.ontologies.INSEE;
 import fr.insee.rmes.model.operations.Operation;
 import fr.insee.rmes.modules.commons.configuration.swagger.model.IdLabelTwoLangs;
+import fr.insee.rmes.modules.operation.domain.event.BilingualLabel;
+import fr.insee.rmes.modules.operation.domain.event.OperationSaved;
 import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationSeriesQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationsOperationQueries;
@@ -34,6 +37,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -54,6 +58,10 @@ public class OperationsRepository extends RdfService {
 
     private final OperationSeriesQueries operationSeriesQueries;
 
+    private final BauhausUriBuilder bauhausUriBuilder;
+
+    private final ApplicationEventPublisher events;
+
     public OperationsRepository(
             RepositoryGestion repoGestion,
             IdGenerator idGenerator,
@@ -65,7 +73,9 @@ public class OperationsRepository extends RdfService {
             OperationsParentRepository operationsParentRepository,
             OperationPublication operationPublication,
             OperationsOperationQueries operationsOperationQueries,
-            OperationSeriesQueries operationSeriesQueries) {
+            OperationSeriesQueries operationSeriesQueries,
+            BauhausUriBuilder bauhausUriBuilder,
+            ApplicationEventPublisher events) {
         super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
         this.languages = languages;
         this.operationsObjectMapper = operationsObjectMapper;
@@ -74,6 +84,8 @@ public class OperationsRepository extends RdfService {
         this.operationPublication = operationPublication;
         this.operationsOperationQueries = operationsOperationQueries;
         this.operationSeriesQueries = operationSeriesQueries;
+        this.bauhausUriBuilder = bauhausUriBuilder;
+        this.events = events;
     }
 
     private void validate(Operation operation) throws RmesException {
@@ -139,6 +151,7 @@ public class OperationsRepository extends RdfService {
 
         createRdfOperation(operation, seriesURI, ValidationStatus.UNPUBLISHED);
         logger.info("Create operation : {} - {}", operation.getId(), operation.getPrefLabelLg1());
+        publishOperationSaved(operation, idSeries);
 
         return operation.getId();
     }
@@ -162,6 +175,24 @@ public class OperationsRepository extends RdfService {
             createRdfOperation(operation, null, ValidationStatus.MODIFIED);
         }
         logger.info("Update operation : {} - {}", operation.getId(), operation.getPrefLabelLg1());
+        publishOperationSaved(
+                operation, operation.getSeries() != null ? operation.getSeries().getId() : null);
+    }
+
+    /**
+     * Signale que l'opération vient d'être écrite en RDF. L'IRI de la série n'accompagne l'événement
+     * que si l'appelant la connaît : le corps d'une modification ne la porte pas toujours, et le
+     * rattachement de l'opération à sa série ne change de toute façon pas à la modification.
+     */
+    private void publishOperationSaved(Operation operation, String idSeries) {
+        events.publishEvent(new OperationSaved(
+                bauhausUriBuilder.getCompleteUriPublication(ObjectType.OPERATION.labelType(), operation.getId()),
+                operation.getId(),
+                idSeries == null
+                        ? null
+                        : bauhausUriBuilder.getCompleteUriPublication(ObjectType.SERIES.labelType(), idSeries),
+                new BilingualLabel(operation.getPrefLabelLg1(), operation.getPrefLabelLg2()),
+                new BilingualLabel(operation.getAltLabelLg1(), operation.getAltLabelLg2())));
     }
 
     void createRdfOperation(Operation operation, IRI serieUri, ValidationStatus newStatus) throws RmesException {
