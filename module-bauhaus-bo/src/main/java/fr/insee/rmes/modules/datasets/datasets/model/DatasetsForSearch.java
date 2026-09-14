@@ -9,5 +9,4 @@ public record DatasetsForSearch(
         String wasGeneratedIRIs,
         String created,
         String updated,
-        String altIdentifier
-){}
+        String altIdentifier) {}

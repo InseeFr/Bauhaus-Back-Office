@@ -1,5 +1,14 @@
 package fr.insee.rmes.modules.ddi.physical_instances.webservice;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIService;
 import org.junit.jupiter.api.Test;
@@ -12,15 +21,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(MockitoExtension.class)
 class PhysicalInstanceVariablesResourcesTest {
@@ -118,8 +118,7 @@ class PhysicalInstanceVariablesResourcesTest {
         MockMvc mockMvc = MockMvcBuilders.standaloneSetup(resources).build();
         when(ddiService.getDataRelationships(AGENCY, ID, null)).thenReturn(emptyDdi4());
 
-        mockMvc.perform(get("/ddi/public/fichier/{agency}/{id}", AGENCY, ID)
-                        .accept(MediaType.APPLICATION_JSON))
+        mockMvc.perform(get("/ddi/public/fichier/{agency}/{id}", AGENCY, ID).accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }
 
@@ -136,11 +135,9 @@ class PhysicalInstanceVariablesResourcesTest {
     @Test
     void endpointMappedUnderDdiFichier_xml() throws Exception {
         MockMvc mockMvc = MockMvcBuilders.standaloneSetup(resources).build();
-        when(ddiService.getDataRelationshipsXml(AGENCY, ID, null))
-                .thenReturn("<ddi:FragmentInstance/>");
+        when(ddiService.getDataRelationshipsXml(AGENCY, ID, null)).thenReturn("<ddi:FragmentInstance/>");
 
-        mockMvc.perform(get("/ddi/public/fichier/{agency}/{id}", AGENCY, ID)
-                        .accept(MediaType.APPLICATION_XML))
+        mockMvc.perform(get("/ddi/public/fichier/{agency}/{id}", AGENCY, ID).accept(MediaType.APPLICATION_XML))
                 .andExpect(status().isOk());
     }
 

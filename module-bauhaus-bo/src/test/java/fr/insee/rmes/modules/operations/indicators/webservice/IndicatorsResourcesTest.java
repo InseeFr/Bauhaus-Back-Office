@@ -1,10 +1,17 @@
 package fr.insee.rmes.modules.operations.indicators.webservice;
 
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
 import fr.insee.rmes.bauhaus_services.OperationsDocumentationsService;
 import fr.insee.rmes.bauhaus_services.OperationsService;
-import fr.insee.rmes.modules.commons.configuration.LogRequestFilter;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.model.operations.PartialOperationIndicator;
+import fr.insee.rmes.modules.commons.configuration.LogRequestFilter;
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,14 +29,6 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
 @ExtendWith(MockitoExtension.class)
 class IndicatorsResourcesTest {
     @InjectMocks
@@ -45,16 +44,8 @@ class IndicatorsResourcesTest {
     void get_indicators_should_return_list_of_indicators() throws RmesException {
         // Given
         List<PartialOperationIndicator> indicators = new ArrayList<>();
-        indicators.add(new PartialOperationIndicator(
-                "ind1",
-                "Indicator 1",
-                "Indicateur 1"
-        ));
-        indicators.add(new PartialOperationIndicator(
-                "ind2",
-                "Indicator 2",
-                "Indicateur 2"
-        ));
+        indicators.add(new PartialOperationIndicator("ind1", "Indicator 1", "Indicateur 1"));
+        indicators.add(new PartialOperationIndicator("ind2", "Indicator 2", "Indicateur 2"));
 
         when(operationsService.getIndicators()).thenReturn(indicators);
 
@@ -89,11 +80,7 @@ class IndicatorsResourcesTest {
     void get_indicators_should_add_self_link_to_each_indicator() throws RmesException {
         // Given
         List<PartialOperationIndicator> indicators = new ArrayList<>();
-        indicators.add(new PartialOperationIndicator(
-                "ind1",
-                "Indicator 1",
-                "Indicateur 1"
-        ));
+        indicators.add(new PartialOperationIndicator("ind1", "Indicator 1", "Indicateur 1"));
 
         when(operationsService.getIndicators()).thenReturn(indicators);
 
@@ -111,12 +98,10 @@ class IndicatorsResourcesTest {
     }
 }
 
-
 @WebMvcTest(
-    value = IndicatorsResources.class,
-    excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = LogRequestFilter.class),
-    excludeAutoConfiguration = OAuth2ResourceServerAutoConfiguration.class
-)
+        value = IndicatorsResources.class,
+        excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = LogRequestFilter.class),
+        excludeAutoConfiguration = OAuth2ResourceServerAutoConfiguration.class)
 @AutoConfigureMockMvc(addFilters = false)
 class IndicatorsResourcesWebTest {
 
@@ -132,17 +117,9 @@ class IndicatorsResourcesWebTest {
     @Test
     void get_indicators_should_return_list_of_indicators_with_hal_json() throws Exception {
         // Given
-        PartialOperationIndicator ind1 = new PartialOperationIndicator(
-                "ind1",
-                "Indicator 1",
-                "Indicateur 1"
-        );
+        PartialOperationIndicator ind1 = new PartialOperationIndicator("ind1", "Indicator 1", "Indicateur 1");
 
-        PartialOperationIndicator ind2 = new PartialOperationIndicator(
-                "ind2",
-                "Indicator 2",
-                "Indicateur 2"
-        );
+        PartialOperationIndicator ind2 = new PartialOperationIndicator("ind2", "Indicator 2", "Indicateur 2");
 
         List<PartialOperationIndicator> indicators = List.of(ind1, ind2);
         when(operationsService.getIndicators()).thenReturn(indicators);

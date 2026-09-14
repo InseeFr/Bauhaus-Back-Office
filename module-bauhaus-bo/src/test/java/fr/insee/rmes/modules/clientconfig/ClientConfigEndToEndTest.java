@@ -1,5 +1,7 @@
 package fr.insee.rmes.modules.clientconfig;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.json.JSONObject;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -8,8 +10,6 @@ import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.client.RestClient;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class ClientConfigEndToEndTest {
@@ -23,11 +23,8 @@ class ClientConfigEndToEndTest {
         String initEndpoint = "http://localhost:" + serverPort + "/api/init";
         RestClient restClient = RestClient.create(initEndpoint);
 
-        var entityResponse = restClient
-                .get()
-                .accept(MediaType.APPLICATION_JSON)
-                .retrieve()
-                .toEntity(String.class);
+        var entityResponse =
+                restClient.get().accept(MediaType.APPLICATION_JSON).retrieve().toEntity(String.class);
 
         assertThat(entityResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(entityResponse.getBody()).isNotNull();

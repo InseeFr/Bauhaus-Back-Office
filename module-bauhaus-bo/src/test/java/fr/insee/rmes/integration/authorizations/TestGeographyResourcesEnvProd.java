@@ -1,11 +1,19 @@
 package fr.insee.rmes.integration.authorizations;
 
+import static fr.insee.rmes.integration.authorizations.TokenForTestsConfiguration.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import fr.insee.rmes.bauhaus_services.GeographyService;
-import fr.insee.rmes.modules.commons.configuration.LogRequestFilter;
-import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
-import fr.insee.rmes.integration.AbstractResourcesEnvProd;
-import fr.insee.rmes.modules.geographies.webservice.GeographyResources;
 import fr.insee.rmes.config.auth.UserAuthTestConfiguration;
+import fr.insee.rmes.integration.AbstractResourcesEnvProd;
+import fr.insee.rmes.modules.commons.configuration.LogRequestFilter;
+import fr.insee.rmes.modules.geographies.webservice.GeographyResources;
+import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
+import java.util.Collections;
+import java.util.stream.Stream;
 import org.json.JSONObject;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -19,27 +27,14 @@ import org.springframework.http.MediaType;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-import java.util.Collections;
-import java.util.stream.Stream;
-
-import static fr.insee.rmes.integration.authorizations.TokenForTestsConfiguration.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 @WebMvcTest(
         controllers = GeographyResources.class,
         excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = LogRequestFilter.class),
         properties = {
-                "fr.insee.rmes.bauhaus.modules[0].identifier=operations",
-                "fr.insee.rmes.bauhaus.extensions=pdf,odt"
-        }
-)
-@Import({
-        GeographyResources.class,
-        UserAuthTestConfiguration.class
-})
+            "fr.insee.rmes.bauhaus.modules.operations.enabled=true",
+            "fr.insee.rmes.bauhaus.extensions=pdf,odt"
+        })
+@Import({GeographyResources.class, UserAuthTestConfiguration.class})
 class TestGeographyResourcesEnvProd extends AbstractResourcesEnvProd {
 
     @Configuration
@@ -51,17 +46,13 @@ class TestGeographyResourcesEnvProd extends AbstractResourcesEnvProd {
     @MockitoBean
     GeographyService geographyService;
 
-
     private static Stream<Arguments> provideDataForGetEndpoints() {
         return Stream.of(
                 Arguments.of("/geo/territories", 200, true),
                 Arguments.of("/geo/territory/1", 200, true),
-
                 Arguments.of("/geo/territories", 403, false),
-                Arguments.of("/geo/territory/1", 403, false)
-        );
+                Arguments.of("/geo/territory/1", 403, false));
     }
-
 
     @MethodSource("provideDataForGetEndpoints")
     @ParameterizedTest
@@ -74,22 +65,18 @@ class TestGeographyResourcesEnvProd extends AbstractResourcesEnvProd {
         var request = get(url).contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
         request.header("Authorization", "Bearer toto");
 
-
         mvc.perform(request).andExpect(status().is(code));
     }
 
     private static Stream<Arguments> provideDataForPostEndpoints() {
-        return Stream.of(
-                Arguments.of(201, true),
-                Arguments.of(403, false)
-        );
+        return Stream.of(Arguments.of(201, true), Arguments.of(403, false));
     }
-
 
     @MethodSource("provideDataForPostEndpoints")
     @ParameterizedTest
     void create(Integer code, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
-        when(checker.hasAccess(any(), any(), any(), any())).thenReturn(hasAccessReturn);        when(geographyService.createFeature(any())).thenReturn("http://bauhaus/geo/territory/test-id");
+        when(checker.hasAccess(any(), any(), any(), any())).thenReturn(hasAccessReturn);
+        when(geographyService.createFeature(any())).thenReturn("http://bauhaus/geo/territory/test-id");
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
         var request = post("/geo/territory")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -101,14 +88,9 @@ class TestGeographyResourcesEnvProd extends AbstractResourcesEnvProd {
         mvc.perform(request).andExpect(status().is(code));
     }
 
-
     private static Stream<Arguments> provideDataForPutEndpoints() {
-        return Stream.of(
-                Arguments.of(200, true),
-                Arguments.of(403, false)
-        );
+        return Stream.of(Arguments.of(200, true), Arguments.of(403, false));
     }
-
 
     @MethodSource("provideDataForPutEndpoints")
     @ParameterizedTest

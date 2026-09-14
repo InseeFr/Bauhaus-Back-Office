@@ -1,27 +1,25 @@
 package fr.insee.rmes.modules.commons.infrastructure.minio;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+
 import fr.insee.rmes.exceptions.RmesFileException;
 import fr.insee.rmes.modules.commons.domain.model.Document;
 import io.minio.*;
 import io.minio.errors.ErrorResponseException;
 import io.minio.errors.MinioException;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-
-import static org.mockito.Mockito.mock;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class MinioFilesOperationTest {
@@ -57,14 +55,13 @@ class MinioFilesOperationTest {
     void test_read_should_throw_rmes_file_exception_when_minio_client_throws_exception() throws Exception {
         Document document = new Document("test/path", "file.txt");
 
-        doThrow(new MinioException("Minio error"))
-            .when(minioClient).getObject(any(GetObjectArgs.class));
+        doThrow(new MinioException("Minio error")).when(minioClient).getObject(any(GetObjectArgs.class));
 
         assertThatThrownBy(() -> minioFilesOperation.read(document))
-            .isInstanceOf(RmesFileException.class)
-            .hasMessageContaining("Error reading file")
-            .hasMessageContaining("test/path/file.txt")
-            .hasMessageContaining(BUCKET_NAME);
+                .isInstanceOf(RmesFileException.class)
+                .hasMessageContaining("Error reading file")
+                .hasMessageContaining("test/path/file.txt")
+                .hasMessageContaining(BUCKET_NAME);
     }
 
     @Test
@@ -83,14 +80,13 @@ class MinioFilesOperationTest {
         Document document = new Document("test/path", "file.txt");
         InputStream content = new ByteArrayInputStream("test content".getBytes());
 
-        doThrow(new MinioException("Minio error"))
-            .when(minioClient).putObject(any(PutObjectArgs.class));
+        doThrow(new MinioException("Minio error")).when(minioClient).putObject(any(PutObjectArgs.class));
 
         assertThatThrownBy(() -> minioFilesOperation.write(content, document))
-            .isInstanceOf(RmesFileException.class)
-            .hasMessageContaining("Error writing file")
-            .hasMessageContaining("file.txt")
-            .hasMessageContaining(BUCKET_NAME);
+                .isInstanceOf(RmesFileException.class)
+                .hasMessageContaining("Error writing file")
+                .hasMessageContaining("file.txt")
+                .hasMessageContaining(BUCKET_NAME);
     }
 
     @Test
@@ -109,15 +105,14 @@ class MinioFilesOperationTest {
         Document srcDocument = new Document("source/path", "source.txt");
         Document targetDocument = new Document("target/path", "target.txt");
 
-        doThrow(new MinioException("Minio error"))
-            .when(minioClient).copyObject(any(CopyObjectArgs.class));
+        doThrow(new MinioException("Minio error")).when(minioClient).copyObject(any(CopyObjectArgs.class));
 
         assertThatThrownBy(() -> minioFilesOperation.copy(srcDocument, targetDocument))
-            .isInstanceOf(RmesFileException.class)
-            .hasMessageContaining("Error copying file")
-            .hasMessageContaining("source/path/source.txt")
-            .hasMessageContaining("target/path/target.txt")
-            .hasMessageContaining(BUCKET_NAME);
+                .isInstanceOf(RmesFileException.class)
+                .hasMessageContaining("Error copying file")
+                .hasMessageContaining("source/path/source.txt")
+                .hasMessageContaining("target/path/target.txt")
+                .hasMessageContaining(BUCKET_NAME);
     }
 
     @Test
@@ -138,8 +133,7 @@ class MinioFilesOperationTest {
     void test_exists_should_return_false_when_document_does_not_exist() throws Exception {
         Document document = new Document("test/path", "file.txt");
 
-        doThrow(mock(ErrorResponseException.class))
-            .when(minioClient).statObject(any(StatObjectArgs.class));
+        doThrow(mock(ErrorResponseException.class)).when(minioClient).statObject(any(StatObjectArgs.class));
 
         boolean result = minioFilesOperation.exists(document);
 
@@ -151,7 +145,8 @@ class MinioFilesOperationTest {
         Document document = new Document("test/path", "file.txt");
 
         doThrow(new MinioException("Connection error", new IOException("Connection error")))
-            .when(minioClient).statObject(any(StatObjectArgs.class));
+                .when(minioClient)
+                .statObject(any(StatObjectArgs.class));
 
         boolean result = minioFilesOperation.exists(document);
 
@@ -180,13 +175,12 @@ class MinioFilesOperationTest {
     void test_delete_should_throw_rmes_file_exception_when_minio_client_throws_exception() throws Exception {
         Document document = new Document("test/path", "file.txt");
 
-        doThrow(new MinioException("Minio error"))
-            .when(minioClient).removeObject(any(RemoveObjectArgs.class));
+        doThrow(new MinioException("Minio error")).when(minioClient).removeObject(any(RemoveObjectArgs.class));
 
         assertThatThrownBy(() -> minioFilesOperation.delete(document))
-            .isInstanceOf(RmesFileException.class)
-            .hasMessageContaining("Error deleting file")
-            .hasMessageContaining("test/path/file.txt")
-            .hasMessageContaining(BUCKET_NAME);
+                .isInstanceOf(RmesFileException.class)
+                .hasMessageContaining("Error deleting file")
+                .hasMessageContaining("test/path/file.txt")
+                .hasMessageContaining(BUCKET_NAME);
     }
 }

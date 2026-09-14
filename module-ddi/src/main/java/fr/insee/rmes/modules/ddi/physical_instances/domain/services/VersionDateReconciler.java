@@ -5,7 +5,6 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CogsDate;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4VersionedItem;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
-
 import java.lang.reflect.RecordComponent;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -27,8 +26,7 @@ import java.util.stream.Stream;
  */
 public final class VersionDateReconciler {
 
-    private VersionDateReconciler() {
-    }
+    private VersionDateReconciler() {}
 
     public static Ddi4Response reconcile(Ddi4Response current, Ddi4Response incoming, CogsDate now) {
         Map<String, Ddi4VersionedItem> storedByKey = new HashMap<>();
@@ -38,7 +36,9 @@ public final class VersionDateReconciler {
         Set<String> dirty = directlyDirtyKeys(incomingItems, storedByKey);
         propagateToReferencingItems(dirty, incomingItems);
 
-        return new Ddi4Response(incoming.schema(), incoming.topLevelReference(),
+        return new Ddi4Response(
+                incoming.schema(),
+                incoming.topLevelReference(),
                 rewrite(incoming.physicalInstance(), dirty, storedByKey, now),
                 rewrite(incoming.dataRelationship(), dirty, storedByKey, now),
                 rewrite(incoming.variable(), dirty, storedByKey, now),
@@ -47,17 +47,28 @@ public final class VersionDateReconciler {
                 rewrite(incoming.managedMissingValuesRepresentation(), dirty, storedByKey, now));
     }
 
-    /** Items modifiés ou nouveaux : comparaison à l'état stocké en neutralisant la {@code VersionDate}. */
-    private static Set<String> directlyDirtyKeys(List<Ddi4VersionedItem> incomingItems,
-                                                 Map<String, Ddi4VersionedItem> storedByKey) {
+    /** Items modifiés ou nouveaux : comparaison à l'état stocké, champs estampillés neutralisés. */
+    private static Set<String> directlyDirtyKeys(
+            List<Ddi4VersionedItem> incomingItems, Map<String, Ddi4VersionedItem> storedByKey) {
         Set<String> dirty = new HashSet<>();
         for (Ddi4VersionedItem item : incomingItems) {
             Ddi4VersionedItem stored = storedByKey.get(key(item));
-            if (stored == null || !item.withVersionDate(null).equals(stored.withVersionDate(null))) {
+            if (stored == null || !content(item).equals(content(stored))) {
                 dirty.add(key(item));
             }
         }
         return dirty;
+    }
+
+    /**
+     * Copie réduite au contenu rédigé. {@code VersionDate} et {@code VersionResponsibility} sont
+     * estampillés à l'écriture — la première par ce réconciliateur, le second depuis
+     * {@code colectica.yml} — et une divergence sur l'un d'eux ne dit rien d'un changement de
+     * contenu : les comparer ferait passer pour modifié un item que personne n'a touché, et
+     * redaterait toute sa chaîne de parents.
+     */
+    private static Ddi4VersionedItem content(Ddi4VersionedItem item) {
+        return item.withVersionDate(null).withVersionResponsibility(null);
     }
 
     /**
@@ -74,7 +85,9 @@ public final class VersionDateReconciler {
             for (Reference reference : collectReferences(item)) {
                 String referencedKey = reference.agency() + "|" + reference.id();
                 if (incomingKeys.contains(referencedKey) && !referencedKey.equals(key(item))) {
-                    referencingKeysByKey.computeIfAbsent(referencedKey, k -> new HashSet<>()).add(key(item));
+                    referencingKeysByKey
+                            .computeIfAbsent(referencedKey, k -> new HashSet<>())
+                            .add(key(item));
                 }
             }
         }
@@ -104,39 +117,45 @@ public final class VersionDateReconciler {
 
     private static void collectReferences(Object value, List<Reference> references) {
         switch (value) {
-            case null -> { /* rien à collecter */ }
+            case null -> {
+                /* rien à collecter */
+            }
             case Reference reference -> references.add(reference);
-            case BasedOnObject ignored -> { /* lignage : exclu de la propagation */ }
+            case BasedOnObject ignored -> {
+                /* lignage : exclu de la propagation */
+            }
             case List<?> list -> list.forEach(element -> collectReferences(element, references));
-            case Record record -> {
-                for (RecordComponent component : record.getClass().getRecordComponents()) {
-                    collectReferences(componentValue(record, component), references);
+            case Record recordValue -> {
+                for (RecordComponent component : recordValue.getClass().getRecordComponents()) {
+                    collectReferences(componentValue(recordValue, component), references);
                 }
             }
-            default -> { /* scalaire : rien à collecter */ }
+            default -> {
+                /* scalaire : rien à collecter */
+            }
         }
     }
 
-    private static Object componentValue(Record record, RecordComponent component) {
+    private static Object componentValue(Record recordValue, RecordComponent component) {
         try {
-            return component.getAccessor().invoke(record);
+            return component.getAccessor().invoke(recordValue);
         } catch (ReflectiveOperationException e) {
             throw new IllegalStateException(
-                    "Unable to read record component " + component.getName() + " of " + record.getClass(), e);
+                    "Unable to read record component " + component.getName() + " of " + recordValue.getClass(), e);
         }
     }
 
     @SuppressWarnings("unchecked")
-    private static <T extends Ddi4VersionedItem> List<T> rewrite(List<T> items, Set<String> dirty,
-                                                                 Map<String, Ddi4VersionedItem> storedByKey,
-                                                                 CogsDate now) {
+    private static <T extends Ddi4VersionedItem> List<T> rewrite(
+            List<T> items, Set<String> dirty, Map<String, Ddi4VersionedItem> storedByKey, CogsDate now) {
         if (items == null) {
             return null;
         }
         return items.stream()
-                .map(item -> (T) item.withVersionDate(dirty.contains(key(item))
-                        ? now
-                        : storedByKey.get(key(item)).versionDate()))
+                .map(item -> (T) item.withVersionDate(
+                        dirty.contains(key(item))
+                                ? now
+                                : storedByKey.get(key(item)).versionDate()))
                 .toList();
     }
 
@@ -144,8 +163,12 @@ public final class VersionDateReconciler {
         if (response == null) {
             return Stream.empty();
         }
-        return Stream.of(response.physicalInstance(), response.dataRelationship(),
-                        response.variable(), response.codeList(), response.category(),
+        return Stream.of(
+                        response.physicalInstance(),
+                        response.dataRelationship(),
+                        response.variable(),
+                        response.codeList(),
+                        response.category(),
                         response.managedMissingValuesRepresentation())
                 .filter(Objects::nonNull)
                 .flatMap(List::stream)

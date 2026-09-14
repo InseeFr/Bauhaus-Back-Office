@@ -7,8 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public record DateTimeRepresentation(
         @JsonProperty("$type") String type,
         @JsonProperty("DateTypeCode") String dateTypeCode,
-        @JsonProperty("DateFieldFormat") String dateFieldFormat
-) {
+        @JsonProperty("DateFieldFormat") String dateFieldFormat) {
 
     public static final String TYPE = "DateTimeRepresentationBaseType";
 }

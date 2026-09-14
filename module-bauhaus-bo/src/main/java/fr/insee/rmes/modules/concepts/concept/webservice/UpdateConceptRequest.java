@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import fr.insee.rmes.modules.concepts.concept.domain.exceptions.InvalidConceptIdException;
 import fr.insee.rmes.modules.concepts.concept.domain.exceptions.InvalidCreateConceptCommandException;
 import fr.insee.rmes.modules.concepts.concept.domain.model.commands.UpdateConceptCommand;
-
 import java.util.Collections;
 import java.util.List;
 
@@ -30,7 +29,6 @@ public class UpdateConceptRequest extends CreateConceptRequest {
                 creator,
                 contributor,
                 disseminationStatus,
-                collections == null ? Collections.emptyList() : collections
-        );
+                collections == null ? Collections.emptyList() : collections);
     }
 }

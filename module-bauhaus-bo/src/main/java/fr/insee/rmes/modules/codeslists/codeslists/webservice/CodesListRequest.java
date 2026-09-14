@@ -4,7 +4,6 @@ import fr.insee.rmes.modules.codeslists.codeslists.domain.model.commands.CreateC
 import fr.insee.rmes.modules.codeslists.codeslists.domain.model.commands.UpdateCodesListCommand;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
-
 import java.util.List;
 
 /**
@@ -33,15 +32,33 @@ public record CodesListRequest(
         String descriptionLg2,
         @NotBlank(message = "creator is required") String creator,
         List<String> contributor,
-        @NotBlank(message = "disseminationStatus is required") String disseminationStatus,
-        @NotBlank(message = "lastListUriSegment is required") String lastListUriSegment,
-        @NotBlank(message = "lastClassUriSegment is required") String lastClassUriSegment,
-        @NotBlank(message = "lastCodeUriSegment is required") String lastCodeUriSegment,
+
+        @NotBlank(message = "disseminationStatus is required")
+        String disseminationStatus,
+
+        @NotBlank(message = "lastListUriSegment is required")
+        String lastListUriSegment,
+
+        @NotBlank(message = "lastClassUriSegment is required")
+        String lastClassUriSegment,
+
+        @NotBlank(message = "lastCodeUriSegment is required")
+        String lastCodeUriSegment,
+
         List<@Valid CodeRequest> codes) {
 
     public CreateCodesListCommand toCreateCommand() {
-        return new CreateCodesListCommand(id, labelLg1, labelLg2, descriptionLg1, descriptionLg2,
-                creator, contributor, disseminationStatus, lastListUriSegment, lastClassUriSegment,
+        return new CreateCodesListCommand(
+                id,
+                labelLg1,
+                labelLg2,
+                descriptionLg1,
+                descriptionLg2,
+                creator,
+                contributor,
+                disseminationStatus,
+                lastListUriSegment,
+                lastClassUriSegment,
                 lastCodeUriSegment);
     }
 

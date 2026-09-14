@@ -1,10 +1,9 @@
 package fr.insee.rmes.modules.users.domain.model;
 
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Set;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.Test;
 
 class ModuleAccessPrivilegesTest {
 
@@ -13,10 +12,7 @@ class ModuleAccessPrivilegesTest {
         var privilege1 = new ModuleAccessPrivileges.Privilege(RBAC.Privilege.CREATE, RBAC.Strategy.ALL);
         var privilege2 = new ModuleAccessPrivileges.Privilege(RBAC.Privilege.READ, RBAC.Strategy.STAMP);
 
-        var modulePrivileges = new ModuleAccessPrivileges(
-            RBAC.Module.CONCEPT_CONCEPT,
-            Set.of(privilege1, privilege2)
-        );
+        var modulePrivileges = new ModuleAccessPrivileges(RBAC.Module.CONCEPT_CONCEPT, Set.of(privilege1, privilege2));
 
         assertThat(modulePrivileges.application()).isEqualTo(RBAC.Module.CONCEPT_CONCEPT);
         assertThat(modulePrivileges.privileges()).hasSize(2);
@@ -25,10 +21,7 @@ class ModuleAccessPrivilegesTest {
 
     @Test
     void should_create_empty_privileges() {
-        var modulePrivileges = new ModuleAccessPrivileges(
-            RBAC.Module.OPERATION_SERIES,
-            Set.of()
-        );
+        var modulePrivileges = new ModuleAccessPrivileges(RBAC.Module.OPERATION_SERIES, Set.of());
 
         assertThat(modulePrivileges.application()).isEqualTo(RBAC.Module.OPERATION_SERIES);
         assertThat(modulePrivileges.privileges()).isEmpty();

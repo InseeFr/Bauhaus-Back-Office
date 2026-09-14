@@ -1,10 +1,18 @@
 package fr.insee.rmes.modules.organisations.infrastructure.graphdb;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
+
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.organisations.domain.exceptions.OrganisationFetchException;
 import fr.insee.rmes.modules.organisations.domain.model.CompactOrganisation;
 import fr.insee.rmes.modules.organisations.domain.model.OrganisationSummary;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
+import java.util.Arrays;
+import java.util.List;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,15 +20,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.Arrays;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class GraphDBOrganisationsRepositoryTest {
@@ -36,10 +35,18 @@ class GraphDBOrganisationsRepositoryTest {
     @BeforeEach
     void setUp() throws RmesException {
         repository = new GraphDBOrganisationsRepository(repositoryGestion, organizationQueries);
-        lenient().when(organizationQueries.generateCompactOrganisationQuery(anyString())).thenReturn("mock-query");
-        lenient().when(organizationQueries.generateCompactOrganisationsQuery(any())).thenReturn("mock-query");
-        lenient().when(organizationQueries.checkIfOrganisationExistsQuery(anyString())).thenReturn("mock-query");
-        lenient().when(organizationQueries.getOrganizationIdenfier(any(), anyString(), any())).thenReturn("mock-query");
+        lenient()
+                .when(organizationQueries.generateCompactOrganisationQuery(anyString()))
+                .thenReturn("mock-query");
+        lenient()
+                .when(organizationQueries.generateCompactOrganisationsQuery(any()))
+                .thenReturn("mock-query");
+        lenient()
+                .when(organizationQueries.checkIfOrganisationExistsQuery(anyString()))
+                .thenReturn("mock-query");
+        lenient()
+                .when(organizationQueries.getOrganizationIdenfier(any(), anyString(), any()))
+                .thenReturn("mock-query");
         lenient().when(organizationQueries.organizationsQuery()).thenReturn("mock-query");
     }
 
@@ -62,11 +69,38 @@ class GraphDBOrganisationsRepositoryTest {
         List<OrganisationSummary> result = repository.getOrganisations();
 
         // Then
-        assertThat(result).containsExactly(
-            new OrganisationSummary("http://bauhaus/organisations/ORG-002", "ORG-002", "Service des données", "Data Department")
-        );
+        assertThat(result)
+                .containsExactly(new OrganisationSummary(
+                        "http://bauhaus/organisations/ORG-002",
+                        "ORG-002",
+                        null,
+                        "Service des données",
+                        "Data Department"));
 
         verify(repositoryGestion).getResponseAsArray("mock-query");
+    }
+
+    @Test
+    void shouldMapStampFromSparqlRow() throws RmesException, OrganisationFetchException {
+        // Given
+        JSONArray jsonArray = new JSONArray();
+        jsonArray.put(new JSONObject("""
+            {
+                "iri": "http://bauhaus/organisations/insee/HIE2001201",
+                "id": "HIE2001201",
+                "stamp": "DG75-L201",
+                "label": "Division Agriculture et Environnement",
+                "labelLg2": "Agriculture and Environment Division"
+            }
+            """));
+
+        when(repositoryGestion.getResponseAsArray("mock-query")).thenReturn(jsonArray);
+
+        // When
+        List<OrganisationSummary> result = repository.getOrganisations();
+
+        // Then
+        assertThat(result).extracting(OrganisationSummary::stamp).containsExactly("DG75-L201");
     }
 
     @Test
@@ -89,11 +123,13 @@ class GraphDBOrganisationsRepositoryTest {
         List<OrganisationSummary> result = repository.getOrganisations();
 
         // Then
-        assertThat(result).containsExactly(new OrganisationSummary(
-                "http://bauhaus/organisations/5c499713",
-                "HIE2171581",
-                "Direction générale de l'Administration et de la Fonction publique (DGAFP)",
-                "Directorate-General for Administration and the Civil Service (DGAFP)"));
+        assertThat(result)
+                .containsExactly(new OrganisationSummary(
+                        "http://bauhaus/organisations/5c499713",
+                        "HIE2171581",
+                        null,
+                        "Direction générale de l'Administration et de la Fonction publique (DGAFP)",
+                        "Directorate-General for Administration and the Civil Service (DGAFP)"));
     }
 
     @Test
@@ -114,8 +150,9 @@ class GraphDBOrganisationsRepositoryTest {
         List<OrganisationSummary> result = repository.getOrganisations();
 
         // Then
-        assertThat(result).containsExactly(
-            new OrganisationSummary("http://bauhaus/organisations/d94861cf", "HIE-DGPN", "DGPN", "DGPN"));
+        assertThat(result)
+                .containsExactly(new OrganisationSummary(
+                        "http://bauhaus/organisations/d94861cf", "HIE-DGPN", null, "DGPN", "DGPN"));
     }
 
     @Test
@@ -134,11 +171,10 @@ class GraphDBOrganisationsRepositoryTest {
     void shouldThrowOrganisationFetchExceptionWhenListingFails() throws RmesException {
         // Given
         when(repositoryGestion.getResponseAsArray("mock-query"))
-            .thenThrow(new RmesException(500, "Database error", "Error accessing repository"));
+                .thenThrow(new RmesException(500, "Database error", "Error accessing repository"));
 
         // When/Then
-        assertThatThrownBy(() -> repository.getOrganisations())
-            .isInstanceOf(OrganisationFetchException.class);
+        assertThatThrownBy(() -> repository.getOrganisations()).isInstanceOf(OrganisationFetchException.class);
     }
 
     @Test
@@ -173,11 +209,11 @@ class GraphDBOrganisationsRepositoryTest {
         // Given
         String organisationId = "ORG-001";
         when(repositoryGestion.getResponseAsObject(anyString()))
-            .thenThrow(new RmesException(500, "Database error", "Error accessing repository"));
+                .thenThrow(new RmesException(500, "Database error", "Error accessing repository"));
 
         // When/Then
         assertThatThrownBy(() -> repository.getCompactOrganisation(organisationId))
-            .isInstanceOf(OrganisationFetchException.class);
+                .isInstanceOf(OrganisationFetchException.class);
 
         verify(repositoryGestion).getResponseAsObject(anyString());
     }
@@ -196,7 +232,7 @@ class GraphDBOrganisationsRepositoryTest {
 
         // When/Then
         assertThatThrownBy(() -> repository.getCompactOrganisation(organisationId))
-            .isInstanceOf(OrganisationFetchException.class);
+                .isInstanceOf(OrganisationFetchException.class);
 
         verify(repositoryGestion).getResponseAsObject(anyString());
     }
@@ -319,11 +355,11 @@ class GraphDBOrganisationsRepositoryTest {
         // Given
         List<String> organisationIds = Arrays.asList("ORG-001", "ORG-002");
         when(repositoryGestion.getResponseAsArray(anyString()))
-            .thenThrow(new RmesException(500, "Database error", "Error accessing repository"));
+                .thenThrow(new RmesException(500, "Database error", "Error accessing repository"));
 
         // When/Then
         assertThatThrownBy(() -> repository.getCompactOrganisations(organisationIds))
-            .isInstanceOf(OrganisationFetchException.class);
+                .isInstanceOf(OrganisationFetchException.class);
 
         verify(repositoryGestion).getResponseAsArray(anyString());
     }
@@ -343,7 +379,7 @@ class GraphDBOrganisationsRepositoryTest {
 
         // When/Then
         assertThatThrownBy(() -> repository.getCompactOrganisations(organisationIds))
-            .isInstanceOf(OrganisationFetchException.class);
+                .isInstanceOf(OrganisationFetchException.class);
 
         verify(repositoryGestion).getResponseAsArray(anyString());
     }
@@ -385,11 +421,11 @@ class GraphDBOrganisationsRepositoryTest {
         // Given
         String iri = "http://bauhaus/organisations/insee/HIE2000052";
         when(repositoryGestion.getResponseAsBoolean(anyString()))
-            .thenThrow(new RmesException(500, "Database error", "Error accessing repository"));
+                .thenThrow(new RmesException(500, "Database error", "Error accessing repository"));
 
         // When/Then
         assertThatThrownBy(() -> repository.checkIfOrganisationExists(iri))
-            .isInstanceOf(OrganisationFetchException.class);
+                .isInstanceOf(OrganisationFetchException.class);
 
         verify(repositoryGestion).getResponseAsBoolean(anyString());
     }

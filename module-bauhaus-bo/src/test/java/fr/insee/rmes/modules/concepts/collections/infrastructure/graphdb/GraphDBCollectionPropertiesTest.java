@@ -1,9 +1,9 @@
 package fr.insee.rmes.modules.concepts.collections.infrastructure.graphdb;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 class GraphDBCollectionPropertiesTest {
 
@@ -35,7 +35,6 @@ class GraphDBCollectionPropertiesTest {
     void keeps_the_scheme_separator() {
         var properties = new GraphDBCollectionProperties(GRAPH, "https://bauhaus/concepts/definitions");
 
-        assertThat(properties.getResourceIRI("qq").stringValue())
-                .isEqualTo("https://bauhaus/concepts/definitions/qq");
+        assertThat(properties.getResourceIRI("qq").stringValue()).isEqualTo("https://bauhaus/concepts/definitions/qq");
     }
 }

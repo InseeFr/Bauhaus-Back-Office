@@ -1,5 +1,11 @@
 package fr.insee.rmes.modules.ddi.physical_instances.domain.services;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi3Response;
@@ -10,17 +16,10 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3t
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIItemConverter;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.services.converters.GroupDDIItemConverter;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.services.converters.StudyUnitDDIItemConverter;
-import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-
 import java.util.List;
 import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
+import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 class DDIItemConvertServiceImplTest {
 
@@ -50,16 +49,14 @@ class DDIItemConvertServiceImplTest {
 
     private static final Map<String, String> ITEM_TYPES = Map.of(
             "CodeList", "8b108ef8-b642-4484-9c49-f88e4bf7cf1d",
-            "Category", "7e47c269-bcae-44e2-a3ce-49b417a2f877"
-    );
+            "Category", "7e47c269-bcae-44e2-a3ce-49b417a2f877");
 
     private static final Map<String, String> FULL_ITEM_TYPES = Map.of(
             "PhysicalInstance", "a51e85bb-6259-4488-8df2-f08cb43485f8",
             "DataRelationship", "f39ff278-8500-45fe-a850-3906da2d242b",
             "Variable", "683889c6-f74b-4d5e-92ed-908c0a42bb2d",
             "CodeList", "8b108ef8-b642-4484-9c49-f88e4bf7cf1d",
-            "Category", "7e47c269-bcab-40f7-a778-af7bbc4e3d00"
-    );
+            "Category", "7e47c269-bcab-40f7-a778-af7bbc4e3d00");
 
     private static final String PHYSICAL_INSTANCE_FRAGMENT = """
             <Fragment xmlns:r="ddi:reusable:3_3" xmlns="ddi:instance:3_3">
@@ -100,11 +97,11 @@ class DDIItemConvertServiceImplTest {
 
         DDI3toDDI4ConverterService schemaConverter = mock(DDI3toDDI4ConverterService.class);
         Ddi4CodeList codeList = new Ddi4CodeList(
-                Ddi4CodeList.TYPE, null, "urn:ddi:fr.insee:cl-1:1",
-                "fr.insee", "cl-1", "1", null, null, List.of());
-        Ddi4Response ddi4 = new Ddi4Response(
-                "ddi:4.0", null, null, null, null, List.of(codeList), List.<Ddi4Category>of(), null);
-        when(schemaConverter.convertDdi3ToDdi4(any(Ddi3Response.class), eq("ddi:4.0"))).thenReturn(ddi4);
+                Ddi4CodeList.TYPE, null, "urn:ddi:fr.insee:cl-1:1", "fr.insee", "cl-1", "1", null, null, List.of());
+        Ddi4Response ddi4 =
+                new Ddi4Response("ddi:4.0", null, null, null, null, List.of(codeList), List.<Ddi4Category>of(), null);
+        when(schemaConverter.convertDdi3ToDdi4(any(Ddi3Response.class), eq("ddi:4.0")))
+                .thenReturn(ddi4);
 
         var service = new DDIItemConvertServiceImpl(List.of(unsupported), schemaConverter, ITEM_TYPES, OBJECT_MAPPER);
         JsonNode result = service.convert(CODELIST_FRAGMENT);
@@ -132,7 +129,9 @@ class DDIItemConvertServiceImplTest {
         var schemaConverter = new DDI3toDDI4ConverterServiceImpl(FULL_ITEM_TYPES);
         var service = new DDIItemConvertServiceImpl(
                 List.of(new GroupDDIItemConverter(), new StudyUnitDDIItemConverter()),
-                schemaConverter, FULL_ITEM_TYPES, OBJECT_MAPPER);
+                schemaConverter,
+                FULL_ITEM_TYPES,
+                OBJECT_MAPPER);
 
         JsonNode result = service.convert(PHYSICAL_INSTANCE_FRAGMENT);
 
@@ -140,7 +139,8 @@ class DDIItemConvertServiceImplTest {
         assertNotNull(items, "expected an items envelope array");
         assertEquals(1, items.size());
         assertEquals("PhysicalInstance", items.get(0).get("$type").asText());
-        assertEquals("c05c0443-fc56-4069-9bea-a9c7300ae0a0", items.get(0).get("ID").asText());
+        assertEquals(
+                "c05c0443-fc56-4069-9bea-a9c7300ae0a0", items.get(0).get("ID").asText());
     }
 
     @Test
@@ -160,7 +160,9 @@ class DDIItemConvertServiceImplTest {
         var schemaConverter = new DDI3toDDI4ConverterServiceImpl(FULL_ITEM_TYPES);
         var service = new DDIItemConvertServiceImpl(
                 List.of(new GroupDDIItemConverter(), new StudyUnitDDIItemConverter()),
-                schemaConverter, FULL_ITEM_TYPES, OBJECT_MAPPER);
+                schemaConverter,
+                FULL_ITEM_TYPES,
+                OBJECT_MAPPER);
 
         JsonNode result = service.convert(codeListFragment);
 

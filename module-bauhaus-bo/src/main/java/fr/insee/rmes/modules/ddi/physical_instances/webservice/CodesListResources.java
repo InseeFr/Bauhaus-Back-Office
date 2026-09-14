@@ -1,5 +1,7 @@
 package fr.insee.rmes.modules.ddi.physical_instances.webservice;
 
+import static fr.insee.rmes.domain.logging.LogSanitizer.forLog;
+
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CategoryCodeListUsage;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeListVariableUsage;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIService;
@@ -22,9 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(value = "/ddi", produces = MediaType.APPLICATION_JSON_VALUE)
 public class CodesListResources {
 
-    private static final Logger logger = LoggerFactory.getLogger(
-        CodesListResources.class
-    );
+    private static final Logger logger = LoggerFactory.getLogger(CodesListResources.class);
 
     private final DDIService ddiService;
 
@@ -36,30 +36,17 @@ public class CodesListResources {
      * Returns every Variable (with its PhysicalInstance) that uses the code list {@code agencyId/id}.
      */
     @GetMapping("/codes-list/{agencyId}/{id}/users")
-    @HasAccess(
-        module = RBAC.Module.DDI_PHYSICALINSTANCE,
-        privilege = RBAC.Privilege.READ
-    )
+    @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.READ)
     public ResponseEntity<List<CodeListVariableUsage>> getCodeListUsers(
-        @PathVariable String agencyId,
-        @PathVariable String id
-    ) {
+            @PathVariable String agencyId, @PathVariable String id) {
         logger.info(
-            "GET /ddi/codes-list/{}/{}/users - Getting variables using code list",
-            agencyId,
-            id
-        );
+                "GET /ddi/codes-list/{}/{}/users - Getting variables using code list", forLog(agencyId), forLog(id));
         try {
-            List<CodeListVariableUsage> usages =
-                ddiService.getVariablesUsingCodeList(agencyId, id);
+            List<CodeListVariableUsage> usages = ddiService.getVariablesUsingCodeList(agencyId, id);
             return ResponseEntity.ok(usages);
         } catch (Exception e) {
             logger.error(
-                "Failed to get variables using code list: agencyId={}, id={}",
-                agencyId,
-                id,
-                e
-            );
+                    "Failed to get variables using code list: agencyId={}, id={}", forLog(agencyId), forLog(id), e);
             return ResponseEntity.internalServerError().build();
         }
     }
@@ -69,30 +56,16 @@ public class CodesListResources {
      * Alimente la popup de confirmation « catégorie partagée » côté front.
      */
     @GetMapping("/category/{agencyId}/{id}/users")
-    @HasAccess(
-        module = RBAC.Module.DDI_PHYSICALINSTANCE,
-        privilege = RBAC.Privilege.READ
-    )
+    @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.READ)
     public ResponseEntity<List<CategoryCodeListUsage>> getCategoryUsers(
-        @PathVariable String agencyId,
-        @PathVariable String id
-    ) {
-        logger.info(
-            "GET /ddi/category/{}/{}/users - Getting code lists using category",
-            agencyId,
-            id
-        );
+            @PathVariable String agencyId, @PathVariable String id) {
+        logger.info("GET /ddi/category/{}/{}/users - Getting code lists using category", forLog(agencyId), forLog(id));
         try {
-            List<CategoryCodeListUsage> usages =
-                ddiService.getCodeListsUsingCategory(agencyId, id);
+            List<CategoryCodeListUsage> usages = ddiService.getCodeListsUsingCategory(agencyId, id);
             return ResponseEntity.ok(usages);
         } catch (Exception e) {
             logger.error(
-                "Failed to get code lists using category: agencyId={}, id={}",
-                agencyId,
-                id,
-                e
-            );
+                    "Failed to get code lists using category: agencyId={}, id={}", forLog(agencyId), forLog(id), e);
             return ResponseEntity.internalServerError().build();
         }
     }
@@ -103,32 +76,23 @@ public class CodesListResources {
      * Alimente la règle lecture seule/écriture de la section sentinelles.
      */
     @GetMapping("/missing-values-representations/{agencyId}/{id}/users")
-    @HasAccess(
-        module = RBAC.Module.DDI_PHYSICALINSTANCE,
-        privilege = RBAC.Privilege.READ
-    )
+    @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.READ)
     public ResponseEntity<List<CodeListVariableUsage>> getMissingValuesRepresentationUsers(
-        @PathVariable String agencyId,
-        @PathVariable String id
-    ) {
+            @PathVariable String agencyId, @PathVariable String id) {
         logger.info(
-            "GET /ddi/missing-values-representations/{}/{}/users - Getting variables using MMVR",
-            agencyId,
-            id
-        );
+                "GET /ddi/missing-values-representations/{}/{}/users - Getting variables using MMVR",
+                forLog(agencyId),
+                forLog(id));
         try {
-            List<CodeListVariableUsage> usages =
-                ddiService.getVariablesUsingMissingValuesRepresentation(agencyId, id);
+            List<CodeListVariableUsage> usages = ddiService.getVariablesUsingMissingValuesRepresentation(agencyId, id);
             return ResponseEntity.ok(usages);
         } catch (Exception e) {
             logger.error(
-                "Failed to get variables using missing values representation: agencyId={}, id={}",
-                agencyId,
-                id,
-                e
-            );
+                    "Failed to get variables using missing values representation: agencyId={}, id={}",
+                    forLog(agencyId),
+                    forLog(id),
+                    e);
             return ResponseEntity.internalServerError().build();
         }
     }
-
 }

@@ -1,10 +1,16 @@
 package fr.insee.rmes.modules.users.webservice;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
 import fr.insee.rmes.modules.users.domain.model.ModuleAccessPrivileges;
 import fr.insee.rmes.modules.users.domain.model.RBAC;
 import fr.insee.rmes.modules.users.domain.model.Stamp;
 import fr.insee.rmes.modules.users.domain.port.clientside.UserService;
+import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -12,13 +18,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
-
-import java.util.Set;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class UserResourcesTest {
@@ -71,12 +70,12 @@ class UserResourcesTest {
         Object principal = "somePrincipal";
 
         when(userService.computePrivileges(principal))
-            .thenThrow(new MissingUserInformationException("User information is missing"));
+                .thenThrow(new MissingUserInformationException("User information is missing"));
 
         assertThatThrownBy(() -> userResources.getUserInformation(principal))
-            .isInstanceOf(ResponseStatusException.class)
-            .hasFieldOrPropertyWithValue("statusCode", HttpStatus.UNAUTHORIZED)
-            .hasMessageContaining("User information is missing");
+                .isInstanceOf(ResponseStatusException.class)
+                .hasFieldOrPropertyWithValue("statusCode", HttpStatus.UNAUTHORIZED)
+                .hasMessageContaining("User information is missing");
     }
 
     @Test
@@ -110,12 +109,12 @@ class UserResourcesTest {
         Object principal = "somePrincipal";
 
         when(userService.findStampsFrom(principal))
-            .thenThrow(new MissingUserInformationException("Cannot retrieve stamps"));
+                .thenThrow(new MissingUserInformationException("Cannot retrieve stamps"));
 
         assertThatThrownBy(() -> userResources.getStamps(principal))
-            .isInstanceOf(ResponseStatusException.class)
-            .hasFieldOrPropertyWithValue("statusCode", HttpStatus.UNAUTHORIZED)
-            .hasMessageContaining("Cannot retrieve stamps");
+                .isInstanceOf(ResponseStatusException.class)
+                .hasFieldOrPropertyWithValue("statusCode", HttpStatus.UNAUTHORIZED)
+                .hasMessageContaining("Cannot retrieve stamps");
     }
 
     @Test
@@ -128,9 +127,7 @@ class UserResourcesTest {
         var deletePrivilege = new ModuleAccessPrivileges.Privilege(RBAC.Privilege.DELETE, RBAC.Strategy.NONE);
 
         var conceptPrivileges = new ModuleAccessPrivileges(
-            RBAC.Module.CONCEPT_CONCEPT,
-            Set.of(readPrivilege, createPrivilege, updatePrivilege, deletePrivilege)
-        );
+                RBAC.Module.CONCEPT_CONCEPT, Set.of(readPrivilege, createPrivilege, updatePrivilege, deletePrivilege));
 
         Set<ModuleAccessPrivileges> expectedPrivileges = Set.of(conceptPrivileges);
 

@@ -1,22 +1,18 @@
 package fr.insee.rmes.bauhaus_services.rdf_utils;
 
-import org.junit.jupiter.api.Test;
-
-import java.util.Optional;
-
 import static fr.insee.rmes.PropertiesKeys.OPERATIONS_BASE_URI;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Optional;
+import org.junit.jupiter.api.Test;
+
 class BauhausUriBuilderTest {
 
-    private final BauhausUriBuilder.PropertiesFinder propertiesFinder = name ->
-            OPERATIONS_BASE_URI.equals(name) ? Optional.of("operations/operation") : Optional.empty();
+    private final BauhausUriBuilder.PropertiesFinder propertiesFinder =
+            name -> OPERATIONS_BASE_URI.equals(name) ? Optional.of("operations/operation") : Optional.empty();
 
-    private final BauhausUriBuilder bauhausUriBuilder = new BauhausUriBuilder(
-            "http://id.insee.fr/",
-            "http://bauhaus/",
-            propertiesFinder
-    );
+    private final BauhausUriBuilder bauhausUriBuilder =
+            new BauhausUriBuilder("http://id.insee.fr/", "http://bauhaus/", propertiesFinder);
 
     @Test
     void getCompleteUriGestion_buildsGestionScopedOperationIri() {

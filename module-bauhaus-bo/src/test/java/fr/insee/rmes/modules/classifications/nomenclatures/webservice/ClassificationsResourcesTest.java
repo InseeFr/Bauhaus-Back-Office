@@ -1,13 +1,17 @@
 package fr.insee.rmes.modules.classifications.nomenclatures.webservice;
 
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.when;
+
 import fr.insee.rmes.AppSpringBootTest;
 import fr.insee.rmes.bauhaus_services.classifications.ClassificationsService;
 import fr.insee.rmes.bauhaus_services.classifications.item.ClassificationItemService;
-import fr.insee.rmes.modules.commons.configuration.swagger.model.Id;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.classifications.families.model.PartialClassificationFamily;
 import fr.insee.rmes.modules.classifications.nomenclatures.model.PartialClassification;
 import fr.insee.rmes.modules.classifications.series.model.PartialClassificationSeries;
+import fr.insee.rmes.modules.commons.configuration.swagger.model.Id;
+import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,10 +19,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-import java.util.List;
-
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 @AppSpringBootTest
 class ClassificationsResourcesTest {
@@ -33,7 +33,8 @@ class ClassificationsResourcesTest {
 
     @Test
     void shouldReturnFamiliesWithHateoasLinks() throws RmesException {
-        ClassificationsResources classificationsResources = new ClassificationsResources(classificationsService, classificationItemService);
+        ClassificationsResources classificationsResources =
+                new ClassificationsResources(classificationsService, classificationItemService);
 
         PartialClassificationFamily family1 = new PartialClassificationFamily("family-1", "Family 1");
         PartialClassificationFamily family2 = new PartialClassificationFamily("family-2", "Family 2");
@@ -50,7 +51,8 @@ class ClassificationsResourcesTest {
 
     @Test
     void shouldReturnSeriesWithHateoasLinks() throws RmesException {
-        ClassificationsResources classificationsResources = new ClassificationsResources(classificationsService, classificationItemService);
+        ClassificationsResources classificationsResources =
+                new ClassificationsResources(classificationsService, classificationItemService);
 
         PartialClassificationSeries series1 = new PartialClassificationSeries("series-1", "Series 1", "altLabels");
         PartialClassificationSeries series2 = new PartialClassificationSeries("series-2", "Series 2", "altLabels");
@@ -67,7 +69,8 @@ class ClassificationsResourcesTest {
 
     @Test
     void shouldReturnClassificationsWithHateoasLinks() throws RmesException {
-        ClassificationsResources classificationsResources = new ClassificationsResources(classificationsService, classificationItemService);
+        ClassificationsResources classificationsResources =
+                new ClassificationsResources(classificationsService, classificationItemService);
 
         PartialClassification classification1 = new PartialClassification("class-1", "Classification 1", "altLabels");
         PartialClassification classification2 = new PartialClassification("class-2", "Classification 2", "altLabels");
@@ -84,146 +87,192 @@ class ClassificationsResourcesTest {
 
     @Test
     void shouldReturnResponseWhenGetFamily() throws RmesException {
-        ClassificationsResources classificationsResources = new ClassificationsResources(classificationsService,classificationItemService);
+        ClassificationsResources classificationsResources =
+                new ClassificationsResources(classificationsService, classificationItemService);
         when(classificationsService.getFamily(id.identifier())).thenReturn("mocked result");
         String actual = classificationsResources.getFamily(id.identifier()).toString();
-        Assertions.assertEquals("<200 OK OK,mocked result,[]>",actual);
+        Assertions.assertEquals("<200 OK OK,mocked result,[]>", actual);
     }
 
     @Test
     void shouldReturnResponseWhenGetFamilyMembers() throws RmesException {
-        ClassificationsResources classificationsResources = new ClassificationsResources(classificationsService,classificationItemService);
+        ClassificationsResources classificationsResources =
+                new ClassificationsResources(classificationsService, classificationItemService);
         when(classificationsService.getFamilyMembers(id.identifier())).thenReturn("mocked result");
-        String actual = classificationsResources.getFamilyMembers(id.identifier()).toString();
-        Assertions.assertEquals("<200 OK OK,mocked result,[]>",actual);
+        String actual =
+                classificationsResources.getFamilyMembers(id.identifier()).toString();
+        Assertions.assertEquals("<200 OK OK,mocked result,[]>", actual);
     }
 
     @Test
     void shouldReturnResponseWhenGetOneSeries() throws RmesException {
-        ClassificationsResources classificationsResources = new ClassificationsResources(classificationsService,classificationItemService);
+        ClassificationsResources classificationsResources =
+                new ClassificationsResources(classificationsService, classificationItemService);
         when(classificationsService.getOneSeries(id.identifier())).thenReturn("mocked result");
         String actual = classificationsResources.getOneSeries(id.identifier()).toString();
-        Assertions.assertEquals("<200 OK OK,mocked result,[]>",actual);
+        Assertions.assertEquals("<200 OK OK,mocked result,[]>", actual);
     }
 
     @Test
     void shouldReturnResponseWhenGetSeriesMembers() throws RmesException {
-        ClassificationsResources classificationsResources = new ClassificationsResources(classificationsService,classificationItemService);
+        ClassificationsResources classificationsResources =
+                new ClassificationsResources(classificationsService, classificationItemService);
         when(classificationsService.getSeriesMembers(id.identifier())).thenReturn("mocked result");
-        String actual = classificationsResources.getSeriesMembers(id.identifier()).toString();
-        Assertions.assertEquals("<200 OK OK,mocked result,[]>",actual);
+        String actual =
+                classificationsResources.getSeriesMembers(id.identifier()).toString();
+        Assertions.assertEquals("<200 OK OK,mocked result,[]>", actual);
     }
 
     @Test
     void shouldReturnResponseWhenGetClassification() throws RmesException {
-        ClassificationsResources classificationsResources = new ClassificationsResources(classificationsService,classificationItemService);
+        ClassificationsResources classificationsResources =
+                new ClassificationsResources(classificationsService, classificationItemService);
         when(classificationsService.getClassification(id.identifier())).thenReturn("mocked result");
-        String actual = classificationsResources.getClassification(id.identifier()).toString();
-        Assertions.assertEquals("<200 OK OK,mocked result,[]>",actual);
+        String actual =
+                classificationsResources.getClassification(id.identifier()).toString();
+        Assertions.assertEquals("<200 OK OK,mocked result,[]>", actual);
     }
 
     @Test
     void shouldReturnResponseWhenUpdateClassification() throws RmesException {
         doNothing().when(classificationsService).updateClassification(id.identifier(), " mocked body");
-        ClassificationsResources classificationsResources = new ClassificationsResources(classificationsService,classificationItemService);
-        String actual = classificationsResources.updateClassification(id, " mocked body").toString();
-        Assertions.assertEquals("<200 OK OK,Id[identifier=mocked Id],[]>",actual);
+        ClassificationsResources classificationsResources =
+                new ClassificationsResources(classificationsService, classificationItemService);
+        String actual = classificationsResources
+                .updateClassification(id, " mocked body")
+                .toString();
+        Assertions.assertEquals("<200 OK OK,Id[identifier=mocked Id],[]>", actual);
     }
 
     @Test
     void shouldReturnResponseWhenPublishClassification() throws RmesException {
         doNothing().when(classificationsService).setClassificationValidation(id.identifier());
-        ClassificationsResources classificationsResources = new ClassificationsResources(classificationsService,classificationItemService);
+        ClassificationsResources classificationsResources =
+                new ClassificationsResources(classificationsService, classificationItemService);
         String actual = classificationsResources.publishClassification(id).toString();
-        Assertions.assertEquals("<200 OK OK,Id[identifier=mocked Id],[]>",actual);
+        Assertions.assertEquals("<200 OK OK,Id[identifier=mocked Id],[]>", actual);
     }
 
     @Test
     void shouldReturnResponseWhenGetClassificationItems() throws RmesException {
         when(classificationItemService.getClassificationItems(id.identifier())).thenReturn("mocked result");
-        ClassificationsResources classificationsResources = new ClassificationsResources(classificationsService,classificationItemService);
-        String actual = classificationsResources.getClassificationItems(id.identifier()).toString();
-        Assertions.assertEquals("<200 OK OK,mocked result,[]>",actual);
+        ClassificationsResources classificationsResources =
+                new ClassificationsResources(classificationsService, classificationItemService);
+        String actual =
+                classificationsResources.getClassificationItems(id.identifier()).toString();
+        Assertions.assertEquals("<200 OK OK,mocked result,[]>", actual);
     }
 
     @Test
     void shouldReturnResponseWhenGetClassificationLevels() throws RmesException {
         when(classificationsService.getClassificationLevels(id.identifier())).thenReturn("mocked result");
-        ClassificationsResources classificationsResources = new ClassificationsResources(classificationsService,classificationItemService);
-        String actual = classificationsResources.getClassificationLevels(id.identifier()).toString();
-        Assertions.assertEquals("<200 OK OK,mocked result,[]>",actual);
+        ClassificationsResources classificationsResources =
+                new ClassificationsResources(classificationsService, classificationItemService);
+        String actual = classificationsResources
+                .getClassificationLevels(id.identifier())
+                .toString();
+        Assertions.assertEquals("<200 OK OK,mocked result,[]>", actual);
     }
 
     @Test
     void shouldReturnResponseWhenGetClassificationLevel() throws RmesException {
-        when(classificationsService.getClassificationLevel(id.identifier(),"mocked Level")).thenReturn("mocked result");
-        ClassificationsResources classificationsResources = new ClassificationsResources(classificationsService,classificationItemService);
-        String actual = classificationsResources.getClassificationLevel(id.identifier(),"mocked Level").toString();
-        Assertions.assertEquals("<200 OK OK,mocked result,[]>",actual);
+        when(classificationsService.getClassificationLevel(id.identifier(), "mocked Level"))
+                .thenReturn("mocked result");
+        ClassificationsResources classificationsResources =
+                new ClassificationsResources(classificationsService, classificationItemService);
+        String actual = classificationsResources
+                .getClassificationLevel(id.identifier(), "mocked Level")
+                .toString();
+        Assertions.assertEquals("<200 OK OK,mocked result,[]>", actual);
     }
 
     @Test
     void shouldReturnResponseWhenGetClassificationLevelMembers() throws RmesException {
-        when(classificationsService.getClassificationLevelMembers(id.identifier(),"mocked Level")).thenReturn("mocked result");
-        ClassificationsResources classificationsResources = new ClassificationsResources(classificationsService,classificationItemService);
-        String actual = classificationsResources.getClassificationLevelMembers(id.identifier(),"mocked Level").toString();
-        Assertions.assertEquals("<200 OK OK,mocked result,[]>",actual);
+        when(classificationsService.getClassificationLevelMembers(id.identifier(), "mocked Level"))
+                .thenReturn("mocked result");
+        ClassificationsResources classificationsResources =
+                new ClassificationsResources(classificationsService, classificationItemService);
+        String actual = classificationsResources
+                .getClassificationLevelMembers(id.identifier(), "mocked Level")
+                .toString();
+        Assertions.assertEquals("<200 OK OK,mocked result,[]>", actual);
     }
 
     @Test
     void shouldReturnResponseWhenGetClassificationItem() throws RmesException {
-        when(classificationItemService.getClassificationItem(id.identifier(),"mocked item")).thenReturn("mocked result");
-        ClassificationsResources classificationsResources = new ClassificationsResources(classificationsService,classificationItemService);
-        String actual = classificationsResources.getClassificationItem(id.identifier(),"mocked item").toString();
-        Assertions.assertEquals("<200 OK OK,mocked result,[]>",actual);
+        when(classificationItemService.getClassificationItem(id.identifier(), "mocked item"))
+                .thenReturn("mocked result");
+        ClassificationsResources classificationsResources =
+                new ClassificationsResources(classificationsService, classificationItemService);
+        String actual = classificationsResources
+                .getClassificationItem(id.identifier(), "mocked item")
+                .toString();
+        Assertions.assertEquals("<200 OK OK,mocked result,[]>", actual);
     }
 
     @Test
     void shouldReturnResponseWhenUpdateClassificationItem() throws RmesException {
-        doNothing().when(classificationItemService).updateClassificationItem(id.identifier(),"mocked item","body");
-        ClassificationsResources classificationsResources = new ClassificationsResources(classificationsService,classificationItemService);
-        String actual = classificationsResources.updateClassificationItem(id.identifier(),"mocked item","body").toString();
-        Assertions.assertEquals("<200 OK OK,mocked item,[]>",actual);
+        doNothing().when(classificationItemService).updateClassificationItem(id.identifier(), "mocked item", "body");
+        ClassificationsResources classificationsResources =
+                new ClassificationsResources(classificationsService, classificationItemService);
+        String actual = classificationsResources
+                .updateClassificationItem(id.identifier(), "mocked item", "body")
+                .toString();
+        Assertions.assertEquals("<200 OK OK,mocked item,[]>", actual);
     }
 
     @Test
     void shouldReturnResponseWhenGetClassificationItemNarrowers() throws RmesException {
-        when(classificationItemService.getClassificationItemNarrowers(id.identifier(),"mocked item")).thenReturn("mocked result");
-        ClassificationsResources classificationsResources = new ClassificationsResources(classificationsService,classificationItemService);
-        String actual = classificationsResources.getClassificationItemNarrowers(id.identifier(),"mocked item").toString();
-        Assertions.assertEquals("<200 OK OK,mocked result,[]>",actual);
+        when(classificationItemService.getClassificationItemNarrowers(id.identifier(), "mocked item"))
+                .thenReturn("mocked result");
+        ClassificationsResources classificationsResources =
+                new ClassificationsResources(classificationsService, classificationItemService);
+        String actual = classificationsResources
+                .getClassificationItemNarrowers(id.identifier(), "mocked item")
+                .toString();
+        Assertions.assertEquals("<200 OK OK,mocked result,[]>", actual);
     }
 
     @Test
     void shouldReturnResponseWhenGetCorrespondences() throws RmesException {
         when(classificationsService.getCorrespondences()).thenReturn("mocked result");
-        ClassificationsResources classificationsResources = new ClassificationsResources(classificationsService,classificationItemService);
+        ClassificationsResources classificationsResources =
+                new ClassificationsResources(classificationsService, classificationItemService);
         String actual = classificationsResources.getCorrespondences().toString();
-        Assertions.assertEquals("<200 OK OK,mocked result,[]>",actual);
+        Assertions.assertEquals("<200 OK OK,mocked result,[]>", actual);
     }
 
     @Test
     void shouldReturnResponseWhenGetCorrespondence() throws RmesException {
         when(classificationsService.getCorrespondence(id.identifier())).thenReturn("mocked result");
-        ClassificationsResources classificationsResources = new ClassificationsResources(classificationsService,classificationItemService);
-        String actual = classificationsResources.getCorrespondence(id.identifier()).toString();
-        Assertions.assertEquals("<200 OK OK,mocked result,[]>",actual);
+        ClassificationsResources classificationsResources =
+                new ClassificationsResources(classificationsService, classificationItemService);
+        String actual =
+                classificationsResources.getCorrespondence(id.identifier()).toString();
+        Assertions.assertEquals("<200 OK OK,mocked result,[]>", actual);
     }
 
     @Test
     void shouldReturnResponseWhenGetCorrespondenceAssociations() throws RmesException {
-        when(classificationsService.getCorrespondenceAssociations(id.identifier())).thenReturn("mocked result");
-        ClassificationsResources classificationsResources = new ClassificationsResources(classificationsService,classificationItemService);
-        String actual = classificationsResources.getCorrespondenceAssociations(id.identifier()).toString();
-        Assertions.assertEquals("<200 OK OK,mocked result,[]>",actual);
+        when(classificationsService.getCorrespondenceAssociations(id.identifier()))
+                .thenReturn("mocked result");
+        ClassificationsResources classificationsResources =
+                new ClassificationsResources(classificationsService, classificationItemService);
+        String actual = classificationsResources
+                .getCorrespondenceAssociations(id.identifier())
+                .toString();
+        Assertions.assertEquals("<200 OK OK,mocked result,[]>", actual);
     }
 
     @Test
     void shouldReturnResponseWhenGetCorrespondenceItem() throws RmesException {
-        when(classificationsService.getCorrespondenceAssociation(id.identifier(),"mocked associationId")).thenReturn("mocked result");
-        ClassificationsResources classificationsResources = new ClassificationsResources(classificationsService,classificationItemService);
-        String actual = classificationsResources.getCorrespondenceItem(id.identifier(),"mocked associationId").toString();
-        Assertions.assertEquals("<200 OK OK,mocked result,[]>",actual);
+        when(classificationsService.getCorrespondenceAssociation(id.identifier(), "mocked associationId"))
+                .thenReturn("mocked result");
+        ClassificationsResources classificationsResources =
+                new ClassificationsResources(classificationsService, classificationItemService);
+        String actual = classificationsResources
+                .getCorrespondenceItem(id.identifier(), "mocked associationId")
+                .toString();
+        Assertions.assertEquals("<200 OK OK,mocked result,[]>", actual);
     }
-
 }

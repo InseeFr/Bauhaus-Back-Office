@@ -1,8 +1,7 @@
 package fr.insee.rmes.utils;
 
-import org.springframework.stereotype.Component;
-
 import java.util.UUID;
+import org.springframework.stereotype.Component;
 
 @Component
 public record IdGenerator() {
@@ -10,5 +9,4 @@ public record IdGenerator() {
         UUID uuid = UUID.randomUUID();
         return uuid.toString();
     }
-
 }

@@ -19,13 +19,13 @@ public enum Source {
         if (value == null) {
             return null;
         }
-        
+
         for (Source source : Source.values()) {
             if (source.value.equals(value)) {
                 return source;
             }
         }
-        
+
         throw new IllegalArgumentException("Unknown source value: " + value);
     }
 }

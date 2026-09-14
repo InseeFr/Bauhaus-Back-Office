@@ -32,107 +32,62 @@ public class OperationsResources {
     protected final BauhausUriBuilder bauhausUriBuilder;
 
     public OperationsResources(
-        OperationsService operationsService,
-        OperationsDocumentationsService documentationsService,
-        DDIService ddiService,
-        BauhausUriBuilder bauhausUriBuilder
-    ) {
+            OperationsService operationsService,
+            OperationsDocumentationsService documentationsService,
+            DDIService ddiService,
+            BauhausUriBuilder bauhausUriBuilder) {
         this.operationsService = operationsService;
         this.documentationsService = documentationsService;
         this.ddiService = ddiService;
         this.bauhausUriBuilder = bauhausUriBuilder;
     }
 
-    @HasAccess(
-        module = RBAC.Module.OPERATION_OPERATION,
-        privilege = RBAC.Privilege.READ
-    )
+    @HasAccess(module = RBAC.Module.OPERATION_OPERATION, privilege = RBAC.Privilege.READ)
+    @GetMapping(value = "/operations", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<PartialOperationResponse>> getOperations() throws RmesException {
+        List<PartialOperationResponse> responses = this.operationsService.getOperations().stream()
+                .map(operation -> {
+                    var response = PartialOperationResponse.fromDomain(operation);
+                    response.add(linkTo(OperationsResources.class)
+                            .slash("operation")
+                            .slash(operation.id())
+                            .withSelfRel());
+                    return response;
+                })
+                .toList();
+
+        return ResponseEntity.ok().contentType(MediaTypes.HAL_JSON).body(responses);
+    }
+
+    @HasAccess(module = RBAC.Module.OPERATION_OPERATION, privilege = RBAC.Privilege.READ)
     @GetMapping(
-        value = "/operations",
-        produces = MediaType.APPLICATION_JSON_VALUE
-    )
-    public ResponseEntity<List<PartialOperationResponse>> getOperations()
-        throws RmesException {
-        List<PartialOperationResponse> responses = this.operationsService
-            .getOperations()
-            .stream()
-            .map(operation -> {
-                var response = PartialOperationResponse.fromDomain(operation);
-                response.add(
-                    linkTo(OperationsResources.class)
-                        .slash("operation")
-                        .slash(operation.id())
-                        .withSelfRel()
-                );
-                return response;
+            value = "/operation/{id}",
+            produces = {
+                MediaType.APPLICATION_JSON_VALUE,
+                MediaType.APPLICATION_XML_VALUE,
             })
-            .toList();
-
-        return ResponseEntity.ok()
-            .contentType(MediaTypes.HAL_JSON)
-            .body(responses);
+    public ResponseEntity<Operation> getOperationByID(@PathVariable(Constants.ID) String id) throws RmesException {
+        return ResponseEntity.status(HttpStatus.OK).body(operationsService.getOperationById(id));
     }
 
-    @HasAccess(
-        module = RBAC.Module.OPERATION_OPERATION,
-        privilege = RBAC.Privilege.READ
-    )
-    @GetMapping(
-        value = "/operation/{id}",
-        produces = {
-            MediaType.APPLICATION_JSON_VALUE,
-            MediaType.APPLICATION_XML_VALUE,
-        }
-    )
-    public ResponseEntity<Operation> getOperationByID(
-        @PathVariable(Constants.ID) String id
-    ) throws RmesException {
-        return ResponseEntity.status(HttpStatus.OK).body(
-            operationsService.getOperationById(id)
-        );
-    }
-
-    @HasAccess(
-        module = RBAC.Module.OPERATION_OPERATION,
-        privilege = RBAC.Privilege.UPDATE
-    )
-    @PutMapping(
-        value = "/operation/{id}",
-        consumes = MediaType.APPLICATION_JSON_VALUE
-    )
-    public ResponseEntity<Void> setOperationById(
-        @PathVariable(Constants.ID) String id,
-        @RequestBody String body
-    ) throws RmesException {
+    @HasAccess(module = RBAC.Module.OPERATION_OPERATION, privilege = RBAC.Privilege.UPDATE)
+    @PutMapping(value = "/operation/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Void> setOperationById(@PathVariable(Constants.ID) String id, @RequestBody String body)
+            throws RmesException {
         operationsService.setOperation(id, body);
         return ResponseEntity.noContent().build();
     }
 
-    @HasAccess(
-        module = RBAC.Module.OPERATION_OPERATION,
-        privilege = RBAC.Privilege.CREATE
-    )
-    @PostMapping(
-        value = "/operation",
-        consumes = MediaType.APPLICATION_JSON_VALUE
-    )
-    public ResponseEntity<String> createOperation(@RequestBody String body)
-        throws RmesException {
+    @HasAccess(module = RBAC.Module.OPERATION_OPERATION, privilege = RBAC.Privilege.CREATE)
+    @PostMapping(value = "/operation", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> createOperation(@RequestBody String body) throws RmesException {
         String id = operationsService.createOperation(body);
         return ResponseEntity.status(HttpStatus.OK).body(id);
     }
 
-    @HasAccess(
-        module = RBAC.Module.OPERATION_OPERATION,
-        privilege = RBAC.Privilege.PUBLISH
-    )
-    @PutMapping(
-        value = "/operation/{id}/validate",
-        consumes = MediaType.APPLICATION_JSON_VALUE
-    )
-    public ResponseEntity<String> setOperationValidation(
-        @PathVariable(Constants.ID) String id
-    ) throws RmesException {
+    @HasAccess(module = RBAC.Module.OPERATION_OPERATION, privilege = RBAC.Privilege.PUBLISH)
+    @PutMapping(value = "/operation/{id}/validate", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> setOperationValidation(@PathVariable(Constants.ID) String id) throws RmesException {
         operationsService.setOperationValidation(id);
         return ResponseEntity.status(HttpStatus.OK).body(id);
     }

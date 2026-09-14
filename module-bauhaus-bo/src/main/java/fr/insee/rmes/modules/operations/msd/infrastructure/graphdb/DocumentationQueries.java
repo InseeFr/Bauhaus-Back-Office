@@ -1,22 +1,22 @@
 package fr.insee.rmes.modules.operations.msd.infrastructure.graphdb;
 
 import fr.insee.rmes.BauhausLanguagesProperties;
-import fr.insee.rmes.GraphsProperties;
 import fr.insee.rmes.Constants;
-import fr.insee.rmes.freemarker.FreeMarkerUtils;
-import fr.insee.rmes.model.operations.documentations.RangeType;
+import fr.insee.rmes.GraphsProperties;
 import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.freemarker.FreeMarkerUtils;
 import fr.insee.rmes.graphdb.SparqlLiterals;
-import org.eclipse.rdf4j.model.Resource;
-import org.springframework.stereotype.Component;
-
+import fr.insee.rmes.model.operations.documentations.RangeType;
 import java.util.HashMap;
 import java.util.Map;
+import org.eclipse.rdf4j.model.Resource;
+import org.springframework.stereotype.Component;
 
 @Component
 public class DocumentationQueries {
 
     private static final String ID_SIMS = Constants.ID_SIMS;
+    private static final String DOCUMENTATION_GRAPH_IRI = "DOCUMENTATION_GRAPH_IRI";
 
     private final BauhausLanguagesProperties languages;
     private final GraphsProperties graphs;
@@ -30,7 +30,7 @@ public class DocumentationQueries {
         Map<String, Object> params = new HashMap<>();
         params.put("LG1", SparqlLiterals.literal(languages.lg1()));
         params.put("LG2", SparqlLiterals.literal(languages.lg2()));
-        
+
         params.put("MSD_GRAPH", SparqlLiterals.iri(graphs.msdGraph()));
         params.put("CODELIST_GRAPH", SparqlLiterals.iri(graphs.codeListGraph()));
         params.put("MSD_CONCEPTS_GRAPH", SparqlLiterals.iri(graphs.msdConceptsGraph()));
@@ -60,14 +60,14 @@ public class DocumentationQueries {
     public String getDocumentationTitleQuery(String idSims) throws RmesException {
         Map<String, Object> params = initParams();
         params.put(ID_SIMS, SparqlLiterals.literal(idSims));
-        params.put("DOCUMENTATION_GRAPH_IRI", SparqlLiterals.iri(graphs.documentationsGraph() + "/" + idSims));
+        params.put(DOCUMENTATION_GRAPH_IRI, SparqlLiterals.iri(graphs.documentationsGraph() + "/" + idSims));
         return buildRequest("getDocumentationTitleQuery.ftlh", params);
     }
 
     public String getTargetByIdSims(String idSims) throws RmesException {
         Map<String, Object> params = initParams();
         params.put(ID_SIMS, SparqlLiterals.literal(idSims));
-        params.put("DOCUMENTATION_GRAPH_IRI", SparqlLiterals.iri(graphs.documentationsGraph() + "/" + idSims));
+        params.put(DOCUMENTATION_GRAPH_IRI, SparqlLiterals.iri(graphs.documentationsGraph() + "/" + idSims));
         return buildRequest("getTargetByIdSimsQuery.ftlh", params);
     }
 
@@ -80,9 +80,10 @@ public class DocumentationQueries {
     public String getDocumentationRubricsQuery(String idSims, String clLg1, String clLg2) throws RmesException {
         Map<String, Object> params = initParams();
         params.put(ID_SIMS, SparqlLiterals.literal(idSims));
-        params.put("DOCUMENTATION_GRAPH_IRI", SparqlLiterals.iri(graphs.documentationsGraph() + "/" + idSims));
+        params.put(DOCUMENTATION_GRAPH_IRI, SparqlLiterals.iri(graphs.documentationsGraph() + "/" + idSims));
         params.put("DATE_JSON_TYPE", SparqlLiterals.literal(RangeType.DATE.getJsonType()));
-        params.put("DATE_RDF_TYPE", SparqlLiterals.iri(RangeType.DATE.getRdfType().stringValue()));
+        params.put(
+                "DATE_RDF_TYPE", SparqlLiterals.iri(RangeType.DATE.getRdfType().stringValue()));
         params.put("STRING_JSON_TYPE", SparqlLiterals.literal(RangeType.STRING.getJsonType()));
         params.put("RICHTEXT_JSON_TYPE", SparqlLiterals.literal(RangeType.RICHTEXT.getJsonType()));
         params.put("CODELIST_JSON_TYPE", SparqlLiterals.literal(RangeType.CODELIST.getJsonType()));
@@ -105,8 +106,8 @@ public class DocumentationQueries {
     public String getPublicationState(String id) throws RmesException {
         Map<String, Object> params = initParams();
         params.put(Constants.ID_SIMS, SparqlLiterals.literal(id));
-        params.put("DOCUMENTATION_GRAPH_IRI", SparqlLiterals.iri(graphs.documentationsGraph() + "/" + id));
-        
+        params.put(DOCUMENTATION_GRAPH_IRI, SparqlLiterals.iri(graphs.documentationsGraph() + "/" + id));
+
         return buildRequest("getPublicationStatusQuery.ftlh", params);
     }
 

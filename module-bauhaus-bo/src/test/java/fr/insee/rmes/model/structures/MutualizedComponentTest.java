@@ -1,13 +1,14 @@
 package fr.insee.rmes.model.structures;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.structures.components.domain.model.MutualizedComponent;
 import fr.insee.rmes.modules.structures.structures.domain.model.Structure;
-import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
 
 class MutualizedComponentTest {
 
@@ -16,7 +17,8 @@ class MutualizedComponentTest {
 
         MutualizedComponent mutualizedComponent = new MutualizedComponent();
 
-        List<String> attributes = List.of("mockedIdentifiant",
+        List<String> attributes = List.of(
+                "mockedIdentifiant",
                 "mockedIdentifiant",
                 "mockedLabelLg1",
                 "mockedLabelLg2",
@@ -37,8 +39,7 @@ class MutualizedComponentTest {
                 "mockedMaxLength",
                 "mockedMinInclusive",
                 "mockedMaxInclusive",
-                "mockedPattern"
-                );
+                "mockedPattern");
 
         mutualizedComponent.setIdentifiant(attributes.getFirst());
         mutualizedComponent.setId(attributes.get(1));
@@ -63,7 +64,7 @@ class MutualizedComponentTest {
         mutualizedComponent.setMaxInclusive(attributes.get(20));
         mutualizedComponent.setPattern(attributes.get(21));
 
-        List<String> actualAttributes= List.of(
+        List<String> actualAttributes = List.of(
                 mutualizedComponent.getIdentifiant(),
                 mutualizedComponent.getId(),
                 mutualizedComponent.getLabelLg1(),
@@ -85,12 +86,11 @@ class MutualizedComponentTest {
                 mutualizedComponent.getMaxLength(),
                 mutualizedComponent.getMinInclusive(),
                 mutualizedComponent.getMaxInclusive(),
-                mutualizedComponent.getPattern()
-        );
+                mutualizedComponent.getPattern());
 
         boolean stringParameters = attributes.equals(actualAttributes);
 
-        Structure[] structureArray= new Structure[]{new Structure(), new Structure()};
+        Structure[] structureArray = new Structure[] {new Structure(), new Structure()};
         mutualizedComponent.setStructures(structureArray);
 
         boolean structureParameters = Arrays.equals(structureArray, mutualizedComponent.getStructures());

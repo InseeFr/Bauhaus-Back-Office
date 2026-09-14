@@ -1,14 +1,13 @@
 package fr.insee.rmes.bauhaus_services.operations.documentations.documents;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import fr.insee.rmes.json.JSONUtils;
+import java.util.List;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Reconstitue l'ordre des documents d'une rubrique à partir des cellules
@@ -77,15 +76,10 @@ class RdfListOrdererTest {
     }
 
     private static JSONObject row(String id, String listCell, String listNext) {
-        return new JSONObject()
-                .put("id", id)
-                .put("listCell", listCell)
-                .put("listNext", listNext);
+        return new JSONObject().put("id", id).put("listCell", listCell).put("listNext", listNext);
     }
 
     private static List<String> idsOf(JSONArray arr) {
-        return JSONUtils.stream(arr)
-                .map(row -> row.getString("id"))
-                .toList();
+        return JSONUtils.stream(arr).map(row -> row.getString("id")).toList();
     }
 }

@@ -1,11 +1,10 @@
 package fr.insee.rmes.modules.concepts.collections.infrastructure.graphdb;
 
+import java.util.regex.Pattern;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-
-import java.util.regex.Pattern;
 
 @ConfigurationProperties("fr.insee.rmes.bauhaus.collections")
 public class GraphDBCollectionProperties {
@@ -21,19 +20,19 @@ public class GraphDBCollectionProperties {
 
     private final String graph;
     private final String baseURI;
-    private static ValueFactory factory =  SimpleValueFactory.getInstance();
+    private static ValueFactory factory = SimpleValueFactory.getInstance();
 
     public GraphDBCollectionProperties(String graph, String baseURI) {
         this.graph = graph;
         this.baseURI = baseURI;
     }
 
-    public IRI getResourceIRI(String id){
+    public IRI getResourceIRI(String id) {
         var iri = "%s/%s".formatted(baseURI, id);
         return factory.createIRI(DUPLICATED_PATH_SEPARATORS.matcher(iri).replaceAll("/"));
     }
 
-    IRI getResourceGraph(){
+    IRI getResourceGraph() {
         return factory.createIRI(graph);
     }
 }

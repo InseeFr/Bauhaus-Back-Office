@@ -1,5 +1,10 @@
 package fr.insee.rmes.bauhaus_services.operations;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationsUtils;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import org.json.JSONObject;
@@ -8,11 +13,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class OperationsDocumentationsImplTest {
@@ -24,7 +24,8 @@ class OperationsDocumentationsImplTest {
 
     @BeforeEach
     void setUp() {
-        metadataReportService = new OperationsDocumentationsImpl(null, null, null, null, null, documentationsUtils, null, null, null);
+        metadataReportService =
+                new OperationsDocumentationsImpl(null, null, null, null, null, documentationsUtils, null, null, null);
     }
 
     @Test
@@ -66,7 +67,8 @@ class OperationsDocumentationsImplTest {
     void shouldPropagateRmesExceptionWhenGetMetadataReportFails() throws RmesException {
         // Given
         String simsId = "3000";
-        RmesException expectedException = new RmesException(404, "Documentation not found", "No documentation with id: " + simsId);
+        RmesException expectedException =
+                new RmesException(404, "Documentation not found", "No documentation with id: " + simsId);
 
         when(documentationsUtils.getDocumentationByIdSims(simsId)).thenThrow(expectedException);
 
@@ -78,5 +80,4 @@ class OperationsDocumentationsImplTest {
         assertEquals(expectedException.getMessage(), exception.getMessage());
         verify(documentationsUtils).getDocumentationByIdSims(simsId);
     }
-
 }

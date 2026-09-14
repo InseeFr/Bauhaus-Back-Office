@@ -36,11 +36,10 @@ class ColecticaHierarchyBrowser {
     private final ColecticaCodeListRepository codeLists;
 
     ColecticaHierarchyBrowser(
-        ColecticaConfiguration.ColecticaInstanceConfiguration instanceConfiguration,
-        ColecticaClient colecticaClient,
-        ColecticaCatalogRepository catalog,
-        ColecticaCodeListRepository codeLists
-    ) {
+            ColecticaConfiguration.ColecticaInstanceConfiguration instanceConfiguration,
+            ColecticaClient colecticaClient,
+            ColecticaCatalogRepository catalog,
+            ColecticaCodeListRepository codeLists) {
         this.instanceConfiguration = instanceConfiguration;
         this.colecticaClient = colecticaClient;
         this.catalog = catalog;
@@ -54,8 +53,8 @@ class ColecticaHierarchyBrowser {
             return List.of();
         }
         return catalog.getLogicalProducts().stream()
-            .filter(lp -> logicalProductIds.contains(lp.id()))
-            .toList();
+                .filter(lp -> logicalProductIds.contains(lp.id()))
+                .toList();
     }
 
     List<PartialCodeListScheme> getCodeListSchemesByLogicalProduct(String agencyId, String logicalProductId) {
@@ -65,8 +64,8 @@ class ColecticaHierarchyBrowser {
             return List.of();
         }
         return catalog.getCodeListSchemes().stream()
-            .filter(scheme -> codeListSchemeIds.contains(scheme.id()))
-            .toList();
+                .filter(scheme -> codeListSchemeIds.contains(scheme.id()))
+                .toList();
     }
 
     List<PartialCodesList> getCodeListsByCodeListScheme(String agencyId, String codeListSchemeId) {
@@ -85,32 +84,35 @@ class ColecticaHierarchyBrowser {
      */
     List<PartialCodesList> getMissingCodesListsByGroup(String agencyId, String groupId) {
         logger.info("Fetching missing (sentinel) code lists for group {}/{}", agencyId, groupId);
-        List<ItemReference> refs = descendFromGroup(agencyId, groupId, List.of(
-            LOGICAL_PRODUCT,
-            MANAGED_REPRESENTATION_SCHEME,
-            MANAGED_MISSING_VALUES_REPRESENTATION,
-            CODE_LIST));
+        List<ItemReference> refs = descendFromGroup(
+                agencyId,
+                groupId,
+                List.of(
+                        LOGICAL_PRODUCT,
+                        MANAGED_REPRESENTATION_SCHEME,
+                        MANAGED_MISSING_VALUES_REPRESENTATION,
+                        CODE_LIST));
         if (refs.isEmpty()) {
             return List.of();
         }
         return codeLists.resolveCodeListsMetadata(
-            refs.stream().map(ItemReference::identifier).collect(Collectors.toSet()));
+                refs.stream().map(ItemReference::identifier).collect(Collectors.toSet()));
     }
 
     /** Descente {@code bysubject} depuis un groupe, les niveaux étant donnés par leurs clés de type. */
     List<ItemReference> descendFromGroup(String agencyId, String groupId, List<String> typeKeys) {
         return ColecticaRelationships.descend(
-            colecticaClient,
-            new ItemReference(agencyId, groupId),
-            typeKeys.stream().map(this::itemType).toList());
+                colecticaClient,
+                new ItemReference(agencyId, groupId),
+                typeKeys.stream().map(this::itemType).toList());
     }
 
     private Set<String> childIds(String agencyId, String parentId, String childTypeKey) {
-        return ColecticaRelationships
-            .childrenOfType(colecticaClient, new ItemReference(agencyId, parentId), itemType(childTypeKey))
-            .stream()
-            .map(ItemReference::identifier)
-            .collect(Collectors.toSet());
+        return ColecticaRelationships.childrenOfType(
+                        colecticaClient, new ItemReference(agencyId, parentId), itemType(childTypeKey))
+                .stream()
+                .map(ItemReference::identifier)
+                .collect(Collectors.toSet());
     }
 
     private String itemType(String typeKey) {

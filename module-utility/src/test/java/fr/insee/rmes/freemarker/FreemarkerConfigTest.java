@@ -1,14 +1,13 @@
 package fr.insee.rmes.freemarker;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import fr.insee.rmes.domain.exceptions.RmesException;
 import freemarker.template.Configuration;
 import freemarker.template.TemplateExceptionHandler;
-import org.junit.jupiter.api.Test;
-
 import java.util.Locale;
 import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
 
 class FreemarkerConfigTest {
 
@@ -18,8 +17,7 @@ class FreemarkerConfigTest {
      */
     @Test
     void shouldNotEscapeAnInterpolatedValueInAFtlhTemplate() throws RmesException {
-        String rendered = FreeMarkerUtils.buildRequest("", "escapingProbe.ftlh",
-                Map.of("VALUE", "a\"b'c&d<e>"));
+        String rendered = FreeMarkerUtils.buildRequest("", "escapingProbe.ftlh", Map.of("VALUE", "a\"b'c&d<e>"));
 
         assertTrue(rendered.trim().endsWith("VALUES ?x { a\"b'c&d<e> }"), () -> rendered);
     }

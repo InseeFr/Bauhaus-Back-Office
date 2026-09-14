@@ -1,19 +1,18 @@
 package fr.insee.rmes.modules.concepts.concept.webservice.response;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.modules.concepts.concept.domain.model.Concept;
 import fr.insee.rmes.modules.concepts.concept.domain.model.ConceptId;
 import fr.insee.rmes.modules.concepts.concept.domain.model.ConceptVersion;
 import fr.insee.rmes.modules.shared_kernel.domain.model.LocalisedLabel;
 import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
-import org.json.JSONObject;
-import org.junit.jupiter.api.Test;
-
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.json.JSONObject;
+import org.junit.jupiter.api.Test;
 
 class ConceptResponseTest {
 
@@ -25,8 +24,7 @@ class ConceptResponseTest {
                 new ConceptId("c00001"),
                 List.of(
                         LocalisedLabel.ofDefaultLanguage("Concept FR"),
-                        LocalisedLabel.ofAlternativeLanguage("Concept EN")
-                ),
+                        LocalisedLabel.ofAlternativeLanguage("Concept EN")),
                 "http://bauhaus/HIE000000",
                 "http://bauhaus/HIE000001",
                 "http://id.insee.fr/codes/base/statutDiffusion/Prive",
@@ -34,8 +32,7 @@ class ConceptResponseTest {
                 LocalDateTime.of(2026, 2, 2, 11, 0),
                 ValidationStatus.UNPUBLISHED,
                 new ConceptVersion(2),
-                List.of("Collection-001")
-        );
+                List.of("Collection-001"));
 
         ConceptResponse response = ConceptResponse.fromDomain(concept);
         JSONObject json = new JSONObject(MAPPER.writeValueAsString(response));
@@ -67,8 +64,7 @@ class ConceptResponseTest {
                 null, // modified
                 ValidationStatus.UNPUBLISHED,
                 ConceptVersion.initial(),
-                Collections.emptyList()
-        );
+                Collections.emptyList());
 
         ConceptResponse response = ConceptResponse.fromDomain(concept);
         JSONObject json = new JSONObject(MAPPER.writeValueAsString(response));

@@ -17,9 +17,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping(
-    value = "/ddi",
-    produces = { "application/hal+json", MediaType.APPLICATION_JSON_VALUE }
-)
+        value = "/ddi",
+        produces = {"application/hal+json", MediaType.APPLICATION_JSON_VALUE})
 public class CodeListSchemeResources {
 
     private final DDIService ddiService;
@@ -29,35 +28,22 @@ public class CodeListSchemeResources {
     }
 
     @GetMapping("/code-list-scheme")
-    @HasAccess(
-        module = RBAC.Module.DDI_PHYSICALINSTANCE,
-        privilege = RBAC.Privilege.READ
-    )
-    public ResponseEntity<
-        List<PartialCodeListSchemeResponse>
-    > getCodeListSchemes() {
-        List<PartialCodeListScheme> codeListSchemes =
-            ddiService.getCodeListSchemes();
+    @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.READ)
+    public ResponseEntity<List<PartialCodeListSchemeResponse>> getCodeListSchemes() {
+        List<PartialCodeListScheme> codeListSchemes = ddiService.getCodeListSchemes();
 
-        List<PartialCodeListSchemeResponse> responses = codeListSchemes
-            .stream()
-            .map(codeListScheme -> {
-                var response = PartialCodeListSchemeResponse.fromDomain(
-                    codeListScheme
-                );
-                response.add(
-                    linkTo(CodeListSchemeResources.class)
-                        .slash("code-list-scheme")
-                        .slash(codeListScheme.agency())
-                        .slash(codeListScheme.id())
-                        .withSelfRel()
-                );
-                return response;
-            })
-            .toList();
+        List<PartialCodeListSchemeResponse> responses = codeListSchemes.stream()
+                .map(codeListScheme -> {
+                    var response = PartialCodeListSchemeResponse.fromDomain(codeListScheme);
+                    response.add(linkTo(CodeListSchemeResources.class)
+                            .slash("code-list-scheme")
+                            .slash(codeListScheme.agency())
+                            .slash(codeListScheme.id())
+                            .withSelfRel());
+                    return response;
+                })
+                .toList();
 
-        return ResponseEntity.ok()
-            .contentType(MediaTypes.HAL_JSON)
-            .body(responses);
+        return ResponseEntity.ok().contentType(MediaTypes.HAL_JSON).body(responses);
     }
 }

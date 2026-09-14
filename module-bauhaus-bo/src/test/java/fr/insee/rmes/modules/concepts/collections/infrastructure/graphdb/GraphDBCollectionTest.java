@@ -1,17 +1,16 @@
 package fr.insee.rmes.modules.concepts.collections.infrastructure.graphdb;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import fr.insee.rmes.modules.concepts.collections.domain.model.Collection;
 import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionId;
 import fr.insee.rmes.modules.concepts.concept.domain.model.ConceptId;
 import fr.insee.rmes.modules.shared_kernel.domain.model.Lang;
 import fr.insee.rmes.modules.shared_kernel.domain.model.LocalisedLabel;
 import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
-import org.junit.jupiter.api.Test;
-
 import java.time.LocalDateTime;
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
 
 class GraphDBCollectionTest {
 
@@ -20,13 +19,9 @@ class GraphDBCollectionTest {
         // Given
         var collectionId = new CollectionId("c1000");
         var labels = List.of(
-                new LocalisedLabel("Collection Label FR", Lang.FR),
-                new LocalisedLabel("Collection Label EN", Lang.EN)
-        );
-        var descriptions = List.of(
-                new LocalisedLabel("Description FR", Lang.FR),
-                new LocalisedLabel("Description EN", Lang.EN)
-        );
+                new LocalisedLabel("Collection Label FR", Lang.FR), new LocalisedLabel("Collection Label EN", Lang.EN));
+        var descriptions =
+                List.of(new LocalisedLabel("Description FR", Lang.FR), new LocalisedLabel("Description EN", Lang.EN));
         var created = LocalDateTime.of(2024, 1, 1, 10, 0);
         var modified = LocalDateTime.of(2024, 6, 1, 15, 30);
         var conceptIds = List.of(new ConceptId("concept1"), new ConceptId("concept2"));
@@ -40,8 +35,7 @@ class GraphDBCollectionTest {
                 created,
                 modified,
                 ValidationStatus.VALIDATED,
-                conceptIds
-        );
+                conceptIds);
 
         // When
         var graphDBCollection = GraphDBCollection.fromDomain(collection);
@@ -83,8 +77,7 @@ class GraphDBCollectionTest {
                 created,
                 null,
                 ValidationStatus.UNPUBLISHED,
-                List.of()
-        );
+                List.of());
 
         // When
         var graphDBCollection = GraphDBCollection.fromDomain(collection);
@@ -123,8 +116,7 @@ class GraphDBCollectionTest {
                 created,
                 null,
                 ValidationStatus.UNPUBLISHED,
-                List.of()
-        );
+                List.of());
 
         // When
         var graphDBCollection = GraphDBCollection.fromDomain(collection);
@@ -154,8 +146,7 @@ class GraphDBCollectionTest {
                 "Validated",
                 "creator1",
                 "contributor1",
-                List.of("concept1", "concept2")
-        );
+                List.of("concept1", "concept2"));
 
         // When
         var collection = graphDBCollection.toDomain();
@@ -174,7 +165,9 @@ class GraphDBCollectionTest {
         assertEquals("Description EN", collection.descriptions().get(1).value());
         assertEquals(Lang.EN, collection.descriptions().get(1).lang());
         assertEquals(LocalDateTime.parse("2024-01-01T10:00:00"), collection.created());
-        assertEquals(LocalDateTime.parse("2024-06-01T15:30:00"), collection.modified().orElse(null));
+        assertEquals(
+                LocalDateTime.parse("2024-06-01T15:30:00"),
+                collection.modified().orElse(null));
         assertEquals(ValidationStatus.VALIDATED, collection.validationState());
         assertEquals("creator1", collection.creator());
         assertEquals("contributor1", collection.contributor().orElse(null));
@@ -201,8 +194,7 @@ class GraphDBCollectionTest {
                 "Unpublished",
                 "creator1",
                 null,
-                List.of()
-        );
+                List.of());
 
         // When
         var collection = graphDBCollection.toDomain();
@@ -237,8 +229,7 @@ class GraphDBCollectionTest {
                 "Unpublished",
                 "creator1",
                 null,
-                List.of()
-        );
+                List.of());
 
         // When
         var collection = graphDBCollection.toDomain();
@@ -267,13 +258,12 @@ class GraphDBCollectionTest {
                 "Validated",
                 "creator1",
                 "contributor1",
-                List.of("concept1", "concept2")
-        );
+                List.of("concept1", "concept2"));
 
-        var newConcepts = new GraphDBConcept[]{
-                new GraphDBConcept("concept3", "Concept 3 FR", "Concept 3 EN"),
-                new GraphDBConcept("concept4", "Concept 4 FR", "Concept 4 EN"),
-                new GraphDBConcept("concept5", "Concept 5 FR", "Concept 5 EN")
+        var newConcepts = new GraphDBConcept[] {
+            new GraphDBConcept("concept3", "Concept 3 FR", "Concept 3 EN"),
+            new GraphDBConcept("concept4", "Concept 4 FR", "Concept 4 EN"),
+            new GraphDBConcept("concept5", "Concept 5 FR", "Concept 5 EN")
         };
 
         // When
@@ -317,10 +307,9 @@ class GraphDBCollectionTest {
                 "Unpublished",
                 "creator1",
                 null,
-                List.of("concept1", "concept2")
-        );
+                List.of("concept1", "concept2"));
 
-        var newConcepts = new GraphDBConcept[]{};
+        var newConcepts = new GraphDBConcept[] {};
 
         // When
         var updatedGraphDBCollection = originalGraphDBCollection.withConcepts(newConcepts);
@@ -334,13 +323,9 @@ class GraphDBCollectionTest {
         // Given - Create a domain object
         var collectionId = new CollectionId("c1000");
         var labels = List.of(
-                new LocalisedLabel("Collection Label FR", Lang.FR),
-                new LocalisedLabel("Collection Label EN", Lang.EN)
-        );
-        var descriptions = List.of(
-                new LocalisedLabel("Description FR", Lang.FR),
-                new LocalisedLabel("Description EN", Lang.EN)
-        );
+                new LocalisedLabel("Collection Label FR", Lang.FR), new LocalisedLabel("Collection Label EN", Lang.EN));
+        var descriptions =
+                List.of(new LocalisedLabel("Description FR", Lang.FR), new LocalisedLabel("Description EN", Lang.EN));
         var created = LocalDateTime.of(2024, 1, 1, 10, 0);
         var modified = LocalDateTime.of(2024, 6, 1, 15, 30);
         var conceptIds = List.of(new ConceptId("concept1"), new ConceptId("concept2"));
@@ -354,8 +339,7 @@ class GraphDBCollectionTest {
                 created,
                 modified,
                 ValidationStatus.VALIDATED,
-                conceptIds
-        );
+                conceptIds);
 
         // When - Convert to GraphDB and back to domain
         var graphDBCollection = GraphDBCollection.fromDomain(originalCollection);
@@ -363,16 +347,30 @@ class GraphDBCollectionTest {
 
         // Then - Verify the round trip preserves all data
         assertEquals(originalCollection.id().value(), convertedCollection.id().value());
-        assertEquals(originalCollection.prefLabel().value(), convertedCollection.prefLabel().value());
-        assertEquals(originalCollection.prefLabel().lang(), convertedCollection.prefLabel().lang());
-        assertEquals(originalCollection.alternativeLabels().size(), convertedCollection.alternativeLabels().size());
-        assertEquals(originalCollection.descriptions().size(), convertedCollection.descriptions().size());
+        assertEquals(
+                originalCollection.prefLabel().value(),
+                convertedCollection.prefLabel().value());
+        assertEquals(
+                originalCollection.prefLabel().lang(),
+                convertedCollection.prefLabel().lang());
+        assertEquals(
+                originalCollection.alternativeLabels().size(),
+                convertedCollection.alternativeLabels().size());
+        assertEquals(
+                originalCollection.descriptions().size(),
+                convertedCollection.descriptions().size());
         assertEquals(originalCollection.created(), convertedCollection.created());
-        assertEquals(originalCollection.modified().orElse(null), convertedCollection.modified().orElse(null));
+        assertEquals(
+                originalCollection.modified().orElse(null),
+                convertedCollection.modified().orElse(null));
         assertEquals(originalCollection.validationState(), convertedCollection.validationState());
         assertEquals(originalCollection.creator(), convertedCollection.creator());
-        assertEquals(originalCollection.contributor().orElse(null), convertedCollection.contributor().orElse(null));
-        assertEquals(originalCollection.conceptIds().size(), convertedCollection.conceptIds().size());
+        assertEquals(
+                originalCollection.contributor().orElse(null),
+                convertedCollection.contributor().orElse(null));
+        assertEquals(
+                originalCollection.conceptIds().size(),
+                convertedCollection.conceptIds().size());
     }
 
     @Test
@@ -391,8 +389,7 @@ class GraphDBCollectionTest {
                 created,
                 null,
                 ValidationStatus.UNPUBLISHED,
-                List.of()
-        );
+                List.of());
 
         // When
         var graphDBCollection = GraphDBCollection.fromDomain(originalCollection);
@@ -400,7 +397,9 @@ class GraphDBCollectionTest {
 
         // Then
         assertEquals(originalCollection.id().value(), convertedCollection.id().value());
-        assertEquals(originalCollection.prefLabel().value(), convertedCollection.prefLabel().value());
+        assertEquals(
+                originalCollection.prefLabel().value(),
+                convertedCollection.prefLabel().value());
         assertEquals(originalCollection.created(), convertedCollection.created());
         assertNull(convertedCollection.modified().orElse(null));
         assertNull(convertedCollection.contributor().orElse(null));
@@ -428,8 +427,7 @@ class GraphDBCollectionTest {
                 "Unpublished",
                 "creator1",
                 null,
-                List.of()
-        );
+                List.of());
 
         // When
         var collection = graphDBCollection.toDomain();
@@ -437,7 +435,8 @@ class GraphDBCollectionTest {
         // Then
         assertNotNull(collection);
         assertEquals(LocalDateTime.of(2010, 2, 17, 0, 0, 0), collection.created());
-        assertEquals(LocalDateTime.of(2024, 6, 1, 15, 30, 0), collection.modified().orElse(null));
+        assertEquals(
+                LocalDateTime.of(2024, 6, 1, 15, 30, 0), collection.modified().orElse(null));
     }
 
     @Test
@@ -458,8 +457,7 @@ class GraphDBCollectionTest {
                 "Unpublished",
                 "creator1",
                 null,
-                List.of()
-        );
+                List.of());
 
         // When
         var collection = graphDBCollection.toDomain();
@@ -467,6 +465,7 @@ class GraphDBCollectionTest {
         // Then
         assertNotNull(collection);
         assertEquals(LocalDateTime.of(2024, 1, 1, 10, 0, 0), collection.created());
-        assertEquals(LocalDateTime.of(2024, 6, 1, 15, 30, 0), collection.modified().orElse(null));
+        assertEquals(
+                LocalDateTime.of(2024, 6, 1, 15, 30, 0), collection.modified().orElse(null));
     }
 }

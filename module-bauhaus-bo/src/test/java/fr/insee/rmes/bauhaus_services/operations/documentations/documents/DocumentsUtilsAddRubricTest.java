@@ -1,5 +1,7 @@
 package fr.insee.rmes.bauhaus_services.operations.documentations.documents;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.DocumentsStorageProperties;
 import fr.insee.rmes.bauhaus_services.operations.OperationsParentRepository;
@@ -13,6 +15,10 @@ import fr.insee.rmes.modules.commons.domain.port.serverside.FilesOperations;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationDocumentsQueries;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.utils.IdGenerator;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
@@ -27,27 +33,37 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 @ExtendWith(MockitoExtension.class)
 class DocumentsUtilsAddRubricTest {
 
     private static final SimpleValueFactory FACTORY = SimpleValueFactory.getInstance();
 
-    @Mock RepositoryGestion repoGestion;
-    @Mock IdGenerator idGenerator;
-    @Mock RepositoryPublication repositoryPublication;
-    @Mock PublicationUtils publicationUtils;
-    @Mock OperationsParentRepository operationsParentRepository;
-    @Mock FilesOperations filesOperations;
-    @Mock StorageProperties storageProperties;
-    @Mock OperationDocumentsQueries operationDocumentsQueries;
-    @Mock DocumentsStorageProperties documentsStorage;
+    @Mock
+    RepositoryGestion repoGestion;
+
+    @Mock
+    IdGenerator idGenerator;
+
+    @Mock
+    RepositoryPublication repositoryPublication;
+
+    @Mock
+    PublicationUtils publicationUtils;
+
+    @Mock
+    OperationsParentRepository operationsParentRepository;
+
+    @Mock
+    FilesOperations filesOperations;
+
+    @Mock
+    StorageProperties storageProperties;
+
+    @Mock
+    OperationDocumentsQueries operationDocumentsQueries;
+
+    @Mock
+    DocumentsStorageProperties documentsStorage;
 
     private DocumentsUtils documentsUtils;
     private Model model;
@@ -56,9 +72,17 @@ class DocumentsUtilsAddRubricTest {
 
     @BeforeEach
     void setUp() {
-        documentsUtils = new DocumentsUtils(repoGestion, idGenerator, repositoryPublication,
-                new BauhausLanguagesProperties("fr", "en"), publicationUtils, operationsParentRepository,
-                filesOperations, storageProperties, operationDocumentsQueries, documentsStorage);
+        documentsUtils = new DocumentsUtils(
+                repoGestion,
+                idGenerator,
+                repositoryPublication,
+                new BauhausLanguagesProperties("fr", "en"),
+                publicationUtils,
+                operationsParentRepository,
+                filesOperations,
+                storageProperties,
+                operationDocumentsQueries,
+                documentsStorage);
         model = new LinkedHashModel();
         graph = FACTORY.createIRI("http://rdf.insee.fr/graphes/qualite/rapport/9999");
         textUri = FACTORY.createIRI("http://bauhaus/qualite/attribut/9999/S.3.1/texte");
@@ -72,9 +96,7 @@ class DocumentsUtilsAddRubricTest {
         IRI doc711 = doc("711");
 
         documentsUtils.addDocumentsAndLinksToRubric(
-                model, graph,
-                List.of(asDocument(doc709), asDocument(doc710), asDocument(doc711)),
-                textUri);
+                model, graph, List.of(asDocument(doc709), asDocument(doc710), asDocument(doc711)), textUri);
 
         Resource head = uniqueAdditionalMaterialHead();
         List<Value> orderedDocs = walkList(head);
@@ -89,15 +111,13 @@ class DocumentsUtilsAddRubricTest {
     void shouldProduceSingletonRdfListForOneDocument() throws RmesException {
         IRI doc709 = doc("709");
 
-        documentsUtils.addDocumentsAndLinksToRubric(
-                model, graph, List.of(asDocument(doc709)), textUri);
+        documentsUtils.addDocumentsAndLinksToRubric(model, graph, List.of(asDocument(doc709)), textUri);
 
         Resource head = uniqueAdditionalMaterialHead();
         List<Value> orderedDocs = walkList(head);
 
         assertThat(orderedDocs).containsExactly(doc709);
-        assertThat(model.filter(head, RDF.REST, null).objects())
-                .containsExactly(RDF.NIL);
+        assertThat(model.filter(head, RDF.REST, null).objects()).containsExactly(RDF.NIL);
     }
 
     @Test
@@ -141,7 +161,8 @@ class DocumentsUtilsAddRubricTest {
     }
 
     private Resource uniqueAdditionalMaterialHead() {
-        Set<Value> objects = model.filter(textUri, INSEE.ADDITIONALMATERIAL, null).objects();
+        Set<Value> objects =
+                model.filter(textUri, INSEE.ADDITIONALMATERIAL, null).objects();
         assertThat(objects).as("Exactement une tête de liste attendue").hasSize(1);
         return (Resource) objects.iterator().next();
     }
@@ -161,8 +182,11 @@ class DocumentsUtilsAddRubricTest {
     private Value onlyObject(Resource subject, IRI predicate) {
         return Optional.of(model.filter(subject, predicate, null).objects())
                 .map(s -> {
-                    assertThat(s).as("Une seule valeur attendue pour " + predicate).hasSize(1);
+                    assertThat(s)
+                            .as("Une seule valeur attendue pour " + predicate)
+                            .hasSize(1);
                     return s.iterator().next();
-                }).orElseThrow();
+                })
+                .orElseThrow();
     }
 }

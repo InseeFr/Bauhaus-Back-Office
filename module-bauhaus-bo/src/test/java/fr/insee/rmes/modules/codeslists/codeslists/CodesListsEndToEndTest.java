@@ -1,5 +1,7 @@
 package fr.insee.rmes.modules.codeslists.codeslists;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import fr.insee.rmes.testcontainers.WithGraphDBContainer;
 import org.json.JSONObject;
 import org.junit.jupiter.api.DisplayName;
@@ -15,8 +17,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.web.client.RestClient;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Parcours complet d'une liste de codes, du POST jusqu'à l'ajout d'un code, contre un vrai
@@ -78,7 +78,8 @@ class CodesListsEndToEndTest extends WithGraphDBContainer {
     }
 
     private String create(String id, String uriSegment, String classSegment) {
-        var response = RestClient.create().post()
+        var response = RestClient.create()
+                .post()
                 .uri(codesListsEndpoint())
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.TEXT_PLAIN)
@@ -90,7 +91,8 @@ class CodesListsEndToEndTest extends WithGraphDBContainer {
     }
 
     private JSONObject fetchDetailed(String id) {
-        return new JSONObject(RestClient.create().get()
+        return new JSONObject(RestClient.create()
+                .get()
                 .uri(codesListsEndpoint() + "/detailed/" + id)
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
@@ -118,7 +120,8 @@ class CodesListsEndToEndTest extends WithGraphDBContainer {
         assertThat(createdDate).isNotBlank();
 
         // Le point qui motive la validation de lastCodeUriSegment : sans lui, ce POST partait en 500.
-        var codeResponse = RestClient.create().post()
+        var codeResponse = RestClient.create()
+                .post()
                 .uri(codesListsEndpoint() + "/detailed/CL_E2E/codes")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
@@ -128,14 +131,17 @@ class CodesListsEndToEndTest extends WithGraphDBContainer {
                 .toEntity(String.class);
         assertThat(codeResponse.getStatusCode()).isEqualTo(HttpStatus.CREATED);
 
-        String codes = RestClient.create().get()
+        String codes = RestClient.create()
+                .get()
                 .uri(codesListsEndpoint() + "/detailed/CL_E2E/codes?page=1")
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
                 .body(String.class);
-        assertThat(new JSONObject(codes).getJSONArray("items").getJSONObject(0).getString("code")).isEqualTo("A");
+        assertThat(new JSONObject(codes).getJSONArray("items").getJSONObject(0).getString("code"))
+                .isEqualTo("A");
 
-        var updateResponse = RestClient.create().put()
+        var updateResponse = RestClient.create()
+                .put()
                 .uri(codesListsEndpoint() + "/CL_E2E")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.TEXT_PLAIN)
@@ -156,13 +162,15 @@ class CodesListsEndToEndTest extends WithGraphDBContainer {
     void bad_request_when_the_body_id_does_not_match_the_url() {
         create("CL_MISMATCH", "cl-mismatch", "ClMismatch");
 
-        RestClient.create().put()
+        RestClient.create()
+                .put()
                 .uri(codesListsEndpoint() + "/CL_MISMATCH")
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(body("CL_OTHER", "cl-mismatch", "ClMismatch"))
                 .retrieve()
-                .onStatus(status -> true, (req, res) ->
-                        assertThat(res.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST))
+                .onStatus(
+                        status -> true,
+                        (req, res) -> assertThat(res.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST))
                 .toBodilessEntity();
     }
 
@@ -170,13 +178,15 @@ class CodesListsEndToEndTest extends WithGraphDBContainer {
     @Order(3)
     @DisplayName("PUT on a codes list that does not exist returns 404")
     void not_found_when_the_codes_list_does_not_exist() {
-        RestClient.create().put()
+        RestClient.create()
+                .put()
                 .uri(codesListsEndpoint() + "/CL_UNKNOWN")
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(body("CL_UNKNOWN", "cl-unknown", "ClUnknown"))
                 .retrieve()
-                .onStatus(status -> true, (req, res) ->
-                        assertThat(res.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND))
+                .onStatus(
+                        status -> true,
+                        (req, res) -> assertThat(res.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND))
                 .toBodilessEntity();
     }
 
@@ -186,13 +196,15 @@ class CodesListsEndToEndTest extends WithGraphDBContainer {
     void bad_request_when_the_identifier_is_already_taken() {
         create("CL_UNIQUE", "cl-unique", "ClUnique");
 
-        RestClient.create().post()
+        RestClient.create()
+                .post()
                 .uri(codesListsEndpoint())
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(body("CL_UNIQUE", "cl-unique-bis", "ClUniqueBis"))
                 .retrieve()
-                .onStatus(status -> true, (req, res) ->
-                        assertThat(res.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST))
+                .onStatus(
+                        status -> true,
+                        (req, res) -> assertThat(res.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST))
                 .toBodilessEntity();
     }
 
@@ -200,20 +212,24 @@ class CodesListsEndToEndTest extends WithGraphDBContainer {
     @Order(5)
     @DisplayName("POST with a blank mandatory field returns 400 without touching the repository")
     void bad_request_when_a_mandatory_field_is_blank() {
-        RestClient.create().post()
+        RestClient.create()
+                .post()
                 .uri(codesListsEndpoint())
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(body("CL_BLANK", "cl-blank", "ClBlank").replace("\"cl-blank-code\"", "\"   \""))
                 .retrieve()
-                .onStatus(status -> true, (req, res) ->
-                        assertThat(res.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST))
+                .onStatus(
+                        status -> true,
+                        (req, res) -> assertThat(res.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST))
                 .toBodilessEntity();
 
-        RestClient.create().get()
+        RestClient.create()
+                .get()
                 .uri(codesListsEndpoint() + "/detailed/CL_BLANK")
                 .retrieve()
-                .onStatus(status -> true, (req, res) ->
-                        assertThat(res.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND))
+                .onStatus(
+                        status -> true,
+                        (req, res) -> assertThat(res.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND))
                 .toBodilessEntity();
     }
 
@@ -223,18 +239,21 @@ class CodesListsEndToEndTest extends WithGraphDBContainer {
     void modified_when_a_published_codes_list_is_updated() {
         create("CL_PUBLISHED", "cl-published", "ClPublished");
 
-        var publishResponse = RestClient.create().put()
+        var publishResponse = RestClient.create()
+                .put()
                 .uri(codesListsEndpoint() + "/CL_PUBLISHED/validate")
                 .retrieve()
                 .toBodilessEntity();
         assertThat(publishResponse.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(fetchDetailed("CL_PUBLISHED").getString("validationState")).isEqualTo("Validated");
 
-        RestClient.create().put()
+        RestClient.create()
+                .put()
                 .uri(codesListsEndpoint() + "/CL_PUBLISHED")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.TEXT_PLAIN)
-                .body(body("CL_PUBLISHED", "cl-published", "ClPublished").replace("Liste CL_PUBLISHED", "Liste publiée v2"))
+                .body(body("CL_PUBLISHED", "cl-published", "ClPublished")
+                        .replace("Liste CL_PUBLISHED", "Liste publiée v2"))
                 .retrieve()
                 .toBodilessEntity();
 
@@ -247,7 +266,8 @@ class CodesListsEndToEndTest extends WithGraphDBContainer {
     @Order(7)
     @DisplayName("The created codes list is exposed with a Location header pointing at itself")
     void location_header_points_at_the_created_codes_list() {
-        var response = RestClient.create().post()
+        var response = RestClient.create()
+                .post()
                 .uri(codesListsEndpoint())
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.TEXT_PLAIN)

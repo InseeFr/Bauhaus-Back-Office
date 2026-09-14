@@ -10,6 +10,4 @@ public record CollectionDashboardItem(
         @Nullable String modified,
         ValidationStatus validationState,
         @Nullable String creator,
-        int nbMembers
-) {
-}
+        int nbMembers) {}

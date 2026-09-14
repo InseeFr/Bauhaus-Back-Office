@@ -1,9 +1,6 @@
 package fr.insee.rmes.bauhaus_services.operations.documentations.documents;
 
 import fr.insee.rmes.json.JSONUtils;
-import org.json.JSONArray;
-import org.json.JSONObject;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -11,6 +8,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 final class RdfListOrderer {
 
@@ -54,8 +53,13 @@ final class RdfListOrderer {
         return new JSONArray(result);
     }
 
-    private static void walk(String cell, Map<String, JSONObject> byCell, String cellField,
-                             String nextField, Set<String> visited, List<JSONObject> out) {
+    private static void walk(
+            String cell,
+            Map<String, JSONObject> byCell,
+            String cellField,
+            String nextField,
+            Set<String> visited,
+            List<JSONObject> out) {
         String current = cell;
         while (current != null && !RDF_NIL.equals(current) && visited.add(current)) {
             JSONObject row = byCell.get(current);

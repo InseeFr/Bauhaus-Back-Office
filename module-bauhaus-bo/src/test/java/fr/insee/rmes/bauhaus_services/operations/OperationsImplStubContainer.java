@@ -1,14 +1,22 @@
 package fr.insee.rmes.bauhaus_services.operations;
 
 import fr.insee.rmes.graphdb.RdfConnectionDetails;
-import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.graphdb.RepositoryInitiator;
 import fr.insee.rmes.graphdb.RepositoryUtils;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
 
 public class OperationsImplStubContainer extends OperationsImpl {
 
     public OperationsImplStubContainer(RdfConnectionDetails rdfGestionConectionDetails) {
-        super(new RepositoryGestion(rdfGestionConectionDetails, new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED)),
-                null, null, null, null, null, null, null);
+        super(
+                new RepositoryGestion(
+                        rdfGestionConectionDetails, new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED)),
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null);
     }
 }

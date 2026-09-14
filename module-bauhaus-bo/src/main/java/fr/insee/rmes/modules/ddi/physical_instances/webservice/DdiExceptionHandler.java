@@ -14,16 +14,12 @@ public class DdiExceptionHandler {
 
     @ExceptionHandler(StudyUnitNotFoundException.class)
     public ResponseEntity<ErrorMessageResponse> handleStudyUnitNotFound(StudyUnitNotFoundException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-            .body(new ErrorMessageResponse(ex.getMessage()));
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorMessageResponse(ex.getMessage()));
     }
 
     /** Valeurs sentinelles (#1566) : labels obligatoires manquants dans le payload de save. */
     @ExceptionHandler(InvalidSentinelValuesException.class)
-    public ResponseEntity<ErrorMessageResponse> handleInvalidSentinelValues(
-            InvalidSentinelValuesException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-            .body(new ErrorMessageResponse(ex.getMessage()));
+    public ResponseEntity<ErrorMessageResponse> handleInvalidSentinelValues(InvalidSentinelValuesException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorMessageResponse(ex.getMessage()));
     }
-
 }

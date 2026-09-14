@@ -10,13 +10,14 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 @TestConfiguration
 @Import({UserAuthTestConfiguration.class, JwtProperties.class})
-@TestPropertySource(properties = {
-        "jwt.stampClaim=timbre",
-        "jwt.roleClaim=roles",
-        "jwt.idClaim=idep",
-        "jwt.roleClaimConfig.roles=roles",
-        "jwt.sourceClaim=source"
-})
+@TestPropertySource(
+        properties = {
+            "jwt.stampClaim=timbre",
+            "jwt.roleClaim=roles",
+            "jwt.idClaim=idep",
+            "jwt.roleClaimConfig.roles=roles",
+            "jwt.sourceClaim=source"
+        })
 public abstract class BaseConfigForMvcTests {
 
     @MockitoBean

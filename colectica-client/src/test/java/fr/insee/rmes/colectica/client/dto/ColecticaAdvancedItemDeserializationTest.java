@@ -1,13 +1,13 @@
 package fr.insee.rmes.colectica.client.dto;
 
-import org.junit.jupiter.api.Test;
-import tools.jackson.databind.ObjectMapper;
-import tools.jackson.databind.json.JsonMapper;
-
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+
+import org.junit.jupiter.api.Test;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 class ColecticaAdvancedItemDeserializationTest {
 
@@ -38,8 +38,7 @@ class ColecticaAdvancedItemDeserializationTest {
             }
             """;
 
-        ColecticaAdvancedItem item =
-            assertDoesNotThrow(() -> mapper.readValue(json, ColecticaAdvancedItem.class));
+        ColecticaAdvancedItem item = assertDoesNotThrow(() -> mapper.readValue(json, ColecticaAdvancedItem.class));
 
         assertEquals("fr.insee", item.agencyId());
         assertEquals("2ded665b-f513-489a-8c7a-8778f5ffc7de", item.identifier());
@@ -49,7 +48,9 @@ class ColecticaAdvancedItemDeserializationTest {
         assertEquals("20260625 EDE", item.textProperties().get("label").get(0).value());
         assertEquals("fr-FR", item.textProperties().get("label").get(0).languageTag());
         assertEquals("20260625 EDE", item.textProperties().get("dcTitle").get(0).value());
-        assertEquals("2026-06-29T14:26:32.961778", item.dateProperties().get("versionDate").get(0));
+        assertEquals(
+                "2026-06-29T14:26:32.961778",
+                item.dateProperties().get("versionDate").get(0));
         assertEquals(Boolean.FALSE, item.booleanProperties().get("isPublished"));
     }
 
@@ -63,8 +64,7 @@ class ColecticaAdvancedItemDeserializationTest {
             }
             """;
 
-        ColecticaAdvancedItem item =
-            assertDoesNotThrow(() -> mapper.readValue(json, ColecticaAdvancedItem.class));
+        ColecticaAdvancedItem item = assertDoesNotThrow(() -> mapper.readValue(json, ColecticaAdvancedItem.class));
 
         assertEquals("abcd-1234", item.identifier());
         assertNull(item.textProperties());

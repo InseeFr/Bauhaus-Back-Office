@@ -1,15 +1,14 @@
 package fr.insee.rmes.modules.ddi.physical_instances.infrastructure.schema;
 
-import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.InvalidDdi4JsonException;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.Ddi4SchemaRepository;
-import org.junit.jupiter.api.Test;
-
-import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.InvalidDdi4JsonException;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.Ddi4SchemaRepository;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import org.junit.jupiter.api.Test;
 
 /**
  * Le schéma DDI 4 pèse 1,1 Mo : le lire, le parser et le compiler à chaque requête coûtait des
@@ -17,8 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 class NetworkntDdi4SchemaValidatorTest {
 
-    private static final String STUB_SCHEMA =
-            """
+    private static final String STUB_SCHEMA = """
             {
               "$schema": "http://json-schema.org/draft/2020-12/schema",
               "type": "object",
@@ -48,8 +46,7 @@ class NetworkntDdi4SchemaValidatorTest {
         validator.validate(CONFORMING);
         validator.validate(CONFORMING);
 
-        assertEquals(1, reads.get(),
-                "Le schéma doit être lu et compilé une seule fois, pas à chaque validation");
+        assertEquals(1, reads.get(), "Le schéma doit être lu et compilé une seule fois, pas à chaque validation");
     }
 
     @Test

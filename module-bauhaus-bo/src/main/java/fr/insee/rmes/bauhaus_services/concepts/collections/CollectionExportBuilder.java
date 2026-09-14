@@ -8,21 +8,29 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.bauhaus_services.utils.OrganisationLabelResolver;
-import fr.insee.rmes.modules.organisations.domain.model.OrganisationOption;
-import fr.insee.rmes.rdf_utils.RepositoryGestion;
-import fr.insee.rmes.utils.IdGenerator;
-import fr.insee.rmes.modules.shared_kernel.domain.model.Language;
-import fr.insee.rmes.modules.organisations.domain.port.clientside.OrganisationService;
+import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.json.JSONUtils;
 import fr.insee.rmes.model.concepts.CollectionForExport;
 import fr.insee.rmes.model.concepts.CollectionForExportOld;
-import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.modules.organisations.domain.model.OrganisationOption;
+import fr.insee.rmes.modules.organisations.domain.port.clientside.OrganisationService;
+import fr.insee.rmes.modules.shared_kernel.domain.model.Language;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptCollectionsQueries;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.ExportUtils;
 import fr.insee.rmes.utils.FilesUtils;
-import fr.insee.rmes.json.JSONUtils;
+import fr.insee.rmes.utils.IdGenerator;
 import fr.insee.rmes.utils.XsltUtils;
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.text.Collator;
+import java.util.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 import org.apache.http.HttpStatus;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -32,59 +40,53 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.text.Collator;
-import java.util.*;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
-
 @Component
 public class CollectionExportBuilder extends RdfService {
 
-	private final OrganisationService organisationService;
+    private final OrganisationService organisationService;
 
-	private final ExportUtils exportUtils;
+    private final ExportUtils exportUtils;
 
-	private final ConceptCollectionsQueries conceptCollectionsQueries;
+    private final ConceptCollectionsQueries conceptCollectionsQueries;
 
-	public CollectionExportBuilder(RepositoryGestion repoGestion, IdGenerator idGenerator,
-								   RepositoryPublication repositoryPublication,
-								   PublicationUtils publicationUtils, OrganisationService organisationService,
-								   ExportUtils exportUtils, ConceptCollectionsQueries conceptCollectionsQueries) {
-		super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
-		this.organisationService = organisationService;
-		this.exportUtils = exportUtils;
-		this.conceptCollectionsQueries = conceptCollectionsQueries;
-	}
+    public CollectionExportBuilder(
+            RepositoryGestion repoGestion,
+            IdGenerator idGenerator,
+            RepositoryPublication repositoryPublication,
+            PublicationUtils publicationUtils,
+            OrganisationService organisationService,
+            ExportUtils exportUtils,
+            ConceptCollectionsQueries conceptCollectionsQueries) {
+        super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
+        this.organisationService = organisationService;
+        this.exportUtils = exportUtils;
+        this.conceptCollectionsQueries = conceptCollectionsQueries;
+    }
 
-	private static final String XSL_FILE = "/xslTransformerFiles/rmes2odt.xsl";
-	private static final String XML_PATERN = "/xslTransformerFiles/collection/collectionPatternContent.xml";
-	private static final String ZIP = "/xslTransformerFiles/collection/toZipForCollection.zip";
-	private static final String ZIP_OLD = "/xslTransformerFiles/collection/toZipForCollectionOld.zip";
-	private static final String XML_PATTERN_FR = "/xslTransformerFiles/collection/collectionFrPatternContent.xml";
-	private static final String XML_PATTERN_EN = "/xslTransformerFiles/collection/collectionEnPatternContent.xml";
-	private static final String XML_PATTERN_ODS = "/xslTransformerFiles/collection/collectionOdsPatternContent.xml";
-	private static final String ZIP_ODS = "/xslTransformerFiles/collection/toZipForCollectionOds.zip";
+    private static final String XSL_FILE = "/xslTransformerFiles/rmes2odt.xsl";
+    private static final String XML_PATERN = "/xslTransformerFiles/collection/collectionPatternContent.xml";
+    private static final String ZIP = "/xslTransformerFiles/collection/toZipForCollection.zip";
+    private static final String ZIP_OLD = "/xslTransformerFiles/collection/toZipForCollectionOld.zip";
+    private static final String XML_PATTERN_FR = "/xslTransformerFiles/collection/collectionFrPatternContent.xml";
+    private static final String XML_PATTERN_EN = "/xslTransformerFiles/collection/collectionEnPatternContent.xml";
+    private static final String XML_PATTERN_ODS = "/xslTransformerFiles/collection/collectionOdsPatternContent.xml";
+    private static final String ZIP_ODS = "/xslTransformerFiles/collection/toZipForCollectionOds.zip";
 
-	final Collator instance = Collator.getInstance();
+    final Collator instance = Collator.getInstance();
 
-	private static final String CONTENT_TYPE = "Content-Type";
+    private static final String CONTENT_TYPE = "Content-Type";
 
+    public CollectionForExport getCollectionData(String id) throws RmesException {
+        CollectionForExport collection;
+        JSONObject json = repoGestion.getResponseAsObject(conceptCollectionsQueries.collectionQuery(id));
+        JSONArray members = repoGestion.getResponseAsArray(conceptCollectionsQueries.collectionConceptsQuery(id));
 
-	public CollectionForExport getCollectionData(String id) throws RmesException {
-		CollectionForExport collection;
-		JSONObject json = repoGestion.getResponseAsObject(conceptCollectionsQueries.collectionQuery(id));
-		JSONArray members = repoGestion.getResponseAsArray(conceptCollectionsQueries.collectionConceptsQuery(id));
+        List<JSONObject> orderMembers = new ArrayList<>();
+        JSONUtils.stream(members).forEach(orderMembers::add);
 
-		List<JSONObject> orderMembers = new ArrayList<>();
-		JSONUtils.stream(members).forEach(orderMembers::add);
+        instance.setStrength(Collator.NO_DECOMPOSITION);
 
-		instance.setStrength(Collator.NO_DECOMPOSITION);
-
-		Collections.sort( orderMembers, new Comparator<>() {
+        Collections.sort(orderMembers, new Comparator<>() {
             private static final String KEY_NAME = "prefLabelLg1";
 
             @Override
@@ -96,175 +98,287 @@ public class CollectionExportBuilder extends RdfService {
             }
         });
 
+        JSONArray orderMembersJSONArray = new JSONArray(orderMembers);
 
-		JSONArray orderMembersJSONArray = new JSONArray(orderMembers);
+        // Deserialization in the `CollectionForExport` class
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        mapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
+        try {
+            collection = mapper.readValue(json.toString(), CollectionForExport.class);
+            collection.addMembers(orderMembersJSONArray);
 
+            // format specific data
+            collection.setCreated(DateUtils.toDate(collection.getCreated()));
+            collection.setModified(DateUtils.toDate(collection.getModified()));
+            collection.setIsValidated(ExportUtils.toValidationStatus(collection.getIsValidated(), true));
 
+            resolveOrganisationLabels(collection);
+        } catch (JsonProcessingException e) {
+            throw new RmesException(
+                    HttpStatus.SC_INTERNAL_SERVER_ERROR,
+                    e.getMessage(),
+                    e.getClass().getSimpleName());
+        }
 
-		// Deserialization in the `CollectionForExport` class
-		ObjectMapper mapper = new ObjectMapper();
-		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-		mapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
-		try {
- 			collection = mapper.readValue(json.toString(), CollectionForExport.class);
-			collection.addMembers(orderMembersJSONArray);
+        return collection;
+    }
 
-			// format specific data
-			collection.setCreated(DateUtils.toDate(collection.getCreated()));
-			collection.setModified(DateUtils.toDate(collection.getModified()));
-			collection.setIsValidated(ExportUtils.toValidationStatus(collection.getIsValidated(),true));
+    private void resolveOrganisationLabels(CollectionForExport collection) {
+        List<String> identifiers = new ArrayList<>();
+        identifiers.add(collection.getCreator());
+        identifiers.add(collection.getContributor());
+        collection.getMembersLg().forEach(member -> identifiers.add(member.getCreator()));
 
-			resolveOrganisationLabels(collection);
-		} catch (JsonProcessingException e) {
-			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), e.getClass().getSimpleName());
-		}
+        Map<String, OrganisationOption> organisations =
+                OrganisationLabelResolver.organisationsByIdentifier(organisationService, identifiers);
 
-		return collection;
-	}
+        collection.setCreator(
+                OrganisationLabelResolver.labelOrReadableIdentifier(collection.getCreator(), organisations));
+        collection.setContributor(
+                OrganisationLabelResolver.labelOrReadableIdentifier(collection.getContributor(), organisations));
+        collection
+                .getMembersLg()
+                .forEach(member -> member.setCreator(
+                        OrganisationLabelResolver.labelOrReadableIdentifier(member.getCreator(), organisations)));
+    }
 
-	private void resolveOrganisationLabels(CollectionForExport collection) {
-		List<String> identifiers = new ArrayList<>();
-		identifiers.add(collection.getCreator());
-		identifiers.add(collection.getContributor());
-		collection.getMembersLg().forEach(member -> identifiers.add(member.getCreator()));
+    public ResponseEntity<Resource> exportAsResponse(
+            String fileName, Map<String, String> xmlContent, boolean lg1, boolean lg2, boolean includeEmptyFields)
+            throws RmesException {
+        String parametersXML = XsltUtils.buildParams(lg1, lg2, includeEmptyFields, Constants.COLLECTION);
+        xmlContent.put(Constants.PARAMETERS_FILE, parametersXML);
+        return exportUtils.exportAsODT(fileName, xmlContent, XSL_FILE, XML_PATERN, ZIP_OLD, Constants.COLLECTION);
+    }
 
-		Map<String, OrganisationOption> organisations = OrganisationLabelResolver.organisationsByIdentifier(organisationService, identifiers);
+    public ResponseEntity<Resource> exportAsResponseODT(
+            String fileName, Map<String, String> xmlContent, boolean includeEmptyFields, Language lg)
+            throws RmesException {
+        String parametersXML = XsltUtils.buildParams(true, true, includeEmptyFields, Constants.COLLECTION);
+        xmlContent.put(Constants.PARAMETERS_FILE, parametersXML);
+        String xmlPattern = lg == Language.lg1 ? XML_PATTERN_FR : XML_PATTERN_EN;
+        return exportUtils.exportAsODT(fileName, xmlContent, XSL_FILE, xmlPattern, ZIP, Constants.COLLECTION);
+    }
 
-		collection.setCreator(OrganisationLabelResolver.labelOrReadableIdentifier(collection.getCreator(), organisations));
-		collection.setContributor(OrganisationLabelResolver.labelOrReadableIdentifier(collection.getContributor(), organisations));
-		collection.getMembersLg().forEach(member -> member.setCreator(OrganisationLabelResolver.labelOrReadableIdentifier(member.getCreator(), organisations)));
-	}
+    public ResponseEntity<Resource> exportAsResponseODS(
+            String fileName, Map<String, String> xmlContent, boolean lg1, boolean lg2, boolean includeEmptyFields)
+            throws RmesException {
+        String parametersXML = XsltUtils.buildParams(lg1, lg2, includeEmptyFields, Constants.COLLECTION);
+        xmlContent.put(Constants.PARAMETERS_FILE, parametersXML);
+        return exportUtils.exportAsODS(fileName, xmlContent, XSL_FILE, XML_PATTERN_ODS, ZIP_ODS, Constants.COLLECTION);
+    }
 
+    public void exportMultipleCollectionsAsZipOdt(
+            Map<String, Map<String, String>> collections,
+            boolean lg1,
+            boolean lg2,
+            boolean includeEmptyFields,
+            HttpServletResponse response,
+            Language lg,
+            Map<String, Map<String, InputStream>> concepts,
+            boolean withConcepts)
+            throws RmesException {
+        String parametersXML = XsltUtils.buildParams(lg1, lg2, includeEmptyFields, Constants.COLLECTION);
+        collections.values().stream().forEach(collection -> collection.put(Constants.PARAMETERS_FILE, parametersXML));
+        String xmlPattern = lg == Language.lg1 ? XML_PATTERN_FR : XML_PATTERN_EN;
+        exportMultipleResourceAsZip(
+                collections, XSL_FILE, xmlPattern, ZIP, response, FilesUtils.ODT_EXTENSION, concepts, withConcepts);
+    }
 
-	public ResponseEntity<Resource> exportAsResponse(String fileName, Map<String, String> xmlContent, boolean lg1, boolean lg2, boolean includeEmptyFields) throws RmesException {
-		String parametersXML = XsltUtils.buildParams(lg1, lg2, includeEmptyFields, Constants.COLLECTION);
-		xmlContent.put(Constants.PARAMETERS_FILE, parametersXML);
-		return exportUtils.exportAsODT(fileName, xmlContent,XSL_FILE,XML_PATERN,ZIP_OLD, Constants.COLLECTION);
-	}
+    public void exportMultipleCollectionsAsZipOds(
+            Map<String, Map<String, String>> collections,
+            boolean lg1,
+            boolean lg2,
+            boolean includeEmptyFields,
+            HttpServletResponse response,
+            Map<String, Map<String, InputStream>> concepts,
+            boolean withConcepts)
+            throws RmesException {
+        String parametersXML = XsltUtils.buildParams(lg1, lg2, includeEmptyFields, Constants.COLLECTION);
+        collections.values().stream().forEach(collection -> collection.put(Constants.PARAMETERS_FILE, parametersXML));
+        exportMultipleResourceAsZip(
+                collections,
+                XSL_FILE,
+                XML_PATTERN_ODS,
+                ZIP_ODS,
+                response,
+                FilesUtils.ODS_EXTENSION,
+                concepts,
+                withConcepts);
+    }
 
+    public byte[] buildOdtZipBytes(
+            Map<String, Map<String, String>> collections,
+            boolean lg1,
+            boolean lg2,
+            boolean includeEmptyFields,
+            Language lg,
+            Map<String, Map<String, InputStream>> concepts,
+            boolean withConcepts)
+            throws RmesException {
+        String parametersXML = XsltUtils.buildParams(lg1, lg2, includeEmptyFields, Constants.COLLECTION);
+        collections.values().forEach(c -> c.put(Constants.PARAMETERS_FILE, parametersXML));
+        String xmlPattern = lg == Language.lg1 ? XML_PATTERN_FR : XML_PATTERN_EN;
+        return buildMultipleResourceZipBytes(
+                collections, XSL_FILE, xmlPattern, ZIP, FilesUtils.ODT_EXTENSION, concepts, withConcepts);
+    }
 
-	public ResponseEntity<Resource> exportAsResponseODT(String fileName, Map<String, String> xmlContent, boolean includeEmptyFields, Language lg) throws RmesException {
-		String parametersXML = XsltUtils.buildParams(true, true, includeEmptyFields, Constants.COLLECTION);
-		xmlContent.put(Constants.PARAMETERS_FILE, parametersXML);
-		String xmlPattern = lg == Language.lg1 ? XML_PATTERN_FR : XML_PATTERN_EN;
-		return exportUtils.exportAsODT(fileName, xmlContent, XSL_FILE, xmlPattern, ZIP, Constants.COLLECTION);
-	}
+    public byte[] buildOdsZipBytes(
+            Map<String, Map<String, String>> collections,
+            boolean lg1,
+            boolean lg2,
+            boolean includeEmptyFields,
+            Map<String, Map<String, InputStream>> concepts,
+            boolean withConcepts)
+            throws RmesException {
+        String parametersXML = XsltUtils.buildParams(lg1, lg2, includeEmptyFields, Constants.COLLECTION);
+        collections.values().forEach(c -> c.put(Constants.PARAMETERS_FILE, parametersXML));
+        return buildMultipleResourceZipBytes(
+                collections, XSL_FILE, XML_PATTERN_ODS, ZIP_ODS, FilesUtils.ODS_EXTENSION, concepts, withConcepts);
+    }
 
-	public ResponseEntity<Resource> exportAsResponseODS(String fileName, Map<String, String> xmlContent, boolean lg1, boolean lg2, boolean includeEmptyFields) throws RmesException {
-		String parametersXML = XsltUtils.buildParams(lg1, lg2, includeEmptyFields, Constants.COLLECTION);
-		xmlContent.put(Constants.PARAMETERS_FILE, parametersXML);
-		return exportUtils.exportAsODS(fileName, xmlContent,XSL_FILE,XML_PATTERN_ODS,ZIP_ODS, Constants.COLLECTION);
-	}
+    private void exportMultipleResourceAsZip(
+            Map<String, Map<String, String>> resources,
+            String xslFile,
+            String xmlPattern,
+            String zip,
+            HttpServletResponse response,
+            String extension,
+            Map<String, Map<String, InputStream>> concepts,
+            boolean withConcepts)
+            throws RmesException {
 
-	public void exportMultipleCollectionsAsZipOdt(Map<String, Map<String, String>> collections, boolean lg1, boolean lg2, boolean includeEmptyFields, HttpServletResponse response, Language lg, Map<String, Map<String, InputStream>> concepts, boolean withConcepts) throws RmesException {
-		String parametersXML = XsltUtils.buildParams(lg1, lg2, includeEmptyFields, Constants.COLLECTION);
-		collections.values().stream().forEach(collection -> collection.put(Constants.PARAMETERS_FILE, parametersXML));
-		String xmlPattern = lg == Language.lg1 ? XML_PATTERN_FR : XML_PATTERN_EN;
-		exportMultipleResourceAsZip(collections,XSL_FILE,xmlPattern,ZIP, response, FilesUtils.ODT_EXTENSION, concepts, withConcepts);
-	}
+        String zipFileName = computeZipFileName(resources);
 
-	public void exportMultipleCollectionsAsZipOds(Map<String, Map<String, String>> collections, boolean lg1, boolean lg2, boolean includeEmptyFields, HttpServletResponse response, Map<String, Map<String, InputStream>> concepts, boolean withConcepts) throws RmesException {
-		String parametersXML = XsltUtils.buildParams(lg1, lg2, includeEmptyFields, Constants.COLLECTION);
-		collections.values().stream().forEach(collection -> collection.put(Constants.PARAMETERS_FILE, parametersXML));
-		exportMultipleResourceAsZip(collections,XSL_FILE,XML_PATTERN_ODS, ZIP_ODS, response, FilesUtils.ODS_EXTENSION, concepts, withConcepts);
-	}
+        response.addHeader(HttpHeaders.ACCEPT, "*/*");
+        response.setStatus(HttpServletResponse.SC_OK);
+        response.addHeader("Content-Disposition", "attachment; filename=\"" + zipFileName + "\"");
+        response.addHeader(CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM_VALUE);
+        response.setHeader(
+                "Access-Control-Expose-Headers",
+                "Content-Disposition, Access-Control-Allow-Origin, Access-Control-Allow-Credentials");
 
-	public byte[] buildOdtZipBytes(Map<String, Map<String, String>> collections, boolean lg1, boolean lg2, boolean includeEmptyFields, Language lg, Map<String, Map<String, InputStream>> concepts, boolean withConcepts) throws RmesException {
-		String parametersXML = XsltUtils.buildParams(lg1, lg2, includeEmptyFields, Constants.COLLECTION);
-		collections.values().forEach(c -> c.put(Constants.PARAMETERS_FILE, parametersXML));
-		String xmlPattern = lg == Language.lg1 ? XML_PATTERN_FR : XML_PATTERN_EN;
-		return buildMultipleResourceZipBytes(collections, XSL_FILE, xmlPattern, ZIP, FilesUtils.ODT_EXTENSION, concepts, withConcepts);
-	}
+        try {
+            writeMultipleResourceAsZip(
+                    resources,
+                    xslFile,
+                    xmlPattern,
+                    zip,
+                    response.getOutputStream(),
+                    extension,
+                    concepts,
+                    withConcepts,
+                    zipFileName);
+        } catch (IOException e1) {
+            throw new RmesException(
+                    org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR,
+                    "IOException on " + zipFileName,
+                    e1.getMessage());
+        }
+    }
 
-	public byte[] buildOdsZipBytes(Map<String, Map<String, String>> collections, boolean lg1, boolean lg2, boolean includeEmptyFields, Map<String, Map<String, InputStream>> concepts, boolean withConcepts) throws RmesException {
-		String parametersXML = XsltUtils.buildParams(lg1, lg2, includeEmptyFields, Constants.COLLECTION);
-		collections.values().forEach(c -> c.put(Constants.PARAMETERS_FILE, parametersXML));
-		return buildMultipleResourceZipBytes(collections, XSL_FILE, XML_PATTERN_ODS, ZIP_ODS, FilesUtils.ODS_EXTENSION, concepts, withConcepts);
-	}
+    public byte[] buildMultipleResourceZipBytes(
+            Map<String, Map<String, String>> resources,
+            String xslFile,
+            String xmlPattern,
+            String zip,
+            String extension,
+            Map<String, Map<String, InputStream>> concepts,
+            boolean withConcepts)
+            throws RmesException {
+        String zipFileName = computeZipFileName(resources);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try {
+            writeMultipleResourceAsZip(
+                    resources, xslFile, xmlPattern, zip, baos, extension, concepts, withConcepts, zipFileName);
+        } catch (IOException e) {
+            throw new RmesException(
+                    org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR,
+                    "IOException on " + zipFileName,
+                    e.getMessage());
+        }
+        return baos.toByteArray();
+    }
 
-	private void exportMultipleResourceAsZip(Map<String, Map<String, String>> resources, String xslFile, String xmlPattern, String zip, HttpServletResponse response, String extension, Map<String, Map<String, InputStream>> concepts, boolean withConcepts) throws RmesException {
+    public String computeZipFileName(Map<String, Map<String, String>> resources) {
+        if (resources.size() == 1) {
+            return resources.keySet().iterator().next() + FilesUtils.ZIP_EXTENSION;
+        }
+        return "collections" + FilesUtils.ZIP_EXTENSION;
+    }
 
-		String zipFileName = computeZipFileName(resources);
+    private void writeMultipleResourceAsZip(
+            Map<String, Map<String, String>> resources,
+            String xslFile,
+            String xmlPattern,
+            String zip,
+            OutputStream output,
+            String extension,
+            Map<String, Map<String, InputStream>> concepts,
+            boolean withConcepts,
+            String zipFileName)
+            throws IOException, RmesException {
+        try (ZipOutputStream zos = new ZipOutputStream(output)) {
+            if (withConcepts && concepts != null) {
+                addCollectionsConcepts(concepts, zos);
+            } else {
+                for (String key : resources.keySet()) {
+                    InputStream input = exportUtils.exportAsInputStream(
+                            key.replace(extension, ""),
+                            resources.get(key),
+                            xslFile,
+                            xmlPattern,
+                            zip,
+                            Constants.COLLECTION,
+                            FilesUtils.ODS_EXTENSION);
+                    if (input == null) {
+                        throw new RmesException(
+                                org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR,
+                                "Can't generate codebook",
+                                "Stream is null on " + zipFileName);
+                    }
+                    this.addZipEntry("", key + extension, input, zos);
+                }
+            }
+        }
+    }
 
-		response.addHeader(HttpHeaders.ACCEPT, "*/*");
-		response.setStatus(HttpServletResponse.SC_OK);
-		response.addHeader("Content-Disposition", "attachment; filename=\"" + zipFileName + "\"");
-		response.addHeader(CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM_VALUE);
-		response.setHeader("Access-Control-Expose-Headers", "Content-Disposition, Access-Control-Allow-Origin, Access-Control-Allow-Credentials");
+    private void addCollectionsConcepts(
+            Map<String, Map<String, InputStream>> collectionsConcepts, ZipOutputStream zipOutputStreamStream)
+            throws IOException {
+        Iterator<String> collectionIterator = collectionsConcepts.keySet().iterator();
+        while (collectionIterator.hasNext()) {
+            String collectionName = collectionIterator.next();
+            Map<String, InputStream> concepts = collectionsConcepts.get(collectionName);
 
-		try {
-			writeMultipleResourceAsZip(resources, xslFile, xmlPattern, zip, response.getOutputStream(), extension, concepts, withConcepts, zipFileName);
-		} catch (IOException e1) {
-			throw new RmesException(org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR, "IOException on " + zipFileName, e1.getMessage());
-		}
-	}
+            Iterator<String> conceptsIterator = concepts.keySet().iterator();
+            while (conceptsIterator.hasNext()) {
+                String key = conceptsIterator.next();
+                this.addZipEntry(
+                        collectionName + "/", key + FilesUtils.ODT_EXTENSION, concepts.get(key), zipOutputStreamStream);
+            }
+        }
+    }
 
-	public byte[] buildMultipleResourceZipBytes(Map<String, Map<String, String>> resources, String xslFile, String xmlPattern, String zip, String extension, Map<String, Map<String, InputStream>> concepts, boolean withConcepts) throws RmesException {
-		String zipFileName = computeZipFileName(resources);
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		try {
-			writeMultipleResourceAsZip(resources, xslFile, xmlPattern, zip, baos, extension, concepts, withConcepts, zipFileName);
-		} catch (IOException e) {
-			throw new RmesException(org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR, "IOException on " + zipFileName, e.getMessage());
-		}
-		return baos.toByteArray();
-	}
+    private void addZipEntry(String folder, String filename, InputStream input, ZipOutputStream zos)
+            throws IOException {
+        ZipEntry entry = new ZipEntry(folder + filename);
+        zos.putNextEntry(entry);
+        input.transferTo(zos);
+        zos.closeEntry();
+    }
 
-	public String computeZipFileName(Map<String, Map<String, String>> resources) {
-		if (resources.size() == 1) {
-			return resources.keySet().iterator().next() + FilesUtils.ZIP_EXTENSION;
-		}
-		return "collections" + FilesUtils.ZIP_EXTENSION;
-	}
+    public CollectionForExportOld getCollectionDataOld(String id) throws RmesException {
+        CollectionForExportOld collection;
+        JSONObject json = repoGestion.getResponseAsObject(conceptCollectionsQueries.collectionQuery(id));
+        JSONArray members = repoGestion.getResponseAsArray(conceptCollectionsQueries.collectionMembersQuery(id));
 
-	private void writeMultipleResourceAsZip(Map<String, Map<String, String>> resources, String xslFile, String xmlPattern, String zip, OutputStream output, String extension, Map<String, Map<String, InputStream>> concepts, boolean withConcepts, String zipFileName) throws IOException, RmesException {
-		try (ZipOutputStream zos = new ZipOutputStream(output)) {
-			if (withConcepts && concepts != null) {
-				addCollectionsConcepts(concepts, zos);
-			} else {
-				for (String key : resources.keySet()) {
-					InputStream input = exportUtils.exportAsInputStream(key.replace(extension, ""), resources.get(key), xslFile, xmlPattern, zip, Constants.COLLECTION, FilesUtils.ODS_EXTENSION);
-					if (input == null) {
-						throw new RmesException(org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR, "Can't generate codebook", "Stream is null on " + zipFileName);
-					}
-					this.addZipEntry("", key + extension, input, zos);
-				}
-			}
-		}
-	}
+        List<JSONObject> orderMembers = new ArrayList<>();
+        JSONUtils.stream(members).forEach(orderMembers::add);
 
-	private void addCollectionsConcepts(Map<String, Map<String, InputStream>> collectionsConcepts, ZipOutputStream zipOutputStreamStream) throws IOException {
-		Iterator<String> collectionIterator = collectionsConcepts.keySet().iterator();
-		while (collectionIterator.hasNext()) {
-			String collectionName = collectionIterator.next();
-			Map<String, InputStream> concepts = collectionsConcepts.get(collectionName);
+        instance.setStrength(Collator.NO_DECOMPOSITION);
 
-			Iterator<String> conceptsIterator = concepts.keySet().iterator();
-			while (conceptsIterator.hasNext()) {
-				String key = conceptsIterator.next();
-				this.addZipEntry(collectionName + "/", key + FilesUtils.ODT_EXTENSION, concepts.get(key), zipOutputStreamStream);
-			}
-		}
-	}
-
-	private void addZipEntry(String folder, String filename, InputStream input, ZipOutputStream zos) throws IOException {
-		ZipEntry entry = new ZipEntry(folder + filename);
-		zos.putNextEntry(entry);
-		input.transferTo(zos);
-		zos.closeEntry();
-	}
-
-	public CollectionForExportOld getCollectionDataOld(String id) throws RmesException {
-		CollectionForExportOld collection;
-		JSONObject json = repoGestion.getResponseAsObject(conceptCollectionsQueries.collectionQuery(id));
-		JSONArray members = repoGestion.getResponseAsArray(conceptCollectionsQueries.collectionMembersQuery(id));
-
-		List<JSONObject> orderMembers = new ArrayList<>();
-		JSONUtils.stream(members).forEach(orderMembers::add);
-
-		instance.setStrength(Collator.NO_DECOMPOSITION);
-
-		Collections.sort( orderMembers, new Comparator<>() {
+        Collections.sort(orderMembers, new Comparator<>() {
             private static final String KEY_NAME = "prefLabelLg1";
 
             @Override
@@ -276,28 +390,29 @@ public class CollectionExportBuilder extends RdfService {
             }
         });
 
+        JSONArray orderMembersJSONArray = new JSONArray(orderMembers);
 
-		JSONArray orderMembersJSONArray = new JSONArray(orderMembers);
+        // Deserialization in the `CollectionForExport` class
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        mapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
+        try {
+            collection = mapper.readValue(json.toString(), CollectionForExportOld.class);
+            collection.addMembers(orderMembersJSONArray);
 
-		// Deserialization in the `CollectionForExport` class
-		ObjectMapper mapper = new ObjectMapper();
-		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-		mapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
-		try {
-			collection = mapper.readValue(json.toString(), CollectionForExportOld.class);
-			collection.addMembers(orderMembersJSONArray);
+            // format specific data
+            collection.setCreated(DateUtils.toDate(collection.getCreated()));
+            collection.setModified(DateUtils.toDate(collection.getModified()));
+            collection.setIsValidated(ExportUtils.toValidationStatus(collection.getIsValidated(), true));
 
-			// format specific data
-			collection.setCreated(DateUtils.toDate(collection.getCreated()));
-			collection.setModified(DateUtils.toDate(collection.getModified()));
-			collection.setIsValidated(ExportUtils.toValidationStatus(collection.getIsValidated(),true));
+            resolveOrganisationLabels(collection);
+        } catch (JsonProcessingException e) {
+            throw new RmesException(
+                    HttpStatus.SC_INTERNAL_SERVER_ERROR,
+                    e.getMessage(),
+                    e.getClass().getSimpleName());
+        }
 
-			resolveOrganisationLabels(collection);
-		} catch (JsonProcessingException e) {
-			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), e.getClass().getSimpleName());
-		}
-
-		return collection;
-	}
-
+        return collection;
+    }
 }

@@ -3,11 +3,10 @@ package fr.insee.rmes.modules.concepts.concept.domain.model.commands;
 import fr.insee.rmes.modules.concepts.concept.domain.exceptions.InvalidCreateConceptCommandException;
 import fr.insee.rmes.modules.shared_kernel.domain.model.Lang;
 import fr.insee.rmes.modules.shared_kernel.domain.model.LocalisedLabel;
-import org.apache.commons.lang3.StringUtils;
-import org.jspecify.annotations.Nullable;
-
 import java.util.List;
 import java.util.Optional;
+import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.Nullable;
 
 public class CreateConceptCommand {
     private final List<LocalisedLabel> labels;
@@ -21,8 +20,8 @@ public class CreateConceptCommand {
             String creator,
             @Nullable String contributor,
             String disseminationStatus,
-            List<String> collectionIds
-    ) throws InvalidCreateConceptCommandException {
+            List<String> collectionIds)
+            throws InvalidCreateConceptCommandException {
         if (labels.isEmpty()) {
             throw new InvalidCreateConceptCommandException("There are no labels");
         }

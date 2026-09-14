@@ -1,17 +1,17 @@
 package fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica;
 
+import fr.insee.rmes.colectica.client.ColecticaClient;
+import fr.insee.rmes.colectica.client.dto.UpdateItemStateRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialGroup;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.DDIRepository;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.GroupRepository;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.services.Ddi4ToLifecycle33;
-import fr.insee.rmes.colectica.client.ColecticaClient;
-import fr.insee.rmes.colectica.client.dto.UpdateItemStateRequest;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ColecticaGroupRepository extends AbstractColecticaItemRepository implements GroupRepository {
 
@@ -24,15 +24,18 @@ public class ColecticaGroupRepository extends AbstractColecticaItemRepository im
             ColecticaClient colecticaClient,
             ColecticaConfiguration.ColecticaInstanceConfiguration instanceConfiguration,
             Ddi4ToLifecycle33 ddi4ToLifecycle33,
-            DDIRepository ddiRepository
-    ) {
+            DDIRepository ddiRepository) {
         super(colecticaClient, instanceConfiguration, ddi4ToLifecycle33);
         this.ddiRepository = ddiRepository;
     }
 
     @Override
     public void createOrUpdate(Ddi4Group group) {
-        logger.info("Creating/updating group in Colectica: id={}, agency={}, urn={}", group.id(), group.agency(), group.urn());
+        logger.info(
+                "Creating/updating group in Colectica: id={}, agency={}, urn={}",
+                group.id(),
+                group.agency(),
+                group.urn());
         try {
             createOrUpdateItem(GROUP_ITEM_TYPE, group);
             logger.info("Group successfully sent to Colectica: id={}", group.id());
@@ -52,6 +55,11 @@ public class ColecticaGroupRepository extends AbstractColecticaItemRepository im
     }
 
     @Override
+    public Optional<Ddi4Group> find(String agencyId, String id) {
+        return ddiRepository.findGroup(agencyId, id);
+    }
+
+    @Override
     public void deprecate(Collection<String> groupIds) {
         if (groupIds == null || groupIds.isEmpty()) {
             logger.info("No group id provided to deprecate");
@@ -65,11 +73,11 @@ public class ColecticaGroupRepository extends AbstractColecticaItemRepository im
                 })
                 .toList();
         if (ids.isEmpty()) {
-            logger.info("None of the {} requested group id(s) exist in Colectica: nothing to deprecate", groupIds.size());
+            logger.info(
+                    "None of the {} requested group id(s) exist in Colectica: nothing to deprecate", groupIds.size());
             return;
         }
-        colecticaClient.updateItemState(
-                new UpdateItemStateRequest(ids, true, true));
+        colecticaClient.updateItemState(new UpdateItemStateRequest(ids, true, true));
         logger.info("Deprecated {} group(s) from Colectica", ids.size());
     }
 }

@@ -1,10 +1,13 @@
 package fr.insee.rmes.testcontainers.concepts;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.RepositoryInitiator;
 import fr.insee.rmes.graphdb.RepositoryUtils;
 import fr.insee.rmes.testcontainers.WithGraphDBContainer;
+import java.util.List;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
@@ -14,10 +17,6 @@ import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Reproduction du ticket #1495 : « La publication des liens entre concept est incorrecte ».
@@ -47,8 +46,7 @@ class ConceptReferencesPublicationTest extends WithGraphDBContainer {
         repositoryPublication = new RepositoryPublication(
                 getRdfGestionConnectionDetails().getUrlServer(),
                 getRdfGestionConnectionDetails().repositoryId(),
-                repositoryUtils
-        );
+                repositoryUtils);
     }
 
     @Test

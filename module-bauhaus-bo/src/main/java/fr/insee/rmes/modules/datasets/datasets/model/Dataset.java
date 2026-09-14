@@ -1,7 +1,6 @@
 package fr.insee.rmes.modules.datasets.datasets.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-
 import java.util.List;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -106,7 +105,6 @@ public class Dataset {
         return landingPageLg1;
     }
 
-
     public void setLandingPageLg1(String landingPageLg1) {
         this.landingPageLg1 = landingPageLg1;
     }
@@ -178,6 +176,7 @@ public class Dataset {
     private String temporalResolution;
 
     private List<String> spacialResolutions;
+
     public String getType() {
         return type;
     }
@@ -296,7 +295,6 @@ public class Dataset {
     public void setId(String id) {
         this.id = id;
     }
-
 
     public String getDescriptionLg1() {
         return descriptionLg1;

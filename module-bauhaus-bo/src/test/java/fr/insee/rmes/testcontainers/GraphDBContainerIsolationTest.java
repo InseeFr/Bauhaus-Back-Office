@@ -1,5 +1,7 @@
 package fr.insee.rmes.testcontainers;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.RepositoryInitiator;
 import fr.insee.rmes.graphdb.RepositoryUtils;
@@ -9,8 +11,6 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Le conteneur GraphDB est un singleton partagé par toutes les classes de tests d'intégration : ce
@@ -22,8 +22,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class GraphDBContainerIsolationTest extends WithGraphDBContainer {
 
-    private final RepositoryGestion repositoryGestion =
-            new RepositoryGestion(getRdfGestionConnectionDetails(), new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED));
+    private final RepositoryGestion repositoryGestion = new RepositoryGestion(
+            getRdfGestionConnectionDetails(), new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED));
 
     @Test
     @Order(1)
@@ -55,7 +55,8 @@ class GraphDBContainerIsolationTest extends WithGraphDBContainer {
     }
 
     private long triplesCount() throws RmesException {
-        return repositoryGestion.getResponseAsObject("SELECT (COUNT(*) AS ?n) WHERE { GRAPH ?g { ?s ?p ?o } }")
+        return repositoryGestion
+                .getResponseAsObject("SELECT (COUNT(*) AS ?n) WHERE { GRAPH ?g { ?s ?p ?o } }")
                 .getLong("n");
     }
 }

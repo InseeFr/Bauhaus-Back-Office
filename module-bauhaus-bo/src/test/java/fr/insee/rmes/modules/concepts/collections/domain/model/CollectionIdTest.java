@@ -1,13 +1,13 @@
 package fr.insee.rmes.modules.concepts.collections.domain.model;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+
 import fr.insee.rmes.modules.concepts.collections.domain.exceptions.InvalidCollectionIdException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 class CollectionIdTest {
 
@@ -31,14 +31,15 @@ class CollectionIdTest {
      * non conforme (underscore, etc.). CollectionId tolère donc tout caractère côté domaine.
      */
     @ParameterizedTest
-    @ValueSource(strings = {
-            "abc",
-            "Collection-001",
-            "underscore_x",  // legacy
-            "dot.value",     // legacy
-            "café",          // legacy avec accents
-            "with space"     // legacy avec espace
-    })
+    @ValueSource(
+            strings = {
+                "abc",
+                "Collection-001",
+                "underscore_x", // legacy
+                "dot.value", // legacy
+                "café", // legacy avec accents
+                "with space" // legacy avec espace
+            })
     void should_accept_any_non_blank_value(String value) {
         assertDoesNotThrow(() -> new CollectionId(value));
     }

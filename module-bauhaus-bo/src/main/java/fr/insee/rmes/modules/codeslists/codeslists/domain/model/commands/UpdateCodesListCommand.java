@@ -1,8 +1,7 @@
 package fr.insee.rmes.modules.codeslists.codeslists.domain.model.commands;
 
-import org.jspecify.annotations.Nullable;
-
 import java.util.List;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Demande de mise à jour. Même charge utile que la création : le front renvoie la liste entière,
@@ -23,8 +22,18 @@ public record UpdateCodesListCommand(CreateCodesListCommand attributes) {
             String lastListUriSegment,
             String lastClassUriSegment,
             String lastCodeUriSegment) {
-        this(new CreateCodesListCommand(id, labelLg1, labelLg2, descriptionLg1, descriptionLg2, creator,
-                contributors, disseminationStatus, lastListUriSegment, lastClassUriSegment, lastCodeUriSegment));
+        this(new CreateCodesListCommand(
+                id,
+                labelLg1,
+                labelLg2,
+                descriptionLg1,
+                descriptionLg2,
+                creator,
+                contributors,
+                disseminationStatus,
+                lastListUriSegment,
+                lastClassUriSegment,
+                lastCodeUriSegment));
     }
 
     public String id() {

@@ -1,11 +1,15 @@
 package fr.insee.rmes.testcontainers.queries.sparql_queries.operations.operations;
 
-import fr.insee.rmes.rdf_utils.RepositoryGestion;
-import fr.insee.rmes.graphdb.RepositoryInitiator;
-import fr.insee.rmes.graphdb.RepositoryUtils;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.config.GraphsPropertiesStub;
+import fr.insee.rmes.graphdb.RepositoryInitiator;
+import fr.insee.rmes.graphdb.RepositoryUtils;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationsOperationQueries;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.testcontainers.WithGraphDBContainer;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -13,17 +17,15 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-
 @Tag("integration")
 class OperationsOperationQueriesTest extends WithGraphDBContainer {
-    RepositoryGestion repositoryGestion = new RepositoryGestion(getRdfGestionConnectionDetails(), new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED));
-    OperationsOperationQueries operationsOperationQueries = new OperationsOperationQueries(new BauhausLanguagesProperties("fr", "en"), GraphsPropertiesStub.stub());
+    RepositoryGestion repositoryGestion = new RepositoryGestion(
+            getRdfGestionConnectionDetails(), new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED));
+    OperationsOperationQueries operationsOperationQueries =
+            new OperationsOperationQueries(new BauhausLanguagesProperties("fr", "en"), GraphsPropertiesStub.stub());
 
     @BeforeAll
-    static void initData(){
+    static void initData() {
         container.withTrigFiles("all-operations-and-indicators.trig");
     }
 
@@ -32,7 +34,7 @@ class OperationsOperationQueriesTest extends WithGraphDBContainer {
         JSONArray result = repositoryGestion.getResponseAsArray(operationsOperationQueries.operationsQuery());
         assertEquals(390, result.length());
 
-        for (var i = 0; i < result.length(); i++){
+        for (var i = 0; i < result.length(); i++) {
             assertNotNull(result.getJSONObject(i).getString("iri"));
         }
     }
@@ -41,7 +43,8 @@ class OperationsOperationQueriesTest extends WithGraphDBContainer {
     void should_return_operation() throws Exception {
         JSONObject result = repositoryGestion.getResponseAsObject(operationsOperationQueries.operationQuery("s1447"));
         assertThat(result.getString("id")).hasToString("s1447");
-        assertThat(result.getString("prefLabelLg1")).hasToString("Dispositif d'enquêtes permanentes des conditions de vie 2008");
+        assertThat(result.getString("prefLabelLg1"))
+                .hasToString("Dispositif d'enquêtes permanentes des conditions de vie 2008");
         assertThat(result.getString("prefLabelLg2")).hasToString("Permanent living conditions survey 2008");
         assertThat(result.getString("altLabelLg2")).hasToString("EPCV scheme 2008");
         assertThat(result.getString("altLabelLg1")).hasToString("EPCV 2008");

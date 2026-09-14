@@ -1,5 +1,10 @@
 package fr.insee.rmes.bauhaus_services.organizations;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
+
 import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.OperationsObjectMapper;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.commons.configuration.swagger.model.IdLabelTwoLangs;
@@ -11,11 +16,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class OrganizationRepositoryTest {
@@ -33,9 +33,9 @@ class OrganizationRepositoryTest {
     OrganizationQueries organizationQueries;
 
     @Test
-    void shouldBuildOrganizationFromJson()  {
-        JSONObject jsonObject = new JSONObject().put("color","blue");
-        IdLabelTwoLangs idLabelTwoLangs = IdLabelTwoLangs.of("id","label1","label2");
+    void shouldBuildOrganizationFromJson() {
+        JSONObject jsonObject = new JSONObject().put("color", "blue");
+        IdLabelTwoLangs idLabelTwoLangs = IdLabelTwoLangs.of("id", "label1", "label2");
         when(operationsObjectMapper.buildIdLabelTwoLangsFromJson(jsonObject)).thenReturn(idLabelTwoLangs);
         assertNotNull(organizationRepository.buildOrganizationFromJson(jsonObject));
     }
@@ -60,9 +60,8 @@ class OrganizationRepositoryTest {
 
     @Test
     void shouldLeaveLabelsUnchangedWhenNoAcronym() throws RmesException {
-        JSONObject sparqlResult = new JSONObject()
-                .put("labelLg1", "Service des données")
-                .put("labelLg2", "Data Department");
+        JSONObject sparqlResult =
+                new JSONObject().put("labelLg1", "Service des données").put("labelLg2", "Data Department");
         when(organizationQueries.organizationQuery(anyString())).thenReturn("query");
         when(repoGestion.getResponseAsObject("query")).thenReturn(sparqlResult);
 

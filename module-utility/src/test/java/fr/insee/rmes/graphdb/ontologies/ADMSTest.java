@@ -1,8 +1,8 @@
 package fr.insee.rmes.graphdb.ontologies;
 
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.*;
+
+import org.junit.jupiter.api.Test;
 
 class ADMSTest {
 
@@ -22,6 +22,4 @@ class ADMSTest {
         assertNotNull(ADMS.HAS_IDENTIFIER);
         assertEquals("http://www.w3.org/ns/adms#identifier", ADMS.HAS_IDENTIFIER.toString());
     }
-
-
 }

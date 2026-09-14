@@ -1,9 +1,14 @@
 package fr.insee.rmes.modules.ddi.physical_instances.webservice;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CategoryCodeListUsage;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeListVariableUsage;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UsageItem;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIService;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -11,12 +16,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class CodesListResourcesTest {
@@ -30,15 +29,29 @@ class CodesListResourcesTest {
     @Test
     void getCodeListUsers_shouldReturn200WithList() {
         List<CodeListVariableUsage> usages = List.of(
-                new CodeListVariableUsage("fr.insee", "su-1", "Recensement 2024",
-                        "fr.insee", "pi-1", "Fichier détail", "fr.insee", "var-1", "Sexe"),
-                new CodeListVariableUsage("fr.insee", "su-1", "Recensement 2024",
-                        "fr.insee", "pi-2", "Fichier ménage", "fr.insee", "var-2", "Âge")
-        );
+                new CodeListVariableUsage(
+                        "fr.insee",
+                        "su-1",
+                        "Recensement 2024",
+                        "fr.insee",
+                        "pi-1",
+                        "Fichier détail",
+                        "fr.insee",
+                        "var-1",
+                        "Sexe"),
+                new CodeListVariableUsage(
+                        "fr.insee",
+                        "su-1",
+                        "Recensement 2024",
+                        "fr.insee",
+                        "pi-2",
+                        "Fichier ménage",
+                        "fr.insee",
+                        "var-2",
+                        "Âge"));
         when(ddiService.getVariablesUsingCodeList("fr.insee", "cl-1")).thenReturn(usages);
 
-        ResponseEntity<List<CodeListVariableUsage>> response =
-                codesListResources.getCodeListUsers("fr.insee", "cl-1");
+        ResponseEntity<List<CodeListVariableUsage>> response = codesListResources.getCodeListUsers("fr.insee", "cl-1");
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).hasSize(2);
@@ -52,8 +65,7 @@ class CodesListResourcesTest {
         when(ddiService.getVariablesUsingCodeList("fr.insee", "cl-1"))
                 .thenThrow(new RuntimeException("Colectica error"));
 
-        ResponseEntity<List<CodeListVariableUsage>> response =
-                codesListResources.getCodeListUsers("fr.insee", "cl-1");
+        ResponseEntity<List<CodeListVariableUsage>> response = codesListResources.getCodeListUsers("fr.insee", "cl-1");
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -66,20 +78,20 @@ class CodesListResourcesTest {
         UsageItem studyUnit = new UsageItem("fr.insee", "su-1", "Recensement 2024");
         List<CategoryCodeListUsage> usages = List.of(
                 new CategoryCodeListUsage(
-                        group, studyUnit,
+                        group,
+                        studyUnit,
                         new UsageItem("fr.insee", "pi-1", "Fichier détail"),
                         new UsageItem("fr.insee", "var-1", "Sexe"),
                         new UsageItem("fr.insee", "cl-1", "Pays")),
                 new CategoryCodeListUsage(
-                        group, studyUnit,
+                        group,
+                        studyUnit,
                         new UsageItem("fr.insee", "pi-2", "Fichier ménage"),
                         new UsageItem("fr.insee", "var-2", "Âge"),
-                        new UsageItem("fr.insee", "cl-2", "Pays de naissance"))
-        );
+                        new UsageItem("fr.insee", "cl-2", "Pays de naissance")));
         when(ddiService.getCodeListsUsingCategory("fr.insee", "cat-1")).thenReturn(usages);
 
-        ResponseEntity<List<CategoryCodeListUsage>> response =
-                codesListResources.getCategoryUsers("fr.insee", "cat-1");
+        ResponseEntity<List<CategoryCodeListUsage>> response = codesListResources.getCategoryUsers("fr.insee", "cat-1");
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).hasSize(2);
@@ -93,8 +105,7 @@ class CodesListResourcesTest {
         when(ddiService.getCodeListsUsingCategory("fr.insee", "cat-1"))
                 .thenThrow(new RuntimeException("Colectica error"));
 
-        ResponseEntity<List<CategoryCodeListUsage>> response =
-                codesListResources.getCategoryUsers("fr.insee", "cat-1");
+        ResponseEntity<List<CategoryCodeListUsage>> response = codesListResources.getCategoryUsers("fr.insee", "cat-1");
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -103,10 +114,16 @@ class CodesListResourcesTest {
 
     @Test
     void getMissingValuesRepresentationUsers_shouldReturn200WithList() {
-        List<CodeListVariableUsage> usages = List.of(
-                new CodeListVariableUsage("fr.insee", "su-1", "Recensement 2024",
-                        "fr.insee", "pi-1", "Fichier détail", "fr.insee", "var-1", "Sexe")
-        );
+        List<CodeListVariableUsage> usages = List.of(new CodeListVariableUsage(
+                "fr.insee",
+                "su-1",
+                "Recensement 2024",
+                "fr.insee",
+                "pi-1",
+                "Fichier détail",
+                "fr.insee",
+                "var-1",
+                "Sexe"));
         when(ddiService.getVariablesUsingMissingValuesRepresentation("fr.insee", "mmvr-1"))
                 .thenReturn(usages);
 
@@ -129,5 +146,4 @@ class CodesListResourcesTest {
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
     }
-
 }

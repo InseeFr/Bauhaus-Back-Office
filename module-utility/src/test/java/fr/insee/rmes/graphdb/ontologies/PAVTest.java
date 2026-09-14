@@ -1,9 +1,9 @@
 package fr.insee.rmes.graphdb.ontologies;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import org.eclipse.rdf4j.model.Namespace;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class PAVTest {
 
@@ -36,6 +36,4 @@ class PAVTest {
         assertNotNull(PAV.LASTREFRESHEDON);
         assertEquals("http://purl.org/pav/lastRefreshedOn", PAV.LASTREFRESHEDON.toString());
     }
-
-
 }

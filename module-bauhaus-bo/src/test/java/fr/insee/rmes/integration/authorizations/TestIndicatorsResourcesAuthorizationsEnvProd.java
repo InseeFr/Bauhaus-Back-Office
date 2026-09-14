@@ -1,12 +1,20 @@
 package fr.insee.rmes.integration.authorizations;
 
+import static fr.insee.rmes.integration.authorizations.TokenForTestsConfiguration.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import fr.insee.rmes.bauhaus_services.OperationsDocumentationsService;
 import fr.insee.rmes.bauhaus_services.OperationsService;
-import fr.insee.rmes.modules.commons.configuration.LogRequestFilter;
-import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
-import fr.insee.rmes.integration.AbstractResourcesEnvProd;
-import fr.insee.rmes.modules.operations.indicators.webservice.IndicatorsResources;
 import fr.insee.rmes.config.auth.UserAuthTestConfiguration;
+import fr.insee.rmes.integration.AbstractResourcesEnvProd;
+import fr.insee.rmes.modules.commons.configuration.LogRequestFilter;
+import fr.insee.rmes.modules.operations.indicators.webservice.IndicatorsResources;
+import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
+import java.util.Collections;
+import java.util.stream.Stream;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -19,28 +27,14 @@ import org.springframework.http.MediaType;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-import java.util.Collections;
-import java.util.stream.Stream;
-
-import static fr.insee.rmes.integration.authorizations.TokenForTestsConfiguration.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-
 @WebMvcTest(
         controllers = IndicatorsResources.class,
         excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = LogRequestFilter.class),
         properties = {
-                "fr.insee.rmes.bauhaus.modules[0].identifier=operations",
-                "fr.insee.rmes.bauhaus.extensions=pdf,odt"
-        }
-)
-@Import({
-        IndicatorsResources.class,
-        UserAuthTestConfiguration.class
-})
+            "fr.insee.rmes.bauhaus.modules.operations.enabled=true",
+            "fr.insee.rmes.bauhaus.extensions=pdf,odt"
+        })
+@Import({IndicatorsResources.class, UserAuthTestConfiguration.class})
 class TestIndicatorsResourcesAuthorizationsEnvProd extends AbstractResourcesEnvProd {
 
     @Configuration
@@ -55,23 +49,20 @@ class TestIndicatorsResourcesAuthorizationsEnvProd extends AbstractResourcesEnvP
     @MockitoBean
     private OperationsDocumentationsService operationsDocumentationsService;
 
-
     private static Stream<Arguments> provideIndicatorDataGet() {
         return Stream.of(
                 Arguments.of("/operations/indicators", 200, true),
                 Arguments.of("/operations/indicators", 403, false),
-
                 Arguments.of("/operations/indicators/withSims", 200, true),
                 Arguments.of("/operations/indicators/withSims", 403, false),
-
                 Arguments.of("/operations/indicator/1", 200, true),
-                Arguments.of("/operations/indicator/1", 403, false)
-        );
+                Arguments.of("/operations/indicator/1", 403, false));
     }
 
     @MethodSource("provideIndicatorDataGet")
     @ParameterizedTest
-    void getIndicator(String url, Integer code, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
+    void getIndicator(String url, Integer code, boolean hasAccessReturn)
+            throws Exception, MissingUserInformationException {
         when(checker.hasAccess(any(), any(), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
 
@@ -82,10 +73,7 @@ class TestIndicatorsResourcesAuthorizationsEnvProd extends AbstractResourcesEnvP
     }
 
     private static Stream<Arguments> provideIndicatorData() {
-        return Stream.of(
-                Arguments.of(200, true),
-                Arguments.of(403, false)
-        );
+        return Stream.of(Arguments.of(200, true), Arguments.of(403, false));
     }
 
     @MethodSource("provideIndicatorData")
@@ -94,7 +82,10 @@ class TestIndicatorsResourcesAuthorizationsEnvProd extends AbstractResourcesEnvP
         when(checker.hasAccess(any(), any(), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
 
-        var request = post("/operations/indicator").contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON).content("{\"id\": \"1\"} ");
+        var request = post("/operations/indicator")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content("{\"id\": \"1\"} ");
         request.header("Authorization", "Bearer toto");
 
         mvc.perform(request).andExpect(status().is(code));
@@ -106,7 +97,10 @@ class TestIndicatorsResourcesAuthorizationsEnvProd extends AbstractResourcesEnvP
         when(checker.hasAccess(any(), any(), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
 
-        var request = put("/operations/indicator/1").contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON).content("{\"id\": \"1\"} ");
+        var request = put("/operations/indicator/1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content("{\"id\": \"1\"} ");
         request.header("Authorization", "Bearer toto");
 
         mvc.perform(request).andExpect(status().is(code));
@@ -118,7 +112,10 @@ class TestIndicatorsResourcesAuthorizationsEnvProd extends AbstractResourcesEnvP
         when(checker.hasAccess(any(), any(), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
 
-        var request = put("/operations/indicator/1/validate").contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON).content("{\"id\": \"1\"} ");
+        var request = put("/operations/indicator/1/validate")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content("{\"id\": \"1\"} ");
         request.header("Authorization", "Bearer toto");
 
         mvc.perform(request).andExpect(status().is(code));

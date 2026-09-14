@@ -1,13 +1,24 @@
 package fr.insee.rmes.bauhaus_services.concepts.concepts;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
+
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.model.concepts.ConceptForExport;
 import fr.insee.rmes.modules.organisations.domain.model.OrganisationOption;
 import fr.insee.rmes.modules.organisations.domain.port.clientside.OrganisationService;
-import fr.insee.rmes.model.concepts.ConceptForExport;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptConceptsQueries;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.utils.ExportUtils;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,18 +28,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.ResponseEntity;
-
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.ArgumentMatchers.anyMap;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ConceptsExportBuilderTest {
@@ -52,7 +51,15 @@ class ConceptsExportBuilderTest {
 
     @BeforeEach
     void setUp() {
-        conceptsExportBuilder = new ConceptsExportBuilder(repoGestion, null, null, null, legacyConceptsRepository, organisationService, exportUtils, conceptConceptsQueries);
+        conceptsExportBuilder = new ConceptsExportBuilder(
+                repoGestion,
+                null,
+                null,
+                null,
+                legacyConceptsRepository,
+                organisationService,
+                exportUtils,
+                conceptConceptsQueries);
     }
 
     @Test
@@ -78,9 +85,8 @@ class ConceptsExportBuilderTest {
                         .put(Constants.PREF_LABEL_LG1, "Broader Concept FR")
                         .put(Constants.PREF_LABEL_LG2, "Broader Concept EN"));
 
-        JSONObject notes = new JSONObject()
-                .put("definitionLg1", "Definition FR")
-                .put("definitionLg2", "Definition EN");
+        JSONObject notes =
+                new JSONObject().put("definitionLg1", "Definition FR").put("definitionLg2", "Definition EN");
 
         when(legacyConceptsRepository.getConceptById(id)).thenReturn(conceptJson);
         when(repoGestion.getResponseAsArray(any())).thenReturn(links);
@@ -146,7 +152,8 @@ class ConceptsExportBuilderTest {
         // Then
         assertNotNull(result);
         assertEquals(expectedResponse, result);
-        verify(exportUtils, times(1)).exportAsODT(anyString(), anyMap(), anyString(), anyString(), anyString(), anyString());
+        verify(exportUtils, times(1))
+                .exportAsODT(anyString(), anyMap(), anyString(), anyString(), anyString(), anyString());
     }
 
     @Test
@@ -174,7 +181,8 @@ class ConceptsExportBuilderTest {
         assertNotNull(result2);
         assertEquals(expectedResponse, result2);
 
-        verify(exportUtils, times(2)).exportAsODT(anyString(), anyMap(), anyString(), anyString(), anyString(), anyString());
+        verify(exportUtils, times(2))
+                .exportAsODT(anyString(), anyMap(), anyString(), anyString(), anyString(), anyString());
     }
 
     @Test
@@ -194,7 +202,8 @@ class ConceptsExportBuilderTest {
         // Then
         assertNotNull(result);
         assertEquals(expectedResponse, result);
-        verify(exportUtils, times(1)).exportAsODT(anyString(), anyMap(), anyString(), anyString(), anyString(), anyString());
+        verify(exportUtils, times(1))
+                .exportAsODT(anyString(), anyMap(), anyString(), anyString(), anyString(), anyString());
     }
 
     @Test
@@ -205,7 +214,8 @@ class ConceptsExportBuilderTest {
         xmlContent.put("conceptFile", "<Concept></Concept>");
         InputStream expectedStream = new ByteArrayInputStream(new byte[0]);
 
-        when(exportUtils.exportAsInputStream(anyString(), anyMap(), anyString(), anyString(), anyString(), anyString(), anyString()))
+        when(exportUtils.exportAsInputStream(
+                        anyString(), anyMap(), anyString(), anyString(), anyString(), anyString(), anyString()))
                 .thenReturn(expectedStream);
 
         // When
@@ -214,7 +224,9 @@ class ConceptsExportBuilderTest {
         // Then
         assertNotNull(result);
         assertEquals(expectedStream, result);
-        verify(exportUtils, times(1)).exportAsInputStream(anyString(), anyMap(), anyString(), anyString(), anyString(), anyString(), anyString());
+        verify(exportUtils, times(1))
+                .exportAsInputStream(
+                        anyString(), anyMap(), anyString(), anyString(), anyString(), anyString(), anyString());
     }
 
     @Test

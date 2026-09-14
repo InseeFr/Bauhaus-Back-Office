@@ -5,11 +5,11 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialStudyUni
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.StudyUnitService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.StudyUnitRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Domain service for DDI StudyUnit items.
@@ -36,8 +36,16 @@ public class StudyUnitServiceImpl extends AbstractDdiItemService<Ddi4StudyUnit> 
     }
 
     @Override
+    public Optional<Ddi4StudyUnit> find(String agencyId, String id) {
+        return studyUnitRepository.find(agencyId, id);
+    }
+
+    @Override
     public void addPhysicalInstance(Ddi4StudyUnit studyUnit, Reference physicalInstanceReference) {
-        logger.info("Adding physical instance to study unit: id={}, piId={}", studyUnit.id(), physicalInstanceReference.id());
+        logger.info(
+                "Adding physical instance to study unit: id={}, piId={}",
+                studyUnit.id(),
+                physicalInstanceReference.id());
         studyUnitRepository.addPhysicalInstance(studyUnit, physicalInstanceReference);
     }
 

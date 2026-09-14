@@ -24,9 +24,9 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @ConditionalOnProperty(
-    name = "fr.insee.rmes.bauhaus.colectica.cache-warmup-enabled",
-    havingValue = "true",
-    matchIfMissing = true)
+        name = "fr.insee.rmes.bauhaus.colectica.cache-warmup-enabled",
+        havingValue = "true",
+        matchIfMissing = true)
 public class MutualizedCodesCacheWarmer {
 
     private static final Logger logger = LoggerFactory.getLogger(MutualizedCodesCacheWarmer.class);
@@ -35,8 +35,7 @@ public class MutualizedCodesCacheWarmer {
     private final TaskExecutor taskExecutor;
 
     public MutualizedCodesCacheWarmer(
-            DDIRepository ddiRepository,
-            @Qualifier("applicationTaskExecutor") TaskExecutor taskExecutor) {
+            DDIRepository ddiRepository, @Qualifier("applicationTaskExecutor") TaskExecutor taskExecutor) {
         this.ddiRepository = ddiRepository;
         this.taskExecutor = taskExecutor;
     }
@@ -56,12 +55,16 @@ public class MutualizedCodesCacheWarmer {
         long startedAt = System.currentTimeMillis();
         try {
             int count = ddiRepository.getMutualizedCodesLists().size();
-            logger.info("Mutualized codes list cache warm-up finished: {} entries loaded in {} ms",
-                count, System.currentTimeMillis() - startedAt);
+            logger.info(
+                    "Mutualized codes list cache warm-up finished: {} entries loaded in {} ms",
+                    count,
+                    System.currentTimeMillis() - startedAt);
         } catch (RuntimeException e) {
-            logger.warn("Mutualized codes list cache warm-up failed after {} ms; "
-                + "the cache will be loaded lazily on the first request: {}",
-                System.currentTimeMillis() - startedAt, e.getMessage());
+            logger.warn(
+                    "Mutualized codes list cache warm-up failed after {} ms; "
+                            + "the cache will be loaded lazily on the first request: {}",
+                    System.currentTimeMillis() - startedAt,
+                    e.getMessage());
         }
     }
 
@@ -75,12 +78,16 @@ public class MutualizedCodesCacheWarmer {
         long startedAt = System.currentTimeMillis();
         try {
             int count = ddiRepository.getPhysicalInstanceSearchRows().size();
-            logger.info("Physical instance search rows cache warm-up finished: {} rows loaded in {} ms",
-                count, System.currentTimeMillis() - startedAt);
+            logger.info(
+                    "Physical instance search rows cache warm-up finished: {} rows loaded in {} ms",
+                    count,
+                    System.currentTimeMillis() - startedAt);
         } catch (RuntimeException e) {
-            logger.warn("Physical instance search rows cache warm-up failed after {} ms; "
-                + "the cache will be loaded lazily on the first request: {}",
-                System.currentTimeMillis() - startedAt, e.getMessage());
+            logger.warn(
+                    "Physical instance search rows cache warm-up failed after {} ms; "
+                            + "the cache will be loaded lazily on the first request: {}",
+                    System.currentTimeMillis() - startedAt,
+                    e.getMessage());
         }
     }
 }

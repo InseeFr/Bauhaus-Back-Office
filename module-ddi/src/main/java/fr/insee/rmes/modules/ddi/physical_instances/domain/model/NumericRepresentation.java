@@ -7,8 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public record NumericRepresentation(
         @JsonProperty("$type") String type,
         @JsonProperty("NumericTypeCode") String numericTypeCode,
-        @JsonProperty("NumberRange") NumberRange numberRange
-) {
+        @JsonProperty("NumberRange") NumberRange numberRange) {
 
     public static final String TYPE = "NumericRepresentationBaseType";
 }

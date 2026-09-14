@@ -1,10 +1,10 @@
 package fr.insee.rmes.modules.concepts.concept.domain.model;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import fr.insee.rmes.modules.shared_kernel.domain.model.Lang;
 import fr.insee.rmes.modules.shared_kernel.domain.model.LocalisedLabel;
 import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 class CompactConceptTest {
 

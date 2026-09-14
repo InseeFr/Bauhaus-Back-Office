@@ -1,22 +1,23 @@
 package fr.insee.rmes.bauhaus_services.operations.documentations.documents;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.*;
+
 import fr.insee.rmes.domain.exceptions.RmesException;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.Resource;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.*;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
 @ExtendWith(MockitoExtension.class)
 class DocumentsImplTest {
@@ -91,36 +92,44 @@ class DocumentsImplTest {
     @Test
     void shouldCreateDocument() throws RmesException, IOException {
         DocumentsImpl documentsImpl = new DocumentsImpl(documentsUtils);
-        InputStream documentFile = new InputStream() {public int read() {return 2025;}};
+        InputStream documentFile = new InputStream() {
+            public int read() {
+                return 2025;
+            }
+        };
         when(documentsUtils.createDocumentID()).thenReturn("idExample");
-        String actual = documentsImpl.createDocument("body",documentFile,"documentName");
-        assertEquals("idExample",actual);
+        String actual = documentsImpl.createDocument("body", documentFile, "documentName");
+        assertEquals("idExample", actual);
     }
 
     @Test
     void shouldChangeDocument() throws RmesException {
         DocumentsImpl documentsImpl = new DocumentsImpl(documentsUtils);
-        InputStream documentFile = new InputStream() {public int read() {return 2025;}};
-        when(documentsUtils.changeFile("docId",documentFile,"documentName")).thenReturn("idExample");
-        String actual = documentsImpl.changeDocument("docId",documentFile,"documentName");
-        assertEquals("idExample",actual);
+        InputStream documentFile = new InputStream() {
+            public int read() {
+                return 2025;
+            }
+        };
+        when(documentsUtils.changeFile("docId", documentFile, "documentName")).thenReturn("idExample");
+        String actual = documentsImpl.changeDocument("docId", documentFile, "documentName");
+        assertEquals("idExample", actual);
     }
 
     @Test
     void shouldSetLinkWhenSeveralArguments() throws RmesException {
         DocumentsImpl documentsImpl = new DocumentsImpl(documentsUtils);
         when(documentsUtils.createDocumentID()).thenReturn("id");
-        doNothing().when(documentsUtils).createDocument("id","body",true, null, null);
+        doNothing().when(documentsUtils).createDocument("id", "body", true, null, null);
         String actual = documentsImpl.setLink("body");
-        assertEquals("id",actual);
+        assertEquals("id", actual);
     }
 
     @Test
     void shouldSetLinkWhenUsingOnlyOneParameter() throws RmesException {
         DocumentsImpl documentsImpl = new DocumentsImpl(documentsUtils);
-        doNothing().when(documentsUtils).setDocument("id","body",true);
-        String actual = documentsImpl.setLink("id","body");
-        assertEquals("id",actual);
+        doNothing().when(documentsUtils).setDocument("id", "body", true);
+        String actual = documentsImpl.setLink("id", "body");
+        assertEquals("id", actual);
     }
 
     @Test
@@ -153,5 +162,4 @@ class DocumentsImplTest {
 
         assertEquals(expected, documentService.downloadDocument("1000"));
     }
-
-} 
+}

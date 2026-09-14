@@ -7,16 +7,15 @@ import fr.insee.rmes.modules.users.domain.model.ModuleAccessPrivileges;
 import fr.insee.rmes.modules.users.domain.model.RBAC;
 import fr.insee.rmes.modules.users.domain.model.User;
 import fr.insee.rmes.modules.users.domain.port.clientside.AccessPrivilegesCheckerService;
-import fr.insee.rmes.modules.users.domain.port.serverside.StampChecker;
 import fr.insee.rmes.modules.users.domain.port.serverside.RbacFetcher;
+import fr.insee.rmes.modules.users.domain.port.serverside.StampChecker;
 import fr.insee.rmes.modules.users.domain.port.serverside.UserDecoder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DomainAccessPrivilegesChecker implements AccessPrivilegesCheckerService {
     static final Logger logger = LoggerFactory.getLogger(DomainAccessPrivilegesChecker.class);
@@ -24,17 +23,19 @@ public class DomainAccessPrivilegesChecker implements AccessPrivilegesCheckerSer
     private final RbacFetcher fetcher;
     private final UserDecoder decoder;
     private final StampChecker infrastructureStampChecker;
-    public DomainAccessPrivilegesChecker(RbacFetcher fetcher, UserDecoder decoder, StampChecker infrastructureStampChecker) {
+
+    public DomainAccessPrivilegesChecker(
+            RbacFetcher fetcher, UserDecoder decoder, StampChecker infrastructureStampChecker) {
         this.fetcher = fetcher;
         this.decoder = decoder;
         this.infrastructureStampChecker = infrastructureStampChecker;
     }
 
     @Override
-    public boolean hasAccess(String module, String privilege, String id, Object principal) throws MissingUserInformationException {
+    public boolean hasAccess(String module, String privilege, String id, Object principal)
+            throws MissingUserInformationException {
         var user = this.decoder.fromPrincipal(principal);
         return user.map(u -> hasAcccess(module, privilege, id, u)).orElse(false);
-
     }
 
     private boolean hasAcccess(String moduleIdentifer, String privilegeIdentifier, String id, User user) {
@@ -59,28 +60,30 @@ public class DomainAccessPrivilegesChecker implements AccessPrivilegesCheckerSer
 
         var privilegeAndStrategy = findStrategyByPrivilege(privilege, moduleAccessPrivileges);
 
-        return privilegeAndStrategy.map((privilegeAndStrategyValue) -> this.authorizeFromStrategy(module, privilegeAndStrategyValue, id, user)).orElse(false);
+        return privilegeAndStrategy
+                .map((privilegeAndStrategyValue) ->
+                        this.authorizeFromStrategy(module, privilegeAndStrategyValue, id, user))
+                .orElse(false);
     }
 
-    private boolean authorizeFromStrategy(RBAC.Module module, ModuleAccessPrivileges.Privilege privilegeAndStrategy, String id, User user) {
+    private boolean authorizeFromStrategy(
+            RBAC.Module module, ModuleAccessPrivileges.Privilege privilegeAndStrategy, String id, User user) {
         return switch (privilegeAndStrategy.strategy()) {
             case ALL -> {
-
                 var privilege = privilegeAndStrategy.privilege();
-                 if (user.getStamps().isEmpty() && (
-                        privilege.equals(RBAC.Privilege.CREATE) ||
-                                privilege.equals(RBAC.Privilege.UPDATE) ||
-                                privilege.equals(RBAC.Privilege.DELETE) ||
-                                privilege.equals(RBAC.Privilege.PUBLISH) ||
-                                privilege.equals(RBAC.Privilege.ADMINISTRATION)
-                )) {
+                if (user.getStamps().isEmpty()
+                        && (privilege.equals(RBAC.Privilege.CREATE)
+                                || privilege.equals(RBAC.Privilege.UPDATE)
+                                || privilege.equals(RBAC.Privilege.DELETE)
+                                || privilege.equals(RBAC.Privilege.PUBLISH)
+                                || privilege.equals(RBAC.Privilege.ADMINISTRATION))) {
                     yield false;
                 }
 
                 yield true;
             }
             case STAMP -> {
-                if(user.getStamps().isEmpty()){
+                if (user.getStamps().isEmpty()) {
                     yield false;
                 }
 
@@ -88,7 +91,10 @@ public class DomainAccessPrivilegesChecker implements AccessPrivilegesCheckerSer
                 try {
                     stamps = getStamps(module, id);
                 } catch (StampFetchException | UnsupportedModuleException e) {
-                    logger.error("Could not fetch stamp for %s on the resource %s inside the module %s. So, this user is not allowed to do this action %s".formatted(user, id, module, privilegeAndStrategy.privilege()), e);
+                    logger.error(
+                            "Could not fetch stamp for %s on the resource %s inside the module %s. So, this user is not allowed to do this action %s"
+                                    .formatted(user, id, module, privilegeAndStrategy.privilege()),
+                            e);
                     yield false;
                 }
                 yield stamps.isEmpty() || stamps.stream().anyMatch(user.getStamps()::contains);
@@ -97,8 +103,14 @@ public class DomainAccessPrivilegesChecker implements AccessPrivilegesCheckerSer
         };
     }
 
-    private Optional<ModuleAccessPrivileges.Privilege> findStrategyByPrivilege(RBAC.Privilege privilege, Optional<ModuleAccessPrivileges> moduleAccessPrivileges) {
-        return moduleAccessPrivileges.orElse(new ModuleAccessPrivileges(RBAC.Module.UNKNOWN, Set.of())).privileges().stream().filter(p -> p.privilege().equals(privilege)).findFirst();
+    private Optional<ModuleAccessPrivileges.Privilege> findStrategyByPrivilege(
+            RBAC.Privilege privilege, Optional<ModuleAccessPrivileges> moduleAccessPrivileges) {
+        return moduleAccessPrivileges
+                .orElse(new ModuleAccessPrivileges(RBAC.Module.UNKNOWN, Set.of()))
+                .privileges()
+                .stream()
+                .filter(p -> p.privilege().equals(privilege))
+                .findFirst();
     }
 
     private Optional<ModuleAccessPrivileges> findModuleAccessPrivileges(User user, RBAC.Module module) {
@@ -106,16 +118,23 @@ public class DomainAccessPrivilegesChecker implements AccessPrivilegesCheckerSer
         return privileges.stream().filter(p -> p.application().equals(module)).findFirst();
     }
 
-    private List<String> getStamps(RBAC.Module module, String id) throws StampFetchException, UnsupportedModuleException {
+    private List<String> getStamps(RBAC.Module module, String id)
+            throws StampFetchException, UnsupportedModuleException {
         return switch (module) {
-            case OPERATION_SERIES ->  this.infrastructureStampChecker.getCreatorsStamps(RBAC.Module.OPERATION_SERIES, id);
-            case DDI_PHYSICALINSTANCE -> this.infrastructureStampChecker.getCreatorsStamps(RBAC.Module.DDI_PHYSICALINSTANCE, id);
+            case OPERATION_SERIES ->
+                this.infrastructureStampChecker.getCreatorsStamps(RBAC.Module.OPERATION_SERIES, id);
+            case DDI_PHYSICALINSTANCE ->
+                this.infrastructureStampChecker.getCreatorsStamps(RBAC.Module.DDI_PHYSICALINSTANCE, id);
 
-            case STRUCTURE_STRUCTURE -> this.infrastructureStampChecker.getContributorsStamps(RBAC.Module.STRUCTURE_STRUCTURE, id);
-            case STRUCTURE_COMPONENT -> this.infrastructureStampChecker.getContributorsStamps(RBAC.Module.STRUCTURE_COMPONENT, id);
+            case STRUCTURE_STRUCTURE ->
+                this.infrastructureStampChecker.getContributorsStamps(RBAC.Module.STRUCTURE_STRUCTURE, id);
+            case STRUCTURE_COMPONENT ->
+                this.infrastructureStampChecker.getContributorsStamps(RBAC.Module.STRUCTURE_COMPONENT, id);
 
-            case DATASET_DATASET -> this.infrastructureStampChecker.getContributorsStamps(RBAC.Module.DATASET_DATASET, id);
-            case DATASET_DISTRIBUTION -> this.infrastructureStampChecker.getContributorsStamps(RBAC.Module.DATASET_DISTRIBUTION, id);
+            case DATASET_DATASET ->
+                this.infrastructureStampChecker.getContributorsStamps(RBAC.Module.DATASET_DATASET, id);
+            case DATASET_DISTRIBUTION ->
+                this.infrastructureStampChecker.getContributorsStamps(RBAC.Module.DATASET_DISTRIBUTION, id);
             default -> Collections.emptyList();
         };
     }

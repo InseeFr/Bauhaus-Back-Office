@@ -10,7 +10,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 @ControllerAdvice
 @Order(1)
 public class GraphDbExceptionHandler extends ResponseEntityExceptionHandler {
-    @ExceptionHandler({ DatabaseQueryException.class })
+    @ExceptionHandler({DatabaseQueryException.class})
     public final ResponseEntity<String> genericInternalServerException(DatabaseQueryException exception) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getMessage());
     }

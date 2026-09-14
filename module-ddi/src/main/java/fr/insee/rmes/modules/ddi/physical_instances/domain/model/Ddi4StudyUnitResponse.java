@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -21,8 +20,7 @@ public record Ddi4StudyUnitResponse(
         @JsonIgnore String schema,
         @JsonIgnore List<Reference> topLevelReference,
         @JsonIgnore List<Ddi4StudyUnit> studyUnit,
-        @JsonIgnore List<Ddi4PhysicalInstance> physicalInstance
-) {
+        @JsonIgnore List<Ddi4PhysicalInstance> physicalInstance) {
 
     /** Références de premier niveau de l'enveloppe. */
     @JsonProperty("topLevelReferences")
@@ -48,8 +46,7 @@ public record Ddi4StudyUnitResponse(
     @JsonCreator
     public static Ddi4StudyUnitResponse fromWire(
             @JsonProperty("topLevelReferences") List<Reference> topLevelReferences,
-            @JsonProperty("items") List<Ddi4Item> items
-    ) {
+            @JsonProperty("items") List<Ddi4Item> items) {
         List<Ddi4StudyUnit> studyUnits = new ArrayList<>();
         List<Ddi4PhysicalInstance> physicalInstances = new ArrayList<>();
 
@@ -57,12 +54,15 @@ public record Ddi4StudyUnitResponse(
             switch (item) {
                 case Ddi4StudyUnit it -> studyUnits.add(it);
                 case Ddi4PhysicalInstance it -> physicalInstances.add(it);
-                default -> throw new IllegalArgumentException(
-                        "Type d'item DDI 4 non supporté : " + item.getClass().getSimpleName());
+                default ->
+                    throw new IllegalArgumentException("Type d'item DDI 4 non supporté : "
+                            + item.getClass().getSimpleName());
             }
         }
 
-        return new Ddi4StudyUnitResponse(Ddi4Response.SCHEMA, topLevelReferences,
+        return new Ddi4StudyUnitResponse(
+                Ddi4Response.SCHEMA,
+                topLevelReferences,
                 studyUnits.isEmpty() ? null : studyUnits,
                 physicalInstances.isEmpty() ? null : physicalInstances);
     }

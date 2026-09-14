@@ -3,9 +3,9 @@ package fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialStudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
-
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Server-side port for persisting DDI StudyUnit items.
@@ -13,6 +13,12 @@ import java.util.List;
 public interface StudyUnitRepository extends DdiItemRepository<Ddi4StudyUnit> {
 
     List<PartialStudyUnit> getAll();
+
+    /**
+     * La StudyUnit d'identifiant {@code id}, ou {@link Optional#empty()} si elle est absente du dépôt
+     * DDI. Toute autre défaillance du dépôt remonte.
+     */
+    Optional<Ddi4StudyUnit> find(String agencyId, String id);
 
     void addPhysicalInstance(Ddi4StudyUnit studyUnit, Reference physicalInstanceReference);
 

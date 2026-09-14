@@ -1,15 +1,15 @@
 package fr.insee.rmes.archunit;
 
+import static com.tngtech.archunit.base.DescribedPredicate.not;
+import static com.tngtech.archunit.core.domain.JavaClass.Predicates.resideInAPackage;
+import static com.tngtech.archunit.core.domain.JavaClass.Predicates.resideInAnyPackage;
+import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
+
 import com.tngtech.archunit.base.DescribedPredicate;
 import com.tngtech.archunit.core.domain.JavaClass;
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
-
-import static com.tngtech.archunit.base.DescribedPredicate.not;
-import static com.tngtech.archunit.core.domain.JavaClass.Predicates.resideInAPackage;
-import static com.tngtech.archunit.core.domain.JavaClass.Predicates.resideInAnyPackage;
-import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 
 @AnalyzeClasses(packages = "fr.insee.rmes.modules.ddi")
 class NoBauhausBoDependencyTest {
@@ -40,11 +40,9 @@ class NoBauhausBoDependencyTest {
             "fr.insee.rmes.modules.organisations..",
             "fr.insee.rmes.modules.geographies..",
             "fr.insee.rmes.modules.shared_kernel..",
-            "fr.insee.rmes.modules.concepts.."
-    );
+            "fr.insee.rmes.modules.concepts..");
 
     @ArchTest
     static final ArchRule no_dependency_on_bauhaus_bo_packages =
-            noClasses().should().dependOnClassesThat(
-                    BAUHAUS_BO_PACKAGES.and(not(HEXAGONAL_ANNOTATIONS)));
+            noClasses().should().dependOnClassesThat(BAUHAUS_BO_PACKAGES.and(not(HEXAGONAL_ANNOTATIONS)));
 }

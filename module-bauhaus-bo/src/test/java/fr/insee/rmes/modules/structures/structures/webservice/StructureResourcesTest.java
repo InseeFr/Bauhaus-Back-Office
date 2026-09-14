@@ -1,9 +1,16 @@
 package fr.insee.rmes.modules.structures.structures.webservice;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.when;
+
 import fr.insee.rmes.bauhaus_services.structures.StructureComponent;
 import fr.insee.rmes.bauhaus_services.structures.StructureService;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.structures.structures.domain.model.PartialStructure;
+import java.util.Arrays;
+import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -12,14 +19,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.ResponseEntity;
-
-import java.util.Arrays;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class StructureResourcesTest {
@@ -56,12 +55,10 @@ class StructureResourcesTest {
     @Test
     void shouldGetStructures() throws RmesException {
         // Given
-        PartialStructure structure1 = new PartialStructure(
-                "http://example.com/structure1", "s1", "Label 1", "creator1", "Validated"
-        );
-        PartialStructure structure2 = new PartialStructure(
-                "http://example.com/structure2", "s2", "Label 2", "creator2", "Unpublished"
-        );
+        PartialStructure structure1 =
+                new PartialStructure("http://example.com/structure1", "s1", "Label 1", "creator1", "Validated");
+        PartialStructure structure2 =
+                new PartialStructure("http://example.com/structure2", "s2", "Label 2", "creator2", "Unpublished");
         List<PartialStructure> expectedStructures = Arrays.asList(structure1, structure2);
         when(structureService.getStructures()).thenReturn(expectedStructures);
 
@@ -80,9 +77,8 @@ class StructureResourcesTest {
     @Test
     void should_get_structures_with_hateoas_links() throws RmesException {
         // Given
-        PartialStructure structure1 = new PartialStructure(
-                "http://example.com/structure1", "s1", "Label 1", "creator1", "Validated"
-        );
+        PartialStructure structure1 =
+                new PartialStructure("http://example.com/structure1", "s1", "Label 1", "creator1", "Validated");
         List<PartialStructure> expectedStructures = List.of(structure1);
         when(structureService.getStructures()).thenReturn(expectedStructures);
 
@@ -100,7 +96,8 @@ class StructureResourcesTest {
 
         // Verify the self link URL
         String selfLink = structureResponse.getLink("self").get().getHref();
-        Assertions.assertTrue(selfLink.contains("/structures/structure/s1"),
+        Assertions.assertTrue(
+                selfLink.contains("/structures/structure/s1"),
                 "Self link should contain '/structures/structure/s1' but was: " + selfLink);
 
         verify(structureService, times(1)).getStructures();

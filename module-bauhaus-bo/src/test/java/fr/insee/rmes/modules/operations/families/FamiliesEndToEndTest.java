@@ -1,5 +1,7 @@
 package fr.insee.rmes.modules.operations.families;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.testcontainers.WithGraphDBContainer;
@@ -17,8 +19,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.web.client.RestClient;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Parcours complet d'une famille d'opérations à travers l'API : création, relecture, mise à jour,
@@ -74,7 +74,8 @@ class FamiliesEndToEndTest extends WithGraphDBContainer {
     void ok_when_family_created_updated_then_validated() {
         RestClient restClient = RestClient.create();
 
-        String id = restClient.post()
+        String id = restClient
+                .post()
                 .uri(familiesEndpoint() + "/family")
                 .body(FAMILY_REQUEST_JSON.formatted("Famille e2e", "e2e family"))
                 .contentType(MediaType.APPLICATION_JSON)
@@ -94,7 +95,8 @@ class FamiliesEndToEndTest extends WithGraphDBContainer {
         String created = fetched.get("created").asText();
         assertThat(created).matches(ISO_8601_LOCAL_DATE_TIME_PATTERN);
 
-        var updateResponse = restClient.put()
+        var updateResponse = restClient
+                .put()
                 .uri(familiesEndpoint() + "/family/" + id)
                 .body("""
                         {
@@ -125,7 +127,8 @@ class FamiliesEndToEndTest extends WithGraphDBContainer {
                 .as("la date de création renvoyée par le client doit survivre à la mise à jour")
                 .isEqualTo(created);
 
-        var validateResponse = restClient.put()
+        var validateResponse = restClient
+                .put()
                 .uri(familiesEndpoint() + "/family/" + id + "/validate")
                 .accept(MediaType.TEXT_PLAIN)
                 .retrieve()
@@ -134,12 +137,14 @@ class FamiliesEndToEndTest extends WithGraphDBContainer {
 
         assertThat(getFamily(restClient, id).get("validationState").asText()).isEqualTo("Validated");
 
-        restClient.put()
+        restClient
+                .put()
                 .uri(familiesEndpoint() + "/family/" + id + "/validate")
                 .accept(MediaType.TEXT_PLAIN)
                 .exchange((request, response) -> {
                     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-                    assertThat(new JSONObject(response.bodyTo(String.class)).getInt("code")).isEqualTo(1301);
+                    assertThat(new JSONObject(response.bodyTo(String.class)).getInt("code"))
+                            .isEqualTo(1301);
                     return null;
                 });
     }
@@ -150,7 +155,8 @@ class FamiliesEndToEndTest extends WithGraphDBContainer {
     void bad_request_when_a_pref_label_is_missing() {
         RestClient restClient = RestClient.create();
 
-        restClient.post()
+        restClient
+                .post()
                 .uri(familiesEndpoint() + "/family")
                 .body("""
                         {
@@ -169,7 +175,8 @@ class FamiliesEndToEndTest extends WithGraphDBContainer {
                     return null;
                 });
 
-        restClient.post()
+        restClient
+                .post()
                 .uri(familiesEndpoint() + "/family")
                 .body(FAMILY_REQUEST_JSON.formatted("Famille sans libellé secondaire", ""))
                 .contentType(MediaType.APPLICATION_JSON)
@@ -188,7 +195,8 @@ class FamiliesEndToEndTest extends WithGraphDBContainer {
     void bad_request_when_a_pref_label_is_already_used() {
         RestClient restClient = RestClient.create();
 
-        restClient.post()
+        restClient
+                .post()
                 .uri(familiesEndpoint() + "/family")
                 .body(FAMILY_REQUEST_JSON.formatted("Famille e2e unique", "e2e unique family"))
                 .contentType(MediaType.APPLICATION_JSON)
@@ -196,7 +204,8 @@ class FamiliesEndToEndTest extends WithGraphDBContainer {
                 .retrieve()
                 .toBodilessEntity();
 
-        restClient.post()
+        restClient
+                .post()
                 .uri(familiesEndpoint() + "/family")
                 .body(FAMILY_REQUEST_JSON.formatted("Famille e2e unique", "another e2e family"))
                 .contentType(MediaType.APPLICATION_JSON)
@@ -207,7 +216,8 @@ class FamiliesEndToEndTest extends WithGraphDBContainer {
                     return null;
                 });
 
-        restClient.post()
+        restClient
+                .post()
                 .uri(familiesEndpoint() + "/family")
                 .body(FAMILY_REQUEST_JSON.formatted("Famille e2e encore unique", "e2e unique family"))
                 .contentType(MediaType.APPLICATION_JSON)
@@ -225,19 +235,22 @@ class FamiliesEndToEndTest extends WithGraphDBContainer {
     void not_found_when_updating_an_unknown_family() {
         RestClient restClient = RestClient.create();
 
-        restClient.put()
+        restClient
+                .put()
                 .uri(familiesEndpoint() + "/family/unknown-family")
                 .body(FAMILY_REQUEST_JSON.formatted("Famille fantôme", "ghost family"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .exchange((request, response) -> {
                     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-                    assertThat(new JSONObject(response.bodyTo(String.class)).getInt("code")).isEqualTo(541);
+                    assertThat(new JSONObject(response.bodyTo(String.class)).getInt("code"))
+                            .isEqualTo(541);
                     return null;
                 });
     }
 
     private JsonNode getFamily(RestClient restClient, String id) {
-        String body = restClient.get()
+        String body = restClient
+                .get()
                 .uri(familiesEndpoint() + "/family/" + id)
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()

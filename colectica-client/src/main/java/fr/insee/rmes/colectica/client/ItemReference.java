@@ -9,6 +9,5 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record ItemReference(
-    @JsonProperty("AgencyId") String agencyId,
-    @JsonProperty("Identifier") String identifier
-) {}
+        @JsonProperty("AgencyId") String agencyId,
+        @JsonProperty("Identifier") String identifier) {}

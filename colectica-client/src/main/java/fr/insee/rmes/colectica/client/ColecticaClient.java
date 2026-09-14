@@ -3,26 +3,25 @@ package fr.insee.rmes.colectica.client;
 import fr.insee.rmes.colectica.client.auth.ColecticaCredentials;
 import fr.insee.rmes.colectica.client.dto.AuthenticationRequest;
 import fr.insee.rmes.colectica.client.dto.AuthenticationResponse;
-import fr.insee.rmes.colectica.client.dto.ColecticaCreateItemRequest;
 import fr.insee.rmes.colectica.client.dto.ColecticaAdvancedResponse;
+import fr.insee.rmes.colectica.client.dto.ColecticaCreateItemRequest;
 import fr.insee.rmes.colectica.client.dto.ColecticaItem;
 import fr.insee.rmes.colectica.client.dto.ColecticaItemResponse;
 import fr.insee.rmes.colectica.client.dto.ColecticaResponse;
-import fr.insee.rmes.colectica.client.dto.QueryAdvancedRequest;
 import fr.insee.rmes.colectica.client.dto.ColecticaSetItem;
 import fr.insee.rmes.colectica.client.dto.GetDescriptionsRequest;
+import fr.insee.rmes.colectica.client.dto.QueryAdvancedRequest;
 import fr.insee.rmes.colectica.client.dto.QueryRequest;
 import fr.insee.rmes.colectica.client.dto.UpdateItemStateRequest;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.function.Function;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
-
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.function.Function;
 
 /**
  * Thin SDK over the Colectica Repository REST API.
@@ -47,11 +46,7 @@ public class ColecticaClient {
     private volatile String cachedToken;
 
     public ColecticaClient(
-        RestClient restClient,
-        String baseApiUrl,
-        String baseServerUrl,
-        ColecticaCredentials credentials
-    ) {
+            RestClient restClient, String baseApiUrl, String baseServerUrl, ColecticaCredentials credentials) {
         this.restClient = restClient;
         this.baseApiUrl = baseApiUrl;
         this.baseServerUrl = baseServerUrl;
@@ -65,13 +60,13 @@ public class ColecticaClient {
      */
     public ColecticaResponse query(List<String> itemTypes) {
         return withAuth(token -> restClient
-            .post()
-            .uri(baseApiUrl + "_query")
-            .contentType(MediaType.APPLICATION_JSON)
-            .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token)
-            .body(new QueryRequest(itemTypes))
-            .retrieve()
-            .body(ColecticaResponse.class));
+                .post()
+                .uri(baseApiUrl + "_query")
+                .contentType(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token)
+                .body(new QueryRequest(itemTypes))
+                .retrieve()
+                .body(ColecticaResponse.class));
     }
 
     /**
@@ -81,13 +76,13 @@ public class ColecticaClient {
      */
     public ColecticaAdvancedResponse queryAdvanced(List<String> itemTypes) {
         return withAuth(token -> restClient
-            .post()
-            .uri(baseApiUrl + "_query/advanced")
-            .contentType(MediaType.APPLICATION_JSON)
-            .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token)
-            .body(new QueryAdvancedRequest(itemTypes))
-            .retrieve()
-            .body(ColecticaAdvancedResponse.class));
+                .post()
+                .uri(baseApiUrl + "_query/advanced")
+                .contentType(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token)
+                .body(new QueryAdvancedRequest(itemTypes))
+                .retrieve()
+                .body(ColecticaAdvancedResponse.class));
     }
 
     /**
@@ -95,13 +90,13 @@ public class ColecticaClient {
      */
     public ColecticaItemResponse[] getDescriptions(List<GetDescriptionsRequest.IdentifierRef> identifiers) {
         return withAuth(token -> restClient
-            .post()
-            .uri(baseApiUrl + "item/_getList")
-            .contentType(MediaType.APPLICATION_JSON)
-            .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token)
-            .body(new GetDescriptionsRequest(identifiers))
-            .retrieve()
-            .body(ColecticaItemResponse[].class));
+                .post()
+                .uri(baseApiUrl + "item/_getList")
+                .contentType(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token)
+                .body(new GetDescriptionsRequest(identifiers))
+                .retrieve()
+                .body(ColecticaItemResponse[].class));
     }
 
     /**
@@ -109,18 +104,18 @@ public class ColecticaClient {
      */
     public ColecticaItemResponse getItem(String agency, String id, String version) {
         String url = baseApiUrl + "item/"
-            + URLEncoder.encode(agency, StandardCharsets.UTF_8) + "/"
-            + URLEncoder.encode(id, StandardCharsets.UTF_8);
+                + URLEncoder.encode(agency, StandardCharsets.UTF_8) + "/"
+                + URLEncoder.encode(id, StandardCharsets.UTF_8);
         if (version != null && !version.isBlank()) {
             url += "/" + URLEncoder.encode(version, StandardCharsets.UTF_8);
         }
         String finalUrl = url;
         return withAuth(token -> restClient
-            .get()
-            .uri(finalUrl)
-            .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token)
-            .retrieve()
-            .body(ColecticaItemResponse.class));
+                .get()
+                .uri(finalUrl)
+                .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token)
+                .retrieve()
+                .body(ColecticaItemResponse.class));
     }
 
     /**
@@ -128,14 +123,14 @@ public class ColecticaClient {
      */
     public void deleteItem(String agency, String id) {
         String url = baseApiUrl + "item/"
-            + URLEncoder.encode(agency, StandardCharsets.UTF_8) + "/"
-            + URLEncoder.encode(id, StandardCharsets.UTF_8);
+                + URLEncoder.encode(agency, StandardCharsets.UTF_8) + "/"
+                + URLEncoder.encode(id, StandardCharsets.UTF_8);
         withAuth(token -> restClient
-            .delete()
-            .uri(url)
-            .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token)
-            .retrieve()
-            .toBodilessEntity());
+                .delete()
+                .uri(url)
+                .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token)
+                .retrieve()
+                .toBodilessEntity());
     }
 
     /**
@@ -149,11 +144,11 @@ public class ColecticaClient {
         }
         String finalUrl = url;
         return withAuth(token -> restClient
-            .get()
-            .uri(finalUrl)
-            .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token)
-            .retrieve()
-            .body(ColecticaSetItem[].class));
+                .get()
+                .uri(finalUrl)
+                .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token)
+                .retrieve()
+                .body(ColecticaSetItem[].class));
     }
 
     /**
@@ -163,11 +158,11 @@ public class ColecticaClient {
      */
     public byte[] getDdiSet(String agency, String id) {
         return withAuth(token -> restClient
-            .get()
-            .uri(baseApiUrl + "ddiset/" + agency + "/" + id)
-            .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token)
-            .retrieve()
-            .body(byte[].class));
+                .get()
+                .uri(baseApiUrl + "ddiset/" + agency + "/" + id)
+                .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token)
+                .retrieve()
+                .body(byte[].class));
     }
 
     /**
@@ -175,13 +170,13 @@ public class ColecticaClient {
      */
     public String createOrUpdateItems(ColecticaCreateItemRequest request) {
         return withAuth(token -> restClient
-            .post()
-            .uri(baseApiUrl + "item")
-            .contentType(MediaType.APPLICATION_JSON)
-            .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token)
-            .body(request)
-            .retrieve()
-            .body(String.class));
+                .post()
+                .uri(baseApiUrl + "item")
+                .contentType(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token)
+                .body(request)
+                .retrieve()
+                .body(String.class));
     }
 
     /**
@@ -189,13 +184,13 @@ public class ColecticaClient {
      */
     public String updateItemState(UpdateItemStateRequest request) {
         return withAuth(token -> restClient
-            .post()
-            .uri(baseApiUrl + "item/_updateState")
-            .contentType(MediaType.APPLICATION_JSON)
-            .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token)
-            .body(request)
-            .retrieve()
-            .body(String.class));
+                .post()
+                .uri(baseApiUrl + "item/_updateState")
+                .contentType(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token)
+                .body(request)
+                .retrieve()
+                .body(String.class));
     }
 
     /**
@@ -208,23 +203,18 @@ public class ColecticaClient {
      * @return the matching item references, never {@code null} (empty when none)
      */
     public List<ItemReference> findRelatedDescriptions(
-        RelationshipDirection direction,
-        ItemReference target,
-        List<String> itemTypes
-    ) {
+            RelationshipDirection direction, ItemReference target, List<String> itemTypes) {
         String url = baseApiUrl + "_query/relationship/" + direction.urlSegment() + "/descriptions";
         RelationshipQuery query = new RelationshipQuery(
-            itemTypes,
-            new RelationshipQuery.TargetItem(target.agencyId(), target.identifier())
-        );
+                itemTypes, new RelationshipQuery.TargetItem(target.agencyId(), target.identifier()));
         ItemReference[] response = withAuth(token -> restClient
-            .post()
-            .uri(url)
-            .contentType(MediaType.APPLICATION_JSON)
-            .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token)
-            .body(query)
-            .retrieve()
-            .body(ItemReference[].class));
+                .post()
+                .uri(url)
+                .contentType(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token)
+                .body(query)
+                .retrieve()
+                .body(ItemReference[].class));
         return response == null ? List.of() : List.of(response);
     }
 
@@ -236,23 +226,18 @@ public class ColecticaClient {
      * already returns them.
      */
     public List<ColecticaItem> findRelatedItems(
-        RelationshipDirection direction,
-        ItemReference target,
-        List<String> itemTypes
-    ) {
+            RelationshipDirection direction, ItemReference target, List<String> itemTypes) {
         String url = baseApiUrl + "_query/relationship/" + direction.urlSegment() + "/descriptions";
         RelationshipQuery query = new RelationshipQuery(
-            itemTypes,
-            new RelationshipQuery.TargetItem(target.agencyId(), target.identifier())
-        );
+                itemTypes, new RelationshipQuery.TargetItem(target.agencyId(), target.identifier()));
         ColecticaItem[] response = withAuth(token -> restClient
-            .post()
-            .uri(url)
-            .contentType(MediaType.APPLICATION_JSON)
-            .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token)
-            .body(query)
-            .retrieve()
-            .body(ColecticaItem[].class));
+                .post()
+                .uri(url)
+                .contentType(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token)
+                .body(query)
+                .retrieve()
+                .body(ColecticaItem[].class));
         return response == null ? List.of() : List.of(response);
     }
 
@@ -277,7 +262,8 @@ public class ColecticaClient {
 
     private String currentToken() {
         return switch (credentials) {
-            case ColecticaCredentials.BearerToken bearer -> bearer.tokenSupplier().get();
+            case ColecticaCredentials.BearerToken bearer ->
+                bearer.tokenSupplier().get();
             case ColecticaCredentials.UserPassword userPassword -> {
                 String token = cachedToken;
                 if (token == null) {
@@ -293,18 +279,19 @@ public class ColecticaClient {
         switch (credentials) {
             case ColecticaCredentials.UserPassword ignored -> cachedToken = null;
             // Let the supplier drop its cached token so the retry re-queries a fresh one.
-            case ColecticaCredentials.BearerToken bearer -> bearer.onInvalidate().run();
+            case ColecticaCredentials.BearerToken bearer ->
+                bearer.onInvalidate().run();
         }
     }
 
     private String authenticate(String username, String password) {
         AuthenticationResponse response = restClient
-            .post()
-            .uri(baseServerUrl + "/token/createtoken")
-            .contentType(MediaType.APPLICATION_JSON)
-            .body(new AuthenticationRequest(username, password))
-            .retrieve()
-            .body(AuthenticationResponse.class);
+                .post()
+                .uri(baseServerUrl + "/token/createtoken")
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(new AuthenticationRequest(username, password))
+                .retrieve()
+                .body(AuthenticationResponse.class);
         if (response == null || response.accessToken() == null) {
             throw new RuntimeException("Authentication failed: unable to retrieve access token");
         }

@@ -1,6 +1,5 @@
 package fr.insee.rmes.modules.classifications.nomenclatures.model;
 
-
 import java.util.List;
 
 public class ClassificationItem {
@@ -16,9 +15,9 @@ public class ClassificationItem {
 
     public String altLabelLg2;
 
-    public List<ClassificationItemShortLabel>  altLabels;
+    public List<ClassificationItemShortLabel> altLabels;
 
-    public List<Narrower>  narrowers;
+    public List<Narrower> narrowers;
 
     public String broaderURI;
 

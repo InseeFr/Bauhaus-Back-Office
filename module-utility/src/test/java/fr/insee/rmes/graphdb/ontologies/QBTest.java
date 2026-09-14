@@ -1,9 +1,9 @@
 package fr.insee.rmes.graphdb.ontologies;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import org.eclipse.rdf4j.model.Namespace;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class QBTest {
 
@@ -28,7 +28,8 @@ class QBTest {
     @Test
     void shouldHaveValidDataStructureDefinition() {
         assertNotNull(QB.DATA_STRUCTURE_DEFINITION);
-        assertEquals("http://purl.org/linked-data/cube#DataStructureDefinition", QB.DATA_STRUCTURE_DEFINITION.toString());
+        assertEquals(
+                "http://purl.org/linked-data/cube#DataStructureDefinition", QB.DATA_STRUCTURE_DEFINITION.toString());
     }
 
     @Test
@@ -96,10 +97,9 @@ class QBTest {
         String[] uris = QB.getURIForComponent();
         assertNotNull(uris);
         assertEquals(3, uris.length);
-        
+
         assertTrue(uris[0].contains("MeasureProperty"));
         assertTrue(uris[1].contains("AttributeProperty"));
         assertTrue(uris[2].contains("DimensionProperty"));
     }
-
 }

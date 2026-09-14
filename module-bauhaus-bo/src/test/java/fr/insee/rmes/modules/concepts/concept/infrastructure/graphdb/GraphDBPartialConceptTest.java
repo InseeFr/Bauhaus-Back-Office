@@ -1,9 +1,9 @@
 package fr.insee.rmes.modules.concepts.concept.infrastructure.graphdb;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import fr.insee.rmes.modules.shared_kernel.domain.model.Lang;
 import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 class GraphDBPartialConceptTest {
 

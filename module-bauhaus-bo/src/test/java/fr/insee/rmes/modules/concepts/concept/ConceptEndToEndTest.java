@@ -1,5 +1,7 @@
 package fr.insee.rmes.modules.concepts.concept;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import fr.insee.rmes.json.JSONUtils;
 import fr.insee.rmes.testcontainers.WithGraphDBContainer;
 import org.json.JSONArray;
@@ -18,8 +20,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.web.client.RestClient;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -69,7 +69,8 @@ class ConceptEndToEndTest extends WithGraphDBContainer {
         registry.add("fr.insee.rmes.bauhaus.sesame.publication.sesameServer", () -> sesameServer);
         registry.add("fr.insee.rmes.bauhaus.sesame.publication.repository", () -> BAUHAUS_TEST_PUBLICATION_REPOSITORY);
         registry.add("fr.insee.rmes.bauhaus.sesame.publication.baseURI", () -> "http://id.insee.fr/");
-        container.withInitFolder("fr/insee/rmes/modules/concepts/concept")
+        container
+                .withInitFolder("fr/insee/rmes/modules/concepts/concept")
                 .withTrigFiles("concept-end-to-end-test.trig");
     }
 
@@ -83,11 +84,13 @@ class ConceptEndToEndTest extends WithGraphDBContainer {
     void not_found_when_concept_id_is_unknown() {
         RestClient restClient = RestClient.create();
 
-        restClient.get()
+        restClient
+                .get()
                 .uri(conceptsBaseUrl() + "/concept/c-does-not-exist")
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
-                .onStatus(status -> true,
+                .onStatus(
+                        status -> true,
                         (req, res) -> assertThat(res.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND))
                 .toBodilessEntity();
     }
@@ -98,7 +101,8 @@ class ConceptEndToEndTest extends WithGraphDBContainer {
     void create_then_get_concept_round_trips() {
         RestClient restClient = RestClient.create();
 
-        var createResponse = restClient.post()
+        var createResponse = restClient
+                .post()
                 .uri(conceptsBaseUrl() + "/concept")
                 .body(CREATE_CONCEPT_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -109,7 +113,8 @@ class ConceptEndToEndTest extends WithGraphDBContainer {
         String id = createResponse.getBody();
         assertThat(id).as("POST should return a generated id starting with 'c'").startsWith("c");
 
-        var fetched = restClient.get()
+        var fetched = restClient
+                .get()
                 .uri(conceptsBaseUrl() + "/concept/" + id)
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
@@ -134,7 +139,8 @@ class ConceptEndToEndTest extends WithGraphDBContainer {
     void update_existing_concept_returns_no_content() {
         RestClient restClient = RestClient.create();
 
-        String id = restClient.post()
+        String id = restClient
+                .post()
                 .uri(conceptsBaseUrl() + "/concept")
                 .body(CREATE_CONCEPT_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -142,7 +148,8 @@ class ConceptEndToEndTest extends WithGraphDBContainer {
                 .body(String.class);
         assertThat(id).isNotNull();
 
-        var updateResponse = restClient.put()
+        var updateResponse = restClient
+                .put()
                 .uri(conceptsBaseUrl() + "/concept/" + id)
                 .body(UPDATE_CONCEPT_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -157,14 +164,16 @@ class ConceptEndToEndTest extends WithGraphDBContainer {
     void to_validate_then_validate_workflow() {
         RestClient restClient = RestClient.create();
 
-        String id = restClient.post()
+        String id = restClient
+                .post()
                 .uri(conceptsBaseUrl() + "/concept")
                 .body(CREATE_CONCEPT_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
                 .retrieve()
                 .body(String.class);
 
-        var toValidateBefore = restClient.get()
+        var toValidateBefore = restClient
+                .get()
                 .uri(conceptsBaseUrl() + "/toValidate")
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
@@ -174,7 +183,8 @@ class ConceptEndToEndTest extends WithGraphDBContainer {
                 .as("toValidate list should contain freshly-created concept %s", id)
                 .isTrue();
 
-        var validateResponse = restClient.put()
+        var validateResponse = restClient
+                .put()
                 .uri(conceptsBaseUrl() + "/" + id + "/validate")
                 .body("[\"%s\"]".formatted(id))
                 .contentType(MediaType.APPLICATION_JSON)
@@ -182,7 +192,8 @@ class ConceptEndToEndTest extends WithGraphDBContainer {
                 .toBodilessEntity();
         assertThat(validateResponse.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
 
-        var toValidateAfter = restClient.get()
+        var toValidateAfter = restClient
+                .get()
                 .uri(conceptsBaseUrl() + "/toValidate")
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
@@ -198,14 +209,16 @@ class ConceptEndToEndTest extends WithGraphDBContainer {
     void list_all_concepts_contains_created_one() {
         RestClient restClient = RestClient.create();
 
-        String id = restClient.post()
+        String id = restClient
+                .post()
                 .uri(conceptsBaseUrl() + "/concept")
                 .body(CREATE_CONCEPT_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
                 .retrieve()
                 .body(String.class);
 
-        var listing = restClient.get()
+        var listing = restClient
+                .get()
                 .uri(conceptsBaseUrl())
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
@@ -220,14 +233,16 @@ class ConceptEndToEndTest extends WithGraphDBContainer {
     void advanced_search_contains_created_one() {
         RestClient restClient = RestClient.create();
 
-        String id = restClient.post()
+        String id = restClient
+                .post()
                 .uri(conceptsBaseUrl() + "/concept")
                 .body(CREATE_CONCEPT_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
                 .retrieve()
                 .body(String.class);
 
-        var listing = restClient.get()
+        var listing = restClient
+                .get()
                 .uri(conceptsBaseUrl() + "/advanced-search")
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
@@ -258,14 +273,16 @@ class ConceptEndToEndTest extends WithGraphDBContainer {
                 }
                 """.formatted(CREATOR, CONTRIBUTOR, DISSEMINATION_STATUS_PRIVE);
 
-        String id = restClient.post()
+        String id = restClient
+                .post()
                 .uri(conceptsBaseUrl() + "/concept")
                 .body(conceptWithAltLabelJson)
                 .contentType(MediaType.APPLICATION_JSON)
                 .retrieve()
                 .body(String.class);
 
-        var listing = restClient.get()
+        var listing = restClient
+                .get()
                 .uri(conceptsBaseUrl() + "/advanced-search")
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
@@ -300,14 +317,16 @@ class ConceptEndToEndTest extends WithGraphDBContainer {
                 }
                 """.formatted(CREATOR, CONTRIBUTOR, DISSEMINATION_STATUS_PRIVE);
 
-        String id = restClient.post()
+        String id = restClient
+                .post()
                 .uri(conceptsBaseUrl() + "/concept")
                 .body(conceptWithAltLabelJson)
                 .contentType(MediaType.APPLICATION_JSON)
                 .retrieve()
                 .body(String.class);
 
-        var listing = restClient.get()
+        var listing = restClient
+                .get()
                 .uri(conceptsBaseUrl())
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
@@ -328,14 +347,16 @@ class ConceptEndToEndTest extends WithGraphDBContainer {
     void links_endpoint_returns_empty_array_for_isolated_concept() {
         RestClient restClient = RestClient.create();
 
-        String id = restClient.post()
+        String id = restClient
+                .post()
                 .uri(conceptsBaseUrl() + "/concept")
                 .body(CREATE_CONCEPT_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
                 .retrieve()
                 .body(String.class);
 
-        var links = restClient.get()
+        var links = restClient
+                .get()
                 .uri(conceptsBaseUrl() + "/concept/" + id + "/links")
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
@@ -351,14 +372,16 @@ class ConceptEndToEndTest extends WithGraphDBContainer {
     void export_concept_returns_attachment() {
         RestClient restClient = RestClient.create();
 
-        String id = restClient.post()
+        String id = restClient
+                .post()
                 .uri(conceptsBaseUrl() + "/concept")
                 .body(CREATE_CONCEPT_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
                 .retrieve()
                 .body(String.class);
 
-        var exportResponse = restClient.get()
+        var exportResponse = restClient
+                .get()
                 .uri(conceptsBaseUrl() + "/concept/export/" + id)
                 .accept(MediaType.APPLICATION_OCTET_STREAM)
                 .retrieve()
@@ -380,14 +403,17 @@ class ConceptEndToEndTest extends WithGraphDBContainer {
     void post_concept_with_malformed_body_fails() {
         RestClient restClient = RestClient.create();
 
-        restClient.post()
+        restClient
+                .post()
                 .uri(conceptsBaseUrl() + "/concept")
                 .body("{ not valid json")
                 .contentType(MediaType.APPLICATION_JSON)
                 .retrieve()
-                .onStatus(status -> true, (req, res) -> assertThat(res.getStatusCode().is2xxSuccessful())
-                        .as("malformed JSON must NOT yield a 2xx response")
-                        .isFalse())
+                .onStatus(
+                        status -> true,
+                        (req, res) -> assertThat(res.getStatusCode().is2xxSuccessful())
+                                .as("malformed JSON must NOT yield a 2xx response")
+                                .isFalse())
                 .toBodilessEntity();
     }
 
@@ -397,24 +423,25 @@ class ConceptEndToEndTest extends WithGraphDBContainer {
     void delete_isolated_concept_then_get_returns_404() {
         RestClient restClient = RestClient.create();
 
-        String id = restClient.post()
+        String id = restClient
+                .post()
                 .uri(conceptsBaseUrl() + "/concept")
                 .body(CREATE_CONCEPT_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
                 .retrieve()
                 .body(String.class);
 
-        var deleteResponse = restClient.delete()
-                .uri(conceptsBaseUrl() + "/" + id)
-                .retrieve()
-                .toBodilessEntity();
+        var deleteResponse =
+                restClient.delete().uri(conceptsBaseUrl() + "/" + id).retrieve().toBodilessEntity();
         assertThat(deleteResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
 
-        restClient.get()
+        restClient
+                .get()
                 .uri(conceptsBaseUrl() + "/concept/" + id)
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
-                .onStatus(status -> true,
+                .onStatus(
+                        status -> true,
                         (req, res) -> assertThat(res.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND))
                 .toBodilessEntity();
     }

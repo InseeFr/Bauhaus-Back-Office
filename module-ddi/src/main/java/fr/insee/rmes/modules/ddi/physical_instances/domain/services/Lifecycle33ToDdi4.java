@@ -4,25 +4,26 @@ import fr.insee.ddi.lifecycle33.group.GroupType;
 import fr.insee.ddi.lifecycle33.instance.FragmentDocument;
 import fr.insee.ddi.lifecycle33.logicalproduct.BaseLogicalProductType;
 import fr.insee.ddi.lifecycle33.logicalproduct.CategorySchemeType;
-import fr.insee.ddi.lifecycle33.logicalproduct.LogicalProductType;
 import fr.insee.ddi.lifecycle33.logicalproduct.CategoryType;
 import fr.insee.ddi.lifecycle33.logicalproduct.CodeListSchemeType;
-import fr.insee.ddi.lifecycle33.logicalproduct.VariableSchemeType;
 import fr.insee.ddi.lifecycle33.logicalproduct.CodeListType;
 import fr.insee.ddi.lifecycle33.logicalproduct.CodeType;
 import fr.insee.ddi.lifecycle33.logicalproduct.DataRelationshipType;
 import fr.insee.ddi.lifecycle33.logicalproduct.LevelType;
+import fr.insee.ddi.lifecycle33.logicalproduct.LogicalProductType;
 import fr.insee.ddi.lifecycle33.logicalproduct.LogicalRecordType;
 import fr.insee.ddi.lifecycle33.logicalproduct.VariableRepresentationType;
+import fr.insee.ddi.lifecycle33.logicalproduct.VariableSchemeType;
 import fr.insee.ddi.lifecycle33.logicalproduct.VariableType;
 import fr.insee.ddi.lifecycle33.logicalproduct.VariablesInRecordType;
 import fr.insee.ddi.lifecycle33.physicalinstance.PhysicalInstanceType;
-import fr.insee.ddi.lifecycle33.studyunit.StudyUnitType;
+import fr.insee.ddi.lifecycle33.reusable.AbstractVersionableType;
 import fr.insee.ddi.lifecycle33.reusable.BasedOnObjectType;
 import fr.insee.ddi.lifecycle33.reusable.CitationType;
 import fr.insee.ddi.lifecycle33.reusable.CodeRepresentationBaseType;
 import fr.insee.ddi.lifecycle33.reusable.ContentType;
 import fr.insee.ddi.lifecycle33.reusable.DateTimeRepresentationBaseType;
+import fr.insee.ddi.lifecycle33.reusable.InternationalStringType;
 import fr.insee.ddi.lifecycle33.reusable.LabelType;
 import fr.insee.ddi.lifecycle33.reusable.ManagedMissingValuesRepresentationType;
 import fr.insee.ddi.lifecycle33.reusable.NameType;
@@ -36,16 +37,15 @@ import fr.insee.ddi.lifecycle33.reusable.StructuredStringType;
 import fr.insee.ddi.lifecycle33.reusable.TextRepresentationBaseType;
 import fr.insee.ddi.lifecycle33.reusable.TypeOfObjectType;
 import fr.insee.ddi.lifecycle33.reusable.UserIDType;
+import fr.insee.ddi.lifecycle33.studyunit.StudyUnitType;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.BasedOnObject;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Citation;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CogsDate;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Code;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeRepresentation;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CogsDate;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.DateTimeRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Category;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CategoryScheme;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4VariableScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4DataRelationship;
@@ -56,6 +56,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedRepr
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4PhysicalInstance;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Variable;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4VariableScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LangString;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LangStrings;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Level;
@@ -63,21 +64,26 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LogicalRecord;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.NumberRange;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.NumericRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.RangeValue;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.TextRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.ValueType;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.VariableRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.VariablesInRecord;
+import java.util.ArrayList;
+import java.util.List;
+import javax.xml.namespace.QName;
 import org.apache.xmlbeans.QNameSet;
 import org.apache.xmlbeans.XmlCursor;
 import org.apache.xmlbeans.XmlObject;
 
-import javax.xml.namespace.QName;
-import java.util.ArrayList;
-import java.util.List;
-
 public class Lifecycle33ToDdi4 {
 
     private static final String DDI_REUSABLE_NS = "ddi:reusable:3_3";
+
+    /** {@code r:VersionResponsibility} de l'item, absent des fragments écrits avant sa prise en charge. */
+    private static String readVersionResponsibility(AbstractVersionableType item) {
+        return item.isSetVersionResponsibility() ? item.getVersionResponsibility() : null;
+    }
 
     public Ddi4PhysicalInstance toPhysicalInstance(FragmentDocument doc) {
         PhysicalInstanceType pi = doc.getFragment().getPhysicalInstance();
@@ -93,8 +99,8 @@ public class Lifecycle33ToDdi4 {
                 pi.getVersionArray(0),
                 readBasedOnObject(pi.isSetBasedOnObject() ? pi.getBasedOnObject() : null),
                 readCitation(pi.getCitation()),
-                readDataRelationshipReferences(pi.getDataRelationshipReferenceArray())
-        );
+                readDataRelationshipReferences(pi.getDataRelationshipReferenceArray()),
+                readVersionResponsibility(pi));
     }
 
     public Ddi4DataRelationship toDataRelationship(FragmentDocument doc) {
@@ -112,10 +118,9 @@ public class Lifecycle33ToDdi4 {
                 readBasedOnObject(dr.isSetBasedOnObject() ? dr.getBasedOnObject() : null),
                 readLabelOrName(
                         dr.sizeOfLabelArray() > 0 ? dr.getLabelArray(0) : null,
-                        dr.sizeOfDataRelationshipNameArray() > 0
-                                ? dr.getDataRelationshipNameArray(0) : null),
-                readLogicalRecords(dr.getLogicalRecordArray())
-        );
+                        dr.sizeOfDataRelationshipNameArray() > 0 ? dr.getDataRelationshipNameArray(0) : null),
+                readLogicalRecords(dr.getLogicalRecordArray()),
+                readVersionResponsibility(dr));
     }
 
     public Ddi4Variable toVariable(FragmentDocument doc) {
@@ -131,15 +136,12 @@ public class Lifecycle33ToDdi4 {
                 var.getIDArray(0).getStringValue(),
                 var.getVersionArray(0),
                 readBasedOnObject(var.isSetBasedOnObject() ? var.getBasedOnObject() : null),
-                var.sizeOfVariableNameArray() > 0
-                        ? readName(var.getVariableNameArray(0)) : null,
-                var.sizeOfLabelArray() > 0
-                        ? readLabel(var.getLabelArray(0)) : null,
-                var.isSetDescription()
-                        ? readStructuredString(var.getDescription()) : null,
+                var.sizeOfVariableNameArray() > 0 ? readName(var.getVariableNameArray(0)) : null,
+                var.sizeOfLabelArray() > 0 ? readLabel(var.getLabelArray(0)) : null,
+                var.isSetDescription() ? readStructuredString(var.getDescription()) : null,
                 readVariableRepresentation(var.getVariableRepresentation()),
-                var.isSetIsGeographic() ? var.getIsGeographic() : null
-        );
+                var.isSetIsGeographic() ? var.getIsGeographic() : null,
+                readVersionResponsibility(var));
     }
 
     public Ddi4CodeList toCodeList(FragmentDocument doc) {
@@ -169,8 +171,8 @@ public class Lifecycle33ToDdi4 {
                 readBasedOnObject(cl.getBasedOnObject()),
                 cl.sizeOfLabelArray() > 0 ? readLabel(cl.getLabelArray(0)) : null,
                 levels.isEmpty() ? null : levels,
-                codes.isEmpty() ? null : codes
-        );
+                codes.isEmpty() ? null : codes,
+                readVersionResponsibility(cl));
     }
 
     private Code toCode(CodeType c) {
@@ -206,8 +208,7 @@ public class Lifecycle33ToDdi4 {
                 scheme.getIDArray(0).getStringValue(),
                 scheme.getVersionArray(0),
                 scheme.sizeOfLabelArray() > 0 ? readLabel(scheme.getLabelArray(0)) : null,
-                codeListReferences.isEmpty() ? null : codeListReferences
-        );
+                codeListReferences.isEmpty() ? null : codeListReferences);
     }
 
     /**
@@ -218,13 +219,14 @@ public class Lifecycle33ToDdi4 {
      * erroné (partagé avec la propriété in-line {@code ManagedRepresentation}) et ne matche aucun de
      * ces éléments — d'où la sélection manuelle par QName.
      */
-    private static final QNameSet MANAGED_REPRESENTATION_REFERENCE_QNAMES = QNameSet.forArray(new QName[]{
-            new QName(DDI_REUSABLE_NS, "ManagedRepresentationReference"),
-            new QName(DDI_REUSABLE_NS, "ManagedTextRepresentationReference"),
-            new QName(DDI_REUSABLE_NS, "ManagedNumericRepresentationReference"),
-            new QName(DDI_REUSABLE_NS, "ManagedDateTimeRepresentationReference"),
-            new QName(DDI_REUSABLE_NS, "ManagedScaleRepresentationReference"),
-            new QName(DDI_REUSABLE_NS, "ManagedMissingValuesRepresentationReference")});
+    private static final QNameSet MANAGED_REPRESENTATION_REFERENCE_QNAMES = QNameSet.forArray(new QName[] {
+        new QName(DDI_REUSABLE_NS, "ManagedRepresentationReference"),
+        new QName(DDI_REUSABLE_NS, "ManagedTextRepresentationReference"),
+        new QName(DDI_REUSABLE_NS, "ManagedNumericRepresentationReference"),
+        new QName(DDI_REUSABLE_NS, "ManagedDateTimeRepresentationReference"),
+        new QName(DDI_REUSABLE_NS, "ManagedScaleRepresentationReference"),
+        new QName(DDI_REUSABLE_NS, "ManagedMissingValuesRepresentationReference")
+    });
 
     public Ddi4ManagedRepresentationScheme toManagedRepresentationScheme(FragmentDocument doc) {
         var scheme = doc.getFragment().getManagedRepresentationScheme();
@@ -243,35 +245,32 @@ public class Lifecycle33ToDdi4 {
                 scheme.getIDArray(0).getStringValue(),
                 scheme.getVersionArray(0),
                 scheme.sizeOfLabelArray() > 0 ? readLabel(scheme.getLabelArray(0)) : null,
-                managedRepresentationReferences.isEmpty() ? null : managedRepresentationReferences
-        );
+                managedRepresentationReferences.isEmpty() ? null : managedRepresentationReferences);
     }
 
     public Ddi4ManagedMissingValuesRepresentation toManagedMissingValuesRepresentation(FragmentDocument doc) {
-        ManagedMissingValuesRepresentationType mmvr =
-                doc.getFragment().getManagedMissingValuesRepresentation();
+        ManagedMissingValuesRepresentationType mmvr = doc.getFragment().getManagedMissingValuesRepresentation();
         if (mmvr == null) {
-            throw new IllegalArgumentException(
-                    "Fragment does not contain a ManagedMissingValuesRepresentation");
+            throw new IllegalArgumentException("Fragment does not contain a ManagedMissingValuesRepresentation");
         }
         List<CodeRepresentation> missingCodeRepresentations = new ArrayList<>();
         for (CodeRepresentationBaseType rep : mmvr.getMissingCodeRepresentationArray()) {
-            Reference clRef = rep.isSetCodeListReference()
-                    ? readReference(rep.getCodeListReference())
-                    : null;
+            Reference clRef = rep.isSetCodeListReference() ? readReference(rep.getCodeListReference()) : null;
             missingCodeRepresentations.add(
                     new CodeRepresentation(CodeRepresentation.TYPE, rep.getBlankIsMissingValue(), clRef));
         }
         return new Ddi4ManagedMissingValuesRepresentation(
                 Ddi4ManagedMissingValuesRepresentation.TYPE,
-                mmvr.isSetVersionDate() ? CogsDate.ofDateTime(mmvr.xgetVersionDate().getStringValue()) : null,
+                mmvr.isSetVersionDate()
+                        ? CogsDate.ofDateTime(mmvr.xgetVersionDate().getStringValue())
+                        : null,
                 mmvr.getURNArray(0).getStringValue(),
                 mmvr.getAgencyArray(0),
                 mmvr.getIDArray(0).getStringValue(),
                 mmvr.getVersionArray(0),
                 mmvr.sizeOfLabelArray() > 0 ? readLabel(mmvr.getLabelArray(0)) : null,
-                missingCodeRepresentations.isEmpty() ? null : missingCodeRepresentations
-        );
+                missingCodeRepresentations.isEmpty() ? null : missingCodeRepresentations,
+                readVersionResponsibility(mmvr));
     }
 
     public Ddi4CategoryScheme toCategoryScheme(FragmentDocument doc) {
@@ -291,8 +290,7 @@ public class Lifecycle33ToDdi4 {
                 scheme.getIDArray(0).getStringValue(),
                 scheme.getVersionArray(0),
                 scheme.sizeOfLabelArray() > 0 ? readLabel(scheme.getLabelArray(0)) : null,
-                categoryReferences.isEmpty() ? null : categoryReferences
-        );
+                categoryReferences.isEmpty() ? null : categoryReferences);
     }
 
     public Ddi4VariableScheme toVariableScheme(FragmentDocument doc) {
@@ -312,8 +310,7 @@ public class Lifecycle33ToDdi4 {
                 scheme.getIDArray(0).getStringValue(),
                 scheme.getVersionArray(0),
                 scheme.sizeOfLabelArray() > 0 ? readLabel(scheme.getLabelArray(0)) : null,
-                variableReferences.isEmpty() ? null : variableReferences
-        );
+                variableReferences.isEmpty() ? null : variableReferences);
     }
 
     /**
@@ -339,8 +336,7 @@ public class Lifecycle33ToDdi4 {
                 readSchemeReferences(lp.getCodeListSchemeReferenceArray()),
                 readSchemeReferences(lp.getCategorySchemeReferenceArray()),
                 readSchemeReferences(lp.getVariableSchemeReferenceArray()),
-                readSchemeReferences(lp.getManagedRepresentationSchemeReferenceArray())
-        );
+                readSchemeReferences(lp.getManagedRepresentationSchemeReferenceArray()));
     }
 
     private static List<Reference> readSchemeReferences(ReferenceType[] refs) {
@@ -364,8 +360,8 @@ public class Lifecycle33ToDdi4 {
                 cat.getIDArray(0).getStringValue(),
                 cat.getVersionArray(0),
                 readBasedOnObject(cat.getBasedOnObject()),
-                cat.sizeOfLabelArray() > 0 ? readLabel(cat.getLabelArray(0)) : null
-        );
+                cat.sizeOfLabelArray() > 0 ? readLabel(cat.getLabelArray(0)) : null,
+                readVersionResponsibility(cat));
     }
 
     public Ddi4Group toGroup(FragmentDocument doc) {
@@ -388,12 +384,11 @@ public class Lifecycle33ToDdi4 {
                 group.getAgencyArray(0),
                 group.getIDArray(0).getStringValue(),
                 group.getVersionArray(0),
-                null,
+                readVersionResponsibility(group),
                 readCitation(group.getCitation()),
                 suRefs,
                 seriesIris.isEmpty() ? null : seriesIris,
-                group.getTypeOfGroup() != null ? group.getTypeOfGroup().getStringValue() : null
-        );
+                group.getTypeOfGroup() != null ? group.getTypeOfGroup().getStringValue() : null);
     }
 
     public Ddi4StudyUnit toStudyUnit(FragmentDocument doc) {
@@ -401,8 +396,7 @@ public class Lifecycle33ToDdi4 {
         if (su == null) {
             throw new IllegalArgumentException("Fragment does not contain a StudyUnit");
         }
-        String operationIri = su.sizeOfUserIDArray() > 0
-                ? su.getUserIDArray(0).getStringValue() : null;
+        String operationIri = su.sizeOfUserIDArray() > 0 ? su.getUserIDArray(0).getStringValue() : null;
         List<Reference> piRefs = new ArrayList<>();
         for (ReferenceType ref : su.getPhysicalInstanceReferenceArray()) {
             piRefs.add(readReference(ref));
@@ -416,8 +410,9 @@ public class Lifecycle33ToDdi4 {
                 su.getVersionArray(0),
                 readCitation(su.getCitation()),
                 operationIri,
-                piRefs.isEmpty() ? null : piRefs
-        );
+                piRefs.isEmpty() ? null : piRefs,
+                null,
+                readVersionResponsibility(su));
     }
 
     private static BasedOnObject readBasedOnObject(BasedOnObjectType source) {
@@ -445,17 +440,19 @@ public class Lifecycle33ToDdi4 {
 
     private static VariableRepresentation readVariableRepresentation(VariableRepresentationType vr) {
         if (vr == null) return null;
+        /* Une VariableRepresentation peut ne porter aucune ValueRepresentation : chaque lecteur
+        rend alors null, comme le nom local de l'élément qui les départage. */
         RepresentationType rep = vr.isSetValueRepresentation() ? vr.getValueRepresentation() : null;
         String repName = elementLocalName(rep);
         return new VariableRepresentation(
                 vr.isSetVariableRole() && vr.getVariableRole() != null
-                        ? vr.getVariableRole().getStringValue() : null,
+                        ? vr.getVariableRole().getStringValue()
+                        : null,
                 "CodeRepresentation".equals(repName) ? readCodeRepresentation(rep) : null,
                 "NumericRepresentation".equals(repName) ? readNumericRepresentation(rep) : null,
                 "DateTimeRepresentation".equals(repName) ? readDateTimeRepresentation(rep) : null,
                 "TextRepresentation".equals(repName) ? readTextRepresentation(rep) : null,
-                vr.isSetMissingValuesReference() ? readReference(vr.getMissingValuesReference()) : null
-        );
+                vr.isSetMissingValuesReference() ? readReference(vr.getMissingValuesReference()) : null);
     }
 
     private static String elementLocalName(RepresentationType rep) {
@@ -466,11 +463,10 @@ public class Lifecycle33ToDdi4 {
     }
 
     private static CodeRepresentation readCodeRepresentation(RepresentationType rep) {
+        if (rep == null) return null;
         CodeRepresentationBaseType codeRep =
                 (CodeRepresentationBaseType) rep.changeType(CodeRepresentationBaseType.type);
-        Reference clRef = codeRep.isSetCodeListReference()
-                ? readReference(codeRep.getCodeListReference())
-                : null;
+        Reference clRef = codeRep.isSetCodeListReference() ? readReference(codeRep.getCodeListReference()) : null;
         return new CodeRepresentation(CodeRepresentation.TYPE, codeRep.getBlankIsMissingValue(), clRef);
     }
 
@@ -484,6 +480,7 @@ public class Lifecycle33ToDdi4 {
     }
 
     private static NumericRepresentation readNumericRepresentation(RepresentationType rep) {
+        if (rep == null) return null;
         NumericRepresentationBaseType numRep =
                 (NumericRepresentationBaseType) rep.changeType(NumericRepresentationBaseType.type);
         NumberRange numberRange = null;
@@ -494,8 +491,9 @@ public class Lifecycle33ToDdi4 {
             numberRange = new NumberRange(low, high);
         }
         String typeCode = numRep.isSetNumericTypeCode() && numRep.getNumericTypeCode() != null
-                ? numRep.getNumericTypeCode().getStringValue() : null;
-        return new NumericRepresentation(NumericRepresentation.TYPE,typeCode, numberRange);
+                ? numRep.getNumericTypeCode().getStringValue()
+                : null;
+        return new NumericRepresentation(NumericRepresentation.TYPE, typeCode, numberRange);
     }
 
     private static RangeValue toRangeValue(NumberRangeValueType v) {
@@ -505,23 +503,28 @@ public class Lifecycle33ToDdi4 {
     }
 
     private static DateTimeRepresentation readDateTimeRepresentation(RepresentationType rep) {
+        if (rep == null) return null;
         DateTimeRepresentationBaseType dt =
                 (DateTimeRepresentationBaseType) rep.changeType(DateTimeRepresentationBaseType.type);
         String typeCode = dt.getDateTypeCode() != null ? dt.getDateTypeCode().getStringValue() : null;
         String format = dt.isSetDateFieldFormat() && dt.getDateFieldFormat() != null
-                ? dt.getDateFieldFormat().getStringValue() : null;
-        return new DateTimeRepresentation(DateTimeRepresentation.TYPE,typeCode, format);
+                ? dt.getDateFieldFormat().getStringValue()
+                : null;
+        return new DateTimeRepresentation(DateTimeRepresentation.TYPE, typeCode, format);
     }
 
     private static TextRepresentation readTextRepresentation(RepresentationType rep) {
-        TextRepresentationBaseType txt =
-                (TextRepresentationBaseType) rep.changeType(TextRepresentationBaseType.type);
+        if (rep == null) return null;
+        TextRepresentationBaseType txt = (TextRepresentationBaseType) rep.changeType(TextRepresentationBaseType.type);
         Integer minLength = txt.isSetMinLength() && txt.getMinLength() != null
-                ? txt.getMinLength().intValueExact() : null;
+                ? txt.getMinLength().intValueExact()
+                : null;
         Integer maxLength = txt.isSetMaxLength() && txt.getMaxLength() != null
-                ? txt.getMaxLength().intValueExact() : null;
+                ? txt.getMaxLength().intValueExact()
+                : null;
         String regExp = txt.isSetRegExp() ? txt.getRegExp() : null;
-        return new TextRepresentation(TextRepresentation.TYPE, maxLength, minLength, regExp, txt.getBlankIsMissingValue());
+        return new TextRepresentation(
+                TextRepresentation.TYPE, maxLength, minLength, regExp, txt.getBlankIsMissingValue());
     }
 
     private static List<LangString> readStructuredString(StructuredStringType struct) {
@@ -543,10 +546,8 @@ public class Lifecycle33ToDdi4 {
                 lr.getVersionArray(0),
                 readLabelOrName(
                         lr.sizeOfLabelArray() > 0 ? lr.getLabelArray(0) : null,
-                        lr.sizeOfLogicalRecordNameArray() > 0
-                                ? lr.getLogicalRecordNameArray(0) : null),
-                readVariablesInRecord(lr.getVariablesInRecord())
-        );
+                        lr.sizeOfLogicalRecordNameArray() > 0 ? lr.getLogicalRecordNameArray(0) : null),
+                readVariablesInRecord(lr.getVariablesInRecord()));
     }
 
     private static List<LogicalRecord> readLogicalRecords(LogicalRecordType[] lrs) {
@@ -595,12 +596,26 @@ public class Lifecycle33ToDdi4 {
         }
     }
 
+    /**
+     * Titre et titres alternatifs, chacun dans toutes ses langues. Un item relu ici peut être
+     * réenregistré tel quel ({@code RegisterOrReplace} à version égale) : ce que cette lecture
+     * laisse tomber est effacé de l'item à la réécriture.
+     */
     private static Citation readCitation(CitationType citation) {
-        if (citation == null || !citation.isSetTitle()) return null;
+        if (citation == null) return null;
         List<LangString> titles = new ArrayList<>();
-        for (StringType s : citation.getTitle().getStringList()) {
-            titles.add(new LangString(s.getLang(), s.getStringValue()));
+        if (citation.isSetTitle()) {
+            for (StringType s : citation.getTitle().getStringList()) {
+                titles.add(new LangString(s.getLang(), s.getStringValue()));
+            }
         }
-        return titles.isEmpty() ? null : new Citation(titles);
+        List<LangString> alternateTitles = new ArrayList<>();
+        for (InternationalStringType alternateTitle : citation.getAlternateTitleList()) {
+            for (StringType s : alternateTitle.getStringList()) {
+                alternateTitles.add(new LangString(s.getLang(), s.getStringValue()));
+            }
+        }
+        if (titles.isEmpty() && alternateTitles.isEmpty()) return null;
+        return new Citation(titles.isEmpty() ? null : titles, alternateTitles.isEmpty() ? null : alternateTitles);
     }
 }

@@ -1,31 +1,32 @@
 package fr.insee.rmes;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 @SpringBootTest(classes = GraphsProperties.class)
-@TestPropertySource(properties = {
-        "fr.insee.rmes.bauhaus.baseGraph=http://test.graph/",
-        "fr.insee.rmes.bauhaus.concepts.graph=concepts",
-        "fr.insee.rmes.bauhaus.classifications.families.graph=classif/families",
-        "fr.insee.rmes.bauhaus.operations.graph=operations",
-        "fr.insee.rmes.bauhaus.documentations.graph=docs",
-        "fr.insee.rmes.bauhaus.documentations.msd.graph=msd",
-        "fr.insee.rmes.bauhaus.documentations.concepts.graph=msd-concepts",
-        "fr.insee.rmes.bauhaus.documentation.geographie.graph=geo-docs",
-        "fr.insee.rmes.bauhaus.documents.graph=documents",
-        "fr.insee.rmes.bauhaus.products.graph=products",
-        "fr.insee.rmes.bauhaus.structures.graph=structures",
-        "fr.insee.rmes.bauhaus.structures.components.graph=components",
-        "fr.insee.rmes.bauhaus.codelists.graph=codelists",
-        "fr.insee.rmes.bauhaus.organisations.graph=orgs",
-        "fr.insee.rmes.bauhaus.insee.graph=orgs/insee",
-        "fr.insee.rmes.bauhaus.geographie.graph=geo"
-})
+@TestPropertySource(
+        properties = {
+            "fr.insee.rmes.bauhaus.baseGraph=http://test.graph/",
+            "fr.insee.rmes.bauhaus.concepts.graph=concepts",
+            "fr.insee.rmes.bauhaus.classifications.families.graph=classif/families",
+            "fr.insee.rmes.bauhaus.operations.graph=operations",
+            "fr.insee.rmes.bauhaus.documentations.graph=docs",
+            "fr.insee.rmes.bauhaus.documentations.msd.graph=msd",
+            "fr.insee.rmes.bauhaus.documentations.concepts.graph=msd-concepts",
+            "fr.insee.rmes.bauhaus.documentation.geographie.graph=geo-docs",
+            "fr.insee.rmes.bauhaus.documents.graph=documents",
+            "fr.insee.rmes.bauhaus.products.graph=products",
+            "fr.insee.rmes.bauhaus.structures.graph=structures",
+            "fr.insee.rmes.bauhaus.structures.components.graph=components",
+            "fr.insee.rmes.bauhaus.codelists.graph=codelists",
+            "fr.insee.rmes.bauhaus.organisations.graph=orgs",
+            "fr.insee.rmes.bauhaus.insee.graph=orgs/insee",
+            "fr.insee.rmes.bauhaus.geographie.graph=geo"
+        })
 class GraphsPropertiesTest {
 
     @Autowired

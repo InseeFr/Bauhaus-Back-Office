@@ -1,5 +1,7 @@
 package fr.insee.rmes.modules;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.tngtech.archunit.core.domain.JavaClass;
 import com.tngtech.archunit.core.domain.JavaClasses;
 import com.tngtech.archunit.core.domain.JavaField;
@@ -8,8 +10,6 @@ import com.tngtech.archunit.core.importer.ClassFileImporter;
 import com.tngtech.archunit.core.importer.ImportOption;
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.library.freeze.FreezingArchRule;
-import org.junit.jupiter.api.Test;
-
 import java.io.IOException;
 import java.io.Reader;
 import java.lang.reflect.Field;
@@ -20,8 +20,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.Test;
 
 /**
  * Garde-fou sur le contenu de {@code archunit_store}.
@@ -42,13 +41,10 @@ class ArchUnitStoreTest {
         Set<String> obsolete = new TreeSet<>(storedRules().stringPropertyNames());
         obsolete.removeAll(declaredFrozenRuleDescriptions());
 
-        assertThat(obsolete)
-                .describedAs("""
+        assertThat(obsolete).describedAs("""
                         Ces règles sont encore dans %s/%s alors qu'aucune règle gelée du code ne porte \
                         cette description (règle renommée, reformulée ou supprimée). Supprimer la ligne \
-                        correspondante de stored.rules ainsi que le fichier de violations associé.""",
-                        STORE, STORED_RULES_FILE)
-                .isEmpty();
+                        correspondante de stored.rules ainsi que le fichier de violations associé.""", STORE, STORED_RULES_FILE).isEmpty();
     }
 
     @Test
@@ -67,7 +63,8 @@ class ArchUnitStoreTest {
         }
 
         assertThat(orphans)
-                .describedAs("Fichiers de violations orphelins dans %s : plus référencés par %s, à supprimer",
+                .describedAs(
+                        "Fichiers de violations orphelins dans %s : plus référencés par %s, à supprimer",
                         STORE, STORED_RULES_FILE)
                 .isEmpty();
     }
@@ -111,8 +108,8 @@ class ArchUnitStoreTest {
             reflectedField.setAccessible(true);
             return reflectedField.get(null);
         } catch (ReflectiveOperationException e) {
-            throw new IllegalStateException("Impossible de lire la règle " + testClass.getName() + "." + field.getName(), e);
+            throw new IllegalStateException(
+                    "Impossible de lire la règle " + testClass.getName() + "." + field.getName(), e);
         }
     }
-
 }

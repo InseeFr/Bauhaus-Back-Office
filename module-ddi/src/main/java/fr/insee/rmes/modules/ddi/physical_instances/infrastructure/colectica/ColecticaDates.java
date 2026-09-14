@@ -16,8 +16,7 @@ final class ColecticaDates {
 
     private static final String COLECTICA_PATTERN = "yyyy-MM-dd'T'HH:mm:ss";
 
-    private ColecticaDates() {
-    }
+    private ColecticaDates() {}
 
     /**
      * Parse un instant Colectica {@code yyyy-MM-dd'T'HH:mm:ss} en UTC. Une éventuelle fraction de

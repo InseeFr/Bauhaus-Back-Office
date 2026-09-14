@@ -1,5 +1,7 @@
 package fr.insee.rmes.testcontainers.e2e.operations;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import fr.insee.rmes.testcontainers.e2e.BaseE2ETest;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
@@ -11,8 +13,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * End-to-end test for the organisation-aware validation on POST /api/operations/series.
@@ -74,11 +74,7 @@ class SeriesValidatorIntegrationTest extends BaseE2ETest {
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<String> entity = new HttpEntity<>(body, headers);
         return restTemplate.exchange(
-                "http://localhost:" + port + "/api/operations/series",
-                HttpMethod.POST,
-                entity,
-                String.class
-        );
+                "http://localhost:" + port + "/api/operations/series", HttpMethod.POST, entity, String.class);
     }
 
     private static String buildSeriesJson(String label, String creatorIri) {

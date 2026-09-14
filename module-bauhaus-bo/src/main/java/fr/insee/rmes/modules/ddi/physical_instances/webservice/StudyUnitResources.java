@@ -6,6 +6,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialStudyUni
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.StudyUnitService;
 import fr.insee.rmes.modules.users.domain.model.RBAC;
 import fr.insee.rmes.modules.users.webservice.HasAccess;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
@@ -16,16 +17,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-
 /**
  * REST controller for DDI StudyUnit operations.
  */
 @RestController
-@RequestMapping(
-        value = "/ddi/study-units",
-        produces = MediaType.APPLICATION_JSON_VALUE
-)
+@RequestMapping(value = "/ddi/study-units", produces = MediaType.APPLICATION_JSON_VALUE)
 @ConditionalOnModule("ddi")
 public class StudyUnitResources {
 

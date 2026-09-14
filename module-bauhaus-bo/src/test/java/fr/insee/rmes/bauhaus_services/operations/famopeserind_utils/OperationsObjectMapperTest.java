@@ -1,13 +1,14 @@
 package fr.insee.rmes.bauhaus_services.operations.famopeserind_utils;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.modules.commons.configuration.swagger.model.IdLabelTwoLangs;
+import java.util.List;
+import java.util.Objects;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
-import java.util.List;
-import java.util.Objects;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class OperationsObjectMapperTest {
 
@@ -15,49 +16,51 @@ class OperationsObjectMapperTest {
     void shouldBuildIdLabelTwoLangsFromJson() {
 
         JSONObject jsonObject = new JSONObject();
-        jsonObject.put(Constants.ID,"id2025");
-        jsonObject.put(Constants.LABEL_LG1,"fr");
-        jsonObject.put(Constants.LABEL_LG2,"en");
+        jsonObject.put(Constants.ID, "id2025");
+        jsonObject.put(Constants.LABEL_LG1, "fr");
+        jsonObject.put(Constants.LABEL_LG2, "en");
 
         JSONArray creators = new JSONArray();
         creators.put("Other").put("Unknown");
 
-        jsonObject.put(Constants.CREATORS,creators);
+        jsonObject.put(Constants.CREATORS, creators);
 
         OperationsObjectMapper operationsObjectMapper = new OperationsObjectMapper(null, null, null, null, null);
 
-        IdLabelTwoLangs labelTwoLangs  = operationsObjectMapper.buildIdLabelTwoLangsFromJson(jsonObject);
+        IdLabelTwoLangs labelTwoLangs = operationsObjectMapper.buildIdLabelTwoLangsFromJson(jsonObject);
 
         boolean isIdCorrect = ("id2025").equals(labelTwoLangs.getId());
         boolean isLabelLg1Correct = Objects.equals(labelTwoLangs.getLabelLg1(), "fr");
         boolean isLabelLg2Correct = Objects.equals(labelTwoLangs.getLabelLg2(), "en");
-        boolean isFirstCreatorCorrect = Objects.equals(labelTwoLangs.getCreators().getFirst(), "Other");
-        boolean isSecondCreatorCorrect = Objects.equals(labelTwoLangs.getCreators().getLast(), "Unknown");
+        boolean isFirstCreatorCorrect =
+                Objects.equals(labelTwoLangs.getCreators().getFirst(), "Other");
+        boolean isSecondCreatorCorrect =
+                Objects.equals(labelTwoLangs.getCreators().getLast(), "Unknown");
 
-        List<Boolean> actual = List.of(isIdCorrect,isLabelLg1Correct,isLabelLg2Correct,isFirstCreatorCorrect,isSecondCreatorCorrect);
-        List<Boolean> expected = List.of(true,true,true,true,true);
+        List<Boolean> actual = List.of(
+                isIdCorrect, isLabelLg1Correct, isLabelLg2Correct, isFirstCreatorCorrect, isSecondCreatorCorrect);
+        List<Boolean> expected = List.of(true, true, true, true, true);
 
-        assertEquals(expected,actual);
-
+        assertEquals(expected, actual);
     }
 
     @Test
     void shouldFixOrganizationsNames() {
 
         JSONObject jsonObjectBefore = new JSONObject();
-        jsonObjectBefore.put(Constants.PUBLISHER,"publishersExample");
-        jsonObjectBefore.put(Constants.CONTRIBUTOR,"contributorsExample");
-        jsonObjectBefore.put(Constants.DATA_COLLECTOR,"dataCollectorsExample");
+        jsonObjectBefore.put(Constants.PUBLISHER, "publishersExample");
+        jsonObjectBefore.put(Constants.CONTRIBUTOR, "contributorsExample");
+        jsonObjectBefore.put(Constants.DATA_COLLECTOR, "dataCollectorsExample");
 
         JSONObject jsonObjectAfter = new JSONObject();
-        jsonObjectAfter.put(Constants.PUBLISHERS,"publishersExample");
-        jsonObjectAfter.put(Constants.CONTRIBUTORS,"contributorsExample");
-        jsonObjectAfter.put(Constants.DATA_COLLECTORS,"dataCollectorsExample");
+        jsonObjectAfter.put(Constants.PUBLISHERS, "publishersExample");
+        jsonObjectAfter.put(Constants.CONTRIBUTORS, "contributorsExample");
+        jsonObjectAfter.put(Constants.DATA_COLLECTORS, "dataCollectorsExample");
 
         OperationsObjectMapper operationsObjectMapper = new OperationsObjectMapper(null, null, null, null, null);
         operationsObjectMapper.fixOrganizationsNames(jsonObjectBefore);
 
-        assertEquals(jsonObjectAfter.toString(),jsonObjectBefore.toString());
+        assertEquals(jsonObjectAfter.toString(), jsonObjectBefore.toString());
     }
 
     @Test
@@ -67,11 +70,10 @@ class OperationsObjectMapperTest {
         jsonArray.put(Constants.ID).put(Constants.UNDEFINED).put(Constants.LABEL_LG1);
         OperationsObjectMapper operationsObjectMapper = new OperationsObjectMapper(null, null, null, null, null);
 
-        String actual= operationsObjectMapper.buildStringListFromJson(jsonArray).toString();
+        String actual =
+                operationsObjectMapper.buildStringListFromJson(jsonArray).toString();
         String expected = "[id, undefined, labelLg1]";
 
-        assertEquals(expected,actual);
-
+        assertEquals(expected, actual);
     }
-
 }

@@ -1,30 +1,28 @@
 package fr.insee.rmes.modules.users.domain;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
 import fr.insee.rmes.modules.users.domain.model.ModuleAccessPrivileges;
 import fr.insee.rmes.modules.users.domain.model.RBAC;
+import fr.insee.rmes.modules.users.domain.model.Source;
 import fr.insee.rmes.modules.users.domain.model.Stamp;
 import fr.insee.rmes.modules.users.domain.model.User;
 import fr.insee.rmes.modules.users.domain.port.serverside.RbacFetcher;
 import fr.insee.rmes.modules.users.domain.port.serverside.UserDecoder;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import fr.insee.rmes.modules.users.domain.model.Source;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class DomainUserServiceTest {
@@ -89,8 +87,7 @@ class DomainUserServiceTest {
 
         when(userDecoder.fromPrincipal(principal)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> userService.getUser(principal))
-            .isInstanceOf(Exception.class);
+        assertThatThrownBy(() -> userService.getUser(principal)).isInstanceOf(Exception.class);
     }
 
     @Test
@@ -119,16 +116,15 @@ class DomainUserServiceTest {
         Object principal = "somePrincipal";
 
         var conceptPrivileges = new ModuleAccessPrivileges(
-            RBAC.Module.CONCEPT_CONCEPT,
-            Set.of(new ModuleAccessPrivileges.Privilege(RBAC.Privilege.CREATE, RBAC.Strategy.ALL))
-        );
+                RBAC.Module.CONCEPT_CONCEPT,
+                Set.of(new ModuleAccessPrivileges.Privilege(RBAC.Privilege.CREATE, RBAC.Strategy.ALL)));
         var operationPrivileges = new ModuleAccessPrivileges(
-            RBAC.Module.OPERATION_SERIES,
-            Set.of(new ModuleAccessPrivileges.Privilege(RBAC.Privilege.READ, RBAC.Strategy.STAMP))
-        );
+                RBAC.Module.OPERATION_SERIES,
+                Set.of(new ModuleAccessPrivileges.Privilege(RBAC.Privilege.READ, RBAC.Strategy.STAMP)));
 
         when(userDecoder.fromPrincipal(principal)).thenReturn(Optional.of(user));
-        when(rbacFetcher.computePrivileges(anyList(), any())).thenReturn(Set.of(conceptPrivileges, operationPrivileges));
+        when(rbacFetcher.computePrivileges(anyList(), any()))
+                .thenReturn(Set.of(conceptPrivileges, operationPrivileges));
 
         Set<ModuleAccessPrivileges> result = userService.computePrivileges(principal);
 

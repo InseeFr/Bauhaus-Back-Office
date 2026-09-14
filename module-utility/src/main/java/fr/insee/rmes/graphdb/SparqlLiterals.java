@@ -1,10 +1,9 @@
 package fr.insee.rmes.graphdb;
 
+import java.util.regex.Pattern;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.rio.helpers.NTriplesUtil;
-
-import java.util.regex.Pattern;
 
 /**
  * Builds the SPARQL tokens used to inject a user-supplied value in a query.

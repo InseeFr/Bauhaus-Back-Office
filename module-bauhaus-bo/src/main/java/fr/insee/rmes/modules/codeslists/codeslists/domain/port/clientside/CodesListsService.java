@@ -17,5 +17,6 @@ public interface CodesListsService {
             throws CodesListAlreadyExistsException, CodesListsFetchException, CodesListsSaveException;
 
     CodesListId update(CodesListId idFromUrl, UpdateCodesListCommand command)
-            throws CodesListIdMismatchException, CodesListNotFoundException, CodesListsFetchException, CodesListsSaveException;
+            throws CodesListIdMismatchException, CodesListNotFoundException, CodesListsFetchException,
+                    CodesListsSaveException;
 }

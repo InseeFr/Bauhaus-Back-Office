@@ -1,8 +1,15 @@
 package fr.insee.rmes.modules.ddi.physical_instances.webservice;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIService;
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PartialCodeListSchemeResponse;
+import java.util.Date;
+import java.util.List;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,14 +20,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
-
-import java.util.Date;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class CodeListSchemeResourcesTest {
@@ -52,8 +51,7 @@ class CodeListSchemeResourcesTest {
     void shouldGetCodeListSchemes() {
         List<PartialCodeListScheme> expected = List.of(
                 new PartialCodeListScheme("cls-1", "Schéma 1", new Date(), "fr.insee"),
-                new PartialCodeListScheme("cls-2", "Schéma 2", new Date(), "fr.insee")
-        );
+                new PartialCodeListScheme("cls-2", "Schéma 2", new Date(), "fr.insee"));
         when(ddiService.getCodeListSchemes()).thenReturn(expected);
 
         ResponseEntity<List<PartialCodeListSchemeResponse>> response = codeListSchemeResources.getCodeListSchemes();
@@ -67,11 +65,13 @@ class CodeListSchemeResourcesTest {
         assertEquals("cls-1", result.getFirst().getId());
         assertEquals("Schéma 1", result.getFirst().getLabel());
         assertEquals(1, result.getFirst().getLinks().toList().size());
-        assertEquals("http://localhost:8080/ddi/code-list-scheme/fr.insee/cls-1",
+        assertEquals(
+                "http://localhost:8080/ddi/code-list-scheme/fr.insee/cls-1",
                 result.getFirst().getRequiredLink("self").getHref());
 
         assertEquals("cls-2", result.get(1).getId());
-        assertEquals("http://localhost:8080/ddi/code-list-scheme/fr.insee/cls-2",
+        assertEquals(
+                "http://localhost:8080/ddi/code-list-scheme/fr.insee/cls-2",
                 result.get(1).getRequiredLink("self").getHref());
 
         verify(ddiService).getCodeListSchemes();

@@ -37,6 +37,8 @@
     <rdf4j.version>5.3.1</rdf4j.version>
     <xdocreport.version>2.2.0</xdocreport.version>
     <jacoco.version>0.8.15</jacoco.version>
+    <spotless.version>3.10.2</spotless.version>
+    <palantir-java-format.version>2.98.0</palantir-java-format.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <!-- Default empty value so surefire's @{argLine} resolves even when JaCoCo is skipped -->
     <argLine></argLine>
@@ -309,6 +311,34 @@
   </dependencies>
   <build>
     <plugins>
+
+      <!-- Formatage du code Java. `spotless:apply` reformate, `spotless:check` vérifie ;
+           le check est lié à `validate`, donc tout build (y compris la CI, qui lance
+           `verify`) échoue sur un fichier non formaté, avant même la compilation.
+           Pour l'ignorer ponctuellement : -Dspotless.check.skip=true -->
+      <plugin>
+        <groupId>com.diffplug.spotless</groupId>
+        <artifactId>spotless-maven-plugin</artifactId>
+        <version>${spotless.version}</version>
+        <configuration>
+          <java>
+            <!-- Formateur figé : pas d'option de style, comme Prettier côté front.
+                 Palantir impose 4 espaces et 120 colonnes, ce que le code suivait déjà. -->
+            <palantirJavaFormat>
+              <version>${palantir-java-format.version}</version>
+            </palantirJavaFormat>
+          </java>
+        </configuration>
+        <executions>
+          <execution>
+            <id>spotless-check</id>
+            <phase>validate</phase>
+            <goals>
+              <goal>check</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
 
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>

@@ -5,11 +5,10 @@ import fr.insee.rmes.modules.concepts.concept.domain.model.commands.CreateConcep
 import fr.insee.rmes.modules.shared_kernel.domain.model.Lang;
 import fr.insee.rmes.modules.shared_kernel.domain.model.LocalisedLabel;
 import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
-import org.jspecify.annotations.Nullable;
-
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import org.jspecify.annotations.Nullable;
 
 public class Concept extends CompactConcept {
 
@@ -35,16 +34,14 @@ public class Concept extends CompactConcept {
             @Nullable LocalDateTime modified,
             ValidationStatus validationState,
             ConceptVersion version,
-            List<String> collectionIds
-    ) {
+            List<String> collectionIds) {
         super(
                 id,
                 labels.stream()
                         .filter(l -> l.lang().equals(Lang.defaultLanguage()))
                         .findFirst()
                         .orElseThrow(() -> new MalformedConceptException(
-                                "No label for the default language (" + Lang.defaultLanguage() + ")"))
-        );
+                                "No label for the default language (" + Lang.defaultLanguage() + ")")));
         this.alternativeLabels = labels.stream()
                 .filter(l -> !l.lang().equals(Lang.defaultLanguage()))
                 .toList();
@@ -69,8 +66,7 @@ public class Concept extends CompactConcept {
                 null,
                 DEFAULT_VALIDATION_STATE,
                 ConceptVersion.initial(),
-                command.collectionIds()
-        );
+                command.collectionIds());
     }
 
     public List<LocalisedLabel> alternativeLabels() {

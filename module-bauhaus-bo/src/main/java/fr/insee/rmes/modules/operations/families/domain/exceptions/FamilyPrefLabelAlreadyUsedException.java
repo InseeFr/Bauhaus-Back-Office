@@ -12,7 +12,8 @@ public class FamilyPrefLabelAlreadyUsedException extends Exception {
     private final Language language;
 
     public FamilyPrefLabelAlreadyUsedException(Language language) {
-        super("This prefLabel%s is already used by another family.".formatted(language == Language.lg1 ? "Lg1" : "Lg2"));
+        super("This prefLabel%s is already used by another family."
+                .formatted(language == Language.lg1 ? "Lg1" : "Lg2"));
         this.language = language;
     }
 

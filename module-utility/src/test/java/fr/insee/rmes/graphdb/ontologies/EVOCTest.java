@@ -1,9 +1,9 @@
 package fr.insee.rmes.graphdb.ontologies;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import org.eclipse.rdf4j.model.Namespace;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class EVOCTest {
 
@@ -30,5 +30,4 @@ class EVOCTest {
         assertNotNull(EVOC.NOTE_LITERAL);
         assertEquals("http://eurovoc.europa.eu/schema#noteLiteral", EVOC.NOTE_LITERAL.toString());
     }
-
 }

@@ -8,19 +8,19 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.List;
+import java.util.Set;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.Set;
-
 public class DevAuthenticationFilter extends OncePerRequestFilter {
 
-    private static final User FAKE_USER = new User("fakeUser", List.of(Roles.ADMIN), Set.of(new Stamp("DG75-F302")), Source.INSEE);
+    private static final User FAKE_USER =
+            new User("fakeUser", List.of(Roles.ADMIN), Set.of(new Stamp("DG75-F302")), Source.INSEE);
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -29,9 +29,8 @@ public class DevAuthenticationFilter extends OncePerRequestFilter {
         Authentication existingAuth = SecurityContextHolder.getContext().getAuthentication();
 
         if (existingAuth == null || !existingAuth.isAuthenticated()) {
-            List<SimpleGrantedAuthority> authorities = FAKE_USER.roles().stream()
-                    .map(SimpleGrantedAuthority::new)
-                    .toList();
+            List<SimpleGrantedAuthority> authorities =
+                    FAKE_USER.roles().stream().map(SimpleGrantedAuthority::new).toList();
 
             // Créer une authentification avec le User comme principal
             DevAuthentication authentication = new DevAuthentication(FAKE_USER, authorities);

@@ -1,31 +1,5 @@
 package fr.insee.rmes.bauhaus_services.classifications;
 
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.Logger;
-import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.core.read.ListAppender;
-import fr.insee.rmes.AppSpringBootTest;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.rdf_utils.RepositoryGestion;
-import fr.insee.rmes.BauhausLanguagesProperties;
-import fr.insee.rmes.config.GraphsPropertiesStub;
-import fr.insee.rmes.exceptions.RmesBadRequestException;
-import fr.insee.rmes.exceptions.RmesNotFoundException;
-import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
-import fr.insee.rmes.persistance.sparql_queries.classifications.*;
-import org.eclipse.rdf4j.model.Model;
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.slf4j.LoggerFactory;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -37,6 +11,32 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
+import fr.insee.rmes.AppSpringBootTest;
+import fr.insee.rmes.BauhausLanguagesProperties;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.config.GraphsPropertiesStub;
+import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.exceptions.RmesBadRequestException;
+import fr.insee.rmes.exceptions.RmesNotFoundException;
+import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
+import fr.insee.rmes.persistance.sparql_queries.classifications.*;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
+import org.eclipse.rdf4j.model.Model;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.slf4j.LoggerFactory;
 
 @ExtendWith(MockitoExtension.class)
 @AppSpringBootTest
@@ -56,101 +56,297 @@ class ClassificationsImplTest {
 
     @BeforeEach
     void setUp() {
-        classificationsQueries = new ClassificationsQueries(new BauhausLanguagesProperties("fr", "en"), GraphsPropertiesStub.stub());
+        classificationsQueries =
+                new ClassificationsQueries(new BauhausLanguagesProperties("fr", "en"), GraphsPropertiesStub.stub());
         classificationLevelsQueries = new ClassificationLevelsQueries(new BauhausLanguagesProperties("fr", "en"));
-        classificationSeriesQueries = new ClassificationSeriesQueries(new BauhausLanguagesProperties("fr", "en"), GraphsPropertiesStub.stub());
-        classificationFamiliesQueries = new ClassificationFamiliesQueries(new BauhausLanguagesProperties("fr", "en"), GraphsPropertiesStub.stub());
-        classificationCorrespondencesQueries = new ClassificationCorrespondencesQueries(new BauhausLanguagesProperties("fr", "en"));
+        classificationSeriesQueries = new ClassificationSeriesQueries(
+                new BauhausLanguagesProperties("fr", "en"), GraphsPropertiesStub.stub());
+        classificationFamiliesQueries = new ClassificationFamiliesQueries(
+                new BauhausLanguagesProperties("fr", "en"), GraphsPropertiesStub.stub());
+        classificationCorrespondencesQueries =
+                new ClassificationCorrespondencesQueries(new BauhausLanguagesProperties("fr", "en"));
     }
 
     String mockedComplexResult = "{\"id\":\"mocked result\"}";
-    String mockedSingleResult="[\"mocked result\"]";
-    JSONObject mockedJsonObject = new JSONObject().put("id","mocked result");
+    String mockedSingleResult = "[\"mocked result\"]";
+    JSONObject mockedJsonObject = new JSONObject().put("id", "mocked result");
     JSONArray mockedJsonArray = new JSONArray().put("mocked result");
 
     @Test
     void shouldGetFamily() throws RmesException {
-        ClassificationsServiceImpl classificationImpl = new ClassificationsServiceImpl(repoGestion, new ClassificationRepository(null, null, null, null, null, classificationNoteService, classificationsQueries, GraphsPropertiesStub.stub()), new ClassificationPublication(null, null, null, null), classificationsQueries, classificationLevelsQueries, classificationSeriesQueries, classificationFamiliesQueries, classificationCorrespondencesQueries, GraphsPropertiesStub.stub());
-        when(repoGestion.getResponseAsObject(classificationFamiliesQueries.familyQuery("mocked ID"))).thenReturn(mockedJsonObject);
+        ClassificationsServiceImpl classificationImpl = new ClassificationsServiceImpl(
+                repoGestion,
+                new ClassificationRepository(
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        classificationNoteService,
+                        classificationsQueries,
+                        GraphsPropertiesStub.stub()),
+                new ClassificationPublication(null, null, null, null),
+                classificationsQueries,
+                classificationLevelsQueries,
+                classificationSeriesQueries,
+                classificationFamiliesQueries,
+                classificationCorrespondencesQueries,
+                GraphsPropertiesStub.stub());
+        when(repoGestion.getResponseAsObject(classificationFamiliesQueries.familyQuery("mocked ID")))
+                .thenReturn(mockedJsonObject);
         String actual = classificationImpl.getFamily("mocked ID");
-        Assertions.assertEquals(mockedComplexResult ,actual);
+        Assertions.assertEquals(mockedComplexResult, actual);
     }
 
     @Test
     void shouldGetFamilyMembers() throws RmesException {
-        ClassificationsServiceImpl classificationImpl = new ClassificationsServiceImpl(repoGestion, new ClassificationRepository(null, null, null, null, null, classificationNoteService, classificationsQueries, GraphsPropertiesStub.stub()), new ClassificationPublication(null, null, null, null), classificationsQueries, classificationLevelsQueries, classificationSeriesQueries, classificationFamiliesQueries, classificationCorrespondencesQueries, GraphsPropertiesStub.stub());
-        when(repoGestion.getResponseAsArray(classificationFamiliesQueries.familyMembersQuery("mocked ID"))).thenReturn(mockedJsonArray);
+        ClassificationsServiceImpl classificationImpl = new ClassificationsServiceImpl(
+                repoGestion,
+                new ClassificationRepository(
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        classificationNoteService,
+                        classificationsQueries,
+                        GraphsPropertiesStub.stub()),
+                new ClassificationPublication(null, null, null, null),
+                classificationsQueries,
+                classificationLevelsQueries,
+                classificationSeriesQueries,
+                classificationFamiliesQueries,
+                classificationCorrespondencesQueries,
+                GraphsPropertiesStub.stub());
+        when(repoGestion.getResponseAsArray(classificationFamiliesQueries.familyMembersQuery("mocked ID")))
+                .thenReturn(mockedJsonArray);
         String actual = classificationImpl.getFamilyMembers("mocked ID");
-        Assertions.assertEquals(mockedSingleResult,actual);
+        Assertions.assertEquals(mockedSingleResult, actual);
     }
 
     @Test
     void shouldGetOneSeries() throws RmesException {
-        ClassificationsServiceImpl classificationImpl = new ClassificationsServiceImpl(repoGestion, new ClassificationRepository(null, null, null, null, null, classificationNoteService, classificationsQueries, GraphsPropertiesStub.stub()), new ClassificationPublication(null, null, null, null), classificationsQueries, classificationLevelsQueries, classificationSeriesQueries, classificationFamiliesQueries, classificationCorrespondencesQueries, GraphsPropertiesStub.stub());
-        when(repoGestion.getResponseAsObject(classificationSeriesQueries.oneSeriesQuery("mocked ID"))).thenReturn(mockedJsonObject);
+        ClassificationsServiceImpl classificationImpl = new ClassificationsServiceImpl(
+                repoGestion,
+                new ClassificationRepository(
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        classificationNoteService,
+                        classificationsQueries,
+                        GraphsPropertiesStub.stub()),
+                new ClassificationPublication(null, null, null, null),
+                classificationsQueries,
+                classificationLevelsQueries,
+                classificationSeriesQueries,
+                classificationFamiliesQueries,
+                classificationCorrespondencesQueries,
+                GraphsPropertiesStub.stub());
+        when(repoGestion.getResponseAsObject(classificationSeriesQueries.oneSeriesQuery("mocked ID")))
+                .thenReturn(mockedJsonObject);
         String actual = classificationImpl.getOneSeries("mocked ID");
-        Assertions.assertEquals(mockedComplexResult,actual);
+        Assertions.assertEquals(mockedComplexResult, actual);
     }
 
     @Test
     void shouldGetSeriesMembers() throws RmesException {
-        ClassificationsServiceImpl classificationImpl = new ClassificationsServiceImpl(repoGestion, new ClassificationRepository(null, null, null, null, null, classificationNoteService, classificationsQueries, GraphsPropertiesStub.stub()), new ClassificationPublication(null, null, null, null), classificationsQueries, classificationLevelsQueries, classificationSeriesQueries, classificationFamiliesQueries, classificationCorrespondencesQueries, GraphsPropertiesStub.stub());
-        when(repoGestion.getResponseAsArray(classificationSeriesQueries.seriesMembersQuery("mocked ID"))).thenReturn(mockedJsonObject.names());
+        ClassificationsServiceImpl classificationImpl = new ClassificationsServiceImpl(
+                repoGestion,
+                new ClassificationRepository(
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        classificationNoteService,
+                        classificationsQueries,
+                        GraphsPropertiesStub.stub()),
+                new ClassificationPublication(null, null, null, null),
+                classificationsQueries,
+                classificationLevelsQueries,
+                classificationSeriesQueries,
+                classificationFamiliesQueries,
+                classificationCorrespondencesQueries,
+                GraphsPropertiesStub.stub());
+        when(repoGestion.getResponseAsArray(classificationSeriesQueries.seriesMembersQuery("mocked ID")))
+                .thenReturn(mockedJsonObject.names());
         String actual = classificationImpl.getSeriesMembers("mocked ID");
-        Assertions.assertEquals("[\"id\"]",actual);
+        Assertions.assertEquals("[\"id\"]", actual);
     }
 
     @Test
     void shouldGetClassification() throws RmesException {
-        ClassificationsServiceImpl classificationImpl = new ClassificationsServiceImpl(repoGestion, new ClassificationRepository(null, null, null, null, null, classificationNoteService, classificationsQueries, GraphsPropertiesStub.stub()), new ClassificationPublication(null, null, null, null), classificationsQueries, classificationLevelsQueries, classificationSeriesQueries, classificationFamiliesQueries, classificationCorrespondencesQueries, GraphsPropertiesStub.stub());
-        when(repoGestion.getResponseAsObject(classificationsQueries.classificationQuery("mocked ID"))).thenReturn(mockedJsonObject);
+        ClassificationsServiceImpl classificationImpl = new ClassificationsServiceImpl(
+                repoGestion,
+                new ClassificationRepository(
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        classificationNoteService,
+                        classificationsQueries,
+                        GraphsPropertiesStub.stub()),
+                new ClassificationPublication(null, null, null, null),
+                classificationsQueries,
+                classificationLevelsQueries,
+                classificationSeriesQueries,
+                classificationFamiliesQueries,
+                classificationCorrespondencesQueries,
+                GraphsPropertiesStub.stub());
+        when(repoGestion.getResponseAsObject(classificationsQueries.classificationQuery("mocked ID")))
+                .thenReturn(mockedJsonObject);
         String actual = classificationImpl.getClassification("mocked ID");
-        Assertions.assertEquals(mockedComplexResult,actual);
+        Assertions.assertEquals(mockedComplexResult, actual);
     }
 
     @Test
     void shouldGetClassificationLevels() throws RmesException {
-        ClassificationsServiceImpl classificationImpl = new ClassificationsServiceImpl(repoGestion, new ClassificationRepository(null, null, null, null, null, classificationNoteService, classificationsQueries, GraphsPropertiesStub.stub()), new ClassificationPublication(null, null, null, null), classificationsQueries, classificationLevelsQueries, classificationSeriesQueries, classificationFamiliesQueries, classificationCorrespondencesQueries, GraphsPropertiesStub.stub());
-        when(repoGestion.getResponseAsArray(classificationLevelsQueries.levelsQuery("mocked ID"))).thenReturn(mockedJsonObject.names());
+        ClassificationsServiceImpl classificationImpl = new ClassificationsServiceImpl(
+                repoGestion,
+                new ClassificationRepository(
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        classificationNoteService,
+                        classificationsQueries,
+                        GraphsPropertiesStub.stub()),
+                new ClassificationPublication(null, null, null, null),
+                classificationsQueries,
+                classificationLevelsQueries,
+                classificationSeriesQueries,
+                classificationFamiliesQueries,
+                classificationCorrespondencesQueries,
+                GraphsPropertiesStub.stub());
+        when(repoGestion.getResponseAsArray(classificationLevelsQueries.levelsQuery("mocked ID")))
+                .thenReturn(mockedJsonObject.names());
         String actual = classificationImpl.getClassificationLevels("mocked ID");
-        Assertions.assertEquals("[\"id\"]",actual);
+        Assertions.assertEquals("[\"id\"]", actual);
     }
 
     @Test
     void shouldGetClassificationLevel() throws RmesException {
-        ClassificationsServiceImpl classificationImpl = new ClassificationsServiceImpl(repoGestion, new ClassificationRepository(null, null, null, null, null, classificationNoteService, classificationsQueries, GraphsPropertiesStub.stub()), new ClassificationPublication(null, null, null, null), classificationsQueries, classificationLevelsQueries, classificationSeriesQueries, classificationFamiliesQueries, classificationCorrespondencesQueries, GraphsPropertiesStub.stub());
-        when(repoGestion.getResponseAsObject(classificationLevelsQueries.levelQuery("mocked classificationId", "mocked levelId"))).thenReturn(mockedJsonObject);
+        ClassificationsServiceImpl classificationImpl = new ClassificationsServiceImpl(
+                repoGestion,
+                new ClassificationRepository(
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        classificationNoteService,
+                        classificationsQueries,
+                        GraphsPropertiesStub.stub()),
+                new ClassificationPublication(null, null, null, null),
+                classificationsQueries,
+                classificationLevelsQueries,
+                classificationSeriesQueries,
+                classificationFamiliesQueries,
+                classificationCorrespondencesQueries,
+                GraphsPropertiesStub.stub());
+        when(repoGestion.getResponseAsObject(
+                        classificationLevelsQueries.levelQuery("mocked classificationId", "mocked levelId")))
+                .thenReturn(mockedJsonObject);
         String actual = classificationImpl.getClassificationLevel("mocked classificationId", "mocked levelId");
-        Assertions.assertEquals(mockedComplexResult,actual);
+        Assertions.assertEquals(mockedComplexResult, actual);
     }
 
     @Test
     void shouldGetClassificationLevelMembers() throws RmesException {
-        ClassificationsServiceImpl classificationImpl = new ClassificationsServiceImpl(repoGestion, new ClassificationRepository(null, null, null, null, null, classificationNoteService, classificationsQueries, GraphsPropertiesStub.stub()), new ClassificationPublication(null, null, null, null), classificationsQueries, classificationLevelsQueries, classificationSeriesQueries, classificationFamiliesQueries, classificationCorrespondencesQueries, GraphsPropertiesStub.stub());
-        when(repoGestion.getResponseAsArray(classificationLevelsQueries.levelMembersQuery("mocked classificationId", "mocked levelId"))).thenReturn(mockedJsonArray);
+        ClassificationsServiceImpl classificationImpl = new ClassificationsServiceImpl(
+                repoGestion,
+                new ClassificationRepository(
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        classificationNoteService,
+                        classificationsQueries,
+                        GraphsPropertiesStub.stub()),
+                new ClassificationPublication(null, null, null, null),
+                classificationsQueries,
+                classificationLevelsQueries,
+                classificationSeriesQueries,
+                classificationFamiliesQueries,
+                classificationCorrespondencesQueries,
+                GraphsPropertiesStub.stub());
+        when(repoGestion.getResponseAsArray(
+                        classificationLevelsQueries.levelMembersQuery("mocked classificationId", "mocked levelId")))
+                .thenReturn(mockedJsonArray);
         String actual = classificationImpl.getClassificationLevelMembers("mocked classificationId", "mocked levelId");
-        Assertions.assertEquals(mockedSingleResult,actual);
+        Assertions.assertEquals(mockedSingleResult, actual);
     }
 
     @Test
     void shouldGetCorrespondences() throws RmesException {
-        ClassificationsServiceImpl classificationImpl = new ClassificationsServiceImpl(repoGestion, new ClassificationRepository(null, null, null, null, null, classificationNoteService, classificationsQueries, GraphsPropertiesStub.stub()), new ClassificationPublication(null, null, null, null), classificationsQueries, classificationLevelsQueries, classificationSeriesQueries, classificationFamiliesQueries, classificationCorrespondencesQueries, GraphsPropertiesStub.stub());
-        when(repoGestion.getResponseAsArray(classificationCorrespondencesQueries.correspondencesQuery())).thenReturn(mockedJsonArray);
+        ClassificationsServiceImpl classificationImpl = new ClassificationsServiceImpl(
+                repoGestion,
+                new ClassificationRepository(
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        classificationNoteService,
+                        classificationsQueries,
+                        GraphsPropertiesStub.stub()),
+                new ClassificationPublication(null, null, null, null),
+                classificationsQueries,
+                classificationLevelsQueries,
+                classificationSeriesQueries,
+                classificationFamiliesQueries,
+                classificationCorrespondencesQueries,
+                GraphsPropertiesStub.stub());
+        when(repoGestion.getResponseAsArray(classificationCorrespondencesQueries.correspondencesQuery()))
+                .thenReturn(mockedJsonArray);
         String actual = classificationImpl.getCorrespondences();
-        Assertions.assertEquals(mockedSingleResult,actual);
+        Assertions.assertEquals(mockedSingleResult, actual);
     }
 
     @Test
     void shouldGetCorrespondenceAssociations() throws RmesException {
-        ClassificationsServiceImpl classificationImpl = new ClassificationsServiceImpl(repoGestion, new ClassificationRepository(null, null, null, null, null, classificationNoteService, classificationsQueries, GraphsPropertiesStub.stub()), new ClassificationPublication(null, null, null, null), classificationsQueries, classificationLevelsQueries, classificationSeriesQueries, classificationFamiliesQueries, classificationCorrespondencesQueries, GraphsPropertiesStub.stub());
-        when(repoGestion.getResponseAsArray(classificationCorrespondencesQueries.correspondenceAssociationsQuery("mocked id"))).thenReturn(mockedJsonArray);
+        ClassificationsServiceImpl classificationImpl = new ClassificationsServiceImpl(
+                repoGestion,
+                new ClassificationRepository(
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        classificationNoteService,
+                        classificationsQueries,
+                        GraphsPropertiesStub.stub()),
+                new ClassificationPublication(null, null, null, null),
+                classificationsQueries,
+                classificationLevelsQueries,
+                classificationSeriesQueries,
+                classificationFamiliesQueries,
+                classificationCorrespondencesQueries,
+                GraphsPropertiesStub.stub());
+        when(repoGestion.getResponseAsArray(
+                        classificationCorrespondencesQueries.correspondenceAssociationsQuery("mocked id")))
+                .thenReturn(mockedJsonArray);
         String actual = classificationImpl.getCorrespondenceAssociations("mocked id");
-        Assertions.assertEquals(mockedSingleResult,actual);
+        Assertions.assertEquals(mockedSingleResult, actual);
     }
 
     @Test
     void shouldGetClassificationFamiliesList() throws RmesException {
-        ClassificationsServiceImpl classificationImpl = new ClassificationsServiceImpl(repoGestion, null, null, classificationsQueries, classificationLevelsQueries, classificationSeriesQueries, classificationFamiliesQueries, classificationCorrespondencesQueries, GraphsPropertiesStub.stub());
+        ClassificationsServiceImpl classificationImpl = new ClassificationsServiceImpl(
+                repoGestion,
+                null,
+                null,
+                classificationsQueries,
+                classificationLevelsQueries,
+                classificationSeriesQueries,
+                classificationFamiliesQueries,
+                classificationCorrespondencesQueries,
+                GraphsPropertiesStub.stub());
 
         JSONArray array = new JSONArray();
         array.put(new JSONObject().put("id", "1").put("label", "label 1"));
@@ -177,7 +373,16 @@ class ClassificationsImplTest {
 
     @Test
     void shouldGetClassificationSeriesList() throws RmesException {
-        ClassificationsServiceImpl classificationImpl = new ClassificationsServiceImpl(repoGestion, null, null, classificationsQueries, classificationLevelsQueries, classificationSeriesQueries, classificationFamiliesQueries, classificationCorrespondencesQueries, GraphsPropertiesStub.stub());
+        ClassificationsServiceImpl classificationImpl = new ClassificationsServiceImpl(
+                repoGestion,
+                null,
+                null,
+                classificationsQueries,
+                classificationLevelsQueries,
+                classificationSeriesQueries,
+                classificationFamiliesQueries,
+                classificationCorrespondencesQueries,
+                GraphsPropertiesStub.stub());
 
         JSONArray array = new JSONArray();
         array.put(new JSONObject().put("id", "1").put("label", "value 1").put("altLabels", "label"));
@@ -209,7 +414,16 @@ class ClassificationsImplTest {
 
     @Test
     void shouldGetClassificationList() throws RmesException {
-        ClassificationsServiceImpl classificationImpl = new ClassificationsServiceImpl(repoGestion, null, null, classificationsQueries, classificationLevelsQueries, classificationSeriesQueries, classificationFamiliesQueries, classificationCorrespondencesQueries, GraphsPropertiesStub.stub());
+        ClassificationsServiceImpl classificationImpl = new ClassificationsServiceImpl(
+                repoGestion,
+                null,
+                null,
+                classificationsQueries,
+                classificationLevelsQueries,
+                classificationSeriesQueries,
+                classificationFamiliesQueries,
+                classificationCorrespondencesQueries,
+                GraphsPropertiesStub.stub());
 
         JSONArray array = new JSONArray();
         array.put(new JSONObject().put("id", "1").put("label", "value 1").put("altLabels", "label"));
@@ -241,17 +455,36 @@ class ClassificationsImplTest {
 
     @Test
     void shouldThrowRmesExceptionWhenUpdateClassification() {
-        ClassificationsServiceImpl classificationImpl = new ClassificationsServiceImpl(repoGestion, null, null, classificationsQueries, classificationLevelsQueries, classificationSeriesQueries, classificationFamiliesQueries, classificationCorrespondencesQueries, GraphsPropertiesStub.stub());
-        RmesException exception = assertThrows(RmesNotFoundException.class, () -> classificationImpl.updateClassification("idExample","bodyExample"));
-        Assertions.assertTrue(exception.getDetails().contains("{\"code\":1142,\"details\":\"Can't read request body\""));
+        ClassificationsServiceImpl classificationImpl = new ClassificationsServiceImpl(
+                repoGestion,
+                null,
+                null,
+                classificationsQueries,
+                classificationLevelsQueries,
+                classificationSeriesQueries,
+                classificationFamiliesQueries,
+                classificationCorrespondencesQueries,
+                GraphsPropertiesStub.stub());
+        RmesException exception = assertThrows(
+                RmesNotFoundException.class, () -> classificationImpl.updateClassification("idExample", "bodyExample"));
+        Assertions.assertTrue(
+                exception.getDetails().contains("{\"code\":1142,\"details\":\"Can't read request body\""));
     }
-
 
     @Test
     void setClassificationValidation_shouldReturn400_whenTheClassificationIsAlreadyPublished() throws RmesException {
         String classificationId = "naf2025";
         ClassificationPublication classificationPublication = mock(ClassificationPublication.class);
-        ClassificationsServiceImpl classificationImpl = new ClassificationsServiceImpl(repoGestion, null, classificationPublication, classificationsQueries, classificationLevelsQueries, classificationSeriesQueries, classificationFamiliesQueries, classificationCorrespondencesQueries, GraphsPropertiesStub.stub());
+        ClassificationsServiceImpl classificationImpl = new ClassificationsServiceImpl(
+                repoGestion,
+                null,
+                classificationPublication,
+                classificationsQueries,
+                classificationLevelsQueries,
+                classificationSeriesQueries,
+                classificationFamiliesQueries,
+                classificationCorrespondencesQueries,
+                GraphsPropertiesStub.stub());
         when(repoGestion.getResponseAsObject(classificationsQueries.getGraphUriById(classificationId)))
                 .thenReturn(new JSONObject()
                         .put("graph", "http://rdf.insee.fr/graphes/codes/" + classificationId)
@@ -259,8 +492,8 @@ class ClassificationsImplTest {
         when(repoGestion.getResponseAsObject(classificationsQueries.classificationQuery(classificationId)))
                 .thenReturn(new JSONObject().put("validationState", "Validated"));
 
-        RmesBadRequestException exception = assertThrows(RmesBadRequestException.class,
-                () -> classificationImpl.setClassificationValidation(classificationId));
+        RmesBadRequestException exception = assertThrows(
+                RmesBadRequestException.class, () -> classificationImpl.setClassificationValidation(classificationId));
 
         assertThat(exception.getDetails()).contains("\"code\":1301");
         assertThat(exception.getDetails()).contains("This classification is already published");
@@ -274,7 +507,16 @@ class ClassificationsImplTest {
         String classificationId = "naf2025";
         String classificationUri = "http://rdf.insee.fr/codes/naf2025/";
         ClassificationPublication classificationPublication = mock(ClassificationPublication.class);
-        ClassificationsServiceImpl classificationImpl = new ClassificationsServiceImpl(repoGestion, null, classificationPublication, classificationsQueries, classificationLevelsQueries, classificationSeriesQueries, classificationFamiliesQueries, classificationCorrespondencesQueries, GraphsPropertiesStub.stub());
+        ClassificationsServiceImpl classificationImpl = new ClassificationsServiceImpl(
+                repoGestion,
+                null,
+                classificationPublication,
+                classificationsQueries,
+                classificationLevelsQueries,
+                classificationSeriesQueries,
+                classificationFamiliesQueries,
+                classificationCorrespondencesQueries,
+                GraphsPropertiesStub.stub());
         when(repoGestion.getResponseAsObject(classificationsQueries.getGraphUriById(classificationId)))
                 .thenReturn(new JSONObject()
                         .put("graph", "http://rdf.insee.fr/graphes/codes/" + classificationId)
@@ -289,15 +531,24 @@ class ClassificationsImplTest {
         assertThat(model.getValue().contexts())
                 .as("le validationState doit être écrit dans le graphe nomenclatures, celui que lit getClassification")
                 .containsExactly(RdfUtils.createIRI(GraphsPropertiesStub.stub().classifFamiliesGraph()));
-        assertThat(model.getValue().objects())
-                .containsExactly(RdfUtils.setLiteralString(ValidationStatus.VALIDATED));
+        assertThat(model.getValue().objects()).containsExactly(RdfUtils.setLiteralString(ValidationStatus.VALIDATED));
     }
 
     @Test
-    void setClassificationValidation_logsTheInconsistencyWhenTheManagementRepositoryCannotBeMarkedAsValidated() throws RmesException {
+    void setClassificationValidation_logsTheInconsistencyWhenTheManagementRepositoryCannotBeMarkedAsValidated()
+            throws RmesException {
         String classificationId = "naf2025";
         String classificationGraph = "http://rdf.insee.fr/graphes/codes/" + classificationId;
-        ClassificationsServiceImpl classificationImpl = new ClassificationsServiceImpl(repoGestion, null, mock(ClassificationPublication.class), classificationsQueries, classificationLevelsQueries, classificationSeriesQueries, classificationFamiliesQueries, classificationCorrespondencesQueries, GraphsPropertiesStub.stub());
+        ClassificationsServiceImpl classificationImpl = new ClassificationsServiceImpl(
+                repoGestion,
+                null,
+                mock(ClassificationPublication.class),
+                classificationsQueries,
+                classificationLevelsQueries,
+                classificationSeriesQueries,
+                classificationFamiliesQueries,
+                classificationCorrespondencesQueries,
+                GraphsPropertiesStub.stub());
         when(repoGestion.getResponseAsObject(classificationsQueries.getGraphUriById(classificationId)))
                 .thenReturn(new JSONObject()
                         .put("graph", classificationGraph)
@@ -312,11 +563,10 @@ class ClassificationsImplTest {
         logs.start();
         logger.addAppender(logs);
         try {
-            RmesException thrown = assertThrows(RmesException.class, () -> classificationImpl.setClassificationValidation(classificationId));
+            RmesException thrown = assertThrows(
+                    RmesException.class, () -> classificationImpl.setClassificationValidation(classificationId));
 
-            assertThat(thrown)
-                    .as("l'échec doit rester visible de l'appelant")
-                    .isSameAs(markingFailure);
+            assertThat(thrown).as("l'échec doit rester visible de l'appelant").isSameAs(markingFailure);
             assertThat(logs.list)
                     .filteredOn(event -> event.getLevel() == Level.ERROR)
                     .as("l'incohérence diffusion/gestion doit être journalisée avec de quoi la diagnostiquer")
@@ -331,10 +581,22 @@ class ClassificationsImplTest {
     @Test
     void shouldThrowRmesExceptionWhenSetClassificationValidation() throws RmesException {
         String classificationId = "2025";
-        ClassificationsServiceImpl classificationImpl = new ClassificationsServiceImpl(repoGestion, null, null, classificationsQueries, classificationLevelsQueries, classificationSeriesQueries, classificationFamiliesQueries, classificationCorrespondencesQueries, GraphsPropertiesStub.stub());
-        when(repoGestion.getResponseAsObject(classificationsQueries.getGraphUriById(classificationId))).thenReturn(new JSONObject());
-        RmesException exception = assertThrows(RmesException.class, () -> classificationImpl.setClassificationValidation(classificationId));
-        Assertions.assertEquals("{\"code\":1141,\"details\":\"2025\",\"message\":\"Classification not found\"}", exception.getDetails());
+        ClassificationsServiceImpl classificationImpl = new ClassificationsServiceImpl(
+                repoGestion,
+                null,
+                null,
+                classificationsQueries,
+                classificationLevelsQueries,
+                classificationSeriesQueries,
+                classificationFamiliesQueries,
+                classificationCorrespondencesQueries,
+                GraphsPropertiesStub.stub());
+        when(repoGestion.getResponseAsObject(classificationsQueries.getGraphUriById(classificationId)))
+                .thenReturn(new JSONObject());
+        RmesException exception = assertThrows(
+                RmesException.class, () -> classificationImpl.setClassificationValidation(classificationId));
+        Assertions.assertEquals(
+                "{\"code\":1141,\"details\":\"2025\",\"message\":\"Classification not found\"}",
+                exception.getDetails());
     }
-
 }

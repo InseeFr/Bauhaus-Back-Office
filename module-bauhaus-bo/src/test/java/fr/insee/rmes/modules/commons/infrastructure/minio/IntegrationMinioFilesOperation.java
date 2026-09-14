@@ -1,23 +1,22 @@
 package fr.insee.rmes.modules.commons.infrastructure.minio;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import fr.insee.rmes.exceptions.RmesFileException;
 import fr.insee.rmes.modules.commons.domain.model.Document;
 import io.minio.BucketExistsArgs;
 import io.minio.MakeBucketArgs;
 import io.minio.MinioClient;
 import io.minio.errors.MinioException;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MinIOContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @Tag("integration")
 @Testcontainers
@@ -36,16 +35,15 @@ class IntegrationMinioFilesOperation {
     static final MinIOContainer container = new MinIOContainer(MINIO_IMAGE);
 
     @BeforeAll
-    public static void configureSlf4j() {
-        System.setProperty("org.slf4j.simpleLogger.log."+MinioFilesOperation.class.getName(), "debug");
+    static void configureSlf4j() {
+        System.setProperty("org.slf4j.simpleLogger.log." + MinioFilesOperation.class.getName(), "debug");
         System.setProperty("slf4j.provider", "org.slf4j.simple.SimpleServiceProvider");
     }
 
     @Test
     void testWritingThenCheckExistThenCopyThenRead_shouldBeOK() throws MinioException, IOException {
         var nomFichier = "test.txt";
-        MinioClient minioClient = MinioClient
-                .builder()
+        MinioClient minioClient = MinioClient.builder()
                 .endpoint(container.getS3URL())
                 .credentials(container.getUserName(), container.getPassword())
                 .build();
@@ -61,14 +59,14 @@ class IntegrationMinioFilesOperation {
         minioFilesOperation.copy(documentInGestion, documentInPublication);
         assertThat(minioFilesOperation.exists(documentInPublication)).isTrue();
 
-        assertThat(new String(minioFilesOperation.read(documentInGestion).readAllBytes())).isEqualTo(contenuFichier);
+        assertThat(new String(minioFilesOperation.read(documentInGestion).readAllBytes()))
+                .isEqualTo(contenuFichier);
     }
 
     @Test
     void testDelete_shouldRemoveDocument() throws MinioException {
         var nomFichier = "file-to-delete.txt";
-        MinioClient minioClient = MinioClient
-                .builder()
+        MinioClient minioClient = MinioClient.builder()
                 .endpoint(container.getS3URL())
                 .credentials(container.getUserName(), container.getPassword())
                 .build();
@@ -86,8 +84,7 @@ class IntegrationMinioFilesOperation {
 
     @Test
     void testExists_shouldReturnFalse_whenDocumentDoesNotExist() throws MinioException {
-        MinioClient minioClient = MinioClient
-                .builder()
+        MinioClient minioClient = MinioClient.builder()
                 .endpoint(container.getS3URL())
                 .credentials(container.getUserName(), container.getPassword())
                 .build();
@@ -100,8 +97,7 @@ class IntegrationMinioFilesOperation {
 
     @Test
     void testRead_shouldThrowException_whenDocumentDoesNotExist() throws MinioException {
-        MinioClient minioClient = MinioClient
-                .builder()
+        MinioClient minioClient = MinioClient.builder()
                 .endpoint(container.getS3URL())
                 .credentials(container.getUserName(), container.getPassword())
                 .build();
@@ -116,8 +112,7 @@ class IntegrationMinioFilesOperation {
 
     @Test
     void testCopy_shouldThrowException_whenSourceDocumentDoesNotExist() throws MinioException {
-        MinioClient minioClient = MinioClient
-                .builder()
+        MinioClient minioClient = MinioClient.builder()
                 .endpoint(container.getS3URL())
                 .credentials(container.getUserName(), container.getPassword())
                 .build();
@@ -133,10 +128,10 @@ class IntegrationMinioFilesOperation {
 
     /** Le conteneur étant partagé par la classe, le bucket survit d'une méthode de test à l'autre. */
     private void createBucket(String bucketName, MinioClient minioClient) throws MinioException {
-        if (minioClient.bucketExists(BucketExistsArgs.builder().bucket(bucketName).build())) {
+        if (minioClient.bucketExists(
+                BucketExistsArgs.builder().bucket(bucketName).build())) {
             return;
         }
         minioClient.makeBucket(MakeBucketArgs.builder().bucket(bucketName).build());
     }
-
 }

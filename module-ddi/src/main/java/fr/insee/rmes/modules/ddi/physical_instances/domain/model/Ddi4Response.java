@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -33,8 +32,7 @@ public record Ddi4Response(
         @JsonIgnore List<Ddi4Variable> variable,
         @JsonIgnore List<Ddi4CodeList> codeList,
         @JsonIgnore List<Ddi4Category> category,
-        @JsonIgnore List<Ddi4ManagedMissingValuesRepresentation> managedMissingValuesRepresentation
-) {
+        @JsonIgnore List<Ddi4ManagedMissingValuesRepresentation> managedMissingValuesRepresentation) {
     /** Identifiant du schéma DDI 4. Marqueur interne : il ne circule plus sur le fil. */
     public static final String SCHEMA = "ddi:4.0";
 
@@ -51,7 +49,12 @@ public record Ddi4Response(
      */
     @JsonProperty("items")
     public List<Ddi4VersionedItem> items() {
-        return Stream.of(physicalInstance, dataRelationship, variable, codeList, category,
+        return Stream.of(
+                        physicalInstance,
+                        dataRelationship,
+                        variable,
+                        codeList,
+                        category,
                         managedMissingValuesRepresentation)
                 .filter(Objects::nonNull)
                 .flatMap(List::stream)
@@ -63,15 +66,13 @@ public record Ddi4Response(
     @JsonCreator
     public static Ddi4Response fromWire(
             @JsonProperty("topLevelReferences") List<Reference> topLevelReferences,
-            @JsonProperty("items") List<Ddi4VersionedItem> items
-    ) {
+            @JsonProperty("items") List<Ddi4VersionedItem> items) {
         List<Ddi4PhysicalInstance> physicalInstances = new ArrayList<>();
         List<Ddi4DataRelationship> dataRelationships = new ArrayList<>();
         List<Ddi4Variable> variables = new ArrayList<>();
         List<Ddi4CodeList> codeLists = new ArrayList<>();
         List<Ddi4Category> categories = new ArrayList<>();
-        List<Ddi4ManagedMissingValuesRepresentation> missingValuesRepresentations =
-                new ArrayList<>();
+        List<Ddi4ManagedMissingValuesRepresentation> missingValuesRepresentations = new ArrayList<>();
 
         for (Ddi4VersionedItem item : items == null ? List.<Ddi4VersionedItem>of() : items) {
             switch (item) {
@@ -80,16 +81,21 @@ public record Ddi4Response(
                 case Ddi4Variable it -> variables.add(it);
                 case Ddi4CodeList it -> codeLists.add(it);
                 case Ddi4Category it -> categories.add(it);
-                case Ddi4ManagedMissingValuesRepresentation it ->
-                        missingValuesRepresentations.add(it);
-                default -> throw new IllegalArgumentException(
-                        "Type d'item DDI 4 non supporté : " + item.getClass().getSimpleName());
+                case Ddi4ManagedMissingValuesRepresentation it -> missingValuesRepresentations.add(it);
+                default ->
+                    throw new IllegalArgumentException("Type d'item DDI 4 non supporté : "
+                            + item.getClass().getSimpleName());
             }
         }
 
-        return new Ddi4Response(SCHEMA, topLevelReferences,
-                nullIfEmpty(physicalInstances), nullIfEmpty(dataRelationships),
-                nullIfEmpty(variables), nullIfEmpty(codeLists), nullIfEmpty(categories),
+        return new Ddi4Response(
+                SCHEMA,
+                topLevelReferences,
+                nullIfEmpty(physicalInstances),
+                nullIfEmpty(dataRelationships),
+                nullIfEmpty(variables),
+                nullIfEmpty(codeLists),
+                nullIfEmpty(categories),
                 nullIfEmpty(missingValuesRepresentations));
     }
 

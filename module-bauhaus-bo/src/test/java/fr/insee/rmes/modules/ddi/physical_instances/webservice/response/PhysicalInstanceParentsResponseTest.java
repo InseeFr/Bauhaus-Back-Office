@@ -1,18 +1,23 @@
 package fr.insee.rmes.modules.ddi.physical_instances.webservice.response;
 
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceParents;
-import org.junit.jupiter.api.Test;
-
-import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceParents;
+import java.util.List;
+import org.junit.jupiter.api.Test;
 
 class PhysicalInstanceParentsResponseTest {
 
     @Test
     void fromDomain_exposesParentGroupLabel() {
         PhysicalInstanceParents parents = new PhysicalInstanceParents(
-                "fr.insee", "su-1", "Enquête emploi", "fr.insee", "grp-1", "Base permanente des équipements", List.of());
+                "fr.insee",
+                "su-1",
+                "Enquête emploi",
+                "fr.insee",
+                "grp-1",
+                "Base permanente des équipements",
+                List.of());
 
         PhysicalInstanceParentsResponse response = PhysicalInstanceParentsResponse.fromDomain(parents);
 
@@ -23,7 +28,13 @@ class PhysicalInstanceParentsResponseTest {
     @Test
     void fromDomain_exposesParentStudyUnitLabel() {
         PhysicalInstanceParents parents = new PhysicalInstanceParents(
-                "fr.insee", "su-1", "Enquête emploi", "fr.insee", "grp-1", "Base permanente des équipements", List.of());
+                "fr.insee",
+                "su-1",
+                "Enquête emploi",
+                "fr.insee",
+                "grp-1",
+                "Base permanente des équipements",
+                List.of());
 
         PhysicalInstanceParentsResponse response = PhysicalInstanceParentsResponse.fromDomain(parents);
 

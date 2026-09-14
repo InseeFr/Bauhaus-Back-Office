@@ -1,17 +1,19 @@
 package fr.insee.rmes.bauhaus_services.code_list.export;
 
-import org.junit.jupiter.api.Test;
-import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
+
+import java.util.List;
+import org.junit.jupiter.api.Test;
 
 class ExportedCodesListTest {
 
-    List<ExportedCode> list = List.of(new ExportedCode("firstMockedIri","firstMockedCode","firstMockedLabelLg1", "firstMockedLabelLg2"),
-    new ExportedCode("secondMockedIri","secondMockedCode","secondMockedLabelLg1", "secondMockedLabelLg2"),
-    new ExportedCode("thirdMockedIri","thirdMockedCode","thirdMockedLabelLg1", "thirdMockedLabelLg2"));
+    List<ExportedCode> list = List.of(
+            new ExportedCode("firstMockedIri", "firstMockedCode", "firstMockedLabelLg1", "firstMockedLabelLg2"),
+            new ExportedCode("secondMockedIri", "secondMockedCode", "secondMockedLabelLg1", "secondMockedLabelLg2"),
+            new ExportedCode("thirdMockedIri", "thirdMockedCode", "thirdMockedLabelLg1", "thirdMockedLabelLg2"));
 
-    ExportedCodesList exportedCodeList = new ExportedCodesList("mockedNotation","mockedLabelLg1","mockedLabelLg2", list);
-
+    ExportedCodesList exportedCodeList =
+            new ExportedCodesList("mockedNotation", "mockedLabelLg1", "mockedLabelLg2", list);
 
     @Test
     void shouldGetterIriValueCorrespondsToTheExpectedValue() {
@@ -35,15 +37,16 @@ class ExportedCodesListTest {
 
     @Test
     void shouldCheckTheTwoInstancesAreDifferent() {
-        ExportedCodesList exportedCodeListOther = new ExportedCodesList("mockedNotation","mockedLabelLg1","mockedLabelLg2", list);
-        boolean areDifferent = exportedCodeList!=exportedCodeListOther;
+        ExportedCodesList exportedCodeListOther =
+                new ExportedCodesList("mockedNotation", "mockedLabelLg1", "mockedLabelLg2", list);
+        boolean areDifferent = exportedCodeList != exportedCodeListOther;
         assertTrue(areDifferent);
     }
 
     @Test
     void shouldCheckEncapsulatedValuesAreTheSame() {
-        ExportedCodesList exportedCodeListOther = new ExportedCodesList("mockedNotation","mockedLabelLg1","mockedLabelLg2", list);
-        assertEquals(exportedCodeListOther,exportedCodeList);
+        ExportedCodesList exportedCodeListOther =
+                new ExportedCodesList("mockedNotation", "mockedLabelLg1", "mockedLabelLg2", list);
+        assertEquals(exportedCodeListOther, exportedCodeList);
     }
-
 }

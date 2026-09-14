@@ -1,8 +1,7 @@
 package fr.insee.rmes.exceptions;
 
-import org.json.JSONArray;
-
 import java.util.Collection;
+import org.json.JSONArray;
 
 /**
  * Raised when a SIMS publication is requested while some of the documents it references
@@ -12,11 +11,12 @@ import java.util.Collection;
  */
 public class RmesMissingDocumentsException extends RmesBadRequestException {
 
-	private static final long serialVersionUID = 862L;
+    private static final long serialVersionUID = 862L;
 
-	public RmesMissingDocumentsException(Collection<String> missingDocumentIds) {
-		super(ErrorCodes.SIMS_PUBLICATION_MISSING_DOCUMENTS,
-				"Some documents referenced by this metadataReport are missing from storage",
-				new JSONArray(missingDocumentIds));
-	}
+    public RmesMissingDocumentsException(Collection<String> missingDocumentIds) {
+        super(
+                ErrorCodes.SIMS_PUBLICATION_MISSING_DOCUMENTS,
+                "Some documents referenced by this metadataReport are missing from storage",
+                new JSONArray(missingDocumentIds));
+    }
 }

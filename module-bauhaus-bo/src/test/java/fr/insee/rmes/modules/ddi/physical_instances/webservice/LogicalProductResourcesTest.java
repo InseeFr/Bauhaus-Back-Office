@@ -1,8 +1,16 @@
 package fr.insee.rmes.modules.ddi.physical_instances.webservice;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialLogicalProduct;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIService;
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PartialLogicalProductResponse;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,15 +21,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
-
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class LogicalProductResourcesTest {
@@ -69,14 +68,18 @@ class LogicalProductResourcesTest {
         assertEquals("Logical Product 1", result.getFirst().getLabel());
         assertNotNull(result.getFirst().getLinks());
         assertEquals(1, result.getFirst().getLinks().toList().size());
-        assertEquals("http://localhost:8080/ddi/logical-product/fr.insee/lp-1", result.getFirst().getRequiredLink("self").getHref());
+        assertEquals(
+                "http://localhost:8080/ddi/logical-product/fr.insee/lp-1",
+                result.getFirst().getRequiredLink("self").getHref());
 
         // Verify second product data and links
         assertEquals("lp-2", result.get(1).getId());
         assertEquals("Logical Product 2", result.get(1).getLabel());
         assertNotNull(result.get(1).getLinks());
         assertEquals(1, result.get(1).getLinks().toList().size());
-        assertEquals("http://localhost:8080/ddi/logical-product/fr.insee/lp-2", result.get(1).getRequiredLink("self").getHref());
+        assertEquals(
+                "http://localhost:8080/ddi/logical-product/fr.insee/lp-2",
+                result.get(1).getRequiredLink("self").getHref());
 
         verify(ddiService).getLogicalProducts();
     }

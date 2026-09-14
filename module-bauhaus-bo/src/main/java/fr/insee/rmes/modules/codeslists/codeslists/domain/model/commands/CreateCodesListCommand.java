@@ -1,9 +1,8 @@
 package fr.insee.rmes.modules.codeslists.codeslists.domain.model.commands;
 
 import fr.insee.rmes.modules.codeslists.codeslists.domain.exceptions.InvalidCodesListCommandException;
-import org.jspecify.annotations.Nullable;
-
 import java.util.List;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Demande de création d'une liste de codes complète.

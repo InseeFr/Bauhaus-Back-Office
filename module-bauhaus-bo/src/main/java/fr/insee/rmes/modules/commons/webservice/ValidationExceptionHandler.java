@@ -1,5 +1,8 @@
 package fr.insee.rmes.modules.commons.webservice;
 
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.ResponseEntity;
@@ -11,10 +14,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.exc.MismatchedInputException;
 import tools.jackson.databind.exc.ValueInstantiationException;
-
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * Format d'erreur contractuel de la validation des corps de requête, commun à tous les modules :
@@ -42,11 +41,9 @@ public class ValidationExceptionHandler {
 
     private static final String UNREADABLE_BODY = "the request body could not be read";
 
-    public record ValidationError(String field, String message) {
-    }
+    public record ValidationError(String field, String message) {}
 
-    public record ValidationErrors(List<ValidationError> errors) {
-    }
+    public record ValidationErrors(List<ValidationError> errors) {}
 
     /** Contrainte Bean Validation violée sur un {@code @Valid @RequestBody}. */
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -64,8 +61,7 @@ public class ValidationExceptionHandler {
      */
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ValidationErrors> handleUnreadableBody(HttpMessageNotReadableException exception) {
-        return ResponseEntity.badRequest()
-                .body(new ValidationErrors(List.of(errorOf(exception.getCause()))));
+        return ResponseEntity.badRequest().body(new ValidationErrors(List.of(errorOf(exception.getCause()))));
     }
 
     private static String messageOf(FieldError fieldError) {
@@ -95,9 +91,7 @@ public class ValidationExceptionHandler {
 
     private static String typeMismatchMessageOf(MismatchedInputException exception) {
         Class<?> targetType = exception.getTargetType();
-        return targetType == null
-                ? UNREADABLE_BODY
-                : "is not a valid " + targetType.getSimpleName();
+        return targetType == null ? UNREADABLE_BODY : "is not a valid " + targetType.getSimpleName();
     }
 
     private static String rootMessageOf(ValueInstantiationException exception) {

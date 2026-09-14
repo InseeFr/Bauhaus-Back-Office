@@ -34,14 +34,16 @@ public class DomainCodesListsService implements CodesListsService {
 
     @Override
     public CodesListId update(CodesListId idFromUrl, UpdateCodesListCommand command)
-            throws CodesListIdMismatchException, CodesListNotFoundException, CodesListsFetchException, CodesListsSaveException {
+            throws CodesListIdMismatchException, CodesListNotFoundException, CodesListsFetchException,
+                    CodesListsSaveException {
         if (!idFromUrl.value().equals(command.id())) {
             throw new CodesListIdMismatchException("The id of the list should match the id of the url");
         }
 
         // Sans ce contrôle le PUT était un upsert silencieux. La recherche se fait par IRI, pas par
         // notation : l'identifiant d'une liste complète reste renommable depuis le front.
-        PersistedCodesList persisted = repository.findByUriSegment(command.lastListUriSegment())
+        PersistedCodesList persisted = repository
+                .findByUriSegment(command.lastListUriSegment())
                 .orElseThrow(() -> new CodesListNotFoundException("CodeList not found"));
 
         CodesList codesList = CodesList.revise(command.attributes(), persisted);

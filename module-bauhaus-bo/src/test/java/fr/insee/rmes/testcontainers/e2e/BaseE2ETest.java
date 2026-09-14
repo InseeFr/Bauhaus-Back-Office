@@ -20,17 +20,21 @@ public abstract class BaseE2ETest extends WithGraphDBContainer {
 
     @Autowired
     protected TestRestTemplate restTemplate;
-    
+
     protected final ObjectMapper objectMapper = new ObjectMapper();
 
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
-        registry.add("fr.insee.rmes.bauhaus.sesame.gestion.sesameServer", () -> getRdfGestionConnectionDetails().getUrlServer());
-        registry.add("fr.insee.rmes.bauhaus.sesame.gestion.repository", () -> getRdfGestionConnectionDetails().repositoryId());
+        registry.add(
+                "fr.insee.rmes.bauhaus.sesame.gestion.sesameServer",
+                () -> getRdfGestionConnectionDetails().getUrlServer());
+        registry.add(
+                "fr.insee.rmes.bauhaus.sesame.gestion.repository",
+                () -> getRdfGestionConnectionDetails().repositoryId());
     }
 
     @BeforeAll
-    static void initData(){
+    static void initData() {
         container.withTrigFiles("all-operations-and-indicators.trig");
     }
 }

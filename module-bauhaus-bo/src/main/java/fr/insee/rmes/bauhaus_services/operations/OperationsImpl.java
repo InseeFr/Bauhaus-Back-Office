@@ -5,11 +5,12 @@ import fr.insee.rmes.bauhaus_services.OperationsService;
 import fr.insee.rmes.bauhaus_services.operations.indicators.IndicatorsRepository;
 import fr.insee.rmes.bauhaus_services.operations.operations.OperationsRepository;
 import fr.insee.rmes.bauhaus_services.operations.series.SeriesRepository;
-import fr.insee.rmes.modules.shared_kernel.domain.model.Roles;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.QueryUtils;
+import fr.insee.rmes.json.JSONUtils;
 import fr.insee.rmes.model.operations.*;
 import fr.insee.rmes.modules.operations.series.domain.model.Series;
+import fr.insee.rmes.modules.shared_kernel.domain.model.Roles;
 import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
 import fr.insee.rmes.modules.users.domain.model.Stamp;
 import fr.insee.rmes.modules.users.domain.port.serverside.UserDecoder;
@@ -19,7 +20,10 @@ import fr.insee.rmes.persistance.sparql_queries.operations.OperationsOperationQu
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.utils.DiacriticSorter;
 import fr.insee.rmes.utils.EncodingType;
-import fr.insee.rmes.json.JSONUtils;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -27,247 +31,240 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-
 @Service
-public class OperationsImpl  implements OperationsService {
+public class OperationsImpl implements OperationsService {
 
-	static final Logger logger = LoggerFactory.getLogger(OperationsImpl.class);
+    static final Logger logger = LoggerFactory.getLogger(OperationsImpl.class);
 
-	private final RepositoryGestion repoGestion;
+    private final RepositoryGestion repoGestion;
 
-	private final SeriesRepository seriesRepository;
+    private final SeriesRepository seriesRepository;
 
-	private final OperationsRepository operationsRepository;
+    private final OperationsRepository operationsRepository;
 
-	private final IndicatorsRepository indicatorsRepository;
+    private final IndicatorsRepository indicatorsRepository;
 
     private final UserDecoder userDecoder;
 
-	private final OperationIndicatorsQueries operationIndicatorsQueries;
+    private final OperationIndicatorsQueries operationIndicatorsQueries;
 
-	private final OperationsOperationQueries operationsOperationQueries;
+    private final OperationsOperationQueries operationsOperationQueries;
 
-	private final OperationSeriesQueries operationSeriesQueries;
+    private final OperationSeriesQueries operationSeriesQueries;
 
-	public OperationsImpl(RepositoryGestion repoGestion, SeriesRepository seriesRepository, OperationsRepository operationsRepository,
-						  IndicatorsRepository indicatorsRepository, UserDecoder userDecoder,
-						  OperationIndicatorsQueries operationIndicatorsQueries,
-						  OperationsOperationQueries operationsOperationQueries,
-						  OperationSeriesQueries operationSeriesQueries) {
-		this.repoGestion = repoGestion;
-		this.seriesRepository = seriesRepository;
-		this.operationsRepository = operationsRepository;
-		this.indicatorsRepository = indicatorsRepository;
-		this.userDecoder = userDecoder;
-		this.operationIndicatorsQueries = operationIndicatorsQueries;
-		this.operationsOperationQueries = operationsOperationQueries;
-		this.operationSeriesQueries = operationSeriesQueries;
-	}
+    public OperationsImpl(
+            RepositoryGestion repoGestion,
+            SeriesRepository seriesRepository,
+            OperationsRepository operationsRepository,
+            IndicatorsRepository indicatorsRepository,
+            UserDecoder userDecoder,
+            OperationIndicatorsQueries operationIndicatorsQueries,
+            OperationsOperationQueries operationsOperationQueries,
+            OperationSeriesQueries operationSeriesQueries) {
+        this.repoGestion = repoGestion;
+        this.seriesRepository = seriesRepository;
+        this.operationsRepository = operationsRepository;
+        this.indicatorsRepository = indicatorsRepository;
+        this.userDecoder = userDecoder;
+        this.operationIndicatorsQueries = operationIndicatorsQueries;
+        this.operationsOperationQueries = operationsOperationQueries;
+        this.operationSeriesQueries = operationSeriesQueries;
+    }
 
+    /***************************************************************************************************
+     * SERIES
+     *
+     *****************************************************************************************************/
+    @Override
+    public List<PartialOperationSeries> getSeries() throws RmesException {
+        logger.info("Starting to get operation series list");
+        var series = repoGestion.getResponseAsArray(operationSeriesQueries.seriesQuery());
 
-	/***************************************************************************************************
-	 * SERIES
-	 *
-	 *****************************************************************************************************/
+        return DiacriticSorter.sortGroupingByIdConcatenatingAltLabels(
+                series, PartialOperationSeries[].class, PartialOperationSeries::label);
+    }
 
+    @Override
+    public String getSeriesForSearch() throws RmesException {
+        return seriesRepository.getSeriesForSearch(null);
+    }
 
-	@Override
-	public List<PartialOperationSeries> getSeries() throws RmesException  {
-		logger.info("Starting to get operation series list");
-		var series = repoGestion.getResponseAsArray(operationSeriesQueries.seriesQuery());
+    @Override
+    public String getSeriesWithSims() throws RmesException {
+        logger.info("Starting to get series list with sims");
+        JSONArray seriesArray = repoGestion.getResponseAsArray(operationSeriesQueries.seriesWithSimsQuery());
+        return QueryUtils.correctEmptyGroupConcat(seriesArray.toString());
+    }
 
-		return DiacriticSorter.sortGroupingByIdConcatenatingAltLabels(series,
-				PartialOperationSeries[].class,
-				PartialOperationSeries::label);
-	}
+    @Override
+    public String getSeriesWithStamp() throws RmesException {
+        logger.info("Starting to get series list with sims based on a stamp");
 
-	@Override
-	public String getSeriesForSearch() throws RmesException  {
-		return seriesRepository.getSeriesForSearch(null);
-	}
-
-	@Override
-	public String getSeriesWithSims() throws RmesException  {
-		logger.info("Starting to get series list with sims");
-		JSONArray seriesArray = repoGestion.getResponseAsArray(operationSeriesQueries.seriesWithSimsQuery());
-		return QueryUtils.correctEmptyGroupConcat(seriesArray.toString());
-	}
-
-	@Override
-	public String getSeriesWithStamp() throws RmesException  {
-		logger.info("Starting to get series list with sims based on a stamp");
-
-        //TODO a revoir ceci
+        // TODO a revoir ceci
         var principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         var isAdmin = false;
-		Set<Stamp> stamps = Collections.emptySet();
+        Set<Stamp> stamps = Collections.emptySet();
         try {
             var user = userDecoder.fromPrincipal(principal).get();
             isAdmin = user.hasRole(Roles.ADMIN);
-			stamps = user.stamps();
+            stamps = user.stamps();
         } catch (MissingUserInformationException e) {
             throw new RuntimeException(e);
         }
 
-
         JSONArray series = repoGestion.getResponseAsArray(operationSeriesQueries.seriesWithStampQuery(stamps, isAdmin));
-		List<JSONObject> seriesList = new ArrayList<>();
-		JSONUtils.stream(series).forEach(seriesList::add);
-		seriesList.sort(DiacriticSorter.getComparator(seriesItem -> seriesItem.optString(Constants.LABEL)));
-		return QueryUtils.correctEmptyGroupConcat(seriesList.toString());
-	}
+        List<JSONObject> seriesList = new ArrayList<>();
+        JSONUtils.stream(series).forEach(seriesList::add);
+        seriesList.sort(DiacriticSorter.getComparator(seriesItem -> seriesItem.optString(Constants.LABEL)));
+        return QueryUtils.correctEmptyGroupConcat(seriesList.toString());
+    }
 
-	@Override
-	public String getSeriesForSearchWithStamp(String stamp) throws RmesException {
-		return seriesRepository.getSeriesForSearch(stamp);
-	}
+    @Override
+    public String getSeriesForSearchWithStamp(String stamp) throws RmesException {
+        return seriesRepository.getSeriesForSearch(stamp);
+    }
 
-	@Override
-	public Series getSeriesByID(String id) throws RmesException {
-		return seriesRepository.getSeriesById(id,EncodingType.MARKDOWN);
-	}
+    @Override
+    public Series getSeriesByID(String id) throws RmesException {
+        return seriesRepository.getSeriesById(id, EncodingType.MARKDOWN);
+    }
 
+    /**
+     * Return the series in a JSONObject encoding in markdown
+     */
+    @Override
+    public String getSeriesJsonByID(String id) throws RmesException {
+        JSONObject series = seriesRepository.getSeriesJsonById(id, EncodingType.MARKDOWN);
+        return series.toString();
+    }
 
-	/**
-	 * Return the series in a JSONObject encoding in markdown
-	 */
-	@Override
-	public String getSeriesJsonByID(String id) throws RmesException {
-		JSONObject series = seriesRepository.getSeriesJsonById(id, EncodingType.MARKDOWN);
-		return series.toString();
-	}
+    @Override
+    public void setSeries(String id, String body) throws RmesException {
+        seriesRepository.setSeries(id, body);
+    }
 
-	@Override
-	public void setSeries(String id, String body) throws RmesException {
-		seriesRepository.setSeries(id,body);
-	}
+    @Override
+    public String getOperationsWithoutReport(String idSeries) throws RmesException {
+        JSONArray resQuery =
+                repoGestion.getResponseAsArray(operationsOperationQueries.operationsWithoutSimsQuery(idSeries));
+        if (resQuery.length() == 1 && resQuery.getJSONObject(0).isEmpty()) {
+            resQuery.remove(0);
+        }
+        return QueryUtils.correctEmptyGroupConcat(resQuery.toString());
+    }
 
-	@Override
-	public String getOperationsWithoutReport(String idSeries) throws RmesException {
-		JSONArray resQuery = repoGestion.getResponseAsArray(operationsOperationQueries.operationsWithoutSimsQuery(idSeries));
-		if (resQuery.length()==1 && resQuery.getJSONObject(0).isEmpty()) {resQuery.remove(0);}
-		return QueryUtils.correctEmptyGroupConcat(resQuery.toString());
-	}
+    @Override
+    public String getOperationsWithReport(String idSeries) throws RmesException {
+        JSONArray resQuery =
+                repoGestion.getResponseAsArray(operationsOperationQueries.operationsWithSimsQuery(idSeries));
+        if (resQuery.length() == 1 && resQuery.getJSONObject(0).isEmpty()) {
+            resQuery.remove(0);
+        }
+        return QueryUtils.correctEmptyGroupConcat(resQuery.toString());
+    }
 
-	@Override
-	public String getOperationsWithReport(String idSeries) throws RmesException {
-		JSONArray resQuery = repoGestion.getResponseAsArray(operationsOperationQueries.operationsWithSimsQuery(idSeries));
-		if (resQuery.length()==1 && resQuery.getJSONObject(0).isEmpty()) {resQuery.remove(0);}
-		return QueryUtils.correctEmptyGroupConcat(resQuery.toString());
-	}
+    @Override
+    public String createSeries(String body) throws RmesException {
+        return seriesRepository.createSeries(body);
+    }
 
-	@Override
-	public String createSeries(String body) throws RmesException {
-		return seriesRepository.createSeries(body);
-	}
+    @Override
+    public void setSeriesValidation(String id) throws RmesException {
+        seriesRepository.setSeriesValidation(id);
+    }
 
-	@Override
-	public void setSeriesValidation(String id) throws RmesException{
-		seriesRepository.setSeriesValidation(id);
-	}
+    /***************************************************************************************************
+     * OPERATIONS
+     *
+     *****************************************************************************************************/
+    @Override
+    public List<PartialOperation> getOperations() throws RmesException {
+        logger.info("Starting to get operations list");
+        var operations = repoGestion.getResponseAsArray(operationsOperationQueries.operationsQuery());
 
-	/***************************************************************************************************
-	 * OPERATIONS
-	 *
-	 *****************************************************************************************************/
+        return DiacriticSorter.sortGroupingByIdConcatenatingAltLabels(
+                operations, PartialOperation[].class, PartialOperation::label);
+    }
 
+    @Override
+    public Operation getOperationById(String id) throws RmesException {
+        return operationsRepository.getOperationById(id);
+    }
 
-	@Override
-	public List<PartialOperation> getOperations() throws RmesException  {
-		logger.info("Starting to get operations list");
-		var operations = repoGestion.getResponseAsArray(operationsOperationQueries.operationsQuery());
+    /**
+     * UPDATE
+     */
+    @Override
+    public void setOperation(String id, String body) throws RmesException {
+        operationsRepository.setOperation(id, body);
+    }
 
-		return DiacriticSorter.sortGroupingByIdConcatenatingAltLabels(operations,
-				PartialOperation[].class,
-				PartialOperation::label);
+    /**
+     * CREATE
+     */
+    @Override
+    public String createOperation(String body) throws RmesException {
+        return operationsRepository.setOperation(body);
+    }
 
-	}
+    @Override
+    public void setOperationValidation(String id) throws RmesException {
+        operationsRepository.setOperationValidation(id);
+    }
 
-	@Override
-	public Operation getOperationById(String id) throws RmesException {
-		return operationsRepository.getOperationById(id);
-	}
+    /***************************************************************************************************
+     * INDICATORS
+     * @throws RmesException
+     *****************************************************************************************************/
+    @Override
+    public List<PartialOperationIndicator> getIndicators() throws RmesException {
+        logger.info("Starting to get indicators list");
+        var indicators = repoGestion.getResponseAsArray(operationIndicatorsQueries.indicatorsQuery());
 
-	/**
-	 * UPDATE
-	 */
-	@Override
-	public void setOperation(String id, String body) throws RmesException {
-		operationsRepository.setOperation(id,body);
-	}
+        return DiacriticSorter.sortGroupingByIdConcatenatingAltLabels(
+                indicators, PartialOperationIndicator[].class, PartialOperationIndicator::label);
+    }
 
-	/**
-	 * CREATE
-	 */
-	@Override
-	public String createOperation(String body) throws RmesException {
-		return operationsRepository.setOperation(body);				
-	}
+    @Override
+    public String getIndicatorsWithSims() throws RmesException {
+        logger.info("Starting to get indicators list with sims");
+        String resQuery = repoGestion
+                .getResponseAsArray(operationIndicatorsQueries.indicatorsWithSimsQuery())
+                .toString();
+        return QueryUtils.correctEmptyGroupConcat(resQuery);
+    }
 
-	@Override
-	public void setOperationValidation(String id) throws RmesException{
-		operationsRepository.setOperationValidation(id);
-	}
+    @Override
+    public String getIndicatorJsonByID(String id) throws RmesException {
+        JSONObject indicator = indicatorsRepository.getIndicatorJsonById(id);
+        return indicator.toString();
+    }
 
-	/***************************************************************************************************
-	 * INDICATORS
-	 * @throws RmesException 
-	 *****************************************************************************************************/
+    @Override
+    public Indicator getIndicatorById(String id) throws RmesException {
+        return indicatorsRepository.getIndicatorById(id, false);
+    }
 
+    @Override
+    public void setIndicator(String id, String body) throws RmesException {
+        indicatorsRepository.setIndicator(id, body);
+    }
 
-	@Override
-	public List<PartialOperationIndicator> getIndicators() throws RmesException {
-		logger.info("Starting to get indicators list");
-		var indicators = repoGestion.getResponseAsArray(operationIndicatorsQueries.indicatorsQuery());
+    /**
+     * Publish indicator
+     * @throws RmesException
+     */
+    @Override
+    public void validateIndicator(String id) throws RmesException {
+        indicatorsRepository.validateIndicator(id);
+    }
 
-		return DiacriticSorter.sortGroupingByIdConcatenatingAltLabels(indicators,
-				PartialOperationIndicator[].class,
-				PartialOperationIndicator::label);
-	}
-
-	@Override
-	public String getIndicatorsWithSims() throws RmesException {
-		logger.info("Starting to get indicators list with sims");
-		String resQuery = repoGestion.getResponseAsArray(operationIndicatorsQueries.indicatorsWithSimsQuery()).toString();
-		return QueryUtils.correctEmptyGroupConcat(resQuery);
-	}
-
-	@Override
-	public String getIndicatorJsonByID(String id) throws RmesException {
-		JSONObject indicator = indicatorsRepository.getIndicatorJsonById(id);
-		return indicator.toString();
-	}
-
-	@Override
-	public Indicator getIndicatorById(String id) throws RmesException {
-		return indicatorsRepository.getIndicatorById(id,false);
-	}
-
-	@Override
-	public void setIndicator(String id, String body) throws RmesException {
-		indicatorsRepository.setIndicator(id,body);
-	}
-
-	/**
-	 * Publish indicator
-	 * @throws RmesException 
-	 */
-	@Override
-	public void validateIndicator(String id) throws RmesException{
-		indicatorsRepository.validateIndicator(id);
-	}
-
-	/**
-	 * Create indicator
-	 * @throws RmesException 
-	 */
-	@Override
-	public String setIndicator(String body) throws RmesException {
-		return indicatorsRepository.setIndicator(body);
-	}
-
+    /**
+     * Create indicator
+     * @throws RmesException
+     */
+    @Override
+    public String setIndicator(String body) throws RmesException {
+        return indicatorsRepository.setIndicator(body);
+    }
 }

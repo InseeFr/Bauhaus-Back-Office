@@ -1,10 +1,14 @@
 package fr.insee.rmes.testcontainers.queries.sparql_queries.operations.series;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import fr.insee.rmes.AppSpringBootTest;
 import fr.insee.rmes.bauhaus_services.operations.OperationsParentRepository;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.json.JSONUtils;
 import fr.insee.rmes.testcontainers.WithGraphDBContainer;
+import java.util.ArrayList;
+import java.util.List;
 import org.json.JSONArray;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
@@ -12,11 +16,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Integration test for the read-side double-compat behaviour wired via
@@ -43,8 +42,12 @@ class OperationsParentRepositoryCanonicalizeIntegrationTest extends WithGraphDBC
 
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
-        registry.add("fr.insee.rmes.bauhaus.sesame.gestion.sesameServer", () -> getRdfGestionConnectionDetails().getUrlServer());
-        registry.add("fr.insee.rmes.bauhaus.sesame.gestion.repository", () -> getRdfGestionConnectionDetails().repositoryId());
+        registry.add(
+                "fr.insee.rmes.bauhaus.sesame.gestion.sesameServer",
+                () -> getRdfGestionConnectionDetails().getUrlServer());
+        registry.add(
+                "fr.insee.rmes.bauhaus.sesame.gestion.repository",
+                () -> getRdfGestionConnectionDetails().repositoryId());
     }
 
     @BeforeAll
@@ -71,10 +74,7 @@ class OperationsParentRepositoryCanonicalizeIntegrationTest extends WithGraphDBC
     void getSeriesCreators_returnsBothInShortForm_whenMixed() throws RmesException {
         JSONArray creators = operationsParentRepository.getSeriesCreators("sMIX");
 
-        assertThat(toCreatorList(creators)).containsExactlyInAnyOrder(
-                SHORT_HIE_069,
-                SHORT_HIE_076
-        );
+        assertThat(toCreatorList(creators)).containsExactlyInAnyOrder(SHORT_HIE_069, SHORT_HIE_076);
     }
 
     @Test

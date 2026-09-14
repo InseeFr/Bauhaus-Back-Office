@@ -39,19 +39,19 @@ public class RmesException extends Exception {
     public RmesException(int status, int errorCode, String details) {
         super();
         this.status = status;
-        this.details =  createDetails(errorCode, null, details);
+        this.details = createDetails(errorCode, null, details);
     }
 
     public RmesException(int status, int errorCode, JSONArray details) {
         super();
         this.status = status;
-        this.details =  createDetails(errorCode, null, details.toString());
+        this.details = createDetails(errorCode, null, details.toString());
     }
 
     public RmesException(int status, int errorCode, String message, JSONArray details) {
         super();
         this.status = status;
-        this.details =  createDetails(errorCode, message, details.toString());
+        this.details = createDetails(errorCode, message, details.toString());
     }
 
     public RmesException(int status, int errorCode, String message, JSONObject details) {
@@ -60,7 +60,7 @@ public class RmesException extends Exception {
         JSONObject det = details;
         det.put(CODE, errorCode);
         det.put(MESSAGE, message);
-        this.details=det.toString();
+        this.details = det.toString();
     }
 
     public RmesException(HttpStatus status, String message, String details) {
@@ -71,8 +71,8 @@ public class RmesException extends Exception {
 
     public RmesException(String message, Exception e) {
         super(message, e);
-        this.details=e.getMessage();
-        this.status=HttpStatus.INTERNAL_SERVER_ERROR.value();
+        this.details = e.getMessage();
+        this.status = HttpStatus.INTERNAL_SERVER_ERROR.value();
     }
 
     public int getStatus() {

@@ -1,11 +1,18 @@
 package fr.insee.rmes.modules.operations.msd.infrastructure.legacy;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.when;
+
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.operations.msd.domain.model.ExportGoal;
 import fr.insee.rmes.modules.operations.msd.domain.model.ExportedFile;
 import fr.insee.rmes.modules.operations.msd.domain.model.commands.MetadataExportRequest;
 import fr.insee.rmes.modules.operations.msd.domain.model.commands.SourcesExportRequest;
+import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,14 +24,6 @@ import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-
-import java.util.Set;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class LegacyDocumentationExportGatewayTest {
@@ -77,11 +76,12 @@ class LegacyDocumentationExportGatewayTest {
     @Test
     void exportMetadataReportSources_delegatesToFilesEndpoint() throws RmesException {
         SourcesExportRequest request = new SourcesExportRequest("1", false, true, true);
-        Resource resource = new ByteArrayResource(new byte[]{1});
+        Resource resource = new ByteArrayResource(new byte[] {1});
         ResponseEntity<Object> response = ResponseEntity.ok()
                 .headers(headersWith("xmlFiles.zip", MediaType.APPLICATION_OCTET_STREAM, null))
                 .body(resource);
-        when(documentationExport.exportMetadataReportFiles("1", false, true, true)).thenReturn(response);
+        when(documentationExport.exportMetadataReportFiles("1", false, true, true))
+                .thenReturn(response);
 
         ExportedFile result = gateway.exportMetadataReportSources(request);
 
@@ -100,7 +100,8 @@ class LegacyDocumentationExportGatewayTest {
 
     private static HttpHeaders headersWith(String filename, MediaType contentType, String missingDocuments) {
         HttpHeaders headers = new HttpHeaders();
-        headers.setContentDisposition(ContentDisposition.attachment().filename(filename).build());
+        headers.setContentDisposition(
+                ContentDisposition.attachment().filename(filename).build());
         headers.setContentType(contentType);
         if (missingDocuments != null) {
             headers.set("X-Missing-Documents", missingDocuments);

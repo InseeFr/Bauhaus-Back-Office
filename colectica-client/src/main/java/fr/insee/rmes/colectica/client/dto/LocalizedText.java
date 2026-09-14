@@ -7,6 +7,5 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * {@code _query/advanced} response, e.g. {@code {"Value": "Ma Physical Instance", "LanguageTag": "fr-FR"}}.
  */
 public record LocalizedText(
-    @JsonProperty("Value") String value,
-    @JsonProperty("LanguageTag") String languageTag
-) {}
+        @JsonProperty("Value") String value,
+        @JsonProperty("LanguageTag") String languageTag) {}

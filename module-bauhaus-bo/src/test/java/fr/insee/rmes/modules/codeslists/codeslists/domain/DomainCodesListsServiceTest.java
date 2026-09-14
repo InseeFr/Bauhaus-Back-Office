@@ -1,5 +1,8 @@
 package fr.insee.rmes.modules.codeslists.codeslists.domain;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import fr.insee.rmes.modules.codeslists.codeslists.domain.exceptions.CodesListAlreadyExistsException;
 import fr.insee.rmes.modules.codeslists.codeslists.domain.exceptions.CodesListIdMismatchException;
 import fr.insee.rmes.modules.codeslists.codeslists.domain.exceptions.CodesListNotFoundException;
@@ -12,16 +15,12 @@ import fr.insee.rmes.modules.codeslists.codeslists.domain.model.commands.CreateC
 import fr.insee.rmes.modules.codeslists.codeslists.domain.model.commands.UpdateCodesListCommand;
 import fr.insee.rmes.modules.codeslists.codeslists.domain.port.serverside.CodesListsRepository;
 import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 /**
  * Règles d'écriture d'une liste de codes complète, vues du domaine : ce que le client ne décide
@@ -61,9 +60,18 @@ class DomainCodesListsServiceTest {
     private final DomainCodesListsService service = new DomainCodesListsService(repository);
 
     private static CreateCodesListCommand command(String id) {
-        return new CreateCodesListCommand(id, "libellé", "label", null, null,
-                "http://bauhaus/HIE000000", List.of("http://bauhaus/HIE000001"),
-                "http://disseminationStatus", "cl-test", "ClTest", "cl-test-code");
+        return new CreateCodesListCommand(
+                id,
+                "libellé",
+                "label",
+                null,
+                null,
+                "http://bauhaus/HIE000000",
+                List.of("http://bauhaus/HIE000001"),
+                "http://disseminationStatus",
+                "cl-test",
+                "ClTest",
+                "cl-test-code");
     }
 
     @Test
@@ -92,7 +100,8 @@ class DomainCodesListsServiceTest {
     void updating_a_codes_list_that_does_not_exist_is_a_not_found_and_not_a_silent_upsert() {
         repository.persisted = Optional.empty();
 
-        assertThatThrownBy(() -> service.update(new CodesListId("CL_TEST"), new UpdateCodesListCommand(command("CL_TEST"))))
+        assertThatThrownBy(() ->
+                        service.update(new CodesListId("CL_TEST"), new UpdateCodesListCommand(command("CL_TEST"))))
                 .isInstanceOf(CodesListNotFoundException.class);
 
         assertThat(repository.saved).isEmpty();
@@ -102,7 +111,8 @@ class DomainCodesListsServiceTest {
     void updating_through_an_url_that_names_another_codes_list_is_rejected() {
         repository.persisted = Optional.of(new PersistedCodesList("2020-01-01T00:00:00", ValidationStatus.UNPUBLISHED));
 
-        assertThatThrownBy(() -> service.update(new CodesListId("CL_TEST"), new UpdateCodesListCommand(command("CL_OTHER"))))
+        assertThatThrownBy(() ->
+                        service.update(new CodesListId("CL_TEST"), new UpdateCodesListCommand(command("CL_OTHER"))))
                 .isInstanceOf(CodesListIdMismatchException.class);
 
         assertThat(repository.saved).isEmpty();
@@ -122,13 +132,10 @@ class DomainCodesListsServiceTest {
      * publiée puis modifiée reste « Modified », elle ne retombe pas à « Unpublished ».
      */
     @ParameterizedTest(name = "{0} -> {1}")
-    @CsvSource({
-            "UNPUBLISHED, UNPUBLISHED",
-            "VALIDATED, MODIFIED",
-            "MODIFIED, MODIFIED"
-    })
+    @CsvSource({"UNPUBLISHED, UNPUBLISHED", "VALIDATED, MODIFIED", "MODIFIED, MODIFIED"})
     void updating_moves_the_validation_state(ValidationStatus persistedState, ValidationStatus expected)
-            throws CodesListIdMismatchException, CodesListNotFoundException, CodesListsFetchException, CodesListsSaveException {
+            throws CodesListIdMismatchException, CodesListNotFoundException, CodesListsFetchException,
+                    CodesListsSaveException {
         repository.persisted = Optional.of(new PersistedCodesList("2020-01-01T00:00:00", persistedState));
 
         service.update(new CodesListId("CL_TEST"), new UpdateCodesListCommand(command("CL_TEST")));

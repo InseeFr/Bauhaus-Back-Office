@@ -1,9 +1,9 @@
 package fr.insee.rmes.graphdb.ontologies;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import org.eclipse.rdf4j.model.Namespace;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class SCHEMATest {
 
@@ -31,6 +31,4 @@ class SCHEMATest {
         assertTrue(SCHEMA.URL.toString().startsWith("http://schema.org/"));
         assertTrue(SCHEMA.URL.toString().contains("url"));
     }
-
-
 }

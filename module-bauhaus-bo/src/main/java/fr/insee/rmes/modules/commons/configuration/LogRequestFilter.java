@@ -1,19 +1,18 @@
 package fr.insee.rmes.modules.commons.configuration;
 
-import fr.insee.rmes.modules.users.infrastructure.UserProvider;
+import static java.util.Optional.empty;
+
+import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
 import fr.insee.rmes.modules.users.domain.model.User;
-import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.modules.users.infrastructure.UserProvider;
 import jakarta.servlet.http.HttpServletRequest;
+import java.util.Optional;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.AbstractRequestLoggingFilter;
-
-import java.util.Optional;
-
-import static java.util.Optional.empty;
 
 @Component
 public class LogRequestFilter extends AbstractRequestLoggingFilter {
@@ -42,10 +41,7 @@ public class LogRequestFilter extends AbstractRequestLoggingFilter {
         String queryString = StringUtils.isNotEmpty(request.getQueryString()) ? request.getQueryString() : "";
         return String.format(
                 "From %s by user %s call %s%s",
-                request.getServerName(),
-                idep,
-                StringUtils.substringBetween(message, "[", "]"),
-                queryString);
+                request.getServerName(), idep, StringUtils.substringBetween(message, "[", "]"), queryString);
     }
 
     private String getIdUser() {
@@ -58,5 +54,4 @@ public class LogRequestFilter extends AbstractRequestLoggingFilter {
         }
         return currentUser.map(user -> user.id() + " " + user.getStamps()).orElse("No authentication needed");
     }
-
 }

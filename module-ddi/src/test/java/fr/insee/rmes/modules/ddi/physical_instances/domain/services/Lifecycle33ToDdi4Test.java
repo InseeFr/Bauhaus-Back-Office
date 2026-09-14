@@ -1,5 +1,9 @@
 package fr.insee.rmes.modules.ddi.physical_instances.domain.services;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.ddi.lifecycle33.instance.FragmentDocument;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Code;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Category;
@@ -18,12 +22,34 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import org.apache.xmlbeans.XmlException;
 import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.tuple;
-
 class Lifecycle33ToDdi4Test {
 
     private final Lifecycle33ToDdi4 converter = new Lifecycle33ToDdi4();
+
+    /**
+     * Le {@code VersionResponsibility} du fragment DDI 3.3 doit ressortir dans le JSON DDI 4 :
+     * c'est là que le front le lit.
+     */
+    @Test
+    void shouldExposeVersionResponsibilityInTheDdi4Json() throws Exception {
+        FragmentDocument doc = FragmentDocument.Factory.parse("""
+            <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
+                <PhysicalInstance xmlns="ddi:physicalinstance:3_3" isUniversallyUnique="true" versionDate="2026-12-23T09:52:06.355Z">
+                    <r:URN>urn:ddi:fr.insee:pi-id:1</r:URN>
+                    <r:Agency>fr.insee</r:Agency>
+                    <r:ID>pi-id</r:ID>
+                    <r:Version>1</r:Version>
+                    <r:VersionResponsibility>responsable-configure</r:VersionResponsibility>
+                    <r:Citation><r:Title><r:String xml:lang="fr-FR">Test Instance</r:String></r:Title></r:Citation>
+                </PhysicalInstance>
+            </Fragment>
+            """);
+
+        Ddi4PhysicalInstance pi = converter.toPhysicalInstance(doc);
+
+        assertThat(new ObjectMapper().writeValueAsString(pi))
+                .contains("\"VersionResponsibility\":\"responsable-configure\"");
+    }
 
     @Test
     void shouldParsePhysicalInstanceWithoutBasedOnObject() throws XmlException {
@@ -154,8 +180,15 @@ class Lifecycle33ToDdi4Test {
         assertThat(dr.logicalRecord()).hasSize(1);
         assertThat(dr.logicalRecord().get(0).id()).isEqualTo("lr-id");
         assertThat(dr.logicalRecord().get(0).label().get(0).value()).isEqualTo("LR Label");
-        assertThat(dr.logicalRecord().get(0).variablesInRecord().variableUsedReference()).hasSize(1);
-        assertThat(dr.logicalRecord().get(0).variablesInRecord().variableUsedReference().get(0).id()).isEqualTo("var-1");
+        assertThat(dr.logicalRecord().get(0).variablesInRecord().variableUsedReference())
+                .hasSize(1);
+        assertThat(dr.logicalRecord()
+                        .get(0)
+                        .variablesInRecord()
+                        .variableUsedReference()
+                        .get(0)
+                        .id())
+                .isEqualTo("var-1");
     }
 
     @Test
@@ -177,12 +210,12 @@ class Lifecycle33ToDdi4Test {
             </Fragment>
             """);
 
-        Ddi4Variable var = converter.toVariable(doc);
+        Ddi4Variable variable = converter.toVariable(doc);
 
-        assertThat(var.basedOnObject().basedOnReferences().get(0).id()).isEqualTo("original-var");
-        assertThat(var.variableName().get(0).value()).isEqualTo("VAR_NAME");
-        assertThat(var.label().get(0).value()).isEqualTo("Variable Label");
-        assertThat(var.description()).isNull();
+        assertThat(variable.basedOnObject().basedOnReferences().get(0).id()).isEqualTo("original-var");
+        assertThat(variable.variableName().get(0).value()).isEqualTo("VAR_NAME");
+        assertThat(variable.label().get(0).value()).isEqualTo("Variable Label");
+        assertThat(variable.description()).isNull();
     }
 
     @Test
@@ -200,13 +233,11 @@ class Lifecycle33ToDdi4Test {
             </Fragment>
             """);
 
-        Ddi4Variable var = converter.toVariable(doc);
+        Ddi4Variable variable = converter.toVariable(doc);
 
-        assertThat(var.description())
+        assertThat(variable.description())
                 .extracting(LangString::language, LangString::value)
-                .containsExactly(
-                        tuple("en-IE", "English description"),
-                        tuple("fr-FR", "Description française"));
+                .containsExactly(tuple("en-IE", "English description"), tuple("fr-FR", "Description française"));
     }
 
     @Test
@@ -228,11 +259,16 @@ class Lifecycle33ToDdi4Test {
             </Fragment>
             """);
 
-        Ddi4Variable var = converter.toVariable(doc);
+        Ddi4Variable variable = converter.toVariable(doc);
 
-        assertThat(var.variableRepresentation().codeRepresentation().blankIsMissingValue()).isEqualTo(true);
-        assertThat(var.variableRepresentation().codeRepresentation().codeListReference().id()).isEqualTo("cl-id");
-        assertThat(var.variableRepresentation().numericRepresentation()).isNull();
+        assertThat(variable.variableRepresentation().codeRepresentation().blankIsMissingValue())
+                .isEqualTo(true);
+        assertThat(variable.variableRepresentation()
+                        .codeRepresentation()
+                        .codeListReference()
+                        .id())
+                .isEqualTo("cl-id");
+        assertThat(variable.variableRepresentation().numericRepresentation()).isNull();
     }
 
     /**
@@ -262,11 +298,39 @@ class Lifecycle33ToDdi4Test {
             </Fragment>
             """);
 
-        Ddi4Variable var = converter.toVariable(doc);
+        Ddi4Variable variable = converter.toVariable(doc);
 
-        assertThat(var.variableRepresentation().missingValuesReference())
+        assertThat(variable.variableRepresentation().missingValuesReference())
                 .isEqualTo(Reference.of("fr.insee", "mmvr-1", "1", "ManagedMissingValuesRepresentation"));
-        assertThat(var.variableRepresentation().codeRepresentation().codeListReference().id()).isEqualTo("cl-id");
+        assertThat(variable.variableRepresentation()
+                        .codeRepresentation()
+                        .codeListReference()
+                        .id())
+                .isEqualTo("cl-id");
+    }
+
+    /** Une variable peut déclarer un rôle sans aucune ValueRepresentation : aucun lecteur ne s'applique. */
+    @Test
+    void shouldParseVariableWithoutValueRepresentation() throws XmlException {
+        FragmentDocument doc = FragmentDocument.Factory.parse("""
+            <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
+                <Variable xmlns="ddi:logicalproduct:3_3" isUniversallyUnique="true" versionDate="2025-12-23T09:52:06.355Z">
+                    <r:URN>urn:ddi:fr.insee:var:1</r:URN>
+                    <r:Agency>fr.insee</r:Agency><r:ID>var</r:ID><r:Version>1</r:Version>
+                    <VariableRepresentation>
+                        <VariableRole>Identifier</VariableRole>
+                    </VariableRepresentation>
+                </Variable>
+            </Fragment>
+            """);
+
+        Ddi4Variable variable = converter.toVariable(doc);
+
+        assertThat(variable.variableRepresentation().variableRole()).isEqualTo("Identifier");
+        assertThat(variable.variableRepresentation().codeRepresentation()).isNull();
+        assertThat(variable.variableRepresentation().numericRepresentation()).isNull();
+        assertThat(variable.variableRepresentation().dateTimeRepresentation()).isNull();
+        assertThat(variable.variableRepresentation().textRepresentation()).isNull();
     }
 
     @Test
@@ -289,13 +353,34 @@ class Lifecycle33ToDdi4Test {
             </Fragment>
             """);
 
-        Ddi4Variable var = converter.toVariable(doc);
+        Ddi4Variable variable = converter.toVariable(doc);
 
-        assertThat(var.variableRepresentation().numericRepresentation().numericTypeCode()).isEqualTo("Integer");
-        assertThat(var.variableRepresentation().numericRepresentation().numberRange().low().isInclusive()).isEqualTo(false);
-        assertThat(var.variableRepresentation().numericRepresentation().numberRange().low().value()).isEqualTo(0.0);
-        assertThat(var.variableRepresentation().numericRepresentation().numberRange().high().isInclusive()).isEqualTo(true);
-        assertThat(var.variableRepresentation().numericRepresentation().numberRange().high().value()).isEqualTo(100.0);
+        assertThat(variable.variableRepresentation().numericRepresentation().numericTypeCode())
+                .isEqualTo("Integer");
+        assertThat(variable.variableRepresentation()
+                        .numericRepresentation()
+                        .numberRange()
+                        .low()
+                        .isInclusive())
+                .isEqualTo(false);
+        assertThat(variable.variableRepresentation()
+                        .numericRepresentation()
+                        .numberRange()
+                        .low()
+                        .value())
+                .isEqualTo(0.0);
+        assertThat(variable.variableRepresentation()
+                        .numericRepresentation()
+                        .numberRange()
+                        .high()
+                        .isInclusive())
+                .isEqualTo(true);
+        assertThat(variable.variableRepresentation()
+                        .numericRepresentation()
+                        .numberRange()
+                        .high()
+                        .value())
+                .isEqualTo(100.0);
     }
 
     @Test
@@ -318,10 +403,20 @@ class Lifecycle33ToDdi4Test {
             </Fragment>
             """);
 
-        Ddi4Variable var = converter.toVariable(doc);
+        Ddi4Variable variable = converter.toVariable(doc);
 
-        assertThat(var.variableRepresentation().numericRepresentation().numberRange().low().value()).isEqualTo(0.0001);
-        assertThat(var.variableRepresentation().numericRepresentation().numberRange().high().value()).isEqualTo(12345678.5);
+        assertThat(variable.variableRepresentation()
+                        .numericRepresentation()
+                        .numberRange()
+                        .low()
+                        .value())
+                .isEqualTo(0.0001);
+        assertThat(variable.variableRepresentation()
+                        .numericRepresentation()
+                        .numberRange()
+                        .high()
+                        .value())
+                .isEqualTo(12345678.5);
     }
 
     @Test
@@ -341,10 +436,12 @@ class Lifecycle33ToDdi4Test {
             </Fragment>
             """);
 
-        Ddi4Variable var = converter.toVariable(doc);
+        Ddi4Variable variable = converter.toVariable(doc);
 
-        assertThat(var.variableRepresentation().dateTimeRepresentation().dateTypeCode()).isEqualTo("Date");
-        assertThat(var.variableRepresentation().dateTimeRepresentation().dateFieldFormat()).isEqualTo("yyyy-MM-dd");
+        assertThat(variable.variableRepresentation().dateTimeRepresentation().dateTypeCode())
+                .isEqualTo("Date");
+        assertThat(variable.variableRepresentation().dateTimeRepresentation().dateFieldFormat())
+                .isEqualTo("yyyy-MM-dd");
     }
 
     @Test
@@ -361,12 +458,16 @@ class Lifecycle33ToDdi4Test {
             </Fragment>
             """);
 
-        Ddi4Variable var = converter.toVariable(doc);
+        Ddi4Variable variable = converter.toVariable(doc);
 
-        assertThat(var.variableRepresentation().textRepresentation().minLength()).isEqualTo(1);
-        assertThat(var.variableRepresentation().textRepresentation().maxLength()).isEqualTo(255);
-        assertThat(var.variableRepresentation().textRepresentation().regExp()).isEqualTo("[A-Z]+");
-        assertThat(var.variableRepresentation().textRepresentation().blankIsMissingValue()).isEqualTo(true);
+        assertThat(variable.variableRepresentation().textRepresentation().minLength())
+                .isEqualTo(1);
+        assertThat(variable.variableRepresentation().textRepresentation().maxLength())
+                .isEqualTo(255);
+        assertThat(variable.variableRepresentation().textRepresentation().regExp())
+                .isEqualTo("[A-Z]+");
+        assertThat(variable.variableRepresentation().textRepresentation().blankIsMissingValue())
+                .isEqualTo(true);
     }
 
     @Test
@@ -689,8 +790,7 @@ class Lifecycle33ToDdi4Test {
         assertThat(cat.label())
                 .extracting(LangString::language, LangString::value)
                 .containsExactly(
-                        tuple("en-IE", "Growing of non-perennial crops"),
-                        tuple("fr-FR", "Cultures non permanentes"));
+                        tuple("en-IE", "Growing of non-perennial crops"), tuple("fr-FR", "Cultures non permanentes"));
     }
 
     @Test
@@ -719,6 +819,36 @@ class Lifecycle33ToDdi4Test {
         assertThat(group.citation().title().get(0).value()).isEqualTo("Test Group");
         assertThat(group.studyUnitReference()).hasSize(1);
         assertThat(group.studyUnitReference().get(0).id()).isEqualTo("su-id-1");
+    }
+
+    @Test
+    void shouldParseGroupAlternateTitles() throws XmlException {
+        FragmentDocument doc = FragmentDocument.Factory.parse("""
+            <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
+                <Group xmlns="ddi:group:3_3" isUniversallyUnique="true" versionDate="2026-04-03T12:00:00Z">
+                    <r:URN>urn:ddi:fr.insee:group-id:1</r:URN>
+                    <r:Agency>fr.insee</r:Agency><r:ID>group-id</r:ID><r:Version>1</r:Version>
+                    <r:Citation>
+                        <r:Title>
+                            <r:String xml:lang="fr-FR">Recensement</r:String>
+                            <r:String xml:lang="en-GB">Census</r:String>
+                        </r:Title>
+                        <r:AlternateTitle><r:String xml:lang="fr-FR">RP</r:String></r:AlternateTitle>
+                        <r:AlternateTitle><r:String xml:lang="en-GB">CENS</r:String></r:AlternateTitle>
+                    </r:Citation>
+                </Group>
+            </Fragment>
+            """);
+
+        Ddi4Group group = converter.toGroup(doc);
+
+        assertThat(group.citation().title())
+                .extracting(LangString::language, LangString::value)
+                .containsExactly(tuple("fr-FR", "Recensement"), tuple("en-GB", "Census"));
+        assertThat(group.citation().alternateTitle())
+                .as("un réenregistrement du groupe repart de cette citation : ce qui n'est pas relu est perdu")
+                .extracting(LangString::language, LangString::value)
+                .containsExactly(tuple("fr-FR", "RP"), tuple("en-GB", "CENS"));
     }
 
     @Test

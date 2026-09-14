@@ -14,6 +14,4 @@ public record ClientConfigProperties(
         List<String> extraMandatoryFields,
         String defaultAgencyId,
         List<String> colecticaLangs,
-        boolean enableDevTools
-) {
-}
+        boolean enableDevTools) {}

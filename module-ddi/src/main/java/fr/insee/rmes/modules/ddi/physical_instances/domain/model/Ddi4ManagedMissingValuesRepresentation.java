@@ -2,7 +2,6 @@ package fr.insee.rmes.modules.ddi.physical_instances.domain.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.util.List;
 
 /**
@@ -25,14 +24,37 @@ public record Ddi4ManagedMissingValuesRepresentation(
         @JsonProperty("ID") String id,
         @JsonProperty("Version") String version,
         @JsonProperty("Label") List<LangString> label,
-        @JsonProperty("MissingCodeRepresentation") List<CodeRepresentation> missingCodeRepresentation
-) implements Ddi4VersionedItem {
+        @JsonProperty("MissingCodeRepresentation") List<CodeRepresentation> missingCodeRepresentation,
+        @JsonProperty("VersionResponsibility") String versionResponsibility)
+        implements Ddi4VersionedItem {
 
     public static final String TYPE = "ManagedMissingValuesRepresentation";
 
+    /**
+     * Constructeur de compatibilité (sans {@code VersionResponsibility}) : le champ est estampillé
+     * à l'écriture depuis {@code colectica.yml}, les constructions internes ne le renseignent pas.
+     */
+    public Ddi4ManagedMissingValuesRepresentation(
+            String type,
+            CogsDate versionDate,
+            String urn,
+            String agency,
+            String id,
+            String version,
+            List<LangString> label,
+            List<CodeRepresentation> missingCodeRepresentation) {
+        this(type, versionDate, urn, agency, id, version, label, missingCodeRepresentation, null);
+    }
+
     @Override
     public Ddi4ManagedMissingValuesRepresentation withVersionDate(CogsDate versionDate) {
-        return new Ddi4ManagedMissingValuesRepresentation(type, versionDate, urn, agency, id, version,
-                label, missingCodeRepresentation);
+        return new Ddi4ManagedMissingValuesRepresentation(
+                type, versionDate, urn, agency, id, version, label, missingCodeRepresentation, versionResponsibility);
+    }
+
+    @Override
+    public Ddi4ManagedMissingValuesRepresentation withVersionResponsibility(String versionResponsibility) {
+        return new Ddi4ManagedMissingValuesRepresentation(
+                type, versionDate, urn, agency, id, version, label, missingCodeRepresentation, versionResponsibility);
     }
 }

@@ -1,11 +1,9 @@
 package fr.insee.rmes.modules.organisations.domain.port.clientside;
 
 import fr.insee.rmes.modules.commons.hexagonal.ClientSidePort;
-
 import fr.insee.rmes.modules.organisations.domain.exceptions.OrganisationFetchException;
 import fr.insee.rmes.modules.organisations.domain.model.CompactOrganisation;
 import fr.insee.rmes.modules.organisations.domain.model.OrganisationSummary;
-
 import java.util.List;
 import java.util.Optional;
 

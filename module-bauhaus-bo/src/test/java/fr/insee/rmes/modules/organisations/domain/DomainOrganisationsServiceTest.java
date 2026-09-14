@@ -1,11 +1,17 @@
 package fr.insee.rmes.modules.organisations.domain;
 
-import fr.insee.rmes.modules.shared_kernel.domain.model.Lang;
-import fr.insee.rmes.modules.shared_kernel.domain.model.LocalisedLabel;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.*;
+
 import fr.insee.rmes.modules.organisations.domain.exceptions.OrganisationFetchException;
 import fr.insee.rmes.modules.organisations.domain.model.CompactOrganisation;
 import fr.insee.rmes.modules.organisations.domain.model.OrganisationSummary;
 import fr.insee.rmes.modules.organisations.domain.port.serverside.OrganisationsRepository;
+import fr.insee.rmes.modules.shared_kernel.domain.model.Lang;
+import fr.insee.rmes.modules.shared_kernel.domain.model.LocalisedLabel;
+import java.util.Arrays;
+import java.util.List;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,13 +19,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.Arrays;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class DomainOrganisationsServiceTest {
@@ -42,8 +41,7 @@ class DomainOrganisationsServiceTest {
         LocalisedLabel label = new LocalisedLabel("Direction des statistiques", Lang.FR);
         CompactOrganisation expectedOrganisation = new CompactOrganisation(iri, organisationId, label);
 
-        when(organisationsRepository.getCompactOrganisation(organisationId))
-            .thenReturn(expectedOrganisation);
+        when(organisationsRepository.getCompactOrganisation(organisationId)).thenReturn(expectedOrganisation);
 
         // When
         CompactOrganisation result = service.getCompactOrganisation(organisationId);
@@ -63,9 +61,18 @@ class DomainOrganisationsServiceTest {
     void shouldGetAllOrganisationsDelegatingToRepository() throws OrganisationFetchException {
         // Given
         List<OrganisationSummary> expected = List.of(
-            new OrganisationSummary("http://bauhaus/organisations/ORG-001", "ORG-001", "Direction des statistiques", "Statistics Directorate"),
-            new OrganisationSummary("http://bauhaus/organisations/ORG-002", "ORG-002", "Service des données", "Data Department")
-        );
+                new OrganisationSummary(
+                        "http://bauhaus/organisations/ORG-001",
+                        "ORG-001",
+                        null,
+                        "Direction des statistiques",
+                        "Statistics Directorate"),
+                new OrganisationSummary(
+                        "http://bauhaus/organisations/ORG-002",
+                        "ORG-002",
+                        null,
+                        "Service des données",
+                        "Data Department"));
         when(organisationsRepository.getOrganisations()).thenReturn(expected);
 
         // When
@@ -82,11 +89,11 @@ class DomainOrganisationsServiceTest {
         // Given
         String organisationId = "ORG-001";
         when(organisationsRepository.getCompactOrganisation(organisationId))
-            .thenThrow(new OrganisationFetchException());
+                .thenThrow(new OrganisationFetchException());
 
         // When/Then
         assertThatThrownBy(() -> service.getCompactOrganisation(organisationId))
-            .isInstanceOf(OrganisationFetchException.class);
+                .isInstanceOf(OrganisationFetchException.class);
 
         verify(organisationsRepository, times(1)).getCompactOrganisation(organisationId);
     }
@@ -99,8 +106,7 @@ class DomainOrganisationsServiceTest {
         LocalisedLabel label = new LocalisedLabel("Test Organisation", Lang.EN);
         CompactOrganisation organisation = new CompactOrganisation(iri, organisationId, label);
 
-        when(organisationsRepository.getCompactOrganisation(organisationId))
-            .thenReturn(organisation);
+        when(organisationsRepository.getCompactOrganisation(organisationId)).thenReturn(organisation);
 
         // When
         service.getCompactOrganisation(organisationId);
@@ -118,8 +124,7 @@ class DomainOrganisationsServiceTest {
         LocalisedLabel frenchLabel = new LocalisedLabel("Organisation de test", Lang.FR);
         CompactOrganisation organisation = new CompactOrganisation(iri, organisationId, frenchLabel);
 
-        when(organisationsRepository.getCompactOrganisation(organisationId))
-            .thenReturn(organisation);
+        when(organisationsRepository.getCompactOrganisation(organisationId)).thenReturn(organisation);
 
         // When
         CompactOrganisation result = service.getCompactOrganisation(organisationId);
@@ -166,14 +171,16 @@ class DomainOrganisationsServiceTest {
         IRI iri2 = SimpleValueFactory.getInstance().createIRI("http://rdf.insee.fr/def/base#OrganismUnit_2");
         IRI iri3 = SimpleValueFactory.getInstance().createIRI("http://rdf.insee.fr/def/base#OrganismUnit_3");
 
-        CompactOrganisation org1 = new CompactOrganisation(iri1, "ORG-001", new LocalisedLabel("Direction des statistiques", Lang.FR));
-        CompactOrganisation org2 = new CompactOrganisation(iri2, "ORG-002", new LocalisedLabel("Statistics Department", Lang.EN));
-        CompactOrganisation org3 = new CompactOrganisation(iri3, "ORG-003", new LocalisedLabel("Service des données", Lang.FR));
+        CompactOrganisation org1 =
+                new CompactOrganisation(iri1, "ORG-001", new LocalisedLabel("Direction des statistiques", Lang.FR));
+        CompactOrganisation org2 =
+                new CompactOrganisation(iri2, "ORG-002", new LocalisedLabel("Statistics Department", Lang.EN));
+        CompactOrganisation org3 =
+                new CompactOrganisation(iri3, "ORG-003", new LocalisedLabel("Service des données", Lang.FR));
 
         List<CompactOrganisation> expectedOrganisations = Arrays.asList(org1, org2, org3);
 
-        when(organisationsRepository.getCompactOrganisations(organisationIds))
-            .thenReturn(expectedOrganisations);
+        when(organisationsRepository.getCompactOrganisations(organisationIds)).thenReturn(expectedOrganisations);
 
         // When
         List<CompactOrganisation> result = service.getCompactOrganisations(organisationIds);
@@ -194,11 +201,11 @@ class DomainOrganisationsServiceTest {
         // Given
         List<String> organisationIds = Arrays.asList("ORG-001", "ORG-002");
         when(organisationsRepository.getCompactOrganisations(organisationIds))
-            .thenThrow(new OrganisationFetchException());
+                .thenThrow(new OrganisationFetchException());
 
         // When/Then
         assertThatThrownBy(() -> service.getCompactOrganisations(organisationIds))
-            .isInstanceOf(OrganisationFetchException.class);
+                .isInstanceOf(OrganisationFetchException.class);
 
         verify(organisationsRepository, times(1)).getCompactOrganisations(organisationIds);
     }
@@ -212,12 +219,10 @@ class DomainOrganisationsServiceTest {
         IRI iri2 = SimpleValueFactory.getInstance().createIRI("http://example.org/org#2");
 
         List<CompactOrganisation> organisations = Arrays.asList(
-            new CompactOrganisation(iri1, "ORG-001", new LocalisedLabel("Org 1", Lang.FR)),
-            new CompactOrganisation(iri2, "ORG-002", new LocalisedLabel("Org 2", Lang.EN))
-        );
+                new CompactOrganisation(iri1, "ORG-001", new LocalisedLabel("Org 1", Lang.FR)),
+                new CompactOrganisation(iri2, "ORG-002", new LocalisedLabel("Org 2", Lang.EN)));
 
-        when(organisationsRepository.getCompactOrganisations(organisationIds))
-            .thenReturn(organisations);
+        when(organisationsRepository.getCompactOrganisations(organisationIds)).thenReturn(organisations);
 
         // When
         service.getCompactOrganisations(organisationIds);
@@ -233,8 +238,7 @@ class DomainOrganisationsServiceTest {
         List<String> organisationIds = Arrays.asList("ORG-999");
         List<CompactOrganisation> emptyList = List.of();
 
-        when(organisationsRepository.getCompactOrganisations(organisationIds))
-            .thenReturn(emptyList);
+        when(organisationsRepository.getCompactOrganisations(organisationIds)).thenReturn(emptyList);
 
         // When
         List<CompactOrganisation> result = service.getCompactOrganisations(organisationIds);
@@ -280,12 +284,10 @@ class DomainOrganisationsServiceTest {
     void shouldThrowOrganisationFetchExceptionWhenCheckExistenceFails() throws OrganisationFetchException {
         // Given
         String iri = "http://bauhaus/organisations/insee/HIE2000052";
-        when(organisationsRepository.checkIfOrganisationExists(iri))
-            .thenThrow(new OrganisationFetchException());
+        when(organisationsRepository.checkIfOrganisationExists(iri)).thenThrow(new OrganisationFetchException());
 
         // When/Then
-        assertThatThrownBy(() -> service.checkIfOrganisationExists(iri))
-            .isInstanceOf(OrganisationFetchException.class);
+        assertThatThrownBy(() -> service.checkIfOrganisationExists(iri)).isInstanceOf(OrganisationFetchException.class);
 
         verify(organisationsRepository, times(1)).checkIfOrganisationExists(iri);
     }

@@ -1,7 +1,6 @@
 package fr.insee.rmes.modules.ddi.physical_instances.webservice.response;
 
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceSearchRow;
-
 import java.util.Date;
 
 /**
@@ -19,12 +18,18 @@ public record PhysicalInstanceSearchResponse(
         String studyUnitLabel,
         String groupAgency,
         String groupId,
-        String groupLabel
-) {
+        String groupLabel) {
     public static PhysicalInstanceSearchResponse fromDomain(PhysicalInstanceSearchRow row) {
         return new PhysicalInstanceSearchResponse(
-                row.agency(), row.id(), row.label(), row.versionDate(),
-                row.studyUnitAgency(), row.studyUnitId(), row.studyUnitLabel(),
-                row.groupAgency(), row.groupId(), row.groupLabel());
+                row.agency(),
+                row.id(),
+                row.label(),
+                row.versionDate(),
+                row.studyUnitAgency(),
+                row.studyUnitId(),
+                row.studyUnitLabel(),
+                row.groupAgency(),
+                row.groupId(),
+                row.groupLabel());
     }
 }

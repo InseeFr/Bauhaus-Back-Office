@@ -1,9 +1,9 @@
 package fr.insee.rmes.graphdb.ontologies;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import org.eclipse.rdf4j.model.Namespace;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class DCTERMSTest {
 
@@ -30,5 +30,4 @@ class DCTERMSTest {
         assertNotNull(DCTERMS.HAS_PART);
         assertEquals("http://purl.org/dc/terms/hasPart", DCTERMS.HAS_PART.toString());
     }
-
 }

@@ -1,10 +1,9 @@
 package fr.insee.rmes.modules.clientconfig.domain;
 
-import fr.insee.rmes.modules.clientconfig.domain.model.ModuleConfig;
 import fr.insee.rmes.modules.clientconfig.domain.model.ClientConfigProperties;
+import fr.insee.rmes.modules.clientconfig.domain.model.ModuleConfig;
 import fr.insee.rmes.modules.clientconfig.domain.port.clientside.ClientConfigService;
 import fr.insee.rmes.modules.shared_kernel.domain.model.ConfiguredLanguages;
-
 import java.util.List;
 
 public class DomainClientConfigService implements ClientConfigService {
@@ -60,8 +59,7 @@ public class DomainClientConfigService implements ClientConfigService {
                 extraMandatoryFields,
                 defaultAgencyId,
                 colecticaLangs,
-                enableDevTools
-        );
+                enableDevTools);
     }
 
     private String getAuthType(String env) {

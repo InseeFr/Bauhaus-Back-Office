@@ -1,5 +1,9 @@
 package fr.insee.rmes.modules.commons.configuration.swagger;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import io.swagger.v3.oas.models.OpenAPI;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,22 +17,18 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 /**
  * Comportement par défaut (propriété absente) : ni documentation ni UI ne sont exposées.
  */
 @SpringBootTest(classes = SwaggerDisabledIntegrationTest.TestConfiguration.class)
-@AutoConfigureMockMvc(addFilters = false) // sans filtres : on veut voir le 404 de l'absence de route, pas le 401 de la sécurité
+@AutoConfigureMockMvc(
+        addFilters = false) // sans filtres : on veut voir le 404 de l'absence de route, pas le 401 de la sécurité
 class SwaggerDisabledIntegrationTest {
 
     @Configuration
     @EnableAutoConfiguration
     @Import(OpenApiConfiguration.class)
-    static class TestConfiguration {
-    }
+    static class TestConfiguration {}
 
     @MockitoBean
     private JwtDecoder jwtDecoder;

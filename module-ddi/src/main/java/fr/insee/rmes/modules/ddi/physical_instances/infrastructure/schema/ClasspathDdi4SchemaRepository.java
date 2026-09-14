@@ -2,7 +2,6 @@ package fr.insee.rmes.modules.ddi.physical_instances.infrastructure.schema;
 
 import fr.insee.rmes.modules.commons.hexagonal.ServerSideAdaptor;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.Ddi4SchemaRepository;
-
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,13 +34,10 @@ public class ClasspathDdi4SchemaRepository implements Ddi4SchemaRepository {
     public String schemaDocument() {
         try (InputStream is = getClass().getClassLoader().getResourceAsStream(resourceName)) {
             if (is == null) {
-                throw new UncheckedIOException(
-                        new FileNotFoundException("Schéma DDI 4 introuvable : " + resourceName));
+                throw new UncheckedIOException(new FileNotFoundException("Schéma DDI 4 introuvable : " + resourceName));
             }
             String document = new String(is.readAllBytes(), StandardCharsets.UTF_8);
-            return document.isEmpty() || document.charAt(0) != BYTE_ORDER_MARK
-                    ? document
-                    : document.substring(1);
+            return document.isEmpty() || document.charAt(0) != BYTE_ORDER_MARK ? document : document.substring(1);
         } catch (IOException e) {
             throw new UncheckedIOException("Schéma DDI 4 illisible : " + resourceName, e);
         }

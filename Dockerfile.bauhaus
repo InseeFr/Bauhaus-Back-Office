@@ -43,10 +43,15 @@ COPY --from=builder --chown=10000:10000 /opt/app/extracted/snapshot-dependencies
 COPY --from=builder --chown=10000:10000 /opt/app/extracted/application/ ./
 
 # Training run du cache AOT (Java 25+) : démarre le contexte Spring et sort juste après le
-# refresh (spring.context.exit=onRefresh). Aucun service externe n'est requis à ce stade —
-# les échecs de connexion GraphDB/Colectica sont déjà rattrapés et loggés, et les
-# CommandLineRunner / ApplicationReadyEvent (init des groupes Colectica, préchauffage du
-# cache des codes mutualisés) ne s'exécutent pas avant le refresh.
+# refresh (spring.context.exit=onRefresh). Aucun service externe n'est joignable à ce stade —
+# les échecs de connexion GraphDB/Colectica sont rattrapés et loggés, et les CommandLineRunner /
+# ApplicationReadyEvent (init des groupes Colectica, préchauffage du cache des codes mutualisés)
+# ne s'exécutent pas avant le refresh.
+#
+# default-contributor-check-enabled=false : DefaultContributorValidator est la seule exception,
+# son @PostConstruct interroge la base de gestion et fait échouer le refresh (donc le build) quand
+# GraphDB est injoignable. La vérification garde tout son sens au démarrage réel ; ici elle ne
+# ferait que constater l'absence d'un service que l'entraînement n'a pas vocation à joindre.
 #
 # --add-modules java.instrument : le cache n'est mappable que si le graphe de modules du
 # runtime est identique à celui de l'entraînement. Sans ce drapeau, injecter un -javaagent
@@ -55,6 +60,7 @@ COPY --from=builder --chown=10000:10000 /opt/app/extracted/application/ ./
 RUN java --add-modules java.instrument \
          -XX:AOTCacheOutput=bauhaus.aot \
          -Dspring.context.exit=onRefresh \
+         -Dfr.insee.rmes.bauhaus.default-contributor-check-enabled=false \
          -jar bauhaus.jar
 
 EXPOSE 8080

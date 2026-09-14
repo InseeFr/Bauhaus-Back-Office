@@ -1,12 +1,13 @@
 package fr.insee.rmes.model.structures;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.structures.structures.domain.model.ComponentDefinition;
 import fr.insee.rmes.modules.structures.structures.domain.model.Structure;
-import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.Objects;
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
 
 class StructureTest {
 
@@ -17,7 +18,8 @@ class StructureTest {
 
         Structure otherStructure = new Structure("mockedID");
 
-        List<String> attributes = List.of("mockedID",
+        List<String> attributes = List.of(
+                "mockedID",
                 "mockedLabelLg1",
                 "mockedLabelLg2",
                 "mockedDescriptionLg1",
@@ -53,19 +55,23 @@ class StructureTest {
 
         boolean stringParameters = attributes.equals(actualAttributes);
 
-        List<String> stringArray= List.of("mockedString","mockedString");
+        List<String> stringArray = List.of("mockedString", "mockedString");
         structure.setContributor(stringArray);
 
-        boolean stringListParameters =stringArray.equals(structure.getContributor());
+        boolean stringListParameters = stringArray.equals(structure.getContributor());
 
-        List<ComponentDefinition> componentDefinitionArray= List.of(new ComponentDefinition(),new ComponentDefinition());
+        List<ComponentDefinition> componentDefinitionArray =
+                List.of(new ComponentDefinition(), new ComponentDefinition());
         structure.setComponentDefinitions(componentDefinitionArray);
 
-        boolean componentDefinitionListParameters =componentDefinitionArray.equals(structure.getComponentDefinitions());
+        boolean componentDefinitionListParameters =
+                componentDefinitionArray.equals(structure.getComponentDefinitions());
 
-        boolean otherStructureAttribute= Objects.equals(otherStructure.getId(), "mockedID");
+        boolean otherStructureAttribute = Objects.equals(otherStructure.getId(), "mockedID");
 
-        assertTrue(stringParameters && stringListParameters && componentDefinitionListParameters && otherStructureAttribute);
-
+        assertTrue(stringParameters
+                && stringListParameters
+                && componentDefinitionListParameters
+                && otherStructureAttribute);
     }
 }

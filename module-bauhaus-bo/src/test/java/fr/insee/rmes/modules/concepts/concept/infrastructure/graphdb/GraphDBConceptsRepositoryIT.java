@@ -1,5 +1,7 @@
 package fr.insee.rmes.modules.concepts.concept.infrastructure.graphdb;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import fr.insee.rmes.modules.concepts.concept.domain.exceptions.ConceptsFetchException;
 import fr.insee.rmes.modules.concepts.concept.domain.exceptions.ConceptsSaveException;
 import fr.insee.rmes.modules.concepts.concept.domain.exceptions.InvalidCreateConceptCommandException;
@@ -10,6 +12,10 @@ import fr.insee.rmes.modules.concepts.concept.domain.port.serverside.ConceptsRep
 import fr.insee.rmes.modules.shared_kernel.domain.model.LocalisedLabel;
 import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import fr.insee.rmes.testcontainers.WithGraphDBContainer;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -19,13 +25,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Integration test for {@link GraphDBConceptsRepository}.
@@ -51,7 +50,8 @@ class GraphDBConceptsRepositoryIT extends WithGraphDBContainer {
         String sesameServer = "http://" + container.getHost() + ":" + container.getMappedPort(7200);
         registry.add("fr.insee.rmes.bauhaus.sesame.gestion.sesameServer", () -> sesameServer);
         registry.add("fr.insee.rmes.bauhaus.sesame.gestion.repository", () -> BAUHAUS_TEST_REPOSITORY);
-        container.withInitFolder("fr/insee/rmes/modules/concepts/concept/infrastructure/graphdb")
+        container
+                .withInitFolder("fr/insee/rmes/modules/concepts/concept/infrastructure/graphdb")
                 .withTrigFiles("graphdb-concepts-repository-it.trig");
     }
 
@@ -85,9 +85,7 @@ class GraphDBConceptsRepositoryIT extends WithGraphDBContainer {
     @DisplayName("getConcepts lists the seeded concept")
     void getConcepts_returns_seeded() throws ConceptsFetchException {
         var concepts = repository.getConcepts();
-        assertThat(concepts)
-                .extracting(c -> c.id().value())
-                .contains("c0042");
+        assertThat(concepts).extracting(c -> c.id().value()).contains("c0042");
     }
 
     @Test
@@ -95,9 +93,7 @@ class GraphDBConceptsRepositoryIT extends WithGraphDBContainer {
     @DisplayName("getConceptsToValidate lists the seeded (unvalidated) concept")
     void getConceptsToValidate_returns_seeded() throws ConceptsFetchException {
         var toValidate = repository.getConceptsToValidate();
-        assertThat(toValidate)
-                .extracting(c -> c.id().value())
-                .contains("c0042");
+        assertThat(toValidate).extracting(c -> c.id().value()).contains("c0042");
     }
 
     @Test
@@ -123,20 +119,19 @@ class GraphDBConceptsRepositoryIT extends WithGraphDBContainer {
     @Test
     @Order(7)
     @DisplayName("save persists a new concept (verified via findExistingConceptIds)")
-    void save_persists_new_concept() throws InvalidCreateConceptCommandException, ConceptsSaveException, ConceptsFetchException {
+    void save_persists_new_concept()
+            throws InvalidCreateConceptCommandException, ConceptsSaveException, ConceptsFetchException {
         ConceptId newId = new ConceptId("c9001");
         var command = new CreateConceptCommand(
                 List.of(LocalisedLabel.ofDefaultLanguage("Save IT")),
                 "http://bauhaus/HIE000000",
                 "http://bauhaus/HIE000000",
                 DISSEMINATION_STATUS,
-                Collections.emptyList()
-        );
+                Collections.emptyList());
 
         repository.save(Concept.create(command, newId));
 
-        assertThat(repository.findExistingConceptIds(List.of(newId.value())))
-                .containsExactly(newId.value());
+        assertThat(repository.findExistingConceptIds(List.of(newId.value()))).containsExactly(newId.value());
     }
 
     @Test
@@ -153,19 +148,18 @@ class GraphDBConceptsRepositoryIT extends WithGraphDBContainer {
     @Test
     @Order(9)
     @DisplayName("delete removes a concept from the repository")
-    void delete_removes_concept() throws InvalidCreateConceptCommandException, ConceptsSaveException, ConceptsFetchException {
+    void delete_removes_concept()
+            throws InvalidCreateConceptCommandException, ConceptsSaveException, ConceptsFetchException {
         ConceptId toDelete = new ConceptId("c9002");
         var command = new CreateConceptCommand(
                 List.of(LocalisedLabel.ofDefaultLanguage("Delete IT")),
                 "http://bauhaus/HIE000000",
                 "http://bauhaus/HIE000000",
                 DISSEMINATION_STATUS,
-                Collections.emptyList()
-        );
+                Collections.emptyList());
         repository.save(Concept.create(command, toDelete));
         // Sanity check: the just-saved concept is visible to findExistingConceptIds.
-        assertThat(repository.findExistingConceptIds(List.of(toDelete.value())))
-                .containsExactly(toDelete.value());
+        assertThat(repository.findExistingConceptIds(List.of(toDelete.value()))).containsExactly(toDelete.value());
 
         repository.delete(toDelete);
 

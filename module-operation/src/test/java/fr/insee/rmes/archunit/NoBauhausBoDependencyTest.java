@@ -1,17 +1,19 @@
 package fr.insee.rmes.archunit;
 
+import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
+
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
-
-import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 
 @AnalyzeClasses(packages = "fr.insee.rmes.modules.operation")
 class NoBauhausBoDependencyTest {
 
     @ArchTest
-    static final ArchRule no_dependency_on_bauhaus_bo_packages =
-            noClasses().should().dependOnClassesThat().resideInAnyPackage(
+    static final ArchRule no_dependency_on_bauhaus_bo_packages = noClasses()
+            .should()
+            .dependOnClassesThat()
+            .resideInAnyPackage(
                     "fr.insee.rmes.persistance..",
                     "fr.insee.rmes.bauhaus_services..",
                     "fr.insee.rmes.model..",
@@ -30,6 +32,5 @@ class NoBauhausBoDependencyTest {
                     "fr.insee.rmes.modules.organisations..",
                     "fr.insee.rmes.modules.geographies..",
                     "fr.insee.rmes.modules.shared_kernel..",
-                    "fr.insee.rmes.modules.concepts.."
-            );
+                    "fr.insee.rmes.modules.concepts..");
 }

@@ -1,25 +1,24 @@
 package fr.insee.rmes.modules.ddi.physical_instances.domain.services;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Citation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CogsDate;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialGroup;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LangStrings;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialGroup;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.GroupRepository;
+import java.util.Date;
+import java.util.List;
+import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class GroupServiceImplTest {
@@ -36,15 +35,18 @@ class GroupServiceImplTest {
 
     @Test
     void createOrUpdate_shouldDelegateToRepository() {
-        Ddi4Group group = new Ddi4Group(Ddi4Group.TYPE,
+        Ddi4Group group = new Ddi4Group(
+                Ddi4Group.TYPE,
                 CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
-                "urn:ddi:fr.insee:group-id:1", "fr.insee", "group-id", "1",
+                "urn:ddi:fr.insee:group-id:1",
+                "fr.insee",
+                "group-id",
+                "1",
                 "bauhaus-test",
                 new Citation(LangStrings.of("fr-FR", "Test Group")),
                 List.of(Reference.of("fr.insee", "su-id", "1", "StudyUnit")),
                 List.of("http://id.insee.fr/operations/serie/s1001"),
-                "insee:StatisticalOperationSeries"
-        );
+                "insee:StatisticalOperationSeries");
 
         groupService.createOrUpdate(group);
 
@@ -53,9 +55,7 @@ class GroupServiceImplTest {
 
     @Test
     void getAll_shouldDelegateToRepository() {
-        List<PartialGroup> expected = List.of(
-                new PartialGroup("g1", "Group 1", new Date(), "fr.insee", List.of())
-        );
+        List<PartialGroup> expected = List.of(new PartialGroup("g1", "Group 1", new Date(), "fr.insee", List.of()));
         when(groupRepository.getAll()).thenReturn(expected);
 
         List<PartialGroup> result = groupService.getAll();
@@ -66,16 +66,15 @@ class GroupServiceImplTest {
 
     @Test
     void getAll_shouldBeSortedByLabelDescending() {
-        when(groupRepository.getAll()).thenReturn(List.of(
-                new PartialGroup("g-a", "alpha", new Date(), "fr.insee", List.of()),
-                new PartialGroup("g-c", "Charlie", new Date(), "fr.insee", List.of()),
-                new PartialGroup("g-b", "Bravo", new Date(), "fr.insee", List.of())
-        ));
+        when(groupRepository.getAll())
+                .thenReturn(List.of(
+                        new PartialGroup("g-a", "alpha", new Date(), "fr.insee", List.of()),
+                        new PartialGroup("g-c", "Charlie", new Date(), "fr.insee", List.of()),
+                        new PartialGroup("g-b", "Bravo", new Date(), "fr.insee", List.of())));
 
         List<PartialGroup> result = groupService.getAll();
 
-        assertThat(result).extracting(PartialGroup::label)
-                .containsExactly("Charlie", "Bravo", "alpha");
+        assertThat(result).extracting(PartialGroup::label).containsExactly("Charlie", "Bravo", "alpha");
     }
 
     @Test

@@ -2,7 +2,7 @@ package fr.insee.rmes.modules.operations.msd.domain.model;
 
 import org.json.JSONObject;
 
-public record DocumentationAttribute (
+public record DocumentationAttribute(
         String rangeType,
         String masLabelLg1,
         String masLabelLg2,
@@ -11,14 +11,13 @@ public record DocumentationAttribute (
         Boolean isPresentational,
         Boolean sansObject,
         String codeList,
-        String subPropertyOf
-) {
+        String subPropertyOf) {
 
     public static DocumentationAttribute fromJson(JSONObject obj) {
         String rt = obj.optString("rangeType", null);
         String lg1 = obj.optString("masLabelLg1", null);
         String lg2 = obj.optString("masLabelLg2", null);
-        String id  = obj.optString("id", null);
+        String id = obj.optString("id", null);
         String max = obj.optString("maxOccurs", null);
         Boolean presentational = toNullableBoolean(obj.opt("isPresentational"));
         Boolean sansObject = obj.optBooleanObject("sansObject");

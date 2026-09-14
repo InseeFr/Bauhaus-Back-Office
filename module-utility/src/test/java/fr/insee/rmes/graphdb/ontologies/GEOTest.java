@@ -1,9 +1,9 @@
 package fr.insee.rmes.graphdb.ontologies;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import org.eclipse.rdf4j.model.Namespace;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class GEOTest {
 
@@ -42,5 +42,4 @@ class GEOTest {
         assertNotNull(GEO.UNION);
         assertEquals("http://www.opengis.net/ont/geosparql#union", GEO.UNION.toString());
     }
-
 }

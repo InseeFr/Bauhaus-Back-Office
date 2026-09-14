@@ -2,6 +2,9 @@ package fr.insee.rmes.modules.users.infrastructure;
 
 import fr.insee.rmes.modules.commons.security.PublicEndpoint;
 import jakarta.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.http.HttpMethod;
@@ -12,10 +15,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
 
 /**
  * A {@link RequestMatcher} that matches every request mapped to a handler annotated with
@@ -60,12 +59,11 @@ public class LazyPublicEndpointsMatcher implements RequestMatcher {
 
     private RequestMatcher build() {
         List<RequestMatcher> matchers = new ArrayList<>();
-        handlerMappingProvider.getObject().getHandlerMethods()
-                .forEach((info, handler) -> {
-                    if (isPublic(handler)) {
-                        matchers.addAll(toMatchers(info));
-                    }
-                });
+        handlerMappingProvider.getObject().getHandlerMethods().forEach((info, handler) -> {
+            if (isPublic(handler)) {
+                matchers.addAll(toMatchers(info));
+            }
+        });
         return matchers.isEmpty() ? MATCHES_NOTHING : new OrRequestMatcher(matchers);
     }
 

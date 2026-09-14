@@ -3,28 +3,27 @@ package fr.insee.rmes.modules.ddi.physical_instances.domain.services;
 import fr.insee.ddi.lifecycle33.instance.FragmentDocument;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi3Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Category;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CategoryScheme;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4DataRelationship;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4LogicalProduct;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedMissingValuesRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedRepresentationScheme;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4VariableScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4PhysicalInstance;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Variable;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4VariableScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3toDDI4ConverterService;
-import org.apache.xmlbeans.XmlException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import org.apache.xmlbeans.XmlException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DDI3toDDI4ConverterServiceImpl implements DDI3toDDI4ConverterService {
     static final Logger logger = LoggerFactory.getLogger(DDI3toDDI4ConverterServiceImpl.class);
@@ -60,12 +59,8 @@ public class DDI3toDDI4ConverterServiceImpl implements DDI3toDDI4ConverterServic
                     String itemType = item.itemType();
                     if (itemTypes.get("PhysicalInstance").equals(itemType)) {
                         physicalInstances.add(lifecycle33ToDdi4.toPhysicalInstance(fragment));
-                        topLevelReferences.add(Reference.of(
-                            item.agencyId(),
-                            item.identifier(),
-                            item.version(),
-                            "PhysicalInstance"
-                        ));
+                        topLevelReferences.add(
+                                Reference.of(item.agencyId(), item.identifier(), item.version(), "PhysicalInstance"));
                     } else if (itemTypes.get("DataRelationship").equals(itemType)) {
                         dataRelationships.add(lifecycle33ToDdi4.toDataRelationship(fragment));
                     } else if (itemTypes.get("Variable").equals(itemType)) {
@@ -75,8 +70,8 @@ public class DDI3toDDI4ConverterServiceImpl implements DDI3toDDI4ConverterServic
                     } else if (itemTypes.get("Category").equals(itemType)) {
                         categories.add(lifecycle33ToDdi4.toCategory(fragment));
                     } else if (itemType.equals(itemTypes.get("ManagedMissingValuesRepresentation"))) {
-                        managedMissingValuesRepresentations
-                                .add(lifecycle33ToDdi4.toManagedMissingValuesRepresentation(fragment));
+                        managedMissingValuesRepresentations.add(
+                                lifecycle33ToDdi4.toManagedMissingValuesRepresentation(fragment));
                     }
                 } catch (XmlException e) {
                     logger.error("Error parsing DDI3 item of type {}", item.itemType(), e);
@@ -86,15 +81,14 @@ public class DDI3toDDI4ConverterServiceImpl implements DDI3toDDI4ConverterServic
         }
 
         return new Ddi4Response(
-            schemaUrl,
-            topLevelReferences.isEmpty() ? null : topLevelReferences,
-            physicalInstances.isEmpty() ? null : physicalInstances,
-            dataRelationships.isEmpty() ? null : dataRelationships,
-            variables.isEmpty() ? null : variables,
-            codeLists.isEmpty() ? null : codeLists,
-            categories.isEmpty() ? null : categories,
-            managedMissingValuesRepresentations.isEmpty() ? null : managedMissingValuesRepresentations
-        );
+                schemaUrl,
+                topLevelReferences.isEmpty() ? null : topLevelReferences,
+                physicalInstances.isEmpty() ? null : physicalInstances,
+                dataRelationships.isEmpty() ? null : dataRelationships,
+                variables.isEmpty() ? null : variables,
+                codeLists.isEmpty() ? null : codeLists,
+                categories.isEmpty() ? null : categories,
+                managedMissingValuesRepresentations.isEmpty() ? null : managedMissingValuesRepresentations);
     }
 
     @Override

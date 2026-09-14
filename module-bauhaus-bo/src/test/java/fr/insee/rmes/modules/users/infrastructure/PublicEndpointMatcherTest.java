@@ -1,18 +1,22 @@
 package fr.insee.rmes.modules.users.infrastructure;
 
+import static org.springframework.security.config.Customizer.withDefaults;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import fr.insee.rmes.modules.commons.configuration.LogRequestFilter;
 import fr.insee.rmes.modules.commons.security.PublicEndpoint;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.security.autoconfigure.web.servlet.ServletWebSecurityAutoConfiguration;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.Bean;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
@@ -23,10 +27,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
-import static org.springframework.security.config.Customizer.withDefaults;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 /**
  * Behaviour of the declarative {@link PublicEndpoint @PublicEndpoint} mechanism: a handler
  * carrying the annotation is reachable anonymously, while a sibling handler that does not is
@@ -35,9 +35,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 @WebMvcTest(
         controllers = PublicEndpointMatcherTest.ProbeController.class,
-        excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = LogRequestFilter.class)
-)
-@Import({ PublicEndpointMatcherTest.ProbeController.class, PublicEndpointMatcherTest.TestSecurityConfiguration.class })
+        excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = LogRequestFilter.class))
+@Import({PublicEndpointMatcherTest.ProbeController.class, PublicEndpointMatcherTest.TestSecurityConfiguration.class})
 class PublicEndpointMatcherTest {
 
     @Autowired
@@ -82,9 +81,10 @@ class PublicEndpointMatcherTest {
         SecurityFilterChain filterChain(HttpSecurity http, RequestMatcher publicEndpointsMatcher) throws Exception {
             http.csrf(AbstractHttpConfigurer::disable)
                     .httpBasic(withDefaults())
-                    .authorizeHttpRequests(auth -> auth
-                            .requestMatchers(publicEndpointsMatcher).permitAll()
-                            .anyRequest().authenticated());
+                    .authorizeHttpRequests(auth -> auth.requestMatchers(publicEndpointsMatcher)
+                            .permitAll()
+                            .anyRequest()
+                            .authenticated());
             return http.build();
         }
     }

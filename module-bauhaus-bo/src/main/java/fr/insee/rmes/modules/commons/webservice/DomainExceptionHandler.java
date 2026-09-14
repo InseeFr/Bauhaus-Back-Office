@@ -11,18 +11,20 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 
 @ControllerAdvice
 public class DomainExceptionHandler extends ResponseEntityExceptionHandler {
-    @ExceptionHandler({ GenericInternalServerException.class })
+    @ExceptionHandler({GenericInternalServerException.class})
     public final ResponseEntity<String> genericInternalServerException(GenericInternalServerException exception) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getDetails());
     }
 
-    @ExceptionHandler({ NotFoundAttributeException.class })
+    @ExceptionHandler({NotFoundAttributeException.class})
     public final ResponseEntity<String> notFoundAttributeException(NotFoundAttributeException exception) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getId());
     }
 
-    @ExceptionHandler({ OperationDocumentationRubricWithoutRangeException.class })
-    public final ResponseEntity<String> operationDocumentationRubricWithoutRangeException(OperationDocumentationRubricWithoutRangeException exception) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("At least one attribute don't have range " + exception.getId());
+    @ExceptionHandler({OperationDocumentationRubricWithoutRangeException.class})
+    public final ResponseEntity<String> operationDocumentationRubricWithoutRangeException(
+            OperationDocumentationRubricWithoutRangeException exception) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body("At least one attribute don't have range " + exception.getId());
     }
 }

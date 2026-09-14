@@ -2,18 +2,16 @@ package fr.insee.rmes.bauhaus_services;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import fr.insee.rmes.bauhaus_services.code_list.CodeListKind;
-import fr.insee.rmes.modules.commons.configuration.swagger.model.code_list.CodeList;
-import fr.insee.rmes.modules.commons.configuration.swagger.model.code_list.Page;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.codeslists.codeslists.webservice.CodeRequest;
 import fr.insee.rmes.modules.codeslists.partialcodeslists.model.PartialCodesList;
-
+import fr.insee.rmes.modules.commons.configuration.swagger.model.code_list.CodeList;
+import fr.insee.rmes.modules.commons.configuration.swagger.model.code_list.Page;
 import java.util.List;
 
 public interface CodeListService {
 
     String getCodeListJson(String codeListUri) throws RmesException;
-
 
     String getCodeUri(String notationCodeList, String notationCode) throws RmesException;
 
@@ -35,7 +33,8 @@ public interface CodeListService {
 
     void publishCodeList(String id, CodeListKind kind) throws RmesException;
 
-    Page getCodesForCodeList(String notation, List<String> search, int page, Integer perPage, String sort) throws RmesException;
+    Page getCodesForCodeList(String notation, List<String> search, int page, Integer perPage, String sort)
+            throws RmesException;
 
     String getCodesJson(String notation, int page, Integer perPage) throws RmesException;
 

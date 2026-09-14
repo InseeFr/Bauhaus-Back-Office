@@ -1,5 +1,6 @@
 package fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica;
 
+import static fr.insee.rmes.domain.logging.LogSanitizer.forLog;
 import static fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.ColecticaItemTypes.DATA_RELATIONSHIP;
 import static fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.ColecticaItemTypes.PHYSICAL_INSTANCE;
 import static fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.ColecticaItemTypes.STUDY_UNIT;
@@ -19,6 +20,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LangString;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LangStrings;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LogicalRecord;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceIds;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceParents;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UpdatePhysicalInstanceRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI4toDDI3ConverterService;
@@ -37,8 +39,6 @@ class ColecticaPhysicalInstanceWriter {
 
     private static final Logger logger = LoggerFactory.getLogger(ColecticaPhysicalInstanceWriter.class);
 
-    private static final String BAUHAUS_API = "bauhaus-api";
-
     private final ColecticaConfiguration.ColecticaInstanceConfiguration instanceConfiguration;
     private final ColecticaClient colecticaClient;
     private final DDI4toDDI3ConverterService ddi4ToDdi3Converter;
@@ -47,13 +47,12 @@ class ColecticaPhysicalInstanceWriter {
     private final ColecticaLabels labels;
 
     ColecticaPhysicalInstanceWriter(
-        ColecticaConfiguration.ColecticaInstanceConfiguration instanceConfiguration,
-        ColecticaClient colecticaClient,
-        DDI4toDDI3ConverterService ddi4ToDdi3Converter,
-        ColecticaPhysicalInstanceReader reader,
-        ColecticaSchemeFiler schemeFiler,
-        ColecticaLabels labels
-    ) {
+            ColecticaConfiguration.ColecticaInstanceConfiguration instanceConfiguration,
+            ColecticaClient colecticaClient,
+            DDI4toDDI3ConverterService ddi4ToDdi3Converter,
+            ColecticaPhysicalInstanceReader reader,
+            ColecticaSchemeFiler schemeFiler,
+            ColecticaLabels labels) {
         this.instanceConfiguration = instanceConfiguration;
         this.colecticaClient = colecticaClient;
         this.ddi4ToDdi3Converter = ddi4ToDdi3Converter;
@@ -63,31 +62,46 @@ class ColecticaPhysicalInstanceWriter {
     }
 
     Ddi4Response createPhysicalInstance(CreatePhysicalInstanceRequest request) {
-        String physicalInstanceId = UUID.randomUUID().toString();
-        String dataRelationshipId = UUID.randomUUID().toString();
-        String logicalRecordId = UUID.randomUUID().toString();
+        return createPhysicalInstance(
+                request,
+                new PhysicalInstanceIds(
+                        UUID.randomUUID().toString(),
+                        UUID.randomUUID().toString(),
+                        UUID.randomUUID().toString()));
+    }
+
+    Ddi4Response createPhysicalInstance(CreatePhysicalInstanceRequest request, PhysicalInstanceIds ids) {
+        String physicalInstanceId = ids.physicalInstance();
+        String dataRelationshipId = ids.dataRelationship();
+        String logicalRecordId = ids.logicalRecord();
         String agencyId = instanceConfiguration.defaultAgencyId();
         int version = 1;
         String versionDate = ColecticaDates.nowIso();
 
         String physicalInstanceXml = buildPhysicalInstanceXml(
-            agencyId, physicalInstanceId, version, request.physicalInstanceLabel(),
-            dataRelationshipId, versionDate);
+                agencyId,
+                physicalInstanceId,
+                version,
+                request.physicalInstanceLabel(),
+                dataRelationshipId,
+                versionDate);
 
         String dataRelationshipXml = buildDataRelationshipXml(
-            agencyId, dataRelationshipId, version, request.dataRelationshipLabel(), logicalRecordId,
-            request.logicalRecordLabel() != null
-                ? request.logicalRecordLabel()
-                : request.physicalInstanceLabel(),
-            versionDate);
+                agencyId,
+                dataRelationshipId,
+                version,
+                request.dataRelationshipLabel(),
+                logicalRecordId,
+                request.logicalRecordLabel() != null ? request.logicalRecordLabel() : request.physicalInstanceLabel(),
+                versionDate);
 
         List<ColecticaItemResponse> itemsToCreate = new ArrayList<>(List.of(
-            newItem(PHYSICAL_INSTANCE, agencyId, version, physicalInstanceId, physicalInstanceXml, versionDate),
-            newItem(DATA_RELATIONSHIP, agencyId, version, dataRelationshipId, dataRelationshipXml, versionDate)));
+                newItem(PHYSICAL_INSTANCE, agencyId, version, physicalInstanceId, physicalInstanceXml, versionDate),
+                newItem(DATA_RELATIONSHIP, agencyId, version, dataRelationshipId, dataRelationshipXml, versionDate)));
 
         if (request.studyUnitId() != null && request.studyUnitAgency() != null) {
             itemsToCreate.add(addPhysicalInstanceReferenceToStudyUnit(
-                request.studyUnitAgency(), request.studyUnitId(), agencyId, physicalInstanceId));
+                    request.studyUnitAgency(), request.studyUnitId(), agencyId, physicalInstanceId));
         }
 
         colecticaClient.createOrUpdateItems(new ColecticaCreateItemRequest(itemsToCreate));
@@ -96,68 +110,67 @@ class ColecticaPhysicalInstanceWriter {
     }
 
     private ColecticaItemResponse newItem(
-        String typeKey, String agencyId, int version, String id, String xml, String versionDate
-    ) {
+            String typeKey, String agencyId, int version, String id, String xml, String versionDate) {
         return new ColecticaItemResponse(
-            instanceConfiguration.itemTypes().get(typeKey),
-            agencyId,
-            version,
-            id,
-            xml,
-            versionDate,
-            BAUHAUS_API,
-            false,
-            false,
-            false,
-            instanceConfiguration.itemFormat());
+                instanceConfiguration.itemTypes().get(typeKey),
+                agencyId,
+                version,
+                id,
+                xml,
+                versionDate,
+                instanceConfiguration.versionResponsibility(),
+                false,
+                false,
+                false,
+                instanceConfiguration.itemFormat());
     }
 
     void updatePhysicalInstance(String agencyId, String id, UpdatePhysicalInstanceRequest request) {
         // On recharge l'instance courante pour repartir de tous ses objets, variables comprises.
         Ddi4Response currentInstance = reader.getPhysicalInstance(agencyId, id);
 
-        if (currentInstance == null || currentInstance.physicalInstance() == null
-            || currentInstance.physicalInstance().isEmpty()) {
+        if (currentInstance == null
+                || currentInstance.physicalInstance() == null
+                || currentInstance.physicalInstance().isEmpty()) {
             throw new RuntimeException("Physical instance not found: " + agencyId + "/" + id);
         }
 
         Ddi4PhysicalInstance currentPI = currentInstance.physicalInstance().getFirst();
-        Ddi4DataRelationship currentDR =
-            currentInstance.dataRelationship() != null && !currentInstance.dataRelationship().isEmpty()
+        Ddi4DataRelationship currentDR = currentInstance.dataRelationship() != null
+                        && !currentInstance.dataRelationship().isEmpty()
                 ? currentInstance.dataRelationship().getFirst()
                 : null;
 
         String versionDate = ColecticaDates.nowIso();
 
         LangString currentTitle = currentPI.citation().title().get(0);
-        String newPhysicalInstanceLabel = request.physicalInstanceLabel() != null
-            ? request.physicalInstanceLabel()
-            : currentTitle.value();
+        String newPhysicalInstanceLabel =
+                request.physicalInstanceLabel() != null ? request.physicalInstanceLabel() : currentTitle.value();
 
         Ddi4PhysicalInstance updatedPI = new Ddi4PhysicalInstance(
-            Ddi4PhysicalInstance.TYPE,
-            CogsDate.ofDateTime(versionDate),
-            currentPI.urn(),
-            currentPI.agency(),
-            currentPI.id(),
-            currentPI.version(),
-            currentPI.basedOnObject(),
-            new Citation(LangStrings.of(currentTitle.language(), newPhysicalInstanceLabel)),
-            currentPI.dataRelationshipReference());
+                Ddi4PhysicalInstance.TYPE,
+                CogsDate.ofDateTime(versionDate),
+                currentPI.urn(),
+                currentPI.agency(),
+                currentPI.id(),
+                currentPI.version(),
+                currentPI.basedOnObject(),
+                new Citation(LangStrings.of(currentTitle.language(), newPhysicalInstanceLabel)),
+                currentPI.dataRelationshipReference());
 
         Ddi4DataRelationship updatedDR =
-            currentDR == null ? null : updatedDataRelationship(currentDR, request, versionDate);
+                currentDR == null ? null : updatedDataRelationship(currentDR, request, versionDate);
 
         // Ddi4Response reconstruite en préservant variables, listes de codes et catégories.
         Ddi4Response updatedResponse = new Ddi4Response(
-            currentInstance.schema(),
-            currentInstance.topLevelReference(),
-            List.of(updatedPI),
-            updatedDR != null ? List.of(updatedDR) : currentInstance.dataRelationship(),
-            currentInstance.variable(),
-            currentInstance.codeList(),
-            currentInstance.category(),
-            currentInstance.managedMissingValuesRepresentation());
+                currentInstance.schema(),
+                currentInstance.topLevelReference(),
+                List.of(updatedPI),
+                updatedDR != null ? List.of(updatedDR) : currentInstance.dataRelationship(),
+                currentInstance.variable(),
+                currentInstance.codeList(),
+                currentInstance.category(),
+                currentInstance.managedMissingValuesRepresentation());
 
         // Quand une StudyUnit est fournie (flux de duplication, cf. #1555), on rattache la
         // PhysicalInstance dans le même enregistrement, pour que GET .../parents sache ensuite
@@ -166,13 +179,13 @@ class ColecticaPhysicalInstanceWriter {
         PhysicalInstanceParents requestParents = null;
         if (request.studyUnitId() != null && request.studyUnitAgency() != null) {
             additionalItems.add(addPhysicalInstanceReferenceToStudyUnit(
-                request.studyUnitAgency(), request.studyUnitId(), agencyId, id));
+                    request.studyUnitAgency(), request.studyUnitId(), agencyId, id));
             // Le rattachement part dans ce même batch : la relation StudyUnit n'est donc pas encore
             // interrogeable dans Colectica, la requête est la seule source de vérité pour les parents.
             if (request.groupId() != null && request.groupAgency() != null) {
                 requestParents = new PhysicalInstanceParents(
-                    request.studyUnitAgency(), request.studyUnitId(),
-                    request.groupAgency(), request.groupId());
+                        request.studyUnitAgency(), request.studyUnitId(),
+                        request.groupAgency(), request.groupId());
             }
         }
 
@@ -180,32 +193,31 @@ class ColecticaPhysicalInstanceWriter {
     }
 
     private Ddi4DataRelationship updatedDataRelationship(
-        Ddi4DataRelationship currentDR, UpdatePhysicalInstanceRequest request, String versionDate
-    ) {
+            Ddi4DataRelationship currentDR, UpdatePhysicalInstanceRequest request, String versionDate) {
         List<LogicalRecord> updatedLRs = currentDR.logicalRecord();
         if (updatedLRs != null && request.logicalRecordLabel() != null) {
             updatedLRs = updatedLRs.stream()
-                .map(lr -> new LogicalRecord(
-                    LogicalRecord.TYPE,
-                    lr.urn(),
-                    lr.agency(),
-                    lr.id(),
-                    lr.version(),
-                    labels.withFallback(lr.label(), request.logicalRecordLabel()),
-                    lr.variablesInRecord()))
-                .toList();
+                    .map(lr -> new LogicalRecord(
+                            LogicalRecord.TYPE,
+                            lr.urn(),
+                            lr.agency(),
+                            lr.id(),
+                            lr.version(),
+                            labels.withFallback(lr.label(), request.logicalRecordLabel()),
+                            lr.variablesInRecord()))
+                    .toList();
         }
 
         return new Ddi4DataRelationship(
-            Ddi4DataRelationship.TYPE,
-            CogsDate.ofDateTime(versionDate),
-            currentDR.urn(),
-            currentDR.agency(),
-            currentDR.id(),
-            currentDR.version(),
-            currentDR.basedOnObject(),
-            labels.withFallback(currentDR.label(), request.dataRelationshipLabel()),
-            updatedLRs);
+                Ddi4DataRelationship.TYPE,
+                CogsDate.ofDateTime(versionDate),
+                currentDR.urn(),
+                currentDR.agency(),
+                currentDR.id(),
+                currentDR.version(),
+                currentDR.basedOnObject(),
+                labels.withFallback(currentDR.label(), request.dataRelationshipLabel()),
+                updatedLRs);
     }
 
     void updateFullPhysicalInstance(String agencyId, String id, Ddi4Response ddi4Response) {
@@ -221,29 +233,32 @@ class ColecticaPhysicalInstanceWriter {
      *                     résoudre via les relations Colectica
      */
     private void updateFullPhysicalInstance(
-        String agencyId,
-        String id,
-        Ddi4Response ddi4Response,
-        List<ColecticaItemResponse> additionalItems,
-        PhysicalInstanceParents knownParents
-    ) {
-        logger.info("Updating full physical instance {}/{} with all DDI objects in Colectica", agencyId, id);
+            String agencyId,
+            String id,
+            Ddi4Response ddi4Response,
+            List<ColecticaItemResponse> additionalItems,
+            PhysicalInstanceParents knownParents) {
+        logger.info(
+                "Updating full physical instance {}/{} with all DDI objects in Colectica",
+                forLog(agencyId),
+                forLog(id));
 
         Ddi3Response ddi3Response = ddi4ToDdi3Converter.convertDdi4ToDdi3(ddi4Response);
 
-        if (ddi3Response == null || ddi3Response.items() == null || ddi3Response.items().isEmpty()) {
+        if (ddi3Response == null
+                || ddi3Response.items() == null
+                || ddi3Response.items().isEmpty()) {
             throw new RuntimeException("No items to save in DDI4 response");
         }
 
         List<ColecticaItemResponse> colecticaItems = ddi3Response.items().stream()
-            .map(ColecticaItems::toColecticaItem)
-            .collect(Collectors.toCollection(ArrayList::new));
+                .map(ColecticaItems::toColecticaItem)
+                .collect(Collectors.toCollection(ArrayList::new));
 
         // Range les listes de codes et catégories non mutualisées sous les schemes du groupe, et les
         // variables sous le VariableScheme de la study unit (en auto-provisionnant les schemes
         // manquants). Les parents sont résolus une fois et partagés.
-        schemeFiler.appendSchemeUpdates(
-            agencyId, id, ddi4Response, colecticaItems, additionalItems, knownParents);
+        schemeFiler.appendSchemeUpdates(agencyId, id, ddi4Response, colecticaItems, additionalItems, knownParents);
 
         // Items supplémentaires (p.ex. la StudyUnit réenregistrée avec une nouvelle référence de PI)
         colecticaItems.addAll(additionalItems);
@@ -251,8 +266,10 @@ class ColecticaPhysicalInstanceWriter {
         logger.info("Sending full update request to Colectica with {} items", colecticaItems.size());
         colecticaClient.createOrUpdateItems(new ColecticaCreateItemRequest(colecticaItems));
 
-        logger.info("Successfully updated full physical instance with id: {} ({} items saved)",
-            id, colecticaItems.size());
+        logger.info(
+                "Successfully updated full physical instance with id: {} ({} items saved)",
+                forLog(id),
+                colecticaItems.size());
     }
 
     /**
@@ -260,13 +277,10 @@ class ColecticaPhysicalInstanceWriter {
      * correspondant, à enregistrer dans le même batch que la PhysicalInstance.
      */
     private ColecticaItemResponse addPhysicalInstanceReferenceToStudyUnit(
-        String studyUnitAgency, String studyUnitId,
-        String physicalInstanceAgency, String physicalInstanceId
-    ) {
+            String studyUnitAgency, String studyUnitId, String physicalInstanceAgency, String physicalInstanceId) {
         ColecticaItemResponse studyUnitItem = colecticaClient.getItem(studyUnitAgency, studyUnitId, null);
         if (studyUnitItem == null) {
-            throw new RuntimeException(
-                "StudyUnit not found: agency=" + studyUnitAgency + " id=" + studyUnitId);
+            throw new RuntimeException("StudyUnit not found: agency=" + studyUnitAgency + " id=" + studyUnitId);
         }
         try {
             Document doc = ColecticaXml.parse(studyUnitItem.item());
@@ -284,22 +298,21 @@ class ColecticaPhysicalInstanceWriter {
             studyUnitNodes.item(0).appendChild(piRef);
 
             return new ColecticaItemResponse(
-                instanceConfiguration.itemTypes().get(STUDY_UNIT),
-                studyUnitAgency,
-                studyUnitItem.version(),
-                studyUnitId,
-                ColecticaXml.toXmlString(doc.getDocumentElement()),
-                studyUnitItem.versionDate(),
-                studyUnitItem.versionResponsibility(),
-                studyUnitItem.isPublished(),
-                studyUnitItem.isDeprecated(),
-                studyUnitItem.isProvisional(),
-                instanceConfiguration.itemFormat());
+                    instanceConfiguration.itemTypes().get(STUDY_UNIT),
+                    studyUnitAgency,
+                    studyUnitItem.version(),
+                    studyUnitId,
+                    ColecticaXml.toXmlString(doc.getDocumentElement()),
+                    studyUnitItem.versionDate(),
+                    studyUnitItem.versionResponsibility(),
+                    studyUnitItem.isPublished(),
+                    studyUnitItem.isDeprecated(),
+                    studyUnitItem.isProvisional(),
+                    instanceConfiguration.itemFormat());
         } catch (RuntimeException e) {
             throw e;
         } catch (Exception e) {
-            throw new RuntimeException(
-                "Failed to add PhysicalInstanceReference to StudyUnit id=" + studyUnitId, e);
+            throw new RuntimeException("Failed to add PhysicalInstanceReference to StudyUnit id=" + studyUnitId, e);
         }
     }
 
@@ -309,18 +322,30 @@ class ColecticaPhysicalInstanceWriter {
         parent.appendChild(element);
     }
 
+    /**
+     * {@code r:VersionResponsibility} issu de {@code colectica.yml}, à insérer juste après
+     * {@code r:Version} — l'ordre des éléments de {@code VersionableType} est imposé par le schéma.
+     * Chaîne vide quand la propriété n'est pas renseignée.
+     */
+    private String versionResponsibilityXml() {
+        String versionResponsibility = instanceConfiguration.versionResponsibility();
+        if (versionResponsibility == null || versionResponsibility.isBlank()) {
+            return "";
+        }
+        return "<r:VersionResponsibility>" + ColecticaXml.escape(versionResponsibility) + "</r:VersionResponsibility>";
+    }
+
     private String buildPhysicalInstanceXml(
-        String agencyId, String id, int version, String label,
-        String dataRelationshipId, String versionDate
-    ) {
+            String agencyId, String id, int version, String label, String dataRelationshipId, String versionDate) {
         return String.format(
-            """
+                """
             <Fragment xmlns:r="ddi:reusable:3_3" xmlns="ddi:instance:3_3">
               <PhysicalInstance isUniversallyUnique="true" versionDate="%s" xmlns="ddi:physicalinstance:3_3">
                 <r:URN>urn:ddi:%s:%s:%d</r:URN>
                 <r:Agency>%s</r:Agency>
                 <r:ID>%s</r:ID>
                 <r:Version>%d</r:Version>
+                %s
                 <r:Citation>
                   <r:Title>
                     <r:String xml:lang="%s">%s</r:String>
@@ -329,46 +354,46 @@ class ColecticaPhysicalInstanceWriter {
                 %s
               </PhysicalInstance>
             </Fragment>""",
-            ColecticaXml.escape(versionDate),
-            ColecticaXml.escape(agencyId),
-            ColecticaXml.escape(id),
-            version,
-            ColecticaXml.escape(agencyId),
-            ColecticaXml.escape(id),
-            version,
-            labels.defaultLang(),
-            ColecticaXml.escape(label),
-            dataRelationshipReferenceXml(agencyId, dataRelationshipId, version));
+                ColecticaXml.escape(versionDate),
+                ColecticaXml.escape(agencyId),
+                ColecticaXml.escape(id),
+                version,
+                ColecticaXml.escape(agencyId),
+                ColecticaXml.escape(id),
+                version,
+                versionResponsibilityXml(),
+                labels.defaultLang(),
+                ColecticaXml.escape(label),
+                dataRelationshipReferenceXml(agencyId, dataRelationshipId, version));
     }
 
-    private String dataRelationshipReferenceXml(
-        String agencyId, String dataRelationshipId, int version
-    ) {
-        return String.format(
-            """
+    private String dataRelationshipReferenceXml(String agencyId, String dataRelationshipId, int version) {
+        return String.format("""
             <r:DataRelationshipReference>
               <r:Agency>%s</r:Agency>
               <r:ID>%s</r:ID>
               <r:Version>%d</r:Version>
               <r:TypeOfObject>DataRelationship</r:TypeOfObject>
-            </r:DataRelationshipReference>""",
-            ColecticaXml.escape(agencyId),
-            ColecticaXml.escape(dataRelationshipId),
-            version);
+            </r:DataRelationshipReference>""", ColecticaXml.escape(agencyId), ColecticaXml.escape(dataRelationshipId), version);
     }
 
     private String buildDataRelationshipXml(
-        String agencyId, String dataRelationshipId, int version, String dataRelationshipLabel,
-        String logicalRecordId, String logicalRecordLabel, String versionDate
-    ) {
+            String agencyId,
+            String dataRelationshipId,
+            int version,
+            String dataRelationshipLabel,
+            String logicalRecordId,
+            String logicalRecordLabel,
+            String versionDate) {
         return String.format(
-            """
+                """
             <Fragment xmlns:r="ddi:reusable:3_3" xmlns="ddi:instance:3_3">
               <DataRelationship isUniversallyUnique="true" versionDate="%s" xmlns="ddi:logicalproduct:3_3">
                 <r:URN>urn:ddi:%s:%s:%d</r:URN>
                 <r:Agency>%s</r:Agency>
                 <r:ID>%s</r:ID>
                 <r:Version>%d</r:Version>
+                %s
                 <r:Label>
                   <r:Content xml:lang="%s">%s</r:Content>
                 </r:Label>
@@ -383,22 +408,23 @@ class ColecticaPhysicalInstanceWriter {
                 </LogicalRecord>
               </DataRelationship>
             </Fragment>""",
-            ColecticaXml.escape(versionDate),
-            ColecticaXml.escape(agencyId),
-            ColecticaXml.escape(dataRelationshipId),
-            version,
-            ColecticaXml.escape(agencyId),
-            ColecticaXml.escape(dataRelationshipId),
-            version,
-            labels.defaultLang(),
-            ColecticaXml.escape(dataRelationshipLabel),
-            ColecticaXml.escape(agencyId),
-            ColecticaXml.escape(logicalRecordId),
-            version,
-            ColecticaXml.escape(agencyId),
-            ColecticaXml.escape(logicalRecordId),
-            version,
-            labels.defaultLang(),
-            ColecticaXml.escape(logicalRecordLabel));
+                ColecticaXml.escape(versionDate),
+                ColecticaXml.escape(agencyId),
+                ColecticaXml.escape(dataRelationshipId),
+                version,
+                ColecticaXml.escape(agencyId),
+                ColecticaXml.escape(dataRelationshipId),
+                version,
+                versionResponsibilityXml(),
+                labels.defaultLang(),
+                ColecticaXml.escape(dataRelationshipLabel),
+                ColecticaXml.escape(agencyId),
+                ColecticaXml.escape(logicalRecordId),
+                version,
+                ColecticaXml.escape(agencyId),
+                ColecticaXml.escape(logicalRecordId),
+                version,
+                labels.defaultLang(),
+                ColecticaXml.escape(logicalRecordLabel));
     }
 }

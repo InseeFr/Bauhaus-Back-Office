@@ -4,6 +4,15 @@ import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.operations.documentations.documents.DocumentsUtils;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
+import java.io.*;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.util.Map;
+import javax.xml.transform.TransformerException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -18,16 +27,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-import javax.xml.transform.TransformerException;
-import java.io.*;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
-import java.util.Map;
-
 @Component
 public class ExportUtils {
     private static final Logger logger = LoggerFactory.getLogger(ExportUtils.class);
@@ -38,25 +37,51 @@ public class ExportUtils {
 
     final DocumentsUtils documentsUtils;
 
-    public ExportUtils(@Value("${fr.insee.rmes.bauhaus.filenames.maxlength}") int maxLength, DocumentsUtils documentsUtils) {
+    public ExportUtils(
+            @Value("${fr.insee.rmes.bauhaus.filenames.maxlength}") int maxLength, DocumentsUtils documentsUtils) {
         this.maxLength = maxLength;
         this.documentsUtils = documentsUtils;
     }
 
-    public ResponseEntity<Resource> exportAsODT(String fileName, Map<String, String> xmlContent, String xslFile, String xmlPattern, String zip, String objectType) throws RmesException {
-        return exportAsFileByExtension(fileName, xmlContent, xslFile, xmlPattern, zip, objectType, FilesUtils.ODT_EXTENSION);
+    public ResponseEntity<Resource> exportAsODT(
+            String fileName,
+            Map<String, String> xmlContent,
+            String xslFile,
+            String xmlPattern,
+            String zip,
+            String objectType)
+            throws RmesException {
+        return exportAsFileByExtension(
+                fileName, xmlContent, xslFile, xmlPattern, zip, objectType, FilesUtils.ODT_EXTENSION);
     }
 
-    public ResponseEntity<Resource> exportAsODS(String fileName, Map<String, String> xmlContent, String xslFile, String xmlPattern, String zip, String objectType) throws RmesException {
-        return exportAsFileByExtension(fileName, xmlContent, xslFile, xmlPattern, zip, objectType, FilesUtils.ODS_EXTENSION);
+    public ResponseEntity<Resource> exportAsODS(
+            String fileName,
+            Map<String, String> xmlContent,
+            String xslFile,
+            String xmlPattern,
+            String zip,
+            String objectType)
+            throws RmesException {
+        return exportAsFileByExtension(
+                fileName, xmlContent, xslFile, xmlPattern, zip, objectType, FilesUtils.ODS_EXTENSION);
     }
 
-    private ResponseEntity<Resource> exportAsFileByExtension(String fileName, Map<String, String> xmlContent, String xslFile, String xmlPattern, String zip, String objectType, String extension) throws RmesException {
+    private ResponseEntity<Resource> exportAsFileByExtension(
+            String fileName,
+            Map<String, String> xmlContent,
+            String xslFile,
+            String xmlPattern,
+            String zip,
+            String objectType,
+            String extension)
+            throws RmesException {
         logger.debug("Begin To export {} as Response", objectType);
         fileName = FilesUtils.generateFinalFileNameWithoutExtension(fileName.replace(extension, ""), maxLength);
 
         ByteArrayResource resource;
-        try (InputStream input = exportAsInputStream(fileName, xmlContent, xslFile, xmlPattern, zip, objectType, extension)) {
+        try (InputStream input =
+                exportAsInputStream(fileName, xmlContent, xslFile, xmlPattern, zip, objectType, extension)) {
             if (input == null)
                 throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, CAN_T_GENERATE_CODEBOOK, NULL_STREAM);
             resource = new ByteArrayResource(IOUtils.toByteArray(input));
@@ -75,10 +100,18 @@ public class ExportUtils {
                 .body(resource);
     }
 
-    public InputStream exportAsInputStream(String fileName, Map<String, String> xmlContent, String xslFile, String xmlPattern, String zip, String objectType, String extension) throws RmesException {
+    public InputStream exportAsInputStream(
+            String fileName,
+            Map<String, String> xmlContent,
+            String xslFile,
+            String xmlPattern,
+            String zip,
+            String objectType,
+            String extension)
+            throws RmesException {
         logger.debug("Begin To export {} as InputStream", objectType);
 
-        fileName = fileName.replace(extension, ""); //Remove extension if exists
+        fileName = fileName.replace(extension, ""); // Remove extension if exists
 
         File output = null;
         try {
@@ -92,10 +125,10 @@ public class ExportUtils {
         String xslSystemId = (xslUrl != null) ? xslUrl.toString() : null;
 
         try (InputStream xslFileIS = getClass().getResourceAsStream(xslFile);
-             InputStream odtFileIS = getClass().getResourceAsStream(xmlPattern);
-             InputStream zipToCompleteIS = getClass().getResourceAsStream(zip);
-             OutputStream osOutputFile = FileUtils.openOutputStream(output);
-             PrintStream printStream = new PrintStream(osOutputFile)) {
+                InputStream odtFileIS = getClass().getResourceAsStream(xmlPattern);
+                InputStream zipToCompleteIS = getClass().getResourceAsStream(zip);
+                OutputStream osOutputFile = FileUtils.openOutputStream(output);
+                PrintStream printStream = new PrintStream(osOutputFile)) {
 
             Path tempDir = Files.createTempDirectory("forExport");
             Path finalPath = Paths.get(tempDir.toString(), fileName + extension);
@@ -109,7 +142,10 @@ public class ExportUtils {
 
             return Files.newInputStream(finalPath);
         } catch (IOException | TransformerException e) {
-            throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e.getClass().getSimpleName());
+            throw new RmesException(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    e.getMessage(),
+                    e.getClass().getSimpleName());
         }
     }
 
@@ -130,22 +166,23 @@ public class ExportUtils {
                 }
             });
 
-            //zip tempDirectory
+            // zip tempDirectory
             FilesUtils.zipDirectory(tempDir.toFile());
 
             logger.debug("End To export temp files as Response");
 
             HttpHeaders responseHeaders = HttpUtils.generateHttpHeaders("xmlFiles", FilesUtils.ZIP_EXTENSION);
-            Resource resource = new UrlResource(Paths.get(tempDir.toString(), tempDir.getFileName() + FilesUtils.ZIP_EXTENSION).toUri());
-            return ResponseEntity.ok()
-                    .headers(responseHeaders)
-                    .body(resource);
+            Resource resource =
+                    new UrlResource(Paths.get(tempDir.toString(), tempDir.getFileName() + FilesUtils.ZIP_EXTENSION)
+                            .toUri());
+            return ResponseEntity.ok().headers(responseHeaders).body(resource);
 
         } catch (IOException e1) {
-            throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, e1.getMessage(), e1.getClass().getSimpleName());
+            throw new RmesException(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    e1.getMessage(),
+                    e1.getClass().getSimpleName());
         }
-
-
     }
 
     public static String toValidationStatus(String validationState, boolean fem) {

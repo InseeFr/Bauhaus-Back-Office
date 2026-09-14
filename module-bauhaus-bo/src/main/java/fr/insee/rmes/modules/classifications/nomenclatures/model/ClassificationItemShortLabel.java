@@ -1,6 +1,5 @@
 package fr.insee.rmes.modules.classifications.nomenclatures.model;
 
-
 public class ClassificationItemShortLabel {
 
     public String length;

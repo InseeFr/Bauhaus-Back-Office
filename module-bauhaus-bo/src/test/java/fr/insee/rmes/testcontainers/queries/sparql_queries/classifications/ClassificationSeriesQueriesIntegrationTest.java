@@ -1,5 +1,7 @@
 package fr.insee.rmes.testcontainers.queries.sparql_queries.classifications;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
@@ -13,8 +15,6 @@ import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Non-régression des requêtes de séries de nomenclatures après leur migration vers
@@ -31,11 +31,10 @@ class ClassificationSeriesQueriesIntegrationTest extends WithGraphDBContainer {
     private static final String SERIES_ID = "serMig";
 
     private final RepositoryGestion repositoryGestion = new RepositoryGestion(
-            getRdfGestionConnectionDetails(),
-            new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED));
+            getRdfGestionConnectionDetails(), new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED));
 
-    private final ClassificationSeriesQueries queries = new ClassificationSeriesQueries(
-            new BauhausLanguagesProperties("fr", "en"), GraphsPropertiesStub.stub());
+    private final ClassificationSeriesQueries queries =
+            new ClassificationSeriesQueries(new BauhausLanguagesProperties("fr", "en"), GraphsPropertiesStub.stub());
 
     @BeforeAll
     static void initData() {

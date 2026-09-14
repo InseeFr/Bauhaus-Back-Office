@@ -9,11 +9,4 @@ import java.util.List;
  * sur la variable), libellé, et aperçu des codes de la CodeList de sentinelles référencée.
  */
 public record PartialMissingValuesRepresentation(
-        String id,
-        String agency,
-        String version,
-        String label,
-        String codeListId,
-        List<String> codeValues
-) {
-}
+        String id, String agency, String version, String label, String codeListId, List<String> codeValues) {}

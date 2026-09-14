@@ -1,13 +1,12 @@
 package fr.insee.rmes.persistance.sparql_queries.datasets;
 
 import fr.insee.rmes.BauhausLanguagesProperties;
-import fr.insee.rmes.freemarker.FreeMarkerUtils;
 import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.freemarker.FreeMarkerUtils;
 import fr.insee.rmes.graphdb.SparqlLiterals;
-import org.springframework.stereotype.Component;
-
 import java.util.HashMap;
 import java.util.Map;
+import org.springframework.stereotype.Component;
 
 @Component
 public class DatasetDistributionQueries {

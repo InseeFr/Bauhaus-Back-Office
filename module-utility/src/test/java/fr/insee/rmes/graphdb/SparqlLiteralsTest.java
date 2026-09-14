@@ -1,5 +1,9 @@
 package fr.insee.rmes.graphdb;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
@@ -10,10 +14,6 @@ import org.eclipse.rdf4j.rio.helpers.NTriplesUtil;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class SparqlLiteralsTest {
 
@@ -74,8 +74,8 @@ class SparqlLiteralsTest {
     void shouldBreakTheQueryWhenTheSamePayloadIsConcatenatedNaively() {
         String query = "SELECT * WHERE { ?s ?p \"" + INJECTION_PAYLOAD + "\" }";
 
-        assertThrows(MalformedQueryException.class,
-                () -> QueryParserUtil.parseQuery(QueryLanguage.SPARQL, query, null));
+        assertThrows(
+                MalformedQueryException.class, () -> QueryParserUtil.parseQuery(QueryLanguage.SPARQL, query, null));
     }
 
     @Test
@@ -101,8 +101,8 @@ class SparqlLiteralsTest {
 
     @Test
     void shouldWrapAnIriInAngleBrackets() {
-        assertEquals("<http://rdf.insee.fr/def/base#Concept>",
-                SparqlLiterals.iri("http://rdf.insee.fr/def/base#Concept"));
+        assertEquals(
+                "<http://rdf.insee.fr/def/base#Concept>", SparqlLiterals.iri("http://rdf.insee.fr/def/base#Concept"));
     }
 
     @Test
@@ -111,19 +111,20 @@ class SparqlLiteralsTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {
-            "http://example.org/a> . } DELETE { ?s ?p ?o } #",
-            "http://example.org/a<b",
-            "http://example.org/a b",
-            "http://example.org/a\"b",
-            "http://example.org/a{b",
-            "http://example.org/a}b",
-            "http://example.org/a|b",
-            "http://example.org/a^b",
-            "http://example.org/a`b",
-            "http://example.org/a\\b",
-            "http://example.org/a\nb"
-    })
+    @ValueSource(
+            strings = {
+                "http://example.org/a> . } DELETE { ?s ?p ?o } #",
+                "http://example.org/a<b",
+                "http://example.org/a b",
+                "http://example.org/a\"b",
+                "http://example.org/a{b",
+                "http://example.org/a}b",
+                "http://example.org/a|b",
+                "http://example.org/a^b",
+                "http://example.org/a`b",
+                "http://example.org/a\\b",
+                "http://example.org/a\nb"
+            })
     void shouldRejectAnIriContainingACharacterForbiddenInAnIriRef(String iri) {
         assertThrows(IllegalArgumentException.class, () -> SparqlLiterals.iri(iri));
     }
@@ -151,15 +152,7 @@ class SparqlLiteralsTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {
-            "o } ORDER BY ?x #",
-            "o ?x",
-            "o.x",
-            "o-x",
-            "",
-            "?o",
-            "s ?p ?o"
-    })
+    @ValueSource(strings = {"o } ORDER BY ?x #", "o ?x", "o.x", "o-x", "", "?o", "s ?p ?o"})
     void shouldRejectAVariableNameThatIsNotAValidVarname(String name) {
         assertThrows(IllegalArgumentException.class, () -> SparqlLiterals.variable(name));
     }

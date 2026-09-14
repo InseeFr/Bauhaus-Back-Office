@@ -1,11 +1,11 @@
 package fr.insee.rmes.modules.concepts.collections.webservice;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionDashboardItem;
 import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionId;
 import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class CollectionDashboardItemResponseTest {
 
@@ -18,8 +18,7 @@ class CollectionDashboardItemResponseTest {
                 "2024-06-01T15:30:00",
                 ValidationStatus.VALIDATED,
                 "creator1",
-                5
-        );
+                5);
 
         var response = CollectionDashboardItemResponse.fromDomain(domain);
 
@@ -42,8 +41,7 @@ class CollectionDashboardItemResponseTest {
                 null,
                 ValidationStatus.UNPUBLISHED,
                 null,
-                0
-        );
+                0);
 
         var response = CollectionDashboardItemResponse.fromDomain(domain);
 

@@ -1,7 +1,6 @@
 package fr.insee.rmes.modules.ddi.physical_instances.webservice.response;
 
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeList;
-
 import java.util.Date;
 
 public record CodeListSummaryResponse(String agencyId, String id, String label, String name, Date versionDate) {

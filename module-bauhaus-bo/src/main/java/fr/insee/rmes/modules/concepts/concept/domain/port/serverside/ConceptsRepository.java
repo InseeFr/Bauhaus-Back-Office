@@ -3,12 +3,11 @@ package fr.insee.rmes.modules.concepts.concept.domain.port.serverside;
 import fr.insee.rmes.modules.commons.hexagonal.ServerSidePort;
 import fr.insee.rmes.modules.concepts.concept.domain.exceptions.ConceptsFetchException;
 import fr.insee.rmes.modules.concepts.concept.domain.exceptions.ConceptsSaveException;
-import fr.insee.rmes.modules.concepts.concept.domain.model.PartialConcept;
 import fr.insee.rmes.modules.concepts.concept.domain.model.Concept;
 import fr.insee.rmes.modules.concepts.concept.domain.model.ConceptDashboardItem;
 import fr.insee.rmes.modules.concepts.concept.domain.model.ConceptId;
 import fr.insee.rmes.modules.concepts.concept.domain.model.ConceptToValidate;
-
+import fr.insee.rmes.modules.concepts.concept.domain.model.PartialConcept;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;

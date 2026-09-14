@@ -1,15 +1,17 @@
 package fr.insee.rmes.config;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import fr.insee.rmes.PropertiesKeys;
-import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
 
 class PropertiesKeysTest {
 
-    List<String> actual = List.of(PropertiesKeys.CORS_ALLOWED_ORIGIN,
+    List<String> actual = List.of(
+            PropertiesKeys.CORS_ALLOWED_ORIGIN,
             PropertiesKeys.STRUCTURES_COMPONENTS_BASE_URI,
             PropertiesKeys.CODE_LIST_BASE_URI,
             PropertiesKeys.STRUCTURES_BASE_URI,
@@ -26,42 +28,36 @@ class PropertiesKeysTest {
             PropertiesKeys.DATASET_BASE_URI,
             PropertiesKeys.DISTRIBUTION_BASE_URI,
             PropertiesKeys.BASE_URI_GESTION,
-            PropertiesKeys.BASE_URI_PUBLICATION
-    );
+            PropertiesKeys.BASE_URI_PUBLICATION);
 
     @Test
-    void shouldCheckThatThereAreNoDuplicates(){
+    void shouldCheckThatThereAreNoDuplicates() {
         SortedSet<String> set = new TreeSet<>(actual);
-        boolean existDuplicates = set.size()!= actual.size();
+        boolean existDuplicates = set.size() != actual.size();
         assertFalse(existDuplicates);
     }
 
     @Test
-    void shouldCheckPropertiesHaveTheSamePrefixe(){
-        String prefixe ="fr.insee.rmes.bauhaus." ;
+    void shouldCheckPropertiesHaveTheSamePrefixe() {
+        String prefixe = "fr.insee.rmes.bauhaus.";
         int numberOfPropertiesWithTheSamePrefixe = 0;
-        for(String element : actual){
-            if(element.startsWith(prefixe)){
-                numberOfPropertiesWithTheSamePrefixe =numberOfPropertiesWithTheSamePrefixe +1;
+        for (String element : actual) {
+            if (element.startsWith(prefixe)) {
+                numberOfPropertiesWithTheSamePrefixe = numberOfPropertiesWithTheSamePrefixe + 1;
             }
         }
-        assertEquals(numberOfPropertiesWithTheSamePrefixe ,actual.size());
+        assertEquals(numberOfPropertiesWithTheSamePrefixe, actual.size());
     }
 
     @Test
-    void shouldCheckPropertiesHaveNotTheSameSuffix(){
-        String suffix =".baseURI" ;
+    void shouldCheckPropertiesHaveNotTheSameSuffix() {
+        String suffix = ".baseURI";
         int numberOfPropertiesWithTheSameSuffix = 0;
-        for(String element : actual){
-            if(element.endsWith(suffix)){
-                numberOfPropertiesWithTheSameSuffix =numberOfPropertiesWithTheSameSuffix +1;
+        for (String element : actual) {
+            if (element.endsWith(suffix)) {
+                numberOfPropertiesWithTheSameSuffix = numberOfPropertiesWithTheSameSuffix + 1;
             }
         }
-        assertNotEquals(numberOfPropertiesWithTheSameSuffix ,actual.size());
+        assertNotEquals(numberOfPropertiesWithTheSameSuffix, actual.size());
     }
-
-
-
-
-
 }

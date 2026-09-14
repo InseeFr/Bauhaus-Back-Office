@@ -10,8 +10,7 @@ public record CollectionDashboardItemResponse(
         @Nullable String modified,
         String validationState,
         @Nullable String creator,
-        int nbMembers
-) {
+        int nbMembers) {
     static CollectionDashboardItemResponse fromDomain(CollectionDashboardItem item) {
         return new CollectionDashboardItemResponse(
                 item.id().value().toString(),
@@ -20,7 +19,6 @@ public record CollectionDashboardItemResponse(
                 item.modified(),
                 item.validationState().getValue(),
                 item.creator(),
-                item.nbMembers()
-        );
+                item.nbMembers());
     }
 }

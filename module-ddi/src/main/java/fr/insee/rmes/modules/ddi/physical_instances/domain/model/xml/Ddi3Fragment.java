@@ -12,8 +12,7 @@ public class Ddi3Fragment {
     @XmlAnyElement(lax = true)
     private Object content;
 
-    public Ddi3Fragment() {
-    }
+    public Ddi3Fragment() {}
 
     public Ddi3Fragment(Object content) {
         this.content = content;

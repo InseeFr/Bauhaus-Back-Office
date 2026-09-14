@@ -18,7 +18,7 @@ public class ComponentDefinition {
     private MutualizedComponent component;
 
     public ComponentDefinition() throws RmesException {
-        //nothing to do
+        // nothing to do
     }
 
     public String getId() {

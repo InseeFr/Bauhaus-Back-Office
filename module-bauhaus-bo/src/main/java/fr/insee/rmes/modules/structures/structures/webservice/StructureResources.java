@@ -1,5 +1,7 @@
 package fr.insee.rmes.modules.structures.structures.webservice;
 
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.structures.StructureComponent;
 import fr.insee.rmes.bauhaus_services.structures.StructureService;
@@ -8,27 +10,21 @@ import fr.insee.rmes.modules.commons.configuration.ConditionalOnModule;
 import fr.insee.rmes.modules.commons.configuration.swagger.model.Id;
 import fr.insee.rmes.modules.users.domain.model.RBAC;
 import fr.insee.rmes.modules.users.webservice.HasAccess;
+import java.util.List;
 import org.apache.http.HttpStatus;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-
 @RestController
 @RequestMapping("/structures")
 @ConditionalOnModule("structures")
 public class StructureResources {
 
+    final StructureService structureService;
 
-    final
-    StructureService structureService;
-
-    final
-    StructureComponent structureComponentService;
+    final StructureComponent structureComponentService;
 
     public StructureResources(StructureService structureService, StructureComponent structureComponentService) {
         this.structureService = structureService;
@@ -36,19 +32,20 @@ public class StructureResources {
     }
 
     @HasAccess(module = RBAC.Module.STRUCTURE_STRUCTURE, privilege = RBAC.Privilege.READ)
-    @GetMapping( produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<PartialStructureResponse>> getStructures() throws RmesException {
         List<PartialStructureResponse> responses = this.structureService.getStructures().stream()
                 .map(structure -> {
                     var response = PartialStructureResponse.fromDomain(structure);
-                    response.add(linkTo(StructureResources.class).slash("structure").slash(structure.id()).withSelfRel());
+                    response.add(linkTo(StructureResources.class)
+                            .slash("structure")
+                            .slash(structure.id())
+                            .withSelfRel());
                     return response;
                 })
                 .toList();
 
-        return ResponseEntity.ok()
-                .contentType(MediaTypes.HAL_JSON)
-                .body(responses);
+        return ResponseEntity.ok().contentType(MediaTypes.HAL_JSON).body(responses);
     }
 
     @HasAccess(module = RBAC.Module.STRUCTURE_STRUCTURE, privilege = RBAC.Privilege.READ)
@@ -79,21 +76,17 @@ public class StructureResources {
         return ResponseEntity.status(HttpStatus.SC_OK).body(structure);
     }
 
-
     @HasAccess(module = RBAC.Module.STRUCTURE_STRUCTURE, privilege = RBAC.Privilege.CREATE)
-    @PostMapping(value = "/structure",
-    		consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/structure", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> setStructure(@RequestBody String body) throws RmesException {
         String id = structureService.setStructure(body);
         return ResponseEntity.status(HttpStatus.SC_OK).body(id);
     }
 
     @HasAccess(module = RBAC.Module.STRUCTURE_STRUCTURE, privilege = RBAC.Privilege.UPDATE)
-    @PutMapping(value = "/structure/{structureId}",
-    		consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> setStructure(
-    		@PathVariable("structureId") String id,
-    		@RequestBody String body) throws RmesException {
+    @PutMapping(value = "/structure/{structureId}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Object> setStructure(@PathVariable("structureId") String id, @RequestBody String body)
+            throws RmesException {
         return ResponseEntity.status(HttpStatus.SC_OK).body(structureService.setStructure(id, body));
     }
 

@@ -1,26 +1,25 @@
 package fr.insee.rmes.modules.concepts.collections.webservice;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import fr.insee.rmes.modules.concepts.collections.domain.port.clientside.CollectionsService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.TestPropertySource;
-
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 @SpringBootTest(classes = CollectionsResourcesEnabledIntegrationTest.TestConfiguration.class)
-@TestPropertySource(properties = "fr.insee.rmes.bauhaus.modules[0].identifier=concepts")
+@TestPropertySource(properties = "fr.insee.rmes.bauhaus.modules.concepts.enabled=true")
 class CollectionsResourcesEnabledIntegrationTest {
 
     @Configuration
     @EnableAutoConfiguration
     @Import(CollectionsResources.class)
-    static class TestConfiguration {
-    }
+    static class TestConfiguration {}
 
     @MockitoBean
     private CollectionsService collectionsService;
@@ -30,6 +29,7 @@ class CollectionsResourcesEnabledIntegrationTest {
 
     @Test
     void should_load_controller_when_concepts_module_is_active() {
-        assertNotNull(collectionsResources, "CollectionsResources should be loaded when activeModules contains 'concepts'");
+        assertNotNull(
+                collectionsResources, "CollectionsResources should be loaded when activeModules contains 'concepts'");
     }
 }

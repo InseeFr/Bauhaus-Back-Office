@@ -1,11 +1,16 @@
 package fr.insee.rmes.testcontainers.e2e.operations;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.json.JSONUtils;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.testcontainers.e2e.BaseE2ETest;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeAll;
@@ -21,12 +26,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * End-to-end tests of the three publication endpoints of the operations module:
@@ -227,7 +226,8 @@ class OperationsPublicationE2ETest extends BaseE2ETest {
         void doesNotCopyTheGestionOnlyProperties() throws RmesException {
             publishOnce("/operations/operation/s9104/validate");
 
-            assertThat(publishedObjectsOf(PUBLISHED_OPERATION + "s9104", VALIDATION_STATE)).isEmpty();
+            assertThat(publishedObjectsOf(PUBLISHED_OPERATION + "s9104", VALIDATION_STATE))
+                    .isEmpty();
             assertThat(publishedObjectsOf(PUBLISHED_OPERATION + "s9104", PUBLISHER))
                     .as("publisher is carried by the series, it is not copied on the operation")
                     .isEmpty();
@@ -312,7 +312,8 @@ class OperationsPublicationE2ETest extends BaseE2ETest {
             assertThat(publishedObjectsOf(PUBLISHED_ATTRIBUTE + "9202/S.1.5", PUBLISHED_SIMS_ATTRIBUTE + "S.1.5"))
                     .as("S.1.3 to S.1.8 are internal rubrics, they never reach the publication base")
                     .isEmpty();
-            assertThat(publishedObjectsOf(PUBLISHED_REPORT + "9202", VALIDATION_STATE)).isEmpty();
+            assertThat(publishedObjectsOf(PUBLISHED_REPORT + "9202", VALIDATION_STATE))
+                    .isEmpty();
         }
 
         @Test
@@ -359,11 +360,7 @@ class OperationsPublicationE2ETest extends BaseE2ETest {
         // Every /validate endpoint declares consumes=application/json.
         headers.setContentType(MediaType.APPLICATION_JSON);
         return restTemplate.exchange(
-                "http://localhost:" + port + "/api" + path,
-                HttpMethod.PUT,
-                new HttpEntity<>(headers),
-                String.class
-        );
+                "http://localhost:" + port + "/api" + path, HttpMethod.PUT, new HttpEntity<>(headers), String.class);
     }
 
     /**

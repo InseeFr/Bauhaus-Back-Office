@@ -2,15 +2,26 @@ package fr.insee.rmes.bauhaus_services.datasets;
 
 import fr.insee.rmes.bauhaus_services.distribution.DistributionServiceImpl;
 import fr.insee.rmes.graphdb.RdfConnectionDetails;
-import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.graphdb.RepositoryInitiator;
 import fr.insee.rmes.graphdb.RepositoryUtils;
-
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
 
 public class DistributionServiceImplStubContainer extends DistributionServiceImpl {
 
     public DistributionServiceImplStubContainer(RdfConnectionDetails rdfGestionConectionDetails) {
-        super(new RepositoryGestion(rdfGestionConectionDetails, new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED)),
-                null, null, null, null, null, null, null, null, null, null, null);
+        super(
+                new RepositoryGestion(
+                        rdfGestionConectionDetails, new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED)),
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null);
     }
 }

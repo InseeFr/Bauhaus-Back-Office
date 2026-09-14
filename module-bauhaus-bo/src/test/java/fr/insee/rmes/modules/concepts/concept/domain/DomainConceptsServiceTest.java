@@ -1,5 +1,12 @@
 package fr.insee.rmes.modules.concepts.concept.domain;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import fr.insee.rmes.modules.concepts.concept.domain.exceptions.ConceptAlreadyPublishedException;
 import fr.insee.rmes.modules.concepts.concept.domain.exceptions.ConceptNotFoundException;
 import fr.insee.rmes.modules.concepts.concept.domain.exceptions.ConceptsFetchException;
@@ -9,31 +16,23 @@ import fr.insee.rmes.modules.concepts.concept.domain.exceptions.InvalidCreateCon
 import fr.insee.rmes.modules.concepts.concept.domain.model.Concept;
 import fr.insee.rmes.modules.concepts.concept.domain.model.ConceptDashboardItem;
 import fr.insee.rmes.modules.concepts.concept.domain.model.ConceptId;
-import fr.insee.rmes.modules.concepts.concept.domain.model.PartialConcept;
 import fr.insee.rmes.modules.concepts.concept.domain.model.ConceptToValidate;
 import fr.insee.rmes.modules.concepts.concept.domain.model.ConceptVersion;
+import fr.insee.rmes.modules.concepts.concept.domain.model.PartialConcept;
 import fr.insee.rmes.modules.concepts.concept.domain.model.commands.CreateConceptCommand;
 import fr.insee.rmes.modules.concepts.concept.domain.model.commands.UpdateConceptCommand;
 import fr.insee.rmes.modules.concepts.concept.domain.port.serverside.ConceptsRepository;
 import fr.insee.rmes.modules.shared_kernel.domain.model.LocalisedLabel;
 import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
-import org.mockito.ArgumentCaptor;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 
 class DomainConceptsServiceTest {
 
@@ -48,8 +47,7 @@ class DomainConceptsServiceTest {
             null,
             ValidationStatus.UNPUBLISHED,
             ConceptVersion.initial(),
-            Collections.emptyList()
-    );
+            Collections.emptyList());
 
     ConceptsRepository conceptsRepository;
     DomainConceptsService domainConceptsService;
@@ -72,8 +70,7 @@ class DomainConceptsServiceTest {
 
     @Test
     void should_return_empty_list_when_concept_belongs_to_no_collection() throws ConceptsFetchException {
-        when(conceptsRepository.getCollectionIdsByConceptId("c00001"))
-                .thenReturn(List.of());
+        when(conceptsRepository.getCollectionIdsByConceptId("c00001")).thenReturn(List.of());
 
         var result = domainConceptsService.getCollectionIdsByConceptId("c00001");
 
@@ -100,7 +97,9 @@ class DomainConceptsServiceTest {
 
     @Test
     void getAllConcepts_returns_partial_list_from_repository() throws ConceptsFetchException {
-        var partial1 = new PartialConcept(new ConceptId("c00001"), LocalisedLabel.ofDefaultLanguage("A"),
+        var partial1 = new PartialConcept(
+                new ConceptId("c00001"),
+                LocalisedLabel.ofDefaultLanguage("A"),
                 LocalisedLabel.ofDefaultLanguage("RNIPP"));
         var partial2 = new PartialConcept(new ConceptId("c00002"), LocalisedLabel.ofDefaultLanguage("B"), null);
         when(conceptsRepository.getConcepts()).thenReturn(List.of(partial1, partial2));
@@ -123,7 +122,12 @@ class DomainConceptsServiceTest {
     @Test
     void getConceptsDashboard_delegates_to_repository() throws ConceptsFetchException {
         var item = new ConceptDashboardItem(
-                new ConceptId("c00001"), "Mon concept", "2026-01-01T00:00:00", null, ValidationStatus.UNPUBLISHED, "HIE000000");
+                new ConceptId("c00001"),
+                "Mon concept",
+                "2026-01-01T00:00:00",
+                null,
+                ValidationStatus.UNPUBLISHED,
+                "HIE000000");
         when(conceptsRepository.getConceptsDashboard()).thenReturn(List.of(item));
 
         List<ConceptDashboardItem> result = domainConceptsService.getConceptsDashboard();
@@ -133,7 +137,8 @@ class DomainConceptsServiceTest {
 
     @Test
     void createConcept_uses_nextConceptId_from_repository_and_returns_it()
-            throws InvalidCreateConceptCommandException, InvalidConceptIdException, ConceptsFetchException, ConceptsSaveException {
+            throws InvalidCreateConceptCommandException, InvalidConceptIdException, ConceptsFetchException,
+                    ConceptsSaveException {
         ConceptId generatedId = new ConceptId("c00007");
         when(conceptsRepository.nextConceptId()).thenReturn(generatedId);
         var command = sampleCreateCommand();
@@ -145,7 +150,8 @@ class DomainConceptsServiceTest {
 
     @Test
     void createConcept_saves_concept_built_from_command_with_generated_id()
-            throws InvalidCreateConceptCommandException, InvalidConceptIdException, ConceptsFetchException, ConceptsSaveException {
+            throws InvalidCreateConceptCommandException, InvalidConceptIdException, ConceptsFetchException,
+                    ConceptsSaveException {
         ConceptId generatedId = new ConceptId("c00007");
         when(conceptsRepository.nextConceptId()).thenReturn(generatedId);
         var command = sampleCreateCommand();
@@ -158,8 +164,7 @@ class DomainConceptsServiceTest {
         assertThat(saved.id()).isEqualTo(generatedId);
         assertThat(saved.prefLabel().value()).isEqualTo("Mon concept");
         assertThat(saved.creator()).isEqualTo("HIE000000");
-        assertThat(saved.disseminationStatus())
-                .isEqualTo("http://id.insee.fr/codes/base/statutDiffusion/Prive");
+        assertThat(saved.disseminationStatus()).isEqualTo("http://id.insee.fr/codes/base/statutDiffusion/Prive");
         assertThat(saved.validationState()).isEqualTo(ValidationStatus.UNPUBLISHED);
         assertThat(saved.version()).isEqualTo(ConceptVersion.initial());
     }
@@ -170,8 +175,7 @@ class DomainConceptsServiceTest {
                 "HIE000000",
                 "HIE000000",
                 "http://id.insee.fr/codes/base/statutDiffusion/Prive",
-                Collections.emptyList()
-        );
+                Collections.emptyList());
     }
 
     private static UpdateConceptCommand sampleUpdateCommand(String id)
@@ -182,14 +186,13 @@ class DomainConceptsServiceTest {
                 "HIE000000",
                 "HIE000000",
                 "http://id.insee.fr/codes/base/statutDiffusion/Prive",
-                Collections.emptyList()
-        );
+                Collections.emptyList());
     }
 
     @Test
     void updateConcept_updates_repository_when_concept_exists()
-            throws InvalidCreateConceptCommandException, InvalidConceptIdException,
-            ConceptsFetchException, ConceptsSaveException, ConceptNotFoundException {
+            throws InvalidCreateConceptCommandException, InvalidConceptIdException, ConceptsFetchException,
+                    ConceptsSaveException, ConceptNotFoundException {
         when(conceptsRepository.getConcept(ID)).thenReturn(Optional.of(SAMPLE_CONCEPT));
         var command = sampleUpdateCommand(ID.value());
 
@@ -204,8 +207,8 @@ class DomainConceptsServiceTest {
 
     @Test
     void updateConcept_throws_ConceptNotFoundException_when_id_is_unknown()
-            throws InvalidCreateConceptCommandException, InvalidConceptIdException,
-            ConceptsFetchException, ConceptsSaveException {
+            throws InvalidCreateConceptCommandException, InvalidConceptIdException, ConceptsFetchException,
+                    ConceptsSaveException {
         when(conceptsRepository.getConcept(ID)).thenReturn(Optional.empty());
         var command = sampleUpdateCommand(ID.value());
 
@@ -229,8 +232,7 @@ class DomainConceptsServiceTest {
     }
 
     @Test
-    void validateConcepts_throws_when_at_least_one_id_is_missing()
-            throws ConceptsFetchException {
+    void validateConcepts_throws_when_at_least_one_id_is_missing() throws ConceptsFetchException {
         var id1 = new ConceptId("c00001");
         var id2 = new ConceptId("c00404");
         when(conceptsRepository.findExistingConceptIds(List.of("c00001", "c00404")))
@@ -243,8 +245,7 @@ class DomainConceptsServiceTest {
     }
 
     @Test
-    void validateConcepts_throws_when_at_least_one_concept_is_already_published()
-            throws ConceptsFetchException {
+    void validateConcepts_throws_when_at_least_one_concept_is_already_published() throws ConceptsFetchException {
         var id1 = new ConceptId("c00001");
         var id2 = new ConceptId("c00002");
         when(conceptsRepository.findExistingConceptIds(List.of("c00001", "c00002")))
@@ -258,7 +259,8 @@ class DomainConceptsServiceTest {
     }
 
     @Test
-    void validateConcepts_is_a_noop_on_empty_input() throws ConceptsFetchException, ConceptsSaveException, ConceptAlreadyPublishedException {
+    void validateConcepts_is_a_noop_on_empty_input()
+            throws ConceptsFetchException, ConceptsSaveException, ConceptAlreadyPublishedException {
         domainConceptsService.validateConcepts(List.of());
 
         verify(conceptsRepository, never()).validate(any());

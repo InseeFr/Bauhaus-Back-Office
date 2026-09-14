@@ -5,10 +5,10 @@ fr.insee.rmes.bauhaus:
   enable-dev-tools: false
   app-host: http://localhost:3000/#/
   modules:
-    - identifier: concepts
-    - identifier: classifications
-    - identifier: operations
-    - identifier: structures
-    - identifier: codelists
-    - identifier: datasets
-    - identifier: ddi
+    concepts: {}
+    classifications: {}
+    operations: {}
+    structures: {}
+    codelists: {}
+    datasets: {}
+    ddi: {}

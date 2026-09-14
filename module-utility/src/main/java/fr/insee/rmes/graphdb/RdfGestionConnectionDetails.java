@@ -1,12 +1,11 @@
 package fr.insee.rmes.graphdb;
 
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.context.properties.bind.ConstructorBinding;
-
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.bind.ConstructorBinding;
 
 @ConfigurationProperties(prefix = "fr.insee.rmes.bauhaus.sesame.gestion")
 @Qualifier("rdfGestionConnectionDetails")

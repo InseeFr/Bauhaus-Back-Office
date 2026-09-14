@@ -1,0 +1,8 @@
+# Commits de reformatage automatique, à ignorer dans `git blame`.
+#
+# Activation locale, une fois par clone :
+#   git config blame.ignoreRevsFile .git-blame-ignore-revs
+# (GitHub applique ce fichier automatiquement.)
+
+# style: reformat every java source with palantir-java-format
+b906242b9ef028060de5aa37acd2ac0f5443fb57

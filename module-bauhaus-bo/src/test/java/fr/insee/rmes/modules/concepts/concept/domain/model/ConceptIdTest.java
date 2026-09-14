@@ -1,13 +1,13 @@
 package fr.insee.rmes.modules.concepts.concept.domain.model;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+
 import fr.insee.rmes.modules.concepts.concept.domain.exceptions.InvalidConceptIdException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 class ConceptIdTest {
 
@@ -31,15 +31,7 @@ class ConceptIdTest {
      * doivent rester lisibles et modifiables. ConceptId tolère donc tout caractère non-vide.
      */
     @ParameterizedTest
-    @ValueSource(strings = {
-            "c00001",
-            "c1",
-            "concept-001",
-            "underscore_x",
-            "dot.value",
-            "café",
-            "with space"
-    })
+    @ValueSource(strings = {"c00001", "c1", "concept-001", "underscore_x", "dot.value", "café", "with space"})
     void should_accept_any_non_blank_value(String value) {
         assertDoesNotThrow(() -> new ConceptId(value));
     }

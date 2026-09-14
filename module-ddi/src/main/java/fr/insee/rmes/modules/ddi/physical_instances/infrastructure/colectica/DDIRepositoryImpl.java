@@ -8,11 +8,13 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Category;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CategoryScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeListScheme;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4GroupResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4LogicalProduct;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedMissingValuesRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedRepresentationScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnitResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4VariableScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodeListScheme;
@@ -22,6 +24,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialLogicalP
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialMissingValuesRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialPhysicalInstance;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialStudyUnit;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceIds;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceParents;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceSearchRow;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UpdatePhysicalInstanceRequest;
@@ -69,39 +72,53 @@ public class DDIRepositoryImpl implements DDIRepository {
     private final ColecticaUsageRepository usages;
     private final ColecticaMissingValuesRepository missingValues;
     private final ColecticaItemCreator itemCreator;
+    private final ColecticaItemByIdReader itemByIdReader;
 
     public DDIRepositoryImpl(
-        ColecticaConfiguration.ColecticaInstanceConfiguration instanceConfiguration,
-        DDI3toDDI4ConverterService ddi3ToDdi4Converter,
-        DDI4toDDI3ConverterService ddi4ToDdi3Converter,
-        ColecticaConfiguration colecticaConfiguration,
-        ColecticaClient colecticaClient,
-        MutualizedCodeListRefsStrategy mutualizedCodeListRefsProvider
-    ) {
+            ColecticaConfiguration.ColecticaInstanceConfiguration instanceConfiguration,
+            DDI3toDDI4ConverterService ddi3ToDdi4Converter,
+            DDI4toDDI3ConverterService ddi4ToDdi3Converter,
+            ColecticaConfiguration colecticaConfiguration,
+            ColecticaClient colecticaClient,
+            MutualizedCodeListRefsStrategy mutualizedCodeListRefsProvider) {
         String defaultLang = colecticaConfiguration.langs().getFirst();
         ColecticaLabels labels = new ColecticaLabels(defaultLang);
         ColecticaSetReader setReader = new ColecticaSetReader(instanceConfiguration, colecticaClient);
         ColecticaVersionDates versionDates = new ColecticaVersionDates(colecticaClient);
 
-        this.catalog = new ColecticaCatalogRepository(
-            instanceConfiguration, colecticaClient, labels, ddi3ToDdi4Converter);
-        this.physicalInstanceReader = new ColecticaPhysicalInstanceReader(
-            instanceConfiguration, ddi3ToDdi4Converter, setReader);
+        this.catalog =
+                new ColecticaCatalogRepository(instanceConfiguration, colecticaClient, labels, ddi3ToDdi4Converter);
+        this.physicalInstanceReader =
+                new ColecticaPhysicalInstanceReader(instanceConfiguration, ddi3ToDdi4Converter, setReader);
         this.groupReader = new ColecticaGroupSetReader(colecticaClient, defaultLang);
+        this.itemByIdReader = new ColecticaItemByIdReader(colecticaClient, ddi3ToDdi4Converter);
         this.codeLists = new ColecticaCodeListRepository(
-            instanceConfiguration, colecticaClient, ddi3ToDdi4Converter, setReader, versionDates, labels,
-            mutualizedCodeListRefsProvider);
-        this.hierarchy = new ColecticaHierarchyBrowser(
-            instanceConfiguration, colecticaClient, catalog, codeLists);
+                instanceConfiguration,
+                colecticaClient,
+                ddi3ToDdi4Converter,
+                setReader,
+                versionDates,
+                labels,
+                mutualizedCodeListRefsProvider);
+        this.hierarchy = new ColecticaHierarchyBrowser(instanceConfiguration, colecticaClient, catalog, codeLists);
         this.usages = new ColecticaUsageRepository(instanceConfiguration, colecticaClient, labels);
-        this.missingValues = new ColecticaMissingValuesRepository(
-            colecticaClient, ddi3ToDdi4Converter, hierarchy);
+        this.missingValues = new ColecticaMissingValuesRepository(colecticaClient, ddi3ToDdi4Converter, hierarchy);
         ColecticaSchemeFiler schemeFiler = new ColecticaSchemeFiler(
-            instanceConfiguration, colecticaConfiguration, colecticaClient, ddi3ToDdi4Converter,
-            ddi4ToDdi3Converter, mutualizedCodeListRefsProvider, catalog, defaultLang);
+                instanceConfiguration,
+                colecticaConfiguration,
+                colecticaClient,
+                ddi3ToDdi4Converter,
+                ddi4ToDdi3Converter,
+                mutualizedCodeListRefsProvider,
+                catalog,
+                defaultLang);
         this.physicalInstanceWriter = new ColecticaPhysicalInstanceWriter(
-            instanceConfiguration, colecticaClient, ddi4ToDdi3Converter, physicalInstanceReader,
-            schemeFiler, labels);
+                instanceConfiguration,
+                colecticaClient,
+                ddi4ToDdi3Converter,
+                physicalInstanceReader,
+                schemeFiler,
+                labels);
         this.itemCreator = new ColecticaItemCreator(colecticaClient, ddi4ToDdi3Converter);
     }
 
@@ -122,6 +139,18 @@ public class DDIRepositoryImpl implements DDIRepository {
     @Cacheable(ColecticaCacheNames.PHYSICAL_INSTANCE_SEARCH_ROWS)
     public List<PhysicalInstanceSearchRow> getPhysicalInstanceSearchRows() {
         return catalog.getPhysicalInstanceSearchRows();
+    }
+
+    /**
+     * Vide la région {@link ColecticaCacheNames#PHYSICAL_INSTANCE_SEARCH_ROWS} pour que le prochain
+     * {@link #getPhysicalInstanceSearchRows()} reparcoure Colectica. Les écritures de PhysicalInstance
+     * l'évincent déjà ; ceci couvre les changements survenus hors de Bauhaus, qu'aucune écriture locale
+     * ne signale.
+     */
+    @Override
+    @CacheEvict(cacheNames = ColecticaCacheNames.PHYSICAL_INSTANCE_SEARCH_ROWS, allEntries = true)
+    public void evictPhysicalInstanceSearchRowsCache() {
+        logger.info("Physical instance search rows cache evicted");
     }
 
     @Override
@@ -204,6 +233,12 @@ public class DDIRepositoryImpl implements DDIRepository {
 
     @Override
     @CacheEvict(cacheNames = ColecticaCacheNames.PHYSICAL_INSTANCE_SEARCH_ROWS, allEntries = true)
+    public Ddi4Response createPhysicalInstance(CreatePhysicalInstanceRequest request, PhysicalInstanceIds ids) {
+        return physicalInstanceWriter.createPhysicalInstance(request, ids);
+    }
+
+    @Override
+    @CacheEvict(cacheNames = ColecticaCacheNames.PHYSICAL_INSTANCE_SEARCH_ROWS, allEntries = true)
     public void updatePhysicalInstance(String agencyId, String id, UpdatePhysicalInstanceRequest request) {
         physicalInstanceWriter.updatePhysicalInstance(agencyId, id, request);
     }
@@ -219,6 +254,16 @@ public class DDIRepositoryImpl implements DDIRepository {
     @Override
     public Ddi4GroupResponse getGroup(String agencyId, String id) {
         return groupReader.getGroup(agencyId, id);
+    }
+
+    @Override
+    public Optional<Ddi4Group> findGroup(String agencyId, String id) {
+        return groupReader.findGroup(agencyId, id);
+    }
+
+    @Override
+    public Optional<Ddi4StudyUnit> findStudyUnit(String agencyId, String id) {
+        return itemByIdReader.findStudyUnit(agencyId, id);
     }
 
     // --- Listes de codes et navigation ------------------------------------------------------------
@@ -258,11 +303,11 @@ public class DDIRepositoryImpl implements DDIRepository {
      */
     @Override
     @CacheEvict(
-        cacheNames = {
-            ColecticaCacheNames.MUTUALIZED_CODES_LISTS,
-            ColecticaCacheNames.MUTUALIZED_PACKAGE_CODE_LIST_REFS
-        },
-        allEntries = true)
+            cacheNames = {
+                ColecticaCacheNames.MUTUALIZED_CODES_LISTS,
+                ColecticaCacheNames.MUTUALIZED_PACKAGE_CODE_LIST_REFS
+            },
+            allEntries = true)
     public void evictMutualizedCodesListsCache() {
         logger.info("Mutualized codes lists caches evicted");
     }
@@ -273,9 +318,7 @@ public class DDIRepositoryImpl implements DDIRepository {
     }
 
     @Override
-    public List<PartialCodeListScheme> getCodeListSchemesByLogicalProduct(
-        String agencyId, String logicalProductId
-    ) {
+    public List<PartialCodeListScheme> getCodeListSchemesByLogicalProduct(String agencyId, String logicalProductId) {
         return hierarchy.getCodeListSchemesByLogicalProduct(agencyId, logicalProductId);
     }
 
@@ -292,30 +335,23 @@ public class DDIRepositoryImpl implements DDIRepository {
     // --- Usages et valeurs sentinelles -------------------------------------------------------------
 
     @Override
-    public List<CodeListVariableUsage> getVariablesUsingCodeList(
-        String codeListAgencyId, String codeListId
-    ) {
+    public List<CodeListVariableUsage> getVariablesUsingCodeList(String codeListAgencyId, String codeListId) {
         return usages.getVariablesUsingCodeList(codeListAgencyId, codeListId);
     }
 
     @Override
-    public List<CategoryCodeListUsage> getCodeListsUsingCategory(
-        String categoryAgencyId, String categoryId
-    ) {
+    public List<CategoryCodeListUsage> getCodeListsUsingCategory(String categoryAgencyId, String categoryId) {
         return usages.getCodeListsUsingCategory(categoryAgencyId, categoryId);
     }
 
     @Override
-    public List<CodeListVariableUsage> getVariablesUsingMissingValuesRepresentation(
-        String agencyId, String mmvrId
-    ) {
+    public List<CodeListVariableUsage> getVariablesUsingMissingValuesRepresentation(String agencyId, String mmvrId) {
         return usages.getVariablesUsingMissingValuesRepresentation(agencyId, mmvrId);
     }
 
     @Override
     public List<PartialMissingValuesRepresentation> getMissingValuesRepresentationsByGroup(
-        String agencyId, String groupId
-    ) {
+            String agencyId, String groupId) {
         return missingValues.getMissingValuesRepresentationsByGroup(agencyId, groupId);
     }
 
@@ -342,16 +378,13 @@ public class DDIRepositoryImpl implements DDIRepository {
     }
 
     @Override
-    public void createManagedRepresentationScheme(
-        Ddi4ManagedRepresentationScheme managedRepresentationScheme
-    ) {
+    public void createManagedRepresentationScheme(Ddi4ManagedRepresentationScheme managedRepresentationScheme) {
         itemCreator.createManagedRepresentationScheme(managedRepresentationScheme);
     }
 
     @Override
     public void createManagedMissingValuesRepresentation(
-        Ddi4ManagedMissingValuesRepresentation managedMissingValuesRepresentation
-    ) {
+            Ddi4ManagedMissingValuesRepresentation managedMissingValuesRepresentation) {
         itemCreator.createManagedMissingValuesRepresentation(managedMissingValuesRepresentation);
     }
 

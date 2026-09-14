@@ -42,8 +42,7 @@ final class ColecticaXml {
     static final String STUDY_UNIT_NS = "ddi:studyunit:3_3";
     static final String XML_NS = "http://www.w3.org/XML/1998/namespace";
 
-    private ColecticaXml() {
-    }
+    private ColecticaXml() {}
 
     /** Fabrique de {@code DocumentBuilder} protégée contre les entités externes (XXE). */
     static DocumentBuilderFactory secureDocumentBuilderFactory() throws ParserConfigurationException {
@@ -66,9 +65,7 @@ final class ColecticaXml {
     }
 
     static Document parse(String xml) throws ParserConfigurationException, SAXException, IOException {
-        return secureDocumentBuilderFactory()
-            .newDocumentBuilder()
-            .parse(new InputSource(new StringReader(xml)));
+        return secureDocumentBuilderFactory().newDocumentBuilder().parse(new InputSource(new StringReader(xml)));
     }
 
     /** Sérialise un nœud DOM en XML, sans déclaration {@code <?xml …?>}. */
@@ -131,8 +128,7 @@ final class ColecticaXml {
      * la version n'est pas un entier : Colectica ne saurait rien en faire. Liste vide quand le XML
      * est absent ou illisible.
      */
-    static List<GetDescriptionsRequest.IdentifierRef> referencedIdentifiers(
-        String xml, String referenceLocalName) {
+    static List<GetDescriptionsRequest.IdentifierRef> referencedIdentifiers(String xml, String referenceLocalName) {
         if (xml == null || xml.isBlank()) {
             return List.of();
         }
@@ -145,12 +141,15 @@ final class ColecticaXml {
                 String id = trimmed(textContent(reference, REUSABLE_NS, "ID"));
                 String version = trimmed(textContent(reference, REUSABLE_NS, "Version"));
                 if (agency == null || id == null || version == null || !version.matches("\\d+")) {
-                    logger.warn("Ignoring unusable {}: agency={}, id={}, version={}",
-                        referenceLocalName, agency, id, version);
+                    logger.warn(
+                            "Ignoring unusable {}: agency={}, id={}, version={}",
+                            referenceLocalName,
+                            agency,
+                            id,
+                            version);
                     continue;
                 }
-                identifiers.add(new GetDescriptionsRequest.IdentifierRef(
-                    agency, id, Integer.parseInt(version)));
+                identifiers.add(new GetDescriptionsRequest.IdentifierRef(agency, id, Integer.parseInt(version)));
             }
             return identifiers.stream().distinct().toList();
         } catch (Exception e) {
@@ -194,12 +193,11 @@ final class ColecticaXml {
         if (text == null) {
             return "";
         }
-        return text
-            .replace("&", "&amp;")
-            .replace("<", "&lt;")
-            .replace(">", "&gt;")
-            .replace("\"", "&quot;")
-            .replace("'", "&apos;");
+        return text.replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;")
+                .replace("'", "&apos;");
     }
 
     /**
@@ -210,8 +208,7 @@ final class ColecticaXml {
         int startIndex = 0;
         while (startIndex < xml.length() && xml.charAt(startIndex) != '<') {
             char c = xml.charAt(startIndex);
-            if (!(c == '\uFEFF' || Character.isWhitespace(c) || Character.isISOControl(c)
-                || !Character.isDefined(c))) {
+            if (!(c == '\uFEFF' || Character.isWhitespace(c) || Character.isISOControl(c) || !Character.isDefined(c))) {
                 logger.warn("Unexpected character at position {}: {} (code: {})", startIndex, c, (int) c);
             }
             startIndex++;

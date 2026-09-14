@@ -1,5 +1,8 @@
 package fr.insee.rmes.modules;
 
+import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
+import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
+
 import com.tngtech.archunit.base.DescribedPredicate;
 import com.tngtech.archunit.core.domain.JavaClass;
 import com.tngtech.archunit.core.importer.ImportOption;
@@ -15,9 +18,6 @@ import fr.insee.rmes.modules.commons.hexagonal.ServerSideAdaptor;
 import fr.insee.rmes.modules.commons.hexagonal.ServerSidePort;
 import org.springframework.web.bind.annotation.*;
 
-import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
-import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
-
 /**
  * Règles d'architecture hexagonale appliquées à l'ensemble de {@code fr.insee.rmes.modules}.
  * <p>
@@ -29,8 +29,7 @@ import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
  * nouvelle entrée dans le store sans supprimer l'ancienne. {@link ArchUnitStoreTest} détecte ces
  * entrées obsolètes ; il faut alors purger la ligne de {@code stored.rules} et son fichier de violations.
  */
-@AnalyzeClasses(packages = "fr.insee.rmes.modules",
-        importOptions = ImportOption.DoNotIncludeTests.class)
+@AnalyzeClasses(packages = "fr.insee.rmes.modules", importOptions = ImportOption.DoNotIncludeTests.class)
 public class HexagonaleArchTest {
 
     private static ArchCondition<JavaClass> beImplementedIn(String targetPackage, String prefix) {
@@ -45,17 +44,14 @@ public class HexagonaleArchTest {
                         .filter(subClass -> {
                             String packageName = subClass.getPackage().getName();
                             // Check if package contains targetPackage or ends with it
-                            return packageName.contains(targetPackage) ||
-                                   packageName.endsWith(targetPackage.replace(".", ""));
+                            return packageName.contains(targetPackage)
+                                    || packageName.endsWith(targetPackage.replace(".", ""));
                         })
                         .toList();
 
                 if (implementations.isEmpty()) {
                     String message = String.format(
-                            "Port %s has no implementation in %s package",
-                            javaClass.getFullName(),
-                            targetPackage
-                    );
+                            "Port %s has no implementation in %s package", javaClass.getFullName(), targetPackage);
                     events.add(SimpleConditionEvent.violated(javaClass, message));
                     return;
                 }
@@ -66,9 +62,7 @@ public class HexagonaleArchTest {
                         if (!implementation.getSimpleName().startsWith(prefix)) {
                             String message = String.format(
                                     "Implementation %s does not start with prefix '%s'",
-                                    implementation.getFullName(),
-                                    prefix
-                            );
+                                    implementation.getFullName(), prefix);
                             events.add(SimpleConditionEvent.violated(implementation, message));
                         }
                     }
@@ -79,71 +73,107 @@ public class HexagonaleArchTest {
 
     @ArchTest
     public static final ArchRule domainDependencies = FreezingArchRule.freeze(classes()
-            .that().resideInAPackage("..domain..")
-            .should().onlyDependOnClassesThat().resideInAnyPackage("..domain..", "java..", "org.apache.commons.lang3..", "org.jspecify.annotations..", "org.slf4j..", "fr.insee.rmes.modules.commons.hexagonal..")
+            .that()
+            .resideInAPackage("..domain..")
+            .should()
+            .onlyDependOnClassesThat()
+            .resideInAnyPackage(
+                    "..domain..",
+                    "java..",
+                    "org.apache.commons.lang3..",
+                    "org.jspecify.annotations..",
+                    "org.slf4j..",
+                    "fr.insee.rmes.modules.commons.hexagonal..")
             .because("The domain should only depends of the domain"));
 
     @ArchTest
-    public static final ArchRule webServiceNaming = FreezingArchRule.freeze(classes().that().areAnnotatedWith(RestController.class)
-                .should().haveSimpleNameEndingWith("Resources")
-                .andShould().resideInAPackage("..webservice.."));
+    public static final ArchRule webServiceNaming = FreezingArchRule.freeze(classes()
+            .that()
+            .areAnnotatedWith(RestController.class)
+            .should()
+            .haveSimpleNameEndingWith("Resources")
+            .andShould()
+            .resideInAPackage("..webservice.."));
 
     @ArchTest
     public static final ArchRule serverSideAdaptorShouldImplementServerSidePort = FreezingArchRule.freeze(classes()
-            .that().areAnnotatedWith(ServerSideAdaptor.class)
-            .should().resideInAPackage("..infrastructure..")
-            .andShould().implement(new DescribedPredicate<JavaClass>("Check if the interface is annotated with ServerSidePort") {
+            .that()
+            .areAnnotatedWith(ServerSideAdaptor.class)
+            .should()
+            .resideInAPackage("..infrastructure..")
+            .andShould()
+            .implement(new DescribedPredicate<JavaClass>("Check if the interface is annotated with ServerSidePort") {
                 @Override
                 public boolean test(JavaClass javaClass) {
                     return javaClass.isAnnotatedWith(ServerSidePort.class);
                 }
             }));
 
-
     @ArchTest
     public static final ArchRule webServicePackageDependendencies = FreezingArchRule.freeze(noClasses()
-            .that().resideInAPackage("..webservice..")
-            .should().dependOnClassesThat().resideInAnyPackage("..infrastructure..")
-            .orShould().dependOnClassesThat().areAnnotatedWith(ServerSidePort.class)
+            .that()
+            .resideInAPackage("..webservice..")
+            .should()
+            .dependOnClassesThat()
+            .resideInAnyPackage("..infrastructure..")
+            .orShould()
+            .dependOnClassesThat()
+            .areAnnotatedWith(ServerSidePort.class)
             .because("The webservices should not depends of the serverside ports or the infrastructure "));
 
     @ArchTest
     public static final ArchRule infrastructurePackageDependendencies = FreezingArchRule.freeze(noClasses()
-            .that().resideInAPackage("..infrastructure..")
-            .should().dependOnClassesThat().resideInAnyPackage("..webservice..")
-            .orShould().dependOnClassesThat().areAnnotatedWith(ClientSidePort.class)
+            .that()
+            .resideInAPackage("..infrastructure..")
+            .should()
+            .dependOnClassesThat()
+            .resideInAnyPackage("..webservice..")
+            .orShould()
+            .dependOnClassesThat()
+            .areAnnotatedWith(ClientSidePort.class)
             .because("The infrastructure should not depends of the clientside ports or the webservice "));
 
     @ArchTest
-    public static final ArchRule clientsidePortsImplementedInDomain = FreezingArchRule.freeze(classes()
-            .that().areAnnotatedWith(ClientSidePort.class)
-            .should().resideInAPackage("..clientside..")
-            .andShould().beInterfaces()
-            .andShould().haveSimpleNameEndingWith("Service")
-            .andShould(beImplementedIn(".domain.", "Domain"))
-            .because("All clientside ports defined in domain should be implemented in domain package with 'Domain' prefix"));
+    public static final ArchRule clientsidePortsImplementedInDomain = FreezingArchRule.freeze(
+            classes()
+                    .that()
+                    .areAnnotatedWith(ClientSidePort.class)
+                    .should()
+                    .resideInAPackage("..clientside..")
+                    .andShould()
+                    .beInterfaces()
+                    .andShould()
+                    .haveSimpleNameEndingWith("Service")
+                    .andShould(beImplementedIn(".domain.", "Domain"))
+                    .because(
+                            "All clientside ports defined in domain should be implemented in domain package with 'Domain' prefix"));
 
     @ArchTest
     public static final ArchRule onlyClientSideInterfaceInsideClientSidePackage = FreezingArchRule.freeze(classes()
-            .that().resideInAPackage("..clientside..")
-            .should().beAnnotatedWith(ClientSidePort.class)
+            .that()
+            .resideInAPackage("..clientside..")
+            .should()
+            .beAnnotatedWith(ClientSidePort.class)
             .because("The package clientside should only contain Client Side port"));
 
     @ArchTest
     public static final ArchRule serversidePortsImplementedInInfrastructure = FreezingArchRule.freeze(classes()
-            .that().areAnnotatedWith(ServerSidePort.class)
-            .should().resideInAPackage("..serverside..")
-            .andShould().beInterfaces()
+            .that()
+            .areAnnotatedWith(ServerSidePort.class)
+            .should()
+            .resideInAPackage("..serverside..")
+            .andShould()
+            .beInterfaces()
             .andShould(beImplementedIn(".infrastructure.", ""))
             .because("All serverside ports defined in domain should be implemented in infrastructure package"));
 
     @ArchTest
     public static final ArchRule onlyServerSidePortInsideServerSidePackage = FreezingArchRule.freeze(classes()
-            .that().resideInAPackage("..serverside..")
-            .should().beAnnotatedWith(ServerSidePort.class)
+            .that()
+            .resideInAPackage("..serverside..")
+            .should()
+            .beAnnotatedWith(ServerSidePort.class)
             .because("The package serverside should only contain Server Side port"));
-
-
 
     /**
      * Compteur de migration. Chaque contrôleur encore branché sur {@code bauhaus_services} (les
@@ -152,18 +182,20 @@ public class HexagonaleArchTest {
      */
     @ArchTest
     public static final ArchRule webServiceShouldNotDependOnLegacyServices = FreezingArchRule.freeze(noClasses()
-            .that().resideInAPackage("..webservice..")
-            .should().dependOnClassesThat().resideInAPackage("fr.insee.rmes.bauhaus_services..")
+            .that()
+            .resideInAPackage("..webservice..")
+            .should()
+            .dependOnClassesThat()
+            .resideInAPackage("fr.insee.rmes.bauhaus_services..")
             .because("The webservices should depend on the domain ports, not on the legacy bauhaus_services"));
-
 
     // Port structure
 
     @ArchTest
     public static final ArchRule portsShouldBeInterfaces = FreezingArchRule.freeze(classes()
-            .that().resideInAPackage("..port..")
-            .should().beInterfaces()
+            .that()
+            .resideInAPackage("..port..")
+            .should()
+            .beInterfaces()
             .because("All ports should be interfaces to define contracts"));
-
-
 }

@@ -20,6 +20,4 @@ public record PhysicalInstanceSearchRow(
         String studyUnitLabel,
         String groupAgency,
         String groupId,
-        String groupLabel
-) {
-}
+        String groupLabel) {}

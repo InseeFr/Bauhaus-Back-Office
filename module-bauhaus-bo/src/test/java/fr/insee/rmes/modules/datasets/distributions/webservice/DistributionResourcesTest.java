@@ -1,17 +1,28 @@
 package fr.insee.rmes.modules.datasets.distributions.webservice;
 
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+
 import fr.insee.rmes.bauhaus_services.datasets.DatasetService;
 import fr.insee.rmes.bauhaus_services.distribution.DistributionService;
-import fr.insee.rmes.modules.commons.configuration.LogRequestFilter;
-import fr.insee.rmes.modules.shared_kernel.domain.model.Roles;
-import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
-import fr.insee.rmes.modules.users.domain.port.serverside.UserDecoder;
-import fr.insee.rmes.modules.users.domain.model.User;
 import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.modules.commons.configuration.LogRequestFilter;
+import fr.insee.rmes.modules.datasets.datasets.model.PartialDataset;
 import fr.insee.rmes.modules.datasets.distributions.model.Distribution;
 import fr.insee.rmes.modules.datasets.distributions.model.DistributionsForSearch;
-import fr.insee.rmes.modules.datasets.datasets.model.PartialDataset;
 import fr.insee.rmes.modules.datasets.distributions.model.PartialDistribution;
+import fr.insee.rmes.modules.shared_kernel.domain.model.Roles;
+import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
+import fr.insee.rmes.modules.users.domain.model.User;
+import fr.insee.rmes.modules.users.domain.port.serverside.UserDecoder;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,18 +40,6 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-
 @ExtendWith(MockitoExtension.class)
 class DistributionResourcesTest {
     @InjectMocks
@@ -54,7 +53,6 @@ class DistributionResourcesTest {
 
     @Mock
     UserDecoder userDecoder;
-
 
     @Test
     void shouldReturn200IfRmesExceptionWhenFetchingDistributionsForSearch() throws RmesException {
@@ -73,11 +71,11 @@ class DistributionResourcesTest {
                 "validationStatus",
                 "wasGeneratedIRIs",
                 "created",
-                "updated"
-        ));
+                "updated"));
 
         when(distributionService.getDistributionsForSearch()).thenReturn(distributions);
-        Assertions.assertEquals(1, distributionResources.getDistributionsForSearch().size());
+        Assertions.assertEquals(
+                1, distributionResources.getDistributionsForSearch().size());
     }
 
     @Test
@@ -90,29 +88,32 @@ class DistributionResourcesTest {
     }
 
     @Test
-    void shouldReturn200IfRmesExceptionWhenFetchingDatasetsForDistributionCreationAndAdmin() throws RmesException, MissingUserInformationException {
+    void shouldReturn200IfRmesExceptionWhenFetchingDatasetsForDistributionCreationAndAdmin()
+            throws RmesException, MissingUserInformationException {
         List<PartialDataset> datasets = new ArrayList<>();
-        datasets.add(new PartialDataset(
-                "1",
-                "label"
-        ));
+        datasets.add(new PartialDataset("1", "label"));
 
         when(datasetService.getDatasets()).thenReturn(datasets);
-        when(userDecoder.fromPrincipal(any())).thenReturn(Optional.of(new User("fakeUser", List.of(Roles.ADMIN), Set.of("fakeStampForDvAndQf"))));
-        Assertions.assertEquals(1, distributionResources.getDatasetsForDistributionCreation(null).size());
+        when(userDecoder.fromPrincipal(any()))
+                .thenReturn(Optional.of(new User("fakeUser", List.of(Roles.ADMIN), Set.of("fakeStampForDvAndQf"))));
+        Assertions.assertEquals(
+                1,
+                distributionResources.getDatasetsForDistributionCreation(null).size());
     }
 
     @Test
-    void shouldReturn200IfRmesExceptionWhenFetchingDatasetsForDistributionCreationAndNotAdmin() throws RmesException, MissingUserInformationException {
+    void shouldReturn200IfRmesExceptionWhenFetchingDatasetsForDistributionCreationAndNotAdmin()
+            throws RmesException, MissingUserInformationException {
         List<PartialDataset> datasets = new ArrayList<>();
-        datasets.add(new PartialDataset(
-                "1",
-                "label"
-        ));
+        datasets.add(new PartialDataset("1", "label"));
 
-        when(datasetService.getDatasetsForDistributionCreation(Set.of("fakeStampForDvAndQf"))).thenReturn(datasets);
-        when(userDecoder.fromPrincipal(any())).thenReturn(Optional.of(new User("fakeUser", List.of(), Set.of("fakeStampForDvAndQf"))));
-        Assertions.assertEquals(1, distributionResources.getDatasetsForDistributionCreation(null).size());
+        when(datasetService.getDatasetsForDistributionCreation(Set.of("fakeStampForDvAndQf")))
+                .thenReturn(datasets);
+        when(userDecoder.fromPrincipal(any()))
+                .thenReturn(Optional.of(new User("fakeUser", List.of(), Set.of("fakeStampForDvAndQf"))));
+        Assertions.assertEquals(
+                1,
+                distributionResources.getDatasetsForDistributionCreation(null).size());
     }
 
     @Test
@@ -148,8 +149,7 @@ class DistributionResourcesTest {
                 "2024-01-15",
                 "CSV",
                 "1024",
-                "http://example.com/dist1"
-        ));
+                "http://example.com/dist1"));
         distributions.add(new PartialDistribution(
                 "d2",
                 "dataset2",
@@ -161,8 +161,7 @@ class DistributionResourcesTest {
                 "2024-02-15",
                 "JSON",
                 "2048",
-                "http://example.com/dist2"
-        ));
+                "http://example.com/dist2"));
 
         when(distributionService.getDistributions()).thenReturn(distributions);
 
@@ -192,15 +191,12 @@ class DistributionResourcesTest {
         Assertions.assertNotNull(result.getBody());
         Assertions.assertEquals(0, result.getBody().size());
     }
-
 }
 
-
 @WebMvcTest(
-    value = DistributionResources.class,
-    excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = LogRequestFilter.class),
-    excludeAutoConfiguration = OAuth2ResourceServerAutoConfiguration.class
-)
+        value = DistributionResources.class,
+        excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = LogRequestFilter.class),
+        excludeAutoConfiguration = OAuth2ResourceServerAutoConfiguration.class)
 @AutoConfigureMockMvc(addFilters = false)
 class DistributionResourcesWebTest {
 
@@ -230,8 +226,7 @@ class DistributionResourcesWebTest {
                 "2024-01-15",
                 "CSV",
                 "1024",
-                "http://example.com/dist1"
-        );
+                "http://example.com/dist1");
 
         PartialDistribution dist2 = new PartialDistribution(
                 "d2",
@@ -244,8 +239,7 @@ class DistributionResourcesWebTest {
                 "2024-02-15",
                 "JSON",
                 "2048",
-                "http://example.com/dist2"
-        );
+                "http://example.com/dist2");
 
         List<PartialDistribution> distributions = List.of(dist1, dist2);
         when(distributionService.getDistributions()).thenReturn(distributions);

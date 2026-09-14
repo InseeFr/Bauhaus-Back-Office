@@ -3,7 +3,7 @@ package fr.insee.rmes.model.concepts;
 public class MembersLg {
 
     public String id;
-    public String creator ;
+    public String creator;
     public String prefLabelLg1;
     public String prefLabelLg2;
     public String defCourteLg1;
@@ -13,12 +13,10 @@ public class MembersLg {
     public String isValidated;
     public String editorialNoteLg1;
     public String editorialNoteLg2;
-    public String created ;
-    public String modified ;
+    public String created;
+    public String modified;
 
-
-    public MembersLg() {
-    }
+    public MembersLg() {}
 
     public String getId() {
         return id;

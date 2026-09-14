@@ -1,12 +1,11 @@
 package fr.insee.rmes.modules.ddi.physical_instances.infrastructure.schema;
 
-import org.junit.jupiter.api.Test;
-
-import java.io.UncheckedIOException;
-
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.io.UncheckedIOException;
+import org.junit.jupiter.api.Test;
 
 class ClasspathDdi4SchemaRepositoryTest {
 

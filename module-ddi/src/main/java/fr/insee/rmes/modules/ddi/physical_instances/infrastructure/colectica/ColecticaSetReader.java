@@ -20,9 +20,8 @@ class ColecticaSetReader {
     private final ColecticaClient colecticaClient;
 
     ColecticaSetReader(
-        ColecticaConfiguration.ColecticaInstanceConfiguration instanceConfiguration,
-        ColecticaClient colecticaClient
-    ) {
+            ColecticaConfiguration.ColecticaInstanceConfiguration instanceConfiguration,
+            ColecticaClient colecticaClient) {
         this.instanceConfiguration = instanceConfiguration;
         this.colecticaClient = colecticaClient;
     }
@@ -51,16 +50,17 @@ class ColecticaSetReader {
     boolean rootItemHasType(ColecticaItemResponse[] itemResponses, String id, String expectedTypeKey) {
         String expectedType = instanceConfiguration.itemTypes().get(expectedTypeKey);
         return Arrays.stream(itemResponses)
-            .filter(item -> Objects.equals(item.identifier(), id))
-            .findFirst()
-            .map(item -> Objects.equals(item.itemType(), expectedType))
-            .orElse(false);
+                .filter(item -> Objects.equals(item.identifier(), id))
+                .findFirst()
+                .map(item -> Objects.equals(item.itemType(), expectedType))
+                .orElse(false);
     }
 
     /** {@code true} quand le set est absent, vide, ou que sa racine n'est pas du type attendu. */
     boolean isMissingOrWrongType(ColecticaItemResponse[] itemResponses, String id, String expectedTypeKey) {
-        return itemResponses == null || itemResponses.length == 0
-            || !rootItemHasType(itemResponses, id, expectedTypeKey);
+        return itemResponses == null
+                || itemResponses.length == 0
+                || !rootItemHasType(itemResponses, id, expectedTypeKey);
     }
 
     /**
@@ -81,11 +81,10 @@ class ColecticaSetReader {
             return null;
         }
         return Arrays.stream(itemResponses)
-            .filter(item -> Objects.equals(item.itemType(), typeUuid))
-            .findFirst()
-            .map(item -> Reference.of(
-                item.agencyId(), item.identifier(), String.valueOf(item.version()), typeKey))
-            .orElse(null);
+                .filter(item -> Objects.equals(item.itemType(), typeUuid))
+                .findFirst()
+                .map(item -> Reference.of(item.agencyId(), item.identifier(), String.valueOf(item.version()), typeKey))
+                .orElse(null);
     }
 
     /**
@@ -94,18 +93,20 @@ class ColecticaSetReader {
      * l'un des deux arguments est nul.
      */
     static Ddi4Response withTopLevelReference(Ddi4Response response, Reference topLevelReference) {
-        if (response == null || topLevelReference == null
-            || (response.topLevelReference() != null && !response.topLevelReference().isEmpty())) {
+        if (response == null
+                || topLevelReference == null
+                || (response.topLevelReference() != null
+                        && !response.topLevelReference().isEmpty())) {
             return response;
         }
         return new Ddi4Response(
-            response.schema(),
-            List.of(topLevelReference),
-            response.physicalInstance(),
-            response.dataRelationship(),
-            response.variable(),
-            response.codeList(),
-            response.category(),
-            response.managedMissingValuesRepresentation());
+                response.schema(),
+                List.of(topLevelReference),
+                response.physicalInstance(),
+                response.dataRelationship(),
+                response.variable(),
+                response.codeList(),
+                response.category(),
+                response.managedMissingValuesRepresentation());
     }
 }

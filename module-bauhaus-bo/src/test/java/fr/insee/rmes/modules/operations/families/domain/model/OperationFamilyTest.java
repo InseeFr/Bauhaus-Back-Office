@@ -1,12 +1,11 @@
 package fr.insee.rmes.modules.operations.families.domain.model;
 
-import org.json.JSONObject;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.Collections;
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
+import org.json.JSONObject;
+import org.junit.jupiter.api.Test;
 
 class OperationFamilyTest {
 
@@ -38,8 +37,7 @@ class OperationFamilyTest {
 
     @Test
     void from_json_with_missing_fields() {
-        JSONObject json = new JSONObject()
-                .put("id", "fam002");
+        JSONObject json = new JSONObject().put("id", "fam002");
 
         OperationFamily family = OperationFamily.fromJson(json);
 
@@ -76,15 +74,20 @@ class OperationFamilyTest {
     @Test
     void with_series_replaces_series_list() {
         OperationFamily original = new OperationFamily(
-                "fam001", "Label1", "Label2", "Abstract1", "Abstract2",
-                "DRAFT", "2023-01-01", "2023-06-01",
-                Collections.emptyList(), Collections.emptyList()
-        );
+                "fam001",
+                "Label1",
+                "Label2",
+                "Abstract1",
+                "Abstract2",
+                "DRAFT",
+                "2023-01-01",
+                "2023-06-01",
+                Collections.emptyList(),
+                Collections.emptyList());
 
         List<OperationFamilySeries> newSeries = List.of(
                 new OperationFamilySeries("s1", "Series 1", "Série 1"),
-                new OperationFamilySeries("s2", "Series 2", "Série 2")
-        );
+                new OperationFamilySeries("s2", "Series 2", "Série 2"));
 
         OperationFamily withSeries = original.withSeries(newSeries);
 
@@ -103,15 +106,20 @@ class OperationFamilyTest {
     @Test
     void with_subject_replaces_subjects_list() {
         OperationFamily original = new OperationFamily(
-                "fam001", "Label1", "Label2", "Abstract1", "Abstract2",
-                "DRAFT", "2023-01-01", "2023-06-01",
-                Collections.emptyList(), Collections.emptyList()
-        );
+                "fam001",
+                "Label1",
+                "Label2",
+                "Abstract1",
+                "Abstract2",
+                "DRAFT",
+                "2023-01-01",
+                "2023-06-01",
+                Collections.emptyList(),
+                Collections.emptyList());
 
         List<OperationFamilySubject> newSubjects = List.of(
                 new OperationFamilySubject("sub1", "Subject 1", "Sujet 1"),
-                new OperationFamilySubject("sub2", "Subject 2", "Sujet 2")
-        );
+                new OperationFamilySubject("sub2", "Subject 2", "Sujet 2"));
 
         OperationFamily withSubjects = original.withSubject(newSubjects);
 
@@ -130,14 +138,18 @@ class OperationFamilyTest {
     @Test
     void with_series_maintains_immutability() {
         OperationFamily original = new OperationFamily(
-                "fam001", "Label1", "Label2", "Abstract1", "Abstract2",
-                "DRAFT", "2023-01-01", "2023-06-01",
-                Collections.emptyList(), Collections.emptyList()
-        );
+                "fam001",
+                "Label1",
+                "Label2",
+                "Abstract1",
+                "Abstract2",
+                "DRAFT",
+                "2023-01-01",
+                "2023-06-01",
+                Collections.emptyList(),
+                Collections.emptyList());
 
-        List<OperationFamilySeries> newSeries = List.of(
-                new OperationFamilySeries("s1", "Series 1", "Série 1")
-        );
+        List<OperationFamilySeries> newSeries = List.of(new OperationFamilySeries("s1", "Series 1", "Série 1"));
 
         OperationFamily withSeries = original.withSeries(newSeries);
 
@@ -149,14 +161,18 @@ class OperationFamilyTest {
     @Test
     void with_subject_maintains_immutability() {
         OperationFamily original = new OperationFamily(
-                "fam001", "Label1", "Label2", "Abstract1", "Abstract2",
-                "DRAFT", "2023-01-01", "2023-06-01",
-                Collections.emptyList(), Collections.emptyList()
-        );
+                "fam001",
+                "Label1",
+                "Label2",
+                "Abstract1",
+                "Abstract2",
+                "DRAFT",
+                "2023-01-01",
+                "2023-06-01",
+                Collections.emptyList(),
+                Collections.emptyList());
 
-        List<OperationFamilySubject> newSubjects = List.of(
-                new OperationFamilySubject("sub1", "Subject 1", "Sujet 1")
-        );
+        List<OperationFamilySubject> newSubjects = List.of(new OperationFamilySubject("sub1", "Subject 1", "Sujet 1"));
 
         OperationFamily withSubjects = original.withSubject(newSubjects);
 
@@ -168,16 +184,28 @@ class OperationFamilyTest {
     @Test
     void record_equality() {
         OperationFamily family1 = new OperationFamily(
-                "fam001", "Label1", "Label2", "Abstract1", "Abstract2",
-                "DRAFT", "2023-01-01", "2023-06-01",
-                Collections.emptyList(), Collections.emptyList()
-        );
+                "fam001",
+                "Label1",
+                "Label2",
+                "Abstract1",
+                "Abstract2",
+                "DRAFT",
+                "2023-01-01",
+                "2023-06-01",
+                Collections.emptyList(),
+                Collections.emptyList());
 
         OperationFamily family2 = new OperationFamily(
-                "fam001", "Label1", "Label2", "Abstract1", "Abstract2",
-                "DRAFT", "2023-01-01", "2023-06-01",
-                Collections.emptyList(), Collections.emptyList()
-        );
+                "fam001",
+                "Label1",
+                "Label2",
+                "Abstract1",
+                "Abstract2",
+                "DRAFT",
+                "2023-01-01",
+                "2023-06-01",
+                Collections.emptyList(),
+                Collections.emptyList());
 
         assertEquals(family1, family2);
         assertEquals(family1.hashCode(), family2.hashCode());
@@ -186,16 +214,28 @@ class OperationFamilyTest {
     @Test
     void record_inequality() {
         OperationFamily family1 = new OperationFamily(
-                "fam001", "Label1", "Label2", "Abstract1", "Abstract2",
-                "DRAFT", "2023-01-01", "2023-06-01",
-                Collections.emptyList(), Collections.emptyList()
-        );
+                "fam001",
+                "Label1",
+                "Label2",
+                "Abstract1",
+                "Abstract2",
+                "DRAFT",
+                "2023-01-01",
+                "2023-06-01",
+                Collections.emptyList(),
+                Collections.emptyList());
 
         OperationFamily family2 = new OperationFamily(
-                "fam002", "Label1", "Label2", "Abstract1", "Abstract2",
-                "DRAFT", "2023-01-01", "2023-06-01",
-                Collections.emptyList(), Collections.emptyList()
-        );
+                "fam002",
+                "Label1",
+                "Label2",
+                "Abstract1",
+                "Abstract2",
+                "DRAFT",
+                "2023-01-01",
+                "2023-06-01",
+                Collections.emptyList(),
+                Collections.emptyList());
 
         assertNotEquals(family1, family2);
     }
@@ -203,10 +243,16 @@ class OperationFamilyTest {
     @Test
     void to_string_contains_all_fields() {
         OperationFamily family = new OperationFamily(
-                "fam001", "Label1", "Label2", "Abstract1", "Abstract2",
-                "DRAFT", "2023-01-01", "2023-06-01",
-                Collections.emptyList(), Collections.emptyList()
-        );
+                "fam001",
+                "Label1",
+                "Label2",
+                "Abstract1",
+                "Abstract2",
+                "DRAFT",
+                "2023-01-01",
+                "2023-06-01",
+                Collections.emptyList(),
+                Collections.emptyList());
 
         String toString = family.toString();
 

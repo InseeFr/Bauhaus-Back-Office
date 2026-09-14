@@ -7,6 +7,4 @@ import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationExcep
 public interface AccessPrivilegesCheckerService {
 
     boolean hasAccess(String module, String privilege, String id, Object user) throws MissingUserInformationException;
-
-
 }

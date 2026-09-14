@@ -1,8 +1,5 @@
 package fr.insee.rmes.utils;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -11,17 +8,18 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DateUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(DateUtils.class);
 
     private static List<String> dateFormats;
-    
-	  private DateUtils() {
-		    throw new IllegalStateException("Utility class");
-	}
 
+    private DateUtils() {
+        throw new IllegalStateException("Utility class");
+    }
 
     private static void init() {
         if (dateFormats == null || dateFormats.isEmpty()) {
@@ -46,12 +44,12 @@ public class DateUtils {
         }
         for (String format : dateFormats) {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format);
-            try {//keep the time
+            try { // keep the time
                 return LocalDateTime.parse(dateStr, formatter);
             } catch (Exception e) {
                 logger.debug(e.getMessage());
             }
-            try {//time is set to 00:00.000
+            try { // time is set to 00:00.000
                 return LocalDate.parse(dateStr, formatter).atStartOfDay();
             } catch (Exception e) {
                 logger.debug(e.getMessage());
@@ -66,9 +64,7 @@ public class DateUtils {
     }
 
     private static Date convertDateTimeToDate(LocalDateTime dateTime) {
-        return Date
-                .from(dateTime.atZone(ZoneId.systemDefault())
-                        .toInstant());
+        return Date.from(dateTime.atZone(ZoneId.systemDefault()).toInstant());
     }
     /**
      * @param dateStr date with format DateTimeFormatter.ISO_DATE_TIME
@@ -79,7 +75,11 @@ public class DateUtils {
             LocalDate date = LocalDate.parse(dateStr, DateTimeFormatter.ISO_DATE_TIME);
             return date.format(DateTimeFormatter.ISO_LOCAL_DATE);
         } catch (Exception e) {
-            logger.debug("Date can't be parse in DateTime : {} {} {}" , dateStr, e.getMessage(), e.getClass().getSimpleName());
+            logger.debug(
+                    "Date can't be parse in DateTime : {} {} {}",
+                    dateStr,
+                    e.getMessage(),
+                    e.getClass().getSimpleName());
             return dateStr;
         }
     }
@@ -90,5 +90,4 @@ public class DateUtils {
         }
         return dateTime;
     }
-
 }

@@ -1,15 +1,14 @@
 package fr.insee.rmes.bauhaus_services.rdf_utils;
 
-import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.freemarker.FreeMarkerUtils;
-import org.junit.jupiter.api.Test;
-
-import java.util.Map;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+
+import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.freemarker.FreeMarkerUtils;
+import java.util.Map;
+import org.junit.jupiter.api.Test;
 
 /**
  * Vérifie que les templates FreeMarker de <b>ce module</b> sont chargeables.
@@ -24,7 +23,7 @@ class FreeMarkerTemplateLoadingTest {
 
     @Test
     void buildRequestTest() throws RmesException {
-        assertThatCode(()-> FreeMarkerUtils.buildRequest("", "getAllGraphs.ftlh", Map.of()))
+        assertThatCode(() -> FreeMarkerUtils.buildRequest("", "getAllGraphs.ftlh", Map.of()))
                 .doesNotThrowAnyException();
         assertThat(withUnixLineSeparators(FreeMarkerUtils.buildRequest("", "getAllGraphs.ftlh", Map.of())))
                 .contains("""
@@ -45,9 +44,8 @@ class FreeMarkerTemplateLoadingTest {
 
     @Test
     void buildRequestTest_xdocreport() {
-        //if not null, you should define a TemplateLoader for freemarker templates in xdocreport in FreemarkerConfig
+        // if not null, you should define a TemplateLoader for freemarker templates in xdocreport in FreemarkerConfig
         assertNull(FreeMarkerTemplateLoadingTest.class.getClassLoader().getResource("xdocreport"));
         assertNotNull(FreeMarkerTemplateLoadingTest.class.getClassLoader().getResource("request"));
     }
-
 }

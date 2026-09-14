@@ -1,11 +1,18 @@
 package fr.insee.rmes.infrastructure.webservice;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
+
 import fr.insee.rmes.bauhaus_services.datasets.DatasetService;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.datasets.datasets.model.Dataset;
 import fr.insee.rmes.modules.datasets.datasets.model.DatasetsForSearch;
 import fr.insee.rmes.modules.datasets.datasets.model.PartialDataset;
 import fr.insee.rmes.modules.datasets.datasets.webservice.DatasetResources;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,14 +24,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class DatasetResourcesTest {
@@ -55,8 +54,7 @@ class DatasetResourcesTest {
                 "wasGeneratedIRIs",
                 "created",
                 "updated",
-                "ALT-001"
-        ));
+                "ALT-001"));
 
         when(datasetService.getDatasetsForSearch()).thenReturn(datasets);
         List<DatasetsForSearch> result = datasetResources.getDatasetsForSearch();
@@ -64,10 +62,9 @@ class DatasetResourcesTest {
         Assertions.assertEquals("ALT-001", result.getFirst().altIdentifier());
     }
 
-
     @Test
     void shouldReturn200IfRmesExceptionWhenFetchingDataset() throws RmesException {
-        Dataset dataset=new Dataset();
+        Dataset dataset = new Dataset();
         dataset.setId("1");
         when(datasetService.getDatasetByID(anyString())).thenReturn(dataset);
         Assertions.assertEquals(dataset, datasetResources.getDataset("1"));
@@ -100,8 +97,7 @@ class DatasetResourcesTest {
         assertEquals(expectedId, response.getBody());
         assertEquals(
                 "/datasets/" + expectedId,
-                Objects.requireNonNull(response.getHeaders().getLocation()).getPath()
-        );
+                Objects.requireNonNull(response.getHeaders().getLocation()).getPath());
     }
 
     @Test

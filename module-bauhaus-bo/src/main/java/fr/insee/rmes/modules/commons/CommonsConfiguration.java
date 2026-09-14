@@ -19,5 +19,4 @@ public class CommonsConfiguration {
     ThemeService getThemeService(ThemeRepository themeRepository) {
         return new DomainThemeService(themeRepository);
     }
-
 }

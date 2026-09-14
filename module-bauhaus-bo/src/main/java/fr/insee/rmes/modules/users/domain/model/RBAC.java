@@ -35,6 +35,8 @@ public class RBAC {
     }
 
     public enum Strategy {
-        ALL, STAMP, NONE
+        ALL,
+        STAMP,
+        NONE
     }
 }

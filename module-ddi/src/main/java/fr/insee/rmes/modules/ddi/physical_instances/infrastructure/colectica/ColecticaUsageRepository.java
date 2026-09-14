@@ -34,10 +34,9 @@ class ColecticaUsageRepository {
     private final ColecticaLabels labels;
 
     ColecticaUsageRepository(
-        ColecticaConfiguration.ColecticaInstanceConfiguration instanceConfiguration,
-        ColecticaClient colecticaClient,
-        ColecticaLabels labels
-    ) {
+            ColecticaConfiguration.ColecticaInstanceConfiguration instanceConfiguration,
+            ColecticaClient colecticaClient,
+            ColecticaLabels labels) {
         this.instanceConfiguration = instanceConfiguration;
         this.colecticaClient = colecticaClient;
         this.labels = labels;
@@ -72,10 +71,10 @@ class ColecticaUsageRepository {
     List<CategoryCodeListUsage> getCodeListsUsingCategory(String categoryAgencyId, String categoryId) {
         logger.info("Fetching code lists using category {}/{}", categoryAgencyId, categoryId);
 
-        List<ColecticaItem> codeLists = colecticaClient.findRelatedItems(
-            RelationshipDirection.BY_OBJECT,
-            new ItemReference(categoryAgencyId, categoryId),
-            List.of(itemType(CODE_LIST)));
+        List<ColecticaItem> codeLists = ColecticaItems.latestVersions(colecticaClient.findRelatedItems(
+                RelationshipDirection.BY_OBJECT,
+                new ItemReference(categoryAgencyId, categoryId),
+                List.of(itemType(CODE_LIST))));
 
         Map<String, ColecticaItem> studyUnitByPiKey = new HashMap<>();
         Map<String, ColecticaItem> groupBySuKey = new HashMap<>();
@@ -83,7 +82,7 @@ class ColecticaUsageRepository {
         for (ColecticaItem codeList : codeLists) {
             UsageItem codeListItem = usageItem(codeList);
             List<CodeListVariableUsage> variableUsages =
-                variableUsagesOf(ColecticaItems.itemRef(codeList), studyUnitByPiKey);
+                    variableUsagesOf(ColecticaItems.itemRef(codeList), studyUnitByPiKey);
             if (variableUsages.isEmpty()) {
                 result.add(CategoryCodeListUsage.ofCodeListAlone(codeListItem));
                 continue;
@@ -91,17 +90,21 @@ class ColecticaUsageRepository {
             for (CodeListVariableUsage usage : variableUsages) {
                 // Le type Group n'est pas déclaré dans la map itemTypes de la configuration :
                 // comme getGroups(), on utilise la constante.
-                ColecticaItem group = usage.studyUnitId() == null ? null : resolveOnce(
-                    groupBySuKey,
-                    new ItemReference(usage.studyUnitAgencyId(), usage.studyUnitId()),
-                    GROUP_UUID);
+                ColecticaItem group = usage.studyUnitId() == null
+                        ? null
+                        : resolveOnce(
+                                groupBySuKey,
+                                new ItemReference(usage.studyUnitAgencyId(), usage.studyUnitId()),
+                                GROUP_UUID);
                 result.add(new CategoryCodeListUsage(
-                    usageItem(group),
-                    usageItem(usage.studyUnitAgencyId(), usage.studyUnitId(), usage.studyUnitLabel()),
-                    usageItem(usage.physicalInstanceAgencyId(), usage.physicalInstanceId(),
-                        usage.physicalInstanceLabel()),
-                    usageItem(usage.variableAgencyId(), usage.variableId(), usage.variableLabel()),
-                    codeListItem));
+                        usageItem(group),
+                        usageItem(usage.studyUnitAgencyId(), usage.studyUnitId(), usage.studyUnitLabel()),
+                        usageItem(
+                                usage.physicalInstanceAgencyId(),
+                                usage.physicalInstanceId(),
+                                usage.physicalInstanceLabel()),
+                        usageItem(usage.variableAgencyId(), usage.variableId(), usage.variableLabel()),
+                        codeListItem));
             }
         }
         return result;
@@ -118,14 +121,13 @@ class ColecticaUsageRepository {
      *                         ({@link #getCodeListsUsingCategory}) le partage entre elles.
      */
     private List<CodeListVariableUsage> variableUsagesOf(
-        ItemReference start, Map<String, ColecticaItem> studyUnitByPiKey
-    ) {
+            ItemReference start, Map<String, ColecticaItem> studyUnitByPiKey) {
         // L'endpoint /descriptions renvoie déjà l'ItemName/Label de chaque item lié : on utilise
         // findRelatedItems (qui les conserve) pour les niveaux dont on veut le libellé — sans requête
         // de libellés séparée ni appel HTTP supplémentaire. Les DataRelationships ne sont
         // qu'intermédiaires, des références nues suffisent.
-        List<ColecticaItem> variables = colecticaClient.findRelatedItems(
-            RelationshipDirection.BY_OBJECT, start, List.of(itemType(VARIABLE)));
+        List<ColecticaItem> variables = ColecticaItems.latestVersions(
+                colecticaClient.findRelatedItems(RelationshipDirection.BY_OBJECT, start, List.of(itemType(VARIABLE))));
         if (variables.isEmpty()) {
             return List.of();
         }
@@ -136,25 +138,27 @@ class ColecticaUsageRepository {
 
         List<CodeListVariableUsage> usages = new ArrayList<>();
         for (ColecticaItem variable : variables) {
-            List<ItemReference> dataRelationships = colecticaClient.findRelatedDescriptions(
-                RelationshipDirection.BY_OBJECT, ColecticaItems.itemRef(variable),
-                List.of(dataRelationshipType));
+            List<ItemReference> dataRelationships =
+                    ColecticaItems.distinctReferences(colecticaClient.findRelatedDescriptions(
+                            RelationshipDirection.BY_OBJECT,
+                            ColecticaItems.itemRef(variable),
+                            List.of(dataRelationshipType)));
             for (ItemReference dataRelationship : dataRelationships) {
-                List<ColecticaItem> physicalInstances = colecticaClient.findRelatedItems(
-                    RelationshipDirection.BY_OBJECT, dataRelationship, List.of(physicalInstanceType));
+                List<ColecticaItem> physicalInstances = ColecticaItems.latestVersions(colecticaClient.findRelatedItems(
+                        RelationshipDirection.BY_OBJECT, dataRelationship, List.of(physicalInstanceType)));
                 for (ColecticaItem physicalInstance : physicalInstances) {
-                    ColecticaItem studyUnit = resolveOnce(
-                        studyUnitByPiKey, ColecticaItems.itemRef(physicalInstance), studyUnitType);
+                    ColecticaItem studyUnit =
+                            resolveOnce(studyUnitByPiKey, ColecticaItems.itemRef(physicalInstance), studyUnitType);
                     usages.add(new CodeListVariableUsage(
-                        studyUnit == null ? null : studyUnit.agencyId(),
-                        studyUnit == null ? null : studyUnit.identifier(),
-                        studyUnit == null ? null : labels.of(studyUnit),
-                        physicalInstance.agencyId(),
-                        physicalInstance.identifier(),
-                        labels.of(physicalInstance),
-                        variable.agencyId(),
-                        variable.identifier(),
-                        labels.of(variable)));
+                            studyUnit == null ? null : studyUnit.agencyId(),
+                            studyUnit == null ? null : studyUnit.identifier(),
+                            studyUnit == null ? null : labels.of(studyUnit),
+                            physicalInstance.agencyId(),
+                            physicalInstance.identifier(),
+                            labels.of(physicalInstance),
+                            variable.agencyId(),
+                            variable.identifier(),
+                            labels.of(variable)));
                 }
             }
         }
@@ -162,20 +166,21 @@ class ColecticaUsageRepository {
     }
 
     /**
-     * Premier item de {@code itemType} référençant {@code from}, mémoïsé pour la durée de l'appel.
+     * Premier item de {@code itemType} référençant {@code from} — dans sa dernière version, comme
+     * partout ailleurs —, mémoïsé pour la durée de l'appel.
      * L'absence de résultat est mémoïsée elle aussi : un item sans parent résolvable n'est interrogé
      * qu'une fois, là où {@code computeIfAbsent} le rejouerait à chaque passage.
      */
-    private ColecticaItem resolveOnce(
-        Map<String, ColecticaItem> memo, ItemReference from, String itemType
-    ) {
+    private ColecticaItem resolveOnce(Map<String, ColecticaItem> memo, ItemReference from, String itemType) {
         String key = ColecticaItems.key(from.agencyId(), from.identifier());
         if (memo.containsKey(key)) {
             return memo.get(key);
         }
-        ColecticaItem resolved = colecticaClient
-            .findRelatedItems(RelationshipDirection.BY_OBJECT, from, List.of(itemType))
-            .stream().findFirst().orElse(null);
+        ColecticaItem resolved = ColecticaItems.latestVersions(
+                        colecticaClient.findRelatedItems(RelationshipDirection.BY_OBJECT, from, List.of(itemType)))
+                .stream()
+                .findFirst()
+                .orElse(null);
         memo.put(key, resolved);
         return resolved;
     }

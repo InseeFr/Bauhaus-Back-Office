@@ -1,7 +1,7 @@
 package fr.insee.rmes.modules.datasets.distributions.webservice;
 
-import fr.insee.rmes.modules.datasets.distributions.model.PartialDistribution;
 import fr.insee.rmes.modules.commons.webservice.BaseResponse;
+import fr.insee.rmes.modules.datasets.distributions.model.PartialDistribution;
 
 public class PartialDistributionResponse extends BaseResponse<PartialDistributionResponse, PartialDistribution> {
 

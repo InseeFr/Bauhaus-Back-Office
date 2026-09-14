@@ -1,5 +1,12 @@
 package fr.insee.rmes.graphdb;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.keycloak.TokenService;
 import org.eclipse.rdf4j.http.protocol.UnauthorizedException;
@@ -8,13 +15,6 @@ import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 /**
  * GraphDB répond 401 sans corps d'erreur : RDF4J lève alors une {@link UnauthorizedException}
@@ -85,15 +85,18 @@ class RepositoryUtilsUnauthorizedTest {
         RepositoryUtils repositoryUtils = new RepositoryUtils(tokenService, RepositoryInitiator.Type.DISABLED);
 
         assertThatThrownBy(() -> repositoryUtils.getResponse(QUERY, repositoryRefusingQuery()))
-                .isInstanceOfSatisfying(RmesException.class, exception ->
-                        assertThat(exception.getDetails()).contains("fr.insee.rmes.bauhaus.rdf.auth=DISABLED"));
+                .isInstanceOfSatisfying(
+                        RmesException.class,
+                        exception ->
+                                assertThat(exception.getDetails()).contains("fr.insee.rmes.bauhaus.rdf.auth=DISABLED"));
     }
 
     private static Repository repositoryRefusingQuery() {
         Repository repository = mock(Repository.class);
         RepositoryConnection connection = mock(RepositoryConnection.class);
         when(repository.getConnection()).thenReturn(connection);
-        when(connection.prepareTupleQuery(any(QueryLanguage.class), anyString())).thenThrow(new UnauthorizedException());
+        when(connection.prepareTupleQuery(any(QueryLanguage.class), anyString()))
+                .thenThrow(new UnauthorizedException());
         return repository;
     }
 
@@ -101,7 +104,8 @@ class RepositoryUtilsUnauthorizedTest {
         Repository repository = mock(Repository.class);
         RepositoryConnection connection = mock(RepositoryConnection.class);
         when(repository.getConnection()).thenReturn(connection);
-        when(connection.prepareBooleanQuery(any(QueryLanguage.class), anyString())).thenThrow(new UnauthorizedException());
+        when(connection.prepareBooleanQuery(any(QueryLanguage.class), anyString()))
+                .thenThrow(new UnauthorizedException());
         return repository;
     }
 

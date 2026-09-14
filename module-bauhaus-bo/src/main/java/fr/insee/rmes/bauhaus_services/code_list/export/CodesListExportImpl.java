@@ -1,16 +1,16 @@
 package fr.insee.rmes.bauhaus_services.code_list.export;
 
 import fr.insee.rmes.Constants;
-import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.codeslists.codeslists.infrastructure.graphdb.CodeListsQueries;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.utils.Deserializer;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 
 @Service
-public class CodesListExportImpl implements  CodesListExport {
+public class CodesListExportImpl implements CodesListExport {
 
     private final RepositoryGestion repositoryGestion;
     private final CodeListsQueries codeListsQueries;
@@ -28,7 +28,8 @@ public class CodesListExportImpl implements  CodesListExport {
     }
 
     private JSONObject getCodesList(String notation) throws RmesException {
-        JSONObject codeList = this.repositoryGestion.getResponseAsObject(codeListsQueries.getCodeListLabelByNotation(notation));
+        JSONObject codeList =
+                this.repositoryGestion.getResponseAsObject(codeListsQueries.getCodeListLabelByNotation(notation));
         return codeList.put(Constants.NOTATION, notation);
     }
 

@@ -2,21 +2,19 @@ package fr.insee.rmes.modules.operations.msd.infrastructure.graphdb;
 
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.rdf_utils.RepositoryGestion;
-import fr.insee.rmes.modules.operations.msd.domain.model.DocumentationAttribute;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.model.operations.documentations.RangeType;
 import fr.insee.rmes.modules.commons.domain.GenericInternalServerException;
-import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.operations.msd.domain.NotFoundAttributeException;
 import fr.insee.rmes.modules.operations.msd.domain.OperationDocumentationRubricWithoutRangeException;
+import fr.insee.rmes.modules.operations.msd.domain.model.DocumentationAttribute;
 import fr.insee.rmes.modules.operations.msd.domain.port.serverside.DocumentationRepository;
-import fr.insee.rmes.modules.operations.msd.infrastructure.graphdb.DocumentationQueries;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
+import java.util.ArrayList;
+import java.util.List;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.stereotype.Repository;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Repository
 public class GraphDBDocumentationRepository implements DocumentationRepository {
@@ -26,13 +24,15 @@ public class GraphDBDocumentationRepository implements DocumentationRepository {
     private final RepositoryGestion repositoryGestion;
     private final DocumentationQueries documentationQueries;
 
-    public GraphDBDocumentationRepository(RepositoryGestion repositoryGestion, DocumentationQueries documentationQueries) {
+    public GraphDBDocumentationRepository(
+            RepositoryGestion repositoryGestion, DocumentationQueries documentationQueries) {
         this.repositoryGestion = repositoryGestion;
         this.documentationQueries = documentationQueries;
     }
 
     @Override
-    public List<DocumentationAttribute> getAttributesSpecification() throws GenericInternalServerException, OperationDocumentationRubricWithoutRangeException {
+    public List<DocumentationAttribute> getAttributesSpecification()
+            throws GenericInternalServerException, OperationDocumentationRubricWithoutRangeException {
         JSONArray attributesList;
         try {
             attributesList = repositoryGestion.getResponseAsArray(documentationQueries.getAttributesQuery());
@@ -53,7 +53,9 @@ public class GraphDBDocumentationRepository implements DocumentationRepository {
     }
 
     @Override
-    public DocumentationAttribute getAttributeSpecification(String id) throws GenericInternalServerException, OperationDocumentationRubricWithoutRangeException, NotFoundAttributeException {
+    public DocumentationAttribute getAttributeSpecification(String id)
+            throws GenericInternalServerException, OperationDocumentationRubricWithoutRangeException,
+                    NotFoundAttributeException {
         JSONObject mas;
         try {
             mas = repositoryGestion.getResponseAsObject(documentationQueries.getAttributeSpecificationQuery(id));
@@ -70,7 +72,8 @@ public class GraphDBDocumentationRepository implements DocumentationRepository {
 
     private void transformRangeType(JSONObject mas) throws OperationDocumentationRubricWithoutRangeException {
         if (!mas.has(RANGE)) {
-            throw new OperationDocumentationRubricWithoutRangeException((mas.has("id") ? mas.get(Constants.ID) : mas).toString());
+            throw new OperationDocumentationRubricWithoutRangeException(
+                    (mas.has("id") ? mas.get(Constants.ID) : mas).toString());
         }
         String rangeUri = mas.getString(RANGE);
         RangeType type = RangeType.getEnumByRdfType(RdfUtils.toURI(rangeUri));
@@ -80,6 +83,5 @@ public class GraphDBDocumentationRepository implements DocumentationRepository {
         if (!type.equals(RangeType.CODELIST)) {
             mas.remove(Constants.CODELIST);
         }
-
     }
 }

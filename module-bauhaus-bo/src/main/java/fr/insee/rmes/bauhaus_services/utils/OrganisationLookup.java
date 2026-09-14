@@ -2,19 +2,18 @@ package fr.insee.rmes.bauhaus_services.utils;
 
 import fr.insee.rmes.bauhaus_services.OrganizationsService;
 import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.json.JSONUtils;
+import fr.insee.rmes.modules.organisations.domain.exceptions.OrganisationFetchException;
 import fr.insee.rmes.modules.organisations.domain.model.OrganisationOption;
 import fr.insee.rmes.modules.organisations.domain.port.clientside.OrganisationService;
-import fr.insee.rmes.modules.organisations.domain.exceptions.OrganisationFetchException;
 import fr.insee.rmes.modules.organisations.domain.port.serverside.OrganisationsRepository;
-import fr.insee.rmes.json.JSONUtils;
-import org.json.JSONArray;
-import org.springframework.stereotype.Component;
-
-import java.util.Objects;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import org.json.JSONArray;
+import org.springframework.stereotype.Component;
 
 @Component
 public class OrganisationLookup {
@@ -23,9 +22,10 @@ public class OrganisationLookup {
     private final OrganisationsRepository organisationsRepository;
     private final OrganisationService organisationService;
 
-    public OrganisationLookup(OrganizationsService organizationsService,
-                              OrganisationsRepository organisationsRepository,
-                              OrganisationService organisationService) {
+    public OrganisationLookup(
+            OrganizationsService organizationsService,
+            OrganisationsRepository organisationsRepository,
+            OrganisationService organisationService) {
         this.organizationsService = organizationsService;
         this.organisationsRepository = organisationsRepository;
         this.organisationService = organisationService;

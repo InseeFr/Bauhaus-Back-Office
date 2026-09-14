@@ -5,7 +5,6 @@ import fr.insee.rmes.modules.organisations.domain.model.CompactOrganisation;
 import fr.insee.rmes.modules.organisations.domain.model.OrganisationSummary;
 import fr.insee.rmes.modules.organisations.domain.port.clientside.OrganisationsService;
 import fr.insee.rmes.modules.organisations.domain.port.serverside.OrganisationsRepository;
-
 import java.util.List;
 import java.util.Optional;
 

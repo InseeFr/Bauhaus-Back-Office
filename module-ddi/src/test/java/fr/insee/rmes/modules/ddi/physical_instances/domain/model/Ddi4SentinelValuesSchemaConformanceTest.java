@@ -1,5 +1,7 @@
 package fr.insee.rmes.modules.ddi.physical_instances.domain.model;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -9,13 +11,10 @@ import com.networknt.schema.JsonSchemaFactory;
 import com.networknt.schema.SpecVersion;
 import com.networknt.schema.ValidationMessage;
 import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.schema.ClasspathDdi4SchemaRepository;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-
 import java.util.List;
 import java.util.Set;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 /**
  * Valeurs sentinelles (#1566) — garde-fou « génération à partir du schéma » : la sérialisation
@@ -25,8 +24,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class Ddi4SentinelValuesSchemaConformanceTest {
 
-    private static final ObjectMapper MAPPER = new ObjectMapper()
-            .setSerializationInclusion(JsonInclude.Include.NON_NULL);
+    private static final ObjectMapper MAPPER =
+            new ObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL);
 
     private static JsonNode schemaRoot;
 
@@ -40,8 +39,8 @@ class Ddi4SentinelValuesSchemaConformanceTest {
         ObjectNode wrapper = MAPPER.createObjectNode();
         wrapper.put("$ref", "#/$defs/" + defName);
         wrapper.set("$defs", schemaRoot.get("$defs"));
-        JsonSchema schema = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V202012)
-                .getSchema(wrapper);
+        JsonSchema schema =
+                JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V202012).getSchema(wrapper);
 
         return schema.validate(MAPPER.readTree(MAPPER.writeValueAsString(value)));
     }
@@ -56,14 +55,14 @@ class Ddi4SentinelValuesSchemaConformanceTest {
     @Test
     void variableWithMissingValuesReference_matchesSchemaVariableDef() throws Exception {
         CodeRepresentation codeRepresentation = new CodeRepresentation(
-                CodeRepresentation.TYPE,
-                null,
-                Reference.of("fr.insee", "cl-1", "1", "CodeList"));
+                CodeRepresentation.TYPE, null, Reference.of("fr.insee", "cl-1", "1", "CodeList"));
         Ddi4Variable variable = new Ddi4Variable(
                 Ddi4Variable.TYPE,
                 null,
                 "urn:ddi:fr.insee:var-1:1",
-                "fr.insee", "var-1", "1",
+                "fr.insee",
+                "var-1",
+                "1",
                 null,
                 LangStrings.of("fr-FR", "AGEMEN8"),
                 LangStrings.of("fr-FR", "Âge détaillé"),
@@ -71,7 +70,9 @@ class Ddi4SentinelValuesSchemaConformanceTest {
                 new VariableRepresentation(
                         null,
                         codeRepresentation,
-                        null, null, null,
+                        null,
+                        null,
+                        null,
                         Reference.of("fr.insee", "mmvr-1", "1", "ManagedMissingValuesRepresentation")),
                 null);
 
@@ -84,13 +85,14 @@ class Ddi4SentinelValuesSchemaConformanceTest {
                 Ddi4ManagedMissingValuesRepresentation.TYPE,
                 null,
                 "urn:ddi:fr.insee:mmvr-1:1",
-                "fr.insee", "mmvr-1", "1",
+                "fr.insee",
+                "mmvr-1",
+                "1",
                 LangStrings.of("fr-FR", "Valeurs sentinelles NSP/REF"),
                 List.of(new CodeRepresentation(
-                        CodeRepresentation.TYPE,
-                        null,
-                        Reference.of("fr.insee", "cl-sentinelles-1", "1", "CodeList"))));
+                        CodeRepresentation.TYPE, null, Reference.of("fr.insee", "cl-sentinelles-1", "1", "CodeList"))));
 
-        assertThat(validateAgainstDef(mmvr, "ManagedMissingValuesRepresentation")).isEmpty();
+        assertThat(validateAgainstDef(mmvr, "ManagedMissingValuesRepresentation"))
+                .isEmpty();
     }
 }

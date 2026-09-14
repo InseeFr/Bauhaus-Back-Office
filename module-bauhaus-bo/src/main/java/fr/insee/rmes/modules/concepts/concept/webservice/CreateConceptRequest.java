@@ -7,7 +7,6 @@ import fr.insee.rmes.modules.concepts.concept.domain.model.commands.CreateConcep
 import fr.insee.rmes.modules.concepts.concept.webservice.response.LocalisedLabelResponse;
 import fr.insee.rmes.modules.shared_kernel.domain.model.Lang;
 import fr.insee.rmes.modules.shared_kernel.domain.model.LocalisedLabel;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -43,8 +42,7 @@ public class CreateConceptRequest {
                 creator,
                 contributor,
                 disseminationStatus,
-                collections == null ? Collections.emptyList() : collections
-        );
+                collections == null ? Collections.emptyList() : collections);
     }
 
     protected List<LocalisedLabel> buildLabels() {

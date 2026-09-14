@@ -1,12 +1,12 @@
 package fr.insee.rmes.persistance.sparql_queries.classifications;
 
+import static fr.insee.rmes.persistance.sparql_queries.SparqlQueryNormalizer.normalize;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import org.junit.jupiter.api.Test;
-
-import static fr.insee.rmes.persistance.sparql_queries.SparqlQueryNormalizer.normalize;
-import static org.assertj.core.api.Assertions.assertThat;
 
 class ClassificationFamiliesQueriesTest {
 

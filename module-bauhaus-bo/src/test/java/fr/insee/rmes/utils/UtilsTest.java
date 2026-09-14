@@ -197,5 +197,4 @@ public class UtilsTest {
             	<targetType>SERIES</targetType>
             </parameters>
             """;
-
 }

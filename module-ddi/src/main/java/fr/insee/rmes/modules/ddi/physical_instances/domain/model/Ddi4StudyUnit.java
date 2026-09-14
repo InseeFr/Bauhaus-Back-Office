@@ -1,7 +1,6 @@
 package fr.insee.rmes.modules.ddi.physical_instances.domain.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.util.List;
 
 /**
@@ -23,18 +22,54 @@ public record Ddi4StudyUnit(
         @JsonProperty("Citation") Citation citation,
         String operationIri,
         @JsonProperty("PhysicalInstanceReference") List<Reference> physicalInstanceReferences,
-        @JsonProperty("LogicalProductReference") List<Reference> logicalProductReferences
-) implements Ddi4Item {
+        @JsonProperty("LogicalProductReference") List<Reference> logicalProductReferences,
+        @JsonProperty("VersionResponsibility") String versionResponsibility)
+        implements Ddi4Item {
 
     public static final String TYPE = "StudyUnit";
 
     /**
+     * Constructeur de compatibilité (sans {@code VersionResponsibility}) : le champ est estampillé
+     * à l'écriture depuis {@code colectica.yml}, les constructions internes ne le renseignent pas.
+     */
+    public Ddi4StudyUnit(
+            String type,
+            CogsDate versionDate,
+            String urn,
+            String agency,
+            String id,
+            String version,
+            Citation citation,
+            String operationIri,
+            List<Reference> physicalInstanceReferences,
+            List<Reference> logicalProductReferences) {
+        this(
+                type,
+                versionDate,
+                urn,
+                agency,
+                id,
+                version,
+                citation,
+                operationIri,
+                physicalInstanceReferences,
+                logicalProductReferences,
+                null);
+    }
+
+    /**
      * Backward-compatible constructor for a StudyUnit that files no LogicalProduct.
      */
-    public Ddi4StudyUnit(String type, CogsDate versionDate, String urn, String agency, String id,
-                         String version, Citation citation, String operationIri,
-                         List<Reference> physicalInstanceReferences) {
-        this(type, versionDate, urn, agency, id, version, citation, operationIri,
-                physicalInstanceReferences, null);
+    public Ddi4StudyUnit(
+            String type,
+            CogsDate versionDate,
+            String urn,
+            String agency,
+            String id,
+            String version,
+            Citation citation,
+            String operationIri,
+            List<Reference> physicalInstanceReferences) {
+        this(type, versionDate, urn, agency, id, version, citation, operationIri, physicalInstanceReferences, null);
     }
 }

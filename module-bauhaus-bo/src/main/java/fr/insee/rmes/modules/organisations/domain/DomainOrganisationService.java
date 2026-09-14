@@ -4,7 +4,6 @@ import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.organisations.domain.model.OrganisationOption;
 import fr.insee.rmes.modules.organisations.domain.port.clientside.OrganisationService;
 import fr.insee.rmes.modules.organisations.domain.port.serverside.OrganisationRepository;
-
 import java.util.List;
 import java.util.Map;
 
@@ -284,8 +283,7 @@ public class DomainOrganisationService implements OrganisationService {
             "SSM-DSED",
             "SSM-DESSI",
             "SSM-SIES",
-            "SSM-DEPS"
-    );
+            "SSM-DEPS");
 
     @Override
     public List<String> getStamps() throws RmesException {

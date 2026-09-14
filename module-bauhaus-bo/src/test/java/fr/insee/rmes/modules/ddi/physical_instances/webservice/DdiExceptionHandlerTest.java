@@ -1,5 +1,13 @@
 package fr.insee.rmes.modules.ddi.physical_instances.webservice;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.StudyUnitNotFoundException;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3toDDI4ConverterService;
@@ -17,14 +25,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(MockitoExtension.class)
 class DdiExceptionHandlerTest {
@@ -54,7 +54,15 @@ class DdiExceptionHandlerTest {
 
     @BeforeEach
     void setUp() {
-        DdiResources ddiResources = new DdiResources(ddiService, ddi4toDdi3ConverterService, ddi3toDdi4ConverterService, ddiItemConvertService, userProvider, rbacFetcher, bauhausUriBuilder, mock(Ddi4SchemaService.class));
+        DdiResources ddiResources = new DdiResources(
+                ddiService,
+                ddi4toDdi3ConverterService,
+                ddi3toDdi4ConverterService,
+                ddiItemConvertService,
+                userProvider,
+                rbacFetcher,
+                bauhausUriBuilder,
+                mock(Ddi4SchemaService.class));
         mockMvc = MockMvcBuilders.standaloneSetup(ddiResources)
                 .setControllerAdvice(new DdiExceptionHandler())
                 .build();

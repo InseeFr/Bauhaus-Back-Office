@@ -1,5 +1,7 @@
 package fr.insee.rmes.modules.concepts.concept;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import fr.insee.rmes.json.JSONUtils;
 import fr.insee.rmes.testcontainers.WithGraphDBContainer;
 import org.json.JSONArray;
@@ -12,8 +14,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.web.client.RestClient;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class ConceptConceptCollectionIntegrationTest extends WithGraphDBContainer {
@@ -60,7 +60,8 @@ class ConceptConceptCollectionIntegrationTest extends WithGraphDBContainer {
         registry.add("fr.insee.rmes.bauhaus.sesame.publication.sesameServer", () -> sesameServer);
         registry.add("fr.insee.rmes.bauhaus.sesame.publication.repository", () -> BAUHAUS_TEST_PUBLICATION_REPOSITORY);
         registry.add("fr.insee.rmes.bauhaus.sesame.publication.baseURI", () -> "http://id.insee.fr/");
-        container.withInitFolder("fr/insee/rmes/modules/concepts/concept")
+        container
+                .withInitFolder("fr/insee/rmes/modules/concepts/concept")
                 .withTrigFiles("concept-concept-collection-integration-test.trig");
     }
 
@@ -69,7 +70,8 @@ class ConceptConceptCollectionIntegrationTest extends WithGraphDBContainer {
     }
 
     private String createCollection(String id, String label) {
-        var response = RestClient.create().post()
+        var response = RestClient.create()
+                .post()
                 .uri(conceptsBase() + "/collections")
                 .body(COLLECTION_TEMPLATE.formatted(id, label, CREATOR, CONTRIBUTOR))
                 .contentType(MediaType.APPLICATION_JSON)
@@ -81,7 +83,8 @@ class ConceptConceptCollectionIntegrationTest extends WithGraphDBContainer {
     }
 
     private String createConcept(String label, String collectionsJsonArray) {
-        return RestClient.create().post()
+        return RestClient.create()
+                .post()
                 .uri(conceptsBase() + "/concept")
                 .body(CONCEPT_WITH_NOTE_TEMPLATE.formatted(
                         label, CREATOR, CONTRIBUTOR, DISSEMINATION_STATUS, collectionsJsonArray))
@@ -91,7 +94,8 @@ class ConceptConceptCollectionIntegrationTest extends WithGraphDBContainer {
     }
 
     private JSONArray getCollectionMembers(String collectionId) {
-        String response = RestClient.create().get()
+        String response = RestClient.create()
+                .get()
                 .uri(conceptsBase() + "/collections/" + collectionId + "/members")
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
@@ -100,8 +104,7 @@ class ConceptConceptCollectionIntegrationTest extends WithGraphDBContainer {
     }
 
     private static boolean containsId(JSONArray array, String id) {
-        return JSONUtils.stream(array)
-                .anyMatch(row -> id.equals(row.optString("id")));
+        return JSONUtils.stream(array).anyMatch(row -> id.equals(row.optString("id")));
     }
 
     @Test
@@ -123,12 +126,11 @@ class ConceptConceptCollectionIntegrationTest extends WithGraphDBContainer {
         String conceptId = createConcept("Concept cross 002", "[]");
         assertThat(containsId(getCollectionMembers(collectionId), conceptId)).isFalse();
 
-        RestClient.create().put()
+        RestClient.create()
+                .put()
                 .uri(conceptsBase() + "/concept/" + conceptId)
                 .body(CONCEPT_WITH_NOTE_TEMPLATE.formatted(
-                        "Concept cross 002",
-                        CREATOR, CONTRIBUTOR, DISSEMINATION_STATUS,
-                        "[\"" + collectionId + "\"]"))
+                        "Concept cross 002", CREATOR, CONTRIBUTOR, DISSEMINATION_STATUS, "[\"" + collectionId + "\"]"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .retrieve()
                 .toBodilessEntity();
@@ -143,12 +145,11 @@ class ConceptConceptCollectionIntegrationTest extends WithGraphDBContainer {
         String conceptId = createConcept("Concept cross 003", "[\"" + collectionId + "\"]");
         assertThat(containsId(getCollectionMembers(collectionId), conceptId)).isTrue();
 
-        RestClient.create().put()
+        RestClient.create()
+                .put()
                 .uri(conceptsBase() + "/concept/" + conceptId)
                 .body(CONCEPT_WITH_NOTE_TEMPLATE.formatted(
-                        "Concept cross 003",
-                        CREATOR, CONTRIBUTOR, DISSEMINATION_STATUS,
-                        "[]"))
+                        "Concept cross 003", CREATOR, CONTRIBUTOR, DISSEMINATION_STATUS, "[]"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .retrieve()
                 .toBodilessEntity();
@@ -159,15 +160,19 @@ class ConceptConceptCollectionIntegrationTest extends WithGraphDBContainer {
     @Test
     @DisplayName("POST concept referencing an unknown collection id returns 400")
     void create_concept_with_unknown_collection_is_rejected() {
-        RestClient.create().post()
+        RestClient.create()
+                .post()
                 .uri(conceptsBase() + "/concept")
                 .body(CONCEPT_WITH_NOTE_TEMPLATE.formatted(
                         "Concept cross 004",
-                        CREATOR, CONTRIBUTOR, DISSEMINATION_STATUS,
+                        CREATOR,
+                        CONTRIBUTOR,
+                        DISSEMINATION_STATUS,
                         "[\"Collection-does-not-exist\"]"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .retrieve()
-                .onStatus(status -> true,
+                .onStatus(
+                        status -> true,
                         (req, res) -> assertThat(res.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST))
                 .toBodilessEntity();
     }
@@ -179,7 +184,8 @@ class ConceptConceptCollectionIntegrationTest extends WithGraphDBContainer {
         String conceptId = createConcept("Concept cross 005", "[\"" + collectionId + "\"]");
         assertThat(containsId(getCollectionMembers(collectionId), conceptId)).isTrue();
 
-        RestClient.create().delete()
+        RestClient.create()
+                .delete()
                 .uri(conceptsBase() + "/" + conceptId)
                 .retrieve()
                 .toBodilessEntity();

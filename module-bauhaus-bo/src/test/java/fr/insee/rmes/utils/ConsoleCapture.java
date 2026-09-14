@@ -3,7 +3,7 @@ package fr.insee.rmes.utils;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 
-public class ConsoleCapture{
+public class ConsoleCapture {
 
     private final ByteArrayOutputStream standardOut;
     private final ByteArrayOutputStream standardErr;
@@ -14,13 +14,13 @@ public class ConsoleCapture{
     private ConsoleCapture(ByteArrayOutputStream standardOut, ByteArrayOutputStream standardErr) {
         this.standardOut = standardOut;
         this.standardErr = standardErr;
-        this.capturing=true;
+        this.capturing = true;
     }
 
     public static ConsoleCapture startCapturingConsole() {
         ConsoleCapture consoleCapture = new ConsoleCapture(new ByteArrayOutputStream(), new ByteArrayOutputStream());
-        consoleCapture.lastErr=System.err;
-        consoleCapture.lastOut=System.out;
+        consoleCapture.lastErr = System.err;
+        consoleCapture.lastOut = System.out;
         System.setOut(new PrintStream(consoleCapture.standardOut));
         System.setErr(new PrintStream(consoleCapture.standardErr));
         return consoleCapture;
@@ -29,11 +29,11 @@ public class ConsoleCapture{
     public void stop() {
         System.setErr(this.lastErr);
         System.setOut(this.lastOut);
-        capturing=false;
+        capturing = false;
     }
 
     public String standardOut() {
-        if(! capturing) {
+        if (!capturing) {
             throw new IllegalStateException("No capturing any more");
         }
         return standardOut.toString();

@@ -1,5 +1,7 @@
 package fr.insee.rmes.testcontainers.queries.sparql_queries.concepts;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
@@ -9,6 +11,7 @@ import fr.insee.rmes.json.JSONUtils;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptCollectionsQueries;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.testcontainers.WithGraphDBContainer;
+import java.util.List;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeAll;
@@ -16,14 +19,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
-
 @Tag("integration")
 class ConceptCollectionsQueriesTest extends WithGraphDBContainer {
 
-    RepositoryGestion repositoryGestion = new RepositoryGestion(getRdfGestionConnectionDetails(), new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED));
+    RepositoryGestion repositoryGestion = new RepositoryGestion(
+            getRdfGestionConnectionDetails(), new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED));
 
     private ConceptCollectionsQueries conceptCollectionsQueries;
 
@@ -34,7 +34,8 @@ class ConceptCollectionsQueriesTest extends WithGraphDBContainer {
 
     @BeforeEach
     void setUp() {
-        conceptCollectionsQueries = new ConceptCollectionsQueries(new BauhausLanguagesProperties("fr", "en"), GraphsPropertiesStub.stub());
+        conceptCollectionsQueries =
+                new ConceptCollectionsQueries(new BauhausLanguagesProperties("fr", "en"), GraphsPropertiesStub.stub());
     }
 
     @Test
@@ -92,8 +93,7 @@ class ConceptCollectionsQueriesTest extends WithGraphDBContainer {
         // Verify all returned collections are not validated
         JSONUtils.stream(result).forEach(collection -> {
             String id = collection.getString("id");
-            assertTrue(id.equals("c2000") || id.equals("c4000"),
-                "Only c2000 and c4000 should be non-validated");
+            assertTrue(id.equals("c2000") || id.equals("c4000"), "Only c2000 and c4000 should be non-validated");
         });
 
         // Verify Commerce collection
@@ -124,22 +124,23 @@ class ConceptCollectionsQueriesTest extends WithGraphDBContainer {
     @Test
     void should_return_collection_members() throws RmesException {
         // When - Get members of Agriculture collection
-        JSONArray result = repositoryGestion.getResponseAsArray(conceptCollectionsQueries.collectionMembersQuery("c1000"));
+        JSONArray result =
+                repositoryGestion.getResponseAsArray(conceptCollectionsQueries.collectionMembersQuery("c1000"));
 
         // Then
         assertEquals(3, result.length(), "Agriculture collection should have 3 members");
 
         // Verify member concepts are returned
-        List<String> memberIds = JSONUtils.stream(result)
-                .map(member -> member.getString("id"))
-                .toList();
+        List<String> memberIds =
+                JSONUtils.stream(result).map(member -> member.getString("id")).toList();
         assertTrue(memberIds.containsAll(List.of("c1", "c2", "c3")), "All three concepts should be members");
     }
 
     @Test
     void should_return_empty_array_for_collection_without_members() throws RmesException {
         // When - Get members of empty collection
-        JSONArray result = repositoryGestion.getResponseAsArray(conceptCollectionsQueries.collectionMembersQuery("c5000"));
+        JSONArray result =
+                repositoryGestion.getResponseAsArray(conceptCollectionsQueries.collectionMembersQuery("c5000"));
 
         // Then
         assertEquals(0, result.length(), "Empty collection should have no members");
@@ -148,7 +149,8 @@ class ConceptCollectionsQueriesTest extends WithGraphDBContainer {
     @Test
     void should_return_collection_concepts_with_components_graph() throws RmesException {
         // When - Get concepts from Agriculture collection including those in components graph
-        JSONArray result = repositoryGestion.getResponseAsArray(conceptCollectionsQueries.collectionConceptsQuery("c1000"));
+        JSONArray result =
+                repositoryGestion.getResponseAsArray(conceptCollectionsQueries.collectionConceptsQuery("c1000"));
 
         // Then
         assertTrue(!result.isEmpty(), "Should return concepts from the collection");
@@ -166,7 +168,8 @@ class ConceptCollectionsQueriesTest extends WithGraphDBContainer {
     @Test
     void should_return_true_when_collection_exists() throws RmesException {
         // When
-        boolean result = repositoryGestion.getResponseAsBoolean(conceptCollectionsQueries.collectionExistsById("c1000"));
+        boolean result =
+                repositoryGestion.getResponseAsBoolean(conceptCollectionsQueries.collectionExistsById("c1000"));
 
         // Then
         assertTrue(result, "Should return true when collection exists");
@@ -175,7 +178,8 @@ class ConceptCollectionsQueriesTest extends WithGraphDBContainer {
     @Test
     void should_return_false_when_collection_does_not_exist() throws RmesException {
         // When
-        boolean result = repositoryGestion.getResponseAsBoolean(conceptCollectionsQueries.collectionExistsById("c9999"));
+        boolean result =
+                repositoryGestion.getResponseAsBoolean(conceptCollectionsQueries.collectionExistsById("c9999"));
 
         // Then
         assertFalse(result, "Should return false when collection does not exist");
@@ -208,10 +212,9 @@ class ConceptCollectionsQueriesTest extends WithGraphDBContainer {
         JSONObject demoCollection = findCollectionById(result, "c4000");
 
         assertNotEquals(
-            emploiCollection.getString("nbMembers"),
-            commerceCollection.getString("nbMembers"),
-            "Collections should have different member counts"
-        );
+                emploiCollection.getString("nbMembers"),
+                commerceCollection.getString("nbMembers"),
+                "Collections should have different member counts");
 
         assertEquals("4", emploiCollection.getString("nbMembers"));
         assertEquals("2", commerceCollection.getString("nbMembers"));

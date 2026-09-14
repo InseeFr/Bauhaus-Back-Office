@@ -11,17 +11,10 @@ public record GraphDBConceptDashboardItem(
         String created,
         @Nullable String modified,
         @Nullable String validationState,
-        @Nullable String creator
-) {
+        @Nullable String creator) {
 
     ConceptDashboardItem toDomain() {
         return new ConceptDashboardItem(
-                new ConceptId(id),
-                label,
-                created,
-                modified,
-                ValidationStatus.fromValue(validationState),
-                creator
-        );
+                new ConceptId(id), label, created, modified, ValidationStatus.fromValue(validationState), creator);
     }
 }

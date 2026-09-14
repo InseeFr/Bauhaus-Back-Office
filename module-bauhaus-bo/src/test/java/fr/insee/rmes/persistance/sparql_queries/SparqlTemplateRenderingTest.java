@@ -1,13 +1,10 @@
 package fr.insee.rmes.persistance.sparql_queries;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import fr.insee.rmes.freemarker.FreemarkerConfig;
 import freemarker.template.Template;
-import org.eclipse.rdf4j.query.QueryLanguage;
-import org.eclipse.rdf4j.query.parser.QueryParserUtil;
-import org.junit.jupiter.api.DynamicTest;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestFactory;
-
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.UncheckedIOException;
@@ -23,9 +20,11 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
-
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.eclipse.rdf4j.query.QueryLanguage;
+import org.eclipse.rdf4j.query.parser.QueryParserUtil;
+import org.junit.jupiter.api.DynamicTest;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestFactory;
 
 /**
  * Rend chaque template de requête avec des paramètres factices et le soumet au parseur SPARQL.
@@ -65,23 +64,21 @@ class SparqlTemplateRenderingTest {
     private static final String LITERAL_TOKEN = "\"x\"";
 
     /** {@code ${LG1}^^xsd:language} : une IRI ne peut pas porter de type, il faut un littéral. */
-    private static final Pattern TYPED_LITERAL =
-            Pattern.compile("\\$\\{\\s*([A-Za-z_][\\w.]*)[^}]*\\}\\s*\\^\\^");
+    private static final Pattern TYPED_LITERAL = Pattern.compile("\\$\\{\\s*([A-Za-z_][\\w.]*)[^}]*\\}\\s*\\^\\^");
 
     /** Les formes de mise à jour SPARQL relèvent de parseUpdate, pas de parseQuery. */
-    private static final Pattern UPDATE_FORM =
-            Pattern.compile("^\\s*(INSERT|DELETE|WITH|LOAD|CLEAR|DROP|CREATE|ADD|MOVE|COPY)\\b",
-                    Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
+    private static final Pattern UPDATE_FORM = Pattern.compile(
+            "^\\s*(INSERT|DELETE|WITH|LOAD|CLEAR|DROP|CREATE|ADD|MOVE|COPY)\\b",
+            Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
 
     private static final Pattern INTERPOLATION = Pattern.compile("\\$\\{\\s*([A-Za-z_][\\w.]*)");
     private static final Pattern LIST_DIRECTIVE = Pattern.compile("<#list\\s+([A-Za-z_][\\w.]*)");
-    private static final Pattern BOOLEAN_CONDITION = Pattern.compile("<#(?:if|elseif)\\s+!?\\s*([A-Za-z_][\\w.]*)\\s*>");
-    private static final Pattern CONDITION_IDENTIFIER =
-            Pattern.compile("<#(?:if|elseif)\\s+([^>]*)>");
+    private static final Pattern BOOLEAN_CONDITION =
+            Pattern.compile("<#(?:if|elseif)\\s+!?\\s*([A-Za-z_][\\w.]*)\\s*>");
+    private static final Pattern CONDITION_IDENTIFIER = Pattern.compile("<#(?:if|elseif)\\s+([^>]*)>");
     private static final Pattern IDENTIFIER = Pattern.compile("[A-Za-z_][\\w.]*");
     private static final Pattern INCLUDE = Pattern.compile("<#include\\s+\"([^\"]+)\"");
-    private static final Pattern LIST_ALIAS =
-            Pattern.compile("<#list\\s+([A-Za-z_][\\w.]*)\\s+as\\s+([A-Za-z_]\\w*)");
+    private static final Pattern LIST_ALIAS = Pattern.compile("<#list\\s+([A-Za-z_][\\w.]*)\\s+as\\s+([A-Za-z_]\\w*)");
 
     /** Un template : son nom FreeMarker (relatif à {@code request/}), sa source et son fichier. */
     private record SparqlTemplate(String name, String source, Path path) {
@@ -97,8 +94,8 @@ class SparqlTemplateRenderingTest {
 
         return templates.stream()
                 .filter(template -> !fragments.contains(template.fileName()))
-                .map(template -> DynamicTest.dynamicTest(template.name(),
-                        () -> assertRendersToAParsableQuery(template)))
+                .map(template ->
+                        DynamicTest.dynamicTest(template.name(), () -> assertRendersToAParsableQuery(template)))
                 .toList()
                 .stream();
     }
@@ -196,7 +193,8 @@ class SparqlTemplateRenderingTest {
                 .map(SparqlTemplate::name)
                 .toList();
 
-        assertTrue(offenders.isEmpty(),
+        assertTrue(
+                offenders.isEmpty(),
                 () -> "Ces templates redéclarent des préfixes déjà fournis par prefixes.ftlh : " + offenders);
     }
 
@@ -264,7 +262,8 @@ class SparqlTemplateRenderingTest {
                 continue;
             }
             String alias = aliases.group(2);
-            Matcher fields = Pattern.compile("\\$\\{\\s*" + Pattern.quote(alias) + "\\.(\\w+)").matcher(source);
+            Matcher fields = Pattern.compile("\\$\\{\\s*" + Pattern.quote(alias) + "\\.(\\w+)")
+                    .matcher(source);
             Map<String, Object> element = new HashMap<>();
             while (fields.find()) {
                 element.put(fields.group(1), TOKEN);
@@ -295,8 +294,8 @@ class SparqlTemplateRenderingTest {
             parameters.put(name, value);
             return;
         }
-        Map<String, Object> nested = (Map<String, Object>) parameters
-                .computeIfAbsent(name.substring(0, dot), key -> new HashMap<String, Object>());
+        Map<String, Object> nested = (Map<String, Object>)
+                parameters.computeIfAbsent(name.substring(0, dot), key -> new HashMap<String, Object>());
         nested.put(name.substring(dot + 1), value);
     }
 

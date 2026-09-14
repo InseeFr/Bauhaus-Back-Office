@@ -14,7 +14,7 @@ import org.springframework.context.annotation.Configuration;
 @EnableConfigurationProperties(DocumentationConfiguration.class)
 public class MSDConfiguration {
     @Bean
-    DocumentationService documentationService(DocumentationRepository repository){
+    DocumentationService documentationService(DocumentationRepository repository) {
         return new DomainDocumentationService(repository);
     }
 

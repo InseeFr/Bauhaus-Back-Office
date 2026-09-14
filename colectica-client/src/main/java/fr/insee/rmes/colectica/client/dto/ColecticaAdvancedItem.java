@@ -1,7 +1,6 @@
 package fr.insee.rmes.colectica.client.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.util.List;
 import java.util.Map;
 
@@ -19,12 +18,11 @@ import java.util.Map;
  * </ul>
  */
 public record ColecticaAdvancedItem(
-    @JsonProperty("AgencyId") String agencyId,
-    @JsonProperty("Identifier") String identifier,
-    @JsonProperty("Version") Integer version,
-    @JsonProperty("ItemType") String itemType,
-    @JsonProperty("IsDeprecated") Boolean isDeprecated,
-    @JsonProperty("TextProperties") Map<String, List<LocalizedText>> textProperties,
-    @JsonProperty("DateProperties") Map<String, List<String>> dateProperties,
-    @JsonProperty("BooleanProperties") Map<String, Boolean> booleanProperties
-) {}
+        @JsonProperty("AgencyId") String agencyId,
+        @JsonProperty("Identifier") String identifier,
+        @JsonProperty("Version") Integer version,
+        @JsonProperty("ItemType") String itemType,
+        @JsonProperty("IsDeprecated") Boolean isDeprecated,
+        @JsonProperty("TextProperties") Map<String, List<LocalizedText>> textProperties,
+        @JsonProperty("DateProperties") Map<String, List<String>> dateProperties,
+        @JsonProperty("BooleanProperties") Map<String, Boolean> booleanProperties) {}

@@ -1,11 +1,11 @@
 package fr.insee.rmes.modules.organisations.infrastructure.graphdb;
 
-import fr.insee.rmes.modules.shared_kernel.domain.model.Lang;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import fr.insee.rmes.modules.organisations.domain.model.CompactOrganisation;
+import fr.insee.rmes.modules.shared_kernel.domain.model.Lang;
 import org.eclipse.rdf4j.model.IRI;
 import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 class GraphDbCompactOrganisationTest {
 
@@ -17,12 +17,8 @@ class GraphDbCompactOrganisationTest {
         String label = "Direction des statistiques";
         String labelLg = "fr";
 
-        GraphDbCompactOrganisation graphDbOrganisation = new GraphDbCompactOrganisation(
-            iriString,
-            identifier,
-            label,
-            labelLg
-        );
+        GraphDbCompactOrganisation graphDbOrganisation =
+                new GraphDbCompactOrganisation(iriString, identifier, label, labelLg);
 
         // When
         CompactOrganisation result = graphDbOrganisation.toDomain();
@@ -44,12 +40,8 @@ class GraphDbCompactOrganisationTest {
         String label = "Statistics Department";
         String labelLg = "en";
 
-        GraphDbCompactOrganisation graphDbOrganisation = new GraphDbCompactOrganisation(
-            iriString,
-            identifier,
-            label,
-            labelLg
-        );
+        GraphDbCompactOrganisation graphDbOrganisation =
+                new GraphDbCompactOrganisation(iriString, identifier, label, labelLg);
 
         // When
         CompactOrganisation result = graphDbOrganisation.toDomain();
@@ -71,12 +63,8 @@ class GraphDbCompactOrganisationTest {
         String label = "Test Organization";
         String labelLg = "FR"; // Already uppercase
 
-        GraphDbCompactOrganisation graphDbOrganisation = new GraphDbCompactOrganisation(
-            iriString,
-            identifier,
-            label,
-            labelLg
-        );
+        GraphDbCompactOrganisation graphDbOrganisation =
+                new GraphDbCompactOrganisation(iriString, identifier, label, labelLg);
 
         // When
         CompactOrganisation result = graphDbOrganisation.toDomain();
@@ -90,12 +78,8 @@ class GraphDbCompactOrganisationTest {
     void shouldCreateValidIRIFromString() {
         // Given
         String iriString = "http://example.org/org#123";
-        GraphDbCompactOrganisation graphDbOrganisation = new GraphDbCompactOrganisation(
-            iriString,
-            "ID-123",
-            "Label",
-            "fr"
-        );
+        GraphDbCompactOrganisation graphDbOrganisation =
+                new GraphDbCompactOrganisation(iriString, "ID-123", "Label", "fr");
 
         // When
         CompactOrganisation result = graphDbOrganisation.toDomain();

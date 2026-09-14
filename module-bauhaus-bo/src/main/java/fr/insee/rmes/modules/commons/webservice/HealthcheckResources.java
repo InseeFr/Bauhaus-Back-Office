@@ -1,9 +1,13 @@
 package fr.insee.rmes.modules.commons.webservice;
 
-import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.commons.security.PublicEndpoint;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.util.StringJoiner;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,15 +18,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.util.StringJoiner;
-
 @RestController
 @RequestMapping("healthcheck")
 public class HealthcheckResources extends GenericResources {
-
 
     public static final String OK_STATE = ": OK \n";
 
@@ -36,17 +34,17 @@ public class HealthcheckResources extends GenericResources {
 
     private final String documentsStoragePublicationInterne;
     private final String documentsStoragePublicationExterne;
-    private final  String documentsStorageGestion;
+    private final String documentsStorageGestion;
 
     private static final Logger logger = LoggerFactory.getLogger(HealthcheckResources.class);
 
-
-
-    public HealthcheckResources(RepositoryGestion repoGestion,
-                          RepositoryPublication repositoryPublication,
-                          @Value("${fr.insee.rmes.bauhaus.storage.document.publication.interne}") String documentsStoragePublicationInterne,
-                          @Value("${fr.insee.rmes.bauhaus.storage.document.publication}") String documentsStoragePublicationExterne,
-                          @Value("${fr.insee.rmes.bauhaus.storage.document.gestion}") String documentsStorageGestion) {
+    public HealthcheckResources(
+            RepositoryGestion repoGestion,
+            RepositoryPublication repositoryPublication,
+            @Value("${fr.insee.rmes.bauhaus.storage.document.publication.interne}")
+                    String documentsStoragePublicationInterne,
+            @Value("${fr.insee.rmes.bauhaus.storage.document.publication}") String documentsStoragePublicationExterne,
+            @Value("${fr.insee.rmes.bauhaus.storage.document.gestion}") String documentsStorageGestion) {
         this.repoGestion = repoGestion;
         this.repositoryPublication = repositoryPublication;
         this.documentsStoragePublicationInterne = documentsStoragePublicationInterne;
@@ -55,7 +53,8 @@ public class HealthcheckResources extends GenericResources {
     }
 
     @PublicEndpoint
-    @GetMapping(value = "",
+    @GetMapping(
+            value = "",
             produces = {MediaType.TEXT_PLAIN_VALUE})
     public ResponseEntity<Object> getHealthcheck() {
 
@@ -66,19 +65,18 @@ public class HealthcheckResources extends GenericResources {
         checkDatabase(errorMessage, stateResult);
         checkStrorage(errorMessage, stateResult);
 
-
-        //print result in log
+        // print result in log
         logger.debug("{}", stateResult);
         logger.debug("End healthcheck");
 
         if (!"".equals(errorMessage.toString())) {
             logger.error("Errors message : \n {}", errorMessage);
-            return ResponseEntity.internalServerError().body(stateResult.merge(errorMessage).toString());
+            return ResponseEntity.internalServerError()
+                    .body(stateResult.merge(errorMessage).toString());
         } else {
             return ResponseEntity.ok(stateResult.toString());
         }
     }
-
 
     private void checkStrorage(StringJoiner errorMessage, StringJoiner stateResult) {
         stateResult.add("Document storage \n");
@@ -88,18 +86,20 @@ public class HealthcheckResources extends GenericResources {
     }
 
     public void checkDatabase(StringJoiner errorMessage, StringJoiner stateResult) {
-        //Test database connexion
+        // Test database connexion
         stateResult.add("Database connexion \n");
         checkDatabaseConnexions(errorMessage, stateResult);
     }
 
     private void checkDatabaseConnexions(StringJoiner errorMessage, StringJoiner stateResult) {
         checkDatabaseConnexion(errorMessage, stateResult, repositoryPublication::getResponse, "Publication Z");
-        checkDatabaseConnexion(errorMessage, stateResult, repositoryPublication::getResponsePublication, "Publication I");
+        checkDatabaseConnexion(
+                errorMessage, stateResult, repositoryPublication::getResponsePublication, "Publication I");
         checkDatabaseConnexion(errorMessage, stateResult, repoGestion::getResponse, "Gestion");
     }
 
-    private void checkDatabaseConnexion(StringJoiner errorMessage, StringJoiner stateResult, RequestExecutor executeRequest, String repoName) {
+    private void checkDatabaseConnexion(
+            StringJoiner errorMessage, StringJoiner stateResult, RequestExecutor executeRequest, String repoName) {
         try {
             if (StringUtils.isEmpty(executeRequest.execute(SPARQL_QUERY))) {
                 errorMessage.add("-").add(repoName).add("doesn't return statement \n");
@@ -114,12 +114,16 @@ public class HealthcheckResources extends GenericResources {
         }
     }
 
-    private void checkDocumentStorage(String pathToStorage, String storageType, StringJoiner stateResult, StringJoiner errorMessage) {
+    private void checkDocumentStorage(
+            String pathToStorage, String storageType, StringJoiner stateResult, StringJoiner errorMessage) {
         String dirPath = pathToStorage + "testHealthcheck.txt";
         File testFile = new File(dirPath);
         try {
             if (!testFile.createNewFile()) {
-                errorMessage.add("- File for healthcheck already exists in").add(storageType).add("\n");
+                errorMessage
+                        .add("- File for healthcheck already exists in")
+                        .add(storageType)
+                        .add("\n");
                 stateResult.add(" - File creation").add(storageType).add(KO_STATE);
             } else {
                 stateResult.add(" - File creation").add(storageType).add(OK_STATE);
@@ -131,7 +135,12 @@ public class HealthcheckResources extends GenericResources {
                 stateResult.add(" - File deletion").add(storageType).add(OK_STATE);
             }
         } catch (IOException e) {
-            errorMessage.add("- IOException to save file in").add(pathToStorage).add("-").add(e.getMessage()).add("\n");
+            errorMessage
+                    .add("- IOException to save file in")
+                    .add(pathToStorage)
+                    .add("-")
+                    .add(e.getMessage())
+                    .add("\n");
             stateResult.add(" - Document storage").add(storageType).add(KO_STATE);
         }
     }

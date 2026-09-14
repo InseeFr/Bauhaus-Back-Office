@@ -1,5 +1,7 @@
 package fr.insee.rmes.testcontainers.queries;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.graphdb.RepositoryInitiator;
 import fr.insee.rmes.graphdb.RepositoryUtils;
@@ -13,16 +15,16 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 @Tag("integration")
 class DatasetDistributionQueriesIntegrationTest extends WithGraphDBContainer {
 
     private static final String DISTRIBUTION_GRAPH = "http://rdf.insee.fr/graphes/catalogue-distributions-test";
     private static final String ADMS_GRAPH = "http://rdf.insee.fr/graphes/adms-distributions-test";
 
-    RepositoryGestion repositoryGestion = new RepositoryGestion(getRdfGestionConnectionDetails(), new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED));
-    DatasetDistributionQueries datasetDistributionQueries = new DatasetDistributionQueries(new BauhausLanguagesProperties("fr", "en"));
+    RepositoryGestion repositoryGestion = new RepositoryGestion(
+            getRdfGestionConnectionDetails(), new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED));
+    DatasetDistributionQueries datasetDistributionQueries =
+            new DatasetDistributionQueries(new BauhausLanguagesProperties("fr", "en"));
 
     @BeforeAll
     static void initData() {
@@ -35,7 +37,8 @@ class DatasetDistributionQueriesIntegrationTest extends WithGraphDBContainer {
         return JSONUtils.stream(result)
                 .filter(row -> distributionId.equals(row.optString("distributionId")))
                 .findFirst()
-                .orElseThrow(() -> new AssertionError("No row found for distribution " + distributionId + " in " + result));
+                .orElseThrow(
+                        () -> new AssertionError("No row found for distribution " + distributionId + " in " + result));
     }
 
     @Test

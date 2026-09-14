@@ -3,35 +3,33 @@ package fr.insee.rmes.model.concepts;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.json.JSONUtils;
-import org.json.JSONArray;
-
 import java.util.ArrayList;
 import java.util.List;
+import org.json.JSONArray;
 
-public class CollectionForExportOld extends CollectionForExport{
-    //GENERAL
-    private String id;//
-    private String prefLabelLg1;//
-    private String prefLabelLg2;//
-    private String creator;//
-    private String contributor;//
+public class CollectionForExportOld extends CollectionForExport {
+    // GENERAL
+    private String id; //
+    private String prefLabelLg1; //
+    private String prefLabelLg2; //
+    private String creator; //
+    private String contributor; //
 
-    //DATE
-    private String created;//
-    private String modified;//
+    // DATE
+    private String created; //
+    private String modified; //
 
-    //STATUS
+    // STATUS
     @JsonAlias("validationState")
-    private String isValidated;//
+    private String isValidated; //
 
-    //LINKS
+    // LINKS
     private List<String> membersLg1;
     private List<String> membersLg2;
 
-    //NOTES
+    // NOTES
     private String descriptionLg1;
     private String descriptionLg2;
-
 
     public CollectionForExportOld() {
         membersLg1 = new ArrayList<>();
@@ -109,49 +107,33 @@ public class CollectionForExportOld extends CollectionForExport{
         this.isValidated = isValidated;
     }
 
-
-
     public List<String> getMemberLg1() {
         return membersLg1;
     }
-
-
 
     public void setMemberLg1(List<String> memberLg1) {
         this.membersLg1 = memberLg1;
     }
 
-
-
     public List<String> getMemberLg2() {
         return membersLg2;
     }
-
-
 
     public void setMemberLg2(List<String> memberLg2) {
         this.membersLg2 = memberLg2;
     }
 
-
-
     public String getDescriptionLg1() {
         return descriptionLg1;
     }
-
-
 
     public void setDescriptionLg1(String descriptionLg1) {
         this.descriptionLg1 = descriptionLg1;
     }
 
-
-
     public String getDescriptionLg2() {
         return descriptionLg2;
     }
-
-
 
     public void setDescriptionLg2(String descriptionLg2) {
         this.descriptionLg2 = descriptionLg2;

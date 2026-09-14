@@ -5,11 +5,11 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class CodeLabelTwoLangs {
 
-	public String code;
+    public String code;
 
-	public String labelLg1;
+    public String labelLg1;
 
-	public String labelLg2;
+    public String labelLg2;
 
-	public String id;
+    public String id;
 }

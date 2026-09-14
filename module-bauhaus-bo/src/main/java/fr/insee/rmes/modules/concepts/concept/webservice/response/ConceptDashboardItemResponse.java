@@ -11,8 +11,7 @@ public record ConceptDashboardItemResponse(
         String created,
         @Nullable String modified,
         String validationState,
-        @Nullable String creator
-) {
+        @Nullable String creator) {
 
     public static ConceptDashboardItemResponse fromDomain(ConceptDashboardItem item) {
         return new ConceptDashboardItemResponse(
@@ -21,7 +20,6 @@ public record ConceptDashboardItemResponse(
                 item.created(),
                 item.modified(),
                 item.validationState().getValue(),
-                item.creator()
-        );
+                item.creator());
     }
 }

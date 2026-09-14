@@ -1,19 +1,18 @@
 package fr.insee.rmes.modules.users.infrastructure;
 
+import static java.util.Optional.empty;
+
 import com.nimbusds.jose.shaded.gson.JsonArray;
 import com.nimbusds.jose.shaded.gson.JsonElement;
 import com.nimbusds.jose.shaded.gson.JsonObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Spliterators;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-
-import static java.util.Optional.empty;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 @Component
 public class RoleClaimExtractor {
@@ -35,32 +34,45 @@ public class RoleClaimExtractor {
 
     private RoleClaim roleClaimFrom(Map<String, Object> claims) {
         var rawValue = claims.get(jwtProperties.getRoleClaim());
-        logger.debug("Raw value for roleClaim '{}': {} (type: {})", jwtProperties.getRoleClaim(), rawValue, rawValue != null ? rawValue.getClass().getSimpleName() : "null");
+        logger.debug(
+                "Raw value for roleClaim '{}': {} (type: {})",
+                jwtProperties.getRoleClaim(),
+                rawValue,
+                rawValue != null ? rawValue.getClass().getSimpleName() : "null");
 
         if (rawValue == null) {
             logger.debug("RoleClaim is null, returning empty stream");
             return () -> Stream::empty;
         }
 
-        var valueForRoleClaim = switch (rawValue) {
-            case JsonObject objectForRoles -> {
-                logger.debug("Processing JsonObject, extracting roles from key '{}'", jwtProperties.getRoleClaimConfig().getRoles());
-                yield objectForRoles.getAsJsonArray(jwtProperties.getRoleClaimConfig().getRoles());
-            }
-            case Map<?, ?> mapForRoles -> {
-                logger.debug("Processing Map, extracting roles from key '{}'", jwtProperties.getRoleClaimConfig().getRoles());
-                yield mapForRoles.get(jwtProperties.getRoleClaimConfig().getRoles());
-            }
-            default -> {
-                logger.debug("No matching type for roleClaim value, returning empty");
-                yield empty();
-            }
-        };
+        var valueForRoleClaim =
+                switch (rawValue) {
+                    case JsonObject objectForRoles -> {
+                        logger.debug(
+                                "Processing JsonObject, extracting roles from key '{}'",
+                                jwtProperties.getRoleClaimConfig().getRoles());
+                        yield objectForRoles.getAsJsonArray(
+                                jwtProperties.getRoleClaimConfig().getRoles());
+                    }
+                    case Map<?, ?> mapForRoles -> {
+                        logger.debug(
+                                "Processing Map, extracting roles from key '{}'",
+                                jwtProperties.getRoleClaimConfig().getRoles());
+                        yield mapForRoles.get(jwtProperties.getRoleClaimConfig().getRoles());
+                    }
+                    default -> {
+                        logger.debug("No matching type for roleClaim value, returning empty");
+                        yield empty();
+                    }
+                };
         return roleClaimFrom(valueForRoleClaim);
     }
 
     private RoleClaim roleClaimFrom(Object listOrJsonArray) {
-        logger.debug("Converting to RoleClaim: {} (type: {})", listOrJsonArray, listOrJsonArray != null ? listOrJsonArray.getClass().getSimpleName() : "null");
+        logger.debug(
+                "Converting to RoleClaim: {} (type: {})",
+                listOrJsonArray,
+                listOrJsonArray != null ? listOrJsonArray.getClass().getSimpleName() : "null");
 
         if (listOrJsonArray == null) {
             logger.debug("Value is null, returning empty stream");

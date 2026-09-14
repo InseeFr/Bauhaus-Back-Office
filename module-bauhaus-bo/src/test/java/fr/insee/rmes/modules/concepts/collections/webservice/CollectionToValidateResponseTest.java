@@ -1,10 +1,10 @@
 package fr.insee.rmes.modules.concepts.collections.webservice;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionId;
 import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionToValidate;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class CollectionToValidateResponseTest {
 

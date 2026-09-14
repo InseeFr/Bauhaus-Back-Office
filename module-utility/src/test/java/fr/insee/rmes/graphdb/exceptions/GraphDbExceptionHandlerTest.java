@@ -1,5 +1,7 @@
 package fr.insee.rmes.graphdb.exceptions;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import fr.insee.rmes.graphdb.RepositoryInitiator;
 import org.eclipse.rdf4j.http.protocol.UnauthorizedException;
 import org.eclipse.rdf4j.query.MalformedQueryException;
@@ -7,8 +9,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class GraphDbExceptionHandlerTest {
 
@@ -48,7 +48,8 @@ class GraphDbExceptionHandlerTest {
     void shouldReturnCorrectHttpStatusForDatabaseQueryException() {
         String errorMessage = "Query execution timeout";
         MalformedQueryException rdf4jException = new MalformedQueryException(errorMessage);
-        DatabaseQueryException databaseException = new DatabaseQueryException(rdf4jException, "UPDATE test SET value = 1");
+        DatabaseQueryException databaseException =
+                new DatabaseQueryException(rdf4jException, "UPDATE test SET value = 1");
 
         ResponseEntity<String> response = handler.genericInternalServerException(databaseException);
 
@@ -66,7 +67,6 @@ class GraphDbExceptionHandlerTest {
 
         assertEquals(expectedMessage, response.getBody());
     }
-
 
     @Test
     void shouldHandleEmptyMessageInException() {

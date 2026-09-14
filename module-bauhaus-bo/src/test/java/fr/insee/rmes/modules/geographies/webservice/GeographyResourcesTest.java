@@ -1,9 +1,14 @@
 package fr.insee.rmes.modules.geographies.webservice;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.when;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.bauhaus_services.GeographyService;
 import fr.insee.rmes.domain.exceptions.RmesException;
+import java.util.List;
+import java.util.Objects;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,12 +20,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
-
-import java.util.List;
-import java.util.Objects;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class GeographyResourcesTest {
@@ -55,9 +54,8 @@ class GeographyResourcesTest {
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
         assertEquals(expectedId, response.getBody());
         assertEquals(
-            "/geo/territory/" + expectedId,
-            Objects.requireNonNull(response.getHeaders().getLocation()).getPath()
-        );
+                "/geo/territory/" + expectedId,
+                Objects.requireNonNull(response.getHeaders().getLocation()).getPath());
     }
 
     @Test
@@ -66,7 +64,8 @@ class GeographyResourcesTest {
         ObjectMapper realObjectMapper = new ObjectMapper();
         GeographyResources myGeographyResources = new GeographyResources(geoService, realObjectMapper);
 
-        String jsonResult = "[{\"id\":\"territory-1\",\"labelLg1\":\"Territory 1\",\"labelLg2\":\"Territory 1 EN\"},{\"id\":\"territory-2\",\"labelLg1\":\"Territory 2\",\"labelLg2\":\"Territory 2 EN\"}]";
+        String jsonResult =
+                "[{\"id\":\"territory-1\",\"labelLg1\":\"Territory 1\",\"labelLg2\":\"Territory 1 EN\"},{\"id\":\"territory-2\",\"labelLg1\":\"Territory 2\",\"labelLg2\":\"Territory 2 EN\"}]";
 
         when(geoService.getGeoFeatures()).thenReturn(jsonResult);
 

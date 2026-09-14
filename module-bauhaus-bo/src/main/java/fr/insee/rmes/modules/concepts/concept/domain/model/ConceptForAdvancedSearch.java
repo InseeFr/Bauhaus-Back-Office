@@ -15,5 +15,5 @@ public record ConceptForAdvancedSearch(
         String creator,
         String isTopConceptOf,
         String valid,
-        String altLabel
-) implements DiacriticSorter.AppendableLabel<ConceptForAdvancedSearch>, ConceptForAdvancedSearchBuilder.With {}
+        String altLabel)
+        implements DiacriticSorter.AppendableLabel<ConceptForAdvancedSearch>, ConceptForAdvancedSearchBuilder.With {}

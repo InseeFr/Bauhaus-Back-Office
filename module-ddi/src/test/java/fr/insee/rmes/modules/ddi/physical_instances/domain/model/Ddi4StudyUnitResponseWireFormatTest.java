@@ -22,21 +22,32 @@ class Ddi4StudyUnitResponseWireFormatTest {
                 Ddi4Response.SCHEMA,
                 List.of(Reference.of("fr.insee", "su-1", "1", Ddi4StudyUnit.TYPE)),
                 List.of(new Ddi4StudyUnit(
-                        Ddi4StudyUnit.TYPE, null, "urn:ddi:fr.insee:su-1:1", "fr.insee", "su-1", "1",
+                        Ddi4StudyUnit.TYPE,
+                        null,
+                        "urn:ddi:fr.insee:su-1:1",
+                        "fr.insee",
+                        "su-1",
+                        "1",
                         new Citation(LangStrings.of("fr-FR", "Mon opération")),
                         "http://id.insee.fr/operations/operation/op1",
                         List.of(Reference.of("fr.insee", "pi-1", "1", Ddi4PhysicalInstance.TYPE)))),
                 List.of(new Ddi4PhysicalInstance(
-                        Ddi4PhysicalInstance.TYPE, null, "urn:ddi:fr.insee:pi-1:1", "fr.insee",
-                        "pi-1", "1", null, new Citation(LangStrings.of("fr-FR", "Ma PI")), null)));
+                        Ddi4PhysicalInstance.TYPE,
+                        null,
+                        "urn:ddi:fr.insee:pi-1:1",
+                        "fr.insee",
+                        "pi-1",
+                        "1",
+                        null,
+                        new Citation(LangStrings.of("fr-FR", "Ma PI")),
+                        null)));
     }
 
     @Test
     void shouldSerializeToTheSchemaEnvelope() throws Exception {
         JsonNode json = mapper.readTree(mapper.writeValueAsString(aResponse()));
 
-        assertThat(json.fieldNames()).toIterable()
-                .containsExactlyInAnyOrder("topLevelReferences", "items");
+        assertThat(json.fieldNames()).toIterable().containsExactlyInAnyOrder("topLevelReferences", "items");
     }
 
     @Test
@@ -44,10 +55,10 @@ class Ddi4StudyUnitResponseWireFormatTest {
         JsonNode items = mapper.readTree(mapper.writeValueAsString(aResponse())).get("items");
 
         assertThat(items).hasSize(2);
-        assertThat(items).extracting(item -> item.get("$type").asText())
+        assertThat(items)
+                .extracting(item -> item.get("$type").asText())
                 .containsExactly("StudyUnit", "PhysicalInstance");
-        assertThat(items).extracting(item -> item.get("ID").asText())
-                .containsExactly("su-1", "pi-1");
+        assertThat(items).extracting(item -> item.get("ID").asText()).containsExactly("su-1", "pi-1");
     }
 
     @Test
@@ -57,15 +68,15 @@ class Ddi4StudyUnitResponseWireFormatTest {
         Ddi4StudyUnitResponse roundTripped = mapper.readValue(wire, Ddi4StudyUnitResponse.class);
 
         assertThat(roundTripped.studyUnit()).extracting(Ddi4StudyUnit::id).containsExactly("su-1");
-        assertThat(roundTripped.physicalInstance()).extracting(Ddi4PhysicalInstance::id)
+        assertThat(roundTripped.physicalInstance())
+                .extracting(Ddi4PhysicalInstance::id)
                 .containsExactly("pi-1");
         assertThat(roundTripped.topLevelReference()).extracting(Reference::id).containsExactly("su-1");
     }
 
     @Test
     void shouldOmitEmptyEnvelopeMembers() throws Exception {
-        Ddi4StudyUnitResponse empty =
-                new Ddi4StudyUnitResponse(Ddi4Response.SCHEMA, null, null, null);
+        Ddi4StudyUnitResponse empty = new Ddi4StudyUnitResponse(Ddi4Response.SCHEMA, null, null, null);
 
         String json = mapper.writeValueAsString(empty);
 

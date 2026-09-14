@@ -1,38 +1,38 @@
 package fr.insee.rmes.testcontainers.documentations;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationPublication;
-import fr.insee.rmes.config.GraphsPropertiesStub;
-import fr.insee.rmes.modules.operations.msd.DocumentationConfiguration;
-import fr.insee.rmes.modules.organisations.OrganisationsProperties;
 import fr.insee.rmes.bauhaus_services.operations.documentations.documents.DocumentsPublication;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
-import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
+import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesMissingDocumentsException;
 import fr.insee.rmes.graphdb.RepositoryInitiator;
 import fr.insee.rmes.graphdb.RepositoryUtils;
+import fr.insee.rmes.modules.operations.msd.DocumentationConfiguration;
+import fr.insee.rmes.modules.organisations.OrganisationsProperties;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.testcontainers.WithGraphDBContainer;
+import java.lang.reflect.Field;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import java.lang.reflect.Field;
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-
 @Tag("integration")
 class DocumentationPublicationTest extends WithGraphDBContainer {
 
-    RepositoryGestion repositoryGestion = new RepositoryGestion(getRdfGestionConnectionDetails(), new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED));
+    RepositoryGestion repositoryGestion = new RepositoryGestion(
+            getRdfGestionConnectionDetails(), new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED));
 
     private RepositoryPublication repositoryPublication;
     private DocumentationPublication documentationPublication;
@@ -50,11 +50,8 @@ class DocumentationPublicationTest extends WithGraphDBContainer {
         // Create a simple PropertiesFinder for BauhausUriBuilder
         BauhausUriBuilder.PropertiesFinder propertiesFinder = Optional::of;
 
-        BauhausUriBuilder bauhausUriBuilder = new BauhausUriBuilder(
-                "http://publication/",
-                "http://bauhaus/",
-                propertiesFinder
-        );
+        BauhausUriBuilder bauhausUriBuilder =
+                new BauhausUriBuilder("http://publication/", "http://bauhaus/", propertiesFinder);
         RdfUtils.setBauhausUriBuilder(bauhausUriBuilder);
 
         RepositoryUtils repositoryUtils = new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED);
@@ -63,33 +60,24 @@ class DocumentationPublicationTest extends WithGraphDBContainer {
         repositoryPublication = new RepositoryPublication(
                 getRdfGestionConnectionDetails().getUrlServer(),
                 getRdfGestionConnectionDetails().repositoryId(),
-                repositoryUtils
-        );
+                repositoryUtils);
 
         PublicationUtils publicationUtils = new PublicationUtils(
-                "http://bauhaus/",
-                "http://publication/",
-                repositoryGestion,
-                repositoryPublication
-        );
+                "http://bauhaus/", "http://publication/", repositoryGestion, repositoryPublication);
 
         // Create DocumentsPublication mock (we don't need to test document publication here)
         documentsPublication = Mockito.mock(DocumentsPublication.class);
 
         // Create DocumentationPublication with constructor injection
         var documentationConfiguration = new DocumentationConfiguration(
-                new DocumentationConfiguration.Geographie( "territoire"),
-                "Rapport qualité :",
-                "Quality report:"
-        );
+                new DocumentationConfiguration.Geographie("territoire"), "Rapport qualité :", "Quality report:");
         documentationPublication = new DocumentationPublication(
                 repositoryGestion,
                 repositoryPublication,
                 publicationUtils,
                 documentsPublication,
                 documentationConfiguration,
-                new OrganisationsProperties("organisations")
-        );
+                new OrganisationsProperties("organisations"));
     }
 
     private void injectField(Object target, String fieldName, Object value) throws Exception {
@@ -115,11 +103,10 @@ class DocumentationPublicationTest extends WithGraphDBContainer {
 
     @Test
     void shouldBlockPublicationAndListMissingDocumentsWhenADocumentIsMissing() throws RmesException {
-        Mockito.when(documentsPublication.findMissingDocuments("9999"))
-                .thenReturn(java.util.Set.of("1", "3"));
+        Mockito.when(documentsPublication.findMissingDocuments("9999")).thenReturn(java.util.Set.of("1", "3"));
 
-        RmesMissingDocumentsException exception = assertThrows(RmesMissingDocumentsException.class,
-                () -> documentationPublication.publishSims("9999"));
+        RmesMissingDocumentsException exception =
+                assertThrows(RmesMissingDocumentsException.class, () -> documentationPublication.publishSims("9999"));
 
         // 400 with a structured body carrying the dedicated code and the missing ids
         assertThat(exception.getStatus()).isEqualTo(org.apache.http.HttpStatus.SC_BAD_REQUEST);
@@ -135,8 +122,7 @@ class DocumentationPublicationTest extends WithGraphDBContainer {
     @Test
     void shouldThrowExceptionWhenSimsNotFound() {
         // SIMS 0000 does not exist
-        RmesException exception = assertThrows(RmesException.class,
-            () -> documentationPublication.publishSims("0000"));
+        RmesException exception = assertThrows(RmesException.class, () -> documentationPublication.publishSims("0000"));
 
         assertThat(exception.getDetails()).contains("Sims not found");
     }

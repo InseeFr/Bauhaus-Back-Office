@@ -1,9 +1,14 @@
 package fr.insee.rmes.bauhaus_services.operations.documentations;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.when;
+
 import fr.insee.rmes.Constants;
-import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.operations.msd.infrastructure.graphdb.DocumentationQueries;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
+import java.util.HashMap;
+import java.util.Map;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Assertions;
@@ -12,12 +17,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class MetadataStructureDefUtilsTest {
@@ -31,31 +30,35 @@ class MetadataStructureDefUtilsTest {
     @InjectMocks
     MetadataStructureDefUtils metadataStructureDefUtils;
 
-    JSONObject correctJsonObject = new JSONObject().put(Constants.ID,"Constants.ID").put(Constants.URI,"Constants.URI");
-    JSONObject falseJsonObject = new JSONObject().put(Constants.ID,"Constants.ID");
+    JSONObject correctJsonObject =
+            new JSONObject().put(Constants.ID, "Constants.ID").put(Constants.URI, "Constants.URI");
+    JSONObject falseJsonObject = new JSONObject().put(Constants.ID, "Constants.ID");
     JSONArray array = new JSONArray().put(correctJsonObject).put(falseJsonObject);
 
     @Test
     void shouldThrowARmesExceptionWhenTransformRangeType() {
-        JSONObject mas = new JSONObject().put("keyExample","valueExample");
-        RmesException exception = assertThrows(RmesException.class, () -> metadataStructureDefUtils.transformRangeType(mas));
+        JSONObject mas = new JSONObject().put("keyExample", "valueExample");
+        RmesException exception =
+                assertThrows(RmesException.class, () -> metadataStructureDefUtils.transformRangeType(mas));
         assertTrue(exception.getDetails().contains("At least one attribute don't have range"));
     }
 
     @Test
-    void shouldThrowAnIllegalArgumentExceptionWhenTransformRangeType(){
-        JSONObject mas = new JSONObject().put("range","rangeValue");
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> metadataStructureDefUtils.transformRangeType(mas));
+    void shouldThrowAnIllegalArgumentExceptionWhenTransformRangeType() {
+        JSONObject mas = new JSONObject().put("range", "rangeValue");
+        IllegalArgumentException exception =
+                assertThrows(IllegalArgumentException.class, () -> metadataStructureDefUtils.transformRangeType(mas));
         assertTrue(exception.getMessage().contains("Not a valid (absolute) IRI:"));
     }
 
     @Test
     void shouldTransformRangeType() throws RmesException {
-        JSONObject jsonObjectBefore = new JSONObject().put("range","urn:example:example").put(Constants.CODELIST,"value");
+        JSONObject jsonObjectBefore =
+                new JSONObject().put("range", "urn:example:example").put(Constants.CODELIST, "value");
         metadataStructureDefUtils.transformRangeType(jsonObjectBefore);
-        boolean isRangeKeyRemoved=!jsonObjectBefore.has("range");
-        boolean isConstantsCodeListKeyRemoved=!jsonObjectBefore.has(Constants.CODELIST);
-        boolean isConstantsRangeTypeKeyAdded=jsonObjectBefore.has(Constants.RANGE_TYPE);
+        boolean isRangeKeyRemoved = !jsonObjectBefore.has("range");
+        boolean isConstantsCodeListKeyRemoved = !jsonObjectBefore.has(Constants.CODELIST);
+        boolean isConstantsRangeTypeKeyAdded = jsonObjectBefore.has(Constants.RANGE_TYPE);
         Assertions.assertTrue(isRangeKeyRemoved && isConstantsCodeListKeyRemoved && isConstantsRangeTypeKeyAdded);
     }
 
@@ -63,15 +66,15 @@ class MetadataStructureDefUtilsTest {
     void shouldGetMetadataAttributesUriWhenAttributesEmpty() throws RmesException {
         when(documentationQueries.getAttributesUriQuery()).thenReturn("mock-attributes-query");
         when(repoGestion.getResponseAsArray("mock-attributes-query")).thenReturn(new JSONArray());
-        Map<String,String> actual = metadataStructureDefUtils.getMetadataAttributesUri();
-        assertEquals(new HashMap<>(),actual);
+        Map<String, String> actual = metadataStructureDefUtils.getMetadataAttributesUri();
+        assertEquals(new HashMap<>(), actual);
     }
 
     @Test
     void shouldGetMetadataAttributesUriWhenAttributesNotEmpty() throws RmesException {
         when(documentationQueries.getAttributesUriQuery()).thenReturn("mock-attributes-query");
         when(repoGestion.getResponseAsArray("mock-attributes-query")).thenReturn(array);
-        Map<String,String> actual = metadataStructureDefUtils.getMetadataAttributesUri();
-        assertEquals("{CONSTANTS.ID=Constants.URI}",actual.toString());
+        Map<String, String> actual = metadataStructureDefUtils.getMetadataAttributesUri();
+        assertEquals("{CONSTANTS.ID=Constants.URI}", actual.toString());
     }
 }

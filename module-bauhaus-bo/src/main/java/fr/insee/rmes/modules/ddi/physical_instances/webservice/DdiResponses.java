@@ -9,8 +9,7 @@ import org.springframework.http.ResponseEntity;
  */
 final class DdiResponses {
 
-    private DdiResponses() {
-    }
+    private DdiResponses() {}
 
     static ResponseEntity<String> xml(String xml) {
         if (xml == null) {

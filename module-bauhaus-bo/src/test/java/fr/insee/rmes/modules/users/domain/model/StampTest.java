@@ -1,8 +1,8 @@
 package fr.insee.rmes.modules.users.domain.model;
 
-import org.junit.jupiter.api.Test;
-
 import static org.assertj.core.api.Assertions.assertThat;
+
+import org.junit.jupiter.api.Test;
 
 class StampTest {
 

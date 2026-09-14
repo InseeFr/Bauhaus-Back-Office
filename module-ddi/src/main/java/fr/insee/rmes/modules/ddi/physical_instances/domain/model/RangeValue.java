@@ -6,6 +6,4 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record RangeValue(
         @JsonProperty("IsInclusive") Boolean isInclusive,
-        @JsonProperty("value") Double value
-) {
-}
+        @JsonProperty("value") Double value) {}

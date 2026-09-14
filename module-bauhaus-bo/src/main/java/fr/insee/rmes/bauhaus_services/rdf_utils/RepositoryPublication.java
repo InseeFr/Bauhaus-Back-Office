@@ -5,6 +5,8 @@ import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.RepositoryUtils;
 import fr.insee.rmes.graphdb.exceptions.GraphDbUnauthorizedException;
 import fr.insee.rmes.rdf_utils.SubjectModelGraph;
+import java.util.Arrays;
+import java.util.List;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
@@ -22,9 +24,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 
-import java.util.Arrays;
-import java.util.List;
-
 /**
  * Getters only get on publication base
  * Setters (publish methods and execute methods) operate on publication and internal publication base
@@ -32,212 +31,251 @@ import java.util.List;
  *
  */
 @org.springframework.stereotype.Repository("RepositoryPublication")
-public class RepositoryPublication{
-	private final String rdfServerPublicationExt;
-	private final String idRepositoryPublicationExt;
-	private final RepositoryUtils repositoryUtils;
-	
-	private static final String THREE_PARAMS_LOG = "{} {} {}";
+public class RepositoryPublication {
+    private final String rdfServerPublicationExt;
+    private final String idRepositoryPublicationExt;
+    private final RepositoryUtils repositoryUtils;
 
-	private static final String CONNECTION_TO = "Connection to ";
+    private static final String THREE_PARAMS_LOG = "{} {} {}";
 
-	private static final String FAILED = " failed";
+    private static final String CONNECTION_TO = "Connection to ";
 
-	static final Logger logger = LoggerFactory.getLogger(RepositoryPublication.class);
-	
-	public RepositoryPublication(@Value("${fr.insee.rmes.bauhaus.sesame.publication.sesameServer}") String rdfServerPublicationExt,
-								 @Value("${fr.insee.rmes.bauhaus.sesame.publication.repository}") String idRepositoryPublicationExt,
-								 RepositoryUtils repositoryUtils	) {
-		this.rdfServerPublicationExt=rdfServerPublicationExt;
-		this.idRepositoryPublicationExt=idRepositoryPublicationExt;
-		this.repositoryUtils=repositoryUtils;
-		 repositoryUtils.initRepository(rdfServerPublicationExt, idRepositoryPublicationExt);
-	}
+    private static final String FAILED = " failed";
 
-	
-	/**
-	 * Method which aims to produce response from a sparql query
-	 * 
-	 * @param query
-	 * @return String
-	 * @throws RmesException 
-	 */
-	public String getResponse(String query) throws RmesException {
-		return repositoryUtils.getResponse(query, repositoryUtils.initRepository(rdfServerPublicationExt, idRepositoryPublicationExt));
-	}
-	
-	/**
-	 * Method which aims to produce response from a sparql query for internal Repository
-	 * 
-	 * @param query
-	 * @return String
-	 * @throws RmesException 
-	 */
-	public String getResponsePublication(String query) throws RmesException {
-		return repositoryUtils.getResponse(query, repositoryUtils.initRepository(rdfServerPublicationExt, idRepositoryPublicationExt));
-	}
+    static final Logger logger = LoggerFactory.getLogger(RepositoryPublication.class);
 
-	/**
-	 * Method which aims to produce response from a sparql query
-	 * 
-	 * @param query
-	 * @return JSONArray
-	 * @throws RmesException 
-	 */
-	public JSONArray getResponseAsArray(String query) throws RmesException {
-		return repositoryUtils.getResponseAsArray(query, repositoryUtils.initRepository(rdfServerPublicationExt, idRepositoryPublicationExt));
-	}
+    public RepositoryPublication(
+            @Value("${fr.insee.rmes.bauhaus.sesame.publication.sesameServer}") String rdfServerPublicationExt,
+            @Value("${fr.insee.rmes.bauhaus.sesame.publication.repository}") String idRepositoryPublicationExt,
+            RepositoryUtils repositoryUtils) {
+        this.rdfServerPublicationExt = rdfServerPublicationExt;
+        this.idRepositoryPublicationExt = idRepositoryPublicationExt;
+        this.repositoryUtils = repositoryUtils;
+        repositoryUtils.initRepository(rdfServerPublicationExt, idRepositoryPublicationExt);
+    }
 
+    /**
+     * Method which aims to produce response from a sparql query
+     *
+     * @param query
+     * @return String
+     * @throws RmesException
+     */
+    public String getResponse(String query) throws RmesException {
+        return repositoryUtils.getResponse(
+                query, repositoryUtils.initRepository(rdfServerPublicationExt, idRepositoryPublicationExt));
+    }
 
-	/**
-	 * Method which aims to execute sparql update
-	 * 
-	 * @param updateQuery
-	 * @return String
-	 * @throws RmesException 
-	 */
-	public HttpStatus executeUpdate(String updateQuery) throws RmesException {
-        return repositoryUtils.executeUpdate(updateQuery, repositoryUtils.initRepository(rdfServerPublicationExt, idRepositoryPublicationExt));
-	}
+    /**
+     * Method which aims to produce response from a sparql query for internal Repository
+     *
+     * @param query
+     * @return String
+     * @throws RmesException
+     */
+    public String getResponsePublication(String query) throws RmesException {
+        return repositoryUtils.getResponse(
+                query, repositoryUtils.initRepository(rdfServerPublicationExt, idRepositoryPublicationExt));
+    }
 
-	public void publishConcept(Resource concept, Model model, List<Resource> noteToClear,
-			List<Resource> topConceptOfToDelete) throws RmesException {
-		publishConcept(concept, model, noteToClear,topConceptOfToDelete, repositoryUtils.initRepository(rdfServerPublicationExt, idRepositoryPublicationExt));
-	}
-	
-	private void publishConcept(Resource concept, Model model, List<Resource> noteToClear,
-			List<Resource> topConceptOfToDelete, Repository repo) throws RmesException {
+    /**
+     * Method which aims to produce response from a sparql query
+     *
+     * @param query
+     * @return JSONArray
+     * @throws RmesException
+     */
+    public JSONArray getResponseAsArray(String query) throws RmesException {
+        return repositoryUtils.getResponseAsArray(
+                query, repositoryUtils.initRepository(rdfServerPublicationExt, idRepositoryPublicationExt));
+    }
 
+    /**
+     * Method which aims to execute sparql update
+     *
+     * @param updateQuery
+     * @return String
+     * @throws RmesException
+     */
+    public HttpStatus executeUpdate(String updateQuery) throws RmesException {
+        return repositoryUtils.executeUpdate(
+                updateQuery, repositoryUtils.initRepository(rdfServerPublicationExt, idRepositoryPublicationExt));
+    }
 
-		if (repo == null) {return ;}
+    public void publishConcept(
+            Resource concept, Model model, List<Resource> noteToClear, List<Resource> topConceptOfToDelete)
+            throws RmesException {
+        publishConcept(
+                concept,
+                model,
+                noteToClear,
+                topConceptOfToDelete,
+                repositoryUtils.initRepository(rdfServerPublicationExt, idRepositoryPublicationExt));
+    }
 
-		try (RepositoryConnection conn = repo.getConnection()) {
-			// notes to delete
-			for (Resource note : noteToClear) {
-				conn.remove(note, null, null);
-			}
-			// top concepts of to delete
-			for (Resource c : topConceptOfToDelete) {
-				conn.remove(c, SKOS.TOP_CONCEPT_OF, null);
-			}
-			// links to delete
-			clearConceptLinks(concept, conn);
+    private void publishConcept(
+            Resource concept,
+            Model model,
+            List<Resource> noteToClear,
+            List<Resource> topConceptOfToDelete,
+            Repository repo)
+            throws RmesException {
 
-			conn.remove(concept, null, null);
-			conn.add(model);
-			logger.info("Publication of concept : {}", concept);
-		} catch (RepositoryException e) {
-			throwIfUnauthorized(e, "Publication of concept : " + concept);
-			logger.error("Publication of concept : {} {} {}", concept, FAILED,  e.getMessage());
-			logger.error(THREE_PARAMS_LOG, CONNECTION_TO , repo, FAILED);
-			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), CONNECTION_TO + repo + FAILED);
-		}
-	}
+        if (repo == null) {
+            return;
+        }
 
-	public void publishResource(Resource resource, Model model, String type) throws RmesException {
-		publishResource(resource, model, type, repositoryUtils.initRepository(rdfServerPublicationExt, idRepositoryPublicationExt));
-	}
+        try (RepositoryConnection conn = repo.getConnection()) {
+            // notes to delete
+            for (Resource note : noteToClear) {
+                conn.remove(note, null, null);
+            }
+            // top concepts of to delete
+            for (Resource c : topConceptOfToDelete) {
+                conn.remove(c, SKOS.TOP_CONCEPT_OF, null);
+            }
+            // links to delete
+            clearConceptLinks(concept, conn);
 
-	private void publishResource(Resource resource, Model model, String type, Repository repo) throws RmesException {
-		if (repo == null) {return ;}
+            conn.remove(concept, null, null);
+            conn.add(model);
+            logger.info("Publication of concept : {}", concept);
+        } catch (RepositoryException e) {
+            throwIfUnauthorized(e, "Publication of concept : " + concept);
+            logger.error("Publication of concept : {} {} {}", concept, FAILED, e.getMessage());
+            logger.error(THREE_PARAMS_LOG, CONNECTION_TO, repo, FAILED);
+            throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), CONNECTION_TO + repo + FAILED);
+        }
+    }
 
-		try (RepositoryConnection conn = repo.getConnection()) {
-			conn.remove(resource, null, null);
-			conn.add(model);
-			logger.info("Publication of Resource {} : {}" ,type, resource);
-		} catch (RepositoryException e) {
-			throwIfUnauthorized(e, "Publication of Resource " + type + " : " + resource);
-			logger.error("Publication of Resource {} : {} {}" ,type, resource, FAILED);
-			logger.error(THREE_PARAMS_LOG, CONNECTION_TO, repo, FAILED);
-			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), CONNECTION_TO + repo + FAILED);
-		}
-	}
-	
-	public void publishContext(Resource graph, Model model, String type) throws RmesException {
-		logger.debug("publishContext - type={}, graph={}, {} triples, publication server={}, repository={}",
-				type, graph, model.size(), rdfServerPublicationExt, idRepositoryPublicationExt);
-		publishContext(graph, model, type, repositoryUtils.initRepository(rdfServerPublicationExt, idRepositoryPublicationExt));
-	}
+    public void publishResource(Resource resource, Model model, String type) throws RmesException {
+        publishResource(
+                resource,
+                model,
+                type,
+                repositoryUtils.initRepository(rdfServerPublicationExt, idRepositoryPublicationExt));
+    }
 
+    private void publishResource(Resource resource, Model model, String type, Repository repo) throws RmesException {
+        if (repo == null) {
+            return;
+        }
 
-	private void publishContext(Resource context, Model model, String type, Repository repo) throws RmesException {
-		if (repo == null) {
-			logger.warn("Publication of Graph {} : {} skipped, the publication repository could not be initialized", type, context);
-			return ;
-		}
+        try (RepositoryConnection conn = repo.getConnection()) {
+            conn.remove(resource, null, null);
+            conn.add(model);
+            logger.info("Publication of Resource {} : {}", type, resource);
+        } catch (RepositoryException e) {
+            throwIfUnauthorized(e, "Publication of Resource " + type + " : " + resource);
+            logger.error("Publication of Resource {} : {} {}", type, resource, FAILED);
+            logger.error(THREE_PARAMS_LOG, CONNECTION_TO, repo, FAILED);
+            throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), CONNECTION_TO + repo + FAILED);
+        }
+    }
 
-		try (RepositoryConnection conn = repo.getConnection()) {
-			conn.clear(context);
-			logger.debug("publishContext - graph {} cleared in the publication repository, adding {} triples", context, model.size());
-			conn.add(model);
-			logger.info("Publication of Graph {} : {}" ,type, context);
-		} catch (RepositoryException e) {
-			throwIfUnauthorized(e, "Publication of Graph " + type + " : " + context);
-			logger.error("Publication of Graph {} : {} {}" ,type, context, FAILED);
-			logger.error(THREE_PARAMS_LOG, CONNECTION_TO, repo, FAILED);
-			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), CONNECTION_TO + repo + FAILED);
-		}
-	}
+    public void publishContext(Resource graph, Model model, String type) throws RmesException {
+        logger.debug(
+                "publishContext - type={}, graph={}, {} triples, publication server={}, repository={}",
+                type,
+                graph,
+                model.size(),
+                rdfServerPublicationExt,
+                idRepositoryPublicationExt);
+        publishContext(
+                graph,
+                model,
+                type,
+                repositoryUtils.initRepository(rdfServerPublicationExt, idRepositoryPublicationExt));
+    }
 
-	public void clearStructureAndComponentForAllRepositories(Resource structure) throws RmesException {
-		repositoryUtils.clearStructureAndComponents(structure, repositoryUtils.initRepository(rdfServerPublicationExt, idRepositoryPublicationExt));
-	}
+    private void publishContext(Resource context, Model model, String type, Repository repo) throws RmesException {
+        if (repo == null) {
+            logger.warn(
+                    "Publication of Graph {} : {} skipped, the publication repository could not be initialized",
+                    type,
+                    context);
+            return;
+        }
 
-	public void overrideTriplets(IRI subject, Model model, Resource graph) throws RmesException {
-		Repository repo = repositoryUtils.initRepository(rdfServerPublicationExt, idRepositoryPublicationExt);
-		try (RepositoryConnection conn = repo.getConnection()) {
-			model.predicates().forEach(predicate -> conn.remove(subject, predicate, null, graph));
-			conn.add(model);
-		} catch (RepositoryException e) {
-			throwIfUnauthorized(e, "Override of triplets : " + subject);
-			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), CONNECTION_TO + repo + FAILED);
-		}
-	}
+        try (RepositoryConnection conn = repo.getConnection()) {
+            conn.clear(context);
+            logger.debug(
+                    "publishContext - graph {} cleared in the publication repository, adding {} triples",
+                    context,
+                    model.size());
+            conn.add(model);
+            logger.info("Publication of Graph {} : {}", type, context);
+        } catch (RepositoryException e) {
+            throwIfUnauthorized(e, "Publication of Graph " + type + " : " + context);
+            logger.error("Publication of Graph {} : {} {}", type, context, FAILED);
+            logger.error(THREE_PARAMS_LOG, CONNECTION_TO, repo, FAILED);
+            throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), CONNECTION_TO + repo + FAILED);
+        }
+    }
 
-	public void bulkOverrideTriplets(List<SubjectModelGraph> updates) throws RmesException {
-		Model combinedModel = new LinkedHashModel();
-		Repository repo = repositoryUtils.initRepository(rdfServerPublicationExt, idRepositoryPublicationExt);
-		try (RepositoryConnection conn = repo.getConnection()) {
-			conn.begin();
-			for (SubjectModelGraph update : updates) {
-				update.model().predicates().forEach(predicate -> conn.remove(update.subject(), predicate, null, update.graph()));
-				combinedModel.addAll(update.model());
-			}
-			conn.add(combinedModel);
-			conn.commit();
-		} catch (RepositoryException e) {
-			throwIfUnauthorized(e, "Bulk override of triplets");
-			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), CONNECTION_TO + repo + FAILED);
-		}
-	}
+    public void clearStructureAndComponentForAllRepositories(Resource structure) throws RmesException {
+        repositoryUtils.clearStructureAndComponents(
+                structure, repositoryUtils.initRepository(rdfServerPublicationExt, idRepositoryPublicationExt));
+    }
 
-	private void clearConceptLinks(Resource concept, RepositoryConnection conn) throws RmesException {
-		// DCTERMS.REFERENCES est volontairement exclu : c'est le seul lien unidirectionnel,
-		// porté uniquement par le concept référençant (cf. ConceptLinksRdfMapper.addTripleReferences).
-		// Aucune étape ne le reconstruit côté objet ; effacer le lien entrant en publiant le
-		// concept référencé le perdrait définitivement quand celui-ci est publié après le
-		// concept référençant (#1495). Sa mise à jour reste gérée à la republication du
-		// concept référençant, qui réécrit ses propres triplets sortants.
-		List<IRI> typeOfLink = Arrays.asList(SKOS.BROADER, SKOS.NARROWER, SKOS.MEMBER,
-				DCTERMS.REPLACES, SKOS.RELATED, DCTERMS.IS_REPLACED_BY);
+    public void overrideTriplets(IRI subject, Model model, Resource graph) throws RmesException {
+        Repository repo = repositoryUtils.initRepository(rdfServerPublicationExt, idRepositoryPublicationExt);
+        try (RepositoryConnection conn = repo.getConnection()) {
+            model.predicates().forEach(predicate -> conn.remove(subject, predicate, null, graph));
+            conn.add(model);
+        } catch (RepositoryException e) {
+            throwIfUnauthorized(e, "Override of triplets : " + subject);
+            throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), CONNECTION_TO + repo + FAILED);
+        }
+    }
 
-		for (IRI predicat : typeOfLink) {
-			try (RepositoryResult<Statement> statements = conn.getStatements(null, predicat, concept, false)) {
-				conn.remove(statements);
-			} catch (RepositoryException e) {
-				throwIfUnauthorized(e, "Clear of concept links : " + concept);
-				throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), Constants.REPOSITORY_EXCEPTION);
-			}
-		}
-	}
+    public void bulkOverrideTriplets(List<SubjectModelGraph> updates) throws RmesException {
+        Model combinedModel = new LinkedHashModel();
+        Repository repo = repositoryUtils.initRepository(rdfServerPublicationExt, idRepositoryPublicationExt);
+        try (RepositoryConnection conn = repo.getConnection()) {
+            conn.begin();
+            for (SubjectModelGraph update : updates) {
+                update.model()
+                        .predicates()
+                        .forEach(predicate -> conn.remove(update.subject(), predicate, null, update.graph()));
+                combinedModel.addAll(update.model());
+            }
+            conn.add(combinedModel);
+            conn.commit();
+        } catch (RepositoryException e) {
+            throwIfUnauthorized(e, "Bulk override of triplets");
+            throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), CONNECTION_TO + repo + FAILED);
+        }
+    }
 
-	/**
-	 * Un 401 de GraphDB est signalé par RDF4J sans message : on le remplace par une erreur
-	 * qui nomme le mode d'authentification RDF configuré plutôt qu'une 500 au corps vide.
-	 */
-	private void throwIfUnauthorized(RepositoryException e, String context) throws GraphDbUnauthorizedException {
-		if (GraphDbUnauthorizedException.isUnauthorized(e)) {
-			throw new GraphDbUnauthorizedException(e, context, repositoryUtils.authType());
-		}
-	}
+    private void clearConceptLinks(Resource concept, RepositoryConnection conn) throws RmesException {
+        // DCTERMS.REFERENCES est volontairement exclu : c'est le seul lien unidirectionnel,
+        // porté uniquement par le concept référençant (cf. ConceptLinksRdfMapper.addTripleReferences).
+        // Aucune étape ne le reconstruit côté objet ; effacer le lien entrant en publiant le
+        // concept référencé le perdrait définitivement quand celui-ci est publié après le
+        // concept référençant (#1495). Sa mise à jour reste gérée à la republication du
+        // concept référençant, qui réécrit ses propres triplets sortants.
+        List<IRI> typeOfLink = Arrays.asList(
+                SKOS.BROADER, SKOS.NARROWER, SKOS.MEMBER, DCTERMS.REPLACES, SKOS.RELATED, DCTERMS.IS_REPLACED_BY);
+
+        for (IRI predicat : typeOfLink) {
+            try (RepositoryResult<Statement> statements = conn.getStatements(null, predicat, concept, false)) {
+                conn.remove(statements);
+            } catch (RepositoryException e) {
+                throwIfUnauthorized(e, "Clear of concept links : " + concept);
+                throw new RmesException(
+                        HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), Constants.REPOSITORY_EXCEPTION);
+            }
+        }
+    }
+
+    /**
+     * Un 401 de GraphDB est signalé par RDF4J sans message : on le remplace par une erreur
+     * qui nomme le mode d'authentification RDF configuré plutôt qu'une 500 au corps vide.
+     */
+    private void throwIfUnauthorized(RepositoryException e, String context) throws GraphDbUnauthorizedException {
+        if (GraphDbUnauthorizedException.isUnauthorized(e)) {
+            throw new GraphDbUnauthorizedException(e, context, repositoryUtils.authType());
+        }
+    }
 }

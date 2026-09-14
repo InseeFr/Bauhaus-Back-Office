@@ -2,9 +2,8 @@ package fr.insee.rmes.modules.codeslists.codeslists.domain.model;
 
 import fr.insee.rmes.modules.codeslists.codeslists.domain.model.commands.CreateCodesListCommand;
 import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
-import org.jspecify.annotations.Nullable;
-
 import java.util.List;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Une liste de codes complète, telle qu'elle sera écrite.
@@ -40,14 +39,16 @@ public record CodesList(
      * se lit en base et non dans le corps de la requête, que le client maîtrise.
      */
     public static CodesList revise(CreateCodesListCommand command, PersistedCodesList persisted) {
-        ValidationStatus next = switch (persisted.validationState()) {
-            case VALIDATED, MODIFIED -> ValidationStatus.MODIFIED;
-            case UNPUBLISHED -> ValidationStatus.UNPUBLISHED;
-        };
+        ValidationStatus next =
+                switch (persisted.validationState()) {
+                    case VALIDATED, MODIFIED -> ValidationStatus.MODIFIED;
+                    case UNPUBLISHED -> ValidationStatus.UNPUBLISHED;
+                };
         return of(command, next, persisted.created());
     }
 
-    private static CodesList of(CreateCodesListCommand command, ValidationStatus validationState, @Nullable String created) {
+    private static CodesList of(
+            CreateCodesListCommand command, ValidationStatus validationState, @Nullable String created) {
         return new CodesList(
                 new CodesListId(command.id()),
                 command.labelLg1(),

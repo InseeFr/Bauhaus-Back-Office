@@ -1,14 +1,13 @@
 package fr.insee.rmes.modules.clientconfig.domain;
 
-import fr.insee.rmes.modules.shared_kernel.domain.model.ConfiguredLanguages;
-import fr.insee.rmes.modules.clientconfig.domain.model.ModuleConfig;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import fr.insee.rmes.modules.clientconfig.domain.model.ClientConfigProperties;
+import fr.insee.rmes.modules.clientconfig.domain.model.ModuleConfig;
+import fr.insee.rmes.modules.shared_kernel.domain.model.ConfiguredLanguages;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 class DomainClientConfigServiceTest {
 
@@ -22,13 +21,12 @@ class DomainClientConfigServiceTest {
                 "DG75-L201",
                 new ConfiguredLanguages("fr", "en"),
                 "dev",
-                List.of(new ModuleConfig("concepts", false), new ModuleConfig("classifications", false)),
+                List.of(new ModuleConfig("concepts", true, true), new ModuleConfig("classifications", true, true)),
                 "1.0.0",
                 List.of("altLabel"),
                 "fr.insee",
                 List.of("fr-FR", "en-GB"),
-                true
-        );
+                true);
     }
 
     @Test
@@ -43,7 +41,9 @@ class DomainClientConfigServiceTest {
         assertThat(properties.authType()).isEqualTo("NoAuthImpl");
         assertThat(properties.version()).isEqualTo("1.0.0");
         assertThat(properties.defaultAgencyId()).isEqualTo("fr.insee");
-        assertThat(properties.modules()).containsExactly(new ModuleConfig("concepts", false), new ModuleConfig("classifications", false));
+        assertThat(properties.modules())
+                .containsExactly(
+                        new ModuleConfig("concepts", true, true), new ModuleConfig("classifications", true, true));
         assertThat(properties.extraMandatoryFields()).containsExactly("altLabel");
         assertThat(properties.colecticaLangs()).containsExactly("fr-FR", "en-GB");
         assertThat(properties.enableDevTools()).isTrue();
@@ -52,11 +52,17 @@ class DomainClientConfigServiceTest {
     @Test
     void should_return_openid_connect_auth_for_pre_prod() {
         domainClientConfigService = new DomainClientConfigService(
-                "http://localhost:3000", "350", "DG75-L201",
-                new ConfiguredLanguages("fr", "en"), "pre-prod",
-                List.of(), "1.0.0",
-                List.of(), "fr.insee", List.of(), true
-        );
+                "http://localhost:3000",
+                "350",
+                "DG75-L201",
+                new ConfiguredLanguages("fr", "en"),
+                "pre-prod",
+                List.of(),
+                "1.0.0",
+                List.of(),
+                "fr.insee",
+                List.of(),
+                true);
 
         ClientConfigProperties properties = domainClientConfigService.getClientConfigProperties();
 
@@ -66,11 +72,17 @@ class DomainClientConfigServiceTest {
     @Test
     void should_return_openid_connect_auth_for_prod() {
         domainClientConfigService = new DomainClientConfigService(
-                "http://localhost:3000", "350", "DG75-L201",
-                new ConfiguredLanguages("fr", "en"), "prod",
-                List.of(), "1.0.0",
-                List.of(), "fr.insee", List.of(), true
-        );
+                "http://localhost:3000",
+                "350",
+                "DG75-L201",
+                new ConfiguredLanguages("fr", "en"),
+                "prod",
+                List.of(),
+                "1.0.0",
+                List.of(),
+                "fr.insee",
+                List.of(),
+                true);
 
         ClientConfigProperties properties = domainClientConfigService.getClientConfigProperties();
 
@@ -80,11 +92,17 @@ class DomainClientConfigServiceTest {
     @Test
     void should_return_openid_connect_auth_for_PROD() {
         domainClientConfigService = new DomainClientConfigService(
-                "http://localhost:3000", "350", "DG75-L201",
-                new ConfiguredLanguages("fr", "en"), "PROD",
-                List.of(), "1.0.0",
-                List.of(), "fr.insee", List.of(), true
-        );
+                "http://localhost:3000",
+                "350",
+                "DG75-L201",
+                new ConfiguredLanguages("fr", "en"),
+                "PROD",
+                List.of(),
+                "1.0.0",
+                List.of(),
+                "fr.insee",
+                List.of(),
+                true);
 
         ClientConfigProperties properties = domainClientConfigService.getClientConfigProperties();
 

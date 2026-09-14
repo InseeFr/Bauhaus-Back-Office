@@ -1,6 +1,5 @@
 package fr.insee.rmes.modules.users.infrastructure;
 
-import fr.insee.rmes.modules.users.domain.model.Source;
 import fr.insee.rmes.modules.commons.hexagonal.ServerSideAdaptor;
 import fr.insee.rmes.modules.users.domain.exceptions.UnknownApplicationException;
 import fr.insee.rmes.modules.users.domain.exceptions.UnknownPrivilegeException;
@@ -8,11 +7,11 @@ import fr.insee.rmes.modules.users.domain.exceptions.UnknownRoleException;
 import fr.insee.rmes.modules.users.domain.model.AllModuleAccessPrivileges;
 import fr.insee.rmes.modules.users.domain.model.ModuleAccessPrivileges;
 import fr.insee.rmes.modules.users.domain.model.RBAC;
+import fr.insee.rmes.modules.users.domain.model.Source;
 import fr.insee.rmes.modules.users.domain.port.serverside.RbacFetcher;
-import org.springframework.stereotype.Service;
-
 import java.util.*;
 import java.util.stream.Collectors;
+import org.springframework.stereotype.Service;
 
 @ServerSideAdaptor
 @Service
@@ -26,8 +25,7 @@ public class PropertiesRbacFetcher implements RbacFetcher {
 
     @Override
     public Set<ModuleAccessPrivileges> getPrivilegesByRole(String roleName) {
-        return this.allModulesAccessPrivileges
-                .stream()
+        return this.allModulesAccessPrivileges.stream()
                 .filter(p -> p.roleName().role().equals(roleName))
                 .findFirst()
                 .orElseThrow(() -> new UnknownRoleException(roleName))
@@ -35,33 +33,35 @@ public class PropertiesRbacFetcher implements RbacFetcher {
     }
 
     @Override
-    public Set<ModuleAccessPrivileges.Privilege> getApplicationPrivilegesByRole(String roleName, RBAC.Module application) {
+    public Set<ModuleAccessPrivileges.Privilege> getApplicationPrivilegesByRole(
+            String roleName, RBAC.Module application) {
         var moduleAccessPrivileges = this.getPrivilegesByRole(roleName);
-        return moduleAccessPrivileges
-                .stream().
-                filter(p -> p.application().equals(application))
+        return moduleAccessPrivileges.stream()
+                .filter(p -> p.application().equals(application))
                 .findFirst()
                 .orElseThrow(() -> new UnknownApplicationException(application, roleName))
                 .privileges();
     }
 
     @Override
-    public RBAC.Strategy getApplicationActionStrategyByRole(List<String> roles, RBAC.Module application, RBAC.Privilege privilege) {
-        Set<RBAC.Strategy> strategies = roles.stream().map(r -> {
-            try {
-                var privileges = getApplicationPrivilegesByRole(r, application);
-                return privileges
-                        .stream()
-                        .filter(p -> p.privilege().equals(privilege))
-                        .findFirst()
-                        .orElseThrow(() -> new UnknownPrivilegeException(privilege, r, application))
-                        .strategy();
-            } catch (UnknownApplicationException | UnknownRoleException exception){
+    public RBAC.Strategy getApplicationActionStrategyByRole(
+            List<String> roles, RBAC.Module application, RBAC.Privilege privilege) {
+        Set<RBAC.Strategy> strategies = roles.stream()
+                .map(r -> {
+                    try {
+                        var privileges = getApplicationPrivilegesByRole(r, application);
+                        return privileges.stream()
+                                .filter(p -> p.privilege().equals(privilege))
+                                .findFirst()
+                                .orElseThrow(() -> new UnknownPrivilegeException(privilege, r, application))
+                                .strategy();
+                    } catch (UnknownApplicationException | UnknownRoleException exception) {
 
-                return RBAC.Strategy.NONE;
-            }
-
-        }).filter(Objects::nonNull).collect(Collectors.toSet());
+                        return RBAC.Strategy.NONE;
+                    }
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
 
         return Collections.min(strategies, Comparator.comparingInt(Enum::ordinal));
     }
@@ -82,14 +82,16 @@ public class PropertiesRbacFetcher implements RbacFetcher {
                 for (ModuleAccessPrivileges mp : getPrivilegesByRole(role)) {
                     RBAC.Module module = mp.application();
                     for (ModuleAccessPrivileges.Privilege p : mp.privileges()) {
-                        result
-                                .computeIfAbsent(module, _ -> new HashMap<>())
-                                .merge(p.privilege(), p.strategy(), (s1, s2) ->
-                                        Collections.min(List.of(s1, s2), Comparator.comparingInt(Enum::ordinal))
-                                );
+                        result.computeIfAbsent(module, _ -> new HashMap<>())
+                                .merge(
+                                        p.privilege(),
+                                        p.strategy(),
+                                        (s1, s2) -> Collections.min(
+                                                List.of(s1, s2), Comparator.comparingInt(Enum::ordinal)));
                     }
                 }
-            } catch (UnknownRoleException _){}
+            } catch (UnknownRoleException _) {
+            }
         }
         return result;
     }
@@ -97,23 +99,23 @@ public class PropertiesRbacFetcher implements RbacFetcher {
     private void addInseeReadPrivileges(Map<RBAC.Module, Map<RBAC.Privilege, RBAC.Strategy>> result) {
         for (RBAC.Module module : RBAC.Module.values()) {
             if (module != RBAC.Module.UNKNOWN) {
-                result
-                        .computeIfAbsent(module, _ -> new HashMap<>())
-                        .merge(RBAC.Privilege.READ, RBAC.Strategy.ALL, (s1, s2) ->
-                                Collections.min(List.of(s1, s2), Comparator.comparingInt(Enum::ordinal))
-                        );
+                result.computeIfAbsent(module, _ -> new HashMap<>())
+                        .merge(
+                                RBAC.Privilege.READ,
+                                RBAC.Strategy.ALL,
+                                (s1, s2) -> Collections.min(List.of(s1, s2), Comparator.comparingInt(Enum::ordinal)));
             }
         }
     }
 
-    private Set<ModuleAccessPrivileges> toModuleAccessPrivileges(Map<RBAC.Module, Map<RBAC.Privilege, RBAC.Strategy>> result) {
+    private Set<ModuleAccessPrivileges> toModuleAccessPrivileges(
+            Map<RBAC.Module, Map<RBAC.Privilege, RBAC.Strategy>> result) {
         return result.entrySet().stream()
                 .map(entry -> new ModuleAccessPrivileges(
                         entry.getKey(),
                         entry.getValue().entrySet().stream()
                                 .map(e -> new ModuleAccessPrivileges.Privilege(e.getKey(), e.getValue()))
-                                .collect(Collectors.toSet())
-                ))
+                                .collect(Collectors.toSet())))
                 .collect(Collectors.toSet());
     }
 }

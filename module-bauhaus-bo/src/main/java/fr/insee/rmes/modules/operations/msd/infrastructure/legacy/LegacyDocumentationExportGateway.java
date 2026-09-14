@@ -7,6 +7,9 @@ import fr.insee.rmes.modules.operations.msd.domain.model.ExportedFile;
 import fr.insee.rmes.modules.operations.msd.domain.model.commands.MetadataExportRequest;
 import fr.insee.rmes.modules.operations.msd.domain.model.commands.SourcesExportRequest;
 import fr.insee.rmes.modules.operations.msd.domain.port.serverside.DocumentationExportGateway;
+import java.util.Arrays;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ContentDisposition;
@@ -15,10 +18,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-
-import java.util.Arrays;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Component
 public class LegacyDocumentationExportGateway implements DocumentationExportGateway {
@@ -51,10 +50,7 @@ public class LegacyDocumentationExportGateway implements DocumentationExportGate
     @Override
     public ExportedFile exportMetadataReportSources(SourcesExportRequest request) throws RmesException {
         ResponseEntity<?> response = documentationExport.exportMetadataReportFiles(
-                request.id(),
-                request.includeEmptyMas(),
-                request.lg1(),
-                request.lg2());
+                request.id(), request.includeEmptyMas(), request.lg1(), request.lg2());
         return toExportedFile(response);
     }
 

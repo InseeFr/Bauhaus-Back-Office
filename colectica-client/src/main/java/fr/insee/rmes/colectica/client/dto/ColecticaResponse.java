@@ -1,25 +1,17 @@
 package fr.insee.rmes.colectica.client.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.util.List;
 
 public record ColecticaResponse(
-    @JsonProperty("Results")
-    List<ColecticaItem> results,
+        @JsonProperty("Results") List<ColecticaItem> results,
 
-    @JsonProperty("TotalResults")
-    int totalResults,
+        @JsonProperty("TotalResults") int totalResults,
 
-    @JsonProperty("ReturnedResults")
-    int returnedResults,
+        @JsonProperty("ReturnedResults") int returnedResults,
 
-    @JsonProperty("NextResult")
-    String nextResult,
+        @JsonProperty("NextResult") String nextResult,
 
-    @JsonProperty("DatabaseTime")
-    String databaseTime,
+        @JsonProperty("DatabaseTime") String databaseTime,
 
-    @JsonProperty("RepositoryTime")
-    String repositoryTime
-) {}
+        @JsonProperty("RepositoryTime") String repositoryTime) {}

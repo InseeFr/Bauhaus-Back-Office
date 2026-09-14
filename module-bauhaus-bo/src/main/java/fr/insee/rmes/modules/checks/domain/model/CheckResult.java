@@ -19,10 +19,7 @@ public class CheckResult {
 
     @Override
     public String toString() {
-        return "CheckResult{" +
-                "name='" + name + '\'' +
-                ", value=" + value +
-                '}';
+        return "CheckResult{" + "name='" + name + '\'' + ", value=" + value + '}';
     }
 
     @Override

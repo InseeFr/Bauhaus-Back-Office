@@ -6,12 +6,12 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
-import fr.insee.rmes.rdf_utils.RepositoryGestion;
-import fr.insee.rmes.utils.IdGenerator;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
-import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.utils.IdGenerator;
 import org.apache.http.HttpStatus;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
@@ -23,80 +23,90 @@ import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.json.JSONObject;
 import org.springframework.stereotype.Component;
 
-
 @Component
-public class OperationPublication extends RdfService{
+public class OperationPublication extends RdfService {
 
-	private final OperationsParentRepository operationsParentRepository;
+    private final OperationsParentRepository operationsParentRepository;
 
-	public OperationPublication(RepositoryGestion repoGestion, IdGenerator idGenerator,
-								RepositoryPublication repositoryPublication,
-								PublicationUtils publicationUtils,
-								OperationsParentRepository operationsParentRepository) {
-		super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
-		this.operationsParentRepository = operationsParentRepository;
-	}
+    public OperationPublication(
+            RepositoryGestion repoGestion,
+            IdGenerator idGenerator,
+            RepositoryPublication repositoryPublication,
+            PublicationUtils publicationUtils,
+            OperationsParentRepository operationsParentRepository) {
+        super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
+        this.operationsParentRepository = operationsParentRepository;
+    }
 
-	String[] ignoredAttrs = { "validationState", "hasPart", Constants.PUBLISHER, Constants.CONTRIBUTOR };
+    String[] ignoredAttrs = {"validationState", "hasPart", Constants.PUBLISHER, Constants.CONTRIBUTOR};
 
-	public void publishOperation(String operationId, JSONObject operationJson) throws RmesException {
-		PublicationUtils.rejectIfAlreadyPublished("Operation", operationId, operationsParentRepository.getFamOpSerValidationStatus(operationId));
+    public void publishOperation(String operationId, JSONObject operationJson) throws RmesException {
+        PublicationUtils.rejectIfAlreadyPublished(
+                "Operation", operationId, operationsParentRepository.getFamOpSerValidationStatus(operationId));
 
-		checkSeriesIsPublished(operationId, operationJson);
+        checkSeriesIsPublished(operationId, operationJson);
 
-		Model model = new LinkedHashModel();
+        Model model = new LinkedHashModel();
 
-		Resource operation = RdfUtils.operationIRI(operationId);
-		try (RepositoryConnection con = repoGestion.getConnection();
-			 RepositoryResult<Statement> statements = repoGestion.getStatements(con, operation)) {
-			if (!statements.hasNext()) {
-				throw new RmesNotFoundException(ErrorCodes.OPERATION_UNKNOWN_ID, "Operation not found", operationId);
-			}
-			while (statements.hasNext()) {
-				Statement st = statements.next();
-				// Other URI to transform
-				if (RdfUtils.toString(st.getPredicate()).endsWith("isPartOf")) {
-					model.add(publicationUtils.tranformBaseURIToPublish(st.getSubject()), st.getPredicate(),
-							publicationUtils.tranformBaseURIToPublish((Resource) st.getObject()), st.getContext());
-				} else if (PublicationUtils.stringEndsWithItemFromList(RdfUtils.toString(st.getPredicate()), ignoredAttrs)) {
-					// nothing, wouldn't copy this attr
-				}
-				// Literals
-				else {
-					model.add(publicationUtils.tranformBaseURIToPublish(st.getSubject()), st.getPredicate(),
-							st.getObject(), st.getContext());
-				}
-				addHasPartStatements(model, operation, con);
-			}
-		} catch (RepositoryException e) {
-			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), Constants.REPOSITORY_EXCEPTION);
-		}
-		Resource operationToPublishRessource = publicationUtils.tranformBaseURIToPublish(operation);
-		repositoryPublication.publishResource(operationToPublishRessource, model, "operation");
+        Resource operation = RdfUtils.operationIRI(operationId);
+        try (RepositoryConnection con = repoGestion.getConnection();
+                RepositoryResult<Statement> statements = repoGestion.getStatements(con, operation)) {
+            if (!statements.hasNext()) {
+                throw new RmesNotFoundException(ErrorCodes.OPERATION_UNKNOWN_ID, "Operation not found", operationId);
+            }
+            while (statements.hasNext()) {
+                Statement st = statements.next();
+                // Other URI to transform
+                if (RdfUtils.toString(st.getPredicate()).endsWith("isPartOf")) {
+                    model.add(
+                            publicationUtils.tranformBaseURIToPublish(st.getSubject()),
+                            st.getPredicate(),
+                            publicationUtils.tranformBaseURIToPublish((Resource) st.getObject()),
+                            st.getContext());
+                } else if (PublicationUtils.stringEndsWithItemFromList(
+                        RdfUtils.toString(st.getPredicate()), ignoredAttrs)) {
+                    // nothing, wouldn't copy this attr
+                }
+                // Literals
+                else {
+                    model.add(
+                            publicationUtils.tranformBaseURIToPublish(st.getSubject()),
+                            st.getPredicate(),
+                            st.getObject(),
+                            st.getContext());
+                }
+                addHasPartStatements(model, operation, con);
+            }
+        } catch (RepositoryException e) {
+            throw new RmesException(
+                    HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), Constants.REPOSITORY_EXCEPTION);
+        }
+        Resource operationToPublishRessource = publicationUtils.tranformBaseURIToPublish(operation);
+        repositoryPublication.publishResource(operationToPublishRessource, model, "operation");
+    }
 
-	}
+    private void checkSeriesIsPublished(String operationId, JSONObject operationJson) throws RmesException {
+        String seriesId = operationJson.getJSONObject("series").getString(Constants.ID);
+        String status = operationsParentRepository.getValidationStatus(seriesId);
 
-	private void checkSeriesIsPublished(String operationId, JSONObject operationJson)
-			throws RmesException {
-		String seriesId = operationJson.getJSONObject("series").getString(Constants.ID);
-		String status = operationsParentRepository.getValidationStatus(seriesId);
+        if (PublicationUtils.isUnublished(status)) {
+            throw new RmesBadRequestException(
+                    ErrorCodes.OPERATION_VALIDATION_UNPUBLISHED_SERIES,
+                    "This operation cannot be published before its series is published",
+                    "Operation: " + operationId + " ; Series: " + seriesId);
+        }
+    }
 
-		if (PublicationUtils.isUnublished(status)) {
-			throw new RmesBadRequestException(ErrorCodes.OPERATION_VALIDATION_UNPUBLISHED_SERIES,
-					"This operation cannot be published before its series is published",
-					"Operation: " + operationId + " ; Series: " + seriesId);
-		}
-	}
-
-	private void addHasPartStatements(Model model, Resource operation, RepositoryConnection con)
-			throws RmesException {
-		try (RepositoryResult<Statement> hasPartStatements = repoGestion.getHasPartStatements(con, operation)) {
-			while (hasPartStatements.hasNext()) {
-				Statement hpst = hasPartStatements.next();
-				model.add(publicationUtils.tranformBaseURIToPublish(hpst.getSubject()), hpst.getPredicate(),
-						publicationUtils.tranformBaseURIToPublish((Resource) hpst.getObject()), hpst.getContext());
-			}
-		}
-	}
-
+    private void addHasPartStatements(Model model, Resource operation, RepositoryConnection con) throws RmesException {
+        try (RepositoryResult<Statement> hasPartStatements = repoGestion.getHasPartStatements(con, operation)) {
+            while (hasPartStatements.hasNext()) {
+                Statement hpst = hasPartStatements.next();
+                model.add(
+                        publicationUtils.tranformBaseURIToPublish(hpst.getSubject()),
+                        hpst.getPredicate(),
+                        publicationUtils.tranformBaseURIToPublish((Resource) hpst.getObject()),
+                        hpst.getContext());
+            }
+        }
+    }
 }

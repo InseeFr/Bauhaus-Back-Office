@@ -1,7 +1,7 @@
 package fr.insee.rmes.modules.geographies.webservice.response;
 
-import fr.insee.rmes.modules.geographies.model.GeoFeature;
 import fr.insee.rmes.modules.commons.webservice.BaseResponse;
+import fr.insee.rmes.modules.geographies.model.GeoFeature;
 
 public class TerritoryResponse extends BaseResponse<TerritoryResponse, GeoFeature> {
 

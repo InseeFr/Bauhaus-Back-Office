@@ -26,10 +26,9 @@ public class RepositoryPublicationReader {
     private final String repositoryId;
 
     public RepositoryPublicationReader(
-        RepositoryUtils repositoryUtils,
-        @Value("${fr.insee.rmes.bauhaus.sesame.publication.sesameServer}") String sesameServer,
-        @Value("${fr.insee.rmes.bauhaus.sesame.publication.repository}") String repositoryId
-    ) {
+            RepositoryUtils repositoryUtils,
+            @Value("${fr.insee.rmes.bauhaus.sesame.publication.sesameServer}") String sesameServer,
+            @Value("${fr.insee.rmes.bauhaus.sesame.publication.repository}") String repositoryId) {
         this.repositoryUtils = repositoryUtils;
         this.sesameServer = sesameServer;
         this.repositoryId = repositoryId;

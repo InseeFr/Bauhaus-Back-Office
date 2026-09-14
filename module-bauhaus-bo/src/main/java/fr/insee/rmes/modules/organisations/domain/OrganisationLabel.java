@@ -5,8 +5,7 @@ package fr.insee.rmes.modules.organisations.domain;
  */
 public final class OrganisationLabel {
 
-    private OrganisationLabel() {
-    }
+    private OrganisationLabel() {}
 
     /**
      * Appends the acronym in parentheses to the label when both are present
