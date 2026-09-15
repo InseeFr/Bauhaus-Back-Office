@@ -8,6 +8,10 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
 import fr.insee.rmes.colectica.client.auth.ColecticaCredentials;
 import fr.insee.rmes.colectica.client.dto.ColecticaAdvancedItem;
 import fr.insee.rmes.colectica.client.dto.ColecticaAdvancedResponse;
@@ -23,6 +27,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.Test;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -113,6 +118,90 @@ class ColecticaClientTest {
         assertThat(item.dateProperties().get("versionDate")).containsExactly("2026-06-29T14:26:32.961778");
         assertThat(item.textProperties().get("label").get(0).value()).isEqualTo("20260625 EDE");
         assertThat(item.booleanProperties().get("isPublished")).isFalse();
+    }
+
+    @Test
+    void queryAdvanced_logsRawColecticaResponseWhenDebugIsEnabled() {
+        Fixture f = newFixture();
+        f.server
+                .expect(requestTo(BASE_API_URL + "_query/advanced"))
+                .andRespond(withSuccess(
+                        "{\"Results\":[{\"Identifier\":\"pi-1\",\"TextProperties\":{}}],\"ReturnedResults\":1}",
+                        MediaType.APPLICATION_JSON));
+
+        Logged<ColecticaAdvancedResponse> logged =
+                withDebugLogs(() -> f.client.queryAdvanced(List.of(PHYSICAL_INSTANCE_TYPE)));
+
+        assertThat(logged.result().results().get(0).identifier()).isEqualTo("pi-1");
+        assertThat(logged.messages())
+                .anyMatch(message -> message.contains("_query/advanced") && message.contains("TextProperties"));
+    }
+
+    @Test
+    void queryAdvanced_logsJsonBodiesIndentedWhenDebugIsEnabled() {
+        Fixture f = newFixture();
+        f.server
+                .expect(requestTo(BASE_API_URL + "_query/advanced"))
+                .andRespond(withSuccess(
+                        "{\"Results\":[{\"Identifier\":\"pi-1\"}],\"ReturnedResults\":1}", MediaType.APPLICATION_JSON));
+
+        Logged<ColecticaAdvancedResponse> logged =
+                withDebugLogs(() -> f.client.queryAdvanced(List.of(PHYSICAL_INSTANCE_TYPE)));
+
+        assertThat(logged.messages())
+                .anyMatch(message -> message.lines().anyMatch(line -> line.startsWith("  \"Results\""))
+                        && message.lines().anyMatch(line -> line.startsWith("  \"itemTypes\"")));
+    }
+
+    @Test
+    void queryAdvanced_logsRequestBodySentToColecticaWhenDebugIsEnabled() {
+        Fixture f = newFixture();
+        f.server
+                .expect(requestTo(BASE_API_URL + "_query/advanced"))
+                .andRespond(withSuccess("{\"Results\":[],\"ReturnedResults\":0}", MediaType.APPLICATION_JSON));
+
+        Logged<ColecticaAdvancedResponse> logged =
+                withDebugLogs(() -> f.client.queryAdvanced(List.of(PHYSICAL_INSTANCE_TYPE)));
+
+        assertThat(logged.messages())
+                .anyMatch(message -> message.contains("resultsIncludeAll") && message.contains(PHYSICAL_INSTANCE_TYPE));
+    }
+
+    @Test
+    void getDdiSet_logsNonJsonBodyAsIsAndStillReturnsItWhenDebugIsEnabled() {
+        String xml = "<ddi:DDIInstance><r:ID>pi-1</r:ID></ddi:DDIInstance>";
+        Fixture f = newFixture();
+        f.server
+                .expect(requestTo(BASE_API_URL + "ddiset/fr.insee/pi-1"))
+                .andRespond(withSuccess(xml, MediaType.APPLICATION_XML));
+
+        Logged<byte[]> logged = withDebugLogs(() -> f.client.getDdiSet("fr.insee", "pi-1"));
+
+        assertThat(new String(logged.result(), StandardCharsets.UTF_8)).isEqualTo(xml);
+        assertThat(logged.messages()).anyMatch(message -> message.contains(xml));
+    }
+
+    private record Logged<T>(T result, List<String> messages) {}
+
+    /** Runs {@code action} with the client's logger at DEBUG and returns what it logged. */
+    private static <T> Logged<T> withDebugLogs(Supplier<T> action) {
+        Logger logger = (Logger) LoggerFactory.getLogger(ColecticaClient.class);
+        Level previousLevel = logger.getLevel();
+        ListAppender<ILoggingEvent> appender = new ListAppender<>();
+        appender.start();
+        logger.addAppender(appender);
+        logger.setLevel(Level.DEBUG);
+        try {
+            T result = action.get();
+            return new Logged<>(
+                    result,
+                    appender.list.stream()
+                            .map(ILoggingEvent::getFormattedMessage)
+                            .toList());
+        } finally {
+            logger.detachAppender(appender);
+            logger.setLevel(previousLevel);
+        }
     }
 
     @Test
@@ -322,6 +411,25 @@ class ColecticaClientTest {
         f.client.query(List.of(LOGICAL_PRODUCT_TYPE));
 
         f.server.verify();
+    }
+
+    @Test
+    void userPassword_neverLogsTheTokenResponseEvenWhenDebugIsEnabled() {
+        Fixture f = newFixture(new ColecticaCredentials.UserPassword("user", "secret"));
+        f.server
+                .expect(requestTo(BASE_SERVER_URL + "/token/createtoken"))
+                .andRespond(withSuccess("{\"access_token\":\"jwt-abc\"}", MediaType.APPLICATION_JSON));
+        f.server
+                .expect(requestTo(BASE_API_URL + "_query"))
+                .andRespond(withSuccess(
+                        "{\"TotalResults\":0,\"ReturnedResults\":0,\"Results\":[]}", MediaType.APPLICATION_JSON));
+
+        Logged<ColecticaResponse> logged = withDebugLogs(() -> f.client.query(List.of(LOGICAL_PRODUCT_TYPE)));
+
+        assertThat(logged.messages())
+                .isNotEmpty()
+                .noneMatch(message -> message.contains("jwt-abc"))
+                .noneMatch(message -> message.contains("secret"));
     }
 
     @Test

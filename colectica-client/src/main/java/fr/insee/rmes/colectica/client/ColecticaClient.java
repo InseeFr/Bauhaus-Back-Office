@@ -47,7 +47,10 @@ public class ColecticaClient {
 
     public ColecticaClient(
             RestClient restClient, String baseApiUrl, String baseServerUrl, ColecticaCredentials credentials) {
-        this.restClient = restClient;
+        this.restClient = restClient
+                .mutate()
+                .requestInterceptor(new ColecticaResponseLoggingInterceptor())
+                .build();
         this.baseApiUrl = baseApiUrl;
         this.baseServerUrl = baseServerUrl;
         this.credentials = credentials;
