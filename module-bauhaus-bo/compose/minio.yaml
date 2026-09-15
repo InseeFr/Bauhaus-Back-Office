@@ -1,6 +1,8 @@
 services:
   minio:
-    image: minio/minio:RELEASE.2024-11-07T00-52-20Z
+    # quay.io et non Docker Hub : MinIO n'y publie plus, et `minio/minio` y est
+    # refusé au pull (« pull access denied »), tags épinglés compris.
+    image: quay.io/minio/minio:RELEASE.2024-11-07T00-52-20Z
     restart: always
     ports:
       - "9000:9000"
