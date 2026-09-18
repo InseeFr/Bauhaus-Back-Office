@@ -3,7 +3,6 @@ package fr.insee.rmes.persistance.sparql_queries.operations.operations;
 import static fr.insee.rmes.persistance.sparql_queries.FreeMarkerRequestStub.ANY_PARAMS;
 import static fr.insee.rmes.persistance.sparql_queries.FreeMarkerRequestStub.assertQueryBuiltFromTemplate;
 import static fr.insee.rmes.persistance.sparql_queries.FreeMarkerRequestStub.assertRmesExceptionPropagated;
-import static fr.insee.rmes.persistance.sparql_queries.FreeMarkerRequestStub.callWithStubbedTemplate;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.mockStatic;
@@ -134,7 +133,7 @@ class OperationsOperationQueriesTest {
 
     @Test
     void shouldVerifyInitParamsContainsAllRequiredParameters() throws RmesException {
-        callWithStubbedTemplate(
+        assertQueryBuiltFromTemplate(
                 OPERATIONS_FOLDER,
                 "getOperations.ftlh",
                 GET_OPERATIONS_QUERY,
