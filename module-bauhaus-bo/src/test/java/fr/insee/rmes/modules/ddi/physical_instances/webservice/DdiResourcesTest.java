@@ -255,7 +255,7 @@ class DdiResourcesTest {
 
         assertNotNull(response);
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        List<CodeListSummaryResponse> body = assertBodyOfSize(response, 1);
+        assertBodyOfSize(response, 1);
 
         // The cache must be cleared *before* the list is (re)computed, otherwise the stale entry is served.
         InOrder inOrder = inOrder(ddiService);
@@ -950,7 +950,7 @@ class DdiResourcesTest {
                 .andExpect(status().isNotFound());
     }
 
-    private String givenOperationIri(String id) throws RmesException {
+    private String givenOperationIri(String id) {
         String operationIri = "http://id.insee.fr/operations/operation/" + id;
         when(bauhausUriBuilder.getCompleteUriPublication("operation", id)).thenReturn(operationIri);
         return operationIri;

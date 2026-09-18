@@ -85,7 +85,7 @@ abstract class AbstractSimsPublicationEndToEndTest extends WithGraphDBContainer 
     AccessPrivilegesCheckerService checker;
 
     /** Valide (publie) le rapport qualité {@code simsId} en tant qu'administrateur. */
-    ResponseEntity<String> validateSimsAsAdmin(String simsId) throws Exception, MissingUserInformationException {
+    ResponseEntity<String> validateSimsAsAdmin(String simsId) throws MissingUserInformationException {
         configureJwtDecoderMock(jwtDecoder, "admin", "XX59-YYY", List.of(Roles.ADMIN));
         when(checker.hasAccess(any(), any(), any(), any())).thenReturn(true);
 

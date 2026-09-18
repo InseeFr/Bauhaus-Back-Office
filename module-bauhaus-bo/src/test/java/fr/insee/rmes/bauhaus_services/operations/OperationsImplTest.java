@@ -9,6 +9,9 @@ import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.when;
 
 import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.model.operations.PartialOperation;
+import fr.insee.rmes.model.operations.PartialOperationIndicator;
+import fr.insee.rmes.model.operations.PartialOperationSeries;
 import fr.insee.rmes.modules.users.domain.model.User;
 import fr.insee.rmes.modules.users.domain.port.serverside.UserDecoder;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationIndicatorsQueries;
@@ -77,7 +80,8 @@ class OperationsImplTest {
         when(repoGestion.getResponseAsArray("query")).thenReturn(rowsWithDuplicatesAndDiacritics());
         var series = operationsImpl.getSeries().stream().toList();
 
-        assertSortedByLabelWithMergedAltLabels(series, s -> s.id(), s -> s.label(), s -> s.altLabel());
+        assertSortedByLabelWithMergedAltLabels(
+                series, PartialOperationSeries::id, PartialOperationSeries::label, PartialOperationSeries::altLabel);
     }
 
     @Test
@@ -86,7 +90,8 @@ class OperationsImplTest {
         when(repoGestion.getResponseAsArray("query")).thenReturn(rowsWithDuplicatesAndDiacritics());
         var series = operationsImpl.getOperations().stream().toList();
 
-        assertSortedByLabelWithMergedAltLabels(series, s -> s.id(), s -> s.label(), s -> s.altLabel());
+        assertSortedByLabelWithMergedAltLabels(
+                series, PartialOperation::id, PartialOperation::label, PartialOperation::altLabel);
     }
 
     @Test
@@ -95,7 +100,11 @@ class OperationsImplTest {
         when(repoGestion.getResponseAsArray("query")).thenReturn(rowsWithDuplicatesAndDiacritics());
         var series = operationsImpl.getIndicators().stream().toList();
 
-        assertSortedByLabelWithMergedAltLabels(series, s -> s.id(), s -> s.label(), s -> s.altLabel());
+        assertSortedByLabelWithMergedAltLabels(
+                series,
+                PartialOperationIndicator::id,
+                PartialOperationIndicator::label,
+                PartialOperationIndicator::altLabel);
     }
 
     @Test

@@ -438,7 +438,7 @@ class DocumentationExportTest {
         assertThat(indicatorFile).endsWith("</Indicator>");
     }
 
-    private Indicator createIndicatorForTest() throws RmesException {
+    private Indicator createIndicatorForTest() {
         Indicator indicator = new Indicator();
         indicator.setId("p1723");
         indicator.setPrefLabelLg1("Aide publique au développement (APD) bilatérale");

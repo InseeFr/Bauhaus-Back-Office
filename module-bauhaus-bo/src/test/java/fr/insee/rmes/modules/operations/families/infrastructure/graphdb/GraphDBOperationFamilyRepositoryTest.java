@@ -64,7 +64,7 @@ class GraphDBOperationFamilyRepositoryTest {
         when(operationFamilyQueries.familiesQuery()).thenReturn("query");
         when(repositoryGestion.getResponseAsArray("query")).thenReturn(emptyArray);
 
-        try (MockedStatic<DiacriticSorter> _ = diacriticSorterReturning(List.of())) {
+        try (var _ = diacriticSorterReturning(List.of())) {
 
             List<PartialOperationFamily> result = repository.getFamilies();
 
@@ -85,7 +85,7 @@ class GraphDBOperationFamilyRepositoryTest {
         when(operationFamilyQueries.familiesQuery()).thenReturn("query");
         when(repositoryGestion.getResponseAsArray("query")).thenReturn(familiesArray);
 
-        try (MockedStatic<DiacriticSorter> _ = diacriticSorterReturning(expectedFamilies)) {
+        try (var _ = diacriticSorterReturning(expectedFamilies)) {
 
             List<PartialOperationFamily> result = repository.getFamilies();
 
@@ -219,7 +219,7 @@ class GraphDBOperationFamilyRepositoryTest {
 
         givenFullFamily(familyId, familyJson, seriesArray, subjectsArray);
 
-        try (MockedStatic<XhtmlToMarkdownUtils> _ = xhtmlConversionIgnored()) {
+        try (var _ = xhtmlConversionIgnored()) {
             OperationFamily result = repository.getFullFamily(familyId);
 
             assertNotNull(result);
@@ -242,7 +242,7 @@ class GraphDBOperationFamilyRepositoryTest {
 
         givenFullFamily(familyId, familyJson, emptyArray, emptyArray);
 
-        try (MockedStatic<XhtmlToMarkdownUtils> _ = xhtmlConversionIgnored()) {
+        try (var _ = xhtmlConversionIgnored()) {
             OperationFamily result = repository.getFullFamily(familyId);
 
             assertNotNull(result);

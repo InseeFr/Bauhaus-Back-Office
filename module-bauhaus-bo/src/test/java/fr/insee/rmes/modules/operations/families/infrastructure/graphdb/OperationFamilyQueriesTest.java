@@ -53,7 +53,7 @@ class OperationFamilyQueriesTest {
     void families_query_should_throw_rmes_exception_when_free_marker_fails() {
         RmesException expectedException = new RmesException(500, "FreeMarker error", "Details");
 
-        try (MockedStatic<FreeMarkerUtils> _ = freeMarkerThrowing(expectedException)) {
+        try (var _ = freeMarkerThrowing(expectedException)) {
 
             RmesException thrownException =
                     assertThrows(RmesException.class, () -> operationFamilyQueries.familiesQuery());
@@ -82,7 +82,7 @@ class OperationFamilyQueriesTest {
         String familyId = "123";
         RmesException expectedException = new RmesException(500, "FreeMarker error", "Details");
 
-        try (MockedStatic<FreeMarkerUtils> _ = freeMarkerThrowing(expectedException)) {
+        try (var _ = freeMarkerThrowing(expectedException)) {
 
             RmesException thrownException =
                     assertThrows(RmesException.class, () -> operationFamilyQueries.familyQuery(familyId));
@@ -111,7 +111,7 @@ class OperationFamilyQueriesTest {
         String familyId = "456";
         RmesException expectedException = new RmesException(500, "FreeMarker error", "Details");
 
-        try (MockedStatic<FreeMarkerUtils> _ = freeMarkerThrowing(expectedException)) {
+        try (var _ = freeMarkerThrowing(expectedException)) {
 
             RmesException thrownException =
                     assertThrows(RmesException.class, () -> operationFamilyQueries.getSeries(familyId));

@@ -1,6 +1,5 @@
 package fr.insee.rmes.modules.operations.documents.webservice;
 
-import static fr.insee.rmes.integration.authorizations.TokenForTestsConfiguration.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE;

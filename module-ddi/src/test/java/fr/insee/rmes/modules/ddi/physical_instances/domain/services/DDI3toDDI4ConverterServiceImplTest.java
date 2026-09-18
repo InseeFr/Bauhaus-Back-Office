@@ -381,32 +381,34 @@ class DDI3toDDI4ConverterServiceImplTest {
                 """);
 
         // When
-        Ddi4Variable var = convertSingleVariable(ddi3Item(VARIABLE_TYPE, "AGEMEN8", variableXml));
+        Ddi4Variable variable = convertSingleVariable(ddi3Item(VARIABLE_TYPE, "AGEMEN8", variableXml));
 
         // Then
-        assertEquals("2025-01-21T13:48:46.363", var.versionDate().dateTime());
-        assertEquals("urn:ddi:fr.insee:Variable.AGEMEN8:1", var.urn());
-        assertEquals("fr.insee", var.agency());
-        assertEquals("AGEMEN8", var.id());
-        assertEquals("1", var.version());
+        assertEquals("2025-01-21T13:48:46.363", variable.versionDate().dateTime());
+        assertEquals("urn:ddi:fr.insee:Variable.AGEMEN8:1", variable.urn());
+        assertEquals("fr.insee", variable.agency());
+        assertEquals("AGEMEN8", variable.id());
+        assertEquals("1", variable.version());
 
-        assertNotNull(var.variableName());
-        assertEquals("AGEMEN8", var.variableName().get(0).value());
+        assertNotNull(variable.variableName());
+        assertEquals("AGEMEN8", variable.variableName().get(0).value());
 
-        assertNotNull(var.label());
-        assertEquals("Âge détaillé", var.label().get(0).value());
+        assertNotNull(variable.label());
+        assertEquals("Âge détaillé", variable.label().get(0).value());
 
-        assertNotNull(var.description());
+        assertNotNull(variable.description());
         assertEquals(
-                "Âge de l'individu en années révolues", var.description().get(0).value());
+                "Âge de l'individu en années révolues",
+                variable.description().get(0).value());
 
-        assertNotNull(var.variableRepresentation());
-        assertEquals("Demographic", var.variableRepresentation().variableRole());
-        assertNotNull(var.variableRepresentation().codeRepresentation());
-        assertEquals(false, var.variableRepresentation().codeRepresentation().blankIsMissingValue());
+        assertNotNull(variable.variableRepresentation());
+        assertEquals("Demographic", variable.variableRepresentation().variableRole());
+        assertNotNull(variable.variableRepresentation().codeRepresentation());
+        assertEquals(
+                false, variable.variableRepresentation().codeRepresentation().blankIsMissingValue());
         assertEquals(
                 "CL_AGEMEN8",
-                var.variableRepresentation()
+                variable.variableRepresentation()
                         .codeRepresentation()
                         .codeListReference()
                         .id());
@@ -434,13 +436,13 @@ class DDI3toDDI4ConverterServiceImplTest {
                 """);
 
         // When
-        Ddi4Variable var = convertSingleVariable(ddi3Item(VARIABLE_TYPE, "AGE", variableXml));
+        Ddi4Variable variable = convertSingleVariable(ddi3Item(VARIABLE_TYPE, "AGE", variableXml));
 
         // Then
-        assertNotNull(var.variableRepresentation());
-        assertNotNull(var.variableRepresentation().numericRepresentation());
+        assertNotNull(variable.variableRepresentation());
+        assertNotNull(variable.variableRepresentation().numericRepresentation());
 
-        NumericRepresentation numRep = var.variableRepresentation().numericRepresentation();
+        NumericRepresentation numRep = variable.variableRepresentation().numericRepresentation();
         assertEquals("Integer", numRep.numericTypeCode());
         assertNotNull(numRep.numberRange());
         assertEquals(true, numRep.numberRange().low().isInclusive());
@@ -586,18 +588,18 @@ class DDI3toDDI4ConverterServiceImplTest {
                 """));
 
         // When
-        Ddi4Variable var = convertSingleVariable(ddi3Item(VARIABLE_TYPE, "NAME", variableXml));
+        Ddi4Variable variable = convertSingleVariable(ddi3Item(VARIABLE_TYPE, "NAME", variableXml));
 
         // Then
-        assertEquals(true, var.isGeographic());
-        assertEquals("NAME", var.variableName().get(0).value());
-        assertEquals("Name", var.label().get(0).value());
-        assertEquals("Person name", var.description().get(0).value());
+        assertEquals(true, variable.isGeographic());
+        assertEquals("NAME", variable.variableName().get(0).value());
+        assertEquals("Name", variable.label().get(0).value());
+        assertEquals("Person name", variable.description().get(0).value());
 
-        assertNotNull(var.variableRepresentation());
-        assertNotNull(var.variableRepresentation().textRepresentation());
+        assertNotNull(variable.variableRepresentation());
+        assertNotNull(variable.variableRepresentation().textRepresentation());
 
-        TextRepresentation textRep = var.variableRepresentation().textRepresentation();
+        TextRepresentation textRep = variable.variableRepresentation().textRepresentation();
         assertEquals(50, textRep.maxLength());
         assertEquals(1, textRep.minLength());
         assertEquals("[A-Za-z ]+", textRep.regExp());
@@ -623,16 +625,16 @@ class DDI3toDDI4ConverterServiceImplTest {
                 """);
 
         // When
-        Ddi4Variable var = convertSingleVariable(ddi3Item(VARIABLE_TYPE, "BIRTHDATE", variableXml));
+        Ddi4Variable variable = convertSingleVariable(ddi3Item(VARIABLE_TYPE, "BIRTHDATE", variableXml));
 
         // Then
-        assertEquals("BIRTHDATE", var.variableName().get(0).value());
-        assertEquals("Birth Date", var.label().get(0).value());
+        assertEquals("BIRTHDATE", variable.variableName().get(0).value());
+        assertEquals("Birth Date", variable.label().get(0).value());
 
-        assertNotNull(var.variableRepresentation());
-        assertNotNull(var.variableRepresentation().dateTimeRepresentation());
+        assertNotNull(variable.variableRepresentation());
+        assertNotNull(variable.variableRepresentation().dateTimeRepresentation());
 
-        DateTimeRepresentation dateTimeRep = var.variableRepresentation().dateTimeRepresentation();
+        DateTimeRepresentation dateTimeRep = variable.variableRepresentation().dateTimeRepresentation();
         assertEquals("Date", dateTimeRep.dateTypeCode());
         assertEquals("YYYY-MM-DD", dateTimeRep.dateFieldFormat());
     }

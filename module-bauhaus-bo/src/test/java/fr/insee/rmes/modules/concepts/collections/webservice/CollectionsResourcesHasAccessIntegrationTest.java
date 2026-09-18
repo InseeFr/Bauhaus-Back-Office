@@ -168,7 +168,7 @@ class CollectionsResourcesHasAccessIntegrationTest extends AbstractResourcesEnvP
         performJsonRequest(get("/concepts/collections/search"), code);
     }
 
-    private void givenAccess(boolean hasAccessReturn) throws Exception, MissingUserInformationException {
+    private void givenAccess(boolean hasAccessReturn) throws MissingUserInformationException {
         when(checker.hasAccess(any(), any(), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
     }
