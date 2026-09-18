@@ -1,5 +1,8 @@
 package fr.insee.rmes.bauhaus_services.datasets;
 
+import static fr.insee.rmes.bauhaus_services.utils.RdfUtilsStaticStubs.CURRENT_DATE;
+import static fr.insee.rmes.bauhaus_services.utils.RdfUtilsStaticStubs.callRealLiteralAndTripleBuilders;
+import static fr.insee.rmes.bauhaus_services.utils.RdfUtilsStaticStubs.freezeCurrentDate;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
@@ -92,11 +95,7 @@ class DatasetServiceImplTest {
 
     @Test
     void shouldReturnDatasets() throws RmesException {
-        JSONArray array = new JSONArray();
-        array.put(new JSONObject().put("id", "1").put("label", "label"));
-
-        when(datasetQueries.getDatasets(anyString(), any(Set.class))).thenReturn("query");
-        when(repositoryGestion.getResponseAsArray("query")).thenReturn(array);
+        givenPartialDatasets();
         var datasets = datasetService.getDatasets();
         Assertions.assertEquals("1", datasets.getFirst().id());
         Assertions.assertEquals("label", datasets.getFirst().label());
@@ -126,11 +125,7 @@ class DatasetServiceImplTest {
 
     @Test
     void getDatasetsForDistributionCreationWithStamp() throws RmesException {
-        JSONArray array = new JSONArray();
-        array.put(new JSONObject().put("id", "1").put("label", "label"));
-
-        when(datasetQueries.getDatasets(anyString(), any(Set.class))).thenReturn("query");
-        when(repositoryGestion.getResponseAsArray("query")).thenReturn(array);
+        givenPartialDatasets();
         var datasets = datasetService.getDatasetsForDistributionCreation(Set.of("fakeStampForDvAndQf"));
         Assertions.assertEquals("1", datasets.getFirst().id());
         Assertions.assertEquals("label", datasets.getFirst().label());
@@ -146,12 +141,7 @@ class DatasetServiceImplTest {
                 .put(new JSONObject().put("lang", "fr").put("keyword", "keyword 1"))
                 .put(new JSONObject().put("lang", "en").put("keyword", "keyword 2"));
 
-        doCallRealMethod().when(repositoryGestion).getMultipleTripletsForObject(any(), any(), any(), any());
-        when(datasetQueries.getDataset(eq("1"), any(), any())).thenReturn("query");
-        when(datasetQueries.getDatasetCreators(eq("1"), any())).thenReturn("query-creators");
-        when(datasetQueries.getDatasetSpacialResolutions(eq("1"), any())).thenReturn("query-spacialResolutions");
-        when(datasetQueries.getDatasetStatisticalUnits(eq("1"), any())).thenReturn("query-statisticalUnits");
-        when(datasetQueries.getKeywords(eq("1"), any())).thenReturn("query-keywords");
+        givenDatasetReadQueries("1");
         when(repositoryGestion.getResponseAsArray("query")).thenReturn(array);
         when(repositoryGestion.getResponseAsArray("query-keywords")).thenReturn(keywords);
         when(repositoryGestion.getResponseAsArray("query-creators"))
@@ -172,13 +162,8 @@ class DatasetServiceImplTest {
         JSONObject object = new JSONObject().put("id", "1");
         JSONArray array = new JSONArray().put(object);
 
-        doCallRealMethod().when(repositoryGestion).getMultipleTripletsForObject(any(), any(), any(), any());
-        when(datasetQueries.getDataset(eq("1"), any(), any())).thenReturn("query");
-        when(datasetQueries.getDatasetCreators(eq("1"), any())).thenReturn("query-creators");
-        when(datasetQueries.getDatasetSpacialResolutions(eq("1"), any())).thenReturn("query-spacialResolutions");
-        when(datasetQueries.getDatasetStatisticalUnits(eq("1"), any())).thenReturn("query-statisticalUnits");
+        givenDatasetReadQueries("1");
         when(datasetQueries.getDatasetContributors(any(), any())).thenReturn("query-contributors");
-        when(datasetQueries.getKeywords(eq("1"), any())).thenReturn("query-keywords");
 
         when(repositoryGestion.getResponseAsArray("query")).thenReturn(array);
         when(repositoryGestion.getResponseAsArray("query-creators")).thenReturn(new JSONArray());
@@ -217,14 +202,7 @@ class DatasetServiceImplTest {
     void shouldReturnAnErrorIfLabelLg1NotDefinedWhenCreating() throws RmesException {
         JSONObject body = new JSONObject();
 
-        when(repositoryGestion.getResponseAsObject(anyString())).then(invocationOnMock -> {
-            JSONObject lastId = new JSONObject();
-            lastId.put("id", "1000");
-            return lastId;
-        });
-        RmesException exception =
-                assertThrows(RmesBadRequestException.class, () -> datasetService.create(body.toString()));
-        Assertions.assertEquals("{\"message\":\"The property labelLg1 is required\"}", exception.getDetails());
+        assertCreationRejectedWith(body, "{\"message\":\"The property labelLg1 is required\"}");
     }
 
     @Test
@@ -232,130 +210,67 @@ class DatasetServiceImplTest {
         JSONObject body = new JSONObject();
         body.put("labelLg1", "labelLg1");
 
-        when(repositoryGestion.getResponseAsObject(anyString())).then(invocationOnMock -> {
-            JSONObject lastId = new JSONObject();
-            lastId.put("id", "1000");
-            return lastId;
-        });
-        RmesException exception =
-                assertThrows(RmesBadRequestException.class, () -> datasetService.create(body.toString()));
-        Assertions.assertEquals("{\"message\":\"The property labelLg2 is required\"}", exception.getDetails());
+        assertCreationRejectedWith(body, "{\"message\":\"The property labelLg2 is required\"}");
     }
 
     @Test
     void shouldReturnAnErrorIfCreatorNotDefinedWhenCreating() throws RmesException {
-        JSONObject body = new JSONObject();
-        body.put("labelLg1", "labelLg1");
-        body.put("labelLg2", "labelLg2R");
+        JSONObject body = labelledBody();
 
-        when(repositoryGestion.getResponseAsObject(anyString())).then(invocationOnMock -> {
-            JSONObject lastId = new JSONObject();
-            lastId.put("id", "1000");
-            return lastId;
-        });
-        RmesException exception =
-                assertThrows(RmesBadRequestException.class, () -> datasetService.create(body.toString()));
-        Assertions.assertEquals("{\"message\":\"The property creator is required\"}", exception.getDetails());
+        assertCreationRejectedWith(body, "{\"message\":\"The property creator is required\"}");
     }
 
     @Test
     void shouldReturnAnErrorIfContributorNotDefinedWhenCreating() throws RmesException {
-        JSONObject body = new JSONObject();
-        body.put("labelLg1", "labelLg1");
-        body.put("labelLg2", "labelLg2R");
+        JSONObject body = labelledBody();
 
         JSONObject record = new JSONObject();
         record.put("creator", "creator");
         body.put("catalogRecord", record);
 
-        when(repositoryGestion.getResponseAsObject(anyString())).then(invocationOnMock -> {
-            JSONObject lastId = new JSONObject();
-            lastId.put("id", "1000");
-            return lastId;
-        });
-        RmesException exception =
-                assertThrows(RmesBadRequestException.class, () -> datasetService.create(body.toString()));
-        Assertions.assertEquals("{\"message\":\"The property contributor is required\"}", exception.getDetails());
+        assertCreationRejectedWith(body, "{\"message\":\"The property contributor is required\"}");
     }
 
     @Test
     void shouldReturnAnErrorIfDisseminationStatusNotDefinedWhenCreating() throws RmesException {
-        JSONObject body = new JSONObject();
-        body.put("labelLg1", "labelLg1");
-        body.put("labelLg2", "labelLg2R");
+        JSONObject body = labelledBody();
 
         body.put("catalogRecord", this.generateCatalogRecord());
 
-        when(repositoryGestion.getResponseAsObject(anyString())).then(invocationOnMock -> {
-            JSONObject lastId = new JSONObject();
-            lastId.put("id", "1000");
-            return lastId;
-        });
-        RmesException exception =
-                assertThrows(RmesBadRequestException.class, () -> datasetService.create(body.toString()));
-        Assertions.assertEquals(
-                "{\"message\":\"The property disseminationStatus is required\"}", exception.getDetails());
+        assertCreationRejectedWith(body, "{\"message\":\"The property disseminationStatus is required\"}");
     }
 
     @Test
     void shouldReturnAnErrorBadFormattedAltIdentifierWhenCreating() throws RmesException {
-        JSONObject body = new JSONObject();
-        body.put("labelLg1", "labelLg1");
-        body.put("labelLg2", "labelLg2R");
+        JSONObject body = labelledBody();
         body.put("disseminationStatus", "disseminationStatus");
         body.put("altIdentifier", "%abc");
         body.put("catalogRecord", this.generateCatalogRecord());
 
-        when(repositoryGestion.getResponseAsObject(anyString())).then(invocationOnMock -> {
-            JSONObject lastId = new JSONObject();
-            lastId.put("id", "1000");
-            return lastId;
-        });
-        RmesException exception =
-                assertThrows(RmesBadRequestException.class, () -> datasetService.create(body.toString()));
-        Assertions.assertEquals(
-                "{\"message\":\"The property altIdentifier contains forbidden characters\"}", exception.getDetails());
+        assertCreationRejectedWith(body, "{\"message\":\"The property altIdentifier contains forbidden characters\"}");
     }
 
     @Test
     void shouldReturnAnErrorIfUnknownSeriesNotDefinedWhenCreating() throws RmesException {
-        JSONObject body = new JSONObject();
-        body.put("labelLg1", "labelLg1");
-        body.put("labelLg2", "labelLg2R");
+        JSONObject body = labelledBody();
         body.put("disseminationStatus", "disseminationStatus");
         body.put("altIdentifier", "abc");
         body.put("catalogRecord", this.generateCatalogRecord());
 
         when(seriesRepository.isSeriesAndOperationsExist(any())).thenReturn(false);
 
-        when(repositoryGestion.getResponseAsObject(anyString())).then(invocationOnMock -> {
-            JSONObject lastId = new JSONObject();
-            lastId.put("id", "1000");
-            return lastId;
-        });
-        RmesException exception =
-                assertThrows(RmesBadRequestException.class, () -> datasetService.create(body.toString()));
-        Assertions.assertEquals("{\"message\":\"Some series or operations do not exist\"}", exception.getDetails());
+        assertCreationRejectedWith(body, "{\"message\":\"Some series or operations do not exist\"}");
     }
 
     @Test
     void shouldReturnAnErrorIfUnknownSeriesNotDefinedWhenCreatingEvenIfAltIdentifierMissing() throws RmesException {
-        JSONObject body = new JSONObject();
-        body.put("labelLg1", "labelLg1");
-        body.put("labelLg2", "labelLg2R");
+        JSONObject body = labelledBody();
         body.put("disseminationStatus", "disseminationStatus");
         body.put("catalogRecord", this.generateCatalogRecord());
 
         when(seriesRepository.isSeriesAndOperationsExist(anyList())).thenReturn(false);
 
-        when(repositoryGestion.getResponseAsObject(anyString())).then(invocationOnMock -> {
-            JSONObject lastId = new JSONObject();
-            lastId.put("id", "1000");
-            return lastId;
-        });
-        RmesException exception =
-                assertThrows(RmesBadRequestException.class, () -> datasetService.create(body.toString()));
-        Assertions.assertEquals("{\"message\":\"Some series or operations do not exist\"}", exception.getDetails());
+        assertCreationRejectedWith(body, "{\"message\":\"Some series or operations do not exist\"}");
     }
 
     @Test
@@ -365,53 +280,20 @@ class DatasetServiceImplTest {
 
     @Test
     void shouldPatchDataset() throws RmesException {
-        IRI iri = SimpleValueFactory.getInstance().createIRI("http://datasetIRI/jd1001");
-
         String datasetId = "jd1001";
 
-        JSONObject object = new JSONObject();
-        object.put("id", datasetId);
-        generateGeneralInformation(object);
-        object.put("disseminationStatus", "http://disseminationStatus");
-        object.put("catalogRecordCreator", "http://creator");
-        object.put("catalogRecordContributor", List.of("http://contributor"));
-
-        JSONArray distributions = new JSONArray();
-        JSONObject d = new JSONObject();
-        d.put("id", "d1000");
-        distributions.put(d);
-        when(datasetDistributionQueries.getDatasetDistributions(any(), any())).thenReturn("distributions-query");
-        when(repositoryGestion.getResponseAsArray(anyString())).thenReturn(distributions);
-
-        JSONArray array = new JSONArray().put(object);
-        when(seriesRepository.isSeriesAndOperationsExist(any())).thenReturn(true);
-        doCallRealMethod().when(repositoryGestion).getMultipleTripletsForObject(any(), any(), any(), any());
-
-        when(datasetQueries.getDataset(eq(datasetId), any(), any())).thenReturn("query");
-        when(datasetQueries.getDatasetCreators(eq(datasetId), any())).thenReturn("query-creators");
-        when(datasetQueries.getDatasetSpacialResolutions(eq(datasetId), any())).thenReturn("query-spacialResolutions");
-        when(datasetQueries.getDatasetContributors(any(), any())).thenReturn("query-contributor");
-        when(datasetQueries.getDatasetStatisticalUnits(eq(datasetId), any())).thenReturn("query-statisticalUnits");
-        when(repositoryGestion.getResponseAsArray("query")).thenReturn(array);
-        when(repositoryGestion.getResponseAsArray("query-creators"))
-                .thenReturn(new JSONArray().put(new JSONObject().put("creator", "http://creator-1")));
-        when(repositoryGestion.getResponseAsArray("query-contributor"))
-                .thenReturn(new JSONArray().put(new JSONObject().put("contributor", "http://contributor")));
-        when(repositoryGestion.getResponseAsArray("query-spacialResolutions"))
-                .thenReturn(
-                        new JSONArray().put(new JSONObject().put("spacialResolution", "http://spacialResolutions-1")));
-        when(repositoryGestion.getResponseAsArray("query-statisticalUnits"))
-                .thenReturn(new JSONArray().put(new JSONObject().put("statisticalUnit", "http://statisticalUnit-1")));
+        givenExistingDataset(
+                datasetJson(datasetId),
+                distributionsD1000(),
+                new JSONArray().put(new JSONObject().put("spacialResolution", "http://spacialResolutions-1")),
+                new JSONArray().put(new JSONObject().put("statisticalUnit", "http://statisticalUnit-1")));
 
         PatchDataset dataset = new PatchDataset(null, null, 5, null, null);
         datasetService.patchDataset(datasetId, dataset);
 
-        ArgumentCaptor<Model> model = ArgumentCaptor.forClass(Model.class);
-        verify(repositoryGestion, times(1)).loadSimpleObject(eq(iri), model.capture(), any());
-
         Assertions.assertEquals(
                 "[(http://datasetIRI/jd1001, http://purl.org/dc/terms/identifier, \"jd1001\") [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://www.w3.org/ns/dcat#Dataset) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/title, \"labelLg1\"@fr) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/title, \"labelLg2\"@en) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#subtitle, \"subTitleLg1\"@fr) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#subtitle, \"subTitleLg2\"@en) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/accrualPeriodicity, https://accrualPeriodicity) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/accessRights, https://accessRights) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#confidentialityStatus, https://confidentialityStatus) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/creator, http://creator-1) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/publisher, http://c3) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/dcat#landingPage, \"landingPageLg1\"@fr) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/dcat#landingPage, \"landingPageLg2\"@en) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/modified, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/issued, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#disseminationStatus, http://disseminationStatus) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#statisticalUnit, http://statisticalUnit-1) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#numObservations, \"5\"^^<http://www.w3.org/2001/XMLSchema#int>) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#spatialResolution, http://spacialResolutions-1) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/dcat#distribution, http://distributionIRI/d1000) [http://rdf.insee.fr/graphes/datasetGraph/]]",
-                model.getValue().toString());
+                storedDatasetModel().toString());
     }
 
     private void generateGeneralInformation(JSONObject body) {
@@ -460,79 +342,40 @@ class DatasetServiceImplTest {
             IRI iri = SimpleValueFactory.getInstance().createIRI("http://datasetIRI/" + nextId);
             IRI catalogRecordIri = SimpleValueFactory.getInstance().createIRI("http://recordIRI/" + nextId);
 
-            rdfUtilsMock.when(() -> RdfUtils.createIRI(any())).thenCallRealMethod();
+            stubDatasetRdfUtils(rdfUtilsMock);
             rdfUtilsMock.when(() -> RdfUtils.toURI(anyString())).thenCallRealMethod();
-
-            dateUtilsMock.when(DateUtils::getCurrentDate).thenReturn("2023-10-19T11:44:23.335590");
-            dateUtilsMock.when(() -> DateUtils.parseDate(anyString())).thenCallRealMethod();
-            dateUtilsMock
-                    .when(() -> DateUtils.parseDateTime(anyString()))
-                    .thenReturn(LocalDateTime.parse("2023-10-19T11:44:23.335590"));
-            rdfUtilsMock
-                    .when(() -> RdfUtils.seriesIRI("2"))
-                    .thenReturn(SimpleValueFactory.getInstance().createIRI("http://seriesIRI/2"));
-            rdfUtilsMock.when(() -> RdfUtils.setLiteralString(anyString())).thenCallRealMethod();
-            rdfUtilsMock
-                    .when(() -> RdfUtils.setLiteralString(anyString(), anyString()))
-                    .thenCallRealMethod();
-            rdfUtilsMock.when(() -> RdfUtils.setLiteralDateTime(any())).thenCallRealMethod();
-            rdfUtilsMock.when(() -> RdfUtils.setLiteralDate(any())).thenCallRealMethod();
-            rdfUtilsMock
-                    .when(() -> RdfUtils.addTripleString(any(), any(), any(), any(), any(), any()))
-                    .thenCallRealMethod();
-            rdfUtilsMock
-                    .when(() -> RdfUtils.addTripleString(any(), any(), any(), any(), any()))
-                    .thenCallRealMethod();
-            rdfUtilsMock
-                    .when(() -> RdfUtils.addTripleInt(any(), any(), any(), any(), any()))
-                    .thenCallRealMethod();
             rdfUtilsMock
                     .when(() -> RdfUtils.addTripleUri(any(IRI.class), any(), any(IRI.class), any(), any()))
                     .thenCallRealMethod();
             rdfUtilsMock
-                    .when(() -> RdfUtils.addTripleDateTime(any(), any(), any(), any(), any()))
-                    .thenCallRealMethod();
-            rdfUtilsMock
                     .when(() -> RdfUtils.addTripleUri(any(), any(IRI.class), any(String.class), any(), any()))
                     .thenCallRealMethod();
-            rdfUtilsMock.when(() -> RdfUtils.setLiteralInt(any())).thenCallRealMethod();
-            rdfUtilsMock.when(RdfUtils::createBlankNode).thenCallRealMethod();
 
-            JSONObject body = new JSONObject();
+            freezeCurrentDate(dateUtilsMock);
+            dateUtilsMock.when(() -> DateUtils.parseDate(anyString())).thenCallRealMethod();
+            dateUtilsMock
+                    .when(() -> DateUtils.parseDateTime(anyString()))
+                    .thenReturn(LocalDateTime.parse(CURRENT_DATE));
 
-            this.generateGeneralInformation(body);
-            this.generateGeneralManagment(body);
-            this.generateStatisticsINformations(body);
-
+            JSONObject body = datasetBody("https://theme");
             body.put("catalogRecord", this.generateCatalogRecord());
 
-            body.put("descriptionLg2", "descriptionLg2");
-
-            body.put("wasGeneratedIRIs", List.of("http://2"));
-            body.put("themes", new JSONArray().put("https://theme"));
-
-            JSONArray distributions = new JSONArray();
-            when(datasetDistributionQueries.getDatasetDistributions(any(), any()))
-                    .thenReturn("distributions-query");
-            when(repositoryGestion.getResponseAsArray(anyString())).thenReturn(distributions);
+            givenDatasetDistributions(new JSONArray());
 
             when(seriesRepository.isSeriesAndOperationsExist(anyList())).thenReturn(true);
 
             String id = datasetService.create(body.toString());
 
-            ArgumentCaptor<Model> model = ArgumentCaptor.forClass(Model.class);
-            verify(repositoryGestion, times(1)).loadSimpleObject(eq(iri), model.capture(), any());
-
-            ArgumentCaptor<Model> model2 = ArgumentCaptor.forClass(Model.class);
-            verify(repositoryGestion, times(1)).loadSimpleObject(eq(catalogRecordIri), model2.capture(), any());
+            Model model = modelLoadedFor(iri);
+            Model model2 = modelLoadedFor(catalogRecordIri);
 
             Assertions.assertEquals(
                     "[(http://datasetIRI/jd1001, http://purl.org/dc/terms/identifier, \"jd1001\") [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://www.w3.org/ns/dcat#Dataset) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/title, \"labelLg1\"@fr) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/title, \"labelLg2\"@en) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#subtitle, \"subTitleLg1\"@fr) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#subtitle, \"subTitleLg2\"@en) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/accrualPeriodicity, https://accrualPeriodicity) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/accessRights, https://accessRights) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#confidentialityStatus, https://confidentialityStatus) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/creator, http://c1) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/creator, http://c2) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/publisher, http://c3) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/dcat#landingPage, \"landingPageLg1\"@fr) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/dcat#landingPage, \"landingPageLg2\"@en) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/modified, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/issued, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#disseminationStatus, https://disseminationStatus) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#processStep, https://disseminationStatus) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#archiveUnit, https://archiveUnit) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/description, \"descriptionLg2\"@en) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/type, http://type) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#statisticalUnit, https://statisticalUnit) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#structure, https://dataStructure) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#numObservations, \"2\"^^<http://www.w3.org/2001/XMLSchema#int>) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/spatial, https://spacialCoverage) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/dcat#temporalResolution, https://temporalResolution) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#spatialResolution, http://spacialResolutions) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#validationState, \"Unpublished\") [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/prov#wasGeneratedBy, http://2) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/dcat#theme, https://theme) [http://rdf.insee.fr/graphes/datasetGraph/]]"
                             .replaceAll("jd1001", nextId),
-                    model.getValue().toString());
+                    model.toString());
             Assertions.assertEquals(
                     "[(http://recordIRI/jd1001, http://xmlns.com/foaf/0.1/primaryTopic, http://datasetIRI/jd1001) [http://rdf.insee.fr/graphes/datasetGraph/], (http://recordIRI/jd1001, http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://www.w3.org/ns/dcat#CatalogRecord) [http://rdf.insee.fr/graphes/datasetGraph/], (http://recordIRI/jd1001, http://purl.org/dc/elements/1.1/creator, http://creator) [http://rdf.insee.fr/graphes/datasetGraph/], (http://recordIRI/jd1001, http://purl.org/dc/elements/1.1/contributor, http://contributor) [http://rdf.insee.fr/graphes/datasetGraph/], (http://recordIRI/jd1001, http://purl.org/dc/terms/created, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>) [http://rdf.insee.fr/graphes/datasetGraph/], (http://recordIRI/jd1001, http://purl.org/dc/terms/modified, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>) [http://rdf.insee.fr/graphes/datasetGraph/]]",
-                    model2.getValue().toString());
+                    model2.toString());
             Assertions.assertEquals(id, nextId);
         }
     }
@@ -545,13 +388,22 @@ class DatasetServiceImplTest {
 
         try (MockedStatic<RdfUtils> rdfUtilsMock = mockStatic(RdfUtils.class);
                 MockedStatic<DateUtils> dateUtilsMock = mockStatic(DateUtils.class)) {
-            rdfUtilsMock.when(() -> RdfUtils.createIRI(any())).thenCallRealMethod();
+            stubDatasetRdfUtils(rdfUtilsMock);
             rdfUtilsMock.when(() -> RdfUtils.toURI(any())).thenCallRealMethod();
+            rdfUtilsMock
+                    .when(() -> RdfUtils.addTripleUri(any(), any(), any(String.class), any(), any()))
+                    .thenCallRealMethod();
+            rdfUtilsMock
+                    .when(() -> RdfUtils.addTripleUri(any(), any(), any(IRI.class), any(), any()))
+                    .thenCallRealMethod();
+            rdfUtilsMock
+                    .when(() -> RdfUtils.addTripleBNode(any(), any(), any(), any(), any()))
+                    .thenCallRealMethod();
 
-            dateUtilsMock.when(DateUtils::getCurrentDate).thenReturn("2023-10-19T11:44:23.335590");
+            freezeCurrentDate(dateUtilsMock);
             dateUtilsMock
-                    .when(() -> DateUtils.parseDateTime(eq("2023-10-19T11:44:23.335590")))
-                    .thenReturn(LocalDateTime.parse("2023-10-19T11:44:23.335590"));
+                    .when(() -> DateUtils.parseDateTime(eq(CURRENT_DATE)))
+                    .thenReturn(LocalDateTime.parse(CURRENT_DATE));
             dateUtilsMock
                     .when(() -> DateUtils.parseDateTime(eq("2022-10-19T11:44:23.335590")))
                     .thenReturn(LocalDateTime.parse("2022-10-19T11:44:23.335590"));
@@ -562,49 +414,8 @@ class DatasetServiceImplTest {
                     .when(() -> DateUtils.parseDate(eq("2022-10-19T11:44:23.335590")))
                     .thenReturn(Date.from(Instant.parse("2022-10-19T00:00:00.000Z")));
 
-            rdfUtilsMock
-                    .when(() -> RdfUtils.seriesIRI("2"))
-                    .thenReturn(SimpleValueFactory.getInstance().createIRI("http://seriesIRI/2"));
-            rdfUtilsMock.when(() -> RdfUtils.setLiteralString(anyString())).thenCallRealMethod();
-            rdfUtilsMock
-                    .when(() -> RdfUtils.setLiteralString(anyString(), anyString()))
-                    .thenCallRealMethod();
-            rdfUtilsMock.when(() -> RdfUtils.setLiteralDateTime(any())).thenCallRealMethod();
-            rdfUtilsMock.when(() -> RdfUtils.setLiteralDate(any())).thenCallRealMethod();
-            rdfUtilsMock
-                    .when(() -> RdfUtils.addTripleString(any(), any(), any(), any(), any(), any()))
-                    .thenCallRealMethod();
-            rdfUtilsMock
-                    .when(() -> RdfUtils.addTripleString(any(), any(), any(), any(), any()))
-                    .thenCallRealMethod();
-            rdfUtilsMock
-                    .when(() -> RdfUtils.addTripleInt(any(), any(), any(), any(), any()))
-                    .thenCallRealMethod();
-            rdfUtilsMock
-                    .when(() -> RdfUtils.addTripleUri(any(), any(), any(String.class), any(), any()))
-                    .thenCallRealMethod();
-            rdfUtilsMock
-                    .when(() -> RdfUtils.addTripleUri(any(), any(), any(IRI.class), any(), any()))
-                    .thenCallRealMethod();
-            rdfUtilsMock
-                    .when(() -> RdfUtils.addTripleDateTime(any(), any(), any(), any(), any()))
-                    .thenCallRealMethod();
-            rdfUtilsMock.when(() -> RdfUtils.setLiteralInt(any())).thenCallRealMethod();
-            rdfUtilsMock
-                    .when(() -> RdfUtils.addTripleBNode(any(), any(), any(), any(), any()))
-                    .thenCallRealMethod();
-            rdfUtilsMock.when(RdfUtils::createBlankNode).thenCallRealMethod();
-
-            JSONObject body = new JSONObject();
-
-            this.generateGeneralInformation(body);
-            this.generateGeneralManagment(body);
-            this.generateStatisticsINformations(body);
-
+            JSONObject body = datasetBody("http://theme");
             body.put("descriptionLg1", "descriptionLg1");
-            body.put("descriptionLg2", "descriptionLg2");
-            body.put("wasGeneratedIRIs", List.of("http://2"));
-            body.put("themes", new JSONArray().put("http://theme"));
             body.put("altIdentifier", "1");
 
             JSONObject record = new JSONObject();
@@ -614,36 +425,25 @@ class DatasetServiceImplTest {
 
             body.put("catalogRecord", record);
 
-            JSONArray distributions = new JSONArray();
-            JSONObject d = new JSONObject();
-            d.put("id", "d1000");
-            distributions.put(d);
-            when(datasetDistributionQueries.getDatasetDistributions(any(), any()))
-                    .thenReturn("distributions-query");
-            when(repositoryGestion.getResponseAsArray(anyString())).thenReturn(distributions);
+            givenDatasetDistributions(distributionsD1000());
 
             when(seriesRepository.isSeriesAndOperationsExist(any())).thenReturn(true);
 
             String id = datasetService.update("jd1001", body.toString());
 
-            ArgumentCaptor<Model> model = ArgumentCaptor.forClass(Model.class);
-            verify(repositoryGestion, times(1)).loadSimpleObject(eq(iri), model.capture(), any());
-
-            ArgumentCaptor<Model> model2 = ArgumentCaptor.forClass(Model.class);
-            verify(repositoryGestion, times(1)).loadSimpleObject(eq(catalogRecordIri), model2.capture(), any());
-
-            ArgumentCaptor<Model> model3 = ArgumentCaptor.forClass(Model.class);
-            verify(repositoryGestion, times(1)).loadSimpleObject(eq(admsIri), model3.capture(), any());
+            Model model = modelLoadedFor(iri);
+            Model model2 = modelLoadedFor(catalogRecordIri);
+            Model model3 = modelLoadedFor(admsIri);
 
             Assertions.assertEquals(
                     "[(http://datasetIRI/jd1001, http://purl.org/dc/terms/identifier, \"jd1001\") [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://www.w3.org/ns/dcat#Dataset) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/title, \"labelLg1\"@fr) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/title, \"labelLg2\"@en) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#subtitle, \"subTitleLg1\"@fr) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#subtitle, \"subTitleLg2\"@en) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/accrualPeriodicity, https://accrualPeriodicity) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/accessRights, https://accessRights) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#confidentialityStatus, https://confidentialityStatus) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/creator, http://c1) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/creator, http://c2) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/publisher, http://c3) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/dcat#landingPage, \"landingPageLg1\"@fr) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/dcat#landingPage, \"landingPageLg2\"@en) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/modified, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/issued, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#disseminationStatus, https://disseminationStatus) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#processStep, https://disseminationStatus) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#archiveUnit, https://archiveUnit) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/adms#identifier, http://identifiantsAlternatifs/jeuDeDonnees/jd1001) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/description, \"descriptionLg1\"@fr) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/description, \"descriptionLg2\"@en) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/type, http://type) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#statisticalUnit, https://statisticalUnit) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#structure, https://dataStructure) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#numObservations, \"2\"^^<http://www.w3.org/2001/XMLSchema#int>) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/spatial, https://spacialCoverage) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/dcat#temporalResolution, https://temporalResolution) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#spatialResolution, http://spacialResolutions) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/prov#wasGeneratedBy, http://2) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/dcat#theme, http://theme) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/dcat#distribution, http://distributionIRI/d1000) [http://rdf.insee.fr/graphes/datasetGraph/]]",
-                    model.getValue().toString());
+                    model.toString());
             Assertions.assertEquals(
                     "[(http://recordIRI/jd1001, http://xmlns.com/foaf/0.1/primaryTopic, http://datasetIRI/jd1001) [http://rdf.insee.fr/graphes/datasetGraph/], (http://recordIRI/jd1001, http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://www.w3.org/ns/dcat#CatalogRecord) [http://rdf.insee.fr/graphes/datasetGraph/], (http://recordIRI/jd1001, http://purl.org/dc/elements/1.1/creator, http://creator) [http://rdf.insee.fr/graphes/datasetGraph/], (http://recordIRI/jd1001, http://purl.org/dc/elements/1.1/contributor, http://contributor) [http://rdf.insee.fr/graphes/datasetGraph/], (http://recordIRI/jd1001, http://purl.org/dc/terms/created, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>) [http://rdf.insee.fr/graphes/datasetGraph/], (http://recordIRI/jd1001, http://purl.org/dc/terms/modified, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>) [http://rdf.insee.fr/graphes/datasetGraph/]]",
-                    model2.getValue().toString());
+                    model2.toString());
             Assertions.assertEquals(
                     "[(http://identifiantsAlternatifs/jeuDeDonnees/jd1001, http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://www.w3.org/ns/adms#Identifier) [http://rdf.insee.fr/graphes/adms], (http://identifiantsAlternatifs/jeuDeDonnees/jd1001, http://www.w3.org/2004/02/skos/core#notation, \"1\") [http://rdf.insee.fr/graphes/adms]]",
-                    model3.getValue().toString());
+                    model3.toString());
             Assertions.assertEquals("jd1001", id);
         }
     }
@@ -731,21 +531,7 @@ class DatasetServiceImplTest {
 
     @Test
     void shouldNotDeleteNotUnpublishedDatasetAndReturn406() throws RmesException {
-        JSONArray mockJSON = new JSONArray("""
-                [{
-                  "id": idTest,
-                  "validationState": "Not Unpublished",
-                  "catalogRecordCreator": "DG57-C003"
-                }
-                ]""");
-
-        JSONArray empty_array = new JSONArray(EMPTY_ARRAY);
-
-        when(datasetQueries.getDataset(any(), any(), any())).thenReturn("query1 ");
-        when(repositoryGestion.getResponseAsArray("query1 ")).thenReturn(mockJSON);
-
-        when(datasetQueries.getDatasetCreators(any(), any())).thenReturn("query2 ");
-        when(repositoryGestion.getResponseAsArray("query2 ")).thenReturn(empty_array);
+        givenDatasetToDelete("Not Unpublished");
 
         RmesBadRequestException exception =
                 assertThrows(RmesBadRequestException.class, () -> datasetService.deleteDatasetId("idTest"));
@@ -755,21 +541,8 @@ class DatasetServiceImplTest {
 
     @Test
     void shouldNotDeleteDataSetWithDistributionAndReturn400() throws RmesException {
-        JSONArray mockJSON = new JSONArray("""
-                [{
-                  "id": idTest,
-                  "validationState": "Unpublished",
-                  "catalogRecordCreator": "DG57-C003"
-                }
-                ]""");
-        JSONArray empty_array = new JSONArray(EMPTY_ARRAY);
         JSONArray mockDistrib = new JSONArray("[{\"idDataset\":\"idTest\",\"id\":\"distrib1\"}]");
-
-        when(datasetQueries.getDataset(any(), any(), any())).thenReturn("query1 ");
-        when(repositoryGestion.getResponseAsArray("query1 ")).thenReturn(mockJSON);
-
-        when(datasetQueries.getDatasetCreators(any(), any())).thenReturn("query2 ");
-        when(repositoryGestion.getResponseAsArray("query2 ")).thenReturn(empty_array);
+        givenDatasetToDelete("Unpublished");
 
         when(datasetDistributionQueries.getDatasetDistributions(any(), any())).thenReturn("query3 ");
         when(repositoryGestion.getResponseAsArray("query3 ")).thenReturn(mockDistrib);
@@ -783,24 +556,13 @@ class DatasetServiceImplTest {
 
     @Test
     void shouldDeleteDataSet() throws RmesException {
-        JSONArray mockJSON = new JSONArray("""
-                [{
-                  "id": idTest,
-                  "validationState": "Unpublished",
-                  "catalogRecordCreator": "DG57-C003"
-                }
-                ]""");
         JSONArray empty_array = new JSONArray(EMPTY_ARRAY);
         JSONObject quasi_empty_object = new JSONObject(QUASI_EMPTY_OBJECT);
 
         String stringDatasetURI = "http://bauhaus/catalogues/entreeCatalogue/idtest";
         IRI datasetUri = RdfUtils.toURI(stringDatasetURI);
 
-        when(datasetQueries.getDataset(any(), any(), any())).thenReturn("query1 ");
-        when(repositoryGestion.getResponseAsArray("query1 ")).thenReturn(mockJSON);
-
-        when(datasetQueries.getDatasetCreators(any(), any())).thenReturn("query2 ");
-        when(repositoryGestion.getResponseAsArray("query2 ")).thenReturn(empty_array);
+        givenDatasetToDelete("Unpublished");
 
         when(datasetQueries.getDerivedDataset(any(), any())).thenReturn("query4 ");
         when(repositoryGestion.getResponseAsObject("query4 ")).thenReturn(quasi_empty_object);
@@ -916,8 +678,13 @@ class DatasetServiceImplTest {
      * dizaine de requêtes, toutes bouchonnées ici pour que le test porte sur ce qui est écrit.
      */
     private void givenExistingDataset(JSONObject dataset) throws RmesException {
-        when(datasetDistributionQueries.getDatasetDistributions(any(), any())).thenReturn("distributions-query");
-        when(repositoryGestion.getResponseAsArray(anyString())).thenReturn(new JSONArray());
+        givenExistingDataset(dataset, new JSONArray(), new JSONArray(), new JSONArray());
+    }
+
+    private void givenExistingDataset(
+            JSONObject dataset, JSONArray distributions, JSONArray spacialResolutions, JSONArray statisticalUnits)
+            throws RmesException {
+        givenDatasetDistributions(distributions);
         when(seriesRepository.isSeriesAndOperationsExist(any())).thenReturn(true);
         doCallRealMethod().when(repositoryGestion).getMultipleTripletsForObject(any(), any(), any(), any());
 
@@ -932,8 +699,8 @@ class DatasetServiceImplTest {
                 .thenReturn(new JSONArray().put(new JSONObject().put("creator", "http://creator-1")));
         when(repositoryGestion.getResponseAsArray("query-contributor"))
                 .thenReturn(new JSONArray().put(new JSONObject().put("contributor", "http://contributor")));
-        when(repositoryGestion.getResponseAsArray("query-spacialResolutions")).thenReturn(new JSONArray());
-        when(repositoryGestion.getResponseAsArray("query-statisticalUnits")).thenReturn(new JSONArray());
+        when(repositoryGestion.getResponseAsArray("query-spacialResolutions")).thenReturn(spacialResolutions);
+        when(repositoryGestion.getResponseAsArray("query-statisticalUnits")).thenReturn(statisticalUnits);
     }
 
     private JSONObject datasetJson(String id) {
@@ -946,9 +713,101 @@ class DatasetServiceImplTest {
     }
 
     private Model storedDatasetModel() throws RmesException {
-        IRI datasetIri = SimpleValueFactory.getInstance().createIRI("http://datasetIRI/jd1001");
+        return modelLoadedFor(SimpleValueFactory.getInstance().createIRI("http://datasetIRI/jd1001"));
+    }
+
+    /** Le modèle chargé par l'unique appel à {@code loadSimpleObject} sur {@code iri}. */
+    private Model modelLoadedFor(IRI iri) throws RmesException {
         ArgumentCaptor<Model> model = ArgumentCaptor.forClass(Model.class);
-        verify(repositoryGestion).loadSimpleObject(eq(datasetIri), model.capture(), any());
+        verify(repositoryGestion, times(1)).loadSimpleObject(eq(iri), model.capture(), any());
         return model.getValue();
+    }
+
+    private void givenPartialDatasets() throws RmesException {
+        JSONArray array = new JSONArray();
+        array.put(new JSONObject().put("id", "1").put("label", "label"));
+
+        when(datasetQueries.getDatasets(anyString(), any(Set.class))).thenReturn("query");
+        when(repositoryGestion.getResponseAsArray("query")).thenReturn(array);
+    }
+
+    /** Requêtes de lecture d'un jeu de données : fiche, créateurs, résolutions spatiales, unités, mots-clés. */
+    private void givenDatasetReadQueries(String datasetId) throws RmesException {
+        doCallRealMethod().when(repositoryGestion).getMultipleTripletsForObject(any(), any(), any(), any());
+        when(datasetQueries.getDataset(eq(datasetId), any(), any())).thenReturn("query");
+        when(datasetQueries.getDatasetCreators(eq(datasetId), any())).thenReturn("query-creators");
+        when(datasetQueries.getDatasetSpacialResolutions(eq(datasetId), any())).thenReturn("query-spacialResolutions");
+        when(datasetQueries.getDatasetStatisticalUnits(eq(datasetId), any())).thenReturn("query-statisticalUnits");
+        when(datasetQueries.getKeywords(eq(datasetId), any())).thenReturn("query-keywords");
+    }
+
+    private static JSONObject labelledBody() {
+        JSONObject body = new JSONObject();
+        body.put("labelLg1", "labelLg1");
+        body.put("labelLg2", "labelLg2R");
+        return body;
+    }
+
+    private void assertCreationRejectedWith(JSONObject body, String expectedDetails) throws RmesException {
+        when(repositoryGestion.getResponseAsObject(anyString())).then(invocationOnMock -> {
+            JSONObject lastId = new JSONObject();
+            lastId.put("id", "1000");
+            return lastId;
+        });
+        RmesException exception =
+                assertThrows(RmesBadRequestException.class, () -> datasetService.create(body.toString()));
+        Assertions.assertEquals(expectedDetails, exception.getDetails());
+    }
+
+    /** Corps complet d'un jeu de données, hors fiche de catalogue. */
+    private JSONObject datasetBody(String theme) {
+        JSONObject body = new JSONObject();
+        this.generateGeneralInformation(body);
+        this.generateGeneralManagment(body);
+        this.generateStatisticsINformations(body);
+        body.put("descriptionLg2", "descriptionLg2");
+        body.put("wasGeneratedIRIs", List.of("http://2"));
+        body.put("themes", new JSONArray().put(theme));
+        return body;
+    }
+
+    private void givenDatasetDistributions(JSONArray distributions) throws RmesException {
+        when(datasetDistributionQueries.getDatasetDistributions(any(), any())).thenReturn("distributions-query");
+        when(repositoryGestion.getResponseAsArray(anyString())).thenReturn(distributions);
+    }
+
+    private static JSONArray distributionsD1000() {
+        JSONArray distributions = new JSONArray();
+        JSONObject d = new JSONObject();
+        d.put("id", "d1000");
+        distributions.put(d);
+        return distributions;
+    }
+
+    private void givenDatasetToDelete(String validationState) throws RmesException {
+        JSONArray mockJSON = new JSONArray("""
+                [{
+                  "id": idTest,
+                  "validationState": "%s",
+                  "catalogRecordCreator": "DG57-C003"
+                }
+                ]""".formatted(validationState));
+
+        when(datasetQueries.getDataset(any(), any(), any())).thenReturn("query1 ");
+        when(repositoryGestion.getResponseAsArray("query1 ")).thenReturn(mockJSON);
+
+        when(datasetQueries.getDatasetCreators(any(), any())).thenReturn("query2 ");
+        when(repositoryGestion.getResponseAsArray("query2 ")).thenReturn(new JSONArray(EMPTY_ARRAY));
+    }
+
+    /** Socle commun des bouchons {@link RdfUtils}, complété des littéraux date et entier et des nœuds anonymes. */
+    private static void stubDatasetRdfUtils(MockedStatic<RdfUtils> rdfUtilsMock) {
+        callRealLiteralAndTripleBuilders(rdfUtilsMock);
+        rdfUtilsMock.when(() -> RdfUtils.setLiteralDate(any())).thenCallRealMethod();
+        rdfUtilsMock
+                .when(() -> RdfUtils.addTripleInt(any(), any(), any(), any(), any()))
+                .thenCallRealMethod();
+        rdfUtilsMock.when(() -> RdfUtils.setLiteralInt(any())).thenCallRealMethod();
+        rdfUtilsMock.when(RdfUtils::createBlankNode).thenCallRealMethod();
     }
 }

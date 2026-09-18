@@ -11,15 +11,7 @@ class FamilyResourcesE2ETest extends BaseE2ETest {
 
     @Test
     void testGetFamilies() {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setAccept(List.of(MediaType.APPLICATION_JSON));
-        HttpEntity<String> entity = new HttpEntity<>(headers);
-
-        var response = restTemplate.exchange(
-                "http://localhost:" + port + "/api/operations/families", HttpMethod.GET, entity, String.class);
-
-        Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
-        Assertions.assertNotNull(response.getBody());
+        var response = getJsonOk("/api/operations/families");
 
         try {
             JsonNode jsonArray = objectMapper.readTree(response.getBody());
@@ -49,15 +41,7 @@ class FamilyResourcesE2ETest extends BaseE2ETest {
 
     @Test
     void testGetFamilyById() {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setAccept(List.of(MediaType.APPLICATION_JSON));
-        HttpEntity<String> entity = new HttpEntity<>(headers);
-
-        var response = restTemplate.exchange(
-                "http://localhost:" + port + "/api/operations/family/s88", HttpMethod.GET, entity, String.class);
-
-        Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
-        Assertions.assertNotNull(response.getBody());
+        var response = getJsonOk("/api/operations/family/s88");
 
         try {
             JsonNode familyJson = objectMapper.readTree(response.getBody());
@@ -82,5 +66,18 @@ class FamilyResourcesE2ETest extends BaseE2ETest {
         } catch (Exception e) {
             Assertions.fail("Failed to parse JSON response: " + e.getMessage());
         }
+    }
+
+    /** GET en JSON, dont la réponse doit être un 200 avec un corps. */
+    private ResponseEntity<String> getJsonOk(String path) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setAccept(List.of(MediaType.APPLICATION_JSON));
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+
+        var response = restTemplate.exchange("http://localhost:" + port + path, HttpMethod.GET, entity, String.class);
+
+        Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
+        Assertions.assertNotNull(response.getBody());
+        return response;
     }
 }

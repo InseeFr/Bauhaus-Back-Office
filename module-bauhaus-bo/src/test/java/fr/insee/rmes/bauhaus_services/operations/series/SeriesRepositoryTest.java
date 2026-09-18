@@ -1,5 +1,7 @@
 package fr.insee.rmes.bauhaus_services.operations.series;
 
+import static fr.insee.rmes.bauhaus_services.operations.OperationsRdfModelAssertions.assertAbstractsWrittenAsPlainMarkdownLiterals;
+import static fr.insee.rmes.bauhaus_services.operations.OperationsRdfModelAssertions.assertSingleIriObject;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.*;
@@ -33,7 +35,6 @@ import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.DC;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -53,20 +54,7 @@ class SeriesRepositoryTest {
 
     @Test
     void shouldAddAbstractPropertyAsPlainMarkdownLiterals() {
-        SeriesRepository seriesRepository = new SeriesRepository(
-                new BauhausLanguagesProperties("fr", "en"),
-                repositoryGestion,
-                null,
-                null,
-                operationsObjectMapper,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null);
+        SeriesRepository seriesRepository = seriesRepository(null, null);
 
         var series = new Series();
         series.setId("1");
@@ -74,26 +62,7 @@ class SeriesRepositoryTest {
         series.setAbstractLg2("setAbstractLg2");
         IRI seriesIri = SimpleValueFactory.getInstance().createIRI("http://purl.org/dc/dcmitype/" + series.getId());
 
-        Model model = new LinkedHashModel();
-
-        SimpleValueFactory simpleValueFactory = SimpleValueFactory.getInstance();
-
-        seriesRepository.addMulltiLangValues(
-                model,
-                seriesIri,
-                simpleValueFactory.createIRI("http://purl.org/dc/dcmitype/"),
-                "fr",
-                "en",
-                DCTERMS.ABSTRACT);
-
-        Assertions.assertEquals(
-                model.subjects().toArray()[0], simpleValueFactory.createIRI("http://purl.org/dc/dcmitype/1"));
-
-        Assertions.assertEquals(
-                model.predicates().toArray()[0], simpleValueFactory.createIRI(DCTERMS.ABSTRACT.toString()));
-
-        Assertions.assertEquals("\"<p>fr</p>\"@fr", model.objects().toArray()[0].toString());
-        Assertions.assertEquals("\"<p>en</p>\"@en", model.objects().toArray()[1].toString());
+        assertAbstractsWrittenAsPlainMarkdownLiterals(seriesIri, seriesRepository::addMulltiLangValues);
     }
 
     private static final IRI TEST_GRAPH = SimpleValueFactory.getInstance().createIRI("http://test/operations");
@@ -101,20 +70,7 @@ class SeriesRepositoryTest {
     @Test
     void createRdfSeries_addsAdmsIdentifierTriple() throws RmesException {
         SeriesValidator validator = mock(SeriesValidator.class);
-        SeriesRepository seriesRepository = new SeriesRepository(
-                new BauhausLanguagesProperties("fr", "en"),
-                repositoryGestion,
-                null,
-                null,
-                operationsObjectMapper,
-                null,
-                null,
-                null,
-                null,
-                validator,
-                null,
-                null,
-                null);
+        SeriesRepository seriesRepository = seriesRepository(validator, null);
         Series series = new Series();
         series.setId("s2000");
         series.setPrefLabelLg1("Série de test");
@@ -132,92 +88,33 @@ class SeriesRepositoryTest {
 
     @Test
     void addOperationLinksOrganization_writesIriPassthrough_whenLinkIdIsAlreadyAnIri() throws RmesException {
-        OrganisationLookup lookup = mock(OrganisationLookup.class);
-        when(lookup.resolve("http://bauhaus/organisations/DG75-A001"))
-                .thenReturn(Optional.of("http://bauhaus/organisations/DG75-A001"));
-        SeriesRepository seriesRepository = new SeriesRepository(
-                new BauhausLanguagesProperties("fr", "en"),
-                repositoryGestion,
-                null,
-                null,
-                operationsObjectMapper,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                lookup,
-                null);
-        SimpleValueFactory vf = SimpleValueFactory.getInstance();
-        IRI seriesURI = vf.createIRI("http://bauhaus/series/s1");
-        Model model = new LinkedHashModel();
-        OperationsLink link = new OperationsLink();
-        link.id = "http://bauhaus/organisations/DG75-A001";
-
-        seriesRepository.addOperationLinksOrganization(List.of(link), DCTERMS.PUBLISHER, model, seriesURI, TEST_GRAPH);
-
-        IRI publisher = vf.createIRI(DCTERMS.PUBLISHER.toString());
-        List<Value> publishers = model.filter(seriesURI, publisher, null).stream()
-                .map(Statement::getObject)
-                .toList();
-        assertThat(publishers).hasSize(1);
-        assertThat(publishers.get(0)).isInstanceOf(IRI.class);
-        assertThat(publishers.get(0).stringValue()).isEqualTo("http://bauhaus/organisations/DG75-A001");
+        assertOrganisationLinkWrittenAsIri("http://bauhaus/organisations/DG75-A001", DCTERMS.PUBLISHER);
     }
 
     @Test
     void addOperationLinksOrganization_resolvesLegacyIdViaLookup() throws RmesException {
+        assertOrganisationLinkWrittenAsIri("DG75-A001", DCTERMS.CONTRIBUTOR);
+    }
+
+    /** Le lien d'organisation {@code linkId} est résolu par le lookup et écrit comme une IRI. */
+    private void assertOrganisationLinkWrittenAsIri(String linkId, IRI predicate) throws RmesException {
         OrganisationLookup lookup = mock(OrganisationLookup.class);
-        when(lookup.resolve("DG75-A001")).thenReturn(Optional.of("http://bauhaus/organisations/DG75-A001"));
-        SeriesRepository seriesRepository = new SeriesRepository(
-                new BauhausLanguagesProperties("fr", "en"),
-                repositoryGestion,
-                null,
-                null,
-                operationsObjectMapper,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                lookup,
-                null);
+        when(lookup.resolve(linkId)).thenReturn(Optional.of("http://bauhaus/organisations/DG75-A001"));
+        SeriesRepository seriesRepository = seriesRepository(null, lookup);
         SimpleValueFactory vf = SimpleValueFactory.getInstance();
         IRI seriesURI = vf.createIRI("http://bauhaus/series/s1");
         Model model = new LinkedHashModel();
         OperationsLink link = new OperationsLink();
-        link.id = "DG75-A001";
+        link.id = linkId;
 
-        seriesRepository.addOperationLinksOrganization(
-                List.of(link), DCTERMS.CONTRIBUTOR, model, seriesURI, TEST_GRAPH);
+        seriesRepository.addOperationLinksOrganization(List.of(link), predicate, model, seriesURI, TEST_GRAPH);
 
-        IRI contributor = vf.createIRI(DCTERMS.CONTRIBUTOR.toString());
-        List<Value> contributors = model.filter(seriesURI, contributor, null).stream()
-                .map(Statement::getObject)
-                .toList();
-        assertThat(contributors).hasSize(1);
-        assertThat(contributors.get(0)).isInstanceOf(IRI.class);
-        assertThat(contributors.get(0).stringValue()).isEqualTo("http://bauhaus/organisations/DG75-A001");
+        assertSingleIriObject(model, seriesURI, predicate, "http://bauhaus/organisations/DG75-A001");
     }
 
     @Test
     void setSeries_shouldNotRejectWith406_whenBodyContainsBothIdSimsAndOperations() {
-        SeriesRepository seriesRepository = new SeriesRepository(
-                new BauhausLanguagesProperties("fr", "en"),
-                repositoryGestion,
-                null,
-                null,
-                operationsObjectMapper,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null);
+        SeriesRepository seriesRepository = seriesRepository(null, null);
         String body =
                 "{\"idSims\":\"sims-1\",\"operations\":[{\"id\":\"op1\",\"labelLg1\":\"L1\",\"labelLg2\":\"L2\"}]}";
 
@@ -235,20 +132,7 @@ class SeriesRepositoryTest {
 
     @Test
     void addCreators_writesEachCreatorAsAnIriTriple() {
-        SeriesRepository seriesRepository = new SeriesRepository(
-                new BauhausLanguagesProperties("fr", "en"),
-                repositoryGestion,
-                null,
-                null,
-                operationsObjectMapper,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null);
+        SeriesRepository seriesRepository = seriesRepository(null, null);
         SimpleValueFactory vf = SimpleValueFactory.getInstance();
         IRI seriesURI = vf.createIRI("http://bauhaus/series/s1");
         Model model = new LinkedHashModel();
@@ -337,5 +221,22 @@ class SeriesRepositoryTest {
         verify(events).publishEvent(captor.capture());
         assertThat(captor.getValue().iri()).isEqualTo("http://id.insee.fr/operations/serie/s1001");
         assertThat(captor.getValue().prefLabel()).isEqualTo(new BilingualLabel("Recensement", null));
+    }
+
+    private SeriesRepository seriesRepository(SeriesValidator validator, OrganisationLookup organisationLookup) {
+        return new SeriesRepository(
+                new BauhausLanguagesProperties("fr", "en"),
+                repositoryGestion,
+                null,
+                null,
+                operationsObjectMapper,
+                null,
+                null,
+                null,
+                null,
+                validator,
+                null,
+                organisationLookup,
+                null);
     }
 }

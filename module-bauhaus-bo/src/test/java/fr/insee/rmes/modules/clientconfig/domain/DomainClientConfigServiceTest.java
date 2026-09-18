@@ -8,6 +8,8 @@ import fr.insee.rmes.modules.shared_kernel.domain.model.ConfiguredLanguages;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 class DomainClientConfigServiceTest {
 
@@ -49,54 +51,15 @@ class DomainClientConfigServiceTest {
         assertThat(properties.enableDevTools()).isTrue();
     }
 
-    @Test
-    void should_return_openid_connect_auth_for_pre_prod() {
+    @ParameterizedTest
+    @ValueSource(strings = {"pre-prod", "prod", "PROD"})
+    void should_return_openid_connect_auth_for_production_environments(String env) {
         domainClientConfigService = new DomainClientConfigService(
                 "http://localhost:3000",
                 "350",
                 "DG75-L201",
                 new ConfiguredLanguages("fr", "en"),
-                "pre-prod",
-                List.of(),
-                "1.0.0",
-                List.of(),
-                "fr.insee",
-                List.of(),
-                true);
-
-        ClientConfigProperties properties = domainClientConfigService.getClientConfigProperties();
-
-        assertThat(properties.authType()).isEqualTo("OpenIDConnectAuth");
-    }
-
-    @Test
-    void should_return_openid_connect_auth_for_prod() {
-        domainClientConfigService = new DomainClientConfigService(
-                "http://localhost:3000",
-                "350",
-                "DG75-L201",
-                new ConfiguredLanguages("fr", "en"),
-                "prod",
-                List.of(),
-                "1.0.0",
-                List.of(),
-                "fr.insee",
-                List.of(),
-                true);
-
-        ClientConfigProperties properties = domainClientConfigService.getClientConfigProperties();
-
-        assertThat(properties.authType()).isEqualTo("OpenIDConnectAuth");
-    }
-
-    @Test
-    void should_return_openid_connect_auth_for_PROD() {
-        domainClientConfigService = new DomainClientConfigService(
-                "http://localhost:3000",
-                "350",
-                "DG75-L201",
-                new ConfiguredLanguages("fr", "en"),
-                "PROD",
+                env,
                 List.of(),
                 "1.0.0",
                 List.of(),

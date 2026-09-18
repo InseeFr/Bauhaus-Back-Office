@@ -30,24 +30,11 @@ class ColecticaKeycloakServiceTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        var properties = new KeycloakProperties(
-                new KeycloakProperties.Server("keycloak.test"),
-                new KeycloakProperties.RealmConfig("default-realm", "default-client", "default-secret"),
-                new KeycloakProperties.RealmConfig("colectica-realm", "colectica-client", "colectica-secret"));
-        colecticaKeycloakService = new ColecticaKeycloakService(properties);
+        colecticaKeycloakService = new ColecticaKeycloakService(KeycloakTestFixtures.properties());
         colecticaKeycloakService.keycloakClient = testRestClient;
 
-        when(testRestClient.post()).thenReturn(requestBodyUriSpec);
-        when(requestBodyUriSpec.uri(anyString())).thenReturn(requestBodySpec);
-        when(requestBodySpec.retrieve()).thenReturn(responseSpec);
-
-        Token token = new Token() {
-            @Override
-            public String getAccessToken() {
-                return "colectica-token";
-            }
-        };
-        when(responseSpec.body(Token.class)).thenReturn(token);
+        KeycloakTestFixtures.stubTokenRequest(testRestClient, requestBodyUriSpec, requestBodySpec, responseSpec);
+        when(responseSpec.body(Token.class)).thenReturn(KeycloakTestFixtures.token("colectica-token"));
     }
 
     @Test
@@ -65,11 +52,8 @@ class ColecticaKeycloakServiceTest {
 
     @Test
     void shouldThrowMissingKeycloakConfigurationException_whenServerUrlIsNull() {
-        var propertiesWithNullServer = new KeycloakProperties(
-                null,
-                new KeycloakProperties.RealmConfig("default-realm", "default-client", "default-secret"),
-                new KeycloakProperties.RealmConfig("colectica-realm", "colectica-client", "colectica-secret"));
-        ColecticaKeycloakService serviceWithNullServer = new ColecticaKeycloakService(propertiesWithNullServer);
+        ColecticaKeycloakService serviceWithNullServer =
+                new ColecticaKeycloakService(KeycloakTestFixtures.propertiesWithoutServer());
 
         assertThrows(MissingKeycloakConfigurationException.class, serviceWithNullServer::getAccessToken);
     }

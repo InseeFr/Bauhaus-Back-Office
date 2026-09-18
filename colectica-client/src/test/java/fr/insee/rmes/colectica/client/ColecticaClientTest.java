@@ -50,6 +50,28 @@ class ColecticaClientTest {
         return new Fixture(new ColecticaClient(builder.build(), BASE_API_URL, BASE_SERVER_URL, credentials), server);
     }
 
+    private static final String EMPTY_QUERY_RESPONSE = "{\"TotalResults\":0,\"ReturnedResults\":0,\"Results\":[]}";
+
+    /** Expects a /token/createtoken call and issues {@code accessToken}. */
+    private static void expectTokenIssued(MockRestServiceServer server, String accessToken) {
+        server.expect(requestTo(BASE_SERVER_URL + "/token/createtoken"))
+                .andRespond(withSuccess("{\"access_token\":\"" + accessToken + "\"}", MediaType.APPLICATION_JSON));
+    }
+
+    /** Expects a _query call carrying {@code token} and answers with no result. */
+    private static void expectEmptyQuery(MockRestServiceServer server, String token) {
+        server.expect(requestTo(BASE_API_URL + "_query"))
+                .andExpect(header("Authorization", "Bearer " + token))
+                .andRespond(withSuccess(EMPTY_QUERY_RESPONSE, MediaType.APPLICATION_JSON));
+    }
+
+    /** Expects a _query call carrying {@code token} and rejects it as unauthorized. */
+    private static void expectUnauthorizedQuery(MockRestServiceServer server, String token) {
+        server.expect(requestTo(BASE_API_URL + "_query"))
+                .andExpect(header("Authorization", "Bearer " + token))
+                .andRespond(withStatus(HttpStatus.UNAUTHORIZED));
+    }
+
     @Test
     void query_postsItemTypesWithBearerTokenAndMapsResponse() {
         Fixture f = newFixture();
@@ -313,11 +335,7 @@ class ColecticaClientTest {
                 .andExpect(jsonPath("$.username").value("user"))
                 .andExpect(jsonPath("$.password").value("secret"))
                 .andRespond(withSuccess("{\"access_token\":\"jwt-abc\"}", MediaType.APPLICATION_JSON));
-        f.server
-                .expect(requestTo(BASE_API_URL + "_query"))
-                .andExpect(header("Authorization", "Bearer jwt-abc"))
-                .andRespond(withSuccess(
-                        "{\"TotalResults\":0,\"ReturnedResults\":0,\"Results\":[]}", MediaType.APPLICATION_JSON));
+        expectEmptyQuery(f.server, "jwt-abc");
 
         f.client.query(List.of(LOGICAL_PRODUCT_TYPE));
 
@@ -329,24 +347,13 @@ class ColecticaClientTest {
         Fixture f = newFixture(new ColecticaCredentials.UserPassword("user", "secret"));
 
         // 1) initial token
-        f.server
-                .expect(requestTo(BASE_SERVER_URL + "/token/createtoken"))
-                .andRespond(withSuccess("{\"access_token\":\"expired\"}", MediaType.APPLICATION_JSON));
+        expectTokenIssued(f.server, "expired");
         // 2) API call rejected with the expired token
-        f.server
-                .expect(requestTo(BASE_API_URL + "_query"))
-                .andExpect(header("Authorization", "Bearer expired"))
-                .andRespond(withStatus(HttpStatus.UNAUTHORIZED));
+        expectUnauthorizedQuery(f.server, "expired");
         // 3) re-authentication
-        f.server
-                .expect(requestTo(BASE_SERVER_URL + "/token/createtoken"))
-                .andRespond(withSuccess("{\"access_token\":\"fresh\"}", MediaType.APPLICATION_JSON));
+        expectTokenIssued(f.server, "fresh");
         // 4) retry succeeds with the fresh token
-        f.server
-                .expect(requestTo(BASE_API_URL + "_query"))
-                .andExpect(header("Authorization", "Bearer fresh"))
-                .andRespond(withSuccess(
-                        "{\"TotalResults\":0,\"ReturnedResults\":0,\"Results\":[]}", MediaType.APPLICATION_JSON));
+        expectEmptyQuery(f.server, "fresh");
 
         ColecticaResponse response = f.client.query(List.of(LOGICAL_PRODUCT_TYPE));
 
@@ -358,19 +365,9 @@ class ColecticaClientTest {
     void userPassword_cachesTokenAcrossCalls() {
         Fixture f = newFixture(new ColecticaCredentials.UserPassword("user", "secret"));
 
-        f.server
-                .expect(requestTo(BASE_SERVER_URL + "/token/createtoken"))
-                .andRespond(withSuccess("{\"access_token\":\"jwt-abc\"}", MediaType.APPLICATION_JSON));
-        f.server
-                .expect(requestTo(BASE_API_URL + "_query"))
-                .andExpect(header("Authorization", "Bearer jwt-abc"))
-                .andRespond(withSuccess(
-                        "{\"TotalResults\":0,\"ReturnedResults\":0,\"Results\":[]}", MediaType.APPLICATION_JSON));
-        f.server
-                .expect(requestTo(BASE_API_URL + "_query"))
-                .andExpect(header("Authorization", "Bearer jwt-abc"))
-                .andRespond(withSuccess(
-                        "{\"TotalResults\":0,\"ReturnedResults\":0,\"Results\":[]}", MediaType.APPLICATION_JSON));
+        expectTokenIssued(f.server, "jwt-abc");
+        expectEmptyQuery(f.server, "jwt-abc");
+        expectEmptyQuery(f.server, "jwt-abc");
 
         f.client.query(List.of(LOGICAL_PRODUCT_TYPE));
         f.client.query(List.of(LOGICAL_PRODUCT_TYPE));
@@ -385,15 +382,8 @@ class ColecticaClientTest {
         Supplier<String> supplier = () -> "tok-" + calls.incrementAndGet();
         Fixture f = newFixture(new ColecticaCredentials.BearerToken(supplier));
 
-        f.server
-                .expect(requestTo(BASE_API_URL + "_query"))
-                .andExpect(header("Authorization", "Bearer tok-1"))
-                .andRespond(withStatus(HttpStatus.UNAUTHORIZED));
-        f.server
-                .expect(requestTo(BASE_API_URL + "_query"))
-                .andExpect(header("Authorization", "Bearer tok-2"))
-                .andRespond(withSuccess(
-                        "{\"TotalResults\":0,\"ReturnedResults\":0,\"Results\":[]}", MediaType.APPLICATION_JSON));
+        expectUnauthorizedQuery(f.server, "tok-1");
+        expectEmptyQuery(f.server, "tok-2");
 
         f.client.query(List.of(LOGICAL_PRODUCT_TYPE));
 
@@ -413,15 +403,8 @@ class ColecticaClientTest {
         };
         Fixture f = newFixture(new ColecticaCredentials.BearerToken(supplier, onInvalidate));
 
-        f.server
-                .expect(requestTo(BASE_API_URL + "_query"))
-                .andExpect(header("Authorization", "Bearer tok-1"))
-                .andRespond(withStatus(HttpStatus.UNAUTHORIZED));
-        f.server
-                .expect(requestTo(BASE_API_URL + "_query"))
-                .andExpect(header("Authorization", "Bearer tok-2"))
-                .andRespond(withSuccess(
-                        "{\"TotalResults\":0,\"ReturnedResults\":0,\"Results\":[]}", MediaType.APPLICATION_JSON));
+        expectUnauthorizedQuery(f.server, "tok-1");
+        expectEmptyQuery(f.server, "tok-2");
 
         f.client.query(List.of(LOGICAL_PRODUCT_TYPE));
 

@@ -120,26 +120,26 @@ class DomainCollectionsServiceTest {
 
     @Test
     void update_marks_modified_when_existing_collection_is_validated() throws Throwable {
-        Collection existing = collectionWith(ValidationStatus.VALIDATED);
-        when(collectionsRepository.getCollection(ID)).thenReturn(Optional.of(existing));
-
-        domainCollectionsService.update(updateCommand());
-
-        ArgumentCaptor<Collection> captor = ArgumentCaptor.forClass(Collection.class);
-        verify(collectionsRepository).update(captor.capture());
-        assertThat(captor.getValue().validationState()).isEqualTo(ValidationStatus.MODIFIED);
+        assertThat(validationStateSavedWhenUpdatingACollectionThatIs(ValidationStatus.VALIDATED))
+                .isEqualTo(ValidationStatus.MODIFIED);
     }
 
     @Test
     void update_stays_unpublished_when_existing_collection_is_unpublished() throws Throwable {
-        Collection existing = collectionWith(ValidationStatus.UNPUBLISHED);
+        assertThat(validationStateSavedWhenUpdatingACollectionThatIs(ValidationStatus.UNPUBLISHED))
+                .isEqualTo(ValidationStatus.UNPUBLISHED);
+    }
+
+    private ValidationStatus validationStateSavedWhenUpdatingACollectionThatIs(ValidationStatus existingState)
+            throws Throwable {
+        Collection existing = collectionWith(existingState);
         when(collectionsRepository.getCollection(ID)).thenReturn(Optional.of(existing));
 
         domainCollectionsService.update(updateCommand());
 
         ArgumentCaptor<Collection> captor = ArgumentCaptor.forClass(Collection.class);
         verify(collectionsRepository).update(captor.capture());
-        assertThat(captor.getValue().validationState()).isEqualTo(ValidationStatus.UNPUBLISHED);
+        return captor.getValue().validationState();
     }
 
     private static Collection collectionWith(ValidationStatus state) {
@@ -285,10 +285,7 @@ class DomainCollectionsServiceTest {
     @Test
     void publish_should_throw_when_a_collection_is_already_published()
             throws CollectionsFetchException, CollectionsSaveException {
-        when(collectionsRepository.findExistingCollectionIds(List.of(uuid1.toString())))
-                .thenReturn(Set.of(uuid1.toString()));
-        when(collectionsRepository.findValidatedCollectionIds(List.of(uuid1.toString())))
-                .thenReturn(Set.of(uuid1.toString()));
+        givenAnExistingCollectionWhoseValidatedIdsAre(Set.of(uuid1.toString()));
 
         CollectionAlreadyPublishedException exception = assertThrows(
                 CollectionAlreadyPublishedException.class,
@@ -301,13 +298,18 @@ class DomainCollectionsServiceTest {
     @Test
     void publish_should_succeed_when_no_collection_is_already_published()
             throws CollectionsFetchException, CollectionsSaveException {
-        when(collectionsRepository.findExistingCollectionIds(List.of(uuid1.toString())))
-                .thenReturn(Set.of(uuid1.toString()));
-        when(collectionsRepository.findValidatedCollectionIds(List.of(uuid1.toString())))
-                .thenReturn(Set.of());
+        givenAnExistingCollectionWhoseValidatedIdsAre(Set.of());
 
         assertDoesNotThrow(() -> domainCollectionsService.publishCollections(List.of(ID)));
 
         verify(collectionsRepository).publishCollections(List.of(ID));
+    }
+
+    private void givenAnExistingCollectionWhoseValidatedIdsAre(Set<String> validatedIds)
+            throws CollectionsFetchException {
+        when(collectionsRepository.findExistingCollectionIds(List.of(uuid1.toString())))
+                .thenReturn(Set.of(uuid1.toString()));
+        when(collectionsRepository.findValidatedCollectionIds(List.of(uuid1.toString())))
+                .thenReturn(validatedIds);
     }
 }

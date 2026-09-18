@@ -1,5 +1,7 @@
 package fr.insee.rmes.bauhaus_services.operations;
 
+import static fr.insee.rmes.bauhaus_services.SortedLabelRows.assertSortedByLabelWithMergedAltLabels;
+import static fr.insee.rmes.bauhaus_services.SortedLabelRows.rowsWithDuplicatesAndDiacritics;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -72,97 +74,28 @@ class OperationsImplTest {
     @Test
     void shouldGetSeriesList() throws RmesException {
         when(operationSeriesQueries.seriesQuery()).thenReturn("query");
-
-        JSONArray array = new JSONArray();
-        array.put(new JSONObject().put("id", "1").put("label", "label 1").put("altLabel", "latLabel1"));
-        array.put(new JSONObject().put("id", "1").put("label", "label 1").put("altLabel", "latLabel2"));
-        array.put(new JSONObject().put("id", "2").put("label", "elabel 1").put("altLabel", "elatLabel1"));
-        array.put(new JSONObject().put("id", "3").put("label", "alabel 1").put("altLabel", "alatLabel1"));
-        array.put(new JSONObject().put("id", "4").put("label", "élabel 1").put("altLabel", "élatLabel1"));
-        when(repoGestion.getResponseAsArray("query")).thenReturn(array);
+        when(repoGestion.getResponseAsArray("query")).thenReturn(rowsWithDuplicatesAndDiacritics());
         var series = operationsImpl.getSeries().stream().toList();
 
-        assertEquals(4, series.size());
-
-        assertEquals("3", series.getFirst().id());
-        assertEquals("alabel 1", series.get(0).label());
-        assertEquals("alatLabel1", series.get(0).altLabel());
-
-        assertEquals("2", series.get(1).id());
-        assertEquals("elabel 1", series.get(1).label());
-        assertEquals("elatLabel1", series.get(1).altLabel());
-
-        assertEquals("4", series.get(2).id());
-        assertEquals("élabel 1", series.get(2).label());
-        assertEquals("élatLabel1", series.get(2).altLabel());
-
-        assertEquals("1", series.get(3).id());
-        assertEquals("label 1", series.get(3).label());
-        assertEquals("latLabel1 || latLabel2", series.get(3).altLabel());
+        assertSortedByLabelWithMergedAltLabels(series, s -> s.id(), s -> s.label(), s -> s.altLabel());
     }
 
     @Test
     void shouldGetOperationsList() throws RmesException {
         when(operationsOperationQueries.operationsQuery()).thenReturn("query");
-
-        JSONArray array = new JSONArray();
-        array.put(new JSONObject().put("id", "1").put("label", "label 1").put("altLabel", "latLabel1"));
-        array.put(new JSONObject().put("id", "1").put("label", "label 1").put("altLabel", "latLabel2"));
-        array.put(new JSONObject().put("id", "2").put("label", "elabel 1").put("altLabel", "elatLabel1"));
-        array.put(new JSONObject().put("id", "3").put("label", "alabel 1").put("altLabel", "alatLabel1"));
-        array.put(new JSONObject().put("id", "4").put("label", "élabel 1").put("altLabel", "élatLabel1"));
-        when(repoGestion.getResponseAsArray("query")).thenReturn(array);
+        when(repoGestion.getResponseAsArray("query")).thenReturn(rowsWithDuplicatesAndDiacritics());
         var series = operationsImpl.getOperations().stream().toList();
 
-        assertEquals(4, series.size());
-
-        assertEquals("3", series.getFirst().id());
-        assertEquals("alabel 1", series.get(0).label());
-        assertEquals("alatLabel1", series.get(0).altLabel());
-
-        assertEquals("2", series.get(1).id());
-        assertEquals("elabel 1", series.get(1).label());
-        assertEquals("elatLabel1", series.get(1).altLabel());
-
-        assertEquals("4", series.get(2).id());
-        assertEquals("élabel 1", series.get(2).label());
-        assertEquals("élatLabel1", series.get(2).altLabel());
-
-        assertEquals("1", series.get(3).id());
-        assertEquals("label 1", series.get(3).label());
-        assertEquals("latLabel1 || latLabel2", series.get(3).altLabel());
+        assertSortedByLabelWithMergedAltLabels(series, s -> s.id(), s -> s.label(), s -> s.altLabel());
     }
 
     @Test
     void shouldGetIndicatorsList() throws RmesException {
         when(operationIndicatorsQueries.indicatorsQuery()).thenReturn("query");
-
-        JSONArray array = new JSONArray();
-        array.put(new JSONObject().put("id", "1").put("label", "label 1").put("altLabel", "latLabel1"));
-        array.put(new JSONObject().put("id", "1").put("label", "label 1").put("altLabel", "latLabel2"));
-        array.put(new JSONObject().put("id", "2").put("label", "elabel 1").put("altLabel", "elatLabel1"));
-        array.put(new JSONObject().put("id", "3").put("label", "alabel 1").put("altLabel", "alatLabel1"));
-        array.put(new JSONObject().put("id", "4").put("label", "élabel 1").put("altLabel", "élatLabel1"));
-        when(repoGestion.getResponseAsArray("query")).thenReturn(array);
+        when(repoGestion.getResponseAsArray("query")).thenReturn(rowsWithDuplicatesAndDiacritics());
         var series = operationsImpl.getIndicators().stream().toList();
 
-        assertEquals(4, series.size());
-
-        assertEquals("3", series.getFirst().id());
-        assertEquals("alabel 1", series.get(0).label());
-        assertEquals("alatLabel1", series.get(0).altLabel());
-
-        assertEquals("2", series.get(1).id());
-        assertEquals("elabel 1", series.get(1).label());
-        assertEquals("elatLabel1", series.get(1).altLabel());
-
-        assertEquals("4", series.get(2).id());
-        assertEquals("élabel 1", series.get(2).label());
-        assertEquals("élatLabel1", series.get(2).altLabel());
-
-        assertEquals("1", series.get(3).id());
-        assertEquals("label 1", series.get(3).label());
-        assertEquals("latLabel1 || latLabel2", series.get(3).altLabel());
+        assertSortedByLabelWithMergedAltLabels(series, s -> s.id(), s -> s.label(), s -> s.altLabel());
     }
 
     @Test

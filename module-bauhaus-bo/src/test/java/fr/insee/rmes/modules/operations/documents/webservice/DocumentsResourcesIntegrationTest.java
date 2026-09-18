@@ -74,20 +74,17 @@ class DocumentsResourcesIntegrationTest {
     void shouldRejectAFileWhoseExtensionIsNotAllowed() throws Exception {
         // fr.insee.rmes.bauhaus.extensions liste les extensions déposables : tout le reste
         // est refusé avant même d'atteindre le service.
-        MockMultipartFile file =
-                new MockMultipartFile("file", "charge.exe", MediaType.APPLICATION_OCTET_STREAM_VALUE, "x".getBytes());
-
-        mockMvc.perform(MockMvcRequestBuilders.multipart(HttpMethod.PUT, "/documents/document/1000/file")
-                        .file(file))
-                .andExpect(content().string(containsString("Invalid File Extension")));
-
-        verifyNoInteractions(documentsService);
+        assertUploadRejectedForItsExtension("charge.exe");
     }
 
     @Test
     void shouldRejectAFileWithoutAnyExtension() throws Exception {
-        MockMultipartFile file = new MockMultipartFile(
-                "file", "sansextension", MediaType.APPLICATION_OCTET_STREAM_VALUE, "x".getBytes());
+        assertUploadRejectedForItsExtension("sansextension");
+    }
+
+    private void assertUploadRejectedForItsExtension(String fileName) throws Exception {
+        MockMultipartFile file =
+                new MockMultipartFile("file", fileName, MediaType.APPLICATION_OCTET_STREAM_VALUE, "x".getBytes());
 
         mockMvc.perform(MockMvcRequestBuilders.multipart(HttpMethod.PUT, "/documents/document/1000/file")
                         .file(file))

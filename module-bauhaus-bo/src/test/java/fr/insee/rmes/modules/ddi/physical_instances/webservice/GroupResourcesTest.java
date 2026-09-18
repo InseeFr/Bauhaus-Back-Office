@@ -1,5 +1,7 @@
 package fr.insee.rmes.modules.ddi.physical_instances.webservice;
 
+import static fr.insee.rmes.modules.ddi.physical_instances.webservice.DdiResourcesTestSupport.assertOkListOfSize;
+import static fr.insee.rmes.modules.ddi.physical_instances.webservice.DdiResourcesTestSupport.givenStampUserReadingPhysicalInstances;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -15,7 +17,6 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.Group
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PartialGroupResponse;
 import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
 import fr.insee.rmes.modules.users.domain.model.RBAC;
-import fr.insee.rmes.modules.users.domain.model.User;
 import fr.insee.rmes.modules.users.domain.port.serverside.RbacFetcher;
 import fr.insee.rmes.modules.users.infrastructure.UserProvider;
 import java.util.ArrayList;
@@ -23,8 +24,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -33,11 +32,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
-@ExtendWith(MockitoExtension.class)
+@ExtendWith({MockitoExtension.class, LocalhostRequestContextExtension.class})
 class GroupResourcesTest {
 
     @Mock
@@ -54,22 +50,6 @@ class GroupResourcesTest {
 
     @InjectMocks
     private GroupResources groupResources;
-
-    @BeforeEach
-    void setUp() {
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        request.setScheme("http");
-        request.setServerName("localhost");
-        request.setServerPort(8080);
-        request.setContextPath("");
-        ServletRequestAttributes attrs = new ServletRequestAttributes(request);
-        RequestContextHolder.setRequestAttributes(attrs);
-    }
-
-    @AfterEach
-    void tearDown() {
-        RequestContextHolder.resetRequestAttributes();
-    }
 
     // --- plain /ddi/groups list + create ---
 
@@ -157,11 +137,7 @@ class GroupResourcesTest {
 
         ResponseEntity<List<PartialGroupResponse>> response = groupResources.getGroupResponses();
 
-        assertNotNull(response);
-        assertEquals(200, response.getStatusCode().value());
-        List<PartialGroupResponse> result = response.getBody();
-        assertNotNull(result);
-        assertEquals(2, result.size());
+        List<PartialGroupResponse> result = assertOkListOfSize(response, 2);
 
         assertEquals("group-1", result.getFirst().getId());
         assertEquals("Base permanente des équipements", result.getFirst().getLabel());
@@ -183,20 +159,12 @@ class GroupResourcesTest {
         String iri = "http://id.insee.fr/operations/serie/s1001";
         List<PartialGroup> filteredGroups = List.of(
                 new PartialGroup("group-1", "Base permanente des équipements", new Date(), "fr.insee", List.of(iri)));
-        User stampUser = new User("user-1", List.of("role-stamp"), Set.of("stamp-A"));
-        when(userProvider.findUser()).thenReturn(Optional.of(stampUser));
-        when(rbacFetcher.getApplicationActionStrategyByRole(
-                        any(), eq(RBAC.Module.DDI_PHYSICALINSTANCE), eq(RBAC.Privilege.READ)))
-                .thenReturn(RBAC.Strategy.STAMP);
+        givenStampUserReadingPhysicalInstances(userProvider, rbacFetcher);
         when(ddiService.getGroupsFilteredByStamp(Set.of("stamp-A"))).thenReturn(filteredGroups);
 
         ResponseEntity<List<PartialGroupResponse>> response = groupResources.getGroupResponses();
 
-        assertNotNull(response);
-        assertEquals(200, response.getStatusCode().value());
-        List<PartialGroupResponse> result = response.getBody();
-        assertNotNull(result);
-        assertEquals(1, result.size());
+        List<PartialGroupResponse> result = assertOkListOfSize(response, 1);
         assertEquals("group-1", result.getFirst().getId());
 
         verify(ddiService).getGroupsFilteredByStamp(Set.of("stamp-A"));

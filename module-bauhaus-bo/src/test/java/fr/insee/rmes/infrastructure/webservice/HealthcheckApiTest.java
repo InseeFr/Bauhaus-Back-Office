@@ -19,22 +19,16 @@ class HealthcheckApiTest {
     private String documentsStorageGestion;
     private String documentsStoragePublicationExterne;
 
+    private final StringJoiner errorMessage = new StringJoiner(" ");
+    private final StringJoiner stateResult = new StringJoiner(" ");
+
     @Test
     void checkDatabaseTest_success() {
         // Given
-        RepositoryGestion repoGestionStub = new RepositoryGestionStub();
         RepositoryPublication repoPublicationStub = new RepositoryPublicationStub();
-        var healthcheckApi = new HealthcheckResources(
-                repoGestionStub,
-                repoPublicationStub,
-                documentsStoragePublicationInterne,
-                documentsStoragePublicationExterne,
-                documentsStorageGestion);
-        StringJoiner errorMessage = new StringJoiner(" ");
-        StringJoiner stateResult = new StringJoiner(" ");
 
         // When
-        healthcheckApi.checkDatabase(errorMessage, stateResult);
+        checkDatabaseWith(repoPublicationStub);
 
         // Then
         assertThat(stateResult)
@@ -48,19 +42,10 @@ class HealthcheckApiTest {
     @Test
     void checkDatabaseTest_withInternalPublicationError() {
         // Given
-        RepositoryGestion repoGestionStub = new RepositoryGestionStub();
         RepositoryPublication repoPublicationStub = new RepositoryPublicationStubInternalError();
-        var healthcheckApi = new HealthcheckResources(
-                repoGestionStub,
-                repoPublicationStub,
-                documentsStoragePublicationInterne,
-                documentsStoragePublicationExterne,
-                documentsStorageGestion);
-        StringJoiner errorMessage = new StringJoiner(" ");
-        StringJoiner stateResult = new StringJoiner(" ");
 
         // When
-        healthcheckApi.checkDatabase(errorMessage, stateResult);
+        checkDatabaseWith(repoPublicationStub);
 
         // Then
         assertThat(stateResult)
@@ -69,5 +54,16 @@ class HealthcheckApiTest {
                         + " " + " - Publication I" + " " + KO_STATE
                         + " " + " - Gestion" + " " + OK_STATE);
         assertThat(errorMessage).hasToString("- Publication I " + null + " \n");
+    }
+
+    private void checkDatabaseWith(RepositoryPublication repoPublicationStub) {
+        RepositoryGestion repoGestionStub = new RepositoryGestionStub();
+        var healthcheckApi = new HealthcheckResources(
+                repoGestionStub,
+                repoPublicationStub,
+                documentsStoragePublicationInterne,
+                documentsStoragePublicationExterne,
+                documentsStorageGestion);
+        healthcheckApi.checkDatabase(errorMessage, stateResult);
     }
 }

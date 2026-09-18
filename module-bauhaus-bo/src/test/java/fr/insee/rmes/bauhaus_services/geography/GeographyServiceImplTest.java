@@ -1,5 +1,6 @@
 package fr.insee.rmes.bauhaus_services.geography;
 
+import static fr.insee.rmes.bauhaus_services.utils.StoredRdfModels.objectsOf;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -153,12 +154,5 @@ class GeographyServiceImplTest {
         ArgumentCaptor<Model> modelCaptor = ArgumentCaptor.forClass(Model.class);
         verify(repoGestion).loadSimpleObject(any(IRI.class), modelCaptor.capture());
         return modelCaptor.getValue();
-    }
-
-    private static List<String> objectsOf(Model model, IRI predicate) {
-        return model.stream()
-                .filter(statement -> statement.getPredicate().equals(predicate))
-                .map(statement -> statement.getObject().stringValue())
-                .toList();
     }
 }

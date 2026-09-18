@@ -27,6 +27,17 @@ class ChecksResourcesTest {
         checksResources = new ChecksResources(checkerService);
     }
 
+    private void assertSystemErrorContaining(String expectedMessage) {
+        ResponseEntity<List<CheckResult>> response = checksResources.runAllChecks();
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
+        assertThat(response.getBody()).hasSize(1);
+
+        CheckResult errorResult = response.getBody().get(0);
+        assertThat(errorResult.getName()).isEqualTo("system_error");
+        assertThat(errorResult.getValue()).asString().contains(expectedMessage);
+    }
+
     @Test
     void runAllChecks_shouldReturnOk_whenChecksSucceed() {
         // Given
@@ -63,16 +74,8 @@ class ChecksResourcesTest {
         // Given
         when(checkerService.checks()).thenThrow(new RuntimeException("Service error"));
 
-        // When
-        ResponseEntity<List<CheckResult>> response = checksResources.runAllChecks();
-
-        // Then
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
-        assertThat(response.getBody()).hasSize(1);
-
-        CheckResult errorResult = response.getBody().get(0);
-        assertThat(errorResult.getName()).isEqualTo("system_error");
-        assertThat(errorResult.getValue()).asString().contains("Failed to execute checks: Service error");
+        // When / Then
+        assertSystemErrorContaining("Failed to execute checks: Service error");
     }
 
     @Test
@@ -80,15 +83,7 @@ class ChecksResourcesTest {
         // Given
         when(checkerService.checks()).thenThrow(new NullPointerException("Null pointer"));
 
-        // When
-        ResponseEntity<List<CheckResult>> response = checksResources.runAllChecks();
-
-        // Then
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
-        assertThat(response.getBody()).hasSize(1);
-
-        CheckResult errorResult = response.getBody().get(0);
-        assertThat(errorResult.getName()).isEqualTo("system_error");
-        assertThat(errorResult.getValue()).asString().contains("Null pointer");
+        // When / Then
+        assertSystemErrorContaining("Null pointer");
     }
 }

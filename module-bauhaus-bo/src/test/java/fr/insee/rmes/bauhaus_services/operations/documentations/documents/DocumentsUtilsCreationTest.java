@@ -1,7 +1,5 @@
 package fr.insee.rmes.bauhaus_services.operations.documentations.documents;
 
-import static fr.insee.rmes.PropertiesKeys.DOCUMENTS_BASE_URI;
-import static fr.insee.rmes.PropertiesKeys.LINKS_BASE_URI;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -11,30 +9,15 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import fr.insee.rmes.BauhausLanguagesProperties;
-import fr.insee.rmes.DocumentsStorageProperties;
-import fr.insee.rmes.bauhaus_services.operations.OperationsParentRepository;
-import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
-import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
-import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesNotAcceptableException;
-import fr.insee.rmes.modules.commons.configuration.StorageProperties;
 import fr.insee.rmes.modules.commons.domain.model.Document;
-import fr.insee.rmes.modules.commons.domain.port.serverside.FilesOperations;
-import fr.insee.rmes.persistance.sparql_queries.operations.OperationDocumentsQueries;
-import fr.insee.rmes.rdf_utils.RepositoryGestion;
-import fr.insee.rmes.utils.IdGenerator;
-import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Optional;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Value;
@@ -48,7 +31,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
@@ -63,69 +45,21 @@ import org.mockito.quality.Strictness;
  */
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-class DocumentsUtilsCreationTest {
+class DocumentsUtilsCreationTest extends AbstractDocumentsUtilsTest {
 
     private static final String ID = "1000";
     private static final String DOCUMENT_IRI = "http://bauhaus/documents/document/" + ID;
     private static final String LINK_IRI = "http://bauhaus/documents/page/" + ID;
 
-    @Mock
-    RepositoryGestion repoGestion;
-
-    @Mock
-    IdGenerator idGenerator;
-
-    @Mock
-    RepositoryPublication repositoryPublication;
-
-    @Mock
-    PublicationUtils publicationUtils;
-
-    @Mock
-    OperationsParentRepository operationsParentRepository;
-
-    @Mock
-    FilesOperations filesOperations;
-
-    @Mock
-    StorageProperties storageProperties;
-
-    @Mock
-    OperationDocumentsQueries operationDocumentsQueries;
-
-    @Mock
-    DocumentsStorageProperties documentsStorage;
-
     @TempDir
     Path storageFolder;
 
-    private DocumentsUtils documentsUtils;
-
     @BeforeEach
     void setUp() throws RmesException {
-        RdfUtils.setGraphs(GraphsPropertiesStub.stub());
-        RdfUtils.setBauhausUriBuilder(
-                new BauhausUriBuilder("http://id.insee.fr/", "http://bauhaus/", name -> switch (name) {
-                    case DOCUMENTS_BASE_URI -> Optional.of("documents/document");
-                    case LINKS_BASE_URI -> Optional.of("documents/page");
-                    default -> Optional.empty();
-                }));
+        useDocumentAndLinkBaseUris();
+        documentsUtils = newDocumentsUtils();
 
-        documentsUtils = new DocumentsUtils(
-                repoGestion,
-                idGenerator,
-                repositoryPublication,
-                new BauhausLanguagesProperties("fr", "en"),
-                publicationUtils,
-                operationsParentRepository,
-                filesOperations,
-                storageProperties,
-                operationDocumentsQueries,
-                documentsStorage);
-
-        when(documentsStorage.storageGestion()).thenReturn(storageFolder.toString());
-        when(storageProperties.directoryGestion()).thenReturn(storageFolder.toString());
-        when(filesOperations.exists(storageFolder.toString())).thenReturn(true);
+        givenExistingStorageFolder(storageFolder);
         // par défaut : aucun libellé en doublon, aucune URL déjà référencée
         when(repoGestion.getResponseAsBoolean(any())).thenReturn(false);
         when(repoGestion.getResponseAsObject(any())).thenReturn(new JSONObject());
@@ -271,17 +205,9 @@ class DocumentsUtilsCreationTest {
         throw new AssertionError("Aucun objet chargé sous l'IRI " + iri);
     }
 
-    private static String detailsOf(Throwable thrown) {
-        return ((RmesException) thrown).getDetails();
-    }
-
     private static List<String> labelsOf(Model model) {
         return model.filter(null, RDFS.LABEL, null).objects().stream()
                 .map(Value::stringValue)
                 .toList();
-    }
-
-    private static InputStream content(String content) {
-        return new ByteArrayInputStream(content.getBytes());
     }
 }
