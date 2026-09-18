@@ -17,7 +17,6 @@ import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.schema.Networ
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.ValidationResponse;
 import fr.insee.rmes.modules.users.domain.port.serverside.RbacFetcher;
 import fr.insee.rmes.modules.users.infrastructure.UserProvider;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,14 +24,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
 /**
  * Unit tests for DDI validation endpoint using a simple mock schema
  */
-@ExtendWith(MockitoExtension.class)
+@ExtendWith({MockitoExtension.class, LocalhostRequestContextExtension.class})
 class DdiResourcesValidationTest {
 
     @Mock
@@ -97,20 +93,6 @@ class DdiResourcesValidationTest {
                 rbacFetcher,
                 bauhausUriBuilder,
                 new DomainDdi4SchemaService(schemaRepository, new NetworkntDdi4SchemaValidator(schemaRepository)));
-
-        // Setup mock request context
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        request.setScheme("http");
-        request.setServerName("localhost");
-        request.setServerPort(8080);
-        request.setContextPath("");
-        ServletRequestAttributes attrs = new ServletRequestAttributes(request);
-        RequestContextHolder.setRequestAttributes(attrs);
-    }
-
-    @AfterEach
-    void tearDown() {
-        RequestContextHolder.resetRequestAttributes();
     }
 
     @Test
@@ -126,11 +108,7 @@ class DdiResourcesValidationTest {
         ResponseEntity<ValidationResponse> result = ddiResources.validateDdi4(validJson);
 
         // Then
-        assertNotNull(result);
-        assertEquals(HttpStatus.OK, result.getStatusCode());
-        assertNotNull(result.getBody());
-        assertTrue(result.getBody().valid());
-        assertEquals(0, result.getBody().errors().size());
+        assertAccepted(result);
     }
 
     @Test
@@ -154,11 +132,7 @@ class DdiResourcesValidationTest {
         ResponseEntity<ValidationResponse> result = ddiResources.validateDdi4(validJson);
 
         // Then
-        assertNotNull(result);
-        assertEquals(HttpStatus.OK, result.getStatusCode());
-        assertNotNull(result.getBody());
-        assertTrue(result.getBody().valid());
-        assertEquals(0, result.getBody().errors().size());
+        assertAccepted(result);
     }
 
     @Test
@@ -175,11 +149,7 @@ class DdiResourcesValidationTest {
         ResponseEntity<ValidationResponse> result = ddiResources.validateDdi4(invalidJson);
 
         // Then
-        assertNotNull(result);
-        assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
-        assertNotNull(result.getBody());
-        assertFalse(result.getBody().valid());
-        assertFalse(result.getBody().errors().isEmpty());
+        assertRejected(result);
     }
 
     @Test
@@ -196,11 +166,7 @@ class DdiResourcesValidationTest {
         ResponseEntity<ValidationResponse> result = ddiResources.validateDdi4(invalidJson);
 
         // Then
-        assertNotNull(result);
-        assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
-        assertNotNull(result.getBody());
-        assertFalse(result.getBody().valid());
-        assertFalse(result.getBody().errors().isEmpty());
+        assertRejected(result);
     }
 
     @Test
@@ -223,11 +189,7 @@ class DdiResourcesValidationTest {
         ResponseEntity<ValidationResponse> result = ddiResources.validateDdi4(invalidJson);
 
         // Then
-        assertNotNull(result);
-        assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
-        assertNotNull(result.getBody());
-        assertFalse(result.getBody().valid());
-        assertFalse(result.getBody().errors().isEmpty());
+        assertRejected(result);
         // The error message should mention the missing field (version)
         String errorMessage = result.getBody().errors().get(0);
         assertTrue(
@@ -279,5 +241,21 @@ class DdiResourcesValidationTest {
                 failing);
 
         assertThrows(IllegalStateException.class, () -> resources.validateDdi4("{}"));
+    }
+
+    private static void assertAccepted(ResponseEntity<ValidationResponse> result) {
+        assertNotNull(result);
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertNotNull(result.getBody());
+        assertTrue(result.getBody().valid());
+        assertEquals(0, result.getBody().errors().size());
+    }
+
+    private static void assertRejected(ResponseEntity<ValidationResponse> result) {
+        assertNotNull(result);
+        assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
+        assertNotNull(result.getBody());
+        assertFalse(result.getBody().valid());
+        assertFalse(result.getBody().errors().isEmpty());
     }
 }

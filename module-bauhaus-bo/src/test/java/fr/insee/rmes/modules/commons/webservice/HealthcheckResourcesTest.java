@@ -43,11 +43,24 @@ class HealthcheckResourcesTest {
         healthcheck = new HealthcheckResources(repoGestion, repositoryPublication, directory, directory, directory);
     }
 
+    /** Réponses des trois dépôts interrogés : gestion, publication, publication (requête de publication). */
+    private void givenRepositoriesAnswer(String gestion, String publication, String publicationPublication)
+            throws RmesException {
+        when(repoGestion.getResponse(anyString())).thenReturn(gestion);
+        when(repositoryPublication.getResponse(anyString())).thenReturn(publication);
+        when(repositoryPublication.getResponsePublication(anyString())).thenReturn(publicationPublication);
+    }
+
+    private void assertHealthcheckFailsWith(String expectedMessage) {
+        ResponseEntity<Object> response = healthcheck.getHealthcheck();
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
+        assertThat(response.getBody().toString()).contains(expectedMessage);
+    }
+
     @Test
     void shouldReportEverythingUpWhenTheThreeRepositoriesAnswerAndTheStorageIsWritable() throws RmesException {
-        when(repoGestion.getResponse(anyString())).thenReturn("statement");
-        when(repositoryPublication.getResponse(anyString())).thenReturn("statement");
-        when(repositoryPublication.getResponsePublication(anyString())).thenReturn("statement");
+        givenRepositoriesAnswer("statement", "statement", "statement");
 
         ResponseEntity<Object> response = healthcheck.getHealthcheck();
 
@@ -58,14 +71,9 @@ class HealthcheckResourcesTest {
 
     @Test
     void shouldFailWhenARepositoryReturnsNothing() throws RmesException {
-        when(repoGestion.getResponse(anyString())).thenReturn("");
-        when(repositoryPublication.getResponse(anyString())).thenReturn("statement");
-        when(repositoryPublication.getResponsePublication(anyString())).thenReturn("statement");
+        givenRepositoriesAnswer("", "statement", "statement");
 
-        ResponseEntity<Object> response = healthcheck.getHealthcheck();
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
-        assertThat(response.getBody().toString()).contains("Gestion doesn't return statement");
+        assertHealthcheckFailsWith("Gestion doesn't return statement");
     }
 
     @Test
@@ -74,23 +82,15 @@ class HealthcheckResourcesTest {
         when(repositoryPublication.getResponse(anyString())).thenThrow(new RuntimeException("connexion refusée"));
         when(repositoryPublication.getResponsePublication(anyString())).thenReturn("statement");
 
-        ResponseEntity<Object> response = healthcheck.getHealthcheck();
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
-        assertThat(response.getBody().toString()).contains("connexion refusée");
+        assertHealthcheckFailsWith("connexion refusée");
     }
 
     /** Un fichier témoin déjà présent signale que le healthcheck précédent n'a pas su le supprimer. */
     @Test
     void shouldFailWhenTheWitnessFileAlreadyExistsInTheStorage() throws RmesException, IOException {
         Files.createFile(storage.resolve("testHealthcheck.txt"));
-        when(repoGestion.getResponse(anyString())).thenReturn("statement");
-        when(repositoryPublication.getResponse(anyString())).thenReturn("statement");
-        when(repositoryPublication.getResponsePublication(anyString())).thenReturn("statement");
+        givenRepositoriesAnswer("statement", "statement", "statement");
 
-        ResponseEntity<Object> response = healthcheck.getHealthcheck();
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
-        assertThat(response.getBody().toString()).contains("File for healthcheck already exists");
+        assertHealthcheckFailsWith("File for healthcheck already exists");
     }
 }

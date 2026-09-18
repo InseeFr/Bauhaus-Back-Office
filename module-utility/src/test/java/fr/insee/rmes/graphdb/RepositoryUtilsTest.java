@@ -198,20 +198,18 @@ class RepositoryUtilsTest {
         assertNotNull(response);
     }
 
+    /** A SPARQL JSON result binding `?s` once per given subject. */
+    private static JSONObject sparqlResultWithSubjects(String... subjects) {
+        JSONArray bindings = new JSONArray();
+        for (String subject : subjects) {
+            bindings.put(new JSONObject().put("s", new JSONObject().put("value", subject)));
+        }
+        return new JSONObject().put("results", new JSONObject().put("bindings", bindings));
+    }
+
     @Test
     void shouldConvertSparqlJSONToResultArrayValues() {
-        JSONObject sparqlResult = new JSONObject();
-        JSONObject results = new JSONObject();
-        JSONArray bindings = new JSONArray();
-
-        JSONObject binding = new JSONObject();
-        JSONObject subject = new JSONObject();
-        subject.put("value", "http://example.org/subject");
-        binding.put("s", subject);
-
-        bindings.put(binding);
-        results.put("bindings", bindings);
-        sparqlResult.put("results", results);
+        JSONObject sparqlResult = sparqlResultWithSubjects("http://example.org/subject");
 
         JSONArray result = RepositoryUtils.sparqlJSONToResultArrayValues(sparqlResult);
 
@@ -234,18 +232,7 @@ class RepositoryUtilsTest {
 
     @Test
     void shouldConvertSparqlJSONToResultListValues() {
-        JSONObject sparqlResult = new JSONObject();
-        JSONObject results = new JSONObject();
-        JSONArray bindings = new JSONArray();
-
-        JSONObject binding = new JSONObject();
-        JSONObject subject = new JSONObject();
-        subject.put("value", "http://example.org/subject");
-        binding.put("s", subject);
-
-        bindings.put(binding);
-        results.put("bindings", bindings);
-        sparqlResult.put("results", results);
+        JSONObject sparqlResult = sparqlResultWithSubjects("http://example.org/subject");
 
         JSONArray result = RepositoryUtils.sparqlJSONToResultListValues(sparqlResult);
 
@@ -274,26 +261,8 @@ class RepositoryUtilsTest {
 
     @Test
     void shouldHandleMultipleBindingsInSparqlResult() {
-        JSONObject sparqlResult = new JSONObject();
-        JSONObject results = new JSONObject();
-        JSONArray bindings = new JSONArray();
-
-        // First binding
-        JSONObject binding1 = new JSONObject();
-        JSONObject subject1 = new JSONObject();
-        subject1.put("value", "http://example.org/subject1");
-        binding1.put("s", subject1);
-
-        // Second binding
-        JSONObject binding2 = new JSONObject();
-        JSONObject subject2 = new JSONObject();
-        subject2.put("value", "http://example.org/subject2");
-        binding2.put("s", subject2);
-
-        bindings.put(binding1);
-        bindings.put(binding2);
-        results.put("bindings", bindings);
-        sparqlResult.put("results", results);
+        JSONObject sparqlResult =
+                sparqlResultWithSubjects("http://example.org/subject1", "http://example.org/subject2");
 
         JSONArray result = RepositoryUtils.sparqlJSONToResultArrayValues(sparqlResult);
 

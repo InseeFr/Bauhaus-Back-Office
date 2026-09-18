@@ -62,11 +62,7 @@ class ClassificationRepositoryTest {
 
     @Test
     void updateClassification_writesValidationStateInTheNomenclaturesGraph() throws RmesException {
-        when(repoGestion.getResponseAsArray(any())).thenReturn(new JSONArray());
-        Classification classification = new Classification();
-        classification.setId("cpfr21");
-        classification.setPrefLabelLg1("label1");
-        classification.setPrefLabelLg2("label2");
+        Classification classification = givenClassificationWithoutItems("label1", "label2");
         classification.setValidationState(ValidationStatus.VALIDATED.getValue());
 
         classificationRepository.updateClassification(classification, "http://bauhaus/codes/cpfr21/");
@@ -76,10 +72,18 @@ class ClassificationRepositoryTest {
         assertThat(validationState.getContext().stringValue()).isEqualTo(NOMENCLATURES_GRAPH);
     }
 
+    private Classification givenClassificationWithoutItems(String prefLabelLg1, String prefLabelLg2)
+            throws RmesException {
+        when(repoGestion.getResponseAsArray(any())).thenReturn(new JSONArray());
+        Classification classification = new Classification();
+        classification.setId("cpfr21");
+        classification.setPrefLabelLg1(prefLabelLg1);
+        classification.setPrefLabelLg2(prefLabelLg2);
+        return classification;
+    }
+
     private Statement capturedValidationStateStatement() throws RmesException {
-        ArgumentCaptor<Model> modelCaptor = ArgumentCaptor.forClass(Model.class);
-        verify(repoGestion).loadSimpleObjectWithoutDeletion(any(), modelCaptor.capture(), any());
-        return modelCaptor.getValue().stream()
+        return capturedModel().stream()
                 .filter(st -> st.getPredicate().equals(INSEE.VALIDATION_STATE))
                 .findFirst()
                 .orElseThrow(() -> new AssertionError("No validationState statement in the persisted model"));
@@ -91,11 +95,7 @@ class ClassificationRepositoryTest {
      */
     @Test
     void updateClassification_writesEveryOptionalPropertyItCarries() throws RmesException {
-        when(repoGestion.getResponseAsArray(any())).thenReturn(new JSONArray());
-        Classification classification = new Classification();
-        classification.setId("cpfr21");
-        classification.setPrefLabelLg1("label fr");
-        classification.setPrefLabelLg2("label en");
+        Classification classification = givenClassificationWithoutItems("label fr", "label en");
         classification.setAltLabelLg1("alt fr");
         classification.setAltLabelLg2("alt en");
         classification.setDescriptionLg1("description fr");
@@ -124,11 +124,7 @@ class ClassificationRepositoryTest {
 
     @Test
     void updateClassification_writesOnlyTheMandatoryLabelsWhenNothingElseIsFilled() throws RmesException {
-        when(repoGestion.getResponseAsArray(any())).thenReturn(new JSONArray());
-        Classification classification = new Classification();
-        classification.setId("cpfr21");
-        classification.setPrefLabelLg1("label fr");
-        classification.setPrefLabelLg2("label en");
+        Classification classification = givenClassificationWithoutItems("label fr", "label en");
 
         classificationRepository.updateClassification(classification, "http://bauhaus/codes/cpfr21/");
 

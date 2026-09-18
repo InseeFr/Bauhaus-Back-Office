@@ -5,22 +5,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.bauhaus_services.code_list.CodeListKind;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
-import fr.insee.rmes.modules.codeslists.codeslists.domain.port.clientside.CodesListsService;
-import fr.insee.rmes.modules.codeslists.partialcodeslists.webservice.PartialCodeListsResources;
-import fr.insee.rmes.modules.commons.configuration.LogRequestFilter;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.security.oauth2.server.resource.autoconfigure.OAuth2ResourceServerAutoConfiguration;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.FilterType;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
 
 /**
  * Contrat HTTP des publications de listes de codes : republier une liste déjà publiée doit donner
@@ -28,21 +16,7 @@ import org.springframework.test.web.servlet.MockMvc;
  * message. Un test unitaire de contrôleur ne le verrait pas : c'est le {@code RmesExceptionHandler},
  * et donc l'appartenance du contrôleur à sa liste {@code assignableTypes}, qui est en jeu ici.
  */
-@WebMvcTest(
-        value = {CodesListsResources.class, PartialCodeListsResources.class},
-        excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = LogRequestFilter.class),
-        excludeAutoConfiguration = OAuth2ResourceServerAutoConfiguration.class)
-@AutoConfigureMockMvc(addFilters = false)
-class CodesListsResourcesPublishTest {
-
-    @MockitoBean
-    private CodeListService codeListService;
-
-    @MockitoBean
-    private CodesListsService codesListsService;
-
-    @Autowired
-    MockMvc mockMvc;
+class CodesListsResourcesPublishTest extends AbstractCodesListsResourcesWebMvcTest {
 
     @Test
     void publishCodeList_whenTheCodeListIsAlreadyPublished_shouldReturnBadRequestWithTheErrorCode() throws Exception {

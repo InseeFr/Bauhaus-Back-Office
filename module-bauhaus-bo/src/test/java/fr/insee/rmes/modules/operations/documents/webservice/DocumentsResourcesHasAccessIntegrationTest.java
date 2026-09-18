@@ -1,18 +1,15 @@
 package fr.insee.rmes.modules.operations.documents.webservice;
 
-import static fr.insee.rmes.integration.authorizations.TokenForTestsConfiguration.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import fr.insee.rmes.config.auth.UserAuthTestConfiguration;
-import fr.insee.rmes.integration.AbstractResourcesEnvProd;
+import fr.insee.rmes.modules.AbstractHasAccessResourcesTest;
 import fr.insee.rmes.modules.commons.configuration.LogRequestFilter;
 import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
 import java.io.InputStream;
-import java.util.Collections;
 import java.util.stream.Stream;
 import org.json.JSONObject;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -39,7 +36,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
             "fr.insee.rmes.bauhaus.extensions=pdf,odt"
         })
 @Import({DocumentsResources.class, UserAuthTestConfiguration.class})
-class DocumentsResourcesHasAccessIntegrationTest extends AbstractResourcesEnvProd {
+class DocumentsResourcesHasAccessIntegrationTest extends AbstractHasAccessResourcesTest {
 
     @Configuration
     @EnableMethodSecurity(securedEnabled = true)
@@ -67,12 +64,8 @@ class DocumentsResourcesHasAccessIntegrationTest extends AbstractResourcesEnvPro
         when(documentsService.getDocument("1")).thenReturn(new JSONObject());
         when(documentsService.getLink("1")).thenReturn(new JSONObject());
 
-        when(checker.hasAccess(any(), any(), any(), any())).thenReturn(hasAccessReturn);
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
-
         var request = get(url).contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-        request.header("Authorization", "Bearer toto");
-        mvc.perform(request).andExpect(status().is(code));
+        assertStatusWithAccess(request, code, hasAccessReturn);
     }
 
     private static Stream<Arguments> provideDataForPutEndpoints() {
@@ -87,14 +80,11 @@ class DocumentsResourcesHasAccessIntegrationTest extends AbstractResourcesEnvPro
     @ParameterizedTest
     void updateDocumentOrLink(String url, Integer code, boolean hasAccessReturn)
             throws Exception, MissingUserInformationException {
-        when(checker.hasAccess(any(), any(), any(), any())).thenReturn(hasAccessReturn);
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
         var request = put(url).contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
                 .content("{\"id\": \"1\"}");
 
-        request.header("Authorization", "Bearer toto");
-        mvc.perform(request).andExpect(status().is(code));
+        assertStatusWithAccess(request, code, hasAccessReturn);
     }
 
     private static Stream<Arguments> provideDataForDeleteEndpoints() {
@@ -111,12 +101,9 @@ class DocumentsResourcesHasAccessIntegrationTest extends AbstractResourcesEnvPro
             throws Exception, MissingUserInformationException {
         when(documentsService.deleteDocument(anyString())).thenReturn(HttpStatus.OK);
         when(documentsService.deleteLink(anyString())).thenReturn(HttpStatus.OK);
-        when(checker.hasAccess(any(), any(), any(), any())).thenReturn(hasAccessReturn);
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
         var request = delete(url).contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
 
-        request.header("Authorization", "Bearer toto");
-        mvc.perform(request).andExpect(status().is(code));
+        assertStatusWithAccess(request, code, hasAccessReturn);
     }
 
     private static Stream<Arguments> provideDataForDocumentPostEndpoints() {
@@ -126,8 +113,6 @@ class DocumentsResourcesHasAccessIntegrationTest extends AbstractResourcesEnvPro
     @MethodSource("provideDataForDocumentPostEndpoints")
     @ParameterizedTest
     void postDocument(Integer code, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
-        when(checker.hasAccess(any(), any(), any(), any())).thenReturn(hasAccessReturn);
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
         Mockito.when(documentsService.createDocument(
                         Mockito.anyString(), Mockito.any(InputStream.class), Mockito.anyString()))
                 .thenReturn(id);
@@ -143,8 +128,7 @@ class DocumentsResourcesHasAccessIntegrationTest extends AbstractResourcesEnvPro
                 .param("body", "Données Json")
                 .contentType(MULTIPART_FORM_DATA_VALUE);
 
-        request.header("Authorization", "Bearer toto");
-        mvc.perform(request).andExpect(status().is(code));
+        assertStatusWithAccess(request, code, hasAccessReturn);
     }
 
     private static Stream<Arguments> provideDataForLinkPostEndpoints() {
@@ -154,14 +138,11 @@ class DocumentsResourcesHasAccessIntegrationTest extends AbstractResourcesEnvPro
     @MethodSource("provideDataForLinkPostEndpoints")
     @ParameterizedTest
     void postLink(Integer code, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
-        when(checker.hasAccess(any(), any(), any(), any())).thenReturn(hasAccessReturn);
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
 
         Mockito.when(documentsService.setLink(Mockito.anyString())).thenReturn(id);
         var request = post("/documents/link").param("body", "Données Json").contentType(MediaType.APPLICATION_JSON);
 
-        request.header("Authorization", "Bearer toto");
-        mvc.perform(request).andExpect(status().is(code));
+        assertStatusWithAccess(request, code, hasAccessReturn);
     }
 
     private static Stream<Arguments> provideDataForLinkUpdateFileEndpoints() {
@@ -171,9 +152,6 @@ class DocumentsResourcesHasAccessIntegrationTest extends AbstractResourcesEnvPro
     @MethodSource("provideDataForLinkUpdateFileEndpoints")
     @ParameterizedTest
     void updateFile(Integer code, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
-        when(checker.hasAccess(any(), any(), any(), any())).thenReturn(hasAccessReturn);
-
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
 
         String expectedUrl = "http://example.com/documents/12345";
         Mockito.when(documentsService.changeDocument(eq(id), Mockito.any(InputStream.class), Mockito.anyString()))
@@ -190,8 +168,6 @@ class DocumentsResourcesHasAccessIntegrationTest extends AbstractResourcesEnvPro
                 .param("body", "Données Json")
                 .contentType(MULTIPART_FORM_DATA_VALUE);
 
-        request.header("Authorization", "Bearer toto");
-
-        mvc.perform(request).andExpect(status().is(code));
+        assertStatusWithAccess(request, code, hasAccessReturn);
     }
 }

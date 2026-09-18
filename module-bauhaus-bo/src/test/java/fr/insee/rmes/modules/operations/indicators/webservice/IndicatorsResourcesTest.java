@@ -1,5 +1,6 @@
 package fr.insee.rmes.modules.operations.indicators.webservice;
 
+import static fr.insee.rmes.modules.HalJsonListAssertions.assertHalJsonListOfSize;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.when;
@@ -53,11 +54,7 @@ class IndicatorsResourcesTest {
         var result = indicatorsResources.getIndicators();
 
         // Then
-        Assertions.assertNotNull(result);
-        Assertions.assertEquals(200, result.getStatusCode().value());
-        Assertions.assertEquals(MediaTypes.HAL_JSON, result.getHeaders().getContentType());
-        Assertions.assertNotNull(result.getBody());
-        Assertions.assertEquals(2, result.getBody().size());
+        assertHalJsonListOfSize(result, 2);
     }
 
     @Test
@@ -69,11 +66,7 @@ class IndicatorsResourcesTest {
         var result = indicatorsResources.getIndicators();
 
         // Then
-        Assertions.assertNotNull(result);
-        Assertions.assertEquals(200, result.getStatusCode().value());
-        Assertions.assertEquals(MediaTypes.HAL_JSON, result.getHeaders().getContentType());
-        Assertions.assertNotNull(result.getBody());
-        Assertions.assertEquals(0, result.getBody().size());
+        assertHalJsonListOfSize(result, 0);
     }
 
     @Test

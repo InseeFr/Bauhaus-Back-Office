@@ -64,10 +64,7 @@ class GraphDBOperationFamilyRepositoryTest {
         when(operationFamilyQueries.familiesQuery()).thenReturn("query");
         when(repositoryGestion.getResponseAsArray("query")).thenReturn(emptyArray);
 
-        try (MockedStatic<DiacriticSorter> mockedSorter = mockStatic(DiacriticSorter.class)) {
-            mockedSorter
-                    .when(() -> DiacriticSorter.sort(any(JSONArray.class), eq(PartialOperationFamily[].class), any()))
-                    .thenReturn(List.of());
+        try (var _ = diacriticSorterReturning(List.of())) {
 
             List<PartialOperationFamily> result = repository.getFamilies();
 
@@ -88,10 +85,7 @@ class GraphDBOperationFamilyRepositoryTest {
         when(operationFamilyQueries.familiesQuery()).thenReturn("query");
         when(repositoryGestion.getResponseAsArray("query")).thenReturn(familiesArray);
 
-        try (MockedStatic<DiacriticSorter> mockedSorter = mockStatic(DiacriticSorter.class)) {
-            mockedSorter
-                    .when(() -> DiacriticSorter.sort(any(JSONArray.class), eq(PartialOperationFamily[].class), any()))
-                    .thenReturn(expectedFamilies);
+        try (var _ = diacriticSorterReturning(expectedFamilies)) {
 
             List<PartialOperationFamily> result = repository.getFamilies();
 
@@ -223,19 +217,9 @@ class GraphDBOperationFamilyRepositoryTest {
         JSONArray subjectsArray =
                 new JSONArray().put(new JSONObject().put("id", "sub1").put("labelLg1", "Subject 1"));
 
-        when(operationFamilyQueries.familyQuery(familyId)).thenReturn("familyQuery");
-        when(operationFamilyQueries.getSeries(familyId)).thenReturn("seriesQuery");
-        when(operationFamilyQueries.getSubjects(familyId)).thenReturn("subjectsQuery");
+        givenFullFamily(familyId, familyJson, seriesArray, subjectsArray);
 
-        when(repositoryGestion.getResponseAsObject("familyQuery")).thenReturn(familyJson);
-        when(repositoryGestion.getResponseAsArray("seriesQuery")).thenReturn(seriesArray);
-        when(repositoryGestion.getResponseAsArray("subjectsQuery")).thenReturn(subjectsArray);
-
-        try (MockedStatic<XhtmlToMarkdownUtils> mockedUtils = mockStatic(XhtmlToMarkdownUtils.class)) {
-            mockedUtils
-                    .when(() -> XhtmlToMarkdownUtils.convertJSONObject(any()))
-                    .then(invocation -> null);
-
+        try (var _ = xhtmlConversionIgnored()) {
             OperationFamily result = repository.getFullFamily(familyId);
 
             assertNotNull(result);
@@ -256,19 +240,9 @@ class GraphDBOperationFamilyRepositoryTest {
 
         JSONArray emptyArray = new JSONArray();
 
-        when(operationFamilyQueries.familyQuery(familyId)).thenReturn("familyQuery");
-        when(operationFamilyQueries.getSeries(familyId)).thenReturn("seriesQuery");
-        when(operationFamilyQueries.getSubjects(familyId)).thenReturn("subjectsQuery");
+        givenFullFamily(familyId, familyJson, emptyArray, emptyArray);
 
-        when(repositoryGestion.getResponseAsObject("familyQuery")).thenReturn(familyJson);
-        when(repositoryGestion.getResponseAsArray("seriesQuery")).thenReturn(emptyArray);
-        when(repositoryGestion.getResponseAsArray("subjectsQuery")).thenReturn(emptyArray);
-
-        try (MockedStatic<XhtmlToMarkdownUtils> mockedUtils = mockStatic(XhtmlToMarkdownUtils.class)) {
-            mockedUtils
-                    .when(() -> XhtmlToMarkdownUtils.convertJSONObject(any()))
-                    .then(invocation -> null);
-
+        try (var _ = xhtmlConversionIgnored()) {
             OperationFamily result = repository.getFullFamily(familyId);
 
             assertNotNull(result);
@@ -304,5 +278,31 @@ class GraphDBOperationFamilyRepositoryTest {
         when(repositoryGestion.getResponseAsArray("query")).thenReturn(new JSONArray().put(new JSONObject()));
 
         assertTrue(repository.getSeriesWithReport("s1").isEmpty());
+    }
+
+    private static MockedStatic<DiacriticSorter> diacriticSorterReturning(List<PartialOperationFamily> families) {
+        MockedStatic<DiacriticSorter> mockedSorter = mockStatic(DiacriticSorter.class);
+        mockedSorter
+                .when(() -> DiacriticSorter.sort(any(JSONArray.class), eq(PartialOperationFamily[].class), any()))
+                .thenReturn(families);
+        return mockedSorter;
+    }
+
+    private static MockedStatic<XhtmlToMarkdownUtils> xhtmlConversionIgnored() {
+        MockedStatic<XhtmlToMarkdownUtils> mockedUtils = mockStatic(XhtmlToMarkdownUtils.class);
+        mockedUtils.when(() -> XhtmlToMarkdownUtils.convertJSONObject(any())).then(invocation -> null);
+        return mockedUtils;
+    }
+
+    /** La famille, ses séries et ses sujets sont lus par trois requêtes distinctes. */
+    private void givenFullFamily(String familyId, JSONObject familyJson, JSONArray series, JSONArray subjects)
+            throws RmesException {
+        when(operationFamilyQueries.familyQuery(familyId)).thenReturn("familyQuery");
+        when(operationFamilyQueries.getSeries(familyId)).thenReturn("seriesQuery");
+        when(operationFamilyQueries.getSubjects(familyId)).thenReturn("subjectsQuery");
+
+        when(repositoryGestion.getResponseAsObject("familyQuery")).thenReturn(familyJson);
+        when(repositoryGestion.getResponseAsArray("seriesQuery")).thenReturn(series);
+        when(repositoryGestion.getResponseAsArray("subjectsQuery")).thenReturn(subjects);
     }
 }

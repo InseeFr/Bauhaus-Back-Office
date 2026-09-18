@@ -7,10 +7,12 @@ import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.modules.datasets.datasets.infrastructure.DatasetQueries;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4GroupResponse;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.DDIRepository;
 import fr.insee.rmes.modules.operation.series.domain.port.serverside.SeriesCreatorsPort;
 import fr.insee.rmes.modules.organisations.domain.model.OrganisationOption;
@@ -37,6 +39,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class GraphDbStampCheckerTest {
+
+    private static final String SERIES_ID = "s42";
+    private static final IRI SERIES_IRI =
+            SimpleValueFactory.getInstance().createIRI("http://id.insee.fr/operations/serie/" + SERIES_ID);
 
     @Mock
     private RepositoryGestion repositoryGestion;
@@ -77,6 +83,49 @@ class GraphDbStampCheckerTest {
                 organisationService);
     }
 
+    private static Ddi4Group group(List<Reference> studyUnitReference, List<String> seriesIris) {
+        return new Ddi4Group(
+                Ddi4Group.TYPE,
+                null,
+                null,
+                "fr.insee",
+                "group-id",
+                "1",
+                null,
+                null,
+                studyUnitReference,
+                seriesIris,
+                null);
+    }
+
+    private void givenGroupResponse(Ddi4GroupResponse groupResponse) {
+        when(ddiRepository.getGroup("fr.insee", "group-id")).thenReturn(groupResponse);
+    }
+
+    private List<String> creatorsStampsOfGroup() throws StampFetchException, UnsupportedModuleException {
+        return checker.getCreatorsStamps(RBAC.Module.DDI_PHYSICALINSTANCE, "fr.insee|group-id");
+    }
+
+    /** La requête des créateurs de la série SERIES_ID renvoie une ligne par valeur donnée. */
+    private void givenSeriesCreators(String... creators) throws RmesException {
+        String query = "SELECT-creators";
+        when(operationSeriesQueries.getCreatorsBySeriesUri(SERIES_IRI.toString()))
+                .thenReturn(query);
+        JSONArray rows = new JSONArray();
+        for (String creator : creators) {
+            rows.put(new JSONObject().put("creators", creator));
+        }
+        when(repositoryGestion.getResponseAsArray(query)).thenReturn(rows);
+    }
+
+    private List<String> creatorsStampsOfSeries() throws StampFetchException, UnsupportedModuleException {
+        try (MockedStatic<RdfUtils> mocked = mockStatic(RdfUtils.class)) {
+            mocked.when(() -> RdfUtils.objectIRI(ObjectType.SERIES, SERIES_ID)).thenReturn(SERIES_IRI);
+
+            return checker.getCreatorsStamps(RBAC.Module.OPERATION_SERIES, SERIES_ID);
+        }
+    }
+
     @Test
     void get_creators_stamps_ddi_physical_instance_returns_empty_list_when_id_is_null()
             throws StampFetchException, UnsupportedModuleException {
@@ -96,13 +145,9 @@ class GraphDbStampCheckerTest {
     @Test
     void get_creators_stamps_ddi_physical_instance_returns_empty_list_when_group_has_no_series()
             throws StampFetchException, UnsupportedModuleException {
-        // studyUnitReference=List.of(), seriesIris=List.of()
-        Ddi4Group group = new Ddi4Group(
-                Ddi4Group.TYPE, null, null, "fr.insee", "group-id", "1", null, null, List.of(), List.of(), null);
-        Ddi4GroupResponse groupResponse = new Ddi4GroupResponse(null, null, List.of(group), null);
-        when(ddiRepository.getGroup("fr.insee", "group-id")).thenReturn(groupResponse);
+        givenGroupResponse(new Ddi4GroupResponse(null, null, List.of(group(List.of(), List.of())), null));
 
-        List<String> result = checker.getCreatorsStamps(RBAC.Module.DDI_PHYSICALINSTANCE, "fr.insee|group-id");
+        List<String> result = creatorsStampsOfGroup();
 
         assertThat(result).isEmpty();
     }
@@ -112,15 +157,11 @@ class GraphDbStampCheckerTest {
             throws StampFetchException, UnsupportedModuleException {
         String iri1 = "http://id.insee.fr/operations/serie/s1001";
         String iri2 = "http://id.insee.fr/operations/serie/s1002";
-        // studyUnitReference=null, seriesIris=List.of(iri1, iri2)
-        Ddi4Group group = new Ddi4Group(
-                Ddi4Group.TYPE, null, null, "fr.insee", "group-id", "1", null, null, null, List.of(iri1, iri2), null);
-        Ddi4GroupResponse groupResponse = new Ddi4GroupResponse(null, null, List.of(group), null);
-        when(ddiRepository.getGroup("fr.insee", "group-id")).thenReturn(groupResponse);
+        givenGroupResponse(new Ddi4GroupResponse(null, null, List.of(group(null, List.of(iri1, iri2))), null));
         when(seriesCreatorsPort.getCreatorsForSeries(List.of(iri1, iri2)))
                 .thenReturn(Map.of(iri1, List.of("stamp-A", "stamp-B"), iri2, List.of("stamp-B", "stamp-C")));
 
-        List<String> result = checker.getCreatorsStamps(RBAC.Module.DDI_PHYSICALINSTANCE, "fr.insee|group-id");
+        List<String> result = creatorsStampsOfGroup();
 
         assertThat(result).containsExactlyInAnyOrder("stamp-A", "stamp-B", "stamp-C");
     }
@@ -128,10 +169,9 @@ class GraphDbStampCheckerTest {
     @Test
     void get_creators_stamps_ddi_physical_instance_returns_empty_list_when_group_response_has_null_group_list()
             throws StampFetchException, UnsupportedModuleException {
-        Ddi4GroupResponse groupResponse = new Ddi4GroupResponse(null, null, null, null);
-        when(ddiRepository.getGroup("fr.insee", "group-id")).thenReturn(groupResponse);
+        givenGroupResponse(new Ddi4GroupResponse(null, null, null, null));
 
-        List<String> result = checker.getCreatorsStamps(RBAC.Module.DDI_PHYSICALINSTANCE, "fr.insee|group-id");
+        List<String> result = creatorsStampsOfGroup();
 
         assertThat(result).isEmpty();
     }
@@ -160,73 +200,46 @@ class GraphDbStampCheckerTest {
 
     @Test
     void get_creators_stamps_operation_series_normalizes_uris_to_stamp_codes()
-            throws StampFetchException, UnsupportedModuleException, fr.insee.rmes.domain.exceptions.RmesException {
-        String seriesId = "s42";
-        IRI seriesIri = SimpleValueFactory.getInstance().createIRI("http://id.insee.fr/operations/serie/" + seriesId);
+            throws StampFetchException, UnsupportedModuleException, RmesException {
         String orgIri1 = "http://id.insee.fr/organisations/insee/DG75-G401";
         String orgIri2 = "http://id.insee.fr/organisations/insee/DG75-G450";
-        String query = "SELECT-creators";
-        when(operationSeriesQueries.getCreatorsBySeriesUri(seriesIri.toString()))
-                .thenReturn(query);
-        when(repositoryGestion.getResponseAsArray(query))
-                .thenReturn(new JSONArray()
-                        .put(new JSONObject().put("creators", orgIri1))
-                        .put(new JSONObject().put("creators", orgIri2)));
+        givenSeriesCreators(orgIri1, orgIri2);
         when(organisationService.getOrganisationsMap(anyList()))
                 .thenReturn(Map.of(
                         orgIri1, new OrganisationOption("DG75-G401", "Label 1"),
                         orgIri2, new OrganisationOption("DG75-G450", "Label 2")));
 
-        try (MockedStatic<RdfUtils> mocked = mockStatic(RdfUtils.class)) {
-            mocked.when(() -> RdfUtils.objectIRI(ObjectType.SERIES, seriesId)).thenReturn(seriesIri);
+        List<String> result = creatorsStampsOfSeries();
 
-            List<String> result = checker.getCreatorsStamps(RBAC.Module.OPERATION_SERIES, seriesId);
-
-            assertThat(result).containsExactlyInAnyOrder("DG75-G401", "DG75-G450");
-        }
+        assertThat(result).containsExactlyInAnyOrder("DG75-G401", "DG75-G450");
     }
 
     @Test
     void get_creators_stamps_ddi_physical_instance_normalizes_uris_to_stamp_codes()
-            throws StampFetchException, UnsupportedModuleException, fr.insee.rmes.domain.exceptions.RmesException {
+            throws StampFetchException, UnsupportedModuleException, RmesException {
         String iri1 = "http://id.insee.fr/operations/serie/s1001";
         String orgIri = "http://id.insee.fr/organisations/insee/DG75-G401";
-        Ddi4Group group = new Ddi4Group(
-                Ddi4Group.TYPE, null, null, "fr.insee", "group-id", "1", null, null, null, List.of(iri1), null);
-        Ddi4GroupResponse groupResponse = new Ddi4GroupResponse(null, null, List.of(group), null);
-        when(ddiRepository.getGroup("fr.insee", "group-id")).thenReturn(groupResponse);
+        givenGroupResponse(new Ddi4GroupResponse(null, null, List.of(group(null, List.of(iri1))), null));
         when(seriesCreatorsPort.getCreatorsForSeries(List.of(iri1))).thenReturn(Map.of(iri1, List.of(orgIri)));
         when(organisationService.getOrganisationsMap(anyList()))
                 .thenReturn(Map.of(orgIri, new OrganisationOption("DG75-G401", "Label")));
 
-        List<String> result = checker.getCreatorsStamps(RBAC.Module.DDI_PHYSICALINSTANCE, "fr.insee|group-id");
+        List<String> result = creatorsStampsOfGroup();
 
         assertThat(result).containsExactly("DG75-G401");
     }
 
     @Test
     void get_creators_stamps_operation_series_keeps_unresolved_values_as_is()
-            throws StampFetchException, UnsupportedModuleException, fr.insee.rmes.domain.exceptions.RmesException {
-        String seriesId = "s42";
-        IRI seriesIri = SimpleValueFactory.getInstance().createIRI("http://id.insee.fr/operations/serie/" + seriesId);
+            throws StampFetchException, UnsupportedModuleException, RmesException {
         String orgIri = "http://id.insee.fr/organisations/insee/DG75-G401";
         String unresolved = "DG75-UNKNOWN";
-        String query = "SELECT-creators";
-        when(operationSeriesQueries.getCreatorsBySeriesUri(seriesIri.toString()))
-                .thenReturn(query);
-        when(repositoryGestion.getResponseAsArray(query))
-                .thenReturn(new JSONArray()
-                        .put(new JSONObject().put("creators", orgIri))
-                        .put(new JSONObject().put("creators", unresolved)));
+        givenSeriesCreators(orgIri, unresolved);
         when(organisationService.getOrganisationsMap(anyList()))
                 .thenReturn(Map.of(orgIri, new OrganisationOption("DG75-G401", "Label")));
 
-        try (MockedStatic<RdfUtils> mocked = mockStatic(RdfUtils.class)) {
-            mocked.when(() -> RdfUtils.objectIRI(ObjectType.SERIES, seriesId)).thenReturn(seriesIri);
+        List<String> result = creatorsStampsOfSeries();
 
-            List<String> result = checker.getCreatorsStamps(RBAC.Module.OPERATION_SERIES, seriesId);
-
-            assertThat(result).containsExactlyInAnyOrder("DG75-G401", "DG75-UNKNOWN");
-        }
+        assertThat(result).containsExactlyInAnyOrder("DG75-G401", "DG75-UNKNOWN");
     }
 }

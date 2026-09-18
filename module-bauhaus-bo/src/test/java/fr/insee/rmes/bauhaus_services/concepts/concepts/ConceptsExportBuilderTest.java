@@ -1,5 +1,7 @@
 package fr.insee.rmes.bauhaus_services.concepts.concepts;
 
+import static fr.insee.rmes.bauhaus_services.concepts.OdtExportStubs.assertSameResponseExportedOnceAsOdt;
+import static fr.insee.rmes.bauhaus_services.concepts.OdtExportStubs.givenOdtExportResponse;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.anyMap;
@@ -26,7 +28,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.ResponseEntity;
 
 @ExtendWith(MockitoExtension.class)
@@ -66,18 +67,10 @@ class ConceptsExportBuilderTest {
     void shouldGetConceptData() throws RmesException {
         // Given
         String id = "c1";
-        JSONObject conceptJson = new JSONObject()
-                .put("id", id)
-                .put("prefLabelLg1", "Concept FR")
+        JSONObject conceptJson = conceptJsonWith("Creator", "Contributor", "Validated")
                 .put("prefLabelLg2", "Concept EN")
-                .put("created", "2025-01-01T00:00:00")
                 .put("modified", "2025-01-02T00:00:00")
-                .put("valid", "2025-12-31T00:00:00")
-                .put("isValidated", "Validated")
-                .put("disseminationStatus", "http://id.insee.fr/codes/base/statutDiffusion/PublicGenerique")
-                .put("creator", "Creator")
-                .put("contributor", "Contributor")
-                .put("conceptVersion", "1");
+                .put("valid", "2025-12-31T00:00:00");
 
         JSONArray links = new JSONArray()
                 .put(new JSONObject()
@@ -109,21 +102,11 @@ class ConceptsExportBuilderTest {
     void shouldGetConceptDataWithAltLabels() throws RmesException {
         // Given
         String id = "c1";
-        JSONObject conceptJson = new JSONObject()
-                .put("id", id)
-                .put("prefLabelLg1", "Concept FR")
+        JSONObject conceptJson = conceptJsonWith("Creator", "Contributor", "Unpublished")
                 .put(Constants.ALT_LABEL_LG1, new JSONArray().put("Alt 1").put("Alt 2"))
-                .put(Constants.ALT_LABEL_LG2, new JSONArray().put("Alt EN 1"))
-                .put("created", "2025-01-01T00:00:00")
-                .put("isValidated", "Unpublished")
-                .put("disseminationStatus", "http://id.insee.fr/codes/base/statutDiffusion/PublicGenerique")
-                .put("creator", "Creator")
-                .put("contributor", "Contributor")
-                .put("conceptVersion", "1");
+                .put(Constants.ALT_LABEL_LG2, new JSONArray().put("Alt EN 1"));
 
-        when(legacyConceptsRepository.getConceptById(id)).thenReturn(conceptJson);
-        when(repoGestion.getResponseAsArray(any())).thenReturn(new JSONArray());
-        when(repoGestion.getResponseAsObject(any())).thenReturn(new JSONObject());
+        givenConceptWithoutLinksNorNotes(id, conceptJson);
 
         // When
         ConceptForExport result = conceptsExportBuilder.getConceptData(id);
@@ -139,33 +122,22 @@ class ConceptsExportBuilderTest {
     void shouldExportAsResponse() throws RmesException {
         // Given
         String fileName = "concept-export";
-        Map<String, String> xmlContent = new HashMap<>();
-        xmlContent.put("conceptFile", "<Concept></Concept>");
-        ResponseEntity<?> expectedResponse = ResponseEntity.ok(new ByteArrayResource(new byte[0]));
-
-        when(exportUtils.exportAsODT(anyString(), anyMap(), anyString(), anyString(), anyString(), anyString()))
-                .thenReturn((ResponseEntity) expectedResponse);
+        Map<String, String> xmlContent = conceptXmlContent();
+        ResponseEntity<?> expectedResponse = givenOdtExportResponse(exportUtils);
 
         // When
         ResponseEntity<?> result = conceptsExportBuilder.exportAsResponse(fileName, xmlContent, true, true, false);
 
         // Then
-        assertNotNull(result);
-        assertEquals(expectedResponse, result);
-        verify(exportUtils, times(1))
-                .exportAsODT(anyString(), anyMap(), anyString(), anyString(), anyString(), anyString());
+        assertSameResponseExportedOnceAsOdt(exportUtils, expectedResponse, result);
     }
 
     @Test
     void shouldExportAsResponseWithDifferentLanguages() throws RmesException {
         // Given
         String fileName = "concept-export";
-        Map<String, String> xmlContent = new HashMap<>();
-        xmlContent.put("conceptFile", "<Concept></Concept>");
-        ResponseEntity<?> expectedResponse = ResponseEntity.ok(new ByteArrayResource(new byte[0]));
-
-        when(exportUtils.exportAsODT(anyString(), anyMap(), anyString(), anyString(), anyString(), anyString()))
-                .thenReturn((ResponseEntity) expectedResponse);
+        Map<String, String> xmlContent = conceptXmlContent();
+        ResponseEntity<?> expectedResponse = givenOdtExportResponse(exportUtils);
 
         // When - Export with lg1 only
         ResponseEntity<?> result1 = conceptsExportBuilder.exportAsResponse(fileName, xmlContent, true, false, false);
@@ -189,29 +161,21 @@ class ConceptsExportBuilderTest {
     void shouldExportAsResponseWithEmptyFields() throws RmesException {
         // Given
         String fileName = "concept-export";
-        Map<String, String> xmlContent = new HashMap<>();
-        xmlContent.put("conceptFile", "<Concept></Concept>");
-        ResponseEntity<?> expectedResponse = ResponseEntity.ok(new ByteArrayResource(new byte[0]));
-
-        when(exportUtils.exportAsODT(anyString(), anyMap(), anyString(), anyString(), anyString(), anyString()))
-                .thenReturn((ResponseEntity) expectedResponse);
+        Map<String, String> xmlContent = conceptXmlContent();
+        ResponseEntity<?> expectedResponse = givenOdtExportResponse(exportUtils);
 
         // When - Export with empty fields included
         ResponseEntity<?> result = conceptsExportBuilder.exportAsResponse(fileName, xmlContent, true, true, true);
 
         // Then
-        assertNotNull(result);
-        assertEquals(expectedResponse, result);
-        verify(exportUtils, times(1))
-                .exportAsODT(anyString(), anyMap(), anyString(), anyString(), anyString(), anyString());
+        assertSameResponseExportedOnceAsOdt(exportUtils, expectedResponse, result);
     }
 
     @Test
     void shouldExportAsInputStream() throws RmesException {
         // Given
         String fileName = "concept-export";
-        Map<String, String> xmlContent = new HashMap<>();
-        xmlContent.put("conceptFile", "<Concept></Concept>");
+        Map<String, String> xmlContent = conceptXmlContent();
         InputStream expectedStream = new ByteArrayInputStream(new byte[0]);
 
         when(exportUtils.exportAsInputStream(
@@ -235,20 +199,10 @@ class ConceptsExportBuilderTest {
         String id = "c1";
         JSONArray altLabels = new JSONArray().put("Label 1").put("Label 2").put("Label 3");
 
-        JSONObject conceptJson = new JSONObject()
-                .put("id", id)
-                .put("prefLabelLg1", "Concept FR")
-                .put(Constants.ALT_LABEL_LG1, altLabels)
-                .put("created", "2025-01-01T00:00:00")
-                .put("isValidated", "Validated")
-                .put("disseminationStatus", "http://id.insee.fr/codes/base/statutDiffusion/PublicGenerique")
-                .put("creator", "Creator")
-                .put("contributor", "Contributor")
-                .put("conceptVersion", "1");
+        JSONObject conceptJson =
+                conceptJsonWith("Creator", "Contributor", "Validated").put(Constants.ALT_LABEL_LG1, altLabels);
 
-        when(legacyConceptsRepository.getConceptById(id)).thenReturn(conceptJson);
-        when(repoGestion.getResponseAsArray(any())).thenReturn(new JSONArray());
-        when(repoGestion.getResponseAsObject(any())).thenReturn(new JSONObject());
+        givenConceptWithoutLinksNorNotes(id, conceptJson);
 
         // When
         ConceptForExport result = conceptsExportBuilder.getConceptData(id);
@@ -262,19 +216,9 @@ class ConceptsExportBuilderTest {
     void shouldHandleConceptWithNoNotes() throws RmesException {
         // Given
         String id = "c1";
-        JSONObject conceptJson = new JSONObject()
-                .put("id", id)
-                .put("prefLabelLg1", "Concept FR")
-                .put("created", "2025-01-01T00:00:00")
-                .put("isValidated", "Validated")
-                .put("disseminationStatus", "http://id.insee.fr/codes/base/statutDiffusion/PublicGenerique")
-                .put("creator", "Creator")
-                .put("contributor", "Contributor")
-                .put("conceptVersion", "1");
+        JSONObject conceptJson = conceptJsonWith("Creator", "Contributor", "Validated");
 
-        when(legacyConceptsRepository.getConceptById(id)).thenReturn(conceptJson);
-        when(repoGestion.getResponseAsArray(any())).thenReturn(new JSONArray());
-        when(repoGestion.getResponseAsObject(any())).thenReturn(new JSONObject());
+        givenConceptWithoutLinksNorNotes(id, conceptJson);
 
         // When
         ConceptForExport result = conceptsExportBuilder.getConceptData(id);
@@ -288,19 +232,9 @@ class ConceptsExportBuilderTest {
     void shouldHandleConceptWithNoLinks() throws RmesException {
         // Given
         String id = "c1";
-        JSONObject conceptJson = new JSONObject()
-                .put("id", id)
-                .put("prefLabelLg1", "Concept FR")
-                .put("created", "2025-01-01T00:00:00")
-                .put("isValidated", "Unpublished")
-                .put("disseminationStatus", "http://id.insee.fr/codes/base/statutDiffusion/PublicGenerique")
-                .put("creator", "Creator")
-                .put("contributor", "Contributor")
-                .put("conceptVersion", "1");
+        JSONObject conceptJson = conceptJsonWith("Creator", "Contributor", "Unpublished");
 
-        when(legacyConceptsRepository.getConceptById(id)).thenReturn(conceptJson);
-        when(repoGestion.getResponseAsArray(any())).thenReturn(new JSONArray());
-        when(repoGestion.getResponseAsObject(any())).thenReturn(new JSONObject());
+        givenConceptWithoutLinksNorNotes(id, conceptJson);
 
         // When
         ConceptForExport result = conceptsExportBuilder.getConceptData(id);
@@ -314,21 +248,12 @@ class ConceptsExportBuilderTest {
     void shouldFormatDatesCorrectly() throws RmesException {
         // Given
         String id = "c1";
-        JSONObject conceptJson = new JSONObject()
-                .put("id", id)
-                .put("prefLabelLg1", "Concept FR")
+        JSONObject conceptJson = conceptJsonWith("Creator", "Contributor", "Validated")
                 .put("created", "2025-01-15T10:30:00")
                 .put("modified", "2025-02-20T14:45:00")
-                .put("valid", "2025-12-31T23:59:59")
-                .put("isValidated", "Validated")
-                .put("disseminationStatus", "http://id.insee.fr/codes/base/statutDiffusion/PublicGenerique")
-                .put("creator", "Creator")
-                .put("contributor", "Contributor")
-                .put("conceptVersion", "1");
+                .put("valid", "2025-12-31T23:59:59");
 
-        when(legacyConceptsRepository.getConceptById(id)).thenReturn(conceptJson);
-        when(repoGestion.getResponseAsArray(any())).thenReturn(new JSONArray());
-        when(repoGestion.getResponseAsObject(any())).thenReturn(new JSONObject());
+        givenConceptWithoutLinksNorNotes(id, conceptJson);
 
         // When
         ConceptForExport result = conceptsExportBuilder.getConceptData(id);
@@ -339,12 +264,28 @@ class ConceptsExportBuilderTest {
         // Dates should be formatted
     }
 
+    private static Map<String, String> conceptXmlContent() {
+        Map<String, String> xmlContent = new HashMap<>();
+        xmlContent.put("conceptFile", "<Concept></Concept>");
+        return xmlContent;
+    }
+
+    private void givenConceptWithoutLinksNorNotes(String id, JSONObject conceptJson) throws RmesException {
+        when(legacyConceptsRepository.getConceptById(id)).thenReturn(conceptJson);
+        when(repoGestion.getResponseAsArray(any())).thenReturn(new JSONArray());
+        when(repoGestion.getResponseAsObject(any())).thenReturn(new JSONObject());
+    }
+
     private JSONObject conceptJsonWith(String creator, String contributor) {
+        return conceptJsonWith(creator, contributor, "Validated");
+    }
+
+    private JSONObject conceptJsonWith(String creator, String contributor, String isValidated) {
         return new JSONObject()
                 .put("id", "c1")
                 .put("prefLabelLg1", "Concept FR")
                 .put("created", "2025-01-01T00:00:00")
-                .put("isValidated", "Validated")
+                .put("isValidated", isValidated)
                 .put("disseminationStatus", "http://id.insee.fr/codes/base/statutDiffusion/PublicGenerique")
                 .put("creator", creator)
                 .put("contributor", contributor)
@@ -357,9 +298,7 @@ class ConceptsExportBuilderTest {
         String creator = "HIE2000069";
         String contributor = "http://bauhaus/organisations/insee/HIE2003216";
 
-        when(legacyConceptsRepository.getConceptById("c1")).thenReturn(conceptJsonWith(creator, contributor));
-        when(repoGestion.getResponseAsArray(any())).thenReturn(new JSONArray());
-        when(repoGestion.getResponseAsObject(any())).thenReturn(new JSONObject());
+        givenConceptWithoutLinksNorNotes("c1", conceptJsonWith(creator, contributor));
         when(organisationService.getOrganisationsMap(List.of(creator, contributor)))
                 .thenReturn(Map.of(
                         creator, new OrganisationOption(creator, "Division Enquêtes thématiques et études régionales"),
@@ -380,9 +319,7 @@ class ConceptsExportBuilderTest {
         String creator = "http://bauhaus/organisations/insee/HIE000000";
         String contributor = "DG75-L201";
 
-        when(legacyConceptsRepository.getConceptById("c1")).thenReturn(conceptJsonWith(creator, contributor));
-        when(repoGestion.getResponseAsArray(any())).thenReturn(new JSONArray());
-        when(repoGestion.getResponseAsObject(any())).thenReturn(new JSONObject());
+        givenConceptWithoutLinksNorNotes("c1", conceptJsonWith(creator, contributor));
         when(organisationService.getOrganisationsMap(anyList())).thenReturn(Map.of());
 
         // When
@@ -396,9 +333,7 @@ class ConceptsExportBuilderTest {
     @Test
     void shouldKeepRawStampsWhenOrganisationLookupFails() throws RmesException {
         // Given une résolution des organisations qui échoue
-        when(legacyConceptsRepository.getConceptById("c1")).thenReturn(conceptJsonWith("HIE2000069", "DG75-L201"));
-        when(repoGestion.getResponseAsArray(any())).thenReturn(new JSONArray());
-        when(repoGestion.getResponseAsObject(any())).thenReturn(new JSONObject());
+        givenConceptWithoutLinksNorNotes("c1", conceptJsonWith("HIE2000069", "DG75-L201"));
         when(organisationService.getOrganisationsMap(anyList()))
                 .thenThrow(new RmesException(500, "SPARQL failure", "organisations"));
 

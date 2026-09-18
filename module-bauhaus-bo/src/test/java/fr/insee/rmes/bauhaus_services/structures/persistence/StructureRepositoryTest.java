@@ -1,5 +1,7 @@
 package fr.insee.rmes.bauhaus_services.structures.persistence;
 
+import static fr.insee.rmes.bauhaus_services.utils.StoredRdfModels.objectOf;
+import static fr.insee.rmes.bauhaus_services.utils.StoredRdfModels.storedModel;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.*;
@@ -284,9 +286,7 @@ class StructureRepositoryTest {
 
     @Test
     void shouldKeepAnUpdatedStructureUnpublishedWhenItWasNotPublishedYet() throws RmesException {
-        when(structureQueries.getValidationStatus("dsd1000")).thenReturn("validation-status-query");
-        when(repositoryGestion.getResponseAsObject("validation-status-query"))
-                .thenReturn(new JSONObject().put("state", ValidationStatus.UNPUBLISHED.getValue()));
+        givenStructureDsd1000WithStatus(ValidationStatus.UNPUBLISHED);
 
         String id = structureRepository.setStructure("dsd1000", structureBody());
 
@@ -296,9 +296,7 @@ class StructureRepositoryTest {
 
     @Test
     void shouldFlagAnUpdatedStructureAsModifiedWhenItIsAlreadyPublished() throws RmesException {
-        when(structureQueries.getValidationStatus("dsd1000")).thenReturn("validation-status-query");
-        when(repositoryGestion.getResponseAsObject("validation-status-query"))
-                .thenReturn(new JSONObject().put("state", ValidationStatus.VALIDATED.getValue()));
+        givenStructureDsd1000WithStatus(ValidationStatus.VALIDATED);
 
         structureRepository.setStructure("dsd1000", structureBody());
 
@@ -325,9 +323,7 @@ class StructureRepositoryTest {
 
     @Test
     void shouldSkipTheUnicityCheckWhenAComponentOfTheStructureIsStillToBeCreated() throws RmesException {
-        when(structureQueries.getValidationStatus("dsd1000")).thenReturn("validation-status-query");
-        when(repositoryGestion.getResponseAsObject("validation-status-query"))
-                .thenReturn(new JSONObject().put("state", ValidationStatus.UNPUBLISHED.getValue()));
+        givenStructureDsd1000WithStatus(ValidationStatus.UNPUBLISHED);
         when(structureComponentRepository.createComponent(any(MutualizedComponent.class), any(JSONObject.class)))
                 .thenReturn("d2000");
 
@@ -435,17 +431,13 @@ class StructureRepositoryTest {
         return modelCaptor.getValue();
     }
 
-    private String validationStateOfStoredStructure() throws RmesException {
-        ArgumentCaptor<Model> modelCaptor = ArgumentCaptor.forClass(Model.class);
-        verify(repositoryGestion).loadSimpleObject(any(IRI.class), modelCaptor.capture(), isNull());
-        return objectOf(modelCaptor.getValue(), INSEE.VALIDATION_STATE);
+    private void givenStructureDsd1000WithStatus(ValidationStatus status) throws RmesException {
+        when(structureQueries.getValidationStatus("dsd1000")).thenReturn("validation-status-query");
+        when(repositoryGestion.getResponseAsObject("validation-status-query"))
+                .thenReturn(new JSONObject().put("state", status.getValue()));
     }
 
-    private static String objectOf(Model model, IRI predicate) {
-        return model.stream()
-                .filter(statement -> statement.getPredicate().equals(predicate))
-                .map(statement -> statement.getObject().stringValue())
-                .findFirst()
-                .orElseThrow(() -> new AssertionError("no statement for " + predicate));
+    private String validationStateOfStoredStructure() throws RmesException {
+        return objectOf(storedModel(repositoryGestion), INSEE.VALIDATION_STATE);
     }
 }

@@ -106,30 +106,9 @@ class OperationsRepositoryTest {
                     .when(() -> RdfUtils.addTripleInt(any(), any(), any(), any(), any()))
                     .thenCallRealMethod();
             mockedFactory
-                    .when(() -> RdfUtils.addTripleString(any(), any(), any(), any(), any(), any()))
-                    .thenCallRealMethod();
-            mockedFactory
-                    .when(() -> RdfUtils.setLiteralString(anyString(), anyString()))
-                    .thenCallRealMethod();
-            mockedFactory
-                    .when(() -> RdfUtils.setLiteralString(anyString(), anyString()))
-                    .thenCallRealMethod();
-            mockedFactory.when(() -> RdfUtils.setLiteralString(anyString())).thenCallRealMethod();
-            mockedFactory
-                    .when(RdfUtils::operationsGraph)
-                    .thenReturn(valueFactory.createIRI("http://operations-graph/"));
-            mockedFactory
                     .when(() -> RdfUtils.createLiteral(anyString(), eq(XSD.GYEAR)))
                     .thenCallRealMethod();
-            mockedFactory
-                    .when(RdfUtils::operationsGraph)
-                    .thenReturn(valueFactory.createIRI("http://operations-graph/"));
-            mockedFactory
-                    .when(() -> RdfUtils.objectIRI(eq(ObjectType.SERIES), eq("2")))
-                    .thenReturn(valueFactory.createIRI("http://series/2"));
-            mockedFactory
-                    .when(() -> RdfUtils.objectIRI(eq(ObjectType.OPERATION), eq("1")))
-                    .thenReturn(operationIRI);
+            stubRdfUtilsForOperationOfSeries2(mockedFactory, operationIRI);
             JSONObject operation = new JSONObject();
             JSONObject series = new JSONObject().put("id", "2");
             operation
@@ -160,22 +139,7 @@ class OperationsRepositoryTest {
 
         try (MockedStatic<RdfUtils> mockedFactory = Mockito.mockStatic(RdfUtils.class)) {
             SimpleValueFactory valueFactory = SimpleValueFactory.getInstance();
-            mockedFactory
-                    .when(() -> RdfUtils.objectIRI(eq(ObjectType.SERIES), eq("2")))
-                    .thenReturn(valueFactory.createIRI("http://series/2"));
-            mockedFactory
-                    .when(() -> RdfUtils.objectIRI(eq(ObjectType.OPERATION), eq("1")))
-                    .thenReturn(valueFactory.createIRI("http://operation/1"));
-            mockedFactory
-                    .when(RdfUtils::operationsGraph)
-                    .thenReturn(valueFactory.createIRI("http://operations-graph/"));
-            mockedFactory.when(() -> RdfUtils.setLiteralString(anyString())).thenCallRealMethod();
-            mockedFactory
-                    .when(() -> RdfUtils.setLiteralString(anyString(), anyString()))
-                    .thenCallRealMethod();
-            mockedFactory
-                    .when(() -> RdfUtils.addTripleString(any(), any(), any(), any(), any(), any()))
-                    .thenCallRealMethod();
+            stubRdfUtilsForOperationOfSeries2(mockedFactory, valueFactory.createIRI("http://operation/1"));
 
             JSONObject series = new JSONObject().put("id", "2");
             JSONObject operation = new JSONObject()
@@ -194,6 +158,28 @@ class OperationsRepositoryTest {
                 // d'autres exceptions sont attendues car les mocks ne couvrent pas tout le flow
             }
         }
+    }
+
+    /**
+     * L'opération d'identifiant « 1 » est rattachée à la série « 2 » : leurs IRI et le graphe des
+     * opérations sont figés, l'écriture des littéraux passe par les vraies méthodes.
+     */
+    private static void stubRdfUtilsForOperationOfSeries2(MockedStatic<RdfUtils> mockedFactory, IRI operationIRI) {
+        SimpleValueFactory valueFactory = SimpleValueFactory.getInstance();
+        mockedFactory
+                .when(() -> RdfUtils.objectIRI(eq(ObjectType.SERIES), eq("2")))
+                .thenReturn(valueFactory.createIRI("http://series/2"));
+        mockedFactory
+                .when(() -> RdfUtils.objectIRI(eq(ObjectType.OPERATION), eq("1")))
+                .thenReturn(operationIRI);
+        mockedFactory.when(RdfUtils::operationsGraph).thenReturn(valueFactory.createIRI("http://operations-graph/"));
+        mockedFactory.when(() -> RdfUtils.setLiteralString(anyString())).thenCallRealMethod();
+        mockedFactory
+                .when(() -> RdfUtils.setLiteralString(anyString(), anyString()))
+                .thenCallRealMethod();
+        mockedFactory
+                .when(() -> RdfUtils.addTripleString(any(), any(), any(), any(), any(), any()))
+                .thenCallRealMethod();
     }
 
     @Test

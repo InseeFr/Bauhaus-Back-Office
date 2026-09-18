@@ -40,6 +40,14 @@ class ConceptsResourcesTest {
         return new ConceptsResources(legacyConceptsService, conceptsService);
     }
 
+    private JsonNode listedConceptsBody(PartialConcept concept) throws Throwable {
+        when(conceptsService.getAllConcepts()).thenReturn(List.of(concept));
+
+        var response = newController().getConcepts();
+
+        return new ObjectMapper().valueToTree(response.getBody());
+    }
+
     @Test
     void shouldExposeTheAlternativeLabelWhenListingConcepts() throws Throwable {
         PartialConcept concept = new PartialConcept(
@@ -47,11 +55,7 @@ class ConceptsResourcesTest {
                 LocalisedLabel.ofDefaultLanguage("Répertoire des personnes physiques"),
                 LocalisedLabel.ofDefaultLanguage("RNIPP"));
 
-        when(conceptsService.getAllConcepts()).thenReturn(List.of(concept));
-
-        var response = newController().getConcepts();
-
-        JsonNode body = new ObjectMapper().valueToTree(response.getBody());
+        JsonNode body = listedConceptsBody(concept);
         assertThat(body.get(0).get("id").asText()).isEqualTo("c00001");
         assertThat(body.get(0).get("altLabel").asText()).isEqualTo("RNIPP");
     }
@@ -61,11 +65,7 @@ class ConceptsResourcesTest {
         PartialConcept concept = new PartialConcept(
                 new ConceptId("c00002"), LocalisedLabel.ofDefaultLanguage("Concept sans sigle"), null);
 
-        when(conceptsService.getAllConcepts()).thenReturn(List.of(concept));
-
-        var response = newController().getConcepts();
-
-        JsonNode body = new ObjectMapper().valueToTree(response.getBody());
+        JsonNode body = listedConceptsBody(concept);
         assertThat(body.get(0).get("altLabel").isNull()).isTrue();
     }
 

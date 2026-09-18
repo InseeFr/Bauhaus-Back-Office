@@ -1,5 +1,6 @@
 package fr.insee.rmes.modules.ddi.physical_instances.domain.services;
 
+import static fr.insee.rmes.modules.ddi.physical_instances.domain.services.Lifecycle33TestFixtures.sentinelValuesMmvr;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Citation;
@@ -92,10 +93,7 @@ class DDI4toDDI3ConverterServiceImplTest {
                 List.of(Reference.of("fr.insee", "saphir-rp99-sas", "1", "DataRelationship")));
         Ddi4Response ddi4 = new Ddi4Response("file:/jsonSchema.json", null, List.of(pi), null, null, null, null, null);
 
-        Ddi3Response result = converter.convertDdi4ToDdi3(ddi4);
-
-        assertThat(result.items()).hasSize(1);
-        Ddi3Response.Ddi3Item item = result.items().get(0);
+        Ddi3Response.Ddi3Item item = convertSingleItem(ddi4);
         assertThat(item.itemType()).isEqualTo("a51e85bb-6259-4488-8df2-f08cb43485f8");
         assertThat(item.agencyId()).isEqualTo("fr.insee");
         assertThat(item.identifier()).isEqualTo("saphir-rp99-sas");
@@ -123,10 +121,7 @@ class DDI4toDDI3ConverterServiceImplTest {
                         new VariablesInRecord(List.of()))));
         Ddi4Response ddi4 = new Ddi4Response("file:/jsonSchema.json", null, null, List.of(dr), null, null, null, null);
 
-        Ddi3Response result = converter.convertDdi4ToDdi3(ddi4);
-
-        assertThat(result.items()).hasSize(1);
-        Ddi3Response.Ddi3Item item = result.items().get(0);
+        Ddi3Response.Ddi3Item item = convertSingleItem(ddi4);
         assertThat(item.itemType()).isEqualTo("f39ff278-8500-45fe-a850-3906da2d242b");
         assertThat(item.item()).contains("<ddi:DataRelationship").contains(">SAPHIR - RP99<");
     }
@@ -157,10 +152,7 @@ class DDI4toDDI3ConverterServiceImplTest {
                 null);
         Ddi4Response ddi4 = new Ddi4Response("file:/jsonSchema.json", null, null, null, List.of(var), null, null, null);
 
-        Ddi3Response result = converter.convertDdi4ToDdi3(ddi4);
-
-        assertThat(result.items()).hasSize(1);
-        Ddi3Response.Ddi3Item item = result.items().get(0);
+        Ddi3Response.Ddi3Item item = convertSingleItem(ddi4);
         assertThat(item.itemType()).isEqualTo("683889c6-f74b-4d5e-92ed-908c0a42bb2d");
         assertThat(item.item())
                 .contains("<ddi:Variable")
@@ -183,10 +175,7 @@ class DDI4toDDI3ConverterServiceImplTest {
                 List.of());
         Ddi4Response ddi4 = new Ddi4Response("file:/jsonSchema.json", null, null, null, null, List.of(cl), null, null);
 
-        Ddi3Response result = converter.convertDdi4ToDdi3(ddi4);
-
-        assertThat(result.items()).hasSize(1);
-        Ddi3Response.Ddi3Item item = result.items().get(0);
+        Ddi3Response.Ddi3Item item = convertSingleItem(ddi4);
         assertThat(item.itemType()).isEqualTo("8b108ef8-b642-4484-9c49-f88e4bf7cf1d");
         assertThat(item.item()).contains("<ddi:CodeList").contains(">Liste codes<");
     }
@@ -203,10 +192,7 @@ class DDI4toDDI3ConverterServiceImplTest {
                 LangStrings.of("fr-FR", "0 an"));
         Ddi4Response ddi4 = new Ddi4Response("file:/jsonSchema.json", null, null, null, null, null, List.of(cat), null);
 
-        Ddi3Response result = converter.convertDdi4ToDdi3(ddi4);
-
-        assertThat(result.items()).hasSize(1);
-        Ddi3Response.Ddi3Item item = result.items().get(0);
+        Ddi3Response.Ddi3Item item = convertSingleItem(ddi4);
         assertThat(item.itemType()).isEqualTo("7e47c269-bcab-40f7-a778-af7bbc4e3d00");
         assertThat(item.item()).contains("<ddi:Category").contains(">0 an<");
     }
@@ -217,23 +203,12 @@ class DDI4toDDI3ConverterServiceImplTest {
      */
     @Test
     void shouldConvertManagedMissingValuesRepresentations() {
-        Ddi4ManagedMissingValuesRepresentation mmvr = new Ddi4ManagedMissingValuesRepresentation(
-                Ddi4ManagedMissingValuesRepresentation.TYPE,
-                CogsDate.ofDateTime("2025-01-21T13:48:46.363"),
-                "urn:ddi:fr.insee:mmvr-1:1",
-                "fr.insee",
-                "mmvr-1",
-                "1",
-                LangStrings.of("fr-FR", "Valeurs sentinelles NSP/REF"),
-                List.of(new CodeRepresentation(
-                        CodeRepresentation.TYPE, false, Reference.of("fr.insee", "cl-sentinelles", "1", "CodeList"))));
+        Ddi4ManagedMissingValuesRepresentation mmvr =
+                sentinelValuesMmvr(CogsDate.ofDateTime("2025-01-21T13:48:46.363"));
         Ddi4Response ddi4 =
                 new Ddi4Response("file:/jsonSchema.json", null, null, null, null, null, null, List.of(mmvr));
 
-        Ddi3Response result = converter.convertDdi4ToDdi3(ddi4);
-
-        assertThat(result.items()).hasSize(1);
-        Ddi3Response.Ddi3Item item = result.items().get(0);
+        Ddi3Response.Ddi3Item item = convertSingleItem(ddi4);
         assertThat(item.itemType()).isEqualTo("c29c3125-2a53-4179-8fa6-aa3beb2bb5ed");
         assertThat(item.item())
                 .contains("<r:ManagedMissingValuesRepresentation")
@@ -529,5 +504,13 @@ class DDI4toDDI3ConverterServiceImplTest {
                 .contains("<ddi:TopLevelReference")
                 .contains(">test-id<")
                 .contains(">PhysicalInstance<");
+    }
+
+    /** Converts the response, which must yield exactly one DDI 3 item, and returns it. */
+    private Ddi3Response.Ddi3Item convertSingleItem(Ddi4Response ddi4) {
+        Ddi3Response result = converter.convertDdi4ToDdi3(ddi4);
+
+        assertThat(result.items()).hasSize(1);
+        return result.items().get(0);
     }
 }

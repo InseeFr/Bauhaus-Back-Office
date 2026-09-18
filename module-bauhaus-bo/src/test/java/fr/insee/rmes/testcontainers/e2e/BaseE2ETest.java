@@ -2,6 +2,7 @@ package fr.insee.rmes.testcontainers.e2e;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.AppSpringBootTest;
+import fr.insee.rmes.testcontainers.GraphDbTestProperties;
 import fr.insee.rmes.testcontainers.WithGraphDBContainer;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
@@ -25,12 +26,7 @@ public abstract class BaseE2ETest extends WithGraphDBContainer {
 
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
-        registry.add(
-                "fr.insee.rmes.bauhaus.sesame.gestion.sesameServer",
-                () -> getRdfGestionConnectionDetails().getUrlServer());
-        registry.add(
-                "fr.insee.rmes.bauhaus.sesame.gestion.repository",
-                () -> getRdfGestionConnectionDetails().repositoryId());
+        GraphDbTestProperties.registerGestion(registry);
     }
 
     @BeforeAll

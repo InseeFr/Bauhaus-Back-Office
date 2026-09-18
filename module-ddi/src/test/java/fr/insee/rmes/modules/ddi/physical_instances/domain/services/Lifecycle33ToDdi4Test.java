@@ -1,5 +1,15 @@
 package fr.insee.rmes.modules.ddi.physical_instances.domain.services;
 
+import static fr.insee.rmes.modules.ddi.physical_instances.domain.services.Lifecycle33TestFixtures.GROUP_NS;
+import static fr.insee.rmes.modules.ddi.physical_instances.domain.services.Lifecycle33TestFixtures.LOGICAL_PRODUCT_NS;
+import static fr.insee.rmes.modules.ddi.physical_instances.domain.services.Lifecycle33TestFixtures.PHYSICAL_INSTANCE_NS;
+import static fr.insee.rmes.modules.ddi.physical_instances.domain.services.Lifecycle33TestFixtures.STUDY_UNIT_NS;
+import static fr.insee.rmes.modules.ddi.physical_instances.domain.services.Lifecycle33TestFixtures.fragment;
+import static fr.insee.rmes.modules.ddi.physical_instances.domain.services.Lifecycle33TestFixtures.inNamespace;
+import static fr.insee.rmes.modules.ddi.physical_instances.domain.services.Lifecycle33TestFixtures.reference;
+import static fr.insee.rmes.modules.ddi.physical_instances.domain.services.Lifecycle33TestFixtures.sentinelValuesMmvrFragment;
+import static fr.insee.rmes.modules.ddi.physical_instances.domain.services.Lifecycle33TestFixtures.universallyUnique;
+import static fr.insee.rmes.modules.ddi.physical_instances.domain.services.Lifecycle33TestFixtures.versionable;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 
@@ -24,6 +34,11 @@ import org.junit.jupiter.api.Test;
 
 class Lifecycle33ToDdi4Test {
 
+    private static final String VERSION_DATE = "2025-12-23T09:52:06.355Z";
+    private static final String SCHEME_VERSION_DATE = "2026-04-03T12:00:00Z";
+    private static final String TEST_INSTANCE_CITATION =
+            "<r:Citation><r:Title><r:String xml:lang=\"fr-FR\">Test Instance</r:String></r:Title></r:Citation>";
+
     private final Lifecycle33ToDdi4 converter = new Lifecycle33ToDdi4();
 
     /**
@@ -32,18 +47,9 @@ class Lifecycle33ToDdi4Test {
      */
     @Test
     void shouldExposeVersionResponsibilityInTheDdi4Json() throws Exception {
-        FragmentDocument doc = FragmentDocument.Factory.parse("""
-            <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
-                <PhysicalInstance xmlns="ddi:physicalinstance:3_3" isUniversallyUnique="true" versionDate="2026-12-23T09:52:06.355Z">
-                    <r:URN>urn:ddi:fr.insee:pi-id:1</r:URN>
-                    <r:Agency>fr.insee</r:Agency>
-                    <r:ID>pi-id</r:ID>
-                    <r:Version>1</r:Version>
-                    <r:VersionResponsibility>responsable-configure</r:VersionResponsibility>
-                    <r:Citation><r:Title><r:String xml:lang="fr-FR">Test Instance</r:String></r:Title></r:Citation>
-                </PhysicalInstance>
-            </Fragment>
-            """);
+        FragmentDocument doc = physicalInstance(
+                "2026-12-23T09:52:06.355Z",
+                "<r:VersionResponsibility>responsable-configure</r:VersionResponsibility>" + TEST_INSTANCE_CITATION);
 
         Ddi4PhysicalInstance pi = converter.toPhysicalInstance(doc);
 
@@ -53,17 +59,7 @@ class Lifecycle33ToDdi4Test {
 
     @Test
     void shouldParsePhysicalInstanceWithoutBasedOnObject() throws XmlException {
-        FragmentDocument doc = FragmentDocument.Factory.parse("""
-            <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
-                <PhysicalInstance xmlns="ddi:physicalinstance:3_3" isUniversallyUnique="true" versionDate="2025-12-23T09:52:06.355Z">
-                    <r:URN>urn:ddi:fr.insee:pi-id:1</r:URN>
-                    <r:Agency>fr.insee</r:Agency>
-                    <r:ID>pi-id</r:ID>
-                    <r:Version>1</r:Version>
-                    <r:Citation><r:Title><r:String xml:lang="fr-FR">Test Instance</r:String></r:Title></r:Citation>
-                </PhysicalInstance>
-            </Fragment>
-            """);
+        FragmentDocument doc = physicalInstance(VERSION_DATE, TEST_INSTANCE_CITATION);
 
         Ddi4PhysicalInstance pi = converter.toPhysicalInstance(doc);
 
@@ -78,25 +74,17 @@ class Lifecycle33ToDdi4Test {
 
     @Test
     void shouldParsePhysicalInstanceWithBasedOnObjectAndDataRelationshipReference() throws XmlException {
-        FragmentDocument doc = FragmentDocument.Factory.parse("""
-            <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
-                <PhysicalInstance xmlns="ddi:physicalinstance:3_3" isUniversallyUnique="true" versionDate="2025-12-23T09:52:06.355Z">
-                    <r:URN>urn:ddi:fr.insee:pi-id:1</r:URN>
-                    <r:Agency>fr.insee</r:Agency>
-                    <r:ID>pi-id</r:ID>
-                    <r:Version>1</r:Version>
-                    <r:BasedOnObject><r:BasedOnReference>
-                        <r:Agency>fr.insee</r:Agency><r:ID>original-pi</r:ID><r:Version>1</r:Version>
-                        <r:TypeOfObject>PhysicalInstance</r:TypeOfObject>
-                    </r:BasedOnReference></r:BasedOnObject>
-                    <r:Citation><r:Title><r:String xml:lang="fr-FR">Test</r:String></r:Title></r:Citation>
-                    <r:DataRelationshipReference>
-                        <r:Agency>fr.insee</r:Agency><r:ID>dr-id</r:ID><r:Version>1</r:Version>
-                        <r:TypeOfObject>DataRelationship</r:TypeOfObject>
-                    </r:DataRelationshipReference>
-                </PhysicalInstance>
-            </Fragment>
-            """);
+        FragmentDocument doc = physicalInstance(VERSION_DATE, """
+                <r:BasedOnObject><r:BasedOnReference>
+                    <r:Agency>fr.insee</r:Agency><r:ID>original-pi</r:ID><r:Version>1</r:Version>
+                    <r:TypeOfObject>PhysicalInstance</r:TypeOfObject>
+                </r:BasedOnReference></r:BasedOnObject>
+                <r:Citation><r:Title><r:String xml:lang="fr-FR">Test</r:String></r:Title></r:Citation>
+                <r:DataRelationshipReference>
+                    <r:Agency>fr.insee</r:Agency><r:ID>dr-id</r:ID><r:Version>1</r:Version>
+                    <r:TypeOfObject>DataRelationship</r:TypeOfObject>
+                </r:DataRelationshipReference>
+                """);
 
         Ddi4PhysicalInstance pi = converter.toPhysicalInstance(doc);
 
@@ -111,17 +99,9 @@ class Lifecycle33ToDdi4Test {
 
     @Test
     void shouldParseDataRelationshipWithLabelFallbackOnName() throws XmlException {
-        FragmentDocument doc = FragmentDocument.Factory.parse("""
-            <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
-                <DataRelationship xmlns="ddi:logicalproduct:3_3" isUniversallyUnique="true" versionDate="2025-12-23T09:52:06.355Z">
-                    <r:URN>urn:ddi:fr.insee:dr-id:1</r:URN>
-                    <r:Agency>fr.insee</r:Agency>
-                    <r:ID>dr-id</r:ID>
-                    <r:Version>1</r:Version>
-                    <DataRelationshipName><r:String xml:lang="fr-FR">DR Name</r:String></DataRelationshipName>
-                </DataRelationship>
-            </Fragment>
-            """);
+        FragmentDocument doc = logicalProductItem("DataRelationship", "dr-id", """
+                <DataRelationshipName><r:String xml:lang="fr-FR">DR Name</r:String></DataRelationshipName>
+                """);
 
         Ddi4DataRelationship dr = converter.toDataRelationship(doc);
 
@@ -131,18 +111,10 @@ class Lifecycle33ToDdi4Test {
 
     @Test
     void shouldParseDataRelationshipWithExplicitLabelOverridingName() throws XmlException {
-        FragmentDocument doc = FragmentDocument.Factory.parse("""
-            <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
-                <DataRelationship xmlns="ddi:logicalproduct:3_3" isUniversallyUnique="true" versionDate="2025-12-23T09:52:06.355Z">
-                    <r:URN>urn:ddi:fr.insee:dr-id:1</r:URN>
-                    <r:Agency>fr.insee</r:Agency>
-                    <r:ID>dr-id</r:ID>
-                    <r:Version>1</r:Version>
-                    <DataRelationshipName><r:String xml:lang="fr-FR">DR Name</r:String></DataRelationshipName>
-                    <r:Label><r:Content xml:lang="fr-FR">DR Label</r:Content></r:Label>
-                </DataRelationship>
-            </Fragment>
-            """);
+        FragmentDocument doc = logicalProductItem("DataRelationship", "dr-id", """
+                <DataRelationshipName><r:String xml:lang="fr-FR">DR Name</r:String></DataRelationshipName>
+                <r:Label><r:Content xml:lang="fr-FR">DR Label</r:Content></r:Label>
+                """);
 
         Ddi4DataRelationship dr = converter.toDataRelationship(doc);
 
@@ -151,29 +123,21 @@ class Lifecycle33ToDdi4Test {
 
     @Test
     void shouldParseDataRelationshipWithLogicalRecordAndVariablesInRecord() throws XmlException {
-        FragmentDocument doc = FragmentDocument.Factory.parse("""
-            <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
-                <DataRelationship xmlns="ddi:logicalproduct:3_3" isUniversallyUnique="true" versionDate="2025-12-23T09:52:06.355Z">
-                    <r:URN>urn:ddi:fr.insee:dr-id:1</r:URN>
+        FragmentDocument doc = logicalProductItem("DataRelationship", "dr-id", """
+                <LogicalRecord isUniversallyUnique="true">
+                    <r:URN>urn:ddi:fr.insee:lr-id:1</r:URN>
                     <r:Agency>fr.insee</r:Agency>
-                    <r:ID>dr-id</r:ID>
+                    <r:ID>lr-id</r:ID>
                     <r:Version>1</r:Version>
-                    <LogicalRecord isUniversallyUnique="true">
-                        <r:URN>urn:ddi:fr.insee:lr-id:1</r:URN>
-                        <r:Agency>fr.insee</r:Agency>
-                        <r:ID>lr-id</r:ID>
-                        <r:Version>1</r:Version>
-                        <r:Label><r:Content xml:lang="fr-FR">LR Label</r:Content></r:Label>
-                        <VariablesInRecord>
-                            <VariableUsedReference>
-                                <r:Agency>fr.insee</r:Agency><r:ID>var-1</r:ID><r:Version>1</r:Version>
-                                <r:TypeOfObject>Variable</r:TypeOfObject>
-                            </VariableUsedReference>
-                        </VariablesInRecord>
-                    </LogicalRecord>
-                </DataRelationship>
-            </Fragment>
-            """);
+                    <r:Label><r:Content xml:lang="fr-FR">LR Label</r:Content></r:Label>
+                    <VariablesInRecord>
+                        <VariableUsedReference>
+                            <r:Agency>fr.insee</r:Agency><r:ID>var-1</r:ID><r:Version>1</r:Version>
+                            <r:TypeOfObject>Variable</r:TypeOfObject>
+                        </VariableUsedReference>
+                    </VariablesInRecord>
+                </LogicalRecord>
+                """);
 
         Ddi4DataRelationship dr = converter.toDataRelationship(doc);
 
@@ -193,22 +157,14 @@ class Lifecycle33ToDdi4Test {
 
     @Test
     void shouldParseVariableWithBasedOnObjectAndLabel() throws XmlException {
-        FragmentDocument doc = FragmentDocument.Factory.parse("""
-            <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
-                <Variable xmlns="ddi:logicalproduct:3_3" isUniversallyUnique="true" versionDate="2025-12-23T09:52:06.355Z">
-                    <r:URN>urn:ddi:fr.insee:var-id:1</r:URN>
-                    <r:Agency>fr.insee</r:Agency>
-                    <r:ID>var-id</r:ID>
-                    <r:Version>1</r:Version>
-                    <r:BasedOnObject><r:BasedOnReference>
-                        <r:Agency>fr.insee</r:Agency><r:ID>original-var</r:ID><r:Version>1</r:Version>
-                        <r:TypeOfObject>Variable</r:TypeOfObject>
-                    </r:BasedOnReference></r:BasedOnObject>
-                    <VariableName><r:String xml:lang="fr-FR">VAR_NAME</r:String></VariableName>
-                    <r:Label><r:Content xml:lang="fr-FR">Variable Label</r:Content></r:Label>
-                </Variable>
-            </Fragment>
-            """);
+        FragmentDocument doc = logicalProductItem("Variable", "var-id", """
+                <r:BasedOnObject><r:BasedOnReference>
+                    <r:Agency>fr.insee</r:Agency><r:ID>original-var</r:ID><r:Version>1</r:Version>
+                    <r:TypeOfObject>Variable</r:TypeOfObject>
+                </r:BasedOnReference></r:BasedOnObject>
+                <VariableName><r:String xml:lang="fr-FR">VAR_NAME</r:String></VariableName>
+                <r:Label><r:Content xml:lang="fr-FR">Variable Label</r:Content></r:Label>
+                """);
 
         Ddi4Variable variable = converter.toVariable(doc);
 
@@ -220,18 +176,12 @@ class Lifecycle33ToDdi4Test {
 
     @Test
     void shouldParseVariableWithDescriptionInEveryLanguage() throws XmlException {
-        FragmentDocument doc = FragmentDocument.Factory.parse("""
-            <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
-                <Variable xmlns="ddi:logicalproduct:3_3" isUniversallyUnique="true" versionDate="2025-12-23T09:52:06.355Z">
-                    <r:URN>urn:ddi:fr.insee:var-id:1</r:URN>
-                    <r:Agency>fr.insee</r:Agency><r:ID>var-id</r:ID><r:Version>1</r:Version>
-                    <r:Description>
-                        <r:Content xml:lang="en-IE">English description</r:Content>
-                        <r:Content xml:lang="fr-FR">Description française</r:Content>
-                    </r:Description>
-                </Variable>
-            </Fragment>
-            """);
+        FragmentDocument doc = logicalProductItem("Variable", "var-id", """
+                <r:Description>
+                    <r:Content xml:lang="en-IE">English description</r:Content>
+                    <r:Content xml:lang="fr-FR">Description française</r:Content>
+                </r:Description>
+                """);
 
         Ddi4Variable variable = converter.toVariable(doc);
 
@@ -242,22 +192,9 @@ class Lifecycle33ToDdi4Test {
 
     @Test
     void shouldParseVariableWithCodeRepresentation() throws XmlException {
-        FragmentDocument doc = FragmentDocument.Factory.parse("""
-            <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
-                <Variable xmlns="ddi:logicalproduct:3_3" isUniversallyUnique="true" versionDate="2025-12-23T09:52:06.355Z">
-                    <r:URN>urn:ddi:fr.insee:var:1</r:URN>
-                    <r:Agency>fr.insee</r:Agency><r:ID>var</r:ID><r:Version>1</r:Version>
-                    <VariableRepresentation>
-                        <r:CodeRepresentation blankIsMissingValue="true">
-                            <r:CodeListReference>
-                                <r:Agency>fr.insee</r:Agency><r:ID>cl-id</r:ID><r:Version>1</r:Version>
-                                <r:TypeOfObject>CodeList</r:TypeOfObject>
-                            </r:CodeListReference>
-                        </r:CodeRepresentation>
-                    </VariableRepresentation>
-                </Variable>
-            </Fragment>
-            """);
+        FragmentDocument doc = variableWithRepresentation("<r:CodeRepresentation blankIsMissingValue=\"true\">"
+                + reference("r:CodeListReference", "cl-id", "CodeList")
+                + "</r:CodeRepresentation>");
 
         Ddi4Variable variable = converter.toVariable(doc);
 
@@ -277,26 +214,10 @@ class Lifecycle33ToDdi4Test {
      */
     @Test
     void shouldParseVariableWithMissingValuesReference() throws XmlException {
-        FragmentDocument doc = FragmentDocument.Factory.parse("""
-            <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
-                <Variable xmlns="ddi:logicalproduct:3_3" isUniversallyUnique="true" versionDate="2025-12-23T09:52:06.355Z">
-                    <r:URN>urn:ddi:fr.insee:var:1</r:URN>
-                    <r:Agency>fr.insee</r:Agency><r:ID>var</r:ID><r:Version>1</r:Version>
-                    <VariableRepresentation>
-                        <r:CodeRepresentation blankIsMissingValue="false">
-                            <r:CodeListReference>
-                                <r:Agency>fr.insee</r:Agency><r:ID>cl-id</r:ID><r:Version>1</r:Version>
-                                <r:TypeOfObject>CodeList</r:TypeOfObject>
-                            </r:CodeListReference>
-                        </r:CodeRepresentation>
-                        <MissingValuesReference>
-                            <r:Agency>fr.insee</r:Agency><r:ID>mmvr-1</r:ID><r:Version>1</r:Version>
-                            <r:TypeOfObject>ManagedMissingValuesRepresentation</r:TypeOfObject>
-                        </MissingValuesReference>
-                    </VariableRepresentation>
-                </Variable>
-            </Fragment>
-            """);
+        FragmentDocument doc = variableWithRepresentation("<r:CodeRepresentation blankIsMissingValue=\"false\">"
+                + reference("r:CodeListReference", "cl-id", "CodeList")
+                + "</r:CodeRepresentation>"
+                + reference("MissingValuesReference", "mmvr-1", "ManagedMissingValuesRepresentation"));
 
         Ddi4Variable variable = converter.toVariable(doc);
 
@@ -312,17 +233,9 @@ class Lifecycle33ToDdi4Test {
     /** Une variable peut déclarer un rôle sans aucune ValueRepresentation : aucun lecteur ne s'applique. */
     @Test
     void shouldParseVariableWithoutValueRepresentation() throws XmlException {
-        FragmentDocument doc = FragmentDocument.Factory.parse("""
-            <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
-                <Variable xmlns="ddi:logicalproduct:3_3" isUniversallyUnique="true" versionDate="2025-12-23T09:52:06.355Z">
-                    <r:URN>urn:ddi:fr.insee:var:1</r:URN>
-                    <r:Agency>fr.insee</r:Agency><r:ID>var</r:ID><r:Version>1</r:Version>
-                    <VariableRepresentation>
-                        <VariableRole>Identifier</VariableRole>
-                    </VariableRepresentation>
-                </Variable>
-            </Fragment>
-            """);
+        FragmentDocument doc = variableWithRepresentation("""
+                <VariableRole>Identifier</VariableRole>
+                """);
 
         Ddi4Variable variable = converter.toVariable(doc);
 
@@ -335,23 +248,15 @@ class Lifecycle33ToDdi4Test {
 
     @Test
     void shouldParseVariableWithNumericRepresentation() throws XmlException {
-        FragmentDocument doc = FragmentDocument.Factory.parse("""
-            <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
-                <Variable xmlns="ddi:logicalproduct:3_3" isUniversallyUnique="true" versionDate="2025-12-23T09:52:06.355Z">
-                    <r:URN>urn:ddi:fr.insee:var:1</r:URN>
-                    <r:Agency>fr.insee</r:Agency><r:ID>var</r:ID><r:Version>1</r:Version>
-                    <VariableRepresentation>
-                        <r:NumericRepresentation blankIsMissingValue="false">
-                            <r:NumberRange>
-                                <r:Low isInclusive="false">0</r:Low>
-                                <r:High isInclusive="true">100</r:High>
-                            </r:NumberRange>
-                            <r:NumericTypeCode>Integer</r:NumericTypeCode>
-                        </r:NumericRepresentation>
-                    </VariableRepresentation>
-                </Variable>
-            </Fragment>
-            """);
+        FragmentDocument doc = variableWithRepresentation("""
+                <r:NumericRepresentation blankIsMissingValue="false">
+                    <r:NumberRange>
+                        <r:Low isInclusive="false">0</r:Low>
+                        <r:High isInclusive="true">100</r:High>
+                    </r:NumberRange>
+                    <r:NumericTypeCode>Integer</r:NumericTypeCode>
+                </r:NumericRepresentation>
+                """);
 
         Ddi4Variable variable = converter.toVariable(doc);
 
@@ -385,23 +290,15 @@ class Lifecycle33ToDdi4Test {
 
     @Test
     void shouldParseVariableWithDecimalNumericBounds() throws XmlException {
-        FragmentDocument doc = FragmentDocument.Factory.parse("""
-            <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
-                <Variable xmlns="ddi:logicalproduct:3_3" isUniversallyUnique="true" versionDate="2025-12-23T09:52:06.355Z">
-                    <r:URN>urn:ddi:fr.insee:var:1</r:URN>
-                    <r:Agency>fr.insee</r:Agency><r:ID>var</r:ID><r:Version>1</r:Version>
-                    <VariableRepresentation>
-                        <r:NumericRepresentation blankIsMissingValue="false">
-                            <r:NumberRange>
-                                <r:Low isInclusive="true">0.0001</r:Low>
-                                <r:High isInclusive="true">12345678.5</r:High>
-                            </r:NumberRange>
-                            <r:NumericTypeCode>Decimal</r:NumericTypeCode>
-                        </r:NumericRepresentation>
-                    </VariableRepresentation>
-                </Variable>
-            </Fragment>
-            """);
+        FragmentDocument doc = variableWithRepresentation("""
+                <r:NumericRepresentation blankIsMissingValue="false">
+                    <r:NumberRange>
+                        <r:Low isInclusive="true">0.0001</r:Low>
+                        <r:High isInclusive="true">12345678.5</r:High>
+                    </r:NumberRange>
+                    <r:NumericTypeCode>Decimal</r:NumericTypeCode>
+                </r:NumericRepresentation>
+                """);
 
         Ddi4Variable variable = converter.toVariable(doc);
 
@@ -421,20 +318,12 @@ class Lifecycle33ToDdi4Test {
 
     @Test
     void shouldParseVariableWithDateTimeRepresentation() throws XmlException {
-        FragmentDocument doc = FragmentDocument.Factory.parse("""
-            <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
-                <Variable xmlns="ddi:logicalproduct:3_3" isUniversallyUnique="true" versionDate="2025-12-23T09:52:06.355Z">
-                    <r:URN>urn:ddi:fr.insee:var:1</r:URN>
-                    <r:Agency>fr.insee</r:Agency><r:ID>var</r:ID><r:Version>1</r:Version>
-                    <VariableRepresentation>
-                        <r:DateTimeRepresentation>
-                            <r:DateTypeCode>Date</r:DateTypeCode>
-                            <r:DateFieldFormat>yyyy-MM-dd</r:DateFieldFormat>
-                        </r:DateTimeRepresentation>
-                    </VariableRepresentation>
-                </Variable>
-            </Fragment>
-            """);
+        FragmentDocument doc = variableWithRepresentation("""
+                <r:DateTimeRepresentation>
+                    <r:DateTypeCode>Date</r:DateTypeCode>
+                    <r:DateFieldFormat>yyyy-MM-dd</r:DateFieldFormat>
+                </r:DateTimeRepresentation>
+                """);
 
         Ddi4Variable variable = converter.toVariable(doc);
 
@@ -446,17 +335,9 @@ class Lifecycle33ToDdi4Test {
 
     @Test
     void shouldParseVariableWithTextRepresentation() throws XmlException {
-        FragmentDocument doc = FragmentDocument.Factory.parse("""
-            <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
-                <Variable xmlns="ddi:logicalproduct:3_3" isUniversallyUnique="true" versionDate="2025-12-23T09:52:06.355Z">
-                    <r:URN>urn:ddi:fr.insee:var:1</r:URN>
-                    <r:Agency>fr.insee</r:Agency><r:ID>var</r:ID><r:Version>1</r:Version>
-                    <VariableRepresentation>
-                        <r:TextRepresentation blankIsMissingValue="true" minLength="1" maxLength="255" regExp="[A-Z]+"/>
-                    </VariableRepresentation>
-                </Variable>
-            </Fragment>
-            """);
+        FragmentDocument doc = variableWithRepresentation("""
+                <r:TextRepresentation blankIsMissingValue="true" minLength="1" maxLength="255" regExp="[A-Z]+"/>
+                """);
 
         Ddi4Variable variable = converter.toVariable(doc);
 
@@ -472,24 +353,18 @@ class Lifecycle33ToDdi4Test {
 
     @Test
     void shouldParseCodeListWithCodes() throws XmlException {
-        FragmentDocument doc = FragmentDocument.Factory.parse("""
-            <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
-                <CodeList xmlns="ddi:logicalproduct:3_3" isUniversallyUnique="true" versionDate="2025-12-23T09:52:06.355Z">
-                    <r:URN>urn:ddi:fr.insee:cl-id:1</r:URN>
-                    <r:Agency>fr.insee</r:Agency><r:ID>cl-id</r:ID><r:Version>1</r:Version>
-                    <r:Label><r:Content xml:lang="fr-FR">CodeList Label</r:Content></r:Label>
-                    <Code isUniversallyUnique="true">
-                        <r:URN>urn:ddi:fr.insee:code-id:1</r:URN>
-                        <r:Agency>fr.insee</r:Agency><r:ID>code-id</r:ID><r:Version>1</r:Version>
-                        <r:CategoryReference>
-                            <r:Agency>fr.insee</r:Agency><r:ID>cat-id</r:ID><r:Version>1</r:Version>
-                            <r:TypeOfObject>Category</r:TypeOfObject>
-                        </r:CategoryReference>
-                        <r:Value>01</r:Value>
-                    </Code>
-                </CodeList>
-            </Fragment>
-            """);
+        FragmentDocument doc = logicalProductItem("CodeList", "cl-id", """
+                <r:Label><r:Content xml:lang="fr-FR">CodeList Label</r:Content></r:Label>
+                <Code isUniversallyUnique="true">
+                    <r:URN>urn:ddi:fr.insee:code-id:1</r:URN>
+                    <r:Agency>fr.insee</r:Agency><r:ID>code-id</r:ID><r:Version>1</r:Version>
+                    <r:CategoryReference>
+                        <r:Agency>fr.insee</r:Agency><r:ID>cat-id</r:ID><r:Version>1</r:Version>
+                        <r:TypeOfObject>Category</r:TypeOfObject>
+                    </r:CategoryReference>
+                    <r:Value>01</r:Value>
+                </Code>
+                """);
 
         Ddi4CodeList cl = converter.toCodeList(doc);
 
@@ -502,20 +377,14 @@ class Lifecycle33ToDdi4Test {
 
     @Test
     void shouldParseCategoryBasedOnObject() throws XmlException {
-        FragmentDocument doc = FragmentDocument.Factory.parse("""
-            <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
-                <Category xmlns="ddi:logicalproduct:3_3" isUniversallyUnique="true" versionDate="2025-12-23T09:52:06.355Z">
-                    <r:URN>urn:ddi:fr.insee:variant-cat:1</r:URN>
-                    <r:Agency>fr.insee</r:Agency><r:ID>variant-cat</r:ID><r:Version>1</r:Version>
-                    <r:BasedOnObject>
-                        <r:BasedOnReference>
-                            <r:Agency>fr.insee</r:Agency><r:ID>original-cat</r:ID><r:Version>3</r:Version>
-                            <r:TypeOfObject>Category</r:TypeOfObject>
-                        </r:BasedOnReference>
-                    </r:BasedOnObject>
-                </Category>
-            </Fragment>
-            """);
+        FragmentDocument doc = logicalProductItem("Category", "variant-cat", """
+                <r:BasedOnObject>
+                    <r:BasedOnReference>
+                        <r:Agency>fr.insee</r:Agency><r:ID>original-cat</r:ID><r:Version>3</r:Version>
+                        <r:TypeOfObject>Category</r:TypeOfObject>
+                    </r:BasedOnReference>
+                </r:BasedOnObject>
+                """);
 
         Ddi4Category cat = converter.toCategory(doc);
 
@@ -526,20 +395,14 @@ class Lifecycle33ToDdi4Test {
 
     @Test
     void shouldParseCodeListBasedOnObject() throws XmlException {
-        FragmentDocument doc = FragmentDocument.Factory.parse("""
-            <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
-                <CodeList xmlns="ddi:logicalproduct:3_3" isUniversallyUnique="true" versionDate="2025-12-23T09:52:06.355Z">
-                    <r:URN>urn:ddi:fr.insee:variant-id:1</r:URN>
-                    <r:Agency>fr.insee</r:Agency><r:ID>variant-id</r:ID><r:Version>1</r:Version>
-                    <r:BasedOnObject>
-                        <r:BasedOnReference>
-                            <r:Agency>fr.insee</r:Agency><r:ID>original-cl-id</r:ID><r:Version>2</r:Version>
-                            <r:TypeOfObject>CodeList</r:TypeOfObject>
-                        </r:BasedOnReference>
-                    </r:BasedOnObject>
-                </CodeList>
-            </Fragment>
-            """);
+        FragmentDocument doc = logicalProductItem("CodeList", "variant-id", """
+                <r:BasedOnObject>
+                    <r:BasedOnReference>
+                        <r:Agency>fr.insee</r:Agency><r:ID>original-cl-id</r:ID><r:Version>2</r:Version>
+                        <r:TypeOfObject>CodeList</r:TypeOfObject>
+                    </r:BasedOnReference>
+                </r:BasedOnObject>
+                """);
 
         Ddi4CodeList cl = converter.toCodeList(doc);
 
@@ -551,23 +414,17 @@ class Lifecycle33ToDdi4Test {
 
     @Test
     void shouldParseCodeListLevels() throws XmlException {
-        FragmentDocument doc = FragmentDocument.Factory.parse("""
-            <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
-                <CodeList xmlns="ddi:logicalproduct:3_3" isUniversallyUnique="true" versionDate="2025-12-23T09:52:06.355Z">
-                    <r:URN>urn:ddi:fr.insee:cl-id:1</r:URN>
-                    <r:Agency>fr.insee</r:Agency><r:ID>cl-id</r:ID><r:Version>1</r:Version>
-                    <r:Label><r:Content xml:lang="fr-FR">NUTS</r:Content></r:Label>
-                    <Level levelNumber="0">
-                        <LevelName><r:String xml:lang="fr-FR">NUTS 0</r:String></LevelName>
-                        <CategoryRelationship>Nominal</CategoryRelationship>
-                    </Level>
-                    <Level levelNumber="1">
-                        <LevelName><r:String xml:lang="fr-FR">NUTS 1</r:String></LevelName>
-                        <CategoryRelationship>Ordinal</CategoryRelationship>
-                    </Level>
-                </CodeList>
-            </Fragment>
-            """);
+        FragmentDocument doc = logicalProductItem("CodeList", "cl-id", """
+                <r:Label><r:Content xml:lang="fr-FR">NUTS</r:Content></r:Label>
+                <Level levelNumber="0">
+                    <LevelName><r:String xml:lang="fr-FR">NUTS 0</r:String></LevelName>
+                    <CategoryRelationship>Nominal</CategoryRelationship>
+                </Level>
+                <Level levelNumber="1">
+                    <LevelName><r:String xml:lang="fr-FR">NUTS 1</r:String></LevelName>
+                    <CategoryRelationship>Ordinal</CategoryRelationship>
+                </Level>
+                """);
 
         Ddi4CodeList cl = converter.toCodeList(doc);
 
@@ -585,51 +442,45 @@ class Lifecycle33ToDdi4Test {
 
     @Test
     void shouldParseHierarchicalCodeListWithNestedCodes() throws XmlException {
-        FragmentDocument doc = FragmentDocument.Factory.parse("""
-            <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
-                <CodeList xmlns="ddi:logicalproduct:3_3" isUniversallyUnique="true" versionDate="2025-12-23T09:52:06.355Z">
-                    <r:URN>urn:ddi:fr.insee:cl-id:1</r:URN>
-                    <r:Agency>fr.insee</r:Agency><r:ID>cl-id</r:ID><r:Version>1</r:Version>
-                    <r:Label><r:Content xml:lang="fr-FR">NUTS</r:Content></r:Label>
+        FragmentDocument doc = logicalProductItem("CodeList", "cl-id", """
+                <r:Label><r:Content xml:lang="fr-FR">NUTS</r:Content></r:Label>
+                <Code isUniversallyUnique="true">
+                    <r:URN>urn:ddi:fr.insee:code-at:1</r:URN>
+                    <r:Agency>fr.insee</r:Agency><r:ID>code-at</r:ID><r:Version>1</r:Version>
+                    <r:CategoryReference>
+                        <r:Agency>fr.insee</r:Agency><r:ID>cat-at</r:ID><r:Version>1</r:Version>
+                        <r:TypeOfObject>Category</r:TypeOfObject>
+                    </r:CategoryReference>
+                    <r:Value>AT</r:Value>
                     <Code isUniversallyUnique="true">
-                        <r:URN>urn:ddi:fr.insee:code-at:1</r:URN>
-                        <r:Agency>fr.insee</r:Agency><r:ID>code-at</r:ID><r:Version>1</r:Version>
+                        <r:URN>urn:ddi:fr.insee:code-at2:1</r:URN>
+                        <r:Agency>fr.insee</r:Agency><r:ID>code-at2</r:ID><r:Version>1</r:Version>
                         <r:CategoryReference>
-                            <r:Agency>fr.insee</r:Agency><r:ID>cat-at</r:ID><r:Version>1</r:Version>
+                            <r:Agency>fr.insee</r:Agency><r:ID>cat-at2</r:ID><r:Version>1</r:Version>
                             <r:TypeOfObject>Category</r:TypeOfObject>
                         </r:CategoryReference>
-                        <r:Value>AT</r:Value>
+                        <r:Value>AT2</r:Value>
                         <Code isUniversallyUnique="true">
-                            <r:URN>urn:ddi:fr.insee:code-at2:1</r:URN>
-                            <r:Agency>fr.insee</r:Agency><r:ID>code-at2</r:ID><r:Version>1</r:Version>
+                            <r:URN>urn:ddi:fr.insee:code-at21:1</r:URN>
+                            <r:Agency>fr.insee</r:Agency><r:ID>code-at21</r:ID><r:Version>1</r:Version>
                             <r:CategoryReference>
-                                <r:Agency>fr.insee</r:Agency><r:ID>cat-at2</r:ID><r:Version>1</r:Version>
+                                <r:Agency>fr.insee</r:Agency><r:ID>cat-at21</r:ID><r:Version>1</r:Version>
                                 <r:TypeOfObject>Category</r:TypeOfObject>
                             </r:CategoryReference>
-                            <r:Value>AT2</r:Value>
-                            <Code isUniversallyUnique="true">
-                                <r:URN>urn:ddi:fr.insee:code-at21:1</r:URN>
-                                <r:Agency>fr.insee</r:Agency><r:ID>code-at21</r:ID><r:Version>1</r:Version>
-                                <r:CategoryReference>
-                                    <r:Agency>fr.insee</r:Agency><r:ID>cat-at21</r:ID><r:Version>1</r:Version>
-                                    <r:TypeOfObject>Category</r:TypeOfObject>
-                                </r:CategoryReference>
-                                <r:Value>AT21</r:Value>
-                            </Code>
+                            <r:Value>AT21</r:Value>
                         </Code>
                     </Code>
-                    <Code isUniversallyUnique="true">
-                        <r:URN>urn:ddi:fr.insee:code-be:1</r:URN>
-                        <r:Agency>fr.insee</r:Agency><r:ID>code-be</r:ID><r:Version>1</r:Version>
-                        <r:CategoryReference>
-                            <r:Agency>fr.insee</r:Agency><r:ID>cat-be</r:ID><r:Version>1</r:Version>
-                            <r:TypeOfObject>Category</r:TypeOfObject>
-                        </r:CategoryReference>
-                        <r:Value>BE</r:Value>
-                    </Code>
-                </CodeList>
-            </Fragment>
-            """);
+                </Code>
+                <Code isUniversallyUnique="true">
+                    <r:URN>urn:ddi:fr.insee:code-be:1</r:URN>
+                    <r:Agency>fr.insee</r:Agency><r:ID>code-be</r:ID><r:Version>1</r:Version>
+                    <r:CategoryReference>
+                        <r:Agency>fr.insee</r:Agency><r:ID>cat-be</r:ID><r:Version>1</r:Version>
+                        <r:TypeOfObject>Category</r:TypeOfObject>
+                    </r:CategoryReference>
+                    <r:Value>BE</r:Value>
+                </Code>
+                """);
 
         Ddi4CodeList cl = converter.toCodeList(doc);
 
@@ -649,23 +500,14 @@ class Lifecycle33ToDdi4Test {
 
     @Test
     void shouldParseCodeListSchemeWithCodeListReferences() throws XmlException {
-        FragmentDocument doc = FragmentDocument.Factory.parse("""
-            <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
-                <CodeListScheme xmlns="ddi:logicalproduct:3_3" isUniversallyUnique="true" versionDate="2026-04-03T12:00:00Z">
-                    <r:URN>urn:ddi:fr.insee:cls-id:1</r:URN>
-                    <r:Agency>fr.insee</r:Agency><r:ID>cls-id</r:ID><r:Version>1</r:Version>
-                    <r:Label><r:Content xml:lang="fr-FR">CodeListScheme Label</r:Content></r:Label>
-                    <r:CodeListReference>
-                        <r:Agency>fr.insee</r:Agency><r:ID>cl-1</r:ID><r:Version>1</r:Version>
-                        <r:TypeOfObject>CodeList</r:TypeOfObject>
-                    </r:CodeListReference>
-                    <r:CodeListReference>
-                        <r:Agency>fr.insee</r:Agency><r:ID>cl-2</r:ID><r:Version>1</r:Version>
-                        <r:TypeOfObject>CodeList</r:TypeOfObject>
-                    </r:CodeListReference>
-                </CodeListScheme>
-            </Fragment>
-            """);
+        FragmentDocument doc = parse(
+                "CodeListScheme",
+                LOGICAL_PRODUCT_NS,
+                SCHEME_VERSION_DATE,
+                "cls-id",
+                "<r:Label><r:Content xml:lang=\"fr-FR\">CodeListScheme Label</r:Content></r:Label>"
+                        + reference("r:CodeListReference", "cl-1", "CodeList")
+                        + reference("r:CodeListReference", "cl-2", "CodeList"));
 
         Ddi4CodeListScheme scheme = converter.toCodeListScheme(doc);
 
@@ -673,9 +515,7 @@ class Lifecycle33ToDdi4Test {
         assertThat(scheme.agency()).isEqualTo("fr.insee");
         assertThat(scheme.version()).isEqualTo("1");
         assertThat(scheme.label().get(0).value()).isEqualTo("CodeListScheme Label");
-        assertThat(scheme.codeListReference())
-                .extracting(fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference::id)
-                .containsExactly("cl-1", "cl-2");
+        assertThat(scheme.codeListReference()).extracting(Reference::id).containsExactly("cl-1", "cl-2");
     }
 
     @Test
@@ -684,23 +524,22 @@ class Lifecycle33ToDdi4Test {
         // Les membres peuvent être référencés par l'élément concret du type
         // (ManagedMissingValuesRepresentationReference…) ou, dans des données historiques, par la
         // tête générique ManagedRepresentationReference : les deux doivent être lus.
-        FragmentDocument doc = FragmentDocument.Factory.parse("""
-            <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
-                <r:ManagedRepresentationScheme isUniversallyUnique="true" versionDate="2026-04-03T12:00:00Z">
-                    <r:URN>urn:ddi:fr.insee:mrs-id:1</r:URN>
-                    <r:Agency>fr.insee</r:Agency><r:ID>mrs-id</r:ID><r:Version>1</r:Version>
-                    <r:Label><r:Content xml:lang="fr-FR">ManagedRepresentationScheme Label</r:Content></r:Label>
-                    <r:ManagedMissingValuesRepresentationReference>
-                        <r:Agency>fr.insee</r:Agency><r:ID>mmvr-1</r:ID><r:Version>1</r:Version>
-                        <r:TypeOfObject>ManagedMissingValuesRepresentation</r:TypeOfObject>
-                    </r:ManagedMissingValuesRepresentationReference>
-                    <r:ManagedRepresentationReference>
-                        <r:Agency>fr.insee</r:Agency><r:ID>mr-legacy</r:ID><r:Version>1</r:Version>
-                        <r:TypeOfObject>ManagedTextRepresentation</r:TypeOfObject>
-                    </r:ManagedRepresentationReference>
-                </r:ManagedRepresentationScheme>
-            </Fragment>
-            """);
+        FragmentDocument doc = FragmentDocument.Factory.parse(fragment(versionable(
+                "r:ManagedRepresentationScheme",
+                universallyUnique(SCHEME_VERSION_DATE),
+                "urn:ddi:fr.insee:mrs-id:1",
+                "mrs-id",
+                """
+                <r:Label><r:Content xml:lang="fr-FR">ManagedRepresentationScheme Label</r:Content></r:Label>
+                <r:ManagedMissingValuesRepresentationReference>
+                    <r:Agency>fr.insee</r:Agency><r:ID>mmvr-1</r:ID><r:Version>1</r:Version>
+                    <r:TypeOfObject>ManagedMissingValuesRepresentation</r:TypeOfObject>
+                </r:ManagedMissingValuesRepresentationReference>
+                <r:ManagedRepresentationReference>
+                    <r:Agency>fr.insee</r:Agency><r:ID>mr-legacy</r:ID><r:Version>1</r:Version>
+                    <r:TypeOfObject>ManagedTextRepresentation</r:TypeOfObject>
+                </r:ManagedRepresentationReference>
+                """)));
 
         Ddi4ManagedRepresentationScheme scheme = converter.toManagedRepresentationScheme(doc);
 
@@ -722,21 +561,7 @@ class Lifecycle33ToDdi4Test {
      */
     @Test
     void shouldParseManagedMissingValuesRepresentation() throws XmlException {
-        FragmentDocument doc = FragmentDocument.Factory.parse("""
-            <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
-                <r:ManagedMissingValuesRepresentation isUniversallyUnique="true" versionDate="2026-04-03T12:00:00Z">
-                    <r:URN>urn:ddi:fr.insee:mmvr-1:1</r:URN>
-                    <r:Agency>fr.insee</r:Agency><r:ID>mmvr-1</r:ID><r:Version>1</r:Version>
-                    <r:Label><r:Content xml:lang="fr-FR">Valeurs sentinelles NSP/REF</r:Content></r:Label>
-                    <r:MissingCodeRepresentation blankIsMissingValue="false">
-                        <r:CodeListReference>
-                            <r:Agency>fr.insee</r:Agency><r:ID>cl-sentinelles</r:ID><r:Version>1</r:Version>
-                            <r:TypeOfObject>CodeList</r:TypeOfObject>
-                        </r:CodeListReference>
-                    </r:MissingCodeRepresentation>
-                </r:ManagedMissingValuesRepresentation>
-            </Fragment>
-            """);
+        FragmentDocument doc = FragmentDocument.Factory.parse(sentinelValuesMmvrFragment());
 
         Ddi4ManagedMissingValuesRepresentation mmvr = converter.toManagedMissingValuesRepresentation(doc);
 
@@ -753,15 +578,9 @@ class Lifecycle33ToDdi4Test {
 
     @Test
     void shouldParseCategory() throws XmlException {
-        FragmentDocument doc = FragmentDocument.Factory.parse("""
-            <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
-                <Category xmlns="ddi:logicalproduct:3_3" isUniversallyUnique="true" versionDate="2025-12-23T09:52:06.355Z">
-                    <r:URN>urn:ddi:fr.insee:cat-id:1</r:URN>
-                    <r:Agency>fr.insee</r:Agency><r:ID>cat-id</r:ID><r:Version>1</r:Version>
-                    <r:Label><r:Content xml:lang="fr-FR">Category Label</r:Content></r:Label>
-                </Category>
-            </Fragment>
-            """);
+        FragmentDocument doc = logicalProductItem("Category", "cat-id", """
+                <r:Label><r:Content xml:lang="fr-FR">Category Label</r:Content></r:Label>
+                """);
 
         Ddi4Category cat = converter.toCategory(doc);
 
@@ -771,18 +590,12 @@ class Lifecycle33ToDdi4Test {
 
     @Test
     void shouldParseCategoryWithLabelInEveryLanguage() throws XmlException {
-        FragmentDocument doc = FragmentDocument.Factory.parse("""
-            <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
-                <Category xmlns="ddi:logicalproduct:3_3" isUniversallyUnique="true" versionDate="2025-12-23T09:52:06.355Z">
-                    <r:URN>urn:ddi:fr.insee:cat-id:1</r:URN>
-                    <r:Agency>fr.insee</r:Agency><r:ID>cat-id</r:ID><r:Version>1</r:Version>
-                    <r:Label>
-                        <r:Content xml:lang="en-IE">Growing of non-perennial crops</r:Content>
-                        <r:Content xml:lang="fr-FR">Cultures non permanentes</r:Content>
-                    </r:Label>
-                </Category>
-            </Fragment>
-            """);
+        FragmentDocument doc = logicalProductItem("Category", "cat-id", """
+                <r:Label>
+                    <r:Content xml:lang="en-IE">Growing of non-perennial crops</r:Content>
+                    <r:Content xml:lang="fr-FR">Cultures non permanentes</r:Content>
+                </r:Label>
+                """);
 
         Ddi4Category cat = converter.toCategory(doc);
 
@@ -795,21 +608,15 @@ class Lifecycle33ToDdi4Test {
 
     @Test
     void shouldParseGroupWithAllFields() throws XmlException {
-        FragmentDocument doc = FragmentDocument.Factory.parse("""
-            <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
-                <Group xmlns="ddi:group:3_3" isUniversallyUnique="true" versionDate="2026-04-03T12:00:00Z">
-                    <r:URN>urn:ddi:fr.insee:group-id:1</r:URN>
-                    <r:Agency>fr.insee</r:Agency><r:ID>group-id</r:ID><r:Version>1</r:Version>
-                    <r:UserID typeOfUserID="URI">http://id.insee.fr/operations/serie/s1001</r:UserID>
-                    <TypeOfGroup>insee:StatisticalOperationSeries</TypeOfGroup>
-                    <r:Citation><r:Title><r:String xml:lang="fr-FR">Test Group</r:String></r:Title></r:Citation>
-                    <r:StudyUnitReference>
-                        <r:Agency>fr.insee</r:Agency><r:ID>su-id-1</r:ID><r:Version>1</r:Version>
-                        <r:TypeOfObject>StudyUnit</r:TypeOfObject>
-                    </r:StudyUnitReference>
-                </Group>
-            </Fragment>
-            """);
+        FragmentDocument doc = parse("Group", GROUP_NS, SCHEME_VERSION_DATE, "group-id", """
+                <r:UserID typeOfUserID="URI">http://id.insee.fr/operations/serie/s1001</r:UserID>
+                <TypeOfGroup>insee:StatisticalOperationSeries</TypeOfGroup>
+                <r:Citation><r:Title><r:String xml:lang="fr-FR">Test Group</r:String></r:Title></r:Citation>
+                <r:StudyUnitReference>
+                    <r:Agency>fr.insee</r:Agency><r:ID>su-id-1</r:ID><r:Version>1</r:Version>
+                    <r:TypeOfObject>StudyUnit</r:TypeOfObject>
+                </r:StudyUnitReference>
+                """);
 
         Ddi4Group group = converter.toGroup(doc);
 
@@ -823,22 +630,16 @@ class Lifecycle33ToDdi4Test {
 
     @Test
     void shouldParseGroupAlternateTitles() throws XmlException {
-        FragmentDocument doc = FragmentDocument.Factory.parse("""
-            <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
-                <Group xmlns="ddi:group:3_3" isUniversallyUnique="true" versionDate="2026-04-03T12:00:00Z">
-                    <r:URN>urn:ddi:fr.insee:group-id:1</r:URN>
-                    <r:Agency>fr.insee</r:Agency><r:ID>group-id</r:ID><r:Version>1</r:Version>
-                    <r:Citation>
-                        <r:Title>
-                            <r:String xml:lang="fr-FR">Recensement</r:String>
-                            <r:String xml:lang="en-GB">Census</r:String>
-                        </r:Title>
-                        <r:AlternateTitle><r:String xml:lang="fr-FR">RP</r:String></r:AlternateTitle>
-                        <r:AlternateTitle><r:String xml:lang="en-GB">CENS</r:String></r:AlternateTitle>
-                    </r:Citation>
-                </Group>
-            </Fragment>
-            """);
+        FragmentDocument doc = parse("Group", GROUP_NS, SCHEME_VERSION_DATE, "group-id", """
+                <r:Citation>
+                    <r:Title>
+                        <r:String xml:lang="fr-FR">Recensement</r:String>
+                        <r:String xml:lang="en-GB">Census</r:String>
+                    </r:Title>
+                    <r:AlternateTitle><r:String xml:lang="fr-FR">RP</r:String></r:AlternateTitle>
+                    <r:AlternateTitle><r:String xml:lang="en-GB">CENS</r:String></r:AlternateTitle>
+                </r:Citation>
+                """);
 
         Ddi4Group group = converter.toGroup(doc);
 
@@ -853,20 +654,14 @@ class Lifecycle33ToDdi4Test {
 
     @Test
     void shouldParseStudyUnitWithOperationIri() throws XmlException {
-        FragmentDocument doc = FragmentDocument.Factory.parse("""
-            <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
-                <StudyUnit xmlns="ddi:studyunit:3_3" isUniversallyUnique="true" versionDate="2026-04-03T12:00:00Z">
-                    <r:URN>urn:ddi:fr.insee:su-id:1</r:URN>
-                    <r:Agency>fr.insee</r:Agency><r:ID>su-id</r:ID><r:Version>1</r:Version>
-                    <r:UserID typeOfUserID="URI">http://id.insee.fr/operations/operation/op1</r:UserID>
-                    <r:Citation><r:Title><r:String xml:lang="fr-FR">Test SU</r:String></r:Title></r:Citation>
-                    <r:PhysicalInstanceReference>
-                        <r:Agency>fr.insee</r:Agency><r:ID>pi-id</r:ID><r:Version>1</r:Version>
-                        <r:TypeOfObject>PhysicalInstance</r:TypeOfObject>
-                    </r:PhysicalInstanceReference>
-                </StudyUnit>
-            </Fragment>
-            """);
+        FragmentDocument doc = parse("StudyUnit", STUDY_UNIT_NS, SCHEME_VERSION_DATE, "su-id", """
+                <r:UserID typeOfUserID="URI">http://id.insee.fr/operations/operation/op1</r:UserID>
+                <r:Citation><r:Title><r:String xml:lang="fr-FR">Test SU</r:String></r:Title></r:Citation>
+                <r:PhysicalInstanceReference>
+                    <r:Agency>fr.insee</r:Agency><r:ID>pi-id</r:ID><r:Version>1</r:Version>
+                    <r:TypeOfObject>PhysicalInstance</r:TypeOfObject>
+                </r:PhysicalInstanceReference>
+                """);
 
         Ddi4StudyUnit su = converter.toStudyUnit(doc);
 
@@ -875,5 +670,28 @@ class Lifecycle33ToDdi4Test {
         assertThat(su.citation().title().get(0).value()).isEqualTo("Test SU");
         assertThat(su.physicalInstanceReferences()).hasSize(1);
         assertThat(su.physicalInstanceReferences().get(0).id()).isEqualTo("pi-id");
+    }
+
+    /** Parses a Fragment holding the fr.insee item {@code id} (URN {@code urn:ddi:fr.insee:<id>:1}). */
+    private static FragmentDocument parse(String element, String namespace, String versionDate, String id, String body)
+            throws XmlException {
+        return FragmentDocument.Factory.parse(fragment(
+                versionable(element, inNamespace(namespace, versionDate), "urn:ddi:fr.insee:" + id + ":1", id, body)));
+    }
+
+    /** Parses a Fragment holding the pi-id PhysicalInstance. */
+    private static FragmentDocument physicalInstance(String versionDate, String body) throws XmlException {
+        return parse("PhysicalInstance", PHYSICAL_INSTANCE_NS, versionDate, "pi-id", body);
+    }
+
+    /** Parses a Fragment holding a logicalproduct item versioned on {@link #VERSION_DATE}. */
+    private static FragmentDocument logicalProductItem(String element, String id, String body) throws XmlException {
+        return parse(element, LOGICAL_PRODUCT_NS, VERSION_DATE, id, body);
+    }
+
+    /** Parses a Fragment holding the {@code var} Variable with the given VariableRepresentation content. */
+    private static FragmentDocument variableWithRepresentation(String representation) throws XmlException {
+        return logicalProductItem(
+                "Variable", "var", "<VariableRepresentation>" + representation + "</VariableRepresentation>");
     }
 }

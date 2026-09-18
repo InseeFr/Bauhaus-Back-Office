@@ -1,5 +1,8 @@
 package fr.insee.rmes.bauhaus_services.distribution;
 
+import static fr.insee.rmes.bauhaus_services.utils.RdfUtilsStaticStubs.CURRENT_DATE;
+import static fr.insee.rmes.bauhaus_services.utils.RdfUtilsStaticStubs.callRealLiteralAndTripleBuilders;
+import static fr.insee.rmes.bauhaus_services.utils.RdfUtilsStaticStubs.freezeCurrentDate;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
@@ -144,42 +147,14 @@ class DistributionServiceImplTest {
         IRI iri = SimpleValueFactory.getInstance().createIRI("http://distributionIRI/" + nextId);
         try (MockedStatic<RdfUtils> rdfUtilsMock = Mockito.mockStatic(RdfUtils.class);
                 MockedStatic<DateUtils> dateUtilsMock = Mockito.mockStatic(DateUtils.class)) {
-            rdfUtilsMock.when(() -> RdfUtils.createIRI(any())).thenCallRealMethod();
+            stubDistributionRdfUtils(rdfUtilsMock);
 
-            dateUtilsMock.when(DateUtils::getCurrentDate).thenReturn("2023-10-19T11:44:23.335590");
+            freezeCurrentDate(dateUtilsMock);
             dateUtilsMock
                     .when(() -> DateUtils.parseDateTime(anyString()))
-                    .thenReturn(LocalDateTime.parse("2023-10-19T11:44:23.335590"));
-            rdfUtilsMock
-                    .when(() -> RdfUtils.seriesIRI("2"))
-                    .thenReturn(SimpleValueFactory.getInstance().createIRI("http://seriesIRI/2"));
-            rdfUtilsMock.when(() -> RdfUtils.setLiteralString(anyString())).thenCallRealMethod();
-            rdfUtilsMock
-                    .when(() -> RdfUtils.setLiteralString(anyString(), anyString()))
-                    .thenCallRealMethod();
-            rdfUtilsMock.when(() -> RdfUtils.setLiteralDateTime(any())).thenCallRealMethod();
-            rdfUtilsMock
-                    .when(() -> RdfUtils.addTripleString(any(), any(), any(), any(), any(), any()))
-                    .thenCallRealMethod();
-            rdfUtilsMock
-                    .when(() -> RdfUtils.addTripleString(any(), any(), any(), any(), any()))
-                    .thenCallRealMethod();
-            rdfUtilsMock
-                    .when(() -> RdfUtils.addTripleUri(any(IRI.class), any(), any(IRI.class), any(), any()))
-                    .thenCallRealMethod();
-            rdfUtilsMock
-                    .when(() -> RdfUtils.addTripleDateTime(any(), any(), any(), any(), any()))
-                    .thenCallRealMethod();
+                    .thenReturn(LocalDateTime.parse(CURRENT_DATE));
 
-            JSONObject body = new JSONObject();
-            body.put("idDataset", "idDataset");
-            body.put("labelLg1", "labelLg1");
-            body.put("labelLg2", "labelLg2");
-            body.put("descriptionLg1", "descriptionLg1");
-            body.put("descriptionLg2", "descriptionLg2");
-            body.put("format", "format");
-            body.put("byteSize", "byteSize");
-            body.put("url", "url");
+            JSONObject body = distributionBody("idDataset");
 
             String id = distributionService.create(body.toString());
 
@@ -192,6 +167,27 @@ class DistributionServiceImplTest {
                     model.getValue().toString());
             Assertions.assertEquals(id, nextId);
         }
+    }
+
+    /** Socle commun des bouchons {@link RdfUtils}, complété du triplet IRI → IRI d'une distribution. */
+    private static void stubDistributionRdfUtils(MockedStatic<RdfUtils> rdfUtilsMock) {
+        callRealLiteralAndTripleBuilders(rdfUtilsMock);
+        rdfUtilsMock
+                .when(() -> RdfUtils.addTripleUri(any(IRI.class), any(), any(IRI.class), any(), any()))
+                .thenCallRealMethod();
+    }
+
+    private static JSONObject distributionBody(String idDataset) {
+        JSONObject body = new JSONObject();
+        body.put("idDataset", idDataset);
+        body.put("labelLg1", "labelLg1");
+        body.put("labelLg2", "labelLg2");
+        body.put("descriptionLg1", "descriptionLg1");
+        body.put("descriptionLg2", "descriptionLg2");
+        body.put("format", "format");
+        body.put("byteSize", "byteSize");
+        body.put("url", "url");
+        return body;
     }
 
     @Test
@@ -221,45 +217,17 @@ class DistributionServiceImplTest {
                 when(repositoryGestion.getResponseAsObject("query d1001")).thenReturn(distribution);
             }
 
-            rdfUtilsMock.when(() -> RdfUtils.createIRI(any())).thenCallRealMethod();
+            stubDistributionRdfUtils(rdfUtilsMock);
 
-            dateUtilsMock.when(DateUtils::getCurrentDate).thenReturn("2023-10-19T11:44:23.335590");
+            freezeCurrentDate(dateUtilsMock);
             dateUtilsMock
                     .when(() -> DateUtils.parseDateTime(eq("2022-10-19T11:44:23.335590")))
                     .thenReturn(LocalDateTime.parse("2022-10-19T11:44:23.335590"));
             dateUtilsMock
-                    .when(() -> DateUtils.parseDateTime(eq("2023-10-19T11:44:23.335590")))
-                    .thenReturn(LocalDateTime.parse("2023-10-19T11:44:23.335590"));
-            rdfUtilsMock
-                    .when(() -> RdfUtils.seriesIRI("2"))
-                    .thenReturn(SimpleValueFactory.getInstance().createIRI("http://seriesIRI/2"));
-            rdfUtilsMock.when(() -> RdfUtils.setLiteralString(anyString())).thenCallRealMethod();
-            rdfUtilsMock
-                    .when(() -> RdfUtils.setLiteralString(anyString(), anyString()))
-                    .thenCallRealMethod();
-            rdfUtilsMock.when(() -> RdfUtils.setLiteralDateTime(any())).thenCallRealMethod();
-            rdfUtilsMock
-                    .when(() -> RdfUtils.addTripleString(any(), any(), any(), any(), any(), any()))
-                    .thenCallRealMethod();
-            rdfUtilsMock
-                    .when(() -> RdfUtils.addTripleString(any(), any(), any(), any(), any()))
-                    .thenCallRealMethod();
-            rdfUtilsMock
-                    .when(() -> RdfUtils.addTripleUri(any(IRI.class), any(), any(IRI.class), any(), any()))
-                    .thenCallRealMethod();
-            rdfUtilsMock
-                    .when(() -> RdfUtils.addTripleDateTime(any(), any(), any(), any(), any()))
-                    .thenCallRealMethod();
+                    .when(() -> DateUtils.parseDateTime(eq(CURRENT_DATE)))
+                    .thenReturn(LocalDateTime.parse(CURRENT_DATE));
 
-            JSONObject body = new JSONObject();
-            body.put("idDataset", "d1001");
-            body.put("labelLg1", "labelLg1");
-            body.put("labelLg2", "labelLg2");
-            body.put("descriptionLg1", "descriptionLg1");
-            body.put("descriptionLg2", "descriptionLg2");
-            body.put("format", "format");
-            body.put("byteSize", "byteSize");
-            body.put("url", "url");
+            JSONObject body = distributionBody("d1001");
             body.put("created", "2022-10-19T11:44:23.335590");
 
             String id = distributionService.update("d1001", body.toString());

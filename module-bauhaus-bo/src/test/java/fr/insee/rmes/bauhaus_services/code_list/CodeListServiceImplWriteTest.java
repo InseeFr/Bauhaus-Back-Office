@@ -1,11 +1,12 @@
 package fr.insee.rmes.bauhaus_services.code_list;
 
+import static fr.insee.rmes.bauhaus_services.utils.StoredRdfModels.objectsOf;
+import static fr.insee.rmes.bauhaus_services.utils.StoredRdfModels.storedModel;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -150,7 +151,7 @@ class CodeListServiceImplWriteTest {
 
         codeListService.setCodesList("id", fullCodeList().toString(), CodeListKind.FULL);
 
-        assertThat(objectsOf(storedModel(), org.eclipse.rdf4j.model.vocabulary.DCTERMS.CREATED))
+        assertThat(objectsOf(storedModel(repoGestion), org.eclipse.rdf4j.model.vocabulary.DCTERMS.CREATED))
                 .containsExactly("2020-01-01T10:00:00");
     }
 
@@ -161,7 +162,7 @@ class CodeListServiceImplWriteTest {
 
         codeListService.setCodesList(codeList.toString(), CodeListKind.FULL);
 
-        assertThat(objectsOf(storedModel(), INSEE.VALIDATION_STATE))
+        assertThat(objectsOf(storedModel(repoGestion), INSEE.VALIDATION_STATE))
                 .containsExactly(ValidationStatus.MODIFIED.getValue());
     }
 
@@ -176,7 +177,7 @@ class CodeListServiceImplWriteTest {
 
         codeListService.setCodesList(codeList.toString(), CodeListKind.FULL);
 
-        Model model = storedModel();
+        Model model = storedModel(repoGestion);
         assertThat(objectsOf(model, INSEE.DISSEMINATIONSTATUS)).containsExactly("http://status");
         assertThat(objectsOf(model, SKOS.DEFINITION)).containsExactlyInAnyOrder("description fr", "description en");
         assertThat(objectsOf(model, DC.CREATOR)).containsExactly("http://creator");
@@ -190,7 +191,7 @@ class CodeListServiceImplWriteTest {
 
         codeListService.setCodesList(codeList.toString(), CodeListKind.PARTIAL);
 
-        Model model = storedModel();
+        Model model = storedModel(repoGestion);
         assertThat(objectsOf(model, RDF.TYPE)).contains(SKOS.COLLECTION.stringValue());
         assertThat(objectsOf(model, SKOS.MEMBER)).containsExactly("http://bauhaus/codes/id/A");
         assertThat(objectsOf(model, PROV.WAS_DERIVED_FROM)).containsExactly("http://bauhaus/codes/parent");
@@ -236,19 +237,6 @@ class CodeListServiceImplWriteTest {
                 .put(Constants.LABEL_LG1, "label fr")
                 .put(Constants.LABEL_LG2, "label en")
                 .put("codes", new JSONObject().put("A", new JSONObject().put("iri", "http://bauhaus/codes/id/A")));
-    }
-
-    private Model storedModel() throws RmesException {
-        ArgumentCaptor<Model> modelCaptor = ArgumentCaptor.forClass(Model.class);
-        verify(repoGestion).loadSimpleObject(any(IRI.class), modelCaptor.capture(), isNull());
-        return modelCaptor.getValue();
-    }
-
-    private static List<String> objectsOf(Model model, IRI predicate) {
-        return model.stream()
-                .filter(statement -> statement.getPredicate().equals(predicate))
-                .map(statement -> statement.getObject().stringValue())
-                .toList();
     }
 
     @Test
@@ -336,7 +324,7 @@ class CodeListServiceImplWriteTest {
 
         codeListService.addCodeFromCodeList("id", code);
 
-        assertThat(objectsOf(storedModel(), SKOS.DEFINITION))
+        assertThat(objectsOf(storedModel(repoGestion), SKOS.DEFINITION))
                 .containsExactlyInAnyOrder("description fr", "description en");
     }
 

@@ -59,22 +59,43 @@ class OidcUserDecoderTest {
         return rolesMap;
     }
 
-    @Test
-    void should_decode_jwt_with_all_claims() throws MissingUserInformationException {
+    /** Claims of user "user123"; a null stamp or source leaves the corresponding claim out. */
+    private Map<String, Object> buildClaims(String stamp, String source, List<String> roles) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("sub", "user123");
-        claims.put("timbre", "STAMP-01");
-        claims.put("source", "insee");
-        claims.put("roles", buildRolesClaim(List.of("ADMIN", "USER")));
+        if (stamp != null) {
+            claims.put("timbre", stamp);
+        }
+        if (source != null) {
+            claims.put("source", source);
+        }
+        claims.put("roles", buildRolesClaim(roles));
+        return claims;
+    }
 
+    private void givenInseeGroupClaim() {
+        when(jwtProperties.getInseeGroupClaim()).thenReturn("groups");
+        when(jwtProperties.getHieApplicationPrefix()).thenReturn("APP");
+    }
+
+    private User decode(Map<String, Object> claims) throws MissingUserInformationException {
         when(jwt.getClaims()).thenReturn(claims);
 
         Optional<User> result = userDecoder.fromPrincipal(jwt);
 
         assertThat(result).isPresent();
-        assertThat(result.get().id()).isEqualTo("user123");
-        assertThat(result.get().getStamps()).containsExactly("STAMP-01");
-        assertThat(result.get().roles()).containsExactly("ADMIN", "USER");
+        return result.get();
+    }
+
+    @Test
+    void should_decode_jwt_with_all_claims() throws MissingUserInformationException {
+        Map<String, Object> claims = buildClaims("STAMP-01", "insee", List.of("ADMIN", "USER"));
+
+        User user = decode(claims);
+
+        assertThat(user.id()).isEqualTo("user123");
+        assertThat(user.getStamps()).containsExactly("STAMP-01");
+        assertThat(user.roles()).containsExactly("ADMIN", "USER");
     }
 
     @Test
@@ -110,107 +131,66 @@ class OidcUserDecoderTest {
 
     @Test
     void should_extract_stamp_from_insee_groups() throws MissingUserInformationException {
-        when(jwtProperties.getInseeGroupClaim()).thenReturn("groups");
-        when(jwtProperties.getHieApplicationPrefix()).thenReturn("APP");
+        givenInseeGroupClaim();
 
-        Map<String, Object> claims = new HashMap<>();
-        claims.put("sub", "user123");
-        claims.put("source", "insee");
-        claims.put("roles", buildRolesClaim(List.of("ADMIN")));
+        Map<String, Object> claims = buildClaims(null, "insee", List.of("ADMIN"));
         claims.put("groups", List.of("GROUP1", "STAMP-02_APP", "GROUP2"));
         // No stamp in stampClaim, should extract from groups
 
-        when(jwt.getClaims()).thenReturn(claims);
+        User user = decode(claims);
 
-        Optional<User> result = userDecoder.fromPrincipal(jwt);
-
-        assertThat(result).isPresent();
-        assertThat(result.get().getStamps()).containsExactly("STAMP-02");
+        assertThat(user.getStamps()).containsExactly("STAMP-02");
     }
 
     @Test
     void should_prefer_stamp_claim_over_insee_groups() throws MissingUserInformationException {
-        Map<String, Object> claims = new HashMap<>();
-        claims.put("sub", "user123");
-        claims.put("timbre", "STAMP-DIRECT");
-        claims.put("source", "insee");
-        claims.put("roles", buildRolesClaim(List.of("ADMIN")));
+        Map<String, Object> claims = buildClaims("STAMP-DIRECT", "insee", List.of("ADMIN"));
         claims.put("groups", List.of("STAMP-02_APP"));
 
-        when(jwt.getClaims()).thenReturn(claims);
+        User user = decode(claims);
 
-        Optional<User> result = userDecoder.fromPrincipal(jwt);
-
-        assertThat(result).isPresent();
-        assertThat(result.get().getStamps()).containsExactly("STAMP-DIRECT");
+        assertThat(user.getStamps()).containsExactly("STAMP-DIRECT");
     }
 
     @Test
     void should_handle_empty_roles() throws MissingUserInformationException {
-        Map<String, Object> claims = new HashMap<>();
-        claims.put("sub", "user123");
-        claims.put("timbre", "STAMP-01");
-        claims.put("source", "insee");
-        claims.put("roles", buildRolesClaim(List.of()));
+        Map<String, Object> claims = buildClaims("STAMP-01", "insee", List.of());
 
-        when(jwt.getClaims()).thenReturn(claims);
+        User user = decode(claims);
 
-        Optional<User> result = userDecoder.fromPrincipal(jwt);
-
-        assertThat(result).isPresent();
-        assertThat(result.get().roles()).isEmpty();
+        assertThat(user.roles()).isEmpty();
     }
 
     @Test
     void should_handle_null_source() throws MissingUserInformationException {
-        Map<String, Object> claims = new HashMap<>();
-        claims.put("sub", "user123");
-        claims.put("timbre", "STAMP-01");
-        claims.put("roles", buildRolesClaim(List.of("USER")));
         // No source claim
+        Map<String, Object> claims = buildClaims("STAMP-01", null, List.of("USER"));
 
-        when(jwt.getClaims()).thenReturn(claims);
+        User user = decode(claims);
 
-        Optional<User> result = userDecoder.fromPrincipal(jwt);
-
-        assertThat(result).isPresent();
-        assertThat(result.get().source()).isNull();
+        assertThat(user.source()).isNull();
     }
 
     @Test
     void should_extract_multiple_roles() throws MissingUserInformationException {
-        Map<String, Object> claims = new HashMap<>();
-        claims.put("sub", "user123");
-        claims.put("timbre", "STAMP-01");
-        claims.put("source", "ssm");
-        claims.put("roles", buildRolesClaim(List.of("ADMIN", "USER", "MODERATOR")));
+        Map<String, Object> claims = buildClaims("STAMP-01", "ssm", List.of("ADMIN", "USER", "MODERATOR"));
 
-        when(jwt.getClaims()).thenReturn(claims);
+        User user = decode(claims);
 
-        Optional<User> result = userDecoder.fromPrincipal(jwt);
-
-        assertThat(result).isPresent();
-        assertThat(result.get().roles()).containsExactly("ADMIN", "USER", "MODERATOR");
+        assertThat(user.roles()).containsExactly("ADMIN", "USER", "MODERATOR");
     }
 
     @Test
     void should_extract_first_matching_group_from_insee_groups() throws MissingUserInformationException {
-        when(jwtProperties.getInseeGroupClaim()).thenReturn("groups");
-        when(jwtProperties.getHieApplicationPrefix()).thenReturn("APP");
+        givenInseeGroupClaim();
 
-        Map<String, Object> claims = new HashMap<>();
-        claims.put("sub", "user123");
-        claims.put("source", "insee");
-        claims.put("roles", buildRolesClaim(List.of("USER")));
+        Map<String, Object> claims = buildClaims(null, "insee", List.of("USER"));
         claims.put("groups", List.of("GROUP1", "STAMP-FIRST_APP", "STAMP-SECOND_APP"));
 
-        when(jwt.getClaims()).thenReturn(claims);
+        User user = decode(claims);
 
-        Optional<User> result = userDecoder.fromPrincipal(jwt);
-
-        assertThat(result).isPresent();
         // Should extract the first matching group, with the application suffix stripped
-        assertThat(result.get().getStamps()).containsAnyOf("STAMP-FIRST", "STAMP-SECOND");
+        assertThat(user.getStamps()).containsAnyOf("STAMP-FIRST", "STAMP-SECOND");
     }
 
     @Test
@@ -218,41 +198,25 @@ class OidcUserDecoderTest {
             throws MissingUserInformationException, OrganisationFetchException {
         when(organisationsService.getAdmsIdentifier("DG75-F601")).thenReturn(Optional.of("HIE3000165"));
 
-        Map<String, Object> claims = new HashMap<>();
-        claims.put("sub", "user123");
-        claims.put("timbre", "DG75-F601");
-        claims.put("source", "insee");
-        claims.put("roles", buildRolesClaim(List.of("USER")));
+        User user = decode(buildClaims("DG75-F601", "insee", List.of("USER")));
 
-        when(jwt.getClaims()).thenReturn(claims);
-
-        Optional<User> result = userDecoder.fromPrincipal(jwt);
-
-        assertThat(result).isPresent();
-        assertThat(result.get().getStamps()).containsExactlyInAnyOrder("DG75-F601", "HIE3000165");
+        assertThat(user.getStamps()).containsExactlyInAnyOrder("DG75-F601", "HIE3000165");
     }
 
     @Test
     void should_add_dcterms_identifier_when_insee_group_present()
             throws MissingUserInformationException, OrganisationFetchException {
-        when(jwtProperties.getInseeGroupClaim()).thenReturn("groups");
-        when(jwtProperties.getHieApplicationPrefix()).thenReturn("APP");
+        givenInseeGroupClaim();
         // The application suffix must be stripped before looking up the organisation:
         // GraphDB stores the HIE code (adms:identifier) without the "_APP" suffix.
         when(organisationsService.getDctermsIdentifier("HIE3000165")).thenReturn(Optional.of("DG75-F601"));
 
-        Map<String, Object> claims = new HashMap<>();
-        claims.put("sub", "user123");
-        claims.put("source", "insee");
-        claims.put("roles", buildRolesClaim(List.of("USER")));
+        Map<String, Object> claims = buildClaims(null, "insee", List.of("USER"));
         claims.put("groups", List.of("HIE3000165_APP"));
 
-        when(jwt.getClaims()).thenReturn(claims);
+        User user = decode(claims);
 
-        Optional<User> result = userDecoder.fromPrincipal(jwt);
-
-        assertThat(result).isPresent();
-        assertThat(result.get().getStamps()).containsExactlyInAnyOrder("HIE3000165", "DG75-F601");
+        assertThat(user.getStamps()).containsExactlyInAnyOrder("HIE3000165", "DG75-F601");
     }
 
     @Test
@@ -260,17 +224,8 @@ class OidcUserDecoderTest {
             throws MissingUserInformationException, OrganisationFetchException {
         when(organisationsService.getAdmsIdentifier("STAMP-01")).thenThrow(new OrganisationFetchException());
 
-        Map<String, Object> claims = new HashMap<>();
-        claims.put("sub", "user123");
-        claims.put("timbre", "STAMP-01");
-        claims.put("source", "insee");
-        claims.put("roles", buildRolesClaim(List.of("USER")));
+        User user = decode(buildClaims("STAMP-01", "insee", List.of("USER")));
 
-        when(jwt.getClaims()).thenReturn(claims);
-
-        Optional<User> result = userDecoder.fromPrincipal(jwt);
-
-        assertThat(result).isPresent();
-        assertThat(result.get().getStamps()).containsExactly("STAMP-01");
+        assertThat(user.getStamps()).containsExactly("STAMP-01");
     }
 }

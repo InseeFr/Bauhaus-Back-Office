@@ -1,5 +1,6 @@
 package fr.insee.rmes.modules.ddi.physical_instances.domain.services;
 
+import static fr.insee.rmes.modules.ddi.physical_instances.domain.services.PartialGroupFixtures.groupsInUnsortedOrder;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -593,16 +594,7 @@ class DDIServiceImplTest {
      */
     @Test
     void shouldRejectFullUpdateWhenMmvrHasNoLabel() {
-        Ddi4ManagedMissingValuesRepresentation mmvrSansLabel = new Ddi4ManagedMissingValuesRepresentation(
-                Ddi4ManagedMissingValuesRepresentation.TYPE,
-                null,
-                "urn:ddi:fr.insee:mmvr-1:1",
-                "fr.insee",
-                "mmvr-1",
-                "1",
-                null,
-                List.of(new CodeRepresentation(
-                        CodeRepresentation.TYPE, false, Reference.of("fr.insee", "cl-sent", "1", "CodeList"))));
+        Ddi4ManagedMissingValuesRepresentation mmvrSansLabel = sentinelMmvr(null);
         Ddi4Response incoming =
                 new Ddi4Response(Ddi4Response.SCHEMA, null, null, null, null, null, null, List.of(mmvrSansLabel));
 
@@ -616,27 +608,9 @@ class DDIServiceImplTest {
 
     @Test
     void shouldRejectFullUpdateWhenSentinelCodeListHasNoLabel() {
-        Ddi4ManagedMissingValuesRepresentation mmvr = new Ddi4ManagedMissingValuesRepresentation(
-                Ddi4ManagedMissingValuesRepresentation.TYPE,
-                null,
-                "urn:ddi:fr.insee:mmvr-1:1",
-                "fr.insee",
-                "mmvr-1",
-                "1",
-                LangStrings.of("fr-FR", "Sentinelles"),
-                List.of(new CodeRepresentation(
-                        CodeRepresentation.TYPE, false, Reference.of("fr.insee", "cl-sent", "1", "CodeList"))));
+        Ddi4ManagedMissingValuesRepresentation mmvr = sentinelMmvr(LangStrings.of("fr-FR", "Sentinelles"));
         // La CodeList de sentinelles référencée par la MMVR est dans le payload, sans label.
-        Ddi4CodeList sentinelCodeListSansLabel = new Ddi4CodeList(
-                Ddi4CodeList.TYPE,
-                null,
-                "urn:ddi:fr.insee:cl-sent:1",
-                "fr.insee",
-                "cl-sent",
-                "1",
-                null,
-                null,
-                List.of());
+        Ddi4CodeList sentinelCodeListSansLabel = sentinelCodeList(null);
         Ddi4Response incoming = new Ddi4Response(
                 Ddi4Response.SCHEMA, null, null, null, null, List.of(sentinelCodeListSansLabel), null, List.of(mmvr));
 
@@ -650,26 +624,8 @@ class DDIServiceImplTest {
 
     @Test
     void shouldAcceptFullUpdateWhenSentinelLabelsArePresent() {
-        Ddi4ManagedMissingValuesRepresentation mmvr = new Ddi4ManagedMissingValuesRepresentation(
-                Ddi4ManagedMissingValuesRepresentation.TYPE,
-                null,
-                "urn:ddi:fr.insee:mmvr-1:1",
-                "fr.insee",
-                "mmvr-1",
-                "1",
-                LangStrings.of("fr-FR", "Sentinelles"),
-                List.of(new CodeRepresentation(
-                        CodeRepresentation.TYPE, false, Reference.of("fr.insee", "cl-sent", "1", "CodeList"))));
-        Ddi4CodeList sentinelCodeList = new Ddi4CodeList(
-                Ddi4CodeList.TYPE,
-                null,
-                "urn:ddi:fr.insee:cl-sent:1",
-                "fr.insee",
-                "cl-sent",
-                "1",
-                LangStrings.of("fr-FR", "Sentinelles"),
-                null,
-                List.of());
+        Ddi4ManagedMissingValuesRepresentation mmvr = sentinelMmvr(LangStrings.of("fr-FR", "Sentinelles"));
+        Ddi4CodeList sentinelCodeList = sentinelCodeList(LangStrings.of("fr-FR", "Sentinelles"));
         Ddi4Response incoming = new Ddi4Response(
                 Ddi4Response.SCHEMA, null, null, null, null, List.of(sentinelCodeList), null, List.of(mmvr));
         when(ddiRepository.getFullPhysicalInstance("fr.insee", "pi-1")).thenReturn(null);
@@ -677,6 +633,34 @@ class DDIServiceImplTest {
         ddiService.updateFullPhysicalInstance("fr.insee", "pi-1", incoming);
 
         verify(ddiRepository).updateFullPhysicalInstance(eq("fr.insee"), eq("pi-1"), any());
+    }
+
+    /** MMVR {@code mmvr-1} whose missing-code representation references the sentinel CodeList {@code cl-sent}. */
+    private static Ddi4ManagedMissingValuesRepresentation sentinelMmvr(List<LangString> label) {
+        return new Ddi4ManagedMissingValuesRepresentation(
+                Ddi4ManagedMissingValuesRepresentation.TYPE,
+                null,
+                "urn:ddi:fr.insee:mmvr-1:1",
+                "fr.insee",
+                "mmvr-1",
+                "1",
+                label,
+                List.of(new CodeRepresentation(
+                        CodeRepresentation.TYPE, false, Reference.of("fr.insee", "cl-sent", "1", "CodeList"))));
+    }
+
+    /** The sentinel CodeList {@code cl-sent}, without codes. */
+    private static Ddi4CodeList sentinelCodeList(List<LangString> label) {
+        return new Ddi4CodeList(
+                Ddi4CodeList.TYPE,
+                null,
+                "urn:ddi:fr.insee:cl-sent:1",
+                "fr.insee",
+                "cl-sent",
+                "1",
+                label,
+                null,
+                List.of());
     }
 
     private static Ddi4Response physicalInstanceOnlyResponse(CogsDate date, String title) {
@@ -741,11 +725,7 @@ class DDIServiceImplTest {
 
     @Test
     void getGroups_shouldBeSortedByLabelAscending() {
-        when(ddiRepository.getGroups())
-                .thenReturn(List.of(
-                        new PartialGroup("g-a", "alpha", new Date(), "fr.insee", List.of()),
-                        new PartialGroup("g-c", "Charlie", new Date(), "fr.insee", List.of()),
-                        new PartialGroup("g-b", "Bravo", new Date(), "fr.insee", List.of())));
+        when(ddiRepository.getGroups()).thenReturn(groupsInUnsortedOrder());
 
         List<PartialGroup> result = ddiService.getGroups();
 
@@ -974,21 +954,9 @@ class DDIServiceImplTest {
         String id = "pi-123";
         String seriesIri = "http://id.insee.fr/operations/serie/s1001";
 
-        when(ddiRepository.getPhysicalInstanceParents(agencyId, id))
-                .thenReturn(new PhysicalInstanceParents("fr.insee", "su-456", "fr.insee", "grp-789"));
+        stubParentsOfPi123();
 
-        Ddi4Group group = new Ddi4Group(
-                Ddi4Group.TYPE,
-                CogsDate.ofDateTime("2025-01-09T09:00:00Z"),
-                "urn:ddi:fr.insee:grp-789:1",
-                "fr.insee",
-                "grp-789",
-                "1",
-                "bauhaus",
-                null,
-                List.of(),
-                List.of(seriesIri),
-                "insee:StatisticalOperationSeries");
+        Ddi4Group group = group("grp-789", null, List.of(), List.of(seriesIri));
         when(ddiRepository.getGroup("fr.insee", "grp-789"))
                 .thenReturn(new Ddi4GroupResponse("ddi:4.0", List.of(), List.of(group), List.of()));
         when(seriesCreatorsPort.getCreatorsForSeries(List.of(seriesIri)))
@@ -1006,21 +974,10 @@ class DDIServiceImplTest {
         String agencyId = "fr.insee";
         String id = "pi-123";
 
-        when(ddiRepository.getPhysicalInstanceParents(agencyId, id))
-                .thenReturn(new PhysicalInstanceParents("fr.insee", "su-456", "fr.insee", "grp-789"));
+        stubParentsOfPi123();
 
-        Ddi4Group group = new Ddi4Group(
-                Ddi4Group.TYPE,
-                CogsDate.ofDateTime("2025-01-09T09:00:00Z"),
-                "urn:ddi:fr.insee:grp-789:1",
-                "fr.insee",
-                "grp-789",
-                "1",
-                "bauhaus",
-                new Citation(LangStrings.of("fr-FR", "Base permanente des équipements")),
-                null,
-                List.of(),
-                "insee:StatisticalOperationSeries");
+        Ddi4Group group = group(
+                "grp-789", new Citation(LangStrings.of("fr-FR", "Base permanente des équipements")), null, List.of());
         when(ddiRepository.getGroup("fr.insee", "grp-789"))
                 .thenReturn(new Ddi4GroupResponse("ddi:4.0", List.of(), List.of(group), List.of()));
 
@@ -1034,21 +991,9 @@ class DDIServiceImplTest {
         String agencyId = "fr.insee";
         String id = "pi-123";
 
-        when(ddiRepository.getPhysicalInstanceParents(agencyId, id))
-                .thenReturn(new PhysicalInstanceParents("fr.insee", "su-456", "fr.insee", "grp-789"));
+        stubParentsOfPi123();
 
-        Ddi4Group group = new Ddi4Group(
-                Ddi4Group.TYPE,
-                CogsDate.ofDateTime("2025-01-09T09:00:00Z"),
-                "urn:ddi:fr.insee:grp-789:1",
-                "fr.insee",
-                "grp-789",
-                "1",
-                "bauhaus",
-                null,
-                null,
-                List.of(),
-                "insee:StatisticalOperationSeries");
+        Ddi4Group group = group("grp-789", null, null, List.of());
         // Le groupe parent files ses study units ; on retrouve le label de l'étude rattachée
         // à la PI (su-456) dans cette même liste, sans appel Colectica supplémentaire.
         when(ddiRepository.getGroup("fr.insee", "grp-789"))
@@ -1065,16 +1010,15 @@ class DDIServiceImplTest {
         assertEquals("Enquête emploi 2024", result.studyUnitLabel());
     }
 
+    /** The physical instance {@code fr.insee/pi-123} belongs to study unit su-456 of group grp-789. */
+    private void stubParentsOfPi123() {
+        when(ddiRepository.getPhysicalInstanceParents("fr.insee", "pi-123"))
+                .thenReturn(new PhysicalInstanceParents("fr.insee", "su-456", "fr.insee", "grp-789"));
+    }
+
     @Test
     void shouldGetPhysicalInstancesFilteredByStamp_keepsOnlyInstancesOfUserGroups() {
-        PartialPhysicalInstance pi1 = new PartialPhysicalInstance("pi-1", "PI 1", new Date(), "fr.insee");
-        PartialPhysicalInstance pi2 = new PartialPhysicalInstance("pi-2", "PI 2", new Date(), "fr.insee");
-        when(ddiRepository.getPhysicalInstancesViaAdvancedQuery()).thenReturn(List.of(pi1, pi2));
-
-        when(ddiRepository.getPhysicalInstanceParents("fr.insee", "pi-1"))
-                .thenReturn(new PhysicalInstanceParents("fr.insee", "su-1", "fr.insee", "g1"));
-        when(ddiRepository.getPhysicalInstanceParents("fr.insee", "pi-2"))
-                .thenReturn(new PhysicalInstanceParents("fr.insee", "su-2", "fr.insee", "g2"));
+        stubPhysicalInstancesPi1AndPi2InGroups("g1", "g2");
 
         String iri1 = "http://id.insee.fr/operations/serie/s1";
         String iri2 = "http://id.insee.fr/operations/serie/s2";
@@ -1092,15 +1036,8 @@ class DDIServiceImplTest {
 
     @Test
     void shouldGetPhysicalInstancesFilteredByStamp_resolvesGroupStampsOncePerGroup() {
-        PartialPhysicalInstance pi1 = new PartialPhysicalInstance("pi-1", "PI 1", new Date(), "fr.insee");
-        PartialPhysicalInstance pi2 = new PartialPhysicalInstance("pi-2", "PI 2", new Date(), "fr.insee");
-        when(ddiRepository.getPhysicalInstancesViaAdvancedQuery()).thenReturn(List.of(pi1, pi2));
-
         // les deux PI partagent le même groupe parent g1
-        when(ddiRepository.getPhysicalInstanceParents("fr.insee", "pi-1"))
-                .thenReturn(new PhysicalInstanceParents("fr.insee", "su-1", "fr.insee", "g1"));
-        when(ddiRepository.getPhysicalInstanceParents("fr.insee", "pi-2"))
-                .thenReturn(new PhysicalInstanceParents("fr.insee", "su-2", "fr.insee", "g1"));
+        stubPhysicalInstancesPi1AndPi2InGroups("g1", "g1");
 
         String iri1 = "http://id.insee.fr/operations/serie/s1";
         when(ddiRepository.getGroup("fr.insee", "g1")).thenReturn(groupResponseWithSeries("g1", iri1));
@@ -1113,8 +1050,26 @@ class DDIServiceImplTest {
         verify(ddiRepository, times(1)).getGroup("fr.insee", "g1");
     }
 
+    /** Physical instances pi-1 (study unit su-1) and pi-2 (study unit su-2), filed in the given parent groups. */
+    private void stubPhysicalInstancesPi1AndPi2InGroups(String groupOfPi1, String groupOfPi2) {
+        PartialPhysicalInstance pi1 = new PartialPhysicalInstance("pi-1", "PI 1", new Date(), "fr.insee");
+        PartialPhysicalInstance pi2 = new PartialPhysicalInstance("pi-2", "PI 2", new Date(), "fr.insee");
+        when(ddiRepository.getPhysicalInstancesViaAdvancedQuery()).thenReturn(List.of(pi1, pi2));
+
+        when(ddiRepository.getPhysicalInstanceParents("fr.insee", "pi-1"))
+                .thenReturn(new PhysicalInstanceParents("fr.insee", "su-1", "fr.insee", groupOfPi1));
+        when(ddiRepository.getPhysicalInstanceParents("fr.insee", "pi-2"))
+                .thenReturn(new PhysicalInstanceParents("fr.insee", "su-2", "fr.insee", groupOfPi2));
+    }
+
     private Ddi4GroupResponse groupResponseWithSeries(String groupId, String... seriesIris) {
-        Ddi4Group group = new Ddi4Group(
+        Ddi4Group group = group(groupId, null, List.of(), List.of(seriesIris));
+        return new Ddi4GroupResponse("ddi:4.0", List.of(), List.of(group), List.of());
+    }
+
+    private static Ddi4Group group(
+            String groupId, Citation citation, List<Reference> studyUnitReference, List<String> seriesIris) {
+        return new Ddi4Group(
                 Ddi4Group.TYPE,
                 CogsDate.ofDateTime("2025-01-09T09:00:00Z"),
                 "urn:ddi:fr.insee:" + groupId + ":1",
@@ -1122,11 +1077,21 @@ class DDIServiceImplTest {
                 groupId,
                 "1",
                 "bauhaus",
-                null,
-                List.of(),
-                List.of(seriesIris),
+                citation,
+                studyUnitReference,
+                seriesIris,
                 "insee:StatisticalOperationSeries");
-        return new Ddi4GroupResponse("ddi:4.0", List.of(), List.of(group), List.of());
+    }
+
+    private static final String SERIES_OF_G1 = "http://id.insee.fr/operations/serie/s1001";
+    private static final String SERIES_OF_G2 = "http://id.insee.fr/operations/serie/s1002";
+
+    /** Groups g1 and g2, carrying the series {@link #SERIES_OF_G1} and {@link #SERIES_OF_G2} respectively. */
+    private void stubGroupsG1AndG2() {
+        List<PartialGroup> allGroups = List.of(
+                new PartialGroup("g1", "Group 1", null, "fr.insee", List.of(SERIES_OF_G1)),
+                new PartialGroup("g2", "Group 2", null, "fr.insee", List.of(SERIES_OF_G2)));
+        when(ddiRepository.getGroups()).thenReturn(allGroups);
     }
 
     @Test
@@ -1140,14 +1105,9 @@ class DDIServiceImplTest {
 
     @Test
     void shouldGetGroupsFilteredByStamp_returnsMatchingGroups() {
-        String iri1 = "http://id.insee.fr/operations/serie/s1001";
-        String iri2 = "http://id.insee.fr/operations/serie/s1002";
-
-        List<PartialGroup> allGroups = List.of(
-                new PartialGroup("g1", "Group 1", null, "fr.insee", List.of(iri1)),
-                new PartialGroup("g2", "Group 2", null, "fr.insee", List.of(iri2)));
-        when(ddiRepository.getGroups()).thenReturn(allGroups);
-        when(seriesCreatorsPort.getCreatorsForSeries(Set.of(iri1, iri2))).thenReturn(Map.of(iri1, List.of("stamp-A")));
+        stubGroupsG1AndG2();
+        when(seriesCreatorsPort.getCreatorsForSeries(Set.of(SERIES_OF_G1, SERIES_OF_G2)))
+                .thenReturn(Map.of(SERIES_OF_G1, List.of("stamp-A")));
 
         List<PartialGroup> result = ddiService.getGroupsFilteredByStamp(Set.of("stamp-A"));
 
@@ -1205,15 +1165,9 @@ class DDIServiceImplTest {
 
     @Test
     void shouldGetGroupsFilteredByStamp_returnsAllGroups_whenAdmin() {
-        String iri1 = "http://id.insee.fr/operations/serie/s1001";
-        String iri2 = "http://id.insee.fr/operations/serie/s1002";
-
-        List<PartialGroup> allGroups = List.of(
-                new PartialGroup("g1", "Group 1", null, "fr.insee", List.of(iri1)),
-                new PartialGroup("g2", "Group 2", null, "fr.insee", List.of(iri2)));
-        when(ddiRepository.getGroups()).thenReturn(allGroups);
-        when(seriesCreatorsPort.getCreatorsForSeries(Set.of(iri1, iri2)))
-                .thenReturn(Map.of(iri1, List.of("stamp-A"), iri2, List.of("stamp-B")));
+        stubGroupsG1AndG2();
+        when(seriesCreatorsPort.getCreatorsForSeries(Set.of(SERIES_OF_G1, SERIES_OF_G2)))
+                .thenReturn(Map.of(SERIES_OF_G1, List.of("stamp-A"), SERIES_OF_G2, List.of("stamp-B")));
 
         List<PartialGroup> result = ddiService.getGroupsFilteredByStamp(Set.of("stamp-A", "stamp-B"));
 

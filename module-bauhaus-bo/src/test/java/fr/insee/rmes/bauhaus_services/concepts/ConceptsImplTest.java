@@ -1,5 +1,7 @@
 package fr.insee.rmes.bauhaus_services.concepts;
 
+import static fr.insee.rmes.bauhaus_services.SortedLabelRows.assertSortedByLabelWithMergedAltLabels;
+import static fr.insee.rmes.bauhaus_services.SortedLabelRows.rowsWithDuplicatesAndDiacritics;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -16,7 +18,9 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.model.concepts.CollectionForExport;
+import fr.insee.rmes.model.concepts.PartialConcept;
 import fr.insee.rmes.modules.concepts.collections.domain.port.serverside.CollectionRepository;
+import fr.insee.rmes.modules.concepts.concept.domain.model.ConceptForAdvancedSearch;
 import fr.insee.rmes.modules.organisations.domain.model.OrganisationOption;
 import fr.insee.rmes.modules.organisations.domain.port.clientside.OrganisationService;
 import fr.insee.rmes.modules.shared_kernel.domain.model.Language;
@@ -88,68 +92,25 @@ class ConceptsImplTest {
 
     @Test
     void shouldGetConceptsList() throws RmesException {
-        ConceptsImpl conceptsImpl = new ConceptsImpl(
-                repoGestion, null, null, null, null, null, collectionExport, null, 10, null, conceptConceptsQueries);
-
-        JSONArray array = new JSONArray();
-        array.put(new JSONObject().put("id", "1").put("label", "label 1").put("altLabel", "latLabel1"));
-        array.put(new JSONObject().put("id", "1").put("label", "label 1").put("altLabel", "latLabel2"));
-        array.put(new JSONObject().put("id", "2").put("label", "elabel 1").put("altLabel", "elatLabel1"));
-        array.put(new JSONObject().put("id", "3").put("label", "alabel 1").put("altLabel", "alatLabel1"));
-        array.put(new JSONObject().put("id", "4").put("label", "élabel 1").put("altLabel", "élatLabel1"));
-        when(repoGestion.getResponseAsArray(any())).thenReturn(array);
+        ConceptsImpl conceptsImpl = listingConceptsImpl();
+        when(repoGestion.getResponseAsArray(any())).thenReturn(rowsWithDuplicatesAndDiacritics());
         var concepts = conceptsImpl.getConcepts().stream().toList();
 
-        assertEquals(4, concepts.size());
-
-        assertEquals("3", concepts.getFirst().id());
-        assertEquals("alabel 1", concepts.get(0).label());
-        assertEquals("alatLabel1", concepts.get(0).altLabel());
-
-        assertEquals("2", concepts.get(1).id());
-        assertEquals("elabel 1", concepts.get(1).label());
-        assertEquals("elatLabel1", concepts.get(1).altLabel());
-
-        assertEquals("4", concepts.get(2).id());
-        assertEquals("élabel 1", concepts.get(2).label());
-        assertEquals("élatLabel1", concepts.get(2).altLabel());
-
-        assertEquals("1", concepts.get(3).id());
-        assertEquals("label 1", concepts.get(3).label());
-        assertEquals("latLabel1 || latLabel2", concepts.get(3).altLabel());
+        assertSortedByLabelWithMergedAltLabels(
+                concepts, PartialConcept::id, PartialConcept::label, PartialConcept::altLabel);
     }
 
     @Test
     void shouldGetConceptsListForAdvancedSearch() throws RmesException {
-        ConceptsImpl conceptsImpl = new ConceptsImpl(
-                repoGestion, null, null, null, null, null, collectionExport, null, 10, null, conceptConceptsQueries);
-
-        JSONArray array = new JSONArray();
-        array.put(new JSONObject().put("id", "1").put("label", "label 1").put("altLabel", "latLabel1"));
-        array.put(new JSONObject().put("id", "1").put("label", "label 1").put("altLabel", "latLabel2"));
-        array.put(new JSONObject().put("id", "2").put("label", "elabel 1").put("altLabel", "elatLabel1"));
-        array.put(new JSONObject().put("id", "3").put("label", "alabel 1").put("altLabel", "alatLabel1"));
-        array.put(new JSONObject().put("id", "4").put("label", "élabel 1").put("altLabel", "élatLabel1"));
-        when(repoGestion.getResponseAsArray(any())).thenReturn(array);
+        ConceptsImpl conceptsImpl = listingConceptsImpl();
+        when(repoGestion.getResponseAsArray(any())).thenReturn(rowsWithDuplicatesAndDiacritics());
         var concepts = conceptsImpl.getConceptsSearch().stream().toList();
 
-        assertEquals(4, concepts.size());
-
-        assertEquals("3", concepts.getFirst().id());
-        assertEquals("alabel 1", concepts.get(0).label());
-        assertEquals("alatLabel1", concepts.get(0).altLabel());
-
-        assertEquals("2", concepts.get(1).id());
-        assertEquals("elabel 1", concepts.get(1).label());
-        assertEquals("elatLabel1", concepts.get(1).altLabel());
-
-        assertEquals("4", concepts.get(2).id());
-        assertEquals("élabel 1", concepts.get(2).label());
-        assertEquals("élatLabel1", concepts.get(2).altLabel());
-
-        assertEquals("1", concepts.get(3).id());
-        assertEquals("label 1", concepts.get(3).label());
-        assertEquals("latLabel1 || latLabel2", concepts.get(3).altLabel());
+        assertSortedByLabelWithMergedAltLabels(
+                concepts,
+                ConceptForAdvancedSearch::id,
+                ConceptForAdvancedSearch::label,
+                ConceptForAdvancedSearch::altLabel);
     }
 
     @Test
@@ -290,10 +251,7 @@ class ConceptsImplTest {
     /** Un concept qui vit dans plusieurs graphes ne peut pas être supprimé depuis l'un d'eux. */
     @Test
     void shouldRejectTheDeletionOfAConceptUsedInSeveralGraphs() throws RmesException {
-        RdfUtils.setBauhausUriBuilder(
-                new BauhausUriBuilder("http://publication/", "http://bauhaus/", name -> Optional.of("concepts")));
-        when(legacyConceptsRepository.getGraphsWithConcept(anyString()))
-                .thenReturn(new JSONArray().put("http://graphe/1").put("http://graphe/2"));
+        givenAConceptUsedInGraphs(new JSONArray().put("http://graphe/1").put("http://graphe/2"));
 
         RmesException exception =
                 assertThrows(RmesBadRequestException.class, () -> conceptsImpl().deleteConcept("c1000"));
@@ -303,10 +261,7 @@ class ConceptsImplTest {
 
     @Test
     void shouldRejectTheDeletionOfAConceptLinkedToAnotherOne() throws RmesException {
-        RdfUtils.setBauhausUriBuilder(
-                new BauhausUriBuilder("http://publication/", "http://bauhaus/", name -> Optional.of("concepts")));
-        when(legacyConceptsRepository.getGraphsWithConcept(anyString()))
-                .thenReturn(new JSONArray().put("http://graphe/1"));
+        givenAConceptUsedInGraphs(new JSONArray().put("http://graphe/1"));
         when(legacyConceptsRepository.getRelatedConcepts(anyString()))
                 .thenReturn(new JSONArray().put(new JSONObject().put("id", "c1001")));
 
@@ -318,10 +273,7 @@ class ConceptsImplTest {
 
     @Test
     void shouldReportADeletionThatTheRepositoryDidNotAccept() throws RmesException {
-        RdfUtils.setBauhausUriBuilder(
-                new BauhausUriBuilder("http://publication/", "http://bauhaus/", name -> Optional.of("concepts")));
-        when(legacyConceptsRepository.getGraphsWithConcept(anyString()))
-                .thenReturn(new JSONArray().put("http://graphe/1"));
+        givenAConceptUsedInGraphs(new JSONArray().put("http://graphe/1"));
         when(legacyConceptsRepository.getRelatedConcepts(anyString())).thenReturn(new JSONArray());
         when(legacyConceptsRepository.deleteConcept("c1000")).thenReturn(HttpStatus.CONFLICT);
 
@@ -333,10 +285,7 @@ class ConceptsImplTest {
 
     @Test
     void shouldDeleteAConceptThatIsNeitherSharedNorLinked() throws RmesException {
-        RdfUtils.setBauhausUriBuilder(
-                new BauhausUriBuilder("http://publication/", "http://bauhaus/", name -> Optional.of("concepts")));
-        when(legacyConceptsRepository.getGraphsWithConcept(anyString()))
-                .thenReturn(new JSONArray().put("http://graphe/1"));
+        givenAConceptUsedInGraphs(new JSONArray().put("http://graphe/1"));
         when(legacyConceptsRepository.getRelatedConcepts(anyString())).thenReturn(new JSONArray());
         when(legacyConceptsRepository.deleteConcept("c1000")).thenReturn(HttpStatus.OK);
 
@@ -358,5 +307,16 @@ class ConceptsImplTest {
                 10,
                 conceptCollectionsQueries,
                 conceptConceptsQueries);
+    }
+
+    private ConceptsImpl listingConceptsImpl() {
+        return new ConceptsImpl(
+                repoGestion, null, null, null, null, null, collectionExport, null, 10, null, conceptConceptsQueries);
+    }
+
+    private void givenAConceptUsedInGraphs(JSONArray graphs) throws RmesException {
+        RdfUtils.setBauhausUriBuilder(
+                new BauhausUriBuilder("http://publication/", "http://bauhaus/", name -> Optional.of("concepts")));
+        when(legacyConceptsRepository.getGraphsWithConcept(anyString())).thenReturn(graphs);
     }
 }
