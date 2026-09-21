@@ -2,6 +2,7 @@ package fr.insee.rmes;
 
 import fr.insee.rmes.modules.clientconfig.domain.model.ModuleConfig;
 import fr.insee.rmes.modules.clientconfig.domain.model.ModuleSettings;
+import fr.insee.rmes.modules.shared_kernel.domain.model.AuthenticationMode;
 import java.util.List;
 import java.util.Map;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -16,6 +17,11 @@ public record BauhausConfiguration(
         String baseGraph) {
     public BauhausConfiguration {
         modules = modules == null ? Map.of() : modules;
+        AuthenticationMode.fromEnv(env);
+    }
+
+    public AuthenticationMode authenticationMode() {
+        return AuthenticationMode.fromEnv(env);
     }
 
     /**

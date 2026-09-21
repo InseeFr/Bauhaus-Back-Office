@@ -4,6 +4,7 @@ import static org.springframework.security.config.Customizer.withDefaults;
 
 import fr.insee.rmes.BauhausConfiguration;
 import fr.insee.rmes.modules.organisations.domain.port.clientside.OrganisationsService;
+import fr.insee.rmes.modules.shared_kernel.domain.model.AuthenticationMode;
 import fr.insee.rmes.modules.users.domain.DomainAccessPrivilegesChecker;
 import fr.insee.rmes.modules.users.domain.DomainUserService;
 import fr.insee.rmes.modules.users.domain.port.clientside.AccessPrivilegesCheckerService;
@@ -89,13 +90,13 @@ public class UserConfiguration {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, RequestMatcher publicEndpointsMatcher) throws Exception {
-        boolean isProd = "PROD".equalsIgnoreCase(bauhausConfiguration.env());
+        boolean isDev = bauhausConfiguration.authenticationMode() == AuthenticationMode.DEV;
 
         http.sessionManagement(AbstractHttpConfigurer::disable)
                 .cors(withDefaults())
                 .csrf(AbstractHttpConfigurer::disable);
 
-        if (!isProd) {
+        if (isDev) {
             http.addFilterBefore(new DevAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
         }
 
@@ -108,7 +109,7 @@ public class UserConfiguration {
                         .anyRequest()
                         .authenticated());
 
-        logger.info(isProd ? "OpenID authentication activated" : "Development mode with FAKE_USER");
+        logger.info(isDev ? "Development mode with FAKE_USER" : "OpenID authentication activated");
 
         return http.build();
     }

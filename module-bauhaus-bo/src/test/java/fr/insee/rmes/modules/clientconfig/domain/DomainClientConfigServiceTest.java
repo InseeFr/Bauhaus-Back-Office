@@ -22,7 +22,7 @@ class DomainClientConfigServiceTest {
                 "350",
                 "DG75-L201",
                 new ConfiguredLanguages("fr", "en"),
-                "dev",
+                "NoAuth",
                 List.of(new ModuleConfig("concepts", true, true), new ModuleConfig("classifications", true, true)),
                 "1.0.0",
                 List.of("altLabel"),
