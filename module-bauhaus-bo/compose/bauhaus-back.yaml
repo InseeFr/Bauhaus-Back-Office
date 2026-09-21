@@ -8,8 +8,12 @@ services:
       dockerfile: Dockerfile.bauhaus
     ports:
       - "8080:8080"
+    volumes:
+      # La configuration locale n'est pas dans l'image : on la monte là où
+      # application.properties la cherche (./config, relatif au WORKDIR /opt/app).
+      - ../config/bauhaus-local-dev.properties:/opt/app/config/bauhaus-local-dev.properties:ro
     environment:
-      # bauhaus-local-dev.properties, embarqué dans l'image, pointe tout sur
+      # bauhaus-local-dev.properties, monté ci-dessus, pointe tout sur
       # localhost : depuis le conteneur il faut réécrire chaque service par son
       # nom de service compose : les deux dépôts RDF et minio, sinon
       # /api/healthcheck sort en 500 (« could not read protocol version »).

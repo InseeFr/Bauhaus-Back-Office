@@ -5,6 +5,36 @@ Rest Endpoints and services Integration used by [Bauhaus](https://github.com/Ins
 
 The documentation can be found in the [docs](https://github.com/InseeFr/Bauhaus/tree/master/documentation) folder and [browsed online](https://inseefr.github.io/Bauhaus).
 
+## Running locally
+
+The local development settings live in
+`module-bauhaus-bo/config/bauhaus-local-dev.properties`. They are deliberately
+kept **out of the packaged jar**: they allow every CORS origin, disable RDF
+authentication and use MinIO's default credentials. `application.properties`
+imports the file as `optional:file:./config/bauhaus-local-dev.properties`, i.e.
+relative to the **working directory**, which must therefore be
+`module-bauhaus-bo`.
+
+Start the dependencies (GraphDB on 7200, MinIO on 9000), then the application:
+
+```bash
+./mvnw install -DskipTests       # sibling modules, once
+cd module-bauhaus-bo
+docker compose up -d graphdb minio
+../mvnw spring-boot:run          # working directory = module-bauhaus-bo
+```
+
+- **IntelliJ**: in the Spring Boot run configuration, set *Working directory* to
+  `$MODULE_WORKING_DIR$` (or the `module-bauhaus-bo` folder).
+- **From another directory**, or with a packaged jar, point Spring at the file
+  explicitly:
+  `java -jar module-bauhaus-bo-*.jar --spring.config.additional-location=file:/path/to/bauhaus-local-dev.properties`
+- **Whole stack in Docker**: `docker compose up` in `module-bauhaus-bo`; the file
+  is mounted into the container, it is not baked into the image.
+
+Without this file (or an equivalent configuration) the application does not
+start: the JWT issuer URI references `fr.insee.rmes.bauhaus.keycloak.server.url`.
+
 ## Code formatting
 
 Java sources are formatted with [Spotless](https://github.com/diffplug/spotless)
