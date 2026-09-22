@@ -6,6 +6,7 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import java.util.List;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.junit.jupiter.api.Test;
@@ -24,7 +25,7 @@ class DatabaseQueryExceptionTest {
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR.value(), exception.getStatus());
         assertEquals(errorMessage, exception.getMessage());
-        assertEquals(errorMessage, exception.getDetails());
+        assertEquals(DatabaseQueryException.GENERIC_MESSAGE, exception.getDetails());
     }
 
     @Test
@@ -65,7 +66,7 @@ class DatabaseQueryExceptionTest {
         MalformedQueryException rdf4jException = new MalformedQueryException("Test error");
         DatabaseQueryException exception = new DatabaseQueryException(rdf4jException, "SELECT 1");
 
-        assertInstanceOf(fr.insee.rmes.domain.exceptions.RmesException.class, exception);
+        assertInstanceOf(RmesException.class, exception);
     }
 
     @Test

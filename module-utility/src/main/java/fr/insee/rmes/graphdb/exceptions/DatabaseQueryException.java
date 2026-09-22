@@ -10,6 +10,8 @@ import org.springframework.http.HttpStatus;
 public class DatabaseQueryException extends RmesException {
     static final Logger logger = LoggerFactory.getLogger(DatabaseQueryException.class);
 
+    public static final String GENERIC_MESSAGE = "Erreur lors de l'accès à la base RDF";
+
     private static final String EXECUTE_QUERY_FAILED = "Execute query failed : ";
 
     private final RDF4JException exception;
@@ -17,11 +19,15 @@ public class DatabaseQueryException extends RmesException {
     private final String message;
 
     public DatabaseQueryException(RDF4JException exception, String query) {
-        this(exception, query, exception.getMessage());
+        this(exception, query, exception.getMessage(), GENERIC_MESSAGE);
     }
 
-    protected DatabaseQueryException(RDF4JException exception, String query, String message) {
-        super(HttpStatus.INTERNAL_SERVER_ERROR.value(), message);
+    /**
+     * @param message message journalisé, qui peut citer la requête ou GraphDB
+     * @param clientMessage corps de la réponse HTTP : ni requête SPARQL, ni message RDF4J
+     */
+    protected DatabaseQueryException(RDF4JException exception, String query, String message, String clientMessage) {
+        super(HttpStatus.INTERNAL_SERVER_ERROR.value(), clientMessage);
         this.exception = exception;
         this.message = message;
 

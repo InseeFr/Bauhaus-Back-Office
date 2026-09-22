@@ -20,7 +20,7 @@ class GraphDbExceptionHandlerTest {
     }
 
     @Test
-    void shouldHandleDatabaseQueryException() {
+    void shouldAnswerAGenericMessageInsteadOfTheRdf4jOne() {
         String errorMessage = "Database connection failed";
         String query = "SELECT * FROM test";
         MalformedQueryException rdf4jException = new MalformedQueryException(errorMessage);
@@ -29,7 +29,20 @@ class GraphDbExceptionHandlerTest {
         ResponseEntity<String> response = handler.genericInternalServerException(databaseException);
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
-        assertEquals(errorMessage, response.getBody());
+        assertEquals(DatabaseQueryException.GENERIC_MESSAGE, response.getBody());
+    }
+
+    @Test
+    void shouldNotExposeTheSparqlQueryNorTheRdf4jMessage() {
+        String query = "SELECT ?secret WHERE { GRAPH <http://rdf.insee.fr/graphes/private> { ?s ?p ?secret } }";
+        MalformedQueryException rdf4jException =
+                new MalformedQueryException("Encountered \" \"}\" at line 1, column 42 in " + query);
+        DatabaseQueryException databaseException = new DatabaseQueryException(rdf4jException, query);
+
+        String body = handler.genericInternalServerException(databaseException).getBody();
+
+        assertFalse(body.contains("http://rdf.insee.fr/graphes/private"));
+        assertFalse(body.contains("Encountered"));
     }
 
     @Test
@@ -42,54 +55,5 @@ class GraphDbExceptionHandlerTest {
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
         assertTrue(response.getBody().contains("401"));
         assertTrue(response.getBody().contains("fr.insee.rmes.bauhaus.rdf.auth=DISABLED"));
-    }
-
-    @Test
-    void shouldReturnCorrectHttpStatusForDatabaseQueryException() {
-        String errorMessage = "Query execution timeout";
-        MalformedQueryException rdf4jException = new MalformedQueryException(errorMessage);
-        DatabaseQueryException databaseException =
-                new DatabaseQueryException(rdf4jException, "UPDATE test SET value = 1");
-
-        ResponseEntity<String> response = handler.genericInternalServerException(databaseException);
-
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
-        assertNotNull(response.getBody());
-    }
-
-    @Test
-    void shouldReturnExceptionMessageInResponseBody() {
-        String expectedMessage = "SPARQL query syntax error";
-        MalformedQueryException rdf4jException = new MalformedQueryException(expectedMessage);
-        DatabaseQueryException databaseException = new DatabaseQueryException(rdf4jException, "INVALID QUERY");
-
-        ResponseEntity<String> response = handler.genericInternalServerException(databaseException);
-
-        assertEquals(expectedMessage, response.getBody());
-    }
-
-    @Test
-    void shouldHandleEmptyMessageInException() {
-        String emptyMessage = "";
-        MalformedQueryException rdf4jException = new MalformedQueryException(emptyMessage);
-        DatabaseQueryException databaseException = new DatabaseQueryException(rdf4jException, "SELECT 1");
-
-        ResponseEntity<String> response = handler.genericInternalServerException(databaseException);
-
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
-        assertEquals(emptyMessage, response.getBody());
-    }
-
-    @Test
-    void shouldReturnResponseEntityWithStringBody() {
-        String errorMessage = "Connection to RDF store failed";
-        MalformedQueryException rdf4jException = new MalformedQueryException(errorMessage);
-        DatabaseQueryException databaseException = new DatabaseQueryException(rdf4jException, "ASK { ?s ?p ?o }");
-
-        ResponseEntity<String> response = handler.genericInternalServerException(databaseException);
-
-        assertInstanceOf(ResponseEntity.class, response);
-        assertInstanceOf(String.class, response.getBody());
-        assertEquals(errorMessage, response.getBody());
     }
 }

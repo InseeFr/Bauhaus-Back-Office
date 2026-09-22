@@ -3,10 +3,15 @@ package fr.insee.rmes.graphdb;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.keycloak.TokenService;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
+import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
@@ -19,6 +24,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 
 class RepositoryUtilsTest {
@@ -97,6 +103,71 @@ class RepositoryUtilsTest {
 
         HttpStatus result = repositoryUtils.executeUpdate(updateQuery, null);
         assertEquals(HttpStatus.EXPECTATION_FAILED, result);
+    }
+
+    /* Le corps d'une 500 part au client : il ne doit porter ni la requête SPARQL ni le
+    message RDF4J, qui restent dans les logs. */
+    @Test
+    void shouldNotExposeTheUpdateQueryNorTheRdf4jMessageWhenTheUpdateFails() {
+        String updateQuery = "INSERT DATA { GRAPH <http://rdf.insee.fr/graphes/private> { <urn:s> <urn:p> 'o' } }";
+        Repository failingRepository = repositoryFailingOnPrepareUpdate("Transaction rolled back by GraphDB node 3");
+
+        RmesException exception =
+                assertThrows(RmesException.class, () -> repositoryUtils.executeUpdate(updateQuery, failingRepository));
+
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR.value(), exception.getStatus());
+        assertFalse(exception.getDetails().contains("http://rdf.insee.fr/graphes/private"));
+        assertFalse(exception.getDetails().contains("GraphDB node 3"));
+    }
+
+    @Test
+    void shouldLogTheUpdateQueryWhenTheUpdateFails() {
+        String updateQuery = "INSERT DATA { GRAPH <http://rdf.insee.fr/graphes/private> { <urn:s> <urn:p> 'o' } }";
+        Repository failingRepository = repositoryFailingOnPrepareUpdate("Transaction rolled back");
+        Logger logger = (Logger) LoggerFactory.getLogger(RepositoryUtils.class);
+        ListAppender<ILoggingEvent> appender = new ListAppender<>();
+        appender.start();
+        logger.addAppender(appender);
+        try {
+            assertThrows(RmesException.class, () -> repositoryUtils.executeUpdate(updateQuery, failingRepository));
+
+            assertTrue(appender.list.stream()
+                    .anyMatch(event -> event.getLevel() == Level.ERROR
+                            && event.getFormattedMessage().contains(updateQuery)));
+        } finally {
+            logger.detachAppender(appender);
+        }
+    }
+
+    @Test
+    void shouldNotExposeTheRdf4jMessageWhenTheConnectionFails() {
+        Repository mockRepo = mock(Repository.class);
+        when(mockRepo.getConnection()).thenThrow(new RepositoryException("Connection refused: graphdb-internal:7200"));
+
+        RmesException exception = assertThrows(RmesException.class, () -> repositoryUtils.getConnection(mockRepo));
+
+        assertFalse(exception.getDetails().contains("graphdb-internal"));
+    }
+
+    @Test
+    void shouldNotExposeTheRdf4jMessageWhenReadingAGraphFails() {
+        RepositoryConnection connection = mock(RepositoryConnection.class);
+        when(connection.getStatements(null, null, null, (Resource) null))
+                .thenThrow(new RepositoryException("Connection refused: graphdb-internal:7200"));
+
+        RmesException exception =
+                assertThrows(RmesException.class, () -> repositoryUtils.getCompleteGraph(connection, null));
+
+        assertFalse(exception.getDetails().contains("graphdb-internal"));
+    }
+
+    private static Repository repositoryFailingOnPrepareUpdate(String rdf4jMessage) {
+        Repository repository = mock(Repository.class);
+        RepositoryConnection connection = mock(RepositoryConnection.class);
+        when(repository.getConnection()).thenReturn(connection);
+        when(connection.prepareUpdate(eq(QueryLanguage.SPARQL), anyString()))
+                .thenThrow(new RepositoryException(rdf4jMessage));
+        return repository;
     }
 
     @Test
