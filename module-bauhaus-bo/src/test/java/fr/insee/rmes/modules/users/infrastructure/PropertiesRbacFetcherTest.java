@@ -5,6 +5,10 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
 import fr.insee.rmes.modules.users.domain.exceptions.UnknownApplicationException;
 import fr.insee.rmes.modules.users.domain.exceptions.UnknownRoleException;
 import fr.insee.rmes.modules.users.domain.model.AllModuleAccessPrivileges;
@@ -19,6 +23,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.slf4j.LoggerFactory;
 
 @ExtendWith(MockitoExtension.class)
 class PropertiesRbacFetcherTest {
@@ -182,6 +187,29 @@ class PropertiesRbacFetcherTest {
 
         // Should have READ with ALL strategy (minimum) and CREATE with STAMP
         assertThat(conceptResult.privileges()).hasSize(2);
+    }
+
+    @Test
+    void should_warn_and_ignore_unknown_role_when_computing_privileges() {
+        givenRoles(role("ADMIN", conceptPrivileges(privilege(RBAC.Privilege.READ, RBAC.Strategy.ALL))));
+
+        Logger logger = (Logger) LoggerFactory.getLogger(PropertiesRbacFetcher.class);
+        ListAppender<ILoggingEvent> logs = new ListAppender<>();
+        logs.start();
+        logger.addAppender(logs);
+        try {
+            Set<ModuleAccessPrivileges> result = rbacFetcher.computePrivileges(List.of("ADMIN", "GHOST_ROLE"), null);
+
+            assertThat(result)
+                    .extracting(ModuleAccessPrivileges::application)
+                    .containsExactly(RBAC.Module.CONCEPT_CONCEPT);
+            assertThat(logs.list)
+                    .filteredOn(event -> event.getLevel() == Level.WARN)
+                    .as("un rôle absent de la configuration RBAC doit être signalé")
+                    .anySatisfy(event -> assertThat(event.getFormattedMessage()).contains("GHOST_ROLE"));
+        } finally {
+            logger.detachAppender(logs);
+        }
     }
 
     @Test
