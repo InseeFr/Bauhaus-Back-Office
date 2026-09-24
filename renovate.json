@@ -30,8 +30,7 @@
   ],
   "docker-compose": {
     "managerFilePatterns": [
-      "/(^|/)(?:docker-)?compose[^/]*\\.ya?ml$/",
-      "/^module-bauhaus-bo/compose/[^/]+\\.ya?ml$/"
+      "/(^|/)(?:docker-)?compose[^/]*\\.ya?ml$/"
     ]
   },
   "packageRules": [

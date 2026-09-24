@@ -61,7 +61,8 @@ COPY --from=builder --chown=10000:10000 /opt/app/extracted/application/ ./
 # --mount : bauhaus-local-dev.properties n'est plus dans le jar, or sans lui le contexte ne
 # démarre pas (l'issuer-uri JWT référence fr.insee.rmes.bauhaus.keycloak.server.url). Le
 # montage le rend visible, dans ./config, le temps de ce seul RUN : il n'est pas écrit dans
-# l'image. À l'exécution, la configuration est fournie par l'environnement (voir compose/).
+# l'image. À l'exécution, la configuration est fournie par l'environnement (voir le
+# docker-compose.yml du dépôt Bauhaus, qui décrit la stack).
 RUN --mount=type=bind,from=builder,source=/opt/app/module-bauhaus-bo/config,target=/opt/app/config \
     java --add-modules java.instrument \
          -XX:AOTCacheOutput=bauhaus.aot \
