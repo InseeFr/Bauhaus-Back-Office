@@ -271,4 +271,71 @@ class CodesListsEndToEndTest extends WithGraphDBContainer {
         assertThat(response.getHeaders().get(HttpHeaders.LOCATION))
                 .containsExactly(codesListsEndpoint() + "/CL_LOCATION");
     }
+
+    @Test
+    @Order(8)
+    @DisplayName("Parent and child links are stored in both directions and follow the code on update and delete")
+    void links_between_codes_follow_their_updates_and_deletions() {
+        create("CL_TREE", "cl-tree", "ClTree");
+        postCode("CL_TREE", """
+                {"code":"A","labelLg1":"A","labelLg2":"A"}""");
+        postCode("CL_TREE", """
+                {"code":"B","labelLg1":"B","labelLg2":"B"}""");
+        postCode("CL_TREE", """
+                {"code":"A1","labelLg1":"A1","labelLg2":"A1","broader":["A"]}""");
+
+        JSONObject codes = codesByNotation("CL_TREE");
+        assertThat(codes.getJSONObject("A1").getJSONArray("broader").toList()).containsExactly("A");
+        assertThat(codes.getJSONObject("A").getJSONArray("narrower").toList()).containsExactly("A1");
+
+        // Changer de parent retire le lien que l'ancien parent portait vers le code.
+        RestClient.create()
+                .put()
+                .uri(codesListsEndpoint() + "/detailed/CL_TREE/codes/A1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .body("""
+                        {"code":"A1","labelLg1":"A1","labelLg2":"A1","broader":["B"]}""")
+                .retrieve()
+                .toBodilessEntity();
+
+        codes = codesByNotation("CL_TREE");
+        assertThat(codes.getJSONObject("A1").getJSONArray("broader").toList()).containsExactly("B");
+        assertThat(codes.getJSONObject("A").has("narrower")).isFalse();
+        assertThat(codes.getJSONObject("B").getJSONArray("narrower").toList()).containsExactly("A1");
+
+        RestClient.create()
+                .delete()
+                .uri(codesListsEndpoint() + "/detailed/CL_TREE/codes/A1")
+                .retrieve()
+                .toBodilessEntity();
+
+        assertThat(codesByNotation("CL_TREE").getJSONObject("B").has("narrower"))
+                .isFalse();
+    }
+
+    private void postCode(String codesListId, String code) {
+        var response = RestClient.create()
+                .post()
+                .uri(codesListsEndpoint() + "/detailed/" + codesListId + "/codes")
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(code)
+                .retrieve()
+                .toBodilessEntity();
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+    }
+
+    private JSONObject codesByNotation(String codesListId) {
+        var items = new JSONObject(RestClient.create()
+                        .get()
+                        .uri(codesListsEndpoint() + "/detailed/" + codesListId + "/codes?page=1")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .retrieve()
+                        .body(String.class))
+                .getJSONArray("items");
+        JSONObject byNotation = new JSONObject();
+        for (int i = 0; i < items.length(); i++) {
+            byNotation.put(items.getJSONObject(i).getString("code"), items.getJSONObject(i));
+        }
+        return byNotation;
+    }
 }
