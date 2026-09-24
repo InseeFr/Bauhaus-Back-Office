@@ -128,6 +128,41 @@ class DocumentsCrudIntegrationTest extends WithGraphDBContainer {
     }
 
     @Test
+    @DisplayName("Un document relu expose la taille de son fichier, en octets, quand elle est stockée")
+    void shouldExposeTheStoredSizeOfADocument() throws Exception {
+        String id = documents.createDocument("""
+                {"labelLg1": "Document pesé"}""", content("x"), "taille_" + unique() + ".pdf");
+        repositoryGestion.executeUpdate("""
+                INSERT DATA { GRAPH <http://rdf.insee.fr/graphes/qualite/documents> {
+                    <%s> <http://purl.org/dc/terms/extent> "130048"^^<http://www.w3.org/2001/XMLSchema#integer>
+                } }""".formatted(BASE_URI_GESTION + DOCUMENTS_PATH + "/" + id));
+
+        assertThat(documents.getDocument(id).getLong("size")).isEqualTo(130_048L);
+    }
+
+    @Test
+    @DisplayName("Une taille stockée qui n'est pas un nombre d'octets n'est pas exposée")
+    void shouldNotExposeASizeThatIsNotANumberOfBytes() throws Exception {
+        String id = documents.createDocument("""
+                {"labelLg1": "Document mal pesé"}""", content("x"), "taille_texte_" + unique() + ".pdf");
+        repositoryGestion.executeUpdate("""
+                INSERT DATA { GRAPH <http://rdf.insee.fr/graphes/qualite/documents> {
+                    <%s> <http://purl.org/dc/terms/extent> "127 ko"
+                } }""".formatted(BASE_URI_GESTION + DOCUMENTS_PATH + "/" + id));
+
+        assertThat(documents.getDocument(id).has("size")).isFalse();
+    }
+
+    @Test
+    @DisplayName("Un document sans taille stockée est relu sans champ de taille")
+    void shouldNotExposeASizeThatIsNotStored() throws Exception {
+        String id = documents.createDocument("""
+                {"labelLg1": "Document sans taille"}""", content("x"), "sans_taille_" + unique() + ".pdf");
+
+        assertThat(documents.getDocument(id).has("size")).isFalse();
+    }
+
+    @Test
     @DisplayName("Un document créé apparaît dans la liste de tous les documents")
     void shouldListTheCreatedDocument() throws Exception {
         String id = documents.createDocument("""

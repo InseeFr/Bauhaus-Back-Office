@@ -67,6 +67,7 @@ public class DocumentsUtils extends RdfService {
     private final BauhausLanguagesProperties languages;
 
     private static final String SCHEME_FILE = "file://";
+    private static final String SIZE = "size";
     static final Logger logger = LoggerFactory.getLogger(DocumentsUtils.class);
     public static final Pattern VALID_FILENAME_PATTERN = Pattern.compile("^[A-Za-z0-9_-]+\\.[A-Za-z]+$");
 
@@ -184,6 +185,23 @@ public class DocumentsUtils extends RdfService {
     private void formatDateInJsonArray(JSONArray allDocs) {
         if (!allDocs.isEmpty()) {
             JSONUtils.stream(allDocs).forEach(this::formatDateInJsonObject);
+        }
+    }
+
+    /**
+     * dcterms:extent porte la taille du fichier en octets : exposée comme un nombre, et seulement si
+     * c'en est un.
+     */
+    private void keepSizeInBytesOnly(JSONObject doc) {
+        if (!doc.has(SIZE)) {
+            return;
+        }
+        try {
+            doc.put(SIZE, Long.parseLong(doc.getString(SIZE).trim()));
+        } catch (NumberFormatException _) {
+            logger.warn(
+                    "Ignoring the size of {}: dcterms:extent is not a number of bytes", doc.optString(Constants.URI));
+            doc.remove(SIZE);
         }
     }
 
@@ -373,6 +391,7 @@ public class DocumentsUtils extends RdfService {
                     id);
         }
         formatDateInJsonObject(jsonDocs);
+        keepSizeInBytesOnly(jsonDocs);
         jsonDocs.put("sims", this.getSimsByDocument(id, isLink));
         return jsonDocs;
     }
