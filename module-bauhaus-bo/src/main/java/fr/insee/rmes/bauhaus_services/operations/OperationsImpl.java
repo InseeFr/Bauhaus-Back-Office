@@ -101,12 +101,14 @@ public class OperationsImpl implements OperationsService {
     public String getSeriesWithStamp() throws RmesException {
         logger.info("Starting to get series list with sims based on a stamp");
 
-        // TODO a revoir ceci
         var principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         var isAdmin = false;
         Set<Stamp> stamps = Collections.emptySet();
         try {
-            var user = userDecoder.fromPrincipal(principal).get();
+            var user = userDecoder
+                    .fromPrincipal(principal)
+                    .orElseThrow(
+                            () -> new MissingUserInformationException("No user can be decoded from the principal"));
             isAdmin = user.hasRole(Roles.ADMIN);
             stamps = user.stamps();
         } catch (MissingUserInformationException e) {

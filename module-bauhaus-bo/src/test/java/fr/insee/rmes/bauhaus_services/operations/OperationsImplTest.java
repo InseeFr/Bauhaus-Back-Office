@@ -3,6 +3,7 @@ package fr.insee.rmes.bauhaus_services.operations;
 import static fr.insee.rmes.bauhaus_services.SortedLabelRows.assertSortedByLabelWithMergedAltLabels;
 import static fr.insee.rmes.bauhaus_services.SortedLabelRows.rowsWithDuplicatesAndDiacritics;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
@@ -12,6 +13,7 @@ import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.model.operations.PartialOperation;
 import fr.insee.rmes.model.operations.PartialOperationIndicator;
 import fr.insee.rmes.model.operations.PartialOperationSeries;
+import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
 import fr.insee.rmes.modules.users.domain.model.User;
 import fr.insee.rmes.modules.users.domain.port.serverside.UserDecoder;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationIndicatorsQueries;
@@ -72,6 +74,16 @@ class OperationsImplTest {
                         .toList();
 
         assertThat(labels).containsExactly("ea", "éb", "Ez");
+    }
+
+    @Test
+    void shouldReportMissingUserInformationWhenThePrincipalDecodesToNoUser() throws Throwable {
+        SecurityContextHolder.getContext()
+                .setAuthentication(new TestingAuthenticationToken("principal", "credentials"));
+        when(userDecoder.fromPrincipal(any())).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> operationsImpl.getSeriesWithStamp())
+                .hasCauseInstanceOf(MissingUserInformationException.class);
     }
 
     @Test
