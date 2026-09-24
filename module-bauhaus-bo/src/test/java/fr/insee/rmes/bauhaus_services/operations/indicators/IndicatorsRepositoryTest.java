@@ -24,6 +24,8 @@ import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.graphdb.ontologies.ADMS;
 import fr.insee.rmes.model.links.OperationsLink;
 import fr.insee.rmes.model.operations.Indicator;
+import fr.insee.rmes.modules.operations.indicators.domain.model.IndicatorLink;
+import fr.insee.rmes.modules.operations.indicators.domain.model.commands.IndicatorCommand;
 import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationIndicatorsQueries;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
@@ -61,26 +63,49 @@ class IndicatorsRepositoryTest {
 
     @Test
     void shouldThrowExceptionIfWasGeneratedByNull() throws RmesException {
-        JSONObject indicator = new JSONObject();
-
-        assertRejectedAsNotLinkedToASeries(indicator);
+        assertRejectedAsNotLinkedToASeries(null);
     }
 
     @Test
     void shouldThrowExceptionIfWasGeneratedByEmpty() throws RmesException {
-        JSONObject indicator = new JSONObject().put("wasGeneratedBy", new JSONArray());
-
-        assertRejectedAsNotLinkedToASeries(indicator);
+        assertRejectedAsNotLinkedToASeries(List.of());
     }
 
-    private void assertRejectedAsNotLinkedToASeries(JSONObject indicator) throws RmesException {
+    private void assertRejectedAsNotLinkedToASeries(List<IndicatorLink> wasGeneratedBy) throws RmesException {
         IndicatorsRepository indicatorsRepository = spy(indicatorsRepository(null, null));
         doReturn("p1000").when(indicatorsRepository).createID();
 
-        Exception exception =
-                assertThrows(Exception.class, () -> indicatorsRepository.setIndicator(indicator.toString()));
+        Exception exception = assertThrows(
+                Exception.class,
+                () -> indicatorsRepository.setIndicator(command("prefLabelLg1", null, wasGeneratedBy)));
         assertThat(exception).isInstanceOfAny(RmesBadRequestException.class, RmesException.class);
         assertThat(((RmesException) exception).getDetails()).contains("An indicator should be linked to a series.");
+    }
+
+    /** Une commande minimale : seul le libellé principal est un invariant du domaine. */
+    private static IndicatorCommand command(
+            String prefLabelLg1, String prefLabelLg2, List<IndicatorLink> wasGeneratedBy) {
+        return new IndicatorCommand(
+                prefLabelLg1,
+                prefLabelLg2,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                wasGeneratedBy,
+                null,
+                null,
+                null);
     }
 
     @Test
@@ -109,17 +134,11 @@ class IndicatorsRepositoryTest {
 
         IndicatorsRepository indicatorsRepository = indicatorsRepository(operationIndicatorsQueries, null);
         return assertThrows(
-                RmesBadRequestException.class,
-                () -> indicatorsRepository.setIndicator(
-                        indicatorWithBothLabels().toString()));
+                RmesBadRequestException.class, () -> indicatorsRepository.setIndicator(indicatorWithBothLabels()));
     }
 
-    private static JSONObject indicatorWithBothLabels() {
-        return new JSONObject()
-                .put("id", "1")
-                .put("wasGeneratedBy", new JSONArray().put(new JSONObject()))
-                .put("prefLabelLg1", "prefLabelLg1")
-                .put("prefLabelLg2", "prefLabelLg2");
+    private static IndicatorCommand indicatorWithBothLabels() {
+        return command("prefLabelLg1", "prefLabelLg2", List.of(new IndicatorLink(null, null)));
     }
 
     @Test

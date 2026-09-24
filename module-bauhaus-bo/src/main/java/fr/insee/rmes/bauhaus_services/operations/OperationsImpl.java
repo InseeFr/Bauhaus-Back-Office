@@ -9,6 +9,7 @@ import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.QueryUtils;
 import fr.insee.rmes.json.JSONUtils;
 import fr.insee.rmes.model.operations.*;
+import fr.insee.rmes.modules.operations.indicators.domain.model.commands.IndicatorCommand;
 import fr.insee.rmes.modules.operations.series.domain.model.Series;
 import fr.insee.rmes.modules.shared_kernel.domain.model.Roles;
 import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
@@ -246,8 +247,8 @@ public class OperationsImpl implements OperationsService {
     }
 
     @Override
-    public void setIndicator(String id, String body) throws RmesException {
-        indicatorsRepository.setIndicator(id, body);
+    public void setIndicator(String id, IndicatorCommand command) throws RmesException {
+        indicatorsRepository.setIndicator(id, command);
     }
 
     /**
@@ -264,7 +265,7 @@ public class OperationsImpl implements OperationsService {
      * @throws RmesException
      */
     @Override
-    public String setIndicator(String body) throws RmesException {
-        return indicatorsRepository.setIndicator(body);
+    public String setIndicator(IndicatorCommand command) throws RmesException {
+        return indicatorsRepository.setIndicator(command);
     }
 }

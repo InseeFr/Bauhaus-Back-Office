@@ -1,7 +1,5 @@
 package fr.insee.rmes.bauhaus_services.operations.indicators;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.CodeListService;
@@ -23,6 +21,8 @@ import fr.insee.rmes.graphdb.ontologies.ADMS;
 import fr.insee.rmes.graphdb.ontologies.INSEE;
 import fr.insee.rmes.model.links.OperationsLink;
 import fr.insee.rmes.model.operations.Indicator;
+import fr.insee.rmes.modules.operations.indicators.domain.model.IndicatorLink;
+import fr.insee.rmes.modules.operations.indicators.domain.model.commands.IndicatorCommand;
 import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationIndicatorsQueries;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
@@ -30,7 +30,6 @@ import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.Deserializer;
 import fr.insee.rmes.utils.XMLUtils;
 import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -255,27 +254,14 @@ public class IndicatorsRepository {
         }
     }
 
-    /**
-     * Create
-     * @param body
-     * @return
-     * @throws RmesException
-     */
-    public String setIndicator(String body) throws RmesException {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        Indicator indicator = new Indicator();
+    /** Création : l'identifiant est généré, le reste vient de la commande. */
+    public String setIndicator(IndicatorCommand command) throws RmesException {
         String id = createID();
         if (id == null) {
             logger.error("Create indicator cancelled - no id");
             return null;
         }
-        try {
-            indicator = mapper.readValue(body, Indicator.class);
-            indicator.setId(id);
-        } catch (IOException e) {
-            logger.error(e.getMessage());
-        }
+        Indicator indicator = toIndicator(id, command);
         indicator.setCreated(DateUtils.getCurrentDate());
         indicator.setUpdated(DateUtils.getCurrentDate());
         createRdfIndicator(indicator, ValidationStatus.UNPUBLISHED);
@@ -283,23 +269,9 @@ public class IndicatorsRepository {
         return indicator.getId();
     }
 
-    /**
-     * Update
-     * @param id
-     * @param body
-     * @throws RmesException
-     */
-    public void setIndicator(String id, String body) throws RmesException {
-
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        Indicator indicator = Indicator.of(id);
-        try {
-            indicator = mapper.readerForUpdating(indicator).readValue(body);
-        } catch (IOException e) {
-            logger.error(e.getMessage());
-        }
-
+    /** Mise à jour : l'identifiant vient de l'appelant, la commande réécrit l'indicateur entier. */
+    public void setIndicator(String id, IndicatorCommand command) throws RmesException {
+        Indicator indicator = toIndicator(id, command);
         indicator.setUpdated(DateUtils.getCurrentDate());
 
         String status = operationsParentRepository.getIndicatorsValidationStatus(id);
@@ -313,6 +285,43 @@ public class IndicatorsRepository {
         }
 
         logger.info("Update indicator : {} - {}", indicator.getId(), indicator.getPrefLabelLg1());
+    }
+
+    /**
+     * Projette la commande sur le modèle du dépôt. {@code created} et {@code updated} sont posés par
+     * les appelants ci-dessus ; {@code validationState} est décidé par {@code createRdfIndicator}.
+     */
+    private static Indicator toIndicator(String id, IndicatorCommand command) {
+        Indicator indicator = Indicator.of(id);
+        indicator.setPrefLabelLg1(command.prefLabelLg1());
+        indicator.setPrefLabelLg2(command.prefLabelLg2());
+        indicator.setAltLabelLg1(command.altLabelLg1());
+        indicator.setAltLabelLg2(command.altLabelLg2());
+        indicator.setAbstractLg1(command.abstractLg1());
+        indicator.setAbstractLg2(command.abstractLg2());
+        indicator.setHistoryNoteLg1(command.historyNoteLg1());
+        indicator.setHistoryNoteLg2(command.historyNoteLg2());
+        indicator.setAccrualPeriodicityCode(command.accrualPeriodicityCode());
+        indicator.setAccrualPeriodicityList(command.accrualPeriodicityList());
+        indicator.setPublishers(command.publishers());
+        indicator.setContributors(command.contributors());
+        indicator.setCreators(command.creators());
+        indicator.setSeeAlso(toOperationsLinks(command.seeAlso()));
+        indicator.setReplaces(toOperationsLinks(command.replaces()));
+        indicator.setIsReplacedBy(toOperationsLinks(command.isReplacedBy()));
+        indicator.setWasGeneratedBy(toOperationsLinks(command.wasGeneratedBy()));
+        indicator.setIdSims(command.idSims());
+        indicator.setCreated(command.created());
+        return indicator;
+    }
+
+    private static List<OperationsLink> toOperationsLinks(List<IndicatorLink> links) {
+        if (links == null) {
+            return null;
+        }
+        return links.stream()
+                .map(link -> OperationsLink.of(link.id(), link.type(), null, null))
+                .toList();
     }
 
     public void addMulltiLangValues(

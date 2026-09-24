@@ -6,7 +6,6 @@ import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import fr.insee.rmes.bauhaus_services.OperationsDocumentationsService;
 import fr.insee.rmes.bauhaus_services.OperationsService;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.model.operations.PartialOperationIndicator;
@@ -37,9 +36,6 @@ class IndicatorsResourcesTest {
 
     @Mock
     OperationsService operationsService;
-
-    @Mock
-    OperationsDocumentationsService documentationsService;
 
     @Test
     void get_indicators_should_return_list_of_indicators() throws RmesException {
@@ -100,9 +96,6 @@ class IndicatorsResourcesWebTest {
 
     @MockitoBean
     protected OperationsService operationsService;
-
-    @MockitoBean
-    protected OperationsDocumentationsService documentationsService;
 
     @Autowired
     MockMvc mockMvc;

@@ -3,13 +3,13 @@ package fr.insee.rmes.modules.operations.indicators.webservice;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
 import fr.insee.rmes.Constants;
-import fr.insee.rmes.bauhaus_services.OperationsDocumentationsService;
 import fr.insee.rmes.bauhaus_services.OperationsService;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.commons.configuration.ConditionalOnModule;
 import fr.insee.rmes.modules.users.domain.model.RBAC;
 import fr.insee.rmes.modules.users.webservice.HasAccess;
 import fr.insee.rmes.utils.XMLUtils;
+import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.hateoas.MediaTypes;
@@ -25,12 +25,8 @@ import org.springframework.web.bind.annotation.*;
 public class IndicatorsResources {
     protected final OperationsService operationsService;
 
-    protected final OperationsDocumentationsService documentationsService;
-
-    public IndicatorsResources(
-            OperationsService operationsService, OperationsDocumentationsService documentationsService) {
+    public IndicatorsResources(OperationsService operationsService) {
         this.operationsService = operationsService;
-        this.documentationsService = documentationsService;
     }
 
     @HasAccess(module = RBAC.Module.OPERATION_INDICATOR, privilege = RBAC.Privilege.READ)
@@ -75,10 +71,10 @@ public class IndicatorsResources {
 
     @HasAccess(module = RBAC.Module.OPERATION_INDICATOR, privilege = RBAC.Privilege.UPDATE)
     @PutMapping(value = "/indicator/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> setIndicatorById(@PathVariable(Constants.ID) String id, @RequestBody String body)
-            throws RmesException {
+    public ResponseEntity<Object> setIndicatorById(
+            @PathVariable(Constants.ID) String id, @Valid @RequestBody IndicatorRequest body) throws RmesException {
 
-        operationsService.setIndicator(id, body);
+        operationsService.setIndicator(id, body.toCommand());
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
@@ -92,8 +88,8 @@ public class IndicatorsResources {
 
     @HasAccess(module = RBAC.Module.OPERATION_INDICATOR, privilege = RBAC.Privilege.CREATE)
     @PostMapping(value = "/indicator", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> setIndicator(@RequestBody String body) throws RmesException {
-        String id = operationsService.setIndicator(body);
+    public ResponseEntity<Object> setIndicator(@Valid @RequestBody IndicatorRequest body) throws RmesException {
+        String id = operationsService.setIndicator(body.toCommand());
         return ResponseEntity.status(HttpStatus.OK).body(id);
     }
 }
