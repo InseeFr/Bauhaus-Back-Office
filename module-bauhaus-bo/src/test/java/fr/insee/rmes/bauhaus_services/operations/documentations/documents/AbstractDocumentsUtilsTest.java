@@ -4,7 +4,6 @@ import static fr.insee.rmes.PropertiesKeys.DOCUMENTS_BASE_URI;
 import static fr.insee.rmes.PropertiesKeys.LINKS_BASE_URI;
 import static org.mockito.Mockito.when;
 
-import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.DocumentsStorageProperties;
 import fr.insee.rmes.bauhaus_services.operations.OperationsParentRepository;
 import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
@@ -72,13 +71,10 @@ abstract class AbstractDocumentsUtilsTest {
                 repoGestion,
                 idGenerator,
                 repositoryPublication,
-                new BauhausLanguagesProperties("fr", "en"),
                 publicationUtils,
-                operationsParentRepository,
                 filesOperations,
                 storageProperties,
-                operationDocumentsQueries,
-                documentsStorage);
+                operationDocumentsQueries);
     }
 
     /** Le stockage gestion des documents est {@code storageFolder}, et ce dossier existe. */

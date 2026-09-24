@@ -4,7 +4,6 @@ import static fr.insee.rmes.integration.authorizations.TokenForTestsConfiguratio
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-import fr.insee.rmes.bauhaus_services.DocumentsService;
 import fr.insee.rmes.bauhaus_services.operations.documentations.documents.DocumentsPublication;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.modules.operations.msd.infrastructure.graphdb.GraphDBDocumentationRepository;
@@ -77,9 +76,6 @@ abstract class AbstractSimsPublicationEndToEndTest extends WithGraphDBContainer 
 
     @MockitoBean
     DocumentsPublication documentsPublication;
-
-    @MockitoBean
-    DocumentsService documentsService;
 
     @MockitoBean(name = "propertiesAccessPrivilegesChecker")
     AccessPrivilegesCheckerService checker;

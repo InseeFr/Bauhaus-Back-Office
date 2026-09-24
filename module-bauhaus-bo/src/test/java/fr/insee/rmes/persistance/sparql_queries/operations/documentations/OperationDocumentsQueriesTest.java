@@ -37,31 +37,6 @@ class OperationDocumentsQueriesTest {
     }
 
     @Test
-    void shouldCheckLabelUnicity() throws RmesException {
-        assertQueryBuiltFromTemplate(
-                "operations/",
-                "checkFamilyPrefLabelUnicity.ftlh",
-                "ASK { ?s foaf:name 'Test Document'@en }",
-                () -> operationDocumentsQueries.checkLabelUnicity("doc123", "Test Document", "en"),
-                map -> "\"Test Document\"@en".equals(map.get("LABEL"))
-                        && "\"doc123\"".equals(map.get("URI_SUFFIX"))
-                        && "foaf:Document".equals(map.get("TYPE"))
-                        && ("<" + GraphsPropertiesStub.stub().documentsGraph() + ">")
-                                .equals(map.get("OPERATIONS_GRAPH")));
-    }
-
-    @Test
-    void shouldDeleteDocument() throws RmesException {
-        IRI uri = SimpleValueFactory.getInstance().createIRI("http://example.org/doc/123");
-        assertQueryBuiltFromTemplate(
-                DOCUMENTS_FOLDER,
-                "deleteDocumentQuery.ftlh",
-                "DELETE WHERE { <http://example.org/doc/123> ?p ?o }",
-                () -> operationDocumentsQueries.deleteDocumentQuery(uri),
-                map -> ("<" + uri + ">").equals(map.get(Constants.URI)));
-    }
-
-    @Test
     void shouldGetDocumentUri() throws RmesException {
         assertQueryBuiltFromTemplate(
                 DOCUMENTS_FOLDER,
@@ -116,68 +91,6 @@ class OperationDocumentsQueriesTest {
     }
 
     @Test
-    void shouldGetDocumentForDocument() throws RmesException {
-        String expectedType = BauhausUriPropertiesStub.stub().documentsBaseUri();
-        assertQueryBuiltFromTemplate(
-                DOCUMENTS_FOLDER,
-                GET_DOCUMENT_TEMPLATE,
-                "SELECT ?document WHERE { ?document dcterms:identifier 'doc123' }",
-                () -> operationDocumentsQueries.getDocumentQuery("doc123", false),
-                map -> "\"doc123\"".equals(map.get(Constants.ID))
-                        && ("\"" + expectedType + "\"").equals(map.get("type")));
-    }
-
-    @Test
-    void shouldGetDocumentForLink() throws RmesException {
-        String expectedType = BauhausUriPropertiesStub.stub().linksBaseUri();
-        assertQueryBuiltFromTemplate(
-                DOCUMENTS_FOLDER,
-                GET_DOCUMENT_TEMPLATE,
-                "SELECT ?link WHERE { ?link dcterms:identifier 'link123' }",
-                () -> operationDocumentsQueries.getDocumentQuery("link123", true),
-                map -> "\"link123\"".equals(map.get(Constants.ID))
-                        && ("\"" + expectedType + "\"").equals(map.get("type")));
-    }
-
-    @Test
-    void shouldGetAllDocuments() throws RmesException {
-        assertQueryBuiltFromTemplate(
-                DOCUMENTS_FOLDER,
-                GET_DOCUMENT_TEMPLATE,
-                "SELECT ?document WHERE { ?document a foaf:Document }",
-                operationDocumentsQueries::getAllDocumentsQuery,
-                map -> map.get(Constants.ID) == null
-                        && map.get(Constants.ID_SIMS) == null
-                        && map.get("idRubric") == null
-                        && map.get("type") == null);
-    }
-
-    @Test
-    void shouldGetLinksToDocument() throws RmesException {
-        assertQueryBuiltFromTemplate(
-                DOCUMENTS_FOLDER,
-                "getLinksToDocumentQuery.ftlh",
-                "SELECT ?link WHERE { ?link ?p ?document }",
-                () -> operationDocumentsQueries.getLinksToDocumentQuery("doc123"),
-                map -> "\"doc123\"".equals(map.get(Constants.ID)));
-    }
-
-    @Test
-    void shouldChangeDocumentUrl() throws RmesException {
-        assertQueryBuiltFromTemplate(
-                DOCUMENTS_FOLDER,
-                "changeDocumentUrlQuery.ftlh",
-                "DELETE/INSERT query",
-                () -> operationDocumentsQueries.changeDocumentUrlQuery(
-                        "http://example.org/doc/123",
-                        "http://old.example.org/doc.pdf",
-                        "http://new.example.org/doc.pdf"),
-                map -> "\"http://example.org/doc/123\"".equals(map.get("iri"))
-                        && "<http://old.example.org/doc.pdf>".equals(map.get("oldUrl"))
-                        && "<http://new.example.org/doc.pdf>".equals(map.get("newUrl")));
-    }
-
-    @Test
     void shouldGetLastDocumentID() throws RmesException {
         try (MockedStatic<FreeMarkerUtils> mockedFreeMarker = mockStatic(FreeMarkerUtils.class)) {
             mockedFreeMarker
@@ -227,7 +140,7 @@ class OperationDocumentsQueriesTest {
         assertRmesExceptionPropagated(
                 DOCUMENTS_FOLDER,
                 GET_DOCUMENT_TEMPLATE,
-                () -> operationDocumentsQueries.getDocumentQuery("test", false));
+                () -> operationDocumentsQueries.getDocumentsForSimsQuery("test"));
     }
 
     @Test
