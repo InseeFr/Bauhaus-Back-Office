@@ -1,0 +1,73 @@
+@prefix rdf:      <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:     <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:      <http://www.w3.org/2001/XMLSchema#> .
+@prefix foaf:     <http://xmlns.com/foaf/0.1/> .
+@prefix schema:   <http://schema.org/> .
+@prefix dc:       <http://purl.org/dc/elements/1.1/> .
+@prefix dcterms:  <http://purl.org/dc/terms/> .
+@prefix dctype:   <http://purl.org/dc/dcmitype/> .
+@prefix pav:      <http://purl.org/pav/> .
+@prefix sdmx-mm:  <http://www.w3.org/ns/sdmx-mm#> .
+@prefix insee:    <http://rdf.insee.fr/def/base#> .
+@prefix simsv2fr: <http://bauhaus/qualite/simsv2fr/attribut/> .
+
+# 9001 : document complet, cité dans une rubrique DOC_METHOD.
+# page/9001 : lien qui partage l'identifiant du document, cité dans une rubrique COLLECTION_DOCUMENTS.
+# 9002 : document sans aucune donnée facultative, cité nulle part.
+# 9003 : document cité dans deux rubriques de concepts différents, taille dans un format non repris.
+
+<http://rdf.insee.fr/graphes/qualite/documents> {
+    <http://bauhaus/documents/document/9001>
+        a                    foaf:Document ;
+        rdfs:label           "Les projections de population 2026"@fr , "Population projections for 2026"@en ;
+        rdfs:comment         "Commentaire sur les projections"@fr , "Comment on population projections"@en ;
+        pav:lastRefreshedOn  "2026-04-09"^^xsd:date ;
+        dc:language          "fr" ;
+        dcterms:extent       "130048"^^xsd:integer ;
+        schema:url           <https://www.insee.fr/fr/metadonnees/source/fichier/Note_technique.pdf> .
+
+    <http://bauhaus/documents/page/9001>
+        a                    foaf:Document ;
+        rdfs:label           "Page des projections"@fr ;
+        schema:url           <https://www.insee.fr/fr/statistiques/9001> .
+
+    <http://bauhaus/documents/document/9002>
+        a                    foaf:Document ;
+        rdfs:label           "Document minimal"@fr ;
+        schema:url           <https://www.insee.fr/fr/metadonnees/source/fichier/minimal.pdf> .
+
+    <http://bauhaus/documents/document/9003>
+        a                    foaf:Document ;
+        rdfs:label           "Document partagé"@fr ;
+        dcterms:extent       "127 ko" ;
+        schema:url           <https://www.insee.fr/fr/metadonnees/source/fichier/partage.pdf> .
+}
+
+<http://rdf.insee.fr/graphes/qualite/simsv2fr> {
+    simsv2fr:S.10.6   sdmx-mm:concept  <http://ec.europa.eu/eurostat/simsv2/concept/DOC_METHOD> .
+    simsv2fr:I.18.12  sdmx-mm:concept  <http://bauhaus/concepts/simsv2fr/COLLECTION_DOCUMENTS> .
+}
+
+<http://rdf.insee.fr/graphes/qualite/rapport/9901> {
+    <http://bauhaus/qualite/rapport/9901>
+        a                       sdmx-mm:MetadataReport ;
+        rdfs:label              "Rapport des descriptions de documents"@fr .
+
+    <http://bauhaus/qualite/attribut/9901/S.10.6>
+        a                        sdmx-mm:ReportedAttribute ;
+        simsv2fr:S.10.6          <http://bauhaus/qualite/attribut/9901/S.10.6/texte> ;
+        sdmx-mm:metadataReport   <http://bauhaus/qualite/rapport/9901> .
+
+    <http://bauhaus/qualite/attribut/9901/S.10.6/texte>
+        a                          dctype:Text ;
+        insee:additionalMaterial   ( <http://bauhaus/documents/document/9001> <http://bauhaus/documents/document/9003> ) .
+
+    <http://bauhaus/qualite/attribut/9901/I.18.12>
+        a                        sdmx-mm:ReportedAttribute ;
+        simsv2fr:I.18.12         <http://bauhaus/qualite/attribut/9901/I.18.12/texte> ;
+        sdmx-mm:metadataReport   <http://bauhaus/qualite/rapport/9901> .
+
+    <http://bauhaus/qualite/attribut/9901/I.18.12/texte>
+        a                          dctype:Text ;
+        insee:additionalMaterial   ( <http://bauhaus/documents/page/9001> <http://bauhaus/documents/document/9003> ) .
+}
