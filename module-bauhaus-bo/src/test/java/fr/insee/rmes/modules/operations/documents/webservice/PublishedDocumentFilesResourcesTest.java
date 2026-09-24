@@ -93,7 +93,7 @@ class PublishedDocumentFilesResourcesTest {
         }
 
         @Bean
-        SecurityFilterChain filterChain(HttpSecurity http, RequestMatcher publicEndpointsMatcher) throws Exception {
+        SecurityFilterChain filterChain(HttpSecurity http, RequestMatcher publicEndpointsMatcher) {
             http.csrf(AbstractHttpConfigurer::disable)
                     .httpBasic(withDefaults())
                     .authorizeHttpRequests(auth -> auth.requestMatchers(publicEndpointsMatcher)

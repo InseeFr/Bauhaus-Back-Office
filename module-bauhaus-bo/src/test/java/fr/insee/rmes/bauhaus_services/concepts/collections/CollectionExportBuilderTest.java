@@ -337,7 +337,9 @@ class CollectionExportBuilderTest {
             }
 
             @Override
-            public void setWriteListener(WriteListener writeListener) {}
+            public void setWriteListener(WriteListener writeListener) {
+                // Écriture synchrone dans un tampon : aucun écouteur non bloquant à notifier.
+            }
         });
 
         when(exportUtils.exportAsInputStream(

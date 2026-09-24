@@ -11,6 +11,7 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.utils.OrganisationLookup;
 import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.domain.logging.LogSanitizer;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
@@ -265,7 +266,7 @@ public class IndicatorsRepository {
         indicator.setCreated(DateUtils.getCurrentDate());
         indicator.setUpdated(DateUtils.getCurrentDate());
         createRdfIndicator(indicator, ValidationStatus.UNPUBLISHED);
-        logger.info("Create indicator : {} - {}", indicator.getId(), indicator.getPrefLabelLg1());
+        logger.info("Create indicator : {} - {}", indicator.getId(), LogSanitizer.forLog(indicator.getPrefLabelLg1()));
         return indicator.getId();
     }
 
@@ -284,7 +285,10 @@ public class IndicatorsRepository {
             createRdfIndicator(indicator, ValidationStatus.MODIFIED);
         }
 
-        logger.info("Update indicator : {} - {}", indicator.getId(), indicator.getPrefLabelLg1());
+        logger.info(
+                "Update indicator : {} - {}",
+                LogSanitizer.forLog(indicator.getId()),
+                LogSanitizer.forLog(indicator.getPrefLabelLg1()));
     }
 
     /**
@@ -317,7 +321,7 @@ public class IndicatorsRepository {
 
     private static List<OperationsLink> toOperationsLinks(List<IndicatorLink> links) {
         if (links == null) {
-            return null;
+            return List.of();
         }
         return links.stream()
                 .map(link -> OperationsLink.of(link.id(), link.type(), null, null))
