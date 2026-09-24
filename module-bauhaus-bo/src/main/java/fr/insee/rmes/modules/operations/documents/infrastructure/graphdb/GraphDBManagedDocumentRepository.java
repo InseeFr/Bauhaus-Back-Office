@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Function;
+import java.util.function.UnaryOperator;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.jspecify.annotations.Nullable;
@@ -180,7 +180,7 @@ public class GraphDBManagedDocumentRepository implements ManagedDocumentReposito
 
     /** Une valeur vide n'est pas écrite : le template omet alors son triplet. */
     private static void putIfPresent(
-            Map<String, Object> params, String name, @Nullable String value, Function<String, String> token) {
+            Map<String, Object> params, String name, @Nullable String value, UnaryOperator<String> token) {
         if (isPresent(value)) {
             params.put(name, token.apply(value));
         }

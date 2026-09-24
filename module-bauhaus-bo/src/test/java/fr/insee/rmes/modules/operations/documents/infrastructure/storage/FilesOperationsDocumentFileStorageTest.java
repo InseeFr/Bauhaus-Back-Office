@@ -28,7 +28,7 @@ class FilesOperationsDocumentFileStorageTest {
     }
 
     @Test
-    void should_write_the_file_and_give_its_url() throws Exception {
+    void should_write_the_file_and_give_its_url() {
         String url = storage.write("Note.pdf", new ByteArrayInputStream("contenu".getBytes()));
 
         assertThat(url).isEqualTo("file://" + gestion.resolve("Note.pdf"));

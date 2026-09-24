@@ -266,7 +266,10 @@ public class IndicatorsRepository {
         indicator.setCreated(DateUtils.getCurrentDate());
         indicator.setUpdated(DateUtils.getCurrentDate());
         createRdfIndicator(indicator, ValidationStatus.UNPUBLISHED);
-        logger.info("Create indicator : {} - {}", indicator.getId(), LogSanitizer.forLog(indicator.getPrefLabelLg1()));
+        if (logger.isInfoEnabled()) {
+            logger.info(
+                    "Create indicator : {} - {}", indicator.getId(), LogSanitizer.forLog(indicator.getPrefLabelLg1()));
+        }
         return indicator.getId();
     }
 
@@ -285,10 +288,12 @@ public class IndicatorsRepository {
             createRdfIndicator(indicator, ValidationStatus.MODIFIED);
         }
 
-        logger.info(
-                "Update indicator : {} - {}",
-                LogSanitizer.forLog(indicator.getId()),
-                LogSanitizer.forLog(indicator.getPrefLabelLg1()));
+        if (logger.isInfoEnabled()) {
+            logger.info(
+                    "Update indicator : {} - {}",
+                    LogSanitizer.forLog(indicator.getId()),
+                    LogSanitizer.forLog(indicator.getPrefLabelLg1()));
+        }
     }
 
     /**
