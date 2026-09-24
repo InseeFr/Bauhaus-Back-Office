@@ -2,8 +2,9 @@ name: Test and Sonar Analysis
 
 # The body of this job lives in InseeFr/rmes-githubactions-commons, shared with
 # the other RMéS projects: the Conventional Commits title of the pull request
-# (which used to be the pr-name.yml workflow of this repository), the copy-paste
-# check, then the JDK with its Maven cache and the build with its tests.
+# (which used to be the pr-name.yml workflow of this repository), hadolint on
+# the Dockerfile, the copy-paste check, then the JDK with its Maven cache and
+# the build with its tests.
 #
 # What stays here is what belongs to this repository: the Sonar analysis — a
 # back-end runs it through the Maven plugin, inside the build itself, so it
@@ -48,6 +49,9 @@ jobs:
           # rather than dropping the check, and is meant to come down as the
           # duplication does.
           jscpd-threshold: '15'
+          # Static analysis of the Dockerfile (threshold `warning`, exceptions in
+          # .hadolint.yaml), a step of the shared `quality` action.
+          hadolint-dockerfile: Dockerfile.bauhaus
           verify-command: ./mvnw -T 1C -B clean verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Needed to get PR information, if any
