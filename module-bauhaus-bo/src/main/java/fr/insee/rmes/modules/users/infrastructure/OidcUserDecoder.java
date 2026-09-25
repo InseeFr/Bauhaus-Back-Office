@@ -37,13 +37,22 @@ public class OidcUserDecoder implements UserDecoder {
     @Override
     public Optional<User> fromPrincipal(Object principal) throws MissingUserInformationException {
         return switch (principal) {
-            case String s when "anonymousUser".equals(s) -> empty();
+            case String s
+            when "anonymousUser".equals(s) -> {
+                logger.debug("Anonymous principal, no user decoded");
+                yield empty();
+            }
             case User user -> of(user);
             case Jwt jwt -> {
                 var u = of(buildUserFromToken(jwt.getClaims()));
                 yield u;
             }
-            default -> empty();
+            default -> {
+                logger.debug(
+                        "Unsupported principal type {}, no user decoded",
+                        principal == null ? null : principal.getClass().getName());
+                yield empty();
+            }
         };
     }
 
@@ -58,6 +67,7 @@ public class OidcUserDecoder implements UserDecoder {
         var roles = roleClaimExtractor.extractRoles(claims).toList();
 
         if (stamps.isEmpty()) {
+            logger.debug("Current User is {}, without stamp, with roles {} from source {}", id, roles, source);
             return new User(id, roles, Collections.emptySet(), source);
         }
 
