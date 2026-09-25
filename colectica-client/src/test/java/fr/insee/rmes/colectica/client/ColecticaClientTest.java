@@ -376,6 +376,36 @@ class ColecticaClientTest {
     }
 
     @Test
+    void findRelatedItems_skipsNullEntriesReturnedByColectica() {
+        Fixture f = newFixture();
+        f.server
+                .expect(requestTo(BASE_API_URL + "_query/relationship/bysubject/descriptions"))
+                .andRespond(withSuccess(
+                        "[null,{\"AgencyId\":\"fr.insee\",\"Identifier\":\"su-1\"}]", MediaType.APPLICATION_JSON));
+
+        List<ColecticaItem> result = f.client.findRelatedItems(
+                RelationshipDirection.BY_SUBJECT,
+                new ItemReference("fr.insee", "group-1"),
+                List.of(LOGICAL_PRODUCT_TYPE));
+
+        assertThat(result).extracting(ColecticaItem::identifier).containsExactly("su-1");
+    }
+
+    @Test
+    void findRelatedDescriptions_skipsNullEntriesReturnedByColectica() {
+        Fixture f = newFixture();
+        f.server
+                .expect(requestTo(BASE_API_URL + "_query/relationship/bysubject/descriptions"))
+                .andRespond(withSuccess(
+                        "[null,{\"AgencyId\":\"fr.insee\",\"Identifier\":\"lp-1\"}]", MediaType.APPLICATION_JSON));
+
+        List<ItemReference> result = f.client.findRelatedDescriptions(
+                RelationshipDirection.BY_SUBJECT, new ItemReference("fr.insee", "su-1"), List.of(LOGICAL_PRODUCT_TYPE));
+
+        assertThat(result).containsExactly(new ItemReference("fr.insee", "lp-1"));
+    }
+
+    @Test
     void findRelatedDescriptions_returnsEmptyListWhenNoRelatedItem() {
         Fixture f = newFixture();
         f.server
