@@ -1,0 +1,9 @@
+# Fixture de RepositoryUtilsFusekiIntegrationTest : une liste de codes bilingue dans le graphe des codes,
+# la même forme que celle du spike C1.
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+
+<http://rdf.insee.fr/graphes/codes> {
+  <http://codelist/CL_FUSEKI_BILINGUE> a skos:ConceptScheme ;
+    skos:prefLabel "Liste de codes bilingue (Fuseki)"@fr ,
+                   "Bilingual code list (Fuseki)"@en .
+}
