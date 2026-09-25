@@ -57,7 +57,14 @@ COPY --from=builder --chown=10000:10000 /opt/app/extracted/application/ ./
 # runtime est identique à celui de l'entraînement. Sans ce drapeau, injecter un -javaagent
 # (agent APM Elastic embarqué ci-dessus) via JAVA_TOOL_OPTIONS ferait échouer le mappage et
 # annulerait tout le gain. Avec, le même cache sert dans les deux cas.
-RUN java --add-modules java.instrument \
+#
+# --mount : bauhaus-local-dev.properties n'est plus dans le jar, or sans lui le contexte ne
+# démarre pas (l'issuer-uri JWT référence fr.insee.rmes.bauhaus.keycloak.server.url). Le
+# montage le rend visible, dans ./config, le temps de ce seul RUN : il n'est pas écrit dans
+# l'image. À l'exécution, la configuration est fournie par l'environnement (voir le
+# docker-compose.yml du dépôt Bauhaus, qui décrit la stack).
+RUN --mount=type=bind,from=builder,source=/opt/app/module-bauhaus-bo/config,target=/opt/app/config \
+    java --add-modules java.instrument \
          -XX:AOTCacheOutput=bauhaus.aot \
          -Dspring.context.exit=onRefresh \
          -Dfr.insee.rmes.bauhaus.default-contributor-check-enabled=false \

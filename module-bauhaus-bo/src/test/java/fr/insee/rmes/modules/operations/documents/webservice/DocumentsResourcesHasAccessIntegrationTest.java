@@ -1,53 +1,95 @@
 package fr.insee.rmes.modules.operations.documents.webservice;
 
-import static fr.insee.rmes.integration.authorizations.TokenForTestsConfiguration.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.when;
+import static fr.insee.rmes.modules.operations.documents.domain.InMemoryDocumentFileStorage.URL_PREFIX;
+import static fr.insee.rmes.modules.operations.documents.domain.InMemoryManagedDocumentRepository.form;
 import static org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import fr.insee.rmes.config.auth.UserAuthTestConfiguration;
-import fr.insee.rmes.integration.AbstractResourcesEnvProd;
+import fr.insee.rmes.modules.AbstractHasAccessResourcesTest;
 import fr.insee.rmes.modules.commons.configuration.LogRequestFilter;
+import fr.insee.rmes.modules.operations.documents.domain.DomainDocumentManagementService;
+import fr.insee.rmes.modules.operations.documents.domain.InMemoryDocumentFileStorage;
+import fr.insee.rmes.modules.operations.documents.domain.InMemoryManagedDocumentRepository;
+import fr.insee.rmes.modules.operations.documents.domain.InMemorySimsOwnersLookup;
+import fr.insee.rmes.modules.operations.documents.domain.model.DocumentKind;
+import fr.insee.rmes.modules.operations.documents.domain.model.ManagedDocument;
+import fr.insee.rmes.modules.operations.documents.domain.port.clientside.DocumentManagementService;
 import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
-import java.io.InputStream;
-import java.util.Collections;
+import java.util.Set;
 import java.util.stream.Stream;
-import org.json.JSONObject;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
+/**
+ * Les droits RBAC de chaque endpoint, devant le vrai service de domaine : un appel autorisé réussit
+ * pour de bon sur le document et le lien 1, un appel refusé répond 403.
+ */
 @WebMvcTest(
         controllers = DocumentsResources.class,
         excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = LogRequestFilter.class),
-        properties = {
-            "fr.insee.rmes.bauhaus.modules.operations.enabled=true",
-            "fr.insee.rmes.bauhaus.extensions=pdf,odt"
-        })
+        properties = {"fr.insee.rmes.bauhaus.modules.operations.enabled=true"})
 @Import({DocumentsResources.class, UserAuthTestConfiguration.class})
-class DocumentsResourcesHasAccessIntegrationTest extends AbstractResourcesEnvProd {
+class DocumentsResourcesHasAccessIntegrationTest extends AbstractHasAccessResourcesTest {
 
     @Configuration
     @EnableMethodSecurity(securedEnabled = true)
     static class TestSecurityConfiguration {
-        // Configuration minimale pour activer method security
+        @Bean
+        InMemoryManagedDocumentRepository managedDocumentRepository() {
+            return new InMemoryManagedDocumentRepository();
+        }
+
+        @Bean
+        InMemoryDocumentFileStorage documentFileStorage() {
+            return new InMemoryDocumentFileStorage();
+        }
+
+        @Bean
+        DocumentManagementService documentManagementService(
+                InMemoryManagedDocumentRepository repository, InMemoryDocumentFileStorage storage) {
+            return new DomainDocumentManagementService(
+                    repository, storage, new InMemorySimsOwnersLookup(), Set.of("pdf", "odt"));
+        }
     }
 
-    String id = "10";
+    @Autowired
+    InMemoryManagedDocumentRepository repository;
+
+    @Autowired
+    InMemoryDocumentFileStorage storage;
+
+    @BeforeEach
+    void seed() {
+        repository.clear();
+        storage.clear();
+        storage.put("Note.pdf", "contenu");
+        repository.add(new ManagedDocument(
+                "1",
+                DocumentKind.DOCUMENT,
+                "http://bauhaus/documents/document/1",
+                form("Note", null, URL_PREFIX + "Note.pdf"),
+                null));
+        repository.add(new ManagedDocument(
+                "1",
+                DocumentKind.LINK,
+                "http://bauhaus/documents/page/1",
+                form("Page", null, "https://www.insee.fr/page"),
+                null));
+    }
 
     private static Stream<Arguments> provideDataForGetEndpoints() {
         return Stream.of(
@@ -64,22 +106,15 @@ class DocumentsResourcesHasAccessIntegrationTest extends AbstractResourcesEnvPro
     @MethodSource("provideDataForGetEndpoints")
     @ParameterizedTest
     void getData(String url, Integer code, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
-        when(documentsService.getDocument("1")).thenReturn(new JSONObject());
-        when(documentsService.getLink("1")).thenReturn(new JSONObject());
-
-        when(checker.hasAccess(any(), any(), any(), any())).thenReturn(hasAccessReturn);
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
-
         var request = get(url).contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-        request.header("Authorization", "Bearer toto");
-        mvc.perform(request).andExpect(status().is(code));
+        assertStatusWithAccess(request, code, hasAccessReturn);
     }
 
     private static Stream<Arguments> provideDataForPutEndpoints() {
         return Stream.of(
-                Arguments.of("/documents/document/1", 200, true, true),
+                Arguments.of("/documents/document/1", 200, true),
                 Arguments.of("/documents/document/1", 403, false),
-                Arguments.of("/documents/link/1", 200, true, true),
+                Arguments.of("/documents/link/1", 200, true),
                 Arguments.of("/documents/link/1", 403, false));
     }
 
@@ -87,14 +122,11 @@ class DocumentsResourcesHasAccessIntegrationTest extends AbstractResourcesEnvPro
     @ParameterizedTest
     void updateDocumentOrLink(String url, Integer code, boolean hasAccessReturn)
             throws Exception, MissingUserInformationException {
-        when(checker.hasAccess(any(), any(), any(), any())).thenReturn(hasAccessReturn);
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
         var request = put(url).contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content("{\"id\": \"1\"}");
+                .content("{\"id\": \"1\", \"labelLg1\": \"Libellé\", \"url\": \"https://www.insee.fr/page\"}");
 
-        request.header("Authorization", "Bearer toto");
-        mvc.perform(request).andExpect(status().is(code));
+        assertStatusWithAccess(request, code, hasAccessReturn);
     }
 
     private static Stream<Arguments> provideDataForDeleteEndpoints() {
@@ -109,14 +141,9 @@ class DocumentsResourcesHasAccessIntegrationTest extends AbstractResourcesEnvPro
     @ParameterizedTest
     void deleteDocumentOrLink(String url, Integer code, boolean hasAccessReturn)
             throws Exception, MissingUserInformationException {
-        when(documentsService.deleteDocument(anyString())).thenReturn(HttpStatus.OK);
-        when(documentsService.deleteLink(anyString())).thenReturn(HttpStatus.OK);
-        when(checker.hasAccess(any(), any(), any(), any())).thenReturn(hasAccessReturn);
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
         var request = delete(url).contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
 
-        request.header("Authorization", "Bearer toto");
-        mvc.perform(request).andExpect(status().is(code));
+        assertStatusWithAccess(request, code, hasAccessReturn);
     }
 
     private static Stream<Arguments> provideDataForDocumentPostEndpoints() {
@@ -126,25 +153,14 @@ class DocumentsResourcesHasAccessIntegrationTest extends AbstractResourcesEnvPro
     @MethodSource("provideDataForDocumentPostEndpoints")
     @ParameterizedTest
     void postDocument(Integer code, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
-        when(checker.hasAccess(any(), any(), any(), any())).thenReturn(hasAccessReturn);
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
-        Mockito.when(documentsService.createDocument(
-                        Mockito.anyString(), Mockito.any(InputStream.class), Mockito.anyString()))
-                .thenReturn(id);
-        // Création d'un fichier multipart
         MockMultipartFile file = new MockMultipartFile(
-                "file", // Nom du paramètre
-                "document.txt", // Nom du fichier
-                MediaType.TEXT_PLAIN_VALUE, // Type MIME
-                "Contenu du fichier".getBytes() // Contenu
-                );
-        var request = MockMvcRequestBuilders.multipart("/documents/document")
+                "file", "Nouveau.pdf", MediaType.APPLICATION_PDF_VALUE, "Contenu du fichier".getBytes());
+        var request = multipart("/documents/document")
                 .file(file)
-                .param("body", "Données Json")
+                .param("body", "{\"labelLg1\": \"Nouveau\"}")
                 .contentType(MULTIPART_FORM_DATA_VALUE);
 
-        request.header("Authorization", "Bearer toto");
-        mvc.perform(request).andExpect(status().is(code));
+        assertStatusWithAccess(request, code, hasAccessReturn);
     }
 
     private static Stream<Arguments> provideDataForLinkPostEndpoints() {
@@ -154,44 +170,26 @@ class DocumentsResourcesHasAccessIntegrationTest extends AbstractResourcesEnvPro
     @MethodSource("provideDataForLinkPostEndpoints")
     @ParameterizedTest
     void postLink(Integer code, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
-        when(checker.hasAccess(any(), any(), any(), any())).thenReturn(hasAccessReturn);
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
+        var request = post("/documents/link")
+                .param("body", "{\"labelLg1\": \"Nouvelle page\", \"url\": \"https://www.insee.fr/nouvelle\"}")
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED);
 
-        Mockito.when(documentsService.setLink(Mockito.anyString())).thenReturn(id);
-        var request = post("/documents/link").param("body", "Données Json").contentType(MediaType.APPLICATION_JSON);
-
-        request.header("Authorization", "Bearer toto");
-        mvc.perform(request).andExpect(status().is(code));
+        assertStatusWithAccess(request, code, hasAccessReturn);
     }
 
-    private static Stream<Arguments> provideDataForLinkUpdateFileEndpoints() {
+    private static Stream<Arguments> provideDataForUpdateFileEndpoints() {
         return Stream.of(Arguments.of(200, true), Arguments.of(403, false));
     }
 
-    @MethodSource("provideDataForLinkUpdateFileEndpoints")
+    @MethodSource("provideDataForUpdateFileEndpoints")
     @ParameterizedTest
     void updateFile(Integer code, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
-        when(checker.hasAccess(any(), any(), any(), any())).thenReturn(hasAccessReturn);
-
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
-
-        String expectedUrl = "http://example.com/documents/12345";
-        Mockito.when(documentsService.changeDocument(eq(id), Mockito.any(InputStream.class), Mockito.anyString()))
-                .thenReturn(expectedUrl);
-        // Création d'un fichier multipart
-        MockMultipartFile file = new MockMultipartFile(
-                "file", // Nom du paramètre
-                "document.pdf", // Nom du fichier
-                MediaType.TEXT_PLAIN_VALUE, // Type MIME
-                "Contenu du fichier".getBytes() // Contenu
-                );
-        var request = MockMvcRequestBuilders.multipart(HttpMethod.PUT, "/documents/document/" + id + "/file", id)
-                .file(file) // Ajout du fichier
-                .param("body", "Données Json")
+        MockMultipartFile file =
+                new MockMultipartFile("file", "Note.pdf", MediaType.APPLICATION_PDF_VALUE, "nouveau".getBytes());
+        var request = multipart(HttpMethod.PUT, "/documents/document/1/file")
+                .file(file)
                 .contentType(MULTIPART_FORM_DATA_VALUE);
 
-        request.header("Authorization", "Bearer toto");
-
-        mvc.perform(request).andExpect(status().is(code));
+        assertStatusWithAccess(request, code, hasAccessReturn);
     }
 }

@@ -2,6 +2,8 @@ package fr.insee.rmes.modules.checks.webservice;
 
 import fr.insee.rmes.modules.checks.domain.model.CheckResult;
 import fr.insee.rmes.modules.checks.domain.port.clientside.CheckerService;
+import fr.insee.rmes.modules.users.domain.model.RBAC;
+import fr.insee.rmes.modules.users.webservice.HasAccess;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,6 +28,7 @@ public class ChecksResources {
     }
 
     @GetMapping()
+    @HasAccess(module = RBAC.Module.CONCEPT_CONCEPT, privilege = RBAC.Privilege.ADMINISTRATION)
     public ResponseEntity<List<CheckResult>> runAllChecks() {
         try {
             logger.info("Starting all data checks");

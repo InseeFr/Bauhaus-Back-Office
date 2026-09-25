@@ -30,15 +30,14 @@
   ],
   "docker-compose": {
     "managerFilePatterns": [
-      "/(^|/)(?:docker-)?compose[^/]*\\.ya?ml$/",
-      "/^module-bauhaus-bo/compose/[^/]+\\.ya?ml$/"
+      "/(^|/)(?:docker-)?compose[^/]*\\.ya?ml$/"
     ]
   },
   "packageRules": [
     {
       "description": "Les tags MinIO sont de la forme RELEASE.2024-11-07T00-52-20Z : le versionnage sémantique ne s'y applique pas. Le motif exclut volontairement les variantes (.fips, -cpuv1, ...) qui ne sont pas les images standard.",
       "matchDatasources": ["docker"],
-      "matchPackageNames": ["minio/minio"],
+      "matchPackageNames": ["quay.io/minio/minio"],
       "versioning": "regex:^RELEASE\\.(?<major>\\d{4})-(?<minor>\\d{2})-(?<patch>\\d{2})T(?<build>\\d{2}-\\d{2}-\\d{2}Z)$"
     }
   ]

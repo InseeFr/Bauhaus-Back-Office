@@ -90,15 +90,7 @@ class IndicatorPublicationTest {
     @Test
     void validate_ShouldThrowBadRequestException_WhenParentSeriesIsNotValidated() throws RmesException {
         try (MockedStatic<RdfUtils> mockedFactory = Mockito.mockStatic(RdfUtils.class)) {
-            OperationsLink link = new OperationsLink();
-            link.id = "series-1";
-            when(operationsParentRepository.getValidationStatus("series-1"))
-                    .thenReturn(ValidationStatus.UNPUBLISHED.toString());
-            indicator.wasGeneratedBy = List.of(link);
-
-            mockedFactory
-                    .when(() -> RdfUtils.objectIRI(eq(ObjectType.INDICATOR), eq("123")))
-                    .thenReturn(SimpleValueFactory.getInstance().createIRI("http://indicator/1"));
+            givenIndicatorGeneratedBySeriesWithStatus(mockedFactory, ValidationStatus.UNPUBLISHED.toString());
 
             RmesBadRequestException exception =
                     assertThrows(RmesBadRequestException.class, () -> indicatorPublication.validate(indicator));
@@ -110,15 +102,7 @@ class IndicatorPublicationTest {
     @Test
     void validate_ShouldPass_WhenUserHasPermissionAndParentSeriesAreValidated() throws RmesException {
         try (MockedStatic<RdfUtils> mockedFactory = Mockito.mockStatic(RdfUtils.class)) {
-            OperationsLink link = new OperationsLink();
-            link.id = "series-1";
-            when(operationsParentRepository.getValidationStatus("series-1"))
-                    .thenReturn(ValidationStatus.VALIDATED.toString());
-            indicator.wasGeneratedBy = List.of(link);
-
-            mockedFactory
-                    .when(() -> RdfUtils.objectIRI(eq(ObjectType.INDICATOR), eq("123")))
-                    .thenReturn(SimpleValueFactory.getInstance().createIRI("http://indicator/1"));
+            givenIndicatorGeneratedBySeriesWithStatus(mockedFactory, ValidationStatus.VALIDATED.toString());
 
             assertDoesNotThrow(() -> indicatorPublication.validate(indicator));
         }
@@ -179,6 +163,18 @@ class IndicatorPublicationTest {
                 .isTrue();
         assertThat(model.contains(null, SKOS.PREF_LABEL, VF.createLiteral("label fr", "fr")))
                 .isTrue();
+    }
+
+    private void givenIndicatorGeneratedBySeriesWithStatus(MockedStatic<RdfUtils> mockedFactory, String seriesStatus)
+            throws RmesException {
+        OperationsLink link = new OperationsLink();
+        link.id = "series-1";
+        when(operationsParentRepository.getValidationStatus("series-1")).thenReturn(seriesStatus);
+        indicator.wasGeneratedBy = List.of(link);
+
+        mockedFactory
+                .when(() -> RdfUtils.objectIRI(eq(ObjectType.INDICATOR), eq("123")))
+                .thenReturn(SimpleValueFactory.getInstance().createIRI("http://indicator/1"));
     }
 
     private void givenStatementsOfIndicator(Statement... statements) throws RmesException {

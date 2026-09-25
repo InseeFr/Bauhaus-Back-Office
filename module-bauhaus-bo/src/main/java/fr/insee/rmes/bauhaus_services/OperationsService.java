@@ -2,6 +2,7 @@ package fr.insee.rmes.bauhaus_services;
 
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.model.operations.*;
+import fr.insee.rmes.modules.operations.indicators.domain.model.commands.IndicatorCommand;
 import fr.insee.rmes.modules.operations.series.domain.model.Series;
 import java.util.List;
 
@@ -61,12 +62,12 @@ public interface OperationsService {
     /**
      * CREATE
      */
-    String setIndicator(String body) throws RmesException;
+    String setIndicator(IndicatorCommand command) throws RmesException;
 
     /**
      * UPDATE
      */
-    void setIndicator(String id, String body) throws RmesException;
+    void setIndicator(String id, IndicatorCommand command) throws RmesException;
 
     /**
      * PUBLISH

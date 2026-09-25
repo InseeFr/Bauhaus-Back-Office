@@ -34,37 +34,45 @@ class ConceptDateCheckerTest {
         conceptDateChecker = new ConceptDateChecker(repositoryGestion, graphs);
     }
 
+    private static JSONObject concept(String id, String created, String modified) {
+        JSONObject concept = new JSONObject();
+        concept.put("id", id);
+        concept.put("created", created);
+        concept.put("modified", modified);
+        return concept;
+    }
+
+    private void givenConcepts(JSONArray concepts) throws RmesException {
+        when(graphs.conceptsGraph()).thenReturn("http://test.graph");
+        when(repositoryGestion.getResponseAsArray(anyString())).thenReturn(concepts);
+    }
+
+    private CheckResult runCheck() {
+        Optional<CheckResult> result = conceptDateChecker.check();
+
+        assertThat(result).isPresent();
+        return result.get();
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Map<String, Object> valueOf(CheckResult checkResult) {
+        return (Map<String, Object>) checkResult.getValue();
+    }
+
     @Test
     void check_shouldReturnValidResult_whenAllDatesAreValid() throws RmesException {
         // Given
         JSONArray concepts = new JSONArray();
-
-        JSONObject concept1 = new JSONObject();
-        concept1.put("id", "concept1");
-        concept1.put("created", "2023-01-15T10:30:00.000Z");
-        concept1.put("modified", "2023-06-20T14:45:30Z");
-        concepts.put(concept1);
-
-        JSONObject concept2 = new JSONObject();
-        concept2.put("id", "concept2");
-        concept2.put("created", "2023-02-10T15:30:00Z");
-        concept2.put("modified", ""); // Empty is valid
-        concepts.put(concept2);
-
-        when(graphs.conceptsGraph()).thenReturn("http://test.graph");
-        when(repositoryGestion.getResponseAsArray(anyString())).thenReturn(concepts);
+        concepts.put(concept("concept1", "2023-01-15T10:30:00.000Z", "2023-06-20T14:45:30Z"));
+        concepts.put(concept("concept2", "2023-02-10T15:30:00Z", "")); // Empty is valid
+        givenConcepts(concepts);
 
         // When
-        Optional<CheckResult> result = conceptDateChecker.check();
+        CheckResult checkResult = runCheck();
 
         // Then
-        assertThat(result).isPresent();
-        CheckResult checkResult = result.get();
         assertThat(checkResult.getName()).isEqualTo("ConceptDateChecker");
-
-        @SuppressWarnings("unchecked")
-        Map<String, Object> value = (Map<String, Object>) checkResult.getValue();
-        assertThat(value)
+        assertThat(valueOf(checkResult))
                 .containsEntry("status", "completed")
                 .containsEntry("totalConcepts", 2)
                 .containsEntry("validConcepts", 2)
@@ -75,32 +83,17 @@ class ConceptDateCheckerTest {
     void check_shouldReturnInvalidResult_whenSomeDatesAreInvalid() throws RmesException {
         // Given
         JSONArray concepts = new JSONArray();
-
-        JSONObject concept1 = new JSONObject();
-        concept1.put("id", "concept1");
-        concept1.put("created", "2023-01-15T10:30:00.000Z"); // Valid
-        concept1.put("modified", "invalid-date"); // Invalid
-        concepts.put(concept1);
-
-        JSONObject concept2 = new JSONObject();
-        concept2.put("id", "concept2");
-        concept2.put("created", "2023-02-10 15:30:00"); // Invalid format
-        concept2.put("modified", "");
-        concepts.put(concept2);
-
-        when(graphs.conceptsGraph()).thenReturn("http://test.graph");
-        when(repositoryGestion.getResponseAsArray(anyString())).thenReturn(concepts);
+        // Valid created date, invalid modified date
+        concepts.put(concept("concept1", "2023-01-15T10:30:00.000Z", "invalid-date"));
+        // Invalid created date format
+        concepts.put(concept("concept2", "2023-02-10 15:30:00", ""));
+        givenConcepts(concepts);
 
         // When
-        Optional<CheckResult> result = conceptDateChecker.check();
+        CheckResult checkResult = runCheck();
 
         // Then
-        assertThat(result).isPresent();
-        CheckResult checkResult = result.get();
-
-        @SuppressWarnings("unchecked")
-        Map<String, Object> value = (Map<String, Object>) checkResult.getValue();
-        assertThat(value)
+        assertThat(valueOf(checkResult))
                 .containsEntry("status", "completed")
                 .containsEntry("totalConcepts", 2)
                 .containsEntry("validConcepts", 0)
@@ -114,34 +107,22 @@ class ConceptDateCheckerTest {
         when(repositoryGestion.getResponseAsArray(anyString())).thenThrow(new RmesException(1, "Database error"));
 
         // When
-        Optional<CheckResult> result = conceptDateChecker.check();
+        CheckResult checkResult = runCheck();
 
         // Then
-        assertThat(result).isPresent();
-        CheckResult checkResult = result.get();
-
-        @SuppressWarnings("unchecked")
-        Map<String, Object> value = (Map<String, Object>) checkResult.getValue();
-        assertThat(value).containsEntry("status", "error");
+        assertThat(valueOf(checkResult)).containsEntry("status", "error");
     }
 
     @Test
     void check_shouldHandleEmptyConceptsList() throws RmesException {
         // Given
-        JSONArray emptyConcepts = new JSONArray();
-
-        when(graphs.conceptsGraph()).thenReturn("http://test.graph");
-        when(repositoryGestion.getResponseAsArray(anyString())).thenReturn(emptyConcepts);
+        givenConcepts(new JSONArray());
 
         // When
-        Optional<CheckResult> result = conceptDateChecker.check();
+        CheckResult checkResult = runCheck();
 
         // Then
-        assertThat(result).isPresent();
-        CheckResult checkResult = result.get();
-
-        Map<String, Object> value = (Map<String, Object>) checkResult.getValue();
-        assertThat(value)
+        assertThat(valueOf(checkResult))
                 .containsEntry("status", "completed")
                 .containsEntry("totalConcepts", 0)
                 .containsEntry("validConcepts", 0)

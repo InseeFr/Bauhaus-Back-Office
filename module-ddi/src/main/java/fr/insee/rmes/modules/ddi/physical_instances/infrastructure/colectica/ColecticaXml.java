@@ -1,23 +1,16 @@
 package fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica;
 
-import static javax.xml.XMLConstants.ACCESS_EXTERNAL_DTD;
-import static javax.xml.XMLConstants.ACCESS_EXTERNAL_SCHEMA;
-import static javax.xml.XMLConstants.ACCESS_EXTERNAL_STYLESHEET;
-import static javax.xml.XMLConstants.FEATURE_SECURE_PROCESSING;
-
 import fr.insee.rmes.colectica.client.dto.GetDescriptionsRequest;
+import fr.insee.rmes.domain.xml.SecureXml;
 import java.io.IOException;
-import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import org.slf4j.Logger;
@@ -26,12 +19,12 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 /**
- * Plomberie XML partagée par les adaptateurs Colectica : fabriques durcies contre XXE, conversions
- * DOM ↔ String et petits lecteurs de fragments DDI 3.3.
+ * Plomberie XML partagée par les adaptateurs Colectica : conversions DOM ↔ String et petits
+ * lecteurs de fragments DDI 3.3, tous bâtis sur les fabriques durcies contre XXE de
+ * {@link SecureXml}.
  */
 final class ColecticaXml {
 
@@ -44,33 +37,13 @@ final class ColecticaXml {
 
     private ColecticaXml() {}
 
-    /** Fabrique de {@code DocumentBuilder} protégée contre les entités externes (XXE). */
-    static DocumentBuilderFactory secureDocumentBuilderFactory() throws ParserConfigurationException {
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        factory.setFeature(FEATURE_SECURE_PROCESSING, true);
-        factory.setAttribute(ACCESS_EXTERNAL_DTD, "");
-        factory.setAttribute(ACCESS_EXTERNAL_SCHEMA, "");
-        factory.setXIncludeAware(false);
-        factory.setExpandEntityReferences(false);
-        factory.setNamespaceAware(true);
-        return factory;
-    }
-
-    /** Fabrique de {@code Transformer} protégée contre les entités externes (XXE). */
-    static TransformerFactory secureTransformerFactory() {
-        TransformerFactory factory = TransformerFactory.newInstance();
-        factory.setAttribute(ACCESS_EXTERNAL_DTD, "");
-        factory.setAttribute(ACCESS_EXTERNAL_STYLESHEET, "");
-        return factory;
-    }
-
     static Document parse(String xml) throws ParserConfigurationException, SAXException, IOException {
-        return secureDocumentBuilderFactory().newDocumentBuilder().parse(new InputSource(new StringReader(xml)));
+        return SecureXml.parse(xml);
     }
 
     /** Sérialise un nœud DOM en XML, sans déclaration {@code <?xml …?>}. */
     static String toXmlString(Node node) throws TransformerException {
-        Transformer transformer = secureTransformerFactory().newTransformer();
+        Transformer transformer = SecureXml.transformerFactory().newTransformer();
         transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
         StringWriter writer = new StringWriter();
         transformer.transform(new DOMSource(node), new StreamResult(writer));

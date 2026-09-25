@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import fr.insee.rmes.AppSpringBootTest;
 import fr.insee.rmes.bauhaus_services.utils.OrganisationLookup;
 import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.testcontainers.GraphDbTestProperties;
 import fr.insee.rmes.testcontainers.WithGraphDBContainer;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,12 +36,7 @@ class OrganisationLookupIntegrationTest extends WithGraphDBContainer {
 
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
-        registry.add(
-                "fr.insee.rmes.bauhaus.sesame.gestion.sesameServer",
-                () -> getRdfGestionConnectionDetails().getUrlServer());
-        registry.add(
-                "fr.insee.rmes.bauhaus.sesame.gestion.repository",
-                () -> getRdfGestionConnectionDetails().repositoryId());
+        GraphDbTestProperties.registerGestion(registry);
     }
 
     @BeforeAll

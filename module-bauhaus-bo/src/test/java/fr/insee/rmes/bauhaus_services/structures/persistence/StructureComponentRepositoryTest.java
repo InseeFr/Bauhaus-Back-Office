@@ -2,6 +2,8 @@ package fr.insee.rmes.bauhaus_services.structures.persistence;
 
 import static fr.insee.rmes.bauhaus_services.structures.persistence.StructureComponentRepository.MODIFIED;
 import static fr.insee.rmes.bauhaus_services.structures.persistence.StructureComponentRepository.VALIDATED;
+import static fr.insee.rmes.bauhaus_services.utils.StoredRdfModels.objectOf;
+import static fr.insee.rmes.bauhaus_services.utils.StoredRdfModels.storedModel;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.*;
@@ -40,7 +42,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
@@ -220,10 +221,10 @@ class StructureComponentRepositoryTest {
 
         structureComponentRepository.createComponent(component, "d1000", new JSONObject());
 
-        assertThat(storedModel())
+        assertThat(storedModel(repoGestion))
                 .anyMatch(stmt -> stmt.getPredicate().equals(DC.CREATOR)
                         && stmt.getObject().equals(VF.createIRI("http://creator-uri")));
-        assertThat(storedModel())
+        assertThat(storedModel(repoGestion))
                 .anyMatch(stmt -> stmt.getPredicate().equals(DC.CONTRIBUTOR)
                         && stmt.getObject().equals(VF.createIRI("http://contributor-uri")));
     }
@@ -235,7 +236,8 @@ class StructureComponentRepositoryTest {
 
         structureComponentRepository.createComponent(component, "d1000", new JSONObject());
 
-        assertThat(storedModel()).noneMatch(stmt -> stmt.getPredicate().equals(DC.CREATOR));
+        assertThat(storedModel(repoGestion))
+                .noneMatch(stmt -> stmt.getPredicate().equals(DC.CREATOR));
     }
 
     /**
@@ -254,7 +256,7 @@ class StructureComponentRepositoryTest {
         Resource expectedGraph = VF.createIRI("http://rdf.insee.fr/graphes/composants");
 
         verify(repoGestion).loadSimpleObject(eq(expectedIri), any(Model.class), isNull());
-        assertThat(storedModel())
+        assertThat(storedModel(repoGestion))
                 .allMatch(stmt -> stmt.getSubject().equals(expectedIri) && expectedGraph.equals(stmt.getContext()));
     }
 
@@ -330,8 +332,8 @@ class StructureComponentRepositoryTest {
 
         structureComponentRepository.createComponent(component, "d1000", new JSONObject());
 
-        assertThat(objectOf(QB.CONCEPT)).startsWith("http://bauhaus/").endsWith("/c1000");
-        assertThat(objectOf(QB.CODE_LIST)).isEqualTo("http://codelist");
+        assertThat(storedObjectOf(QB.CONCEPT)).startsWith("http://bauhaus/").endsWith("/c1000");
+        assertThat(storedObjectOf(QB.CODE_LIST)).isEqualTo("http://codelist");
     }
 
     @Test
@@ -343,37 +345,31 @@ class StructureComponentRepositoryTest {
 
         structureComponentRepository.createComponent(component, "d1000", new JSONObject());
 
-        assertThat(objectOf(QB.CODE_LIST)).isEqualTo("http://full-codelist");
+        assertThat(storedObjectOf(QB.CODE_LIST)).isEqualTo("http://full-codelist");
     }
 
     @Test
     void shouldTypeAComponentRangedOnCodeListAsCodedAndPointItToTheOwlClassOfItsList() throws RmesException {
-        MutualizedComponent component = dimension();
-        component.setContributor(List.of());
-        component.setRange(INSEE.CODELIST.stringValue());
-        component.setFullCodeListValue("http://codelist");
+        MutualizedComponent component = dimensionRangedOnCodeList();
         when(repoGestion.getResponseAsObject(any()))
                 .thenReturn(new JSONObject().put("uriClasseOwl", "http://owl-class"));
 
         structureComponentRepository.createComponent(component, "d1000", new JSONObject());
 
-        assertThat(storedModel())
+        assertThat(storedModel(repoGestion))
                 .anyMatch(statement -> statement.getPredicate().equals(RDF.TYPE)
                         && statement.getObject().equals(QB.CODED_PROPERTY));
-        assertThat(objectOf(RDFS.RANGE)).isEqualTo("http://owl-class");
+        assertThat(storedObjectOf(RDFS.RANGE)).isEqualTo("http://owl-class");
     }
 
     @Test
     void shouldRangeAComponentOnSkosConceptWhenItsCodeListHasNoOwlClass() throws RmesException {
-        MutualizedComponent component = dimension();
-        component.setContributor(List.of());
-        component.setRange(INSEE.CODELIST.stringValue());
-        component.setFullCodeListValue("http://codelist");
+        MutualizedComponent component = dimensionRangedOnCodeList();
         when(repoGestion.getResponseAsObject(any())).thenReturn(new JSONObject());
 
         structureComponentRepository.createComponent(component, "d1000", new JSONObject());
 
-        assertThat(objectOf(RDFS.RANGE)).isEqualTo(SKOS.CONCEPT.stringValue());
+        assertThat(storedObjectOf(RDFS.RANGE)).isEqualTo(SKOS.CONCEPT.stringValue());
     }
 
     @Test
@@ -435,11 +431,8 @@ class StructureComponentRepositoryTest {
 
     @Test
     void shouldRejectThePublicationOfAComponentWhoseConceptIsNotValidated() throws RmesException {
-        JSONObject component = publishableComponent().put(Constants.CONCEPT, "http://concept");
-        when(repoGestion.getResponseAsBoolean(any())).thenReturn(false);
-
-        RmesException exception = assertThrows(
-                RmesBadRequestException.class, () -> structureComponentRepository.publishComponent(component));
+        RmesException exception =
+                publicationRejectionOf(publishableComponent().put(Constants.CONCEPT, "http://concept"));
 
         assertThat(exception.getDetails()).contains("\"code\":1006");
         assertThat(exception.getDetails()).contains("The concept should be validated");
@@ -447,11 +440,8 @@ class StructureComponentRepositoryTest {
 
     @Test
     void shouldRejectThePublicationOfAComponentWhoseCodeListIsNotValidated() throws RmesException {
-        JSONObject component = publishableComponent().put(Constants.CODELIST, "http://codelist");
-        when(repoGestion.getResponseAsBoolean(any())).thenReturn(false);
-
-        RmesException exception = assertThrows(
-                RmesBadRequestException.class, () -> structureComponentRepository.publishComponent(component));
+        RmesException exception =
+                publicationRejectionOf(publishableComponent().put(Constants.CODELIST, "http://codelist"));
 
         assertThat(exception.getDetails()).contains("\"code\":1007");
         assertThat(exception.getDetails()).contains("The codes list should be validated");
@@ -537,23 +527,31 @@ class StructureComponentRepositoryTest {
 
         structureComponentRepository.createComponent(component, "d1000", new JSONObject());
 
-        return storedModel();
+        return storedModel(repoGestion);
+    }
+
+    /** La publication du composant échoue : son concept ou sa liste de codes n'est pas validé. */
+    private RmesException publicationRejectionOf(JSONObject component) throws RmesException {
+        when(repoGestion.getResponseAsBoolean(any())).thenReturn(false);
+
+        return assertThrows(
+                RmesBadRequestException.class, () -> structureComponentRepository.publishComponent(component));
     }
 
     private String validationState() throws RmesException {
-        return objectOf(INSEE.VALIDATION_STATE);
+        return storedObjectOf(INSEE.VALIDATION_STATE);
     }
 
-    private String objectOf(IRI predicate) throws RmesException {
-        return objectOf(storedModel(), predicate);
+    private String storedObjectOf(IRI predicate) throws RmesException {
+        return objectOf(storedModel(repoGestion), predicate);
     }
 
-    private static String objectOf(Model model, IRI predicate) {
-        return model.stream()
-                .filter(statement -> statement.getPredicate().equals(predicate))
-                .map(statement -> statement.getObject().stringValue())
-                .findFirst()
-                .orElseThrow(() -> new AssertionError("no statement for " + predicate));
+    private static MutualizedComponent dimensionRangedOnCodeList() throws RmesException {
+        MutualizedComponent component = dimension();
+        component.setContributor(List.of());
+        component.setRange(INSEE.CODELIST.stringValue());
+        component.setFullCodeListValue("http://codelist");
+        return component;
     }
 
     private static MutualizedComponent dimension() throws RmesException {
@@ -563,11 +561,5 @@ class StructureComponentRepositoryTest {
         component.setLabelLg2("label en");
         component.setType(QB.DIMENSION_PROPERTY.toString());
         return component;
-    }
-
-    private Model storedModel() throws RmesException {
-        ArgumentCaptor<Model> modelCaptor = ArgumentCaptor.forClass(Model.class);
-        verify(repoGestion).loadSimpleObject(any(IRI.class), modelCaptor.capture(), isNull());
-        return modelCaptor.getValue();
     }
 }

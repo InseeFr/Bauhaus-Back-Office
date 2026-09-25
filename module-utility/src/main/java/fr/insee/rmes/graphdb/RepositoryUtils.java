@@ -1,5 +1,7 @@
 package fr.insee.rmes.graphdb;
 
+import static fr.insee.rmes.graphdb.exceptions.DatabaseQueryException.GENERIC_MESSAGE;
+
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.exceptions.DatabaseQueryException;
 import fr.insee.rmes.graphdb.exceptions.GraphDbUnauthorizedException;
@@ -85,12 +87,8 @@ public class RepositoryUtils {
         try {
             con = repository.getConnection();
         } catch (RepositoryException e) {
-            logger.error("Connection au repository impossible : {}", repository.getDataDir());
-            logger.error(e.getMessage());
-            throw new RmesException(
-                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                    e.getMessage(),
-                    "Connection au repository impossible : " + repository.getDataDir());
+            logger.error("Connection au repository impossible : {}", repository.getDataDir(), e);
+            throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), GENERIC_MESSAGE, null, e);
         }
         return con;
     }
@@ -114,10 +112,8 @@ public class RepositoryUtils {
             if (GraphDbUnauthorizedException.isUnauthorized(e)) {
                 throw new GraphDbUnauthorizedException(e, updateQuery, authType);
             }
-            logger.error("{} {} {}", EXECUTE_QUERY_FAILED, updateQuery, repository);
-            logger.error(e.getMessage());
-            throw new RmesException(
-                    HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), EXECUTE_QUERY_FAILED + updateQuery);
+            logger.error("{} {} {}", EXECUTE_QUERY_FAILED, updateQuery, repository, e);
+            throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), GENERIC_MESSAGE, null, e);
         }
         return (HttpStatus.OK);
     }
@@ -137,10 +133,8 @@ public class RepositoryUtils {
         try {
             statements = con.getStatements(null, null, null, context); // get the complete Graph
         } catch (RepositoryException e) {
-            throw new RmesException(
-                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                    e.getMessage(),
-                    "Failure get following graph : " + context);
+            logger.error("Failure get following graph : {}", context, e);
+            throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), GENERIC_MESSAGE, null, e);
         }
         return statements;
     }
@@ -354,8 +348,8 @@ public class RepositoryUtils {
                 }
             });
         } catch (RepositoryException e) {
-            throw new RmesException(
-                    HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), "Failure deletion : " + structure);
+            logger.error("Failure deletion : {}", structure, e);
+            throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), GENERIC_MESSAGE, null, e);
         }
     }
 }

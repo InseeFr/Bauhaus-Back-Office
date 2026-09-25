@@ -8,6 +8,7 @@ DELETE  {
 	 ?uri rdfs:comment ?description .
 	 ?uri pav:lastRefreshedOn ?updatedDate .
 	 ?uri dc:language ?lang .
+	 ?uri dcterms:extent ?size .
 	}
  WHERE {
 
@@ -17,6 +18,7 @@ DELETE  {
 	OPTIONAL {  ?uri rdfs:comment ?description }
 	OPTIONAL {  ?uri pav:lastRefreshedOn ?updatedDate }
 	OPTIONAL {  ?uri dc:language ?lang }
+	OPTIONAL {  ?uri dcterms:extent ?size }
 	 FILTER(?uri = ${uri})
 	  }
 	;

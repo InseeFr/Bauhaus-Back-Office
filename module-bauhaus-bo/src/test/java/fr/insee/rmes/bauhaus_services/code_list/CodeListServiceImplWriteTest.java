@@ -1,11 +1,13 @@
 package fr.insee.rmes.bauhaus_services.code_list;
 
+import static fr.insee.rmes.bauhaus_services.utils.StoredRdfModels.objectsOf;
+import static fr.insee.rmes.bauhaus_services.utils.StoredRdfModels.storedModel;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -150,7 +152,7 @@ class CodeListServiceImplWriteTest {
 
         codeListService.setCodesList("id", fullCodeList().toString(), CodeListKind.FULL);
 
-        assertThat(objectsOf(storedModel(), org.eclipse.rdf4j.model.vocabulary.DCTERMS.CREATED))
+        assertThat(objectsOf(storedModel(repoGestion), org.eclipse.rdf4j.model.vocabulary.DCTERMS.CREATED))
                 .containsExactly("2020-01-01T10:00:00");
     }
 
@@ -161,7 +163,7 @@ class CodeListServiceImplWriteTest {
 
         codeListService.setCodesList(codeList.toString(), CodeListKind.FULL);
 
-        assertThat(objectsOf(storedModel(), INSEE.VALIDATION_STATE))
+        assertThat(objectsOf(storedModel(repoGestion), INSEE.VALIDATION_STATE))
                 .containsExactly(ValidationStatus.MODIFIED.getValue());
     }
 
@@ -176,7 +178,7 @@ class CodeListServiceImplWriteTest {
 
         codeListService.setCodesList(codeList.toString(), CodeListKind.FULL);
 
-        Model model = storedModel();
+        Model model = storedModel(repoGestion);
         assertThat(objectsOf(model, INSEE.DISSEMINATIONSTATUS)).containsExactly("http://status");
         assertThat(objectsOf(model, SKOS.DEFINITION)).containsExactlyInAnyOrder("description fr", "description en");
         assertThat(objectsOf(model, DC.CREATOR)).containsExactly("http://creator");
@@ -190,7 +192,7 @@ class CodeListServiceImplWriteTest {
 
         codeListService.setCodesList(codeList.toString(), CodeListKind.PARTIAL);
 
-        Model model = storedModel();
+        Model model = storedModel(repoGestion);
         assertThat(objectsOf(model, RDF.TYPE)).contains(SKOS.COLLECTION.stringValue());
         assertThat(objectsOf(model, SKOS.MEMBER)).containsExactly("http://bauhaus/codes/id/A");
         assertThat(objectsOf(model, PROV.WAS_DERIVED_FROM)).containsExactly("http://bauhaus/codes/parent");
@@ -236,19 +238,6 @@ class CodeListServiceImplWriteTest {
                 .put(Constants.LABEL_LG1, "label fr")
                 .put(Constants.LABEL_LG2, "label en")
                 .put("codes", new JSONObject().put("A", new JSONObject().put("iri", "http://bauhaus/codes/id/A")));
-    }
-
-    private Model storedModel() throws RmesException {
-        ArgumentCaptor<Model> modelCaptor = ArgumentCaptor.forClass(Model.class);
-        verify(repoGestion).loadSimpleObject(any(IRI.class), modelCaptor.capture(), isNull());
-        return modelCaptor.getValue();
-    }
-
-    private static List<String> objectsOf(Model model, IRI predicate) {
-        return model.stream()
-                .filter(statement -> statement.getPredicate().equals(predicate))
-                .map(statement -> statement.getObject().stringValue())
-                .toList();
     }
 
     @Test
@@ -336,8 +325,119 @@ class CodeListServiceImplWriteTest {
 
         codeListService.addCodeFromCodeList("id", code);
 
-        assertThat(objectsOf(storedModel(), SKOS.DEFINITION))
+        assertThat(objectsOf(storedModel(repoGestion), SKOS.DEFINITION))
                 .containsExactlyInAnyOrder("description fr", "description en");
+    }
+
+    @Test
+    void shouldLinkAnAddedCodeToItsParentInBothDirections() throws RmesException {
+        stubCodeListReadyForANewCode("A1");
+        stubExistingCode("A");
+
+        codeListService.addCodeFromCodeList("id", codeWithLinks("A1", List.of("A"), List.of()));
+
+        Model model = storedModel(repoGestion);
+        assertThat(model.contains(codeIri("A1"), SKOS.BROADER, codeIri("A"))).isTrue();
+        assertThat(model.contains(codeIri("A"), SKOS.NARROWER, codeIri("A1"))).isTrue();
+    }
+
+    @Test
+    void shouldLinkAnAddedCodeToItsChildInBothDirections() throws RmesException {
+        stubCodeListReadyForANewCode("A1");
+        stubExistingCode("A1.1");
+
+        codeListService.addCodeFromCodeList("id", codeWithLinks("A1", List.of(), List.of("A1.1")));
+
+        Model model = storedModel(repoGestion);
+        assertThat(model.contains(codeIri("A1"), SKOS.NARROWER, codeIri("A1.1")))
+                .isTrue();
+        assertThat(model.contains(codeIri("A1.1"), SKOS.BROADER, codeIri("A1"))).isTrue();
+    }
+
+    @Test
+    void shouldRejectACodeWhoseParentIsAlsoItsChild() throws RmesException {
+        stubNoCodeYet("A1");
+
+        RmesException exception = assertThrows(
+                RmesBadRequestException.class,
+                () -> codeListService.addCodeFromCodeList("id", codeWithLinks("A1", List.of("A"), List.of("A"))));
+
+        assertThat(exception.getDetails()).contains("A code cannot be both parent and child of the same code");
+        verify(repoGestion, never()).loadSimpleObject(any(), any(), any());
+    }
+
+    @Test
+    void shouldRejectACodeLinkedToItself() throws RmesException {
+        stubNoCodeYet("A1");
+
+        RmesException exception = assertThrows(
+                RmesBadRequestException.class,
+                () -> codeListService.addCodeFromCodeList("id", codeWithLinks("A1", List.of("A1"), List.of())));
+
+        assertThat(exception.getDetails()).contains("A code cannot be linked to itself");
+        verify(repoGestion, never()).loadSimpleObject(any(), any(), any());
+    }
+
+    @Test
+    void shouldRejectALinkToACodeMissingFromTheList() throws RmesException {
+        stubNoCodeYet("A1");
+        when(codeListsQueries.getCodeUriByNotation("id", "Z")).thenReturn("uri-of-Z");
+        when(repoGestion.getResponseAsObject("uri-of-Z")).thenReturn(new JSONObject());
+
+        RmesException exception = assertThrows(
+                RmesBadRequestException.class,
+                () -> codeListService.addCodeFromCodeList("id", codeWithLinks("A1", List.of("Z"), List.of())));
+
+        assertThat(exception.getDetails())
+                .contains("Linked code not found in this code list")
+                .contains("Z");
+        verify(repoGestion, never()).loadSimpleObject(any(), any(), any());
+    }
+
+    /** Sans cette purge, les parents et enfants d'un code supprimé ou réécrit gardent un lien vers lui. */
+    @Test
+    void shouldRemoveTheLinksOtherCodesHoldTowardADeletedCode() throws RmesException {
+        when(codeListsQueries.getCodeByNotation("id", "A1")).thenReturn("code-query");
+        when(repoGestion.getResponseAsObject("code-query")).thenReturn(new JSONObject().put("labelLg1", "A1"));
+        stubDetailedCodeList();
+
+        codeListService.deleteCodeFromCodeList("id", "A1");
+
+        verify(repoGestion).deleteObject(codeIri("A1"), null);
+        verify(repoGestion)
+                .deleteTripletByPredicateAndValue(null, SKOS.BROADER, RdfUtils.codesListGraph(), null, codeIri("A1"));
+        verify(repoGestion)
+                .deleteTripletByPredicateAndValue(null, SKOS.NARROWER, RdfUtils.codesListGraph(), null, codeIri("A1"));
+    }
+
+    private void stubCodeListReadyForANewCode(String code) throws RmesException {
+        stubNoCodeYet(code);
+        stubDetailedCodeList();
+    }
+
+    private void stubNoCodeYet(String code) throws RmesException {
+        when(codeListsQueries.getCodeByNotation("id", code)).thenReturn("code-query");
+        when(repoGestion.getResponseAsObject("code-query")).thenReturn(new JSONObject());
+    }
+
+    private void stubDetailedCodeList() throws RmesException {
+        when(codeListsQueries.getDetailedCodeListByNotation("id")).thenReturn("detailed-query");
+        when(repoGestion.getResponseAsObject("detailed-query"))
+                .thenReturn(fullCodeList().put("iri", "http://bauhaus/codes/id"));
+    }
+
+    private void stubExistingCode(String code) throws RmesException {
+        when(codeListsQueries.getCodeUriByNotation("id", code)).thenReturn("uri-of-" + code);
+        when(repoGestion.getResponseAsObject("uri-of-" + code))
+                .thenReturn(new JSONObject().put(Constants.URI, codeIri(code).stringValue()));
+    }
+
+    private static CodeRequest codeWithLinks(String code, List<String> broader, List<String> narrower) {
+        return new CodeRequest(code, "label fr", "label en", null, null, broader, narrower);
+    }
+
+    private static IRI codeIri(String code) {
+        return RdfUtils.codeListIRI("code/" + code);
     }
 
     private void stubDetailedPartialCodeList(JSONObject codeList, JSONArray codes) throws RmesException {

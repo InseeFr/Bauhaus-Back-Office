@@ -1,27 +1,48 @@
 package fr.insee.rmes.modules.ddi.physical_instances.domain.services;
 
+import static fr.insee.rmes.modules.ddi.physical_instances.domain.services.Lifecycle33TestFixtures.GROUP_NS;
+import static fr.insee.rmes.modules.ddi.physical_instances.domain.services.Lifecycle33TestFixtures.LOGICAL_PRODUCT_NS;
+import static fr.insee.rmes.modules.ddi.physical_instances.domain.services.Lifecycle33TestFixtures.PHYSICAL_INSTANCE_NS;
+import static fr.insee.rmes.modules.ddi.physical_instances.domain.services.Lifecycle33TestFixtures.STUDY_UNIT_NS;
+import static fr.insee.rmes.modules.ddi.physical_instances.domain.services.Lifecycle33TestFixtures.fragment;
+import static fr.insee.rmes.modules.ddi.physical_instances.domain.services.Lifecycle33TestFixtures.fragmentOptions;
+import static fr.insee.rmes.modules.ddi.physical_instances.domain.services.Lifecycle33TestFixtures.inNamespace;
+import static fr.insee.rmes.modules.ddi.physical_instances.domain.services.Lifecycle33TestFixtures.logicalProductReferencingEverySchemeKind;
+import static fr.insee.rmes.modules.ddi.physical_instances.domain.services.Lifecycle33TestFixtures.reference;
+import static fr.insee.rmes.modules.ddi.physical_instances.domain.services.Lifecycle33TestFixtures.sentinelValuesMmvrFragment;
+import static fr.insee.rmes.modules.ddi.physical_instances.domain.services.Lifecycle33TestFixtures.versionable;
 import static org.junit.jupiter.api.Assertions.*;
 
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.*;
 import java.util.List;
 import java.util.Map;
+import org.apache.xmlbeans.XmlOptions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class DDI3toDDI4ConverterServiceImplTest {
 
     private static final String SCHEMA_URL = "http://localhost:8080/ddi/schema";
+    private static final String VERSION_DATE = "2025-01-21T13:48:46.363";
+
+    private static final String PHYSICAL_INSTANCE_TYPE = "a51e85bb-6259-4488-8df2-f08cb43485f8";
+    private static final String DATA_RELATIONSHIP_TYPE = "f39ff278-8500-45fe-a850-3906da2d242b";
+    private static final String VARIABLE_TYPE = "683889c6-f74b-4d5e-92ed-908c0a42bb2d";
+    private static final String CODE_LIST_TYPE = "8b108ef8-b642-4484-9c49-f88e4bf7cf1d";
+    private static final String CATEGORY_TYPE = "7e47c269-bcab-40f7-a778-af7bbc4e3d00";
+    private static final String MANAGED_MISSING_VALUES_REPRESENTATION_TYPE = "c29c3125-2a53-4179-8fa6-aa3beb2bb5ed";
+
     private DDI3toDDI4ConverterServiceImpl converter;
 
     @BeforeEach
     void setUp() {
         converter = new DDI3toDDI4ConverterServiceImpl(Map.of(
-                "PhysicalInstance", "a51e85bb-6259-4488-8df2-f08cb43485f8",
-                "DataRelationship", "f39ff278-8500-45fe-a850-3906da2d242b",
-                "Variable", "683889c6-f74b-4d5e-92ed-908c0a42bb2d",
-                "CodeList", "8b108ef8-b642-4484-9c49-f88e4bf7cf1d",
-                "Category", "7e47c269-bcab-40f7-a778-af7bbc4e3d00",
-                "ManagedMissingValuesRepresentation", "c29c3125-2a53-4179-8fa6-aa3beb2bb5ed"));
+                "PhysicalInstance", PHYSICAL_INSTANCE_TYPE,
+                "DataRelationship", DATA_RELATIONSHIP_TYPE,
+                "Variable", VARIABLE_TYPE,
+                "CodeList", CODE_LIST_TYPE,
+                "Category", CATEGORY_TYPE,
+                "ManagedMissingValuesRepresentation", MANAGED_MISSING_VALUES_REPRESENTATION_TYPE));
     }
 
     /**
@@ -30,35 +51,11 @@ class DDI3toDDI4ConverterServiceImplTest {
      */
     @Test
     void shouldConvertManagedMissingValuesRepresentationItems() {
-        String mmvrXml = """
-                <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
-                    <r:ManagedMissingValuesRepresentation isUniversallyUnique="true" versionDate="2026-04-03T12:00:00Z">
-                        <r:URN>urn:ddi:fr.insee:mmvr-1:1</r:URN>
-                        <r:Agency>fr.insee</r:Agency><r:ID>mmvr-1</r:ID><r:Version>1</r:Version>
-                        <r:Label><r:Content xml:lang="fr-FR">Valeurs sentinelles NSP/REF</r:Content></r:Label>
-                        <r:MissingCodeRepresentation blankIsMissingValue="false">
-                            <r:CodeListReference>
-                                <r:Agency>fr.insee</r:Agency><r:ID>cl-sentinelles</r:ID><r:Version>1</r:Version>
-                                <r:TypeOfObject>CodeList</r:TypeOfObject>
-                            </r:CodeListReference>
-                        </r:MissingCodeRepresentation>
-                    </r:ManagedMissingValuesRepresentation>
-                </Fragment>
-                """;
-        Ddi3Response ddi3 = new Ddi3Response(
-                new Ddi3Response.Ddi3Options(List.of("RegisterOrReplace")),
-                List.of(new Ddi3Response.Ddi3Item(
-                        "c29c3125-2a53-4179-8fa6-aa3beb2bb5ed",
-                        "fr.insee",
-                        "1",
-                        "mmvr-1",
-                        mmvrXml,
-                        "2026-04-03T12:00:00Z",
-                        "abcde",
-                        false,
-                        false,
-                        false,
-                        "DC337820-AF3A-4C0B-82F9-CF02535CDE83")));
+        Ddi3Response ddi3 = ddi3Response(ddi3Item(
+                MANAGED_MISSING_VALUES_REPRESENTATION_TYPE,
+                "mmvr-1",
+                sentinelValuesMmvrFragment(),
+                "2026-04-03T12:00:00Z"));
 
         Ddi4Response result = converter.convertDdi3ToDdi4(ddi3, SCHEMA_URL);
 
@@ -103,20 +100,13 @@ class DDI3toDDI4ConverterServiceImplTest {
 
     @Test
     void shouldParseCodeListSchemeFromFragmentXml() {
-        String codeListSchemeXml = """
-                <?xml version="1.0" encoding="UTF-8"?>
-                <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
-                    <CodeListScheme xmlns="ddi:logicalproduct:3_3" isUniversallyUnique="true" versionDate="2026-04-03T12:00:00Z">
-                        <r:URN>urn:ddi:fr.insee:cls-id:1</r:URN>
-                        <r:Agency>fr.insee</r:Agency><r:ID>cls-id</r:ID><r:Version>1</r:Version>
-                        <r:Label><r:Content xml:lang="fr-FR">Schéma listes</r:Content></r:Label>
-                        <r:CodeListReference>
-                            <r:Agency>fr.insee</r:Agency><r:ID>cl-1</r:ID><r:Version>1</r:Version>
-                            <r:TypeOfObject>CodeList</r:TypeOfObject>
-                        </r:CodeListReference>
-                    </CodeListScheme>
-                </Fragment>
-                """;
+        String codeListSchemeXml = fragment(versionable(
+                "CodeListScheme",
+                inNamespace(LOGICAL_PRODUCT_NS, "2026-04-03T12:00:00Z"),
+                "urn:ddi:fr.insee:cls-id:1",
+                "cls-id",
+                "<r:Label><r:Content xml:lang=\"fr-FR\">Schéma listes</r:Content></r:Label>"
+                        + reference("r:CodeListReference", "cl-1", "CodeList")));
 
         Ddi4CodeListScheme scheme = converter.toCodeListScheme(codeListSchemeXml);
 
@@ -143,13 +133,7 @@ class DDI3toDDI4ConverterServiceImplTest {
                 List.of(Reference.of("fr.insee", "su-1", "1", "StudyUnit")),
                 List.of("http://id.insee.fr/operations/serie/s1001"),
                 "insee:StatisticalOperationSeries");
-        java.util.HashMap<String, String> prefixes = new java.util.HashMap<>();
-        prefixes.put("ddi:instance:3_3", "");
-        prefixes.put("ddi:group:3_3", "");
-        prefixes.put("ddi:reusable:3_3", "r");
-        org.apache.xmlbeans.XmlOptions opts = new org.apache.xmlbeans.XmlOptions();
-        opts.setSaveSuggestedPrefixes(prefixes);
-        String groupXml = new Ddi4ToLifecycle33("abcde").toGroup(original).xmlText(opts);
+        String groupXml = new Ddi4ToLifecycle33("abcde").toGroup(original).xmlText(fragmentOptions(GROUP_NS));
 
         Ddi4Group group = converter.toGroup(groupXml);
 
@@ -208,18 +192,7 @@ class DDI3toDDI4ConverterServiceImplTest {
     void shouldParseLogicalProductFromFragmentXml() {
         // Round-trip through the real serializer: this is what reading a group's existing
         // LogicalProduct relies on, to add a scheme reference to it instead of creating a second one.
-        Ddi4LogicalProduct original = new Ddi4LogicalProduct(
-                Ddi4LogicalProduct.TYPE,
-                CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
-                "urn:ddi:fr.insee:lp-id:1",
-                "fr.insee",
-                "lp-id",
-                "1",
-                LangStrings.of("fr-FR", "Produit logique"),
-                List.of(Reference.of("fr.insee", "cls-1", "1", "CodeListScheme")),
-                List.of(Reference.of("fr.insee", "cats-1", "1", "CategoryScheme")),
-                List.of(Reference.of("fr.insee", "vars-1", "1", "VariableScheme")),
-                List.of(Reference.of("fr.insee", "mrs-1", "1", "ManagedRepresentationScheme")));
+        Ddi4LogicalProduct original = logicalProductReferencingEverySchemeKind("Produit logique");
         String xml = new Ddi4ToLifecycle33("abcde").toLogicalProduct(original).xmlText(logicalProductFragmentOptions());
 
         Ddi4LogicalProduct logicalProduct = converter.toLogicalProduct(xml);
@@ -252,7 +225,7 @@ class DDI3toDDI4ConverterServiceImplTest {
                 "http://id.insee.fr/operations/operation/op1",
                 List.of(Reference.of("fr.insee", "pi-1", "1", "PhysicalInstance")),
                 List.of(Reference.of("fr.insee", "lp-1", "1", "LogicalProduct")));
-        String xml = new Ddi4ToLifecycle33("abcde").toStudyUnit(original).xmlText(studyUnitFragmentOptions());
+        String xml = new Ddi4ToLifecycle33("abcde").toStudyUnit(original).xmlText(fragmentOptions(STUDY_UNIT_NS));
 
         Ddi4StudyUnit studyUnit = converter.toStudyUnit(xml);
 
@@ -262,64 +235,28 @@ class DDI3toDDI4ConverterServiceImplTest {
         assertEquals("pi-1", studyUnit.physicalInstanceReferences().get(0).id());
     }
 
-    private static org.apache.xmlbeans.XmlOptions logicalProductFragmentOptions() {
-        return fragmentOptions("ddi:logicalproduct:3_3");
-    }
-
-    private static org.apache.xmlbeans.XmlOptions studyUnitFragmentOptions() {
-        return fragmentOptions("ddi:studyunit:3_3");
-    }
-
-    private static org.apache.xmlbeans.XmlOptions fragmentOptions(String contentNs) {
-        java.util.HashMap<String, String> prefixes = new java.util.HashMap<>();
-        prefixes.put("ddi:instance:3_3", "");
-        prefixes.put(contentNs, "");
-        prefixes.put("ddi:reusable:3_3", "r");
-        org.apache.xmlbeans.XmlOptions opts = new org.apache.xmlbeans.XmlOptions();
-        opts.setSaveSuggestedPrefixes(prefixes);
-        return opts;
+    private static XmlOptions logicalProductFragmentOptions() {
+        return fragmentOptions(LOGICAL_PRODUCT_NS);
     }
 
     @Test
     void shouldConvertPhysicalInstanceFromDdi3() {
         // Given
-        String physicalInstanceXml = """
-                <?xml version="1.0" encoding="UTF-8"?>
-                <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
-                    <PhysicalInstance xmlns="ddi:physicalinstance:3_3" isUniversallyUnique="true" versionDate="2025-01-21T13:48:46.363">
-                        <r:URN>urn:ddi:fr.insee:PhysicalInstance.saphir-rp99-sas:1</r:URN>
-                        <r:Agency>fr.insee</r:Agency>
-                        <r:ID>saphir-rp99-sas</r:ID>
-                        <r:Version>1</r:Version>
-                        <r:Citation>
-                            <r:Title>
-                                <r:String xml:lang="fr-FR">SAPHIR - Fichier Individus RP99 (.sas7bdat)</r:String>
-                            </r:Title>
-                        </r:Citation>
-                        <r:DataRelationshipReference>
-                            <r:Agency>fr.insee</r:Agency>
-                            <r:ID>saphir-rp99-sas</r:ID>
-                            <r:Version>1</r:Version>
-                            <r:TypeOfObject>DataRelationship</r:TypeOfObject>
-                        </r:DataRelationshipReference>
-                    </PhysicalInstance>
-                </Fragment>
-                """;
+        String physicalInstanceXml = ddi3Fragment("PhysicalInstance", PHYSICAL_INSTANCE_NS, "saphir-rp99-sas", """
+                <r:Citation>
+                    <r:Title>
+                        <r:String xml:lang="fr-FR">SAPHIR - Fichier Individus RP99 (.sas7bdat)</r:String>
+                    </r:Title>
+                </r:Citation>
+                <r:DataRelationshipReference>
+                    <r:Agency>fr.insee</r:Agency>
+                    <r:ID>saphir-rp99-sas</r:ID>
+                    <r:Version>1</r:Version>
+                    <r:TypeOfObject>DataRelationship</r:TypeOfObject>
+                </r:DataRelationshipReference>
+                """);
 
-        Ddi3Response ddi3 = new Ddi3Response(
-                new Ddi3Response.Ddi3Options(List.of("RegisterOrReplace")),
-                List.of(new Ddi3Response.Ddi3Item(
-                        "a51e85bb-6259-4488-8df2-f08cb43485f8",
-                        "fr.insee",
-                        "1",
-                        "saphir-rp99-sas",
-                        physicalInstanceXml,
-                        "2025-01-21T13:48:46.363",
-                        "abcde",
-                        false,
-                        false,
-                        false,
-                        "DC337820-AF3A-4C0B-82F9-CF02535CDE83")));
+        Ddi3Response ddi3 = ddi3Response(ddi3Item(PHYSICAL_INSTANCE_TYPE, "saphir-rp99-sas", physicalInstanceXml));
 
         // When
         Ddi4Response result = converter.convertDdi3ToDdi4(ddi3, SCHEMA_URL);
@@ -354,52 +291,30 @@ class DDI3toDDI4ConverterServiceImplTest {
     @Test
     void shouldConvertDataRelationshipFromDdi3() {
         // Given
-        String dataRelationshipXml = """
-                <?xml version="1.0" encoding="UTF-8"?>
-                <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
-                    <DataRelationship xmlns="ddi:logicalproduct:3_3" isUniversallyUnique="true" versionDate="2025-01-21T13:48:46.363">
-                        <r:URN>urn:ddi:fr.insee:DataRelationship.saphir-rp99-sas:1</r:URN>
-                        <r:Agency>fr.insee</r:Agency>
-                        <r:ID>saphir-rp99-sas</r:ID>
-                        <r:Version>1</r:Version>
-                        <DataRelationshipName>
-                            <r:String xml:lang="fr-FR">SAPHIR - RP99</r:String>
-                        </DataRelationshipName>
-                        <LogicalRecord isUniversallyUnique="true">
-                            <r:URN>urn:ddi:fr.insee:LogicalRecord.saphir-rp99-sas:1</r:URN>
+        String dataRelationshipXml = ddi3Fragment("DataRelationship", LOGICAL_PRODUCT_NS, "saphir-rp99-sas", """
+                <DataRelationshipName>
+                    <r:String xml:lang="fr-FR">SAPHIR - RP99</r:String>
+                </DataRelationshipName>
+                <LogicalRecord isUniversallyUnique="true">
+                    <r:URN>urn:ddi:fr.insee:LogicalRecord.saphir-rp99-sas:1</r:URN>
+                    <r:Agency>fr.insee</r:Agency>
+                    <r:ID>saphir-rp99-sas</r:ID>
+                    <r:Version>1</r:Version>
+                    <LogicalRecordName>
+                        <r:String xml:lang="fr-FR">SAPHIR - RP99</r:String>
+                    </LogicalRecordName>
+                    <VariablesInRecord>
+                        <VariableUsedReference>
                             <r:Agency>fr.insee</r:Agency>
-                            <r:ID>saphir-rp99-sas</r:ID>
+                            <r:ID>AGEMEN8</r:ID>
                             <r:Version>1</r:Version>
-                            <LogicalRecordName>
-                                <r:String xml:lang="fr-FR">SAPHIR - RP99</r:String>
-                            </LogicalRecordName>
-                            <VariablesInRecord>
-                                <VariableUsedReference>
-                                    <r:Agency>fr.insee</r:Agency>
-                                    <r:ID>AGEMEN8</r:ID>
-                                    <r:Version>1</r:Version>
-                                    <r:TypeOfObject>Variable</r:TypeOfObject>
-                                </VariableUsedReference>
-                            </VariablesInRecord>
-                        </LogicalRecord>
-                    </DataRelationship>
-                </Fragment>
-                """;
+                            <r:TypeOfObject>Variable</r:TypeOfObject>
+                        </VariableUsedReference>
+                    </VariablesInRecord>
+                </LogicalRecord>
+                """);
 
-        Ddi3Response ddi3 = new Ddi3Response(
-                new Ddi3Response.Ddi3Options(List.of("RegisterOrReplace")),
-                List.of(new Ddi3Response.Ddi3Item(
-                        "f39ff278-8500-45fe-a850-3906da2d242b",
-                        "fr.insee",
-                        "1",
-                        "saphir-rp99-sas",
-                        dataRelationshipXml,
-                        "2025-01-21T13:48:46.363",
-                        "abcde",
-                        false,
-                        false,
-                        false,
-                        "DC337820-AF3A-4C0B-82F9-CF02535CDE83")));
+        Ddi3Response ddi3 = ddi3Response(ddi3Item(DATA_RELATIONSHIP_TYPE, "saphir-rp99-sas", dataRelationshipXml));
 
         // When
         Ddi4Response result = converter.convertDdi3ToDdi4(ddi3, SCHEMA_URL);
@@ -442,85 +357,58 @@ class DDI3toDDI4ConverterServiceImplTest {
     @Test
     void shouldConvertVariableWithCodeRepresentationFromDdi3() {
         // Given
-        String variableXml = """
-                <?xml version="1.0" encoding="UTF-8"?>
-                <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
-                    <Variable xmlns="ddi:logicalproduct:3_3" isUniversallyUnique="true" versionDate="2025-01-21T13:48:46.363">
-                        <r:URN>urn:ddi:fr.insee:Variable.AGEMEN8:1</r:URN>
-                        <r:Agency>fr.insee</r:Agency>
-                        <r:ID>AGEMEN8</r:ID>
-                        <r:Version>1</r:Version>
-                        <VariableName>
-                            <r:String xml:lang="fr-FR">AGEMEN8</r:String>
-                        </VariableName>
-                        <r:Label>
-                            <r:Content xml:lang="fr-FR">Âge détaillé</r:Content>
-                        </r:Label>
-                        <r:Description>
-                            <r:Content xml:lang="fr-FR">Âge de l'individu en années révolues</r:Content>
-                        </r:Description>
-                        <VariableRepresentation>
-                            <VariableRole>Demographic</VariableRole>
-                            <r:CodeRepresentation blankIsMissingValue="false">
-                                <r:CodeListReference>
-                                    <r:Agency>fr.insee</r:Agency>
-                                    <r:ID>CL_AGEMEN8</r:ID>
-                                    <r:Version>1</r:Version>
-                                    <r:TypeOfObject>CodeList</r:TypeOfObject>
-                                </r:CodeListReference>
-                            </r:CodeRepresentation>
-                        </VariableRepresentation>
-                    </Variable>
-                </Fragment>
-                """;
-
-        Ddi3Response ddi3 = new Ddi3Response(
-                new Ddi3Response.Ddi3Options(List.of("RegisterOrReplace")),
-                List.of(new Ddi3Response.Ddi3Item(
-                        "683889c6-f74b-4d5e-92ed-908c0a42bb2d",
-                        "fr.insee",
-                        "1",
-                        "AGEMEN8",
-                        variableXml,
-                        "2025-01-21T13:48:46.363",
-                        "abcde",
-                        false,
-                        false,
-                        false,
-                        "DC337820-AF3A-4C0B-82F9-CF02535CDE83")));
+        String variableXml = ddi3Fragment("Variable", LOGICAL_PRODUCT_NS, "AGEMEN8", """
+                <VariableName>
+                    <r:String xml:lang="fr-FR">AGEMEN8</r:String>
+                </VariableName>
+                <r:Label>
+                    <r:Content xml:lang="fr-FR">Âge détaillé</r:Content>
+                </r:Label>
+                <r:Description>
+                    <r:Content xml:lang="fr-FR">Âge de l'individu en années révolues</r:Content>
+                </r:Description>
+                <VariableRepresentation>
+                    <VariableRole>Demographic</VariableRole>
+                    <r:CodeRepresentation blankIsMissingValue="false">
+                        <r:CodeListReference>
+                            <r:Agency>fr.insee</r:Agency>
+                            <r:ID>CL_AGEMEN8</r:ID>
+                            <r:Version>1</r:Version>
+                            <r:TypeOfObject>CodeList</r:TypeOfObject>
+                        </r:CodeListReference>
+                    </r:CodeRepresentation>
+                </VariableRepresentation>
+                """);
 
         // When
-        Ddi4Response result = converter.convertDdi3ToDdi4(ddi3, SCHEMA_URL);
+        Ddi4Variable variable = convertSingleVariable(ddi3Item(VARIABLE_TYPE, "AGEMEN8", variableXml));
 
         // Then
-        assertNotNull(result);
-        assertNotNull(result.variable());
-        assertEquals(1, result.variable().size());
+        assertEquals("2025-01-21T13:48:46.363", variable.versionDate().dateTime());
+        assertEquals("urn:ddi:fr.insee:Variable.AGEMEN8:1", variable.urn());
+        assertEquals("fr.insee", variable.agency());
+        assertEquals("AGEMEN8", variable.id());
+        assertEquals("1", variable.version());
 
-        Ddi4Variable var = result.variable().get(0);
-        assertEquals("2025-01-21T13:48:46.363", var.versionDate().dateTime());
-        assertEquals("urn:ddi:fr.insee:Variable.AGEMEN8:1", var.urn());
-        assertEquals("fr.insee", var.agency());
-        assertEquals("AGEMEN8", var.id());
-        assertEquals("1", var.version());
+        assertNotNull(variable.variableName());
+        assertEquals("AGEMEN8", variable.variableName().get(0).value());
 
-        assertNotNull(var.variableName());
-        assertEquals("AGEMEN8", var.variableName().get(0).value());
+        assertNotNull(variable.label());
+        assertEquals("Âge détaillé", variable.label().get(0).value());
 
-        assertNotNull(var.label());
-        assertEquals("Âge détaillé", var.label().get(0).value());
-
-        assertNotNull(var.description());
+        assertNotNull(variable.description());
         assertEquals(
-                "Âge de l'individu en années révolues", var.description().get(0).value());
+                "Âge de l'individu en années révolues",
+                variable.description().get(0).value());
 
-        assertNotNull(var.variableRepresentation());
-        assertEquals("Demographic", var.variableRepresentation().variableRole());
-        assertNotNull(var.variableRepresentation().codeRepresentation());
-        assertEquals(false, var.variableRepresentation().codeRepresentation().blankIsMissingValue());
+        assertNotNull(variable.variableRepresentation());
+        assertEquals("Demographic", variable.variableRepresentation().variableRole());
+        assertNotNull(variable.variableRepresentation().codeRepresentation());
+        assertEquals(
+                false, variable.variableRepresentation().codeRepresentation().blankIsMissingValue());
         assertEquals(
                 "CL_AGEMEN8",
-                var.variableRepresentation()
+                variable.variableRepresentation()
                         .codeRepresentation()
                         .codeListReference()
                         .id());
@@ -529,61 +417,32 @@ class DDI3toDDI4ConverterServiceImplTest {
     @Test
     void shouldConvertVariableWithNumericRepresentationFromDdi3() {
         // Given
-        String variableXml = """
-                <?xml version="1.0" encoding="UTF-8"?>
-                <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
-                    <Variable xmlns="ddi:logicalproduct:3_3" isUniversallyUnique="true" versionDate="2025-01-21T13:48:46.363">
-                        <r:URN>urn:ddi:fr.insee:Variable.AGE:1</r:URN>
-                        <r:Agency>fr.insee</r:Agency>
-                        <r:ID>AGE</r:ID>
-                        <r:Version>1</r:Version>
-                        <VariableName>
-                            <r:String xml:lang="fr-FR">AGE</r:String>
-                        </VariableName>
-                        <r:Label>
-                            <r:Content xml:lang="fr-FR">Âge</r:Content>
-                        </r:Label>
-                        <VariableRepresentation>
-                            <r:NumericRepresentation blankIsMissingValue="false">
-                                <r:NumberRange>
-                                    <r:Low isInclusive="true">0</r:Low>
-                                    <r:High isInclusive="true">120</r:High>
-                                </r:NumberRange>
-                                <r:NumericTypeCode>Integer</r:NumericTypeCode>
-                            </r:NumericRepresentation>
-                        </VariableRepresentation>
-                    </Variable>
-                </Fragment>
-                """;
-
-        Ddi3Response ddi3 = new Ddi3Response(
-                new Ddi3Response.Ddi3Options(List.of("RegisterOrReplace")),
-                List.of(new Ddi3Response.Ddi3Item(
-                        "683889c6-f74b-4d5e-92ed-908c0a42bb2d",
-                        "fr.insee",
-                        "1",
-                        "AGE",
-                        variableXml,
-                        "2025-01-21T13:48:46.363",
-                        "abcde",
-                        false,
-                        false,
-                        false,
-                        "DC337820-AF3A-4C0B-82F9-CF02535CDE83")));
+        String variableXml = ddi3Fragment("Variable", LOGICAL_PRODUCT_NS, "AGE", """
+                <VariableName>
+                    <r:String xml:lang="fr-FR">AGE</r:String>
+                </VariableName>
+                <r:Label>
+                    <r:Content xml:lang="fr-FR">Âge</r:Content>
+                </r:Label>
+                <VariableRepresentation>
+                    <r:NumericRepresentation blankIsMissingValue="false">
+                        <r:NumberRange>
+                            <r:Low isInclusive="true">0</r:Low>
+                            <r:High isInclusive="true">120</r:High>
+                        </r:NumberRange>
+                        <r:NumericTypeCode>Integer</r:NumericTypeCode>
+                    </r:NumericRepresentation>
+                </VariableRepresentation>
+                """);
 
         // When
-        Ddi4Response result = converter.convertDdi3ToDdi4(ddi3, SCHEMA_URL);
+        Ddi4Variable variable = convertSingleVariable(ddi3Item(VARIABLE_TYPE, "AGE", variableXml));
 
         // Then
-        assertNotNull(result);
-        assertNotNull(result.variable());
-        assertEquals(1, result.variable().size());
+        assertNotNull(variable.variableRepresentation());
+        assertNotNull(variable.variableRepresentation().numericRepresentation());
 
-        Ddi4Variable var = result.variable().get(0);
-        assertNotNull(var.variableRepresentation());
-        assertNotNull(var.variableRepresentation().numericRepresentation());
-
-        NumericRepresentation numRep = var.variableRepresentation().numericRepresentation();
+        NumericRepresentation numRep = variable.variableRepresentation().numericRepresentation();
         assertEquals("Integer", numRep.numericTypeCode());
         assertNotNull(numRep.numberRange());
         assertEquals(true, numRep.numberRange().low().isInclusive());
@@ -595,61 +454,39 @@ class DDI3toDDI4ConverterServiceImplTest {
     @Test
     void shouldConvertCodeListFromDdi3() {
         // Given
-        String codeListXml = """
-                <?xml version="1.0" encoding="UTF-8"?>
-                <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
-                    <CodeList xmlns="ddi:logicalproduct:3_3" isUniversallyUnique="true" versionDate="2025-01-21T13:48:46.363">
-                        <r:URN>urn:ddi:fr.insee:CodeList.CL_AGEMEN8:1</r:URN>
+        String codeListXml = ddi3Fragment("CodeList", LOGICAL_PRODUCT_NS, "CL_AGEMEN8", """
+                <r:Label>
+                    <r:Content xml:lang="fr-FR">Liste de codes - Âge détaillé</r:Content>
+                </r:Label>
+                <Code isUniversallyUnique="true">
+                    <r:URN>urn:ddi:fr.insee:Code.CL_AGEMEN8.0:1</r:URN>
+                    <r:Agency>fr.insee</r:Agency>
+                    <r:ID>0</r:ID>
+                    <r:Version>1</r:Version>
+                    <r:CategoryReference>
                         <r:Agency>fr.insee</r:Agency>
-                        <r:ID>CL_AGEMEN8</r:ID>
+                        <r:ID>CAT_0</r:ID>
                         <r:Version>1</r:Version>
-                        <r:Label>
-                            <r:Content xml:lang="fr-FR">Liste de codes - Âge détaillé</r:Content>
-                        </r:Label>
-                        <Code isUniversallyUnique="true">
-                            <r:URN>urn:ddi:fr.insee:Code.CL_AGEMEN8.0:1</r:URN>
-                            <r:Agency>fr.insee</r:Agency>
-                            <r:ID>0</r:ID>
-                            <r:Version>1</r:Version>
-                            <r:CategoryReference>
-                                <r:Agency>fr.insee</r:Agency>
-                                <r:ID>CAT_0</r:ID>
-                                <r:Version>1</r:Version>
-                                <r:TypeOfObject>Category</r:TypeOfObject>
-                            </r:CategoryReference>
-                            <r:Value>0</r:Value>
-                        </Code>
-                        <Code isUniversallyUnique="true">
-                            <r:URN>urn:ddi:fr.insee:Code.CL_AGEMEN8.1:1</r:URN>
-                            <r:Agency>fr.insee</r:Agency>
-                            <r:ID>1</r:ID>
-                            <r:Version>1</r:Version>
-                            <r:CategoryReference>
-                                <r:Agency>fr.insee</r:Agency>
-                                <r:ID>CAT_1</r:ID>
-                                <r:Version>1</r:Version>
-                                <r:TypeOfObject>Category</r:TypeOfObject>
-                            </r:CategoryReference>
-                            <r:Value>1</r:Value>
-                        </Code>
-                    </CodeList>
-                </Fragment>
-                """;
+                        <r:TypeOfObject>Category</r:TypeOfObject>
+                    </r:CategoryReference>
+                    <r:Value>0</r:Value>
+                </Code>
+                <Code isUniversallyUnique="true">
+                    <r:URN>urn:ddi:fr.insee:Code.CL_AGEMEN8.1:1</r:URN>
+                    <r:Agency>fr.insee</r:Agency>
+                    <r:ID>1</r:ID>
+                    <r:Version>1</r:Version>
+                    <r:CategoryReference>
+                        <r:Agency>fr.insee</r:Agency>
+                        <r:ID>CAT_1</r:ID>
+                        <r:Version>1</r:Version>
+                        <r:TypeOfObject>Category</r:TypeOfObject>
+                    </r:CategoryReference>
+                    <r:Value>1</r:Value>
+                </Code>
+                """);
 
-        Ddi3Response ddi3 = new Ddi3Response(
-                new Ddi3Response.Ddi3Options(List.of("RegisterOrReplace")),
-                List.of(new Ddi3Response.Ddi3Item(
-                        "8b108ef8-b642-4484-9c49-f88e4bf7cf1d",
-                        "fr.insee",
-                        "1",
-                        "CL_AGEMEN8",
-                        codeListXml,
-                        "2025-01-21T13:48:46.363",
-                        "abcde",
-                        false,
-                        false,
-                        false,
-                        "DC337820-AF3A-4C0B-82F9-CF02535CDE83")));
+        Ddi3Response ddi3 = ddi3Response(ddi3Item(CODE_LIST_TYPE, "CL_AGEMEN8", codeListXml));
 
         // When
         Ddi4Response result = converter.convertDdi3ToDdi4(ddi3, SCHEMA_URL);
@@ -685,35 +522,9 @@ class DDI3toDDI4ConverterServiceImplTest {
     @Test
     void shouldConvertCategoryFromDdi3() {
         // Given
-        String categoryXml = """
-                <?xml version="1.0" encoding="UTF-8"?>
-                <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
-                    <Category xmlns="ddi:logicalproduct:3_3" isUniversallyUnique="true" versionDate="2025-01-21T13:48:46.363" isMissing="false">
-                        <r:URN>urn:ddi:fr.insee:Category.CAT_0:1</r:URN>
-                        <r:Agency>fr.insee</r:Agency>
-                        <r:ID>CAT_0</r:ID>
-                        <r:Version>1</r:Version>
-                        <r:Label>
-                            <r:Content xml:lang="fr-FR">0 an</r:Content>
-                        </r:Label>
-                    </Category>
-                </Fragment>
-                """;
+        String categoryXml = categoryFragment("CAT_0", "0 an");
 
-        Ddi3Response ddi3 = new Ddi3Response(
-                new Ddi3Response.Ddi3Options(List.of("RegisterOrReplace")),
-                List.of(new Ddi3Response.Ddi3Item(
-                        "7e47c269-bcab-40f7-a778-af7bbc4e3d00",
-                        "fr.insee",
-                        "1",
-                        "CAT_0",
-                        categoryXml,
-                        "2025-01-21T13:48:46.363",
-                        "abcde",
-                        false,
-                        false,
-                        false,
-                        "DC337820-AF3A-4C0B-82F9-CF02535CDE83")));
+        Ddi3Response ddi3 = ddi3Response(ddi3Item(CATEGORY_TYPE, "CAT_0", categoryXml));
 
         // When
         Ddi4Response result = converter.convertDdi3ToDdi4(ddi3, SCHEMA_URL);
@@ -737,7 +548,7 @@ class DDI3toDDI4ConverterServiceImplTest {
     @Test
     void shouldHandleEmptyDdi3Response() {
         // Given
-        Ddi3Response ddi3 = new Ddi3Response(new Ddi3Response.Ddi3Options(List.of("RegisterOrReplace")), List.of());
+        Ddi3Response ddi3 = ddi3Response();
 
         // When
         Ddi4Response result = converter.convertDdi3ToDdi4(ddi3, SCHEMA_URL);
@@ -756,63 +567,39 @@ class DDI3toDDI4ConverterServiceImplTest {
     @Test
     void shouldConvertVariableWithTextRepresentationFromDdi3() {
         // Given
-        String variableXml = """
-                <?xml version="1.0" encoding="UTF-8"?>
-                <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
-                    <Variable xmlns="ddi:logicalproduct:3_3" isUniversallyUnique="true" versionDate="2025-01-21T13:48:46.363" isGeographic="true">
-                        <r:URN>urn:ddi:fr.insee:Variable.NAME:1</r:URN>
-                        <r:Agency>fr.insee</r:Agency>
-                        <r:ID>NAME</r:ID>
-                        <r:Version>1</r:Version>
-                        <VariableName>
-                            <r:String xml:lang="fr-FR">NAME</r:String>
-                        </VariableName>
-                        <r:Label>
-                            <r:Content xml:lang="fr-FR">Name</r:Content>
-                        </r:Label>
-                        <r:Description>
-                            <r:Content xml:lang="fr-FR">Person name</r:Content>
-                        </r:Description>
-                        <VariableRepresentation>
-                            <r:TextRepresentation blankIsMissingValue="false" minLength="1" maxLength="50" regExp="[A-Za-z ]+"/>
-                        </VariableRepresentation>
-                    </Variable>
-                </Fragment>
-                """;
-
-        Ddi3Response ddi3 = new Ddi3Response(
-                new Ddi3Response.Ddi3Options(List.of("RegisterOrReplace")),
-                List.of(new Ddi3Response.Ddi3Item(
-                        "683889c6-f74b-4d5e-92ed-908c0a42bb2d",
-                        "fr.insee",
-                        "1",
-                        "NAME",
-                        variableXml,
-                        "2025-01-21T13:48:46.363",
-                        "abcde",
-                        false,
-                        false,
-                        false,
-                        "DC337820-AF3A-4C0B-82F9-CF02535CDE83")));
+        String variableXml = fragment(versionable(
+                "Variable",
+                inNamespace(LOGICAL_PRODUCT_NS, VERSION_DATE) + " isGeographic=\"true\"",
+                "urn:ddi:fr.insee:Variable.NAME:1",
+                "NAME",
+                """
+                <VariableName>
+                    <r:String xml:lang="fr-FR">NAME</r:String>
+                </VariableName>
+                <r:Label>
+                    <r:Content xml:lang="fr-FR">Name</r:Content>
+                </r:Label>
+                <r:Description>
+                    <r:Content xml:lang="fr-FR">Person name</r:Content>
+                </r:Description>
+                <VariableRepresentation>
+                    <r:TextRepresentation blankIsMissingValue="false" minLength="1" maxLength="50" regExp="[A-Za-z ]+"/>
+                </VariableRepresentation>
+                """));
 
         // When
-        Ddi4Response result = converter.convertDdi3ToDdi4(ddi3, SCHEMA_URL);
+        Ddi4Variable variable = convertSingleVariable(ddi3Item(VARIABLE_TYPE, "NAME", variableXml));
 
         // Then
-        assertNotNull(result);
-        assertNotNull(result.variable());
-        assertEquals(1, result.variable().size());
+        assertEquals(true, variable.isGeographic());
+        assertEquals("NAME", variable.variableName().get(0).value());
+        assertEquals("Name", variable.label().get(0).value());
+        assertEquals("Person name", variable.description().get(0).value());
 
-        Ddi4Variable var = result.variable().get(0);
-        assertEquals(true, var.isGeographic());
-        assertEquals("NAME", var.variableName().get(0).value());
-        assertEquals("Name", var.label().get(0).value());
-        assertEquals("Person name", var.description().get(0).value());
+        assertNotNull(variable.variableRepresentation());
+        assertNotNull(variable.variableRepresentation().textRepresentation());
 
-        assertNotNull(var.variableRepresentation());
-        assertNotNull(var.variableRepresentation().textRepresentation());
-
-        TextRepresentation textRep = var.variableRepresentation().textRepresentation();
+        TextRepresentation textRep = variable.variableRepresentation().textRepresentation();
         assertEquals(50, textRep.maxLength());
         assertEquals(1, textRep.minLength());
         assertEquals("[A-Za-z ]+", textRep.regExp());
@@ -822,61 +609,32 @@ class DDI3toDDI4ConverterServiceImplTest {
     @Test
     void shouldConvertVariableWithDateTimeRepresentationFromDdi3() {
         // Given
-        String variableXml = """
-                <?xml version="1.0" encoding="UTF-8"?>
-                <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
-                    <Variable xmlns="ddi:logicalproduct:3_3" isUniversallyUnique="true" versionDate="2025-01-21T13:48:46.363">
-                        <r:URN>urn:ddi:fr.insee:Variable.BIRTHDATE:1</r:URN>
-                        <r:Agency>fr.insee</r:Agency>
-                        <r:ID>BIRTHDATE</r:ID>
-                        <r:Version>1</r:Version>
-                        <VariableName>
-                            <r:String xml:lang="fr-FR">BIRTHDATE</r:String>
-                        </VariableName>
-                        <r:Label>
-                            <r:Content xml:lang="fr-FR">Birth Date</r:Content>
-                        </r:Label>
-                        <VariableRepresentation>
-                            <r:DateTimeRepresentation>
-                                <r:DateTypeCode>Date</r:DateTypeCode>
-                                <r:DateFieldFormat>YYYY-MM-DD</r:DateFieldFormat>
-                            </r:DateTimeRepresentation>
-                        </VariableRepresentation>
-                    </Variable>
-                </Fragment>
-                """;
-
-        Ddi3Response ddi3 = new Ddi3Response(
-                new Ddi3Response.Ddi3Options(List.of("RegisterOrReplace")),
-                List.of(new Ddi3Response.Ddi3Item(
-                        "683889c6-f74b-4d5e-92ed-908c0a42bb2d",
-                        "fr.insee",
-                        "1",
-                        "BIRTHDATE",
-                        variableXml,
-                        "2025-01-21T13:48:46.363",
-                        "abcde",
-                        false,
-                        false,
-                        false,
-                        "DC337820-AF3A-4C0B-82F9-CF02535CDE83")));
+        String variableXml = ddi3Fragment("Variable", LOGICAL_PRODUCT_NS, "BIRTHDATE", """
+                <VariableName>
+                    <r:String xml:lang="fr-FR">BIRTHDATE</r:String>
+                </VariableName>
+                <r:Label>
+                    <r:Content xml:lang="fr-FR">Birth Date</r:Content>
+                </r:Label>
+                <VariableRepresentation>
+                    <r:DateTimeRepresentation>
+                        <r:DateTypeCode>Date</r:DateTypeCode>
+                        <r:DateFieldFormat>YYYY-MM-DD</r:DateFieldFormat>
+                    </r:DateTimeRepresentation>
+                </VariableRepresentation>
+                """);
 
         // When
-        Ddi4Response result = converter.convertDdi3ToDdi4(ddi3, SCHEMA_URL);
+        Ddi4Variable variable = convertSingleVariable(ddi3Item(VARIABLE_TYPE, "BIRTHDATE", variableXml));
 
         // Then
-        assertNotNull(result);
-        assertNotNull(result.variable());
-        assertEquals(1, result.variable().size());
+        assertEquals("BIRTHDATE", variable.variableName().get(0).value());
+        assertEquals("Birth Date", variable.label().get(0).value());
 
-        Ddi4Variable var = result.variable().get(0);
-        assertEquals("BIRTHDATE", var.variableName().get(0).value());
-        assertEquals("Birth Date", var.label().get(0).value());
+        assertNotNull(variable.variableRepresentation());
+        assertNotNull(variable.variableRepresentation().dateTimeRepresentation());
 
-        assertNotNull(var.variableRepresentation());
-        assertNotNull(var.variableRepresentation().dateTimeRepresentation());
-
-        DateTimeRepresentation dateTimeRep = var.variableRepresentation().dateTimeRepresentation();
+        DateTimeRepresentation dateTimeRep = variable.variableRepresentation().dateTimeRepresentation();
         assertEquals("Date", dateTimeRep.dateTypeCode());
         assertEquals("YYYY-MM-DD", dateTimeRep.dateFieldFormat());
     }
@@ -884,206 +642,92 @@ class DDI3toDDI4ConverterServiceImplTest {
     @Test
     void shouldThrowExceptionForMalformedXml() {
         // Given
-        Ddi3Response ddi3 = new Ddi3Response(
-                new Ddi3Response.Ddi3Options(List.of("RegisterOrReplace")),
-                List.of(new Ddi3Response.Ddi3Item(
-                        "a51e85bb-6259-4488-8df2-f08cb43485f8",
-                        "fr.insee",
-                        "1",
-                        "test",
-                        "<invalid>xml<not-closed>",
-                        "2025-01-21T13:48:46.363",
-                        "abcde",
-                        false,
-                        false,
-                        false,
-                        "DC337820-AF3A-4C0B-82F9-CF02535CDE83")));
+        Ddi3Response ddi3 = ddi3Response(ddi3Item(PHYSICAL_INSTANCE_TYPE, "test", "<invalid>xml<not-closed>"));
 
         // When & Then
         assertThrows(RuntimeException.class, () -> converter.convertDdi3ToDdi4(ddi3, SCHEMA_URL));
     }
 
     private Ddi3Response createCompleteDdi3Response() {
-        return new Ddi3Response(
-                new Ddi3Response.Ddi3Options(List.of("RegisterOrReplace")),
-                List.of(
-                        // PhysicalInstance
-                        new Ddi3Response.Ddi3Item(
-                                "a51e85bb-6259-4488-8df2-f08cb43485f8",
-                                "fr.insee",
-                                "1",
-                                "test-pi",
-                                """
-                                        <?xml version="1.0" encoding="UTF-8"?>
-                                        <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
-                                            <PhysicalInstance xmlns="ddi:physicalinstance:3_3" isUniversallyUnique="true" versionDate="2025-01-21T13:48:46.363">
-                                                <r:URN>urn:ddi:fr.insee:PhysicalInstance.test-pi:1</r:URN>
-                                                <r:Agency>fr.insee</r:Agency>
-                                                <r:ID>test-pi</r:ID>
-                                                <r:Version>1</r:Version>
-                                                <r:Citation>
-                                                    <r:Title>
-                                                        <r:String xml:lang="fr-FR">Test Instance</r:String>
-                                                    </r:Title>
-                                                </r:Citation>
-                                            </PhysicalInstance>
-                                        </Fragment>
-                                        """,
-                                "2025-01-21T13:48:46.363",
-                                "abcde",
-                                false,
-                                false,
-                                false,
-                                "DC337820-AF3A-4C0B-82F9-CF02535CDE83"),
-                        // DataRelationship
-                        new Ddi3Response.Ddi3Item(
-                                "f39ff278-8500-45fe-a850-3906da2d242b",
-                                "fr.insee",
-                                "1",
-                                "test-dr",
-                                """
-                                        <?xml version="1.0" encoding="UTF-8"?>
-                                        <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
-                                            <DataRelationship xmlns="ddi:logicalproduct:3_3" isUniversallyUnique="true" versionDate="2025-01-21T13:48:46.363">
-                                                <r:URN>urn:ddi:fr.insee:DataRelationship.test-dr:1</r:URN>
-                                                <r:Agency>fr.insee</r:Agency>
-                                                <r:ID>test-dr</r:ID>
-                                                <r:Version>1</r:Version>
-                                            </DataRelationship>
-                                        </Fragment>
-                                        """,
-                                "2025-01-21T13:48:46.363",
-                                "abcde",
-                                false,
-                                false,
-                                false,
-                                "DC337820-AF3A-4C0B-82F9-CF02535CDE83"),
-                        // Variable 1
-                        new Ddi3Response.Ddi3Item(
-                                "683889c6-f74b-4d5e-92ed-908c0a42bb2d",
-                                "fr.insee",
-                                "1",
-                                "VAR1",
-                                """
-                                        <?xml version="1.0" encoding="UTF-8"?>
-                                        <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
-                                            <Variable xmlns="ddi:logicalproduct:3_3" isUniversallyUnique="true" versionDate="2025-01-21T13:48:46.363">
-                                                <r:URN>urn:ddi:fr.insee:Variable.VAR1:1</r:URN>
-                                                <r:Agency>fr.insee</r:Agency>
-                                                <r:ID>VAR1</r:ID>
-                                                <r:Version>1</r:Version>
-                                                <VariableName>
-                                                    <r:String xml:lang="fr-FR">VAR1</r:String>
-                                                </VariableName>
-                                            </Variable>
-                                        </Fragment>
-                                        """,
-                                "2025-01-21T13:48:46.363",
-                                "abcde",
-                                false,
-                                false,
-                                false,
-                                "DC337820-AF3A-4C0B-82F9-CF02535CDE83"),
-                        // Variable 2
-                        new Ddi3Response.Ddi3Item(
-                                "683889c6-f74b-4d5e-92ed-908c0a42bb2d",
-                                "fr.insee",
-                                "1",
-                                "VAR2",
-                                """
-                                        <?xml version="1.0" encoding="UTF-8"?>
-                                        <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
-                                            <Variable xmlns="ddi:logicalproduct:3_3" isUniversallyUnique="true" versionDate="2025-01-21T13:48:46.363">
-                                                <r:URN>urn:ddi:fr.insee:Variable.VAR2:1</r:URN>
-                                                <r:Agency>fr.insee</r:Agency>
-                                                <r:ID>VAR2</r:ID>
-                                                <r:Version>1</r:Version>
-                                                <VariableName>
-                                                    <r:String xml:lang="fr-FR">VAR2</r:String>
-                                                </VariableName>
-                                            </Variable>
-                                        </Fragment>
-                                        """,
-                                "2025-01-21T13:48:46.363",
-                                "abcde",
-                                false,
-                                false,
-                                false,
-                                "DC337820-AF3A-4C0B-82F9-CF02535CDE83"),
-                        // CodeList
-                        new Ddi3Response.Ddi3Item(
-                                "8b108ef8-b642-4484-9c49-f88e4bf7cf1d",
-                                "fr.insee",
-                                "1",
-                                "CL_TEST",
-                                """
-                                        <?xml version="1.0" encoding="UTF-8"?>
-                                        <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
-                                            <CodeList xmlns="ddi:logicalproduct:3_3" isUniversallyUnique="true" versionDate="2025-01-21T13:48:46.363">
-                                                <r:URN>urn:ddi:fr.insee:CodeList.CL_TEST:1</r:URN>
-                                                <r:Agency>fr.insee</r:Agency>
-                                                <r:ID>CL_TEST</r:ID>
-                                                <r:Version>1</r:Version>
-                                            </CodeList>
-                                        </Fragment>
-                                        """,
-                                "2025-01-21T13:48:46.363",
-                                "abcde",
-                                false,
-                                false,
-                                false,
-                                "DC337820-AF3A-4C0B-82F9-CF02535CDE83"),
-                        // Category 1
-                        new Ddi3Response.Ddi3Item(
-                                "7e47c269-bcab-40f7-a778-af7bbc4e3d00",
-                                "fr.insee",
-                                "1",
-                                "CAT_0",
-                                """
-                                        <?xml version="1.0" encoding="UTF-8"?>
-                                        <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
-                                            <Category xmlns="ddi:logicalproduct:3_3" isUniversallyUnique="true" versionDate="2025-01-21T13:48:46.363" isMissing="false">
-                                                <r:URN>urn:ddi:fr.insee:Category.CAT_0:1</r:URN>
-                                                <r:Agency>fr.insee</r:Agency>
-                                                <r:ID>CAT_0</r:ID>
-                                                <r:Version>1</r:Version>
-                                                <r:Label>
-                                                    <r:Content xml:lang="fr-FR">Category 0</r:Content>
-                                                </r:Label>
-                                            </Category>
-                                        </Fragment>
-                                        """,
-                                "2025-01-21T13:48:46.363",
-                                "abcde",
-                                false,
-                                false,
-                                false,
-                                "DC337820-AF3A-4C0B-82F9-CF02535CDE83"),
-                        // Category 2
-                        new Ddi3Response.Ddi3Item(
-                                "7e47c269-bcab-40f7-a778-af7bbc4e3d00",
-                                "fr.insee",
-                                "1",
-                                "CAT_1",
-                                """
-                                        <?xml version="1.0" encoding="UTF-8"?>
-                                        <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
-                                            <Category xmlns="ddi:logicalproduct:3_3" isUniversallyUnique="true" versionDate="2025-01-21T13:48:46.363" isMissing="false">
-                                                <r:URN>urn:ddi:fr.insee:Category.CAT_1:1</r:URN>
-                                                <r:Agency>fr.insee</r:Agency>
-                                                <r:ID>CAT_1</r:ID>
-                                                <r:Version>1</r:Version>
-                                                <r:Label>
-                                                    <r:Content xml:lang="fr-FR">Category 1</r:Content>
-                                                </r:Label>
-                                            </Category>
-                                        </Fragment>
-                                        """,
-                                "2025-01-21T13:48:46.363",
-                                "abcde",
-                                false,
-                                false,
-                                false,
-                                "DC337820-AF3A-4C0B-82F9-CF02535CDE83")));
+        return ddi3Response(
+                ddi3Item(
+                        PHYSICAL_INSTANCE_TYPE,
+                        "test-pi",
+                        ddi3Fragment("PhysicalInstance", PHYSICAL_INSTANCE_NS, "test-pi", """
+                        <r:Citation>
+                            <r:Title>
+                                <r:String xml:lang="fr-FR">Test Instance</r:String>
+                            </r:Title>
+                        </r:Citation>
+                        """)),
+                ddi3Item(
+                        DATA_RELATIONSHIP_TYPE,
+                        "test-dr",
+                        ddi3Fragment("DataRelationship", LOGICAL_PRODUCT_NS, "test-dr", "")),
+                ddi3Item(VARIABLE_TYPE, "VAR1", variableNamedAsItsId("VAR1")),
+                ddi3Item(VARIABLE_TYPE, "VAR2", variableNamedAsItsId("VAR2")),
+                ddi3Item(CODE_LIST_TYPE, "CL_TEST", ddi3Fragment("CodeList", LOGICAL_PRODUCT_NS, "CL_TEST", "")),
+                ddi3Item(CATEGORY_TYPE, "CAT_0", categoryFragment("CAT_0", "Category 0")),
+                ddi3Item(CATEGORY_TYPE, "CAT_1", categoryFragment("CAT_1", "Category 1")));
+    }
+
+    /** Converts a set holding the given item, which must yield exactly one variable, and returns it. */
+    private Ddi4Variable convertSingleVariable(Ddi3Response.Ddi3Item item) {
+        Ddi4Response result = converter.convertDdi3ToDdi4(ddi3Response(item), SCHEMA_URL);
+
+        assertNotNull(result);
+        assertNotNull(result.variable());
+        assertEquals(1, result.variable().size());
+        return result.variable().get(0);
+    }
+
+    private static Ddi3Response ddi3Response(Ddi3Response.Ddi3Item... items) {
+        return new Ddi3Response(new Ddi3Response.Ddi3Options(List.of("RegisterOrReplace")), List.of(items));
+    }
+
+    private static Ddi3Response.Ddi3Item ddi3Item(String itemType, String identifier, String xml) {
+        return ddi3Item(itemType, identifier, xml, VERSION_DATE);
+    }
+
+    private static Ddi3Response.Ddi3Item ddi3Item(String itemType, String identifier, String xml, String versionDate) {
+        return new Ddi3Response.Ddi3Item(
+                itemType,
+                "fr.insee",
+                "1",
+                identifier,
+                xml,
+                versionDate,
+                "abcde",
+                false,
+                false,
+                false,
+                "DC337820-AF3A-4C0B-82F9-CF02535CDE83");
+    }
+
+    /** Fragment of a fr.insee item versioned on {@link #VERSION_DATE}, with a Colectica-style URN. */
+    private static String ddi3Fragment(String element, String namespace, String id, String body) {
+        return fragment(versionable(
+                element,
+                inNamespace(namespace, VERSION_DATE),
+                "urn:ddi:fr.insee:" + element + "." + id + ":1",
+                id,
+                body));
+    }
+
+    private static String variableNamedAsItsId(String id) {
+        return ddi3Fragment(
+                "Variable",
+                LOGICAL_PRODUCT_NS,
+                id,
+                "<VariableName><r:String xml:lang=\"fr-FR\">" + id + "</r:String></VariableName>");
+    }
+
+    private static String categoryFragment(String id, String label) {
+        return fragment(versionable(
+                "Category",
+                inNamespace(LOGICAL_PRODUCT_NS, VERSION_DATE) + " isMissing=\"false\"",
+                "urn:ddi:fr.insee:Category." + id + ":1",
+                id,
+                "<r:Label><r:Content xml:lang=\"fr-FR\">" + label + "</r:Content></r:Label>"));
     }
 }

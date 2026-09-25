@@ -28,7 +28,8 @@ public class GraphDbUnauthorizedException extends DatabaseQueryException {
     }
 
     private GraphDbUnauthorizedException(RDF4JException exception, String query, String message) {
-        super(exception, query, message);
+        // message construit ici, sans la requête : il peut partir tel quel au client
+        super(exception, query, message, message);
         logger.error(message);
     }
 

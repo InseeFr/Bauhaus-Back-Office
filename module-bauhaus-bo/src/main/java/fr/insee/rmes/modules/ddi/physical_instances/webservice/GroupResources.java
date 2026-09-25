@@ -64,6 +64,7 @@ public class GroupResources {
     }
 
     @GetMapping("/groups")
+    @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.READ)
     public ResponseEntity<List<PartialGroup>> getGroups() {
         logger.info("GET /ddi/groups - Getting all groups");
         try {
@@ -76,6 +77,7 @@ public class GroupResources {
     }
 
     @PostMapping(value = "/groups", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.CREATE)
     public ResponseEntity<Void> createOrUpdateGroup(@RequestBody Ddi4Group group) {
         logger.info("POST /ddi/groups - Creating/updating group: id={}", forLog(group.id()));
         try {

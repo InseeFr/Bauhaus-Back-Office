@@ -1,5 +1,6 @@
 package fr.insee.rmes.modules.operations.families;
 
+import static fr.insee.rmes.testcontainers.GraphDbTestProperties.registerGestionAndDedicatedPublication;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -31,7 +32,6 @@ class FamiliesEndToEndTest extends WithGraphDBContainer {
 
     private static final String ISO_8601_LOCAL_DATE_TIME_PATTERN =
             "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}(:\\d{2})?(\\.\\d+)?$";
-    private static final String BAUHAUS_TEST_PUBLICATION_REPOSITORY = "bauhaus-test-pub";
 
     private static final String FAMILY_REQUEST_JSON = """
             {
@@ -55,13 +55,7 @@ class FamiliesEndToEndTest extends WithGraphDBContainer {
 
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
-        String sesameServer = "http://" + container.getHost() + ":" + container.getMappedPort(7200);
-        registry.add("fr.insee.rmes.bauhaus.sesame.gestion.sesameServer", () -> sesameServer);
-        registry.add("fr.insee.rmes.bauhaus.sesame.gestion.repository", () -> BAUHAUS_TEST_REPOSITORY);
-        container.withInitFolder("/testcontainers").withRepository("config-pub.ttl");
-        registry.add("fr.insee.rmes.bauhaus.sesame.publication.sesameServer", () -> sesameServer);
-        registry.add("fr.insee.rmes.bauhaus.sesame.publication.repository", () -> BAUHAUS_TEST_PUBLICATION_REPOSITORY);
-        registry.add("fr.insee.rmes.bauhaus.sesame.publication.baseURI", () -> "http://id.insee.fr/");
+        registerGestionAndDedicatedPublication(registry);
     }
 
     private String familiesEndpoint() {
@@ -204,27 +198,28 @@ class FamiliesEndToEndTest extends WithGraphDBContainer {
                 .retrieve()
                 .toBodilessEntity();
 
-        restClient
-                .post()
-                .uri(familiesEndpoint() + "/family")
-                .body(FAMILY_REQUEST_JSON.formatted("Famille e2e unique", "another e2e family"))
-                .contentType(MediaType.APPLICATION_JSON)
-                .exchange((request, response) -> {
-                    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-                    assertThat(new JSONObject(response.bodyTo(String.class)).getString("message"))
-                            .isEqualTo("406_OPERATION_FAMILY_OPERATION_FAMILY_EXISTING_PREF_LABEL_LG1");
-                    return null;
-                });
+        assertCreationRejectedWith(
+                restClient,
+                FAMILY_REQUEST_JSON.formatted("Famille e2e unique", "another e2e family"),
+                "406_OPERATION_FAMILY_OPERATION_FAMILY_EXISTING_PREF_LABEL_LG1");
 
+        assertCreationRejectedWith(
+                restClient,
+                FAMILY_REQUEST_JSON.formatted("Famille e2e encore unique", "e2e unique family"),
+                "406_OPERATION_FAMILY_OPERATION_FAMILY_EXISTING_PREF_LABEL_LG2");
+    }
+
+    /** La création de la famille décrite par {@code body} est refusée en 400 avec ce message. */
+    private void assertCreationRejectedWith(RestClient restClient, String body, String expectedMessage) {
         restClient
                 .post()
                 .uri(familiesEndpoint() + "/family")
-                .body(FAMILY_REQUEST_JSON.formatted("Famille e2e encore unique", "e2e unique family"))
+                .body(body)
                 .contentType(MediaType.APPLICATION_JSON)
                 .exchange((request, response) -> {
                     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
                     assertThat(new JSONObject(response.bodyTo(String.class)).getString("message"))
-                            .isEqualTo("406_OPERATION_FAMILY_OPERATION_FAMILY_EXISTING_PREF_LABEL_LG2");
+                            .isEqualTo(expectedMessage);
                     return null;
                 });
     }

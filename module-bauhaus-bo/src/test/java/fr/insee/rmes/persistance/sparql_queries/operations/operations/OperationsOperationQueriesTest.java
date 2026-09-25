@@ -1,5 +1,8 @@
 package fr.insee.rmes.persistance.sparql_queries.operations.operations;
 
+import static fr.insee.rmes.persistance.sparql_queries.FreeMarkerRequestStub.ANY_PARAMS;
+import static fr.insee.rmes.persistance.sparql_queries.FreeMarkerRequestStub.assertQueryBuiltFromTemplate;
+import static fr.insee.rmes.persistance.sparql_queries.FreeMarkerRequestStub.assertRmesExceptionPropagated;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.mockStatic;
@@ -16,6 +19,10 @@ import org.mockito.MockedStatic;
 
 class OperationsOperationQueriesTest {
 
+    private static final String OPERATIONS_FOLDER = "operations/";
+    private static final String SERIES_FOLDER = "operations/series/";
+    private static final String GET_OPERATIONS_QUERY = "SELECT * WHERE { ?operation a insee:StatisticalOperation }";
+
     private OperationsOperationQueries operationsOperationQueries;
 
     @BeforeEach
@@ -26,169 +33,85 @@ class OperationsOperationQueriesTest {
 
     @Test
     void shouldCheckPrefLabelUnicity() throws RmesException {
-        try (MockedStatic<FreeMarkerUtils> mockedFreeMarker = mockStatic(FreeMarkerUtils.class)) {
-            mockedFreeMarker
-                    .when(() -> FreeMarkerUtils.buildRequest(
-                            eq("operations/"), eq("checkFamilyPrefLabelUnicity.ftlh"), any(Map.class)))
-                    .thenReturn("ASK { ?s skos:prefLabel 'Test Operation'@en }");
-
-            String result = operationsOperationQueries.checkPrefLabelUnicity("op123", "Test Operation", "en");
-
-            assertNotNull(result);
-            assertEquals("ASK { ?s skos:prefLabel 'Test Operation'@en }", result);
-            mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(
-                    eq("operations/"), eq("checkFamilyPrefLabelUnicity.ftlh"), argThat(params -> {
-                        Map<String, Object> map = (Map<String, Object>) params;
-                        return "\"Test Operation\"@en".equals(map.get("LABEL"))
-                                && "\"/operations/operation/op123\"".equals(map.get("URI_SUFFIX"))
-                                && "insee:StatisticalOperation".equals(map.get("TYPE"))
-                                && ("<" + GraphsPropertiesStub.stub().operationsGraph() + ">")
-                                        .equals(map.get("OPERATIONS_GRAPH"));
-                    })));
-        }
+        assertQueryBuiltFromTemplate(
+                OPERATIONS_FOLDER,
+                "checkFamilyPrefLabelUnicity.ftlh",
+                "ASK { ?s skos:prefLabel 'Test Operation'@en }",
+                () -> operationsOperationQueries.checkPrefLabelUnicity("op123", "Test Operation", "en"),
+                map -> "\"Test Operation\"@en".equals(map.get("LABEL"))
+                        && "\"/operations/operation/op123\"".equals(map.get("URI_SUFFIX"))
+                        && "insee:StatisticalOperation".equals(map.get("TYPE"))
+                        && isOperationsGraph(map));
     }
 
     @Test
     void shouldGetOperationsQuery() throws RmesException {
-        try (MockedStatic<FreeMarkerUtils> mockedFreeMarker = mockStatic(FreeMarkerUtils.class)) {
-            mockedFreeMarker
-                    .when(() ->
-                            FreeMarkerUtils.buildRequest(eq("operations/"), eq("getOperations.ftlh"), any(Map.class)))
-                    .thenReturn("SELECT * WHERE { ?operation a insee:StatisticalOperation }");
-
-            String result = operationsOperationQueries.operationsQuery();
-
-            assertNotNull(result);
-            assertEquals("SELECT * WHERE { ?operation a insee:StatisticalOperation }", result);
-            mockedFreeMarker.verify(() ->
-                    FreeMarkerUtils.buildRequest(eq("operations/"), eq("getOperations.ftlh"), argThat(params -> {
-                        Map<String, Object> map = (Map<String, Object>) params;
-                        return ("<" + GraphsPropertiesStub.stub().operationsGraph() + ">")
-                                        .equals(map.get("OPERATIONS_GRAPH"))
-                                && "\"fr\"".equals(map.get("LG1"))
-                                && "\"en\"".equals(map.get("LG2"));
-                    })));
-        }
+        assertQueryBuiltFromTemplate(
+                OPERATIONS_FOLDER,
+                "getOperations.ftlh",
+                GET_OPERATIONS_QUERY,
+                operationsOperationQueries::operationsQuery,
+                map -> isOperationsGraph(map) && hasLanguages(map));
     }
 
     @Test
     void shouldGetOperationQuery() throws RmesException {
-        try (MockedStatic<FreeMarkerUtils> mockedFreeMarker = mockStatic(FreeMarkerUtils.class)) {
-            mockedFreeMarker
-                    .when(() ->
-                            FreeMarkerUtils.buildRequest(eq("operations/"), eq("getOperation.ftlh"), any(Map.class)))
-                    .thenReturn("SELECT * WHERE { ?operation dcterms:identifier 'op123' }");
-
-            String result = operationsOperationQueries.operationQuery("op123");
-
-            assertNotNull(result);
-            assertEquals("SELECT * WHERE { ?operation dcterms:identifier 'op123' }", result);
-            mockedFreeMarker.verify(() ->
-                    FreeMarkerUtils.buildRequest(eq("operations/"), eq("getOperation.ftlh"), argThat(params -> {
-                        Map<String, Object> map = (Map<String, Object>) params;
-                        return "\"/operations/operation/op123\"".equals(map.get("OPERATION_URI_SUFFIX"))
-                                && ("<" + GraphsPropertiesStub.stub().operationsGraph() + ">")
-                                        .equals(map.get("OPERATIONS_GRAPH"))
-                                && "\"fr\"".equals(map.get("LG1"))
-                                && "\"en\"".equals(map.get("LG2"));
-                    })));
-        }
+        assertQueryBuiltFromTemplate(
+                OPERATIONS_FOLDER,
+                "getOperation.ftlh",
+                "SELECT * WHERE { ?operation dcterms:identifier 'op123' }",
+                () -> operationsOperationQueries.operationQuery("op123"),
+                map -> "\"/operations/operation/op123\"".equals(map.get("OPERATION_URI_SUFFIX"))
+                        && isOperationsGraph(map)
+                        && hasLanguages(map));
     }
 
     @Test
     void shouldGetSeriesQuery() throws RmesException {
-        try (MockedStatic<FreeMarkerUtils> mockedFreeMarker = mockStatic(FreeMarkerUtils.class)) {
-            mockedFreeMarker
-                    .when(() -> FreeMarkerUtils.buildRequest(
-                            eq("operations/series/"), eq("getSeries.ftlh"), any(Map.class)))
-                    .thenReturn("SELECT ?series WHERE { ?operation insee:isPartOf ?series }");
-
-            String result = operationsOperationQueries.seriesQuery("op123");
-
-            assertNotNull(result);
-            assertEquals("SELECT ?series WHERE { ?operation insee:isPartOf ?series }", result);
-            mockedFreeMarker.verify(() ->
-                    FreeMarkerUtils.buildRequest(eq("operations/series/"), eq("getSeries.ftlh"), argThat(params -> {
-                        Map<String, Object> map = (Map<String, Object>) params;
-                        return "\"/operations/operation/op123\"".equals(map.get("OPERATION_URI_SUFFIX"))
-                                && ("<" + GraphsPropertiesStub.stub().operationsGraph() + ">")
-                                        .equals(map.get("OPERATIONS_GRAPH"))
-                                && "\"fr\"".equals(map.get("LG1"))
-                                && "\"en\"".equals(map.get("LG2"));
-                    })));
-        }
+        assertQueryBuiltFromTemplate(
+                SERIES_FOLDER,
+                "getSeries.ftlh",
+                "SELECT ?series WHERE { ?operation insee:isPartOf ?series }",
+                () -> operationsOperationQueries.seriesQuery("op123"),
+                map -> "\"/operations/operation/op123\"".equals(map.get("OPERATION_URI_SUFFIX"))
+                        && isOperationsGraph(map)
+                        && hasLanguages(map));
     }
 
     @Test
     void shouldGetOperationsWithoutSimsQuery() throws RmesException {
-        try (MockedStatic<FreeMarkerUtils> mockedFreeMarker = mockStatic(FreeMarkerUtils.class)) {
-            mockedFreeMarker
-                    .when(() -> FreeMarkerUtils.buildRequest(
-                            eq("operations/series/"), eq("getOperationsWithoutSimsQuery.ftlh"), any(Map.class)))
-                    .thenReturn("SELECT ?operation WHERE { ?operation insee:isPartOf ?series }");
-
-            String result = operationsOperationQueries.operationsWithoutSimsQuery("series123");
-
-            assertNotNull(result);
-            assertEquals("SELECT ?operation WHERE { ?operation insee:isPartOf ?series }", result);
-            mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(
-                    eq("operations/series/"), eq("getOperationsWithoutSimsQuery.ftlh"), argThat(params -> {
-                        Map<String, Object> map = (Map<String, Object>) params;
-                        return "\"/operations/serie/series123\"".equals(map.get("SERIES_URI_SUFFIX"))
-                                && ("<" + GraphsPropertiesStub.stub().operationsGraph() + ">")
-                                        .equals(map.get("OPERATIONS_GRAPH"))
-                                && "\"fr\"".equals(map.get("LG1"))
-                                && "\"en\"".equals(map.get("LG2"));
-                    })));
-        }
+        assertQueryBuiltFromTemplate(
+                SERIES_FOLDER,
+                "getOperationsWithoutSimsQuery.ftlh",
+                "SELECT ?operation WHERE { ?operation insee:isPartOf ?series }",
+                () -> operationsOperationQueries.operationsWithoutSimsQuery("series123"),
+                map -> "\"/operations/serie/series123\"".equals(map.get("SERIES_URI_SUFFIX"))
+                        && isOperationsGraph(map)
+                        && hasLanguages(map));
     }
 
     @Test
     void shouldGetOperationsWithSimsQuery() throws RmesException {
-        try (MockedStatic<FreeMarkerUtils> mockedFreeMarker = mockStatic(FreeMarkerUtils.class)) {
-            mockedFreeMarker
-                    .when(() -> FreeMarkerUtils.buildRequest(
-                            eq("operations/series/"), eq("getOperationsWithSimsQuery.ftlh"), any(Map.class)))
-                    .thenReturn("SELECT ?operation ?sims WHERE { ?operation insee:isPartOf ?series }");
-
-            String result = operationsOperationQueries.operationsWithSimsQuery("series456");
-
-            assertNotNull(result);
-            assertEquals("SELECT ?operation ?sims WHERE { ?operation insee:isPartOf ?series }", result);
-            mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(
-                    eq("operations/series/"), eq("getOperationsWithSimsQuery.ftlh"), argThat(params -> {
-                        Map<String, Object> map = (Map<String, Object>) params;
-                        return "\"/operations/serie/series456\"".equals(map.get("SERIES_URI_SUFFIX"))
-                                && ("<" + GraphsPropertiesStub.stub().operationsGraph() + ">")
-                                        .equals(map.get("OPERATIONS_GRAPH"))
-                                && "\"fr\"".equals(map.get("LG1"))
-                                && "\"en\"".equals(map.get("LG2"));
-                    })));
-        }
+        assertQueryBuiltFromTemplate(
+                SERIES_FOLDER,
+                "getOperationsWithSimsQuery.ftlh",
+                "SELECT ?operation ?sims WHERE { ?operation insee:isPartOf ?series }",
+                () -> operationsOperationQueries.operationsWithSimsQuery("series456"),
+                map -> "\"/operations/serie/series456\"".equals(map.get("SERIES_URI_SUFFIX"))
+                        && isOperationsGraph(map)
+                        && hasLanguages(map));
     }
 
     @Test
     void shouldGetSeriesWithSimsQuery() throws RmesException {
-        try (MockedStatic<FreeMarkerUtils> mockedFreeMarker = mockStatic(FreeMarkerUtils.class)) {
-            mockedFreeMarker
-                    .when(() -> FreeMarkerUtils.buildRequest(
-                            eq("operations/series/"), eq("getSeriesWithSimsQuery.ftlh"), any(Map.class)))
-                    .thenReturn("SELECT ?series ?sims WHERE { ?series insee:isPartOf ?family }");
-
-            String result = operationsOperationQueries.seriesWithSimsQuery("family789");
-
-            assertNotNull(result);
-            assertEquals("SELECT ?series ?sims WHERE { ?series insee:isPartOf ?family }", result);
-            mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(
-                    eq("operations/series/"), eq("getSeriesWithSimsQuery.ftlh"), argThat(params -> {
-                        Map<String, Object> map = (Map<String, Object>) params;
-                        return "\"/operations/famille/family789\"".equals(map.get("FAMILY_URI_SUFFIX"))
-                                && ("<" + GraphsPropertiesStub.stub().operationsGraph() + ">")
-                                        .equals(map.get("OPERATIONS_GRAPH"))
-                                && "\"fr\"".equals(map.get("LG1"))
-                                && "\"en\"".equals(map.get("LG2"));
-                    })));
-        }
+        assertQueryBuiltFromTemplate(
+                SERIES_FOLDER,
+                "getSeriesWithSimsQuery.ftlh",
+                "SELECT ?series ?sims WHERE { ?series insee:isPartOf ?family }",
+                () -> operationsOperationQueries.seriesWithSimsQuery("family789"),
+                map -> "\"/operations/famille/family789\"".equals(map.get("FAMILY_URI_SUFFIX"))
+                        && isOperationsGraph(map)
+                        && hasLanguages(map));
     }
 
     @Test
@@ -200,57 +123,36 @@ class OperationsOperationQueriesTest {
 
     @Test
     void shouldHandleEmptyStringsInOperationQuery() throws RmesException {
-        try (MockedStatic<FreeMarkerUtils> mockedFreeMarker = mockStatic(FreeMarkerUtils.class)) {
-            mockedFreeMarker
-                    .when(() ->
-                            FreeMarkerUtils.buildRequest(eq("operations/"), eq("getOperation.ftlh"), any(Map.class)))
-                    .thenReturn("SELECT * WHERE { ?operation dcterms:identifier '' }");
-
-            String result = operationsOperationQueries.operationQuery("");
-
-            assertNotNull(result);
-            assertEquals("SELECT * WHERE { ?operation dcterms:identifier '' }", result);
-            mockedFreeMarker.verify(() ->
-                    FreeMarkerUtils.buildRequest(eq("operations/"), eq("getOperation.ftlh"), argThat(params -> {
-                        Map<String, Object> map = (Map<String, Object>) params;
-                        return "\"/operations/operation/\"".equals(map.get("OPERATION_URI_SUFFIX"));
-                    })));
-        }
+        assertQueryBuiltFromTemplate(
+                OPERATIONS_FOLDER,
+                "getOperation.ftlh",
+                "SELECT * WHERE { ?operation dcterms:identifier '' }",
+                () -> operationsOperationQueries.operationQuery(""),
+                map -> "\"/operations/operation/\"".equals(map.get("OPERATION_URI_SUFFIX")));
     }
 
     @Test
     void shouldVerifyInitParamsContainsAllRequiredParameters() throws RmesException {
-        try (MockedStatic<FreeMarkerUtils> mockedFreeMarker = mockStatic(FreeMarkerUtils.class)) {
-            mockedFreeMarker
-                    .when(() ->
-                            FreeMarkerUtils.buildRequest(eq("operations/"), eq("getOperations.ftlh"), any(Map.class)))
-                    .thenReturn("SELECT * WHERE { ?operation a insee:StatisticalOperation }");
-
-            operationsOperationQueries.operationsQuery();
-
-            mockedFreeMarker.verify(() ->
-                    FreeMarkerUtils.buildRequest(eq("operations/"), eq("getOperations.ftlh"), argThat(params -> {
-                        Map<String, Object> map = (Map<String, Object>) params;
-                        return map.containsKey("OPERATIONS_GRAPH")
-                                && map.containsKey("LG1")
-                                && map.containsKey("LG2")
-                                && ("<" + GraphsPropertiesStub.stub().operationsGraph() + ">")
-                                        .equals(map.get("OPERATIONS_GRAPH"))
-                                && "\"fr\"".equals(map.get("LG1"))
-                                && "\"en\"".equals(map.get("LG2"));
-                    })));
-        }
+        assertQueryBuiltFromTemplate(
+                OPERATIONS_FOLDER,
+                "getOperations.ftlh",
+                GET_OPERATIONS_QUERY,
+                operationsOperationQueries::operationsQuery,
+                map -> map.containsKey("OPERATIONS_GRAPH")
+                        && map.containsKey("LG1")
+                        && map.containsKey("LG2")
+                        && isOperationsGraph(map)
+                        && hasLanguages(map));
     }
 
     @Test
     void shouldUseDifferentTemplatePathsCorrectly() throws RmesException {
         try (MockedStatic<FreeMarkerUtils> mockedFreeMarker = mockStatic(FreeMarkerUtils.class)) {
             mockedFreeMarker
-                    .when(() -> FreeMarkerUtils.buildRequest(eq("operations/"), any(String.class), any(Map.class)))
+                    .when(() -> FreeMarkerUtils.buildRequest(eq(OPERATIONS_FOLDER), any(String.class), any(Map.class)))
                     .thenReturn("OPERATIONS_RESULT");
             mockedFreeMarker
-                    .when(() ->
-                            FreeMarkerUtils.buildRequest(eq("operations/series/"), any(String.class), any(Map.class)))
+                    .when(() -> FreeMarkerUtils.buildRequest(eq(SERIES_FOLDER), any(String.class), any(Map.class)))
                     .thenReturn("SERIES_RESULT");
 
             String operationsResult = operationsOperationQueries.operationsQuery();
@@ -259,43 +161,34 @@ class OperationsOperationQueriesTest {
             assertEquals("OPERATIONS_RESULT", operationsResult);
             assertEquals("SERIES_RESULT", seriesResult);
 
+            mockedFreeMarker.verify(() ->
+                    FreeMarkerUtils.buildRequest(eq(OPERATIONS_FOLDER), eq("getOperations.ftlh"), any(Map.class)));
             mockedFreeMarker.verify(
-                    () -> FreeMarkerUtils.buildRequest(eq("operations/"), eq("getOperations.ftlh"), any(Map.class)));
-            mockedFreeMarker.verify(
-                    () -> FreeMarkerUtils.buildRequest(eq("operations/series/"), eq("getSeries.ftlh"), any(Map.class)));
+                    () -> FreeMarkerUtils.buildRequest(eq(SERIES_FOLDER), eq("getSeries.ftlh"), any(Map.class)));
         }
     }
 
     @Test
     void shouldPropagateRmesExceptionFromFreeMarkerUtils() {
-        try (MockedStatic<FreeMarkerUtils> mockedFreeMarker = mockStatic(FreeMarkerUtils.class)) {
-            RmesException testException = new RmesException(500, "Test error", "Test error message");
-            mockedFreeMarker
-                    .when(() ->
-                            FreeMarkerUtils.buildRequest(eq("operations/"), eq("getOperation.ftlh"), any(Map.class)))
-                    .thenThrow(testException);
-
-            RmesException exception =
-                    assertThrows(RmesException.class, () -> operationsOperationQueries.operationQuery("test"));
-
-            assertEquals(testException, exception);
-        }
+        assertRmesExceptionPropagated(
+                OPERATIONS_FOLDER, "getOperation.ftlh", () -> operationsOperationQueries.operationQuery("test"));
     }
 
     @Test
     void shouldVerifyBuildIndicatorRequestMethod() throws RmesException {
-        try (MockedStatic<FreeMarkerUtils> mockedFreeMarker = mockStatic(FreeMarkerUtils.class)) {
-            mockedFreeMarker
-                    .when(() -> FreeMarkerUtils.buildRequest(
-                            eq("operations/series/"), eq("getSeriesWithSimsQuery.ftlh"), any(Map.class)))
-                    .thenReturn("SELECT ?series WHERE { ?series insee:isPartOf ?family }");
+        assertQueryBuiltFromTemplate(
+                SERIES_FOLDER,
+                "getSeriesWithSimsQuery.ftlh",
+                "SELECT ?series WHERE { ?series insee:isPartOf ?family }",
+                () -> operationsOperationQueries.seriesWithSimsQuery("family123"),
+                ANY_PARAMS);
+    }
 
-            String result = operationsOperationQueries.seriesWithSimsQuery("family123");
+    private static boolean isOperationsGraph(Map<String, Object> map) {
+        return ("<" + GraphsPropertiesStub.stub().operationsGraph() + ">").equals(map.get("OPERATIONS_GRAPH"));
+    }
 
-            assertNotNull(result);
-            assertEquals("SELECT ?series WHERE { ?series insee:isPartOf ?family }", result);
-            mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(
-                    eq("operations/series/"), eq("getSeriesWithSimsQuery.ftlh"), any(Map.class)));
-        }
+    private static boolean hasLanguages(Map<String, Object> map) {
+        return "\"fr\"".equals(map.get("LG1")) && "\"en\"".equals(map.get("LG2"));
     }
 }

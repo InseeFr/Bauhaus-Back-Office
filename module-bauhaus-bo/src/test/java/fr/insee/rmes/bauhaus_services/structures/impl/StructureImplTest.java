@@ -85,12 +85,17 @@ class StructureImplTest {
         assertThat(structureService.getStructuresForSearch()).contains("dsd1001");
     }
 
-    @Test
-    void shouldReadTheStructureWithItsContributors() throws RmesException {
+    /** La structure dsd1001 est lue par son identifiant puis mise en forme par le dépôt. */
+    private void givenStructureReadById() throws RmesException {
         JSONObject structure = new JSONObject().put(Constants.ID, "dsd1001");
         when(structureQueries.getStructureById("dsd1001")).thenReturn("by-id-query");
         when(repoGestion.getResponseAsObject("by-id-query")).thenReturn(structure);
         when(structureRepository.formatStructure(structure, "dsd1001")).thenReturn(structure);
+    }
+
+    @Test
+    void shouldReadTheStructureWithItsContributors() throws RmesException {
+        givenStructureReadById();
 
         assertThat(structureService.getStructureById("dsd1001")).contains("dsd1001");
 
@@ -157,10 +162,7 @@ class StructureImplTest {
 
     @Test
     void shouldPublishTheStructureItJustRead() throws RmesException {
-        JSONObject structure = new JSONObject().put(Constants.ID, "dsd1001");
-        when(structureQueries.getStructureById("dsd1001")).thenReturn("by-id-query");
-        when(repoGestion.getResponseAsObject("by-id-query")).thenReturn(structure);
-        when(structureRepository.formatStructure(structure, "dsd1001")).thenReturn(structure);
+        givenStructureReadById();
         when(structureRepository.publishStructure(any(JSONObject.class))).thenReturn("published");
 
         assertThat(structureService.publishStructureById("dsd1001")).isEqualTo("published");
