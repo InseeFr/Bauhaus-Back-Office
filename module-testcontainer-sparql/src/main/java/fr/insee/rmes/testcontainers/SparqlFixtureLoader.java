@@ -10,9 +10,9 @@ package fr.insee.rmes.testcontainers;
  * Protocol ({@code POST /{ds}/data}). This interface hides that difference so the same
  * integration-test base and the same {@code *.trig} fixtures can drive either container.
  *
- * <p>Implemented today by {@link GraphDBContainer}; the future {@code FusekiContainer}
- * (lot D of the GraphDB→Fuseki migration) will implement it as well. When that module
- * lands, this interface is the natural thing to promote to a shared test-support module.
+ * <p>Implemented by {@code GraphDBContainer} ({@code module-testcontainer-graphdb}) and
+ * {@code FusekiContainer} ({@code module-testcontainer-fuseki}). It lives in its own module so
+ * that neither container module depends on the other.
  */
 public interface SparqlFixtureLoader {
 

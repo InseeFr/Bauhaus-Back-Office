@@ -7,10 +7,10 @@
     <version>1.0.0</version>
   </parent>
 
-  <artifactId>module-testcontainer-graphdb</artifactId>
+  <artifactId>module-testcontainer-fuseki</artifactId>
   <version>1.0.0</version>
 
-  <name>module-testcontainer-graphdb</name>
+  <name>module-testcontainer-fuseki</name>
 
   <dependencies>
     <dependency>
@@ -24,33 +24,16 @@
       <artifactId>module-testcontainer-sparql</artifactId>
       <version>1.0.0</version>
     </dependency>
-    
+
     <dependency>
       <groupId>org.testcontainers</groupId>
       <artifactId>testcontainers</artifactId>
     </dependency>
-    
-    <dependency>
-      <groupId>org.testcontainers</groupId>
-      <artifactId>junit-jupiter</artifactId>
-      <version>${testcontainers.version}</version>
-    </dependency>
 
-    <!-- GraphDBResetExtension vit dans src/main : l'API JUnit doit être en scope compile ici,
-         alors que testcontainers:junit-jupiter ne la déclare qu'en provided. -->
+    <!-- FusekiResetExtension vit dans src/main : l'API JUnit doit être en scope compile ici. -->
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-api</artifactId>
-    </dependency>
-    
-    <dependency>
-      <groupId>com.fasterxml.jackson.dataformat</groupId>
-      <artifactId>jackson-dataformat-yaml</artifactId>
-    </dependency>
-    
-    <dependency>
-      <groupId>org.assertj</groupId>
-      <artifactId>assertj-core</artifactId>
     </dependency>
   </dependencies>
 

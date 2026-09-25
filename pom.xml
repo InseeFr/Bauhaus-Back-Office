@@ -433,7 +433,9 @@
   <modules>
     <module>colectica-client</module>
     <module>module-utility</module>
+    <module>module-testcontainer-sparql</module>
     <module>module-testcontainer-graphdb</module>
+    <module>module-testcontainer-fuseki</module>
     <module>module-operation</module>
     <module>module-ddi</module>
     <module>module-bauhaus-bo</module>
