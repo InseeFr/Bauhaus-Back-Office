@@ -15,7 +15,9 @@ import fr.insee.rmes.colectica.client.dto.QueryRequest;
 import fr.insee.rmes.colectica.client.dto.UpdateItemStateRequest;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
@@ -47,7 +49,10 @@ public class ColecticaClient {
 
     public ColecticaClient(
             RestClient restClient, String baseApiUrl, String baseServerUrl, ColecticaCredentials credentials) {
-        this.restClient = restClient;
+        this.restClient = restClient
+                .mutate()
+                .requestInterceptor(new ColecticaResponseLoggingInterceptor())
+                .build();
         this.baseApiUrl = baseApiUrl;
         this.baseServerUrl = baseServerUrl;
         this.credentials = credentials;
@@ -215,7 +220,7 @@ public class ColecticaClient {
                 .body(query)
                 .retrieve()
                 .body(ItemReference[].class));
-        return response == null ? List.of() : List.of(response);
+        return nonNullEntries(response);
     }
 
     /**
@@ -238,7 +243,17 @@ public class ColecticaClient {
                 .body(query)
                 .retrieve()
                 .body(ColecticaItem[].class));
-        return response == null ? List.of() : List.of(response);
+        return nonNullEntries(response);
+    }
+
+    /**
+     * The relationship {@code descriptions} endpoints may return {@code null} entries (a relationship
+     * pointing at an item that can no longer be resolved, e.g. a deleted one): they are dropped.
+     */
+    private static <T> List<T> nonNullEntries(T[] response) {
+        return response == null
+                ? List.of()
+                : Arrays.stream(response).filter(Objects::nonNull).toList();
     }
 
     // --- authentication / token management ---

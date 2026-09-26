@@ -110,8 +110,7 @@ public class DDIRepositoryImpl implements DDIRepository {
                 ddi3ToDdi4Converter,
                 ddi4ToDdi3Converter,
                 mutualizedCodeListRefsProvider,
-                catalog,
-                defaultLang);
+                catalog);
         this.physicalInstanceWriter = new ColecticaPhysicalInstanceWriter(
                 instanceConfiguration,
                 colecticaClient,

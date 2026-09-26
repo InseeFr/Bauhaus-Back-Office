@@ -578,6 +578,93 @@ public class LocalColecticaGroupInitConfiguration {
         };
     }
 
+    /** Graine des ids déterministes de l'exemple « Group et StudyUnit sans LogicalProduct ». */
+    static final String WITHOUT_LOGICAL_PRODUCT_EXAMPLE_STUDY_UNIT_SEED = "example:studyunit:without-logical-product";
+
+    private static final String WITHOUT_LOGICAL_PRODUCT_EXAMPLE_GROUP_SEED = "example:group:without-logical-product";
+
+    /**
+     * Exemple de données volontairement incomplet : un Group → une StudyUnit → une PhysicalInstance,
+     * sans aucun LogicalProduct ni scheme, ni côté Group ni côté StudyUnit.
+     * <p>
+     * Le save d'une PhysicalInstance ne crée plus de LogicalProduct ni de scheme à la volée : il
+     * refuse (409, {@code MissingSchemeException}) quand le parent n'expose pas le scheme attendu.
+     * Cet exemple permet de reproduire les deux erreurs en local et de vérifier leur affichage côté
+     * front : ajouter une variable à la PhysicalInstance (StudyUnit sans LogicalProduct), ou une
+     * liste de codes, une catégorie ou une valeur sentinelle (Group sans CodeListScheme…).
+     * <p>
+     * Indépendant de {@link #initColecticaGroups} : ids déterministes, donc l'init reste rejouable.
+     */
+    @Bean
+    @Order(Ordered.LOWEST_PRECEDENCE)
+    CommandLineRunner initColecticaWithoutLogicalProductExample(
+            GroupService groupService,
+            StudyUnitService studyUnitService,
+            DDIService ddiService,
+            ColecticaConfiguration colecticaConfiguration) {
+        return args -> {
+            logger.info("=== Creating the example group and study unit without logical product ===");
+
+            String defaultAgencyId = colecticaConfiguration.server().defaultAgencyId();
+            String defaultLang = colecticaConfiguration.langs().getFirst();
+            String versionResponsibility = colecticaConfiguration.server().versionResponsibility();
+            String versionDate = ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+
+            try {
+                // La PhysicalInstance d'abord, puis la StudyUnit qui la référence, puis le Group :
+                // Colectica ne doit pas fabriquer de stubs vides des items référencés.
+                String physicalInstanceLabel = "EXEMPLE - PI d'une study unit sans LogicalProduct";
+                Ddi4Response piResponse = ddiService.createPhysicalInstance(
+                        new CreatePhysicalInstanceRequest(
+                                physicalInstanceLabel, physicalInstanceLabel, null, null, null, null, null),
+                        physicalInstanceIds(WITHOUT_LOGICAL_PRODUCT_EXAMPLE_STUDY_UNIT_SEED));
+                Ddi4PhysicalInstance physicalInstance =
+                        piResponse.physicalInstance().getFirst();
+
+                String studyUnitId = generateDeterministicUuid(WITHOUT_LOGICAL_PRODUCT_EXAMPLE_STUDY_UNIT_SEED);
+                Ddi4StudyUnit studyUnit = new Ddi4StudyUnit(
+                        Ddi4StudyUnit.TYPE,
+                        CogsDate.ofDateTime(versionDate),
+                        "urn:ddi:%s:%s:1".formatted(defaultAgencyId, studyUnitId),
+                        defaultAgencyId,
+                        studyUnitId,
+                        "1",
+                        new Citation(LangStrings.of(defaultLang, "EXEMPLE - study unit sans LogicalProduct")),
+                        null,
+                        List.of(Reference.of(
+                                physicalInstance.agency(),
+                                physicalInstance.id(),
+                                physicalInstance.version(),
+                                "PhysicalInstance")),
+                        null);
+                logger.info("Creating the example study unit without logical product: id={}", studyUnitId);
+                studyUnitService.createOrUpdate(studyUnit);
+
+                String groupId = generateDeterministicUuid(WITHOUT_LOGICAL_PRODUCT_EXAMPLE_GROUP_SEED);
+                Ddi4Group group = new Ddi4Group(
+                        Ddi4Group.TYPE,
+                        CogsDate.ofDateTime(versionDate),
+                        "urn:ddi:%s:%s:1".formatted(defaultAgencyId, groupId),
+                        defaultAgencyId,
+                        groupId,
+                        "1",
+                        versionResponsibility,
+                        new Citation(LangStrings.of(defaultLang, "EXEMPLE - groupe sans LogicalProduct")),
+                        List.of(Reference.of(defaultAgencyId, studyUnitId, "1", "StudyUnit")),
+                        List.of(),
+                        "insee:StatisticalOperationSeries",
+                        null);
+                logger.info(
+                        "Creating the example group without logical product: id={}, studyUnit={}",
+                        groupId,
+                        studyUnitId);
+                groupService.createOrUpdate(group);
+            } catch (Exception e) {
+                logger.error("Failed to create the example group and study unit without logical product", e);
+            }
+        };
+    }
+
     private void verifyItemsInColectica(ColecticaClient colecticaClient) {
         String groupItemType = "4bd6eef6-99df-40e6-9b11-5b8f64e5cb23";
         String studyUnitItemType = "752a535b-b548-4fbe-97e4-f26a02d9e413";
