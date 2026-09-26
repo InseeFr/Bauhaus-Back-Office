@@ -256,9 +256,9 @@ class ColecticaPhysicalInstanceWriter {
                 .collect(Collectors.toCollection(ArrayList::new));
 
         // Range les listes de codes et catégories non mutualisées sous les schemes du groupe, et les
-        // variables sous le VariableScheme de la study unit (en auto-provisionnant les schemes
-        // manquants). Les parents sont résolus une fois et partagés.
-        schemeFiler.appendSchemeUpdates(agencyId, id, ddi4Response, colecticaItems, additionalItems, knownParents);
+        // variables sous le VariableScheme de la study unit. Un scheme manquant lève une
+        // MissingSchemeException avant tout envoi. Les parents sont résolus une fois et partagés.
+        schemeFiler.appendSchemeUpdates(agencyId, id, ddi4Response, colecticaItems, knownParents);
 
         // Items supplémentaires (p.ex. la StudyUnit réenregistrée avec une nouvelle référence de PI)
         colecticaItems.addAll(additionalItems);
