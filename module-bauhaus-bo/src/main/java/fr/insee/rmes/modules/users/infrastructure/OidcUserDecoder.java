@@ -42,7 +42,10 @@ public class OidcUserDecoder implements UserDecoder {
                 logger.debug("Anonymous principal, no user decoded");
                 yield empty();
             }
-            case User user -> of(user);
+            case User user -> {
+                logger.debug("Principal is already a user {} with stamps {}", user.id(), user.getStamps());
+                yield of(user);
+            }
             case Jwt jwt -> {
                 var u = of(buildUserFromToken(jwt.getClaims()));
                 yield u;
@@ -61,6 +64,7 @@ public class OidcUserDecoder implements UserDecoder {
             throw new EmptyUserInformationException();
         }
         var id = (String) claims.get(jwtProperties.getIdClaim());
+        logger.debug("Building user {} from a token with claims {}", id, claims.keySet());
         var stamps = extractStamp(claims, id);
 
         var source = (String) claims.get(jwtProperties.getSourceClaim());
@@ -118,7 +122,13 @@ public class OidcUserDecoder implements UserDecoder {
     private Set<String> buildStampsWithAlternateIdentifier(String primaryStamp, IdentifierFetcher fetcher) {
         Set<String> stamps = new HashSet<>();
         stamps.add(primaryStamp);
-        fetcher.fetch(primaryStamp).ifPresent(stamps::add);
+        fetcher.fetch(primaryStamp)
+                .ifPresentOrElse(
+                        alternate -> {
+                            logger.debug("Alternate identifier {} found for stamp {}", alternate, primaryStamp);
+                            stamps.add(alternate);
+                        },
+                        () -> logger.debug("No alternate identifier found for stamp {}", primaryStamp));
         return stamps;
     }
 
@@ -147,19 +157,29 @@ public class OidcUserDecoder implements UserDecoder {
 
     private Optional<String> extractStampFromInseeGroups(Object inseeGroups) {
         if (inseeGroups == null) {
+            logger.debug("Claim '{}' absent from the token", jwtProperties.getInseeGroupClaim());
             return empty();
         }
 
         String suffix = "_" + jwtProperties.getHieApplicationPrefix();
 
         return switch (inseeGroups) {
-            case List<?> list ->
-                list.stream()
-                        .map(this::jsonElementOrElseToString)
+            case List<?> list -> {
+                List<String> groups =
+                        list.stream().map(this::jsonElementOrElseToString).toList();
+                logger.debug("Insee groups {}, looking for the first one ending with '{}'", groups, suffix);
+                yield groups.stream()
                         .filter(group -> group.endsWith(suffix))
                         .map(group -> group.substring(0, group.length() - suffix.length()))
                         .findFirst();
-            default -> empty();
+            }
+            default -> {
+                logger.debug(
+                        "Claim '{}' is a {}, not a list: no stamp extracted",
+                        jwtProperties.getInseeGroupClaim(),
+                        inseeGroups.getClass().getName());
+                yield empty();
+            }
         };
     }
 
