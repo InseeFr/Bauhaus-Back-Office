@@ -34,8 +34,26 @@ public class DomainAccessPrivilegesChecker implements AccessPrivilegesCheckerSer
     @Override
     public boolean hasAccess(String module, String privilege, String id, Object principal)
             throws MissingUserInformationException {
+        logger.debug(
+                "Checking access: module={}, privilege={}, id={}, principalType={}",
+                module,
+                privilege,
+                id,
+                principal == null ? null : principal.getClass().getName());
         var user = this.decoder.fromPrincipal(principal);
-        return user.map(u -> hasAcccess(module, privilege, id, u)).orElse(false);
+        if (user.isEmpty()) {
+            logger.debug("Access denied: no user could be decoded from the principal");
+            return false;
+        }
+        var granted = hasAcccess(module, privilege, id, user.get());
+        logger.debug(
+                "Access {} for user {} on module={}, privilege={}, id={}",
+                granted ? "granted" : "denied",
+                user.get().id(),
+                module,
+                privilege,
+                id);
+        return granted;
     }
 
     private boolean hasAcccess(String moduleIdentifer, String privilegeIdentifier, String id, User user) {
@@ -56,9 +74,26 @@ public class DomainAccessPrivilegesChecker implements AccessPrivilegesCheckerSer
             return false;
         }
 
+        logger.debug(
+                "User {} has roles {}, stamps {}, source {}", user.id(), user.roles(), user.getStamps(), user.source());
+
         var moduleAccessPrivileges = findModuleAccessPrivileges(user, module);
+        if (moduleAccessPrivileges.isEmpty()) {
+            logger.debug("Access denied: roles {} grant no privilege on module {}", user.roles(), module);
+            return false;
+        }
+        logger.debug("Privileges of user {} on module {}: {}", user.id(), module, moduleAccessPrivileges.get());
 
         var privilegeAndStrategy = findStrategyByPrivilege(privilege, moduleAccessPrivileges);
+        if (privilegeAndStrategy.isEmpty()) {
+            logger.debug("Access denied: roles {} grant no {} privilege on module {}", user.roles(), privilege, module);
+            return false;
+        }
+        logger.debug(
+                "Strategy for privilege {} on module {}: {}",
+                privilege,
+                module,
+                privilegeAndStrategy.get().strategy());
 
         return privilegeAndStrategy
                 .map((privilegeAndStrategyValue) ->
@@ -77,6 +112,10 @@ public class DomainAccessPrivilegesChecker implements AccessPrivilegesCheckerSer
                                 || privilege.equals(RBAC.Privilege.DELETE)
                                 || privilege.equals(RBAC.Privilege.PUBLISH)
                                 || privilege.equals(RBAC.Privilege.ADMINISTRATION))) {
+                    logger.debug(
+                            "Access denied: strategy ALL but user {} has no stamp, required for privilege {}",
+                            user.id(),
+                            privilege);
                     yield false;
                 }
 
@@ -84,6 +123,7 @@ public class DomainAccessPrivilegesChecker implements AccessPrivilegesCheckerSer
             }
             case STAMP -> {
                 if (user.getStamps().isEmpty()) {
+                    logger.debug("Access denied: strategy STAMP but user {} has no stamp", user.id());
                     yield false;
                 }
 
@@ -97,9 +137,23 @@ public class DomainAccessPrivilegesChecker implements AccessPrivilegesCheckerSer
                             e);
                     yield false;
                 }
-                yield stamps.isEmpty() || stamps.stream().anyMatch(user.getStamps()::contains);
+                logger.debug(
+                        "Strategy STAMP: resource {} of module {} has stamps {}, user {} has stamps {}",
+                        id,
+                        module,
+                        stamps,
+                        user.id(),
+                        user.getStamps());
+                if (stamps.isEmpty()) {
+                    logger.debug("Strategy STAMP: resource {} has no stamp, access granted", id);
+                    yield true;
+                }
+                yield stamps.stream().anyMatch(user.getStamps()::contains);
             }
-            case NONE -> false;
+            case NONE -> {
+                logger.debug("Access denied: strategy NONE");
+                yield false;
+            }
         };
     }
 

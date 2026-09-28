@@ -859,4 +859,48 @@ class LocalColecticaGroupInitConfigurationTest {
                 .extracting(Reference::id)
                 .containsExactly(expectedStudyUnitId);
     }
+
+    @Test
+    void withoutLogicalProductExample_createsAGroupAndAStudyUnitWithoutLogicalProductHoldingAPhysicalInstance()
+            throws Exception {
+        when(ddiService.createPhysicalInstance(any(), any())).thenReturn(piResponse("fr.insee", "pi-without-lp"));
+
+        LocalColecticaGroupInitConfiguration config = new LocalColecticaGroupInitConfiguration();
+        CommandLineRunner runner = config.initColecticaWithoutLogicalProductExample(
+                groupService, studyUnitService, ddiService, createColecticaConfig());
+
+        runner.run();
+
+        // Une PhysicalInstance à ids déterministes : une relance la réécrit.
+        ArgumentCaptor<PhysicalInstanceIds> idsCaptor = ArgumentCaptor.forClass(PhysicalInstanceIds.class);
+        verify(ddiService).createPhysicalInstance(any(), idsCaptor.capture());
+        assertThat(idsCaptor.getValue().physicalInstance())
+                .isEqualTo(generateDeterministicUuid(
+                        LocalColecticaGroupInitConfiguration.WITHOUT_LOGICAL_PRODUCT_EXAMPLE_STUDY_UNIT_SEED
+                                + "#physicalinstance"));
+
+        // La StudyUnit porte la PI mais aucun LogicalProduct : ranger des variables y est refusé.
+        ArgumentCaptor<Ddi4StudyUnit> suCaptor = ArgumentCaptor.forClass(Ddi4StudyUnit.class);
+        verify(studyUnitService).createOrUpdate(suCaptor.capture());
+        Ddi4StudyUnit studyUnit = suCaptor.getValue();
+        assertThat(studyUnit.id())
+                .isEqualTo(generateDeterministicUuid(
+                        LocalColecticaGroupInitConfiguration.WITHOUT_LOGICAL_PRODUCT_EXAMPLE_STUDY_UNIT_SEED));
+        assertThat(studyUnit.physicalInstanceReferences())
+                .extracting(Reference::id)
+                .containsExactly("pi-without-lp");
+        assertThat(studyUnit.logicalProductReferences()).isNullOrEmpty();
+
+        // Le Group classe la StudyUnit, sans LogicalProduct non plus : ranger des listes de codes,
+        // catégories ou valeurs sentinelles y est refusé.
+        ArgumentCaptor<Ddi4Group> groupCaptor = ArgumentCaptor.forClass(Ddi4Group.class);
+        verify(groupService).createOrUpdate(groupCaptor.capture());
+        Ddi4Group group = groupCaptor.getValue();
+        assertThat(group.studyUnitReference()).extracting(Reference::id).containsExactly(studyUnit.id());
+        assertThat(group.logicalProductReference()).isNullOrEmpty();
+
+        // Aucun LogicalProduct ni scheme créé.
+        verify(ddiService, never()).createLogicalProduct(any());
+        verify(ddiService, never()).createVariableScheme(any());
+    }
 }

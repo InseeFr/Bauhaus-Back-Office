@@ -38,9 +38,9 @@ public class ConceptsExportBuilder extends RdfService {
     private final ExportUtils exportUtils;
     private final ConceptConceptsQueries conceptConceptsQueries;
 
-    private static final String xslFile = "/xslTransformerFiles/rmes2odt.xsl";
-    private static final String xmlPattern = "/xslTransformerFiles/concept/conceptPatternContent.xml";
-    private static final String zip = "/xslTransformerFiles/concept/toZipForConcept.zip";
+    private static final String XSL_FILE = "/xslTransformerFiles/rmes2odt.xsl";
+    private static final String XML_PATTERN = "/xslTransformerFiles/concept/conceptPatternContent.xml";
+    private static final String ZIP = "/xslTransformerFiles/concept/toZipForConcept.zip";
 
     public ConceptsExportBuilder(
             RepositoryGestion repoGestion,
@@ -123,7 +123,7 @@ public class ConceptsExportBuilder extends RdfService {
             throws RmesException {
         String parametersXML = XsltUtils.buildParams(lg1, lg2, includeEmptyFields, Constants.CONCEPT);
         xmlContent.put(Constants.PARAMETERS_FILE, parametersXML);
-        return exportUtils.exportAsODT(fileName, xmlContent, xslFile, xmlPattern, zip, Constants.CONCEPT);
+        return exportUtils.exportAsODT(fileName, xmlContent, XSL_FILE, XML_PATTERN, ZIP, Constants.CONCEPT);
     }
 
     public InputStream exportAsInputStream(
@@ -132,6 +132,6 @@ public class ConceptsExportBuilder extends RdfService {
         String parametersXML = XsltUtils.buildParams(lg1, lg2, includeEmptyFields, Constants.CONCEPT);
         xmlContent.put(Constants.PARAMETERS_FILE, parametersXML);
         return exportUtils.exportAsInputStream(
-                fileName, xmlContent, xslFile, xmlPattern, zip, Constants.CONCEPT, FilesUtils.ODT_EXTENSION);
+                fileName, xmlContent, XSL_FILE, XML_PATTERN, ZIP, Constants.CONCEPT, FilesUtils.ODT_EXTENSION);
     }
 }

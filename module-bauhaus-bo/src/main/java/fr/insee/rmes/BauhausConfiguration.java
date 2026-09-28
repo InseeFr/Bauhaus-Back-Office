@@ -19,6 +19,19 @@ public record BauhausConfiguration(
     }
 
     /**
+     * L'API n'exige un jeton qu'en PROD : ailleurs, le {@code DevAuthenticationFilter} authentifie
+     * chaque requête sans jeton. Seule source de ce critère, partagée par la chaîne de sécurité et
+     * par la documentation OpenAPI.
+     */
+    public static boolean isAuthenticated(String env) {
+        return "PROD".equalsIgnoreCase(env);
+    }
+
+    public boolean authenticated() {
+        return isAuthenticated(env);
+    }
+
+    /**
      * Les modules actifs, dans leur ordre de déclaration — c'est aussi l'ordre des tuiles sur
      * la page d'accueil.
      */

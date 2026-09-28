@@ -11,11 +11,14 @@ import fr.insee.rmes.modules.users.domain.model.Source;
 import fr.insee.rmes.modules.users.domain.port.serverside.RbacFetcher;
 import java.util.*;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @ServerSideAdaptor
 @Service
 public class PropertiesRbacFetcher implements RbacFetcher {
+    private static final Logger logger = LoggerFactory.getLogger(PropertiesRbacFetcher.class);
 
     private final Set<AllModuleAccessPrivileges> allModulesAccessPrivileges;
 
@@ -91,6 +94,7 @@ public class PropertiesRbacFetcher implements RbacFetcher {
                     }
                 }
             } catch (UnknownRoleException _) {
+                logger.debug("Role {} is not declared in the RBAC configuration, ignored", role);
             }
         }
         return result;

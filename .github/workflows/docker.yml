@@ -10,12 +10,15 @@ on:
 
 jobs:
   docker:
-    uses: InseeFr/rmes-githubactions-commons/.github/workflows/docker-publish.yml@main
+    runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: write
-    secrets: inherit
-    with:
-      image: inseefr/bauhaus-back-office
-      dockerfile: Dockerfile.bauhaus
-      latest: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: InseeFr/rmes-githubactions-commons/.github/actions/docker-publish@main
+        with:
+          image: inseefr/bauhaus-back-office
+          dockerfile: Dockerfile.bauhaus
+          latest: 'true'
+          dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
+          dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}

@@ -89,7 +89,7 @@ public class UserConfiguration {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, RequestMatcher publicEndpointsMatcher) throws Exception {
-        boolean isProd = "PROD".equalsIgnoreCase(bauhausConfiguration.env());
+        boolean isProd = bauhausConfiguration.authenticated();
 
         http.sessionManagement(AbstractHttpConfigurer::disable)
                 .cors(withDefaults())

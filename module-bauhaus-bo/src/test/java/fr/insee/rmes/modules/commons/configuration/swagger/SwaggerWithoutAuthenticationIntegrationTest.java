@@ -17,18 +17,20 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 /**
- * Swagger activé sur un environnement sans Keycloak déclaré : la documentation reste servie, mais
- * sans flow OAuth2 — seul le collage manuel d'un jeton (schéma {@code bearerAuth}) est possible.
+ * Swagger activé hors PROD : l'API n'y est pas authentifiée (le {@code DevAuthenticationFilter}
+ * authentifie chaque requête sans jeton), la documentation ne décrit donc aucun schéma de sécurité
+ * — pas de bouton « Authorize » inutile dans l'UI, même si un Keycloak est déclaré.
  */
-@SpringBootTest(classes = SwaggerWithoutIssuerIntegrationTest.TestConfiguration.class)
+@SpringBootTest(classes = SwaggerWithoutAuthenticationIntegrationTest.TestConfiguration.class)
 @AutoConfigureMockMvc(addFilters = false)
 @TestPropertySource(
         properties = {
             "fr.insee.rmes.bauhaus.swagger.enabled=true",
-            "fr.insee.rmes.bauhaus.env=PROD",
-            "spring.security.oauth2.resourceserver.jwt.issuer-uri="
+            "fr.insee.rmes.bauhaus.env=local",
+            "spring.security.oauth2.resourceserver.jwt.issuer-uri=https://auth.test/realms/bauhaus",
+            "fr.insee.rmes.bauhaus.swagger.oauth.client-id=bauhaus-swagger"
         })
-class SwaggerWithoutIssuerIntegrationTest {
+class SwaggerWithoutAuthenticationIntegrationTest {
 
     @Configuration
     @EnableAutoConfiguration
@@ -42,12 +44,11 @@ class SwaggerWithoutIssuerIntegrationTest {
     private MockMvc mvc;
 
     @Test
-    void should_still_document_the_api_with_the_bearer_scheme_only() throws Exception {
+    void should_document_the_api_without_any_security_scheme() throws Exception {
         mvc.perform(get("/v3/api-docs"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.components.securitySchemes.bearerAuth.scheme")
-                        .value("bearer"))
-                .andExpect(jsonPath("$.components.securitySchemes.oauth2").doesNotExist())
-                .andExpect(jsonPath("$.security[?(@.oauth2)]").doesNotExist());
+                .andExpect(jsonPath("$.info.title").value(OpenApiConfiguration.TITLE))
+                .andExpect(jsonPath("$.components.securitySchemes").doesNotExist())
+                .andExpect(jsonPath("$.security").doesNotExist());
     }
 }

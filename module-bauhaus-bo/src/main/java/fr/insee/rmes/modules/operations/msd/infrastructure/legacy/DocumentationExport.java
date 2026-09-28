@@ -64,12 +64,12 @@ public class DocumentationExport {
 
     final DocumentationsUtils documentationsUtils;
     final DocumentsUtils documentsUtils;
-    static final String xslFile = "/xslTransformerFiles/sims2fodt.xsl";
-    static final String xmlPatternRmes = "/xslTransformerFiles/simsRmes/rmesPatternContent.xml";
-    static final String zipRmes = "/xslTransformerFiles/simsRmes/toZipForRmes.zip";
+    static final String XSL_FILE = "/xslTransformerFiles/sims2fodt.xsl";
+    static final String XML_PATTERN_RMES = "/xslTransformerFiles/simsRmes/rmesPatternContent.xml";
+    static final String ZIP_RMES = "/xslTransformerFiles/simsRmes/toZipForRmes.zip";
 
-    static final String xmlPatternLabel = "/xslTransformerFiles/simsLabel/labelPatternContent.xml";
-    static final String zipLabel = "/xslTransformerFiles/simsLabel/toZipForLabel.zip";
+    static final String XML_PATTERN_LABEL = "/xslTransformerFiles/simsLabel/labelPatternContent.xml";
+    static final String ZIP_LABEL = "/xslTransformerFiles/simsLabel/toZipForLabel.zip";
     private final int maxLength;
 
     public DocumentationExport(
@@ -236,7 +236,7 @@ public class DocumentationExport {
 
     private ResponseEntity<Resource> export(
             Exporter exporter, Map<String, String> xmlContent, PatternAndZip patternAndZip) throws RmesException {
-        return exporter.export(xmlContent, xslFile, patternAndZip.xmlPattern(), patternAndZip.zip(), DOCUMENTATION);
+        return exporter.export(xmlContent, XSL_FILE, patternAndZip.xmlPattern(), patternAndZip.zip(), DOCUMENTATION);
     }
 
     public ResponseEntity<Object> exportXmlFiles(
@@ -467,8 +467,8 @@ public class DocumentationExport {
     private record PatternAndZip(String xmlPattern, String zip) {
         public static PatternAndZip of(String goal) throws RmesBadRequestException {
             return switch (goal) {
-                case GOAL_RMES -> new PatternAndZip(xmlPatternRmes, zipRmes);
-                case GOAL_COMITE_LABEL -> new PatternAndZip(xmlPatternLabel, zipLabel);
+                case GOAL_RMES -> new PatternAndZip(XML_PATTERN_RMES, ZIP_RMES);
+                case GOAL_COMITE_LABEL -> new PatternAndZip(XML_PATTERN_LABEL, ZIP_LABEL);
                 default -> throw new RmesBadRequestException("The goal is unknown");
             };
         }

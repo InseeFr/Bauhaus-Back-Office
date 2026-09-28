@@ -1,5 +1,6 @@
 package fr.insee.rmes.modules.commons.configuration.swagger;
 
+import fr.insee.rmes.BauhausConfiguration;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
@@ -33,6 +34,9 @@ import org.springframework.security.web.SecurityFilterChain;
  * auprès de Keycloak. Le flow OAuth2 vise <em>l'émetteur qui protège déjà l'API</em>
  * ({@code spring.security.oauth2.resourceserver.jwt.issuer-uri}) : le jeton obtenu depuis l'UI porte
  * donc les mêmes rôles, et ouvre exactement les mêmes droits, qu'un appel venu du front.
+ * <p>
+ * Hors PROD, l'API n'est pas authentifiée ({@link BauhausConfiguration#isAuthenticated}) : aucun
+ * schéma de sécurité n'est alors décrit, et l'UI n'affiche pas de bouton « Authorize ».
  */
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnProperty(name = OpenApiConfiguration.ENABLED_PROPERTY, havingValue = "true")
@@ -73,16 +77,19 @@ public class OpenApiConfiguration {
     };
 
     private final String appVersion;
+    private final boolean authenticated;
     private final String issuerUri;
     private final String clientId;
     private final String contextPath;
 
     public OpenApiConfiguration(
             @Value("${fr.insee.rmes.bauhaus.version}") String appVersion,
+            @Value("${fr.insee.rmes.bauhaus.env:}") String env,
             @Value("${" + ISSUER_PROPERTY + ":}") String issuerUri,
             @Value("${" + CLIENT_ID_PROPERTY + ":}") String clientId,
             @Value("${server.servlet.contextPath:/}") String contextPath) {
         this.appVersion = appVersion;
+        this.authenticated = BauhausConfiguration.isAuthenticated(env);
         // L'issuer est concaténé aux endpoints OIDC : un « / » final produirait des URLs à double slash,
         // que Keycloak refuse.
         this.issuerUri = trimTrailingSlash(issuerUri.trim());
@@ -92,6 +99,11 @@ public class OpenApiConfiguration {
 
     @Bean
     public OpenAPI openAPI() {
+        Info info = new Info().title(TITLE).version(appVersion).description(DESCRIPTION);
+        if (!authenticated) {
+            return new OpenAPI().info(info);
+        }
+
         Components components = new Components()
                 .addSecuritySchemes(
                         BEARER_SCHEME_NAME,
@@ -101,7 +113,7 @@ public class OpenApiConfiguration {
                                 .bearerFormat("JWT"));
 
         OpenAPI openAPI = new OpenAPI()
-                .info(new Info().title(TITLE).version(appVersion).description(DESCRIPTION))
+                .info(info)
                 .components(components)
                 // Bouton « Authorize » de l'UI, appliqué à toutes les opérations.
                 .addSecurityItem(new SecurityRequirement().addList(BEARER_SCHEME_NAME));
@@ -141,6 +153,11 @@ public class OpenApiConfiguration {
                 "Swagger UI activé : documentation sur {}v3/api-docs, UI sur {}swagger-ui.html",
                 contextPath,
                 contextPath);
+
+        if (!authenticated) {
+            log.info("Swagger UI : API non authentifiée hors PROD, aucun schéma de sécurité décrit");
+            return;
+        }
 
         if (!oauthFlowDescribed()) {
             log.warn(

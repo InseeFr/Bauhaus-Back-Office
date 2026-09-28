@@ -36,6 +36,8 @@
     <springdoc.version>3.0.3</springdoc.version>
     <rdf4j.version>5.3.1</rdf4j.version>
     <xdocreport.version>2.2.0</xdocreport.version>
+    <!-- Surcharge du BOM Spring Boot 4.1.0 (qui fixe 2.3.34) -->
+    <freemarker.version>2.3.35</freemarker.version>
     <jacoco.version>0.8.15</jacoco.version>
     <spotless.version>3.10.2</spotless.version>
     <palantir-java-format.version>2.98.0</palantir-java-format.version>

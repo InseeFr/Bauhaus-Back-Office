@@ -4,11 +4,13 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.MissingSchemeException;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.StudyUnitNotFoundException;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3toDDI4ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI4toDDI3ConverterService;
@@ -17,6 +19,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDISe
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.Ddi4SchemaService;
 import fr.insee.rmes.modules.users.domain.port.serverside.RbacFetcher;
 import fr.insee.rmes.modules.users.infrastructure.UserProvider;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -78,5 +81,41 @@ class DdiExceptionHandlerTest {
                         .content("{}"))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("No study unit found for physical instance fr.insee/pi-111"));
+    }
+
+    @Test
+    void shouldReturnConflictWithMessageWhenPatchedInstanceHasNoScheme() throws Exception {
+        String message = "L'opération (StudyUnit fr.insee/su-1) n'a pas de VariableScheme pour ranger ses variables";
+        when(ddiService.updatePhysicalInstance(eq("fr.insee"), eq("pi-111"), any()))
+                .thenThrow(new MissingSchemeException(
+                        MissingSchemeException.Code.STUDY_UNIT_MISSING_VARIABLE_SCHEME,
+                        Map.of("studyUnit", "fr.insee/su-1"),
+                        message));
+
+        mockMvc.perform(patch("/ddi/physical-instance/fr.insee/pi-111")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.message").value(message))
+                .andExpect(jsonPath("$.code").value("STUDY_UNIT_MISSING_VARIABLE_SCHEME"))
+                .andExpect(jsonPath("$.params.studyUnit").value("fr.insee/su-1"));
+    }
+
+    @Test
+    void shouldReturnConflictWithMessageWhenSavedInstanceHasNoScheme() throws Exception {
+        String message = "La série (Group fr.insee/group-1) n'a pas de CodeListScheme pour ranger ses listes de codes";
+        when(ddiService.updateFullPhysicalInstance(eq("fr.insee"), eq("pi-111"), any()))
+                .thenThrow(new MissingSchemeException(
+                        MissingSchemeException.Code.GROUP_MISSING_CODE_LIST_SCHEME,
+                        Map.of("group", "fr.insee/group-1"),
+                        message));
+
+        mockMvc.perform(put("/ddi/physical-instance/fr.insee/pi-111")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.message").value(message))
+                .andExpect(jsonPath("$.code").value("GROUP_MISSING_CODE_LIST_SCHEME"))
+                .andExpect(jsonPath("$.params.group").value("fr.insee/group-1"));
     }
 }
