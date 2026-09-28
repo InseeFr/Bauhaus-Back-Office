@@ -132,6 +132,49 @@ class IntegrationMinioFilesOperation {
                 .hasMessageContaining("Error copying file");
     }
 
+    @Test
+    void testExistsWithPath_shouldTellWhetherAnObjectLivesUnderThePrefix() throws MinioException {
+        MinioClient minioClient = MinioClient.builder()
+                .endpoint(container.getS3URL())
+                .credentials(container.getUserName(), container.getPassword())
+                .build();
+        MinioFilesOperation minioFilesOperation = new MinioFilesOperation(minioClient, "metadata");
+        createBucket(minioFilesOperation.bucketName(), minioClient);
+
+        minioFilesOperation.write(
+                new ByteArrayInputStream("Test".getBytes()), new Document("prefix/documents", "file.txt"));
+
+        assertThat(minioFilesOperation.exists("prefix/documents")).isTrue();
+        assertThat(minioFilesOperation.exists("prefix/doc")).isFalse();
+        assertThat(minioFilesOperation.exists("missing/documents")).isFalse();
+    }
+
+    @Test
+    void testExists_shouldThrowException_whenBucketDoesNotExist() {
+        MinioClient minioClient = MinioClient.builder()
+                .endpoint(container.getS3URL())
+                .credentials(container.getUserName(), container.getPassword())
+                .build();
+        MinioFilesOperation minioFilesOperation = new MinioFilesOperation(minioClient, "missing-bucket");
+
+        assertThatThrownBy(() -> minioFilesOperation.exists(new Document("test/path", "file.txt")))
+                .isInstanceOf(RmesFileException.class);
+        assertThatThrownBy(() -> minioFilesOperation.exists("test/path")).isInstanceOf(RmesFileException.class);
+    }
+
+    @Test
+    void testExists_shouldThrowException_whenMinioIsUnreachable() {
+        MinioClient minioClient = MinioClient.builder()
+                .endpoint("http://localhost:1")
+                .credentials(container.getUserName(), container.getPassword())
+                .build();
+        MinioFilesOperation minioFilesOperation = new MinioFilesOperation(minioClient, "metadata");
+
+        assertThatThrownBy(() -> minioFilesOperation.exists(new Document("test/path", "file.txt")))
+                .isInstanceOf(RmesFileException.class);
+        assertThatThrownBy(() -> minioFilesOperation.exists("test/path")).isInstanceOf(RmesFileException.class);
+    }
+
     /** Le conteneur étant partagé par la classe, le bucket survit d'une méthode de test à l'autre. */
     private void createBucket(String bucketName, MinioClient minioClient) throws MinioException {
         if (minioClient.bucketExists(

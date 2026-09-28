@@ -8,7 +8,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import fr.insee.rmes.exceptions.RmesFileException;
 import fr.insee.rmes.modules.commons.configuration.LogRequestFilter;
+import fr.insee.rmes.modules.commons.domain.model.Document;
 import fr.insee.rmes.modules.commons.infrastructure.filessystem.FileSystemOperation;
 import fr.insee.rmes.modules.operations.documents.domain.DomainPublishedDocumentFileService;
 import fr.insee.rmes.modules.operations.documents.domain.port.clientside.PublishedDocumentFileService;
@@ -46,6 +48,9 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
 @Import(PublishedDocumentFilesResourcesTest.TestConfiguration.class)
 class PublishedDocumentFilesResourcesTest {
 
+    /** Fichier dont le stockage ne sait pas dire s'il existe, comme un MinIO injoignable. */
+    static final String UNREACHABLE_FILE = "Stockage_en_panne.pdf";
+
     @Autowired
     MockMvc mvc;
 
@@ -75,6 +80,13 @@ class PublishedDocumentFilesResourcesTest {
                 .andExpect(jsonPath("$.message").value("File Brouillon.pdf is not published"));
     }
 
+    @Test
+    void should_answer_500_rather_than_404_when_the_storage_cannot_tell_whether_the_file_exists() throws Exception {
+        mvc.perform(get("/documents/fichier/" + UNREACHABLE_FILE))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.message").value("The file storage could not be read"));
+    }
+
     @org.springframework.boot.test.context.TestConfiguration
     @ImportAutoConfiguration(ServletWebSecurityAutoConfiguration.class)
     static class TestConfiguration {
@@ -84,7 +96,18 @@ class PublishedDocumentFilesResourcesTest {
             Path publication = Files.createTempDirectory("publication");
             Files.writeString(publication.resolve("Note_technique.pdf"), "contenu publié");
             Files.writeString(publication.resolve("page.html"), "<script>alert(1)</script>");
-            return new DomainPublishedDocumentFileService(new FileSystemOperation(), publication.toString());
+            return new DomainPublishedDocumentFileService(
+                    new FileSystemOperation() {
+                        @Override
+                        public boolean exists(Document document) {
+                            if (document.name().equals(UNREACHABLE_FILE)) {
+                                throw new RmesFileException(
+                                        UNREACHABLE_FILE, "storage down", new IOException("Connection refused"));
+                            }
+                            return super.exists(document);
+                        }
+                    },
+                    publication.toString());
         }
 
         @Bean
