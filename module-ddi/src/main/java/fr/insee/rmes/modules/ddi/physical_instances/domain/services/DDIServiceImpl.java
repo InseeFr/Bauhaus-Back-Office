@@ -23,6 +23,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnitResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Variable;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4VariableScheme;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.DuplicatePhysicalInstanceRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LangString;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodesList;
@@ -309,6 +310,18 @@ public class DDIServiceImpl implements DDIService {
     public Ddi4Response updatePhysicalInstance(String agencyId, String id, UpdatePhysicalInstanceRequest request) {
         ddiRepository.updatePhysicalInstance(agencyId, id, request);
         return ddiRepository.getPhysicalInstance(agencyId, id);
+    }
+
+    @Override
+    public Ddi4Response duplicatePhysicalInstance(
+            String agencyId, String id, DuplicatePhysicalInstanceRequest request) {
+        logger.info(
+                "Duplicating physical instance {}/{} with label: {}",
+                forLog(agencyId),
+                forLog(id),
+                forLog(request.physicalInstanceLabel()));
+        Reference copy = ddiRepository.duplicatePhysicalInstance(agencyId, id, request);
+        return ddiRepository.getPhysicalInstance(copy.agency(), copy.id());
     }
 
     @Override

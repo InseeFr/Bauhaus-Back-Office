@@ -80,8 +80,9 @@ class ColecticaSchemeFiler {
      * y a quelque chose à ranger, préservant le comportement pour les instances dont toutes les listes
      * de codes sont mutualisées (aucune résolution de parent, rien d'ajouté).
      *
-     * @param knownParents les parents quand l'appelant les connaît déjà (le PATCH qui rattache
-     *                     l'instance à une StudyUnit les porte dans sa requête) ; {@code null} pour les
+     * @param knownParents les parents quand l'appelant les connaît déjà (la duplication, qui rattache
+     *                     la copie à une StudyUnit dans le même lot, les porte dans sa requête) ;
+     *                     {@code null} pour les
      *                     résoudre via les relations Colectica
      * @throws MissingSchemeException quand un parent n'expose pas le scheme attendu
      */
@@ -111,9 +112,8 @@ class ColecticaSchemeFiler {
             try {
                 parents = catalog.getPhysicalInstanceParents(agencyId, id);
             } catch (StudyUnitNotFoundException _) {
-                // Duplication étape 1 : le PUT brut part avant que l'instance ne soit rattachée à une
-                // StudyUnit. On saute le rangement — le PATCH qui rattache l'instance réenregistre le
-                // même contenu avec les parents portés par sa requête, et range tout à ce moment-là.
+                // Instance rattachée à aucune StudyUnit : il n'y a nulle part où ranger ses objets.
+                // On enregistre l'instance telle quelle plutôt que de refuser la sauvegarde.
                 logger.warn(
                         "Skipping scheme filing for physical instance {}/{}: no study unit attached yet", agencyId, id);
                 return;

@@ -379,6 +379,25 @@ class DdiResourcesTest {
     }
 
     @Test
+    void shouldDuplicatePhysicalInstance() {
+        PhysicalInstanceDuplicationRequest request = new PhysicalInstanceDuplicationRequest(
+                "PI (copy)", "DR", "LR", "su-1", "fr.insee", "group-1", "fr.insee");
+        Ddi4Response copy = createMockDdi4Response();
+        when(ddiService.duplicatePhysicalInstance(
+                        "fr.insee",
+                        "pi-src",
+                        new DuplicatePhysicalInstanceRequest(
+                                "PI (copy)", "DR", "LR", "su-1", "fr.insee", "group-1", "fr.insee")))
+                .thenReturn(copy);
+
+        ResponseEntity<Ddi4Response> result = ddiResources.duplicatePhysicalInstance("fr.insee", "pi-src", request);
+
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertEquals(MediaType.APPLICATION_JSON, result.getHeaders().getContentType());
+        assertEquals(copy, result.getBody());
+    }
+
+    @Test
     void shouldCreatePhysicalInstance() {
         // Given
         CreatePhysicalInstanceRequest request = new CreatePhysicalInstanceRequest(

@@ -33,6 +33,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnitResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Variable;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.DuplicatePhysicalInstanceRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LangString;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LangStrings;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodeListScheme;
@@ -547,6 +548,20 @@ class DDIServiceImplTest {
         assertEquals("updated-schema", result.schema());
         verify(ddiRepository).updatePhysicalInstance(agencyId, instanceId, request);
         verify(ddiRepository).getPhysicalInstance(agencyId, instanceId);
+    }
+
+    @Test
+    void shouldReturnTheCopyAfterDuplicatingPhysicalInstance() {
+        DuplicatePhysicalInstanceRequest request = new DuplicatePhysicalInstanceRequest(
+                "PI (copy)", null, null, "su-1", "fr.insee", "group-1", "fr.insee");
+        when(ddiRepository.duplicatePhysicalInstance("fr.insee", "pi-src", request))
+                .thenReturn(Reference.of("fr.insee", "pi-copy", "1", "PhysicalInstance"));
+        Ddi4Response copy = new Ddi4Response("copy-schema", null, null, null, null, null, null, null);
+        when(ddiRepository.getPhysicalInstance("fr.insee", "pi-copy")).thenReturn(copy);
+
+        Ddi4Response result = ddiService.duplicatePhysicalInstance("fr.insee", "pi-src", request);
+
+        assertEquals(copy, result);
     }
 
     @Test

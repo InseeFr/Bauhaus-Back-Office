@@ -21,6 +21,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI4t
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -843,9 +844,8 @@ class DDIRepositoryImplTest {
 
     @Test
     void shouldAttachPhysicalInstanceToStudyUnitWhenUpdateCarriesStudyUnit() {
-        // Given a PATCH that carries a StudyUnit (duplication workflow, cf. #1555):
-        // the PI must be attached to that StudyUnit so that GET .../parents can resolve
-        // its Group & Study afterwards.
+        // Given a PATCH that carries a StudyUnit: the PI must be attached to that StudyUnit so that
+        // GET .../parents can resolve its Group & Study afterwards.
         String instanceId = "duplicated-pi-id";
         String agencyId = "fr.insee";
         String studyUnitId = "su-target";
@@ -5479,8 +5479,8 @@ class DDIRepositoryImplTest {
 
     @Test
     void updateFullPhysicalInstance_savesWithoutSchemeFilingWhenPhysicalInstanceHasNoStudyUnitYet() {
-        // Duplication step 1: the raw PUT of a duplicated PI (with variables) happens BEFORE the
-        // instance is attached to a StudyUnit — parents resolution must not make the save fail.
+        // A PI attached to no StudyUnit has nowhere to file its variables: parents resolution must
+        // not make the save fail.
         Ddi3Response.Ddi3Item piItem = new Ddi3Response.Ddi3Item(
                 "pi-type", "fr.insee", "1", "pi-1", "<pi/>", "2026-01-01T00:00:00", "resp", false, false, false, "fmt");
         when(ddi4ToDdi3Converter.convertDdi4ToDdi3(any()))
@@ -5521,21 +5521,17 @@ class DDIRepositoryImplTest {
     }
 
     @Test
-    void updatePhysicalInstance_filesVariablesUsingRequestParentsWhenAttachingToStudyUnit() {
-        // Duplication step 2: the PATCH attaches the PI to its StudyUnit in the same batch, so the
-        // parents cannot be resolved through Colectica relationships yet — the request carries them.
+    void updatePhysicalInstance_rewritesOnlyPhysicalInstanceAndDataRelationshipWithoutSchemeFiling() {
+        // Le PATCH ne touche qu'au libellé et au rattachement (Groupe/Étude) : il ne réécrit ni les
+        // variables ni les listes de codes, et ne vérifie donc aucun LogicalProduct ni scheme.
         String agencyId = "fr.insee";
         String instanceId = "pi-1";
         UpdatePhysicalInstanceRequest updateRequest = new UpdatePhysicalInstanceRequest(
-                "Copied PI", "Copied DR", "Copied LR", "su-1", "fr.insee", "group-1", "fr.insee");
+                "New PI", "New DR", "New LR", "su-1", "fr.insee", "group-1", "fr.insee");
 
-        when(instanceConfiguration.itemTypes())
-                .thenReturn(Map.of(
-                        "StudyUnit", STUDY_UNIT_ITEM_TYPE, "LogicalProduct", "lp-type", "VariableScheme", "vs-type"));
-        when(instanceConfiguration.itemFormat()).thenReturn("fmt");
+        when(instanceConfiguration.itemTypes()).thenReturn(Map.of("StudyUnit", STUDY_UNIT_ITEM_TYPE));
 
-        // getPhysicalInstance: the freshly duplicated instance carries one variable
-        Ddi4PhysicalInstance mockPhysicalInstance = new Ddi4PhysicalInstance(
+        Ddi4PhysicalInstance currentPhysicalInstance = new Ddi4PhysicalInstance(
                 Ddi4PhysicalInstance.TYPE,
                 CogsDate.ofDateTime("2026-01-01T00:00:00"),
                 "urn:ddi:fr.insee:pi-1:1",
@@ -5543,29 +5539,27 @@ class DDIRepositoryImplTest {
                 instanceId,
                 "1",
                 null,
-                new Citation(LangStrings.of("fr-FR", "Copied PI")),
-                null);
-        Ddi4Variable variable = new Ddi4Variable(
-                Ddi4Variable.TYPE,
+                new Citation(LangStrings.of("fr-FR", "Old PI")),
+                List.of(Reference.of(agencyId, "dr-1", "1", "DataRelationship")));
+        Ddi4DataRelationship currentDataRelationship = new Ddi4DataRelationship(
+                Ddi4DataRelationship.TYPE,
                 CogsDate.ofDateTime("2026-01-01T00:00:00"),
-                "urn:ddi:fr.insee:VAR_1:1",
-                "fr.insee",
-                "VAR_1",
+                "urn:ddi:fr.insee:dr-1:1",
+                agencyId,
+                "dr-1",
                 "1",
                 null,
                 null,
-                null,
-                null,
-                null,
-                null);
-        Ddi4Response mockDdi4Response = new Ddi4Response(
+                List.of(new LogicalRecord(
+                        LogicalRecord.TYPE, "urn:ddi:fr.insee:lr-1:1", agencyId, "lr-1", "1", null, null)));
+        Ddi4Response currentInstance = new Ddi4Response(
                 "ddi:4.0",
                 List.of(Reference.of(agencyId, instanceId, "1", "PhysicalInstance")),
-                List.of(mockPhysicalInstance),
-                List.of(),
-                List.of(variable),
-                List.of(),
-                List.of(),
+                List.of(currentPhysicalInstance),
+                List.of(currentDataRelationship),
+                ddi4WithOneVariable().variable(),
+                null,
+                null,
                 null);
         when(colecticaClient.getSet(anyString(), anyString(), any()))
                 .thenReturn(new ColecticaSetItem[] {new ColecticaSetItem(instanceId, 1, agencyId)});
@@ -5584,9 +5578,8 @@ class DDIRepositoryImplTest {
                     null)
         });
         when(ddi3ToDdi4Converter.convertDdi3ToDdi4(any(Ddi3Response.class), eq("ddi:4.0")))
-                .thenReturn(mockDdi4Response);
+                .thenReturn(currentInstance);
 
-        // StudyUnit fetched to inject the PhysicalInstanceReference
         String studyUnitXml = "<Fragment xmlns:r=\"ddi:reusable:3_3\" xmlns=\"ddi:instance:3_3\">"
                 + "<StudyUnit xmlns=\"ddi:studyunit:3_3\" isUniversallyUnique=\"true\"/>"
                 + "</Fragment>";
@@ -5604,7 +5597,141 @@ class DDIRepositoryImplTest {
                         false,
                         "fmt"));
 
-        // The StudyUnit from the request already files a VariableScheme (StudyUnit -> LP -> VS)
+        ArgumentCaptor<Ddi4Response> ddi4Captor = ArgumentCaptor.forClass(Ddi4Response.class);
+        when(ddi4ToDdi3Converter.convertDdi4ToDdi3(ddi4Captor.capture()))
+                .thenReturn(new Ddi3Response(
+                        new Ddi3Response.Ddi3Options(List.of("RegisterOrReplace")),
+                        List.of(
+                                new Ddi3Response.Ddi3Item(
+                                        "pi-type",
+                                        agencyId,
+                                        "1",
+                                        instanceId,
+                                        "<pi/>",
+                                        "2026-01-01T00:00:00",
+                                        "resp",
+                                        false,
+                                        false,
+                                        false,
+                                        "fmt"),
+                                new Ddi3Response.Ddi3Item(
+                                        "dr-type",
+                                        agencyId,
+                                        "1",
+                                        "dr-1",
+                                        "<dr/>",
+                                        "2026-01-01T00:00:00",
+                                        "resp",
+                                        false,
+                                        false,
+                                        false,
+                                        "fmt"))));
+        when(colecticaClient.createOrUpdateItems(any())).thenReturn("{}");
+
+        ddiRepository.updatePhysicalInstance(agencyId, instanceId, updateRequest);
+
+        // Seules la PhysicalInstance et la DataRelationship sont converties : pas de variables.
+        assertThat(ddi4Captor.getValue().variable()).isNullOrEmpty();
+        // Aucune résolution de LogicalProduct ni de scheme.
+        verify(colecticaClient, never()).findRelatedDescriptions(any(), any(), anyList());
+        verify(ddi4ToDdi3Converter, never()).toVariableSchemeItem(any());
+        ArgumentCaptor<ColecticaCreateItemRequest> reqCaptor =
+                ArgumentCaptor.forClass(ColecticaCreateItemRequest.class);
+        verify(colecticaClient).createOrUpdateItems(reqCaptor.capture());
+        assertThat(reqCaptor.getValue().items())
+                .extracting(ColecticaItemResponse::identifier)
+                .containsExactly(instanceId, "dr-1", "su-1");
+    }
+
+    @Test
+    void duplicatePhysicalInstance_savesCopyAttachedToStudyUnitAndFilesItsVariablesInOneBatch() {
+        // La copie reçoit de nouveaux identifiants (PI, DataRelationship, LogicalRecord, variables),
+        // chacun pointant sur son original via BasedOnObject, puis part dans un seul lot avec la
+        // StudyUnit de rattachement et le VariableScheme qui range les nouvelles variables.
+        String agencyId = "fr.insee";
+        DuplicatePhysicalInstanceRequest request = new DuplicatePhysicalInstanceRequest(
+                "Source PI (copy)", "Copied DR", null, "su-1", "fr.insee", "group-1", "fr.insee");
+
+        when(instanceConfiguration.itemTypes())
+                .thenReturn(Map.of(
+                        "StudyUnit", STUDY_UNIT_ITEM_TYPE, "LogicalProduct", "lp-type", "VariableScheme", "vs-type"));
+        when(instanceConfiguration.itemFormat()).thenReturn("fmt");
+
+        // Instance source : une PI, sa DR (un LogicalRecord) et une variable
+        Ddi4PhysicalInstance sourcePhysicalInstance = new Ddi4PhysicalInstance(
+                Ddi4PhysicalInstance.TYPE,
+                CogsDate.ofDateTime("2026-01-01T00:00:00"),
+                "urn:ddi:fr.insee:pi-src:3",
+                agencyId,
+                "pi-src",
+                "3",
+                null,
+                new Citation(LangStrings.of("en-GB", "Source PI")),
+                List.of(Reference.of(agencyId, "dr-src", "1", "DataRelationship")));
+        Ddi4DataRelationship sourceDataRelationship = new Ddi4DataRelationship(
+                Ddi4DataRelationship.TYPE,
+                CogsDate.ofDateTime("2026-01-01T00:00:00"),
+                "urn:ddi:fr.insee:dr-src:1",
+                agencyId,
+                "dr-src",
+                "1",
+                null,
+                LangStrings.of("en-GB", "Source DR"),
+                List.of(new LogicalRecord(
+                        LogicalRecord.TYPE,
+                        "urn:ddi:fr.insee:lr-src:1",
+                        agencyId,
+                        "lr-src",
+                        "1",
+                        LangStrings.of("en-GB", "Source LR"),
+                        new VariablesInRecord(List.of(Reference.of(agencyId, "VAR_1", "1", "Variable"))))));
+        Ddi4Response sourceInstance = new Ddi4Response(
+                "ddi:4.0",
+                List.of(Reference.of(agencyId, "pi-src", "3", "PhysicalInstance")),
+                List.of(sourcePhysicalInstance),
+                List.of(sourceDataRelationship),
+                ddi4WithOneVariable().variable(),
+                null,
+                null,
+                null);
+        when(colecticaClient.getSet(anyString(), anyString(), any()))
+                .thenReturn(new ColecticaSetItem[] {new ColecticaSetItem("pi-src", 3, agencyId)});
+        when(colecticaClient.getDescriptions(anyList())).thenReturn(new ColecticaItemResponse[] {
+            new ColecticaItemResponse(
+                    "a51e85bb-6259-4488-8df2-f08cb43485f8",
+                    agencyId,
+                    3,
+                    "pi-src",
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><PhysicalInstance/></Fragment>",
+                    null,
+                    null,
+                    false,
+                    false,
+                    false,
+                    null)
+        });
+        when(ddi3ToDdi4Converter.convertDdi3ToDdi4(any(Ddi3Response.class), eq("ddi:4.0")))
+                .thenReturn(sourceInstance);
+
+        // StudyUnit cible, relue pour y injecter la PhysicalInstanceReference
+        String studyUnitXml = "<Fragment xmlns:r=\"ddi:reusable:3_3\" xmlns=\"ddi:instance:3_3\">"
+                + "<StudyUnit xmlns=\"ddi:studyunit:3_3\" isUniversallyUnique=\"true\"/>"
+                + "</Fragment>";
+        when(colecticaClient.getItem("fr.insee", "su-1", null))
+                .thenReturn(new ColecticaItemResponse(
+                        STUDY_UNIT_ITEM_TYPE,
+                        "fr.insee",
+                        2,
+                        "su-1",
+                        studyUnitXml,
+                        "2026-01-01T00:00:00",
+                        "resp",
+                        false,
+                        false,
+                        false,
+                        "fmt"));
+
+        // La StudyUnit cible expose déjà un VariableScheme (StudyUnit -> LP -> VS)
         when(colecticaClient.findRelatedDescriptions(
                         RelationshipDirection.BY_SUBJECT, new ItemReference("fr.insee", "su-1"), List.of("lp-type")))
                 .thenReturn(List.of(new ItemReference("fr.insee", "lp-1")));
@@ -5624,17 +5751,16 @@ class DDIRepositoryImplTest {
                         false,
                         false,
                         "fmt"));
-        Ddi4VariableScheme parsedScheme = new Ddi4VariableScheme(
-                Ddi4VariableScheme.TYPE,
-                CogsDate.ofDateTime("2026-01-01T00:00:00"),
-                "urn:ddi:fr.insee:VS_1:1",
-                "fr.insee",
-                "VS_1",
-                "1",
-                LangStrings.of("fr-FR", "VS"),
-                new java.util.ArrayList<>(List.of(Reference.of("fr.insee", "VAR_OLD", "1", "Variable"))));
-        when(ddi3ToDdi4Converter.toVariableScheme("<vs/>")).thenReturn(parsedScheme);
-
+        when(ddi3ToDdi4Converter.toVariableScheme("<vs/>"))
+                .thenReturn(new Ddi4VariableScheme(
+                        Ddi4VariableScheme.TYPE,
+                        CogsDate.ofDateTime("2026-01-01T00:00:00"),
+                        "urn:ddi:fr.insee:VS_1:1",
+                        "fr.insee",
+                        "VS_1",
+                        "1",
+                        LangStrings.of("fr-FR", "VS"),
+                        new ArrayList<>(List.of(Reference.of("fr.insee", "VAR_OLD", "1", "Variable")))));
         ArgumentCaptor<Ddi4VariableScheme> vsCaptor = ArgumentCaptor.forClass(Ddi4VariableScheme.class);
         when(ddi4ToDdi3Converter.toVariableSchemeItem(vsCaptor.capture()))
                 .thenReturn(new Ddi3Response.Ddi3Item(
@@ -5650,38 +5776,75 @@ class DDIRepositoryImplTest {
                         false,
                         "fmt"));
 
-        Ddi3Response.Ddi3Item piItem = new Ddi3Response.Ddi3Item(
-                "pi-type",
-                agencyId,
-                "1",
-                instanceId,
-                "<pi/>",
-                "2026-01-01T00:00:00",
-                "resp",
-                false,
-                false,
-                false,
-                "fmt");
-        when(ddi4ToDdi3Converter.convertDdi4ToDdi3(any()))
-                .thenReturn(
-                        new Ddi3Response(new Ddi3Response.Ddi3Options(List.of("RegisterOrReplace")), List.of(piItem)));
+        ArgumentCaptor<Ddi4Response> ddi4Captor = ArgumentCaptor.forClass(Ddi4Response.class);
+        when(ddi4ToDdi3Converter.convertDdi4ToDdi3(ddi4Captor.capture()))
+                .thenReturn(new Ddi3Response(
+                        new Ddi3Response.Ddi3Options(List.of("RegisterOrReplace")),
+                        List.of(new Ddi3Response.Ddi3Item(
+                                "pi-type",
+                                agencyId,
+                                "1",
+                                "pi-copy",
+                                "<pi/>",
+                                "2026-01-01T00:00:00",
+                                "resp",
+                                false,
+                                false,
+                                false,
+                                "fmt"))));
         when(colecticaClient.createOrUpdateItems(any())).thenReturn("{}");
 
-        ddiRepository.updatePhysicalInstance(agencyId, instanceId, updateRequest);
+        Reference duplicated = ddiRepository.duplicatePhysicalInstance(agencyId, "pi-src", request);
 
-        // The parents come from the request: no Colectica relationship lookup for them.
+        assertThat(duplicated).isNotNull();
+        assertThat(duplicated.agency()).isEqualTo(agencyId);
+        assertThat(duplicated.id()).isNotEqualTo("pi-src");
+
+        Ddi4Response copy = ddi4Captor.getValue();
+        Ddi4PhysicalInstance copiedPhysicalInstance = copy.physicalInstance().getFirst();
+        Ddi4DataRelationship copiedDataRelationship = copy.dataRelationship().getFirst();
+        LogicalRecord copiedLogicalRecord =
+                copiedDataRelationship.logicalRecord().getFirst();
+        Ddi4Variable copiedVariable = copy.variable().getFirst();
+
+        assertThat(copiedPhysicalInstance.id()).isEqualTo(duplicated.id());
+        assertThat(copiedPhysicalInstance.version()).isEqualTo("1");
+        assertThat(copiedPhysicalInstance.urn()).isEqualTo("urn:ddi:fr.insee:" + duplicated.id() + ":1");
+        assertThat(copiedPhysicalInstance.citation().title())
+                .containsExactly(new LangString("en-GB", "Source PI (copy)"));
+        assertThat(copiedPhysicalInstance.basedOnObject().basedOnReferences())
+                .containsExactly(Reference.of(agencyId, "pi-src", "3", "PhysicalInstance"));
+        assertThat(copiedPhysicalInstance.dataRelationshipReference())
+                .extracting(Reference::id)
+                .containsExactly(copiedDataRelationship.id());
+
+        assertThat(copiedDataRelationship.id()).isNotEqualTo("dr-src");
+        assertThat(copiedDataRelationship.label()).containsExactly(new LangString("en-GB", "Copied DR"));
+        assertThat(copiedDataRelationship.basedOnObject().basedOnReferences())
+                .containsExactly(Reference.of(agencyId, "dr-src", "1", "DataRelationship"));
+
+        assertThat(copiedLogicalRecord.id()).isNotEqualTo("lr-src");
+        assertThat(copiedLogicalRecord.label())
+                .containsExactly(new LangString("en-GB", "Enregistrement logique : Source PI (copy)"));
+        assertThat(copiedLogicalRecord.variablesInRecord().variableUsedReference())
+                .extracting(Reference::id)
+                .containsExactly(copiedVariable.id());
+
+        assertThat(copiedVariable.id()).isNotEqualTo("VAR_1");
+        assertThat(copiedVariable.basedOnObject().basedOnReferences())
+                .containsExactly(Reference.of("fr.insee", "VAR_1", "1", "Variable"));
+
+        // Les parents viennent de la requête : aucune résolution par les relations Colectica.
         verify(colecticaClient, never()).findRelatedDescriptions(eq(RelationshipDirection.BY_OBJECT), any(), anyList());
-        // The variable is merged into the study unit's existing VariableScheme...
         assertThat(vsCaptor.getValue().variableReference())
                 .extracting(Reference::id)
-                .containsExactlyInAnyOrder("VAR_OLD", "VAR_1");
-        // ...and the batch ships the PI, the updated scheme and the re-registered StudyUnit together.
+                .containsExactlyInAnyOrder("VAR_OLD", copiedVariable.id());
         ArgumentCaptor<ColecticaCreateItemRequest> reqCaptor =
                 ArgumentCaptor.forClass(ColecticaCreateItemRequest.class);
         verify(colecticaClient).createOrUpdateItems(reqCaptor.capture());
         assertThat(reqCaptor.getValue().items())
                 .extracting(ColecticaItemResponse::identifier)
-                .contains(instanceId, "VS_1", "su-1");
+                .contains("pi-copy", "VS_1", "su-1");
     }
 
     // --- Plus de création à la volée : les LogicalProducts et schemes sont créés en amont (init,

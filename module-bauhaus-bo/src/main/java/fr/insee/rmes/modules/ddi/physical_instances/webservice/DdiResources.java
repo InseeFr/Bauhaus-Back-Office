@@ -30,6 +30,7 @@ import fr.insee.rmes.modules.users.domain.model.User;
 import fr.insee.rmes.modules.users.domain.port.serverside.RbacFetcher;
 import fr.insee.rmes.modules.users.infrastructure.UserProvider;
 import fr.insee.rmes.modules.users.webservice.HasAccess;
+import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
@@ -232,6 +233,17 @@ public class DdiResources {
             @RequestBody UpdatePhysicalInstanceRequest request) {
         Ddi4Response updatedInstance = ddiService.updatePhysicalInstance(agencyId, id, request);
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(updatedInstance);
+    }
+
+    @PostMapping("/physical-instance/{agencyId}/{id}/duplicate")
+    @PreAuthorize(
+            "@propertiesAccessPrivilegesChecker.hasAccess('DDI_PHYSICALINSTANCE', 'CREATE', #request.groupAgency + '|' + #request.groupId, authentication.principal)")
+    public ResponseEntity<Ddi4Response> duplicatePhysicalInstance(
+            @PathVariable String agencyId,
+            @PathVariable String id,
+            @Valid @RequestBody PhysicalInstanceDuplicationRequest request) {
+        Ddi4Response copy = ddiService.duplicatePhysicalInstance(agencyId, id, request.toDomain());
+        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(copy);
     }
 
     @PutMapping("/physical-instance/{agencyId}/{id}")
