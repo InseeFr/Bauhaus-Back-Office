@@ -1,6 +1,8 @@
 services:
   minio:
-    image: minio/minio:RELEASE.2024-11-07T00-52-20Z
+    # pgsty/minio (fork communautaire maintenu) : MinIO ne publie plus d'image
+    # publique, `minio/minio` (Docker Hub) comme `quay.io/minio/minio` refusent le pull.
+    image: pgsty/minio:RELEASE.2026-08-04T00-00-00Z
     restart: always
     ports:
       - "9000:9000"
