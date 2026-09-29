@@ -115,6 +115,13 @@ public class OperationSeriesQueries {
         return buildSeriesRequest("getSeriesCreatorsByUriQuery.ftlh", params);
     }
 
+    /** Thèmes de la série, portés par {@code dcterms:subject} comme pour les familles. */
+    public String getThemesBySeriesIri(String seriesIri) throws RmesException {
+        Map<String, Object> params = initParams();
+        params.put("SERIES_IRI", SparqlLiterals.iri(seriesIri));
+        return buildSeriesRequest("getSeriesThemesQuery.ftlh", params);
+    }
+
     /**
      * @param idSeries
      * @return String

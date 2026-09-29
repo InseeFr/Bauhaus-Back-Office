@@ -52,6 +52,8 @@ public class SeriesRepository {
 
     private static final String ID_SERIE = "idSerie";
 
+    private static final String THEMES = "themes";
+
     final RepositoryGestion repositoryGestion;
 
     final CodeListService codeListService;
@@ -157,6 +159,7 @@ public class SeriesRepository {
         addSeriesFamily(id, series);
         addSeriesLinks(id, series);
         addSeriesCreators(id, series);
+        addSeriesThemes(id, series);
         addGeneratedWith(id, series);
         return series;
     }
@@ -271,6 +274,13 @@ public class SeriesRepository {
         series.put(Constants.CREATORS, creators);
     }
 
+    private void addSeriesThemes(String id, JSONObject series) throws RmesException {
+        String seriesIri = RdfUtils.objectIRI(ObjectType.SERIES, id).stringValue();
+        series.put(
+                THEMES,
+                repositoryGestion.getResponseAsJSONList(operationSeriesQueries.getThemesBySeriesIri(seriesIri)));
+    }
+
     private Map<String, List<String>> getAllSeriesCreators() throws RmesException {
         Map<String, List<String>> map = new HashMap<>();
         JSONArray creators = repositoryGestion.getResponseAsArray(operationSeriesQueries.getCreatorsById(""));
@@ -350,6 +360,11 @@ public class SeriesRepository {
                 SKOS.HISTORY_NOTE);
 
         addCreators(model, seriesURI, series.getCreators());
+
+        // Thèmes, par dcterms:subject comme pour les familles (les jeux de données utilisent dcat:theme)
+        Optional.ofNullable(series.getThemes())
+                .ifPresent(themes -> themes.forEach(theme ->
+                        RdfUtils.addTripleUri(seriesURI, DCTERMS.SUBJECT, theme, model, RdfUtils.operationsGraph())));
 
         // Organismes responsables
         addOperationLinksOrganization(series.getPublishers(), DCTERMS.PUBLISHER, model, seriesURI);

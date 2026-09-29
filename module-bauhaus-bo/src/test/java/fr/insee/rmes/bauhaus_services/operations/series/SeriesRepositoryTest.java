@@ -19,13 +19,17 @@ import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotAcceptableException;
 import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.graphdb.ontologies.ADMS;
+import fr.insee.rmes.json.JSONUtils;
 import fr.insee.rmes.model.links.OperationsLink;
 import fr.insee.rmes.modules.operation.domain.event.BilingualLabel;
 import fr.insee.rmes.modules.operation.domain.event.SeriesSaved;
 import fr.insee.rmes.modules.operations.series.domain.model.Series;
 import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
+import fr.insee.rmes.persistance.sparql_queries.operations.OperationSeriesQueries;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.utils.EncodingType;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -35,6 +39,8 @@ import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.DC;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -51,6 +57,9 @@ class SeriesRepositoryTest {
 
     @Autowired
     private OperationsObjectMapper operationsObjectMapper;
+
+    @Autowired
+    private OperationSeriesQueries operationSeriesQueries;
 
     @Test
     void shouldAddAbstractPropertyAsPlainMarkdownLiterals() {
@@ -84,6 +93,44 @@ class SeriesRepositoryTest {
                         .filter(seriesURI, ADMS.HAS_IDENTIFIER, null)
                         .objects())
                 .containsExactly(SimpleValueFactory.getInstance().createLiteral("s2000"));
+    }
+
+    @Test
+    void createRdfSeries_writesEachThemeAsADctermsSubjectIri() throws RmesException {
+        SeriesRepository seriesRepository = seriesRepository(mock(SeriesValidator.class), null);
+        Series series = new Series();
+        series.setId("s2000");
+        series.setPrefLabelLg1("Série de test");
+        series.setThemes(List.of("http://bauhaus/concepts/themes/th1", "http://bauhaus/concepts/themes/th2"));
+
+        seriesRepository.createRdfSeries(series, null, ValidationStatus.UNPUBLISHED);
+
+        ArgumentCaptor<Model> captor = ArgumentCaptor.forClass(Model.class);
+        verify(repositoryGestion).loadObjectWithReplaceLinks(any(), captor.capture());
+        IRI seriesURI = RdfUtils.objectIRI(ObjectType.SERIES, "s2000");
+        List<Value> themes = captor.getValue().filter(seriesURI, DCTERMS.SUBJECT, null).stream()
+                .map(Statement::getObject)
+                .toList();
+        assertThat(themes).allMatch(IRI.class::isInstance, "every dcterms:subject object must be an IRI");
+        assertThat(themes)
+                .extracting(Value::stringValue)
+                .containsExactlyInAnyOrder("http://bauhaus/concepts/themes/th1", "http://bauhaus/concepts/themes/th2");
+    }
+
+    @Test
+    void getSeriesJsonById_returnsTheThemesOfTheSeries() throws RmesException {
+        String themesQuery = operationSeriesQueries.getThemesBySeriesIri(
+                RdfUtils.objectIRI(ObjectType.SERIES, "s2000").stringValue());
+        when(repositoryGestion.getResponseAsObject(any())).thenReturn(new JSONObject(Map.of("id", "s2000")));
+        when(repositoryGestion.getResponseAsArray(any())).thenReturn(new JSONArray());
+        when(repositoryGestion.getResponseAsJSONList(any())).thenReturn(new JSONArray());
+        when(repositoryGestion.getResponseAsJSONList(themesQuery))
+                .thenReturn(new JSONArray(List.of("http://bauhaus/concepts/themes/th1")));
+
+        JSONObject series = seriesRepository(null, null).getSeriesJsonById("s2000", EncodingType.XML);
+
+        assertThat(JSONUtils.jsonArrayToList(series.getJSONArray("themes")))
+                .containsExactly("http://bauhaus/concepts/themes/th1");
     }
 
     @Test
@@ -235,7 +282,7 @@ class SeriesRepositoryTest {
                 null,
                 null,
                 validator,
-                null,
+                operationSeriesQueries,
                 organisationLookup,
                 null);
     }

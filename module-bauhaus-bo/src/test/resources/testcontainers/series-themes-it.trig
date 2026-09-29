@@ -1,0 +1,16 @@
+# Fixture du ticket #1157 « thèmes des séries » : une série porte deux thèmes par dcterms:subject,
+# une autre en porte un troisième qui ne doit pas fuir dans la première.
+#
+# IRIs suffixées « Th » et uniques : le conteneur GraphDB est partagé entre classes de test.
+# Ni type ni libellé : les séries ne doivent pas s'ajouter aux comptages des autres tests, et la
+# requête testée adresse la série par son IRI.
+@prefix dcterms: <http://purl.org/dc/terms/> .
+
+<http://rdf.insee.fr/graphes/operations> {
+
+  <http://bauhaus/operations/serie/sTh1>
+      dcterms:subject <http://bauhaus/concepts/themes/th1> , <http://bauhaus/concepts/themes/th2> .
+
+  <http://bauhaus/operations/serie/sTh2>
+      dcterms:subject <http://bauhaus/concepts/themes/th3> .
+}
