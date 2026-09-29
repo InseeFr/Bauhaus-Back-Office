@@ -17,6 +17,7 @@ import fr.insee.rmes.modules.users.infrastructure.JwtProperties;
 import fr.insee.rmes.modules.users.infrastructure.LazyPublicEndpointsMatcher;
 import fr.insee.rmes.modules.users.infrastructure.OidcUserDecoder;
 import fr.insee.rmes.modules.users.infrastructure.RoleClaimExtractor;
+import jakarta.servlet.DispatcherType;
 import java.util.Collection;
 import java.util.Optional;
 import org.slf4j.Logger;
@@ -102,6 +103,13 @@ public class UserConfiguration {
 
         http.oauth2ResourceServer(oauth2ResourceServer -> oauth2ResourceServer.jwt(withDefaults()))
                 .authorizeHttpRequests(authorizeHttpRequest -> authorizeHttpRequest
+                        // The error dispatch only renders the error of a request already let through;
+                        // refusing it turned every unhandled error into an empty 401 in DEV mode, where
+                        // DevAuthenticationFilter (OncePerRequestFilter) does not run on that dispatch.
+                        .dispatcherTypeMatchers(DispatcherType.ERROR)
+                        .permitAll()
+                        .requestMatchers("/error")
+                        .permitAll()
                         .requestMatchers(publicEndpointsMatcher)
                         .permitAll()
                         .requestMatchers(HttpMethod.OPTIONS)

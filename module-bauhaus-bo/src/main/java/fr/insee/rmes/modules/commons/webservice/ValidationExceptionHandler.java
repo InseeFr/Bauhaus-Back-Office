@@ -19,13 +19,9 @@ import tools.jackson.databind.exc.ValueInstantiationException;
  * Format d'erreur contractuel de la validation des corps de requête, commun à tous les modules :
  * {@code 400} et {@code {"errors":[{"field","message"}]}}.
  * <p>
- * {@link Order}({@link Ordered#HIGHEST_PRECEDENCE}) est indispensable : {@code RmesExceptionHandler}
- * est déclaré {@code @Order(2)} sur une liste {@code assignableTypes} qui couvre presque tous les
- * contrôleurs d'écriture, et rendrait sinon le {@code ProblemDetail} de
- * {@code ResponseEntityExceptionHandler}.
- * <p>
- * Cette classe n'étend volontairement pas {@code ResponseEntityExceptionHandler} : c'est justement
- * le comportement devant lequel on veut passer.
+ * {@link Order}({@link Ordered#HIGHEST_PRECEDENCE}) est indispensable : sans lui, le filet
+ * {@link UnexpectedErrorHandler}, qui traite toutes les exceptions de Spring MVC, pourrait répondre
+ * à sa place avec un message générique au lieu de la liste des champs en erreur.
  * <p>
  * Les exceptions Jackson visées sont celles de <strong>Jackson 3</strong>
  * ({@code tools.jackson}), que Spring Boot 4 utilise pour ses convertisseurs de message. Jackson 2

@@ -22,10 +22,8 @@ import org.springframework.test.web.servlet.MockMvc;
  * Contrat d'erreur de validation, commun à tous les modules : un corps de requête refusé
  * répond 400 avec {@code {"errors":[{"field","message"}]}}.
  * <p>
- * Le test est monté sur {@link DatasetResources}, qui figure dans les {@code assignableTypes}
- * de {@code RmesExceptionHandler} (@Order(2)) : c'est tout l'intérêt du test, il vérifie que
- * le handler de validation passe devant lui et impose le contrat, au lieu du corps
- * {@code ProblemDetail} par défaut de {@code ResponseEntityExceptionHandler}.
+ * Le test vérifie aussi que le handler de validation passe devant le filet
+ * {@link UnexpectedErrorHandler}, qui répondrait sinon par un message générique sans les champs.
  */
 @WebMvcTest(
         value = DatasetResources.class,

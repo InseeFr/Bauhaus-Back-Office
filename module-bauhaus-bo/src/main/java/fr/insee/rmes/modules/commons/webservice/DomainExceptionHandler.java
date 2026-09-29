@@ -3,14 +3,16 @@ package fr.insee.rmes.modules.commons.webservice;
 import fr.insee.rmes.modules.commons.domain.GenericInternalServerException;
 import fr.insee.rmes.modules.operations.msd.domain.NotFoundAttributeException;
 import fr.insee.rmes.modules.operations.msd.domain.OperationDocumentationRubricWithoutRangeException;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
+/** Ordre explicite : doit passer avant le filet {@link UnexpectedErrorHandler}. */
 @ControllerAdvice
-public class DomainExceptionHandler extends ResponseEntityExceptionHandler {
+@Order(3)
+public class DomainExceptionHandler {
     @ExceptionHandler({GenericInternalServerException.class})
     public final ResponseEntity<String> genericInternalServerException(GenericInternalServerException exception) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getDetails());

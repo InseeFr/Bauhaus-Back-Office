@@ -2,12 +2,15 @@ package fr.insee.rmes.modules.ddi.physical_instances.webservice;
 
 import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.InvalidSentinelValuesException;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.StudyUnitNotFoundException;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+/** Ordre explicite : doit passer avant le filet global des erreurs imprévues. */
 @RestControllerAdvice(assignableTypes = DdiResources.class)
+@Order(3)
 public class DdiExceptionHandler {
 
     public record ErrorMessageResponse(String message) {}
