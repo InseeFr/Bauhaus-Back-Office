@@ -7,6 +7,8 @@ import static fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colect
 import static fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.ColecticaItemTypes.PHYSICAL_INSTANCE;
 import static fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.ColecticaItemTypes.VARIABLE;
 
+import fr.insee.rmes.colectica.client.ColecticaClient;
+import fr.insee.rmes.colectica.client.ItemReference;
 import fr.insee.rmes.colectica.client.dto.ColecticaItemResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Code;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeRepresentation;
@@ -17,6 +19,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3toDDI4ConverterService;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -34,31 +37,34 @@ class ColecticaPhysicalInstanceReader {
     private final ColecticaConfiguration.ColecticaInstanceConfiguration instanceConfiguration;
     private final DDI3toDDI4ConverterService ddi3ToDdi4Converter;
     private final ColecticaSetReader setReader;
+    private final ColecticaClient colecticaClient;
 
     ColecticaPhysicalInstanceReader(
             ColecticaConfiguration.ColecticaInstanceConfiguration instanceConfiguration,
             DDI3toDDI4ConverterService ddi3ToDdi4Converter,
-            ColecticaSetReader setReader) {
+            ColecticaSetReader setReader,
+            ColecticaClient colecticaClient) {
         this.instanceConfiguration = instanceConfiguration;
         this.ddi3ToDdi4Converter = ddi3ToDdi4Converter;
         this.setReader = setReader;
+        this.colecticaClient = colecticaClient;
     }
 
     Ddi4Response getPhysicalInstance(String agencyId, String id) {
         try {
-            ColecticaItemResponse[] itemResponses = setReader.fetchSetItems(agencyId, id, null);
+            // Les CodeList et Category sont volontairement écartées du GET PI : payload réduit + on
+            // évite la conversion DDI3 -> DDI4 sur ces items, souvent les plus gros. Le front les
+            // charge paresseusement (clic sur une variable + endpoint dédié /codeslists). Le filtre
+            // est fait par Colectica : télécharger le set complet pour l'appliquer ici coûtait ~40 s
+            // sur une PI qui référence une nomenclature (26 000 Category).
+            ColecticaItemResponse[] itemResponses = setReader.fetchSetItemsOfTypes(
+                    agencyId,
+                    id,
+                    List.of(PHYSICAL_INSTANCE, DATA_RELATIONSHIP, VARIABLE, MANAGED_MISSING_VALUES_REPRESENTATION));
             if (itemResponses == null || itemResponses.length == 0) {
                 return null;
             }
-
-            // Les CodeList et Category sont volontairement écartées du GET PI : payload réduit + on
-            // évite la conversion DDI3 -> DDI4 sur ces items, souvent les plus gros. Le front les
-            // charge paresseusement (clic sur une variable + endpoint dédié /codeslists).
-            Set<String> excludedTypes = codeListAndCategoryItemTypes();
-            List<Ddi3Response.Ddi3Item> ddi3Items = Arrays.stream(itemResponses)
-                    .filter(item -> !excludedTypes.contains(item.itemType()))
-                    .map(ColecticaItems::toDdi3Item)
-                    .toList();
+            List<Ddi3Response.Ddi3Item> ddi3Items = ColecticaItems.toDdi3Items(itemResponses);
 
             logger.info("Converting DDI3 to DDI4 using converter service");
             Ddi4Response response =
@@ -72,20 +78,46 @@ class ColecticaPhysicalInstanceReader {
     }
 
     /**
-     * Tous les items du set, sans l'exclusion CodeList/Category de {@link #getPhysicalInstance} :
-     * l'état stocké complet, tel qu'attendu par la réconciliation des {@code VersionDate}.
+     * La dernière version stockée des items de ce payload, et d'eux seuls ({@code item/_getListLatest}) :
+     * une sauvegarde n'a pas à relire le set complet de la PI, dont les dizaines de milliers de Category
+     * d'une nomenclature référencée. Les items inconnus de Colectica sont absents de la réponse.
      */
-    Ddi4Response getFullPhysicalInstance(String agencyId, String id) {
-        try {
-            ColecticaItemResponse[] itemResponses = setReader.fetchSetItems(agencyId, id, null);
-            if (itemResponses == null || itemResponses.length == 0) {
-                return null;
-            }
-            return ddi3ToDdi4Converter.convertDdi3ToDdi4(
-                    new Ddi3Response(null, ColecticaItems.toDdi3Items(itemResponses)), Ddi4Response.SCHEMA);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to process DDI response", e);
+    Ddi4Response getStoredItems(Ddi4Response items) {
+        List<ItemReference> references = items.items().stream()
+                .map(item -> new ItemReference(item.agency(), item.id()))
+                .distinct()
+                .toList();
+        if (references.isEmpty()) {
+            return null;
         }
+        ColecticaItemResponse[] stored = colecticaClient.getLatestItems(references);
+        if (stored == null || stored.length == 0) {
+            return null;
+        }
+        return ddi3ToDdi4Converter.convertDdi3ToDdi4(
+                new Ddi3Response(null, ColecticaItems.toDdi3Items(stored)), Ddi4Response.SCHEMA);
+    }
+
+    /**
+     * Une référence par cible distincte connue de Colectica, pointant sa dernière version
+     * ({@code item/_getLatestVersionNumbers}, sans lire le contenu des items). Les cibles inconnues sont
+     * omises.
+     */
+    List<Reference> getLatestVersions(List<Reference> references) {
+        Map<ItemReference, Reference> byTarget = new LinkedHashMap<>();
+        references.forEach(
+                reference -> byTarget.putIfAbsent(new ItemReference(reference.agency(), reference.id()), reference));
+        if (byTarget.isEmpty()) {
+            return List.of();
+        }
+        return colecticaClient.getLatestVersionNumbers(List.copyOf(byTarget.keySet())).stream()
+                .map(latest -> Reference.of(
+                        latest.agencyId(),
+                        latest.identifier(),
+                        String.valueOf(latest.version()),
+                        byTarget.get(new ItemReference(latest.agencyId(), latest.identifier()))
+                                .type()))
+                .toList();
     }
 
     List<Ddi4CodeList> getPhysicalInstanceCodeLists(String agencyId, String id) {

@@ -90,8 +90,8 @@ public class DDIRepositoryImpl implements DDIRepository {
 
         this.catalog =
                 new ColecticaCatalogRepository(instanceConfiguration, colecticaClient, labels, ddi3ToDdi4Converter);
-        this.physicalInstanceReader =
-                new ColecticaPhysicalInstanceReader(instanceConfiguration, ddi3ToDdi4Converter, setReader);
+        this.physicalInstanceReader = new ColecticaPhysicalInstanceReader(
+                instanceConfiguration, ddi3ToDdi4Converter, setReader, colecticaClient);
         this.groupReader = new ColecticaGroupSetReader(colecticaClient, defaultLang);
         this.itemByIdReader = new ColecticaItemByIdReader(colecticaClient, ddi3ToDdi4Converter);
         this.codeLists = new ColecticaCodeListRepository(
@@ -212,8 +212,13 @@ public class DDIRepositoryImpl implements DDIRepository {
     }
 
     @Override
-    public Ddi4Response getFullPhysicalInstance(String agencyId, String id) {
-        return physicalInstanceReader.getFullPhysicalInstance(agencyId, id);
+    public Ddi4Response getStoredItems(Ddi4Response items) {
+        return physicalInstanceReader.getStoredItems(items);
+    }
+
+    @Override
+    public List<Reference> getLatestVersions(List<Reference> references) {
+        return physicalInstanceReader.getLatestVersions(references);
     }
 
     @Override

@@ -2,6 +2,7 @@ package fr.insee.rmes.modules.ddi.physical_instances.webservice;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -73,8 +74,9 @@ class DdiExceptionHandlerTest {
 
     @Test
     void shouldReturnNotFoundWithMessageWhenStudyUnitIsMissing() throws Exception {
-        when(ddiService.updateFullPhysicalInstance(eq("fr.insee"), eq("pi-111"), any()))
-                .thenThrow(new StudyUnitNotFoundException("No study unit found for physical instance fr.insee/pi-111"));
+        doThrow(new StudyUnitNotFoundException("No study unit found for physical instance fr.insee/pi-111"))
+                .when(ddiService)
+                .updateFullPhysicalInstance(eq("fr.insee"), eq("pi-111"), any());
 
         mockMvc.perform(put("/ddi/physical-instance/fr.insee/pi-111")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -107,11 +109,12 @@ class DdiExceptionHandlerTest {
     @Test
     void shouldReturnConflictWithMessageWhenSavedInstanceHasNoScheme() throws Exception {
         String message = "La série (Group fr.insee/group-1) n'a pas de CodeListScheme pour ranger ses listes de codes";
-        when(ddiService.updateFullPhysicalInstance(eq("fr.insee"), eq("pi-111"), any()))
-                .thenThrow(new MissingSchemeException(
+        doThrow(new MissingSchemeException(
                         MissingSchemeException.Code.GROUP_MISSING_CODE_LIST_SCHEME,
                         Map.of("group", "fr.insee/group-1"),
-                        message));
+                        message))
+                .when(ddiService)
+                .updateFullPhysicalInstance(eq("fr.insee"), eq("pi-111"), any());
 
         mockMvc.perform(put("/ddi/physical-instance/fr.insee/pi-111")
                         .contentType(MediaType.APPLICATION_JSON)

@@ -3,12 +3,14 @@ package fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica;
 import fr.insee.rmes.colectica.client.ColecticaClient;
 import fr.insee.rmes.colectica.client.dto.ColecticaItemResponse;
 import fr.insee.rmes.colectica.client.dto.ColecticaSetItem;
+import fr.insee.rmes.colectica.client.dto.ColecticaTypedSetItem;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import org.springframework.web.client.HttpClientErrorException;
 
 /**
  * Pipeline commun de lecture d'un « set » Colectica ({@code set/} puis {@code item/_getList}) et des
@@ -36,6 +38,34 @@ class ColecticaSetReader {
             return null;
         }
         return colecticaClient.getDescriptions(ColecticaItems.identifiersOfSet(setItems));
+    }
+
+    /**
+     * Les items de la dernière version du set dont le type figure parmi {@code typeKeys}, filtrés côté
+     * Colectica ({@code _query/set}) : seuls ces items sont téléchargés, là où {@link #fetchSetItems}
+     * rapatrie tout le set — dont les dizaines de milliers de Category d'une nomenclature référencée.
+     * Mêmes versions que {@code set/}. {@code null} quand la racine est inconnue ou le set vide.
+     */
+    ColecticaItemResponse[] fetchSetItemsOfTypes(String agencyId, String id, List<String> typeKeys) {
+        ColecticaItemResponse root;
+        try {
+            root = colecticaClient.getItem(agencyId, id, null);
+        } catch (HttpClientErrorException.NotFound _) {
+            return null;
+        }
+        if (root == null) {
+            return null;
+        }
+        Map<String, String> types = instanceConfiguration.itemTypes();
+        List<String> itemTypes =
+                typeKeys.stream().map(types::get).filter(Objects::nonNull).toList();
+        ColecticaTypedSetItem[] setItems =
+                colecticaClient.querySet(new ColecticaSetItem(id, root.version(), agencyId), itemTypes);
+        if (setItems == null || setItems.length == 0) {
+            return null;
+        }
+        return colecticaClient.getDescriptions(ColecticaItems.identifiersOfSet(
+                Arrays.stream(setItems).map(ColecticaTypedSetItem::reference).toArray(ColecticaSetItem[]::new)));
     }
 
     /**

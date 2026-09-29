@@ -58,18 +58,23 @@ public interface DDIRepository {
 
     List<Ddi4CodeList> getPhysicalInstanceCodeLists(String agencyId, String id);
 
-    /**
-     * Tous les items du set de la PhysicalInstance, listes de codes et catégories comprises —
-     * contrairement à {@link #getPhysicalInstance(String, String)} qui les écarte pour alléger le
-     * GET. Sert de référence à la réconciliation des {@code VersionDate} : un item absent de cette
-     * référence est réellement nouveau, et non simplement hors périmètre de lecture.
-     */
-    Ddi4Response getFullPhysicalInstance(String agencyId, String id);
-
     Ddi4GroupResponse getGroup(String agencyId, String id);
 
     /** Le Group d'identifiant {@code id}, ou {@link Optional#empty()} s'il n'existe pas encore. */
     Optional<Ddi4Group> findGroup(String agencyId, String id);
+
+    /**
+     * L'état stocké (dernière version) des items que ce payload réécrit, et d'eux seuls : ce qu'une
+     * sauvegarde compare pour réconcilier versions et dates. Les items inconnus du stockage sont absents
+     * de la réponse.
+     */
+    Ddi4Response getStoredItems(Ddi4Response items);
+
+    /**
+     * Les mêmes références pointant la dernière version stockée de leur cible, sans en lire le contenu.
+     * Les cibles inconnues du stockage sont omises.
+     */
+    List<Reference> getLatestVersions(List<Reference> references);
 
     /** La StudyUnit d'identifiant {@code id}, ou {@link Optional#empty()} si elle n'existe pas encore. */
     Optional<Ddi4StudyUnit> findStudyUnit(String agencyId, String id);

@@ -5,6 +5,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4VersionedItem;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import java.lang.reflect.RecordComponent;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,14 +29,47 @@ public final class StoredVersions {
     private StoredVersions() {}
 
     public static Ddi4Response align(Ddi4Response stored, Ddi4Response incoming) {
+        return align(stored, List.of(), incoming);
+    }
+
+    /**
+     * Comme {@link #align(Ddi4Response, Ddi4Response)}, avec en plus la version stockée d'items que le
+     * payload référence sans les contenir ({@code storedReferences}, typiquement obtenue pour les
+     * {@link #references cibles} du payload).
+     */
+    public static Ddi4Response align(Ddi4Response stored, List<Reference> storedReferences, Ddi4Response incoming) {
         if (incoming == null) {
             return null;
         }
         Map<String, String> storedVersionByKey = new HashMap<>();
+        storedReferences.forEach(
+                reference -> storedVersionByKey.put(key(reference.agency(), reference.id()), reference.version()));
         if (stored != null) {
             stored.items().forEach(item -> storedVersionByKey.put(key(item.agency(), item.id()), item.version()));
         }
         return (Ddi4Response) align(incoming, storedVersionByKey);
+    }
+
+    /** Les cibles des {@code Reference} du payload, lignage exclu : celles que {@code align} réaligne. */
+    public static List<Reference> references(Ddi4Response incoming) {
+        List<Reference> references = new ArrayList<>();
+        collectReferences(incoming, references);
+        return references;
+    }
+
+    private static void collectReferences(Object value, List<Reference> references) {
+        switch (value) {
+            case null -> {}
+            case Reference reference -> references.add(reference);
+            case BasedOnObject _ -> {}
+            case List<?> list -> list.forEach(element -> collectReferences(element, references));
+            case Record recordValue -> {
+                for (RecordComponent component : recordValue.getClass().getRecordComponents()) {
+                    collectReferences(componentValue(recordValue, component), references);
+                }
+            }
+            default -> {}
+        }
     }
 
     private static Object align(Object value, Map<String, String> storedVersionByKey) {

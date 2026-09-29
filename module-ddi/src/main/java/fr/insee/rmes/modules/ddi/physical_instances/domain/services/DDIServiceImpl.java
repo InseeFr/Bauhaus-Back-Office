@@ -325,21 +325,22 @@ public class DDIServiceImpl implements DDIService {
     }
 
     @Override
-    public Ddi4Response updateFullPhysicalInstance(String agencyId, String id, Ddi4Response ddi4Response) {
+    public void updateFullPhysicalInstance(String agencyId, String id, Ddi4Response ddi4Response) {
         validateSentinelValues(ddi4Response);
-        // GET préalable : les items non modifiés gardent leur date stockée, les items
-        // modifiés ou nouveaux passent à « maintenant », avec propagation enfant → parent.
-        // Lecture complète (listes de codes et catégories comprises) : sur le GET allégé, elles
-        // passeraient pour nouvelles et redateraient les variables qui les référencent.
-        Ddi4Response current = ddiRepository.getFullPhysicalInstance(agencyId, id);
+        // Lecture préalable de l'état stocké : les items non modifiés gardent leur date stockée, les
+        // items modifiés ou nouveaux passent à « maintenant », avec propagation enfant → parent.
+        // Seuls les items du payload sont relus (listes de codes et catégories comprises, sans quoi
+        // elles passeraient pour nouvelles), et des items qu'il référence seulement, rien que la
+        // version : relire le set complet de la PI coûtait des dizaines de secondes.
+        Ddi4Response current = ddiRepository.getStoredItems(ddi4Response);
+        List<Reference> referenced = ddiRepository.getLatestVersions(StoredVersions.references(ddi4Response));
         // Versions alignées sur l'état stocké avant la comparaison des contenus : la v1 émise par le
         // front ferait sinon passer chaque item en v2+ pour modifié.
         Ddi4Response reconciled = VersionDateReconciler.reconcile(
                 current,
-                StoredVersions.align(current, ddi4Response),
+                StoredVersions.align(current, referenced, ddi4Response),
                 CogsDate.ofDateTime(ZonedDateTime.now(clock).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)));
         ddiRepository.updateFullPhysicalInstance(agencyId, id, reconciled);
-        return ddiRepository.getPhysicalInstance(agencyId, id);
     }
 
     /**

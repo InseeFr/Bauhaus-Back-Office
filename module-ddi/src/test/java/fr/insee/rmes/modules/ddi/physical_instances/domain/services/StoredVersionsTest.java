@@ -14,6 +14,8 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.VariableRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.VariablesInRecord;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -71,6 +73,37 @@ class StoredVersionsTest {
                         .basedOnReferences()
                         .getFirst()
                         .version());
+    }
+
+    /**
+     * Le PUT ne relit que les items du payload : la version stockée d'un item seulement référencé (une
+     * liste mutualisée choisie pour une variable) arrive à part, sans son contenu.
+     */
+    @Test
+    void pointsReferencesToItemsOutsideThePayloadToTheirSuppliedStoredVersion() {
+        Ddi4Response aligned = StoredVersions.align(
+                stored(), List.of(Reference.of(AGENCY, "cl-mutualisee", "5", Ddi4CodeList.TYPE)), incoming());
+
+        Reference codeListReference = codeListReference(variable(aligned, "var-new"));
+        assertEquals("5", codeListReference.version());
+        assertEquals("urn:ddi:fr.insee:cl-mutualisee:5", codeListReference.urn());
+    }
+
+    @Test
+    void listsEveryReferencedTargetButLineage() {
+        Ddi4Response payload = response(
+                dataRelationship("1"),
+                List.of(variable(
+                        "var-new",
+                        "1",
+                        "cl-1",
+                        "1",
+                        BasedOnObject.of(List.of(Reference.of(AGENCY, "var-source", "1", Ddi4Variable.TYPE))))),
+                List.of());
+
+        assertEquals(
+                Set.of("var-1", "cl-1"),
+                StoredVersions.references(payload).stream().map(Reference::id).collect(Collectors.toSet()));
     }
 
     // --- fixtures : DR -> {var-1 -> cl-1, var-new -> cl-mutualisee} ---

@@ -248,10 +248,11 @@ public class DdiResources {
 
     @PutMapping("/physical-instance/{agencyId}/{id}")
     @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.UPDATE)
-    public ResponseEntity<Ddi4Response> replacePhysicalInstance(
+    public ResponseEntity<Void> replacePhysicalInstance(
             @PathVariable String agencyId, @PathVariable String id, @RequestBody Ddi4Response ddi4Response) {
-        Ddi4Response updatedInstance = ddiService.updateFullPhysicalInstance(agencyId, id, ddi4Response);
-        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(updatedInstance);
+        // 204 : relire une grosse PI coûte des dizaines de secondes, le front la recharge par le GET.
+        ddiService.updateFullPhysicalInstance(agencyId, id, ddi4Response);
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/convert/ddi4-to-ddi3")
