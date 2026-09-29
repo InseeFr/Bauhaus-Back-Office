@@ -332,9 +332,11 @@ public class DDIServiceImpl implements DDIService {
         // Lecture complète (listes de codes et catégories comprises) : sur le GET allégé, elles
         // passeraient pour nouvelles et redateraient les variables qui les référencent.
         Ddi4Response current = ddiRepository.getFullPhysicalInstance(agencyId, id);
+        // Versions alignées sur l'état stocké avant la comparaison des contenus : la v1 émise par le
+        // front ferait sinon passer chaque item en v2+ pour modifié.
         Ddi4Response reconciled = VersionDateReconciler.reconcile(
                 current,
-                ddi4Response,
+                StoredVersions.align(current, ddi4Response),
                 CogsDate.ofDateTime(ZonedDateTime.now(clock).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)));
         ddiRepository.updateFullPhysicalInstance(agencyId, id, reconciled);
         return ddiRepository.getPhysicalInstance(agencyId, id);

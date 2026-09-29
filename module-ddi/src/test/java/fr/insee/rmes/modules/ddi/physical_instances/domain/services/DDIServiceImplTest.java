@@ -603,6 +603,28 @@ class DDIServiceImplTest {
     }
 
     /**
+     * Le front renvoie tout en v1. Un item stocké en v2 réécrit en v1 serait une version fantôme que
+     * Colectica ne sert jamais : il est écrit à sa version stockée, et sans modification de contenu il
+     * garde sa date stockée.
+     */
+    @Test
+    void shouldWriteUnchangedItemAtItsStoredVersionWithItsStoredDateOnFullUpdate() {
+        CogsDate storedDate = CogsDate.ofDateTime("2020-01-01T00:00:00Z");
+        Ddi4Response stored = physicalInstanceOnlyResponse(storedDate, "Ma PI", "2");
+        Ddi4Response incoming = physicalInstanceOnlyResponse(CogsDate.ofDateTime("2026-01-01T00:00:00Z"), "Ma PI", "1");
+        when(ddiRepository.getFullPhysicalInstance("fr.insee", "pi-1")).thenReturn(stored);
+
+        ddiService.updateFullPhysicalInstance("fr.insee", "pi-1", incoming);
+
+        ArgumentCaptor<Ddi4Response> saved = ArgumentCaptor.forClass(Ddi4Response.class);
+        verify(ddiRepository).updateFullPhysicalInstance(eq("fr.insee"), eq("pi-1"), saved.capture());
+        Ddi4PhysicalInstance savedPhysicalInstance =
+                saved.getValue().physicalInstance().getFirst();
+        assertEquals("2", savedPhysicalInstance.version());
+        assertEquals(storedDate, savedPhysicalInstance.versionDate());
+    }
+
+    /**
      * Valeurs sentinelles (#1566) : les labels de la MMVR et de sa CodeList de sentinelles sont
      * obligatoires — un payload qui les omet est rejeté avant toute écriture.
      */
@@ -695,13 +717,17 @@ class DDIServiceImplTest {
     }
 
     private static Ddi4Response physicalInstanceOnlyResponse(CogsDate date, String title) {
+        return physicalInstanceOnlyResponse(date, title, "1");
+    }
+
+    private static Ddi4Response physicalInstanceOnlyResponse(CogsDate date, String title, String version) {
         Ddi4PhysicalInstance physicalInstance = new Ddi4PhysicalInstance(
                 Ddi4PhysicalInstance.TYPE,
                 date,
-                Reference.synthesizeUrn("fr.insee", "pi-1", "1"),
+                Reference.synthesizeUrn("fr.insee", "pi-1", version),
                 "fr.insee",
                 "pi-1",
-                "1",
+                version,
                 null,
                 new Citation(List.of(new LangString("fr", title))),
                 null);
