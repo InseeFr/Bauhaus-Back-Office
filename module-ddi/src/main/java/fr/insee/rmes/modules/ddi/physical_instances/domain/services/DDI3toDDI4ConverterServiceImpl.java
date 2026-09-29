@@ -55,7 +55,7 @@ public class DDI3toDDI4ConverterServiceImpl implements DDI3toDDI4ConverterServic
         if (ddi3.items() != null) {
             for (Ddi3Response.Ddi3Item item : ddi3.items()) {
                 try {
-                    FragmentDocument fragment = FragmentDocument.Factory.parse(item.item());
+                    FragmentDocument fragment = FragmentDocument.Factory.parse(Ddi32Compatibility.asDdi33(item.item()));
                     String itemType = item.itemType();
                     if (itemTypes.get("PhysicalInstance").equals(itemType)) {
                         physicalInstances.add(lifecycle33ToDdi4.toPhysicalInstance(fragment));
@@ -94,7 +94,7 @@ public class DDI3toDDI4ConverterServiceImpl implements DDI3toDDI4ConverterServic
     @Override
     public Ddi4CodeListScheme toCodeListScheme(String fragmentXml) {
         try {
-            FragmentDocument fragment = FragmentDocument.Factory.parse(fragmentXml);
+            FragmentDocument fragment = FragmentDocument.Factory.parse(Ddi32Compatibility.asDdi33(fragmentXml));
             return lifecycle33ToDdi4.toCodeListScheme(fragment);
         } catch (XmlException e) {
             logger.error("Error parsing CodeListScheme fragment", e);
@@ -105,7 +105,7 @@ public class DDI3toDDI4ConverterServiceImpl implements DDI3toDDI4ConverterServic
     @Override
     public Ddi4Group toGroup(String fragmentXml) {
         try {
-            FragmentDocument fragment = FragmentDocument.Factory.parse(fragmentXml);
+            FragmentDocument fragment = FragmentDocument.Factory.parse(Ddi32Compatibility.asDdi33(fragmentXml));
             return lifecycle33ToDdi4.toGroup(fragment);
         } catch (XmlException e) {
             logger.error("Error parsing Group fragment", e);
@@ -116,7 +116,7 @@ public class DDI3toDDI4ConverterServiceImpl implements DDI3toDDI4ConverterServic
     @Override
     public Ddi4CategoryScheme toCategoryScheme(String fragmentXml) {
         try {
-            FragmentDocument fragment = FragmentDocument.Factory.parse(fragmentXml);
+            FragmentDocument fragment = FragmentDocument.Factory.parse(Ddi32Compatibility.asDdi33(fragmentXml));
             return lifecycle33ToDdi4.toCategoryScheme(fragment);
         } catch (XmlException e) {
             logger.error("Error parsing CategoryScheme fragment", e);
@@ -127,7 +127,7 @@ public class DDI3toDDI4ConverterServiceImpl implements DDI3toDDI4ConverterServic
     @Override
     public Ddi4VariableScheme toVariableScheme(String fragmentXml) {
         try {
-            FragmentDocument fragment = FragmentDocument.Factory.parse(fragmentXml);
+            FragmentDocument fragment = FragmentDocument.Factory.parse(Ddi32Compatibility.asDdi33(fragmentXml));
             return lifecycle33ToDdi4.toVariableScheme(fragment);
         } catch (XmlException e) {
             logger.error("Error parsing VariableScheme fragment", e);
@@ -138,7 +138,7 @@ public class DDI3toDDI4ConverterServiceImpl implements DDI3toDDI4ConverterServic
     @Override
     public Ddi4LogicalProduct toLogicalProduct(String fragmentXml) {
         try {
-            FragmentDocument fragment = FragmentDocument.Factory.parse(fragmentXml);
+            FragmentDocument fragment = FragmentDocument.Factory.parse(Ddi32Compatibility.asDdi33(fragmentXml));
             return lifecycle33ToDdi4.toLogicalProduct(fragment);
         } catch (XmlException e) {
             logger.error("Error parsing LogicalProduct fragment", e);
@@ -149,7 +149,7 @@ public class DDI3toDDI4ConverterServiceImpl implements DDI3toDDI4ConverterServic
     @Override
     public Ddi4StudyUnit toStudyUnit(String fragmentXml) {
         try {
-            FragmentDocument fragment = FragmentDocument.Factory.parse(fragmentXml);
+            FragmentDocument fragment = FragmentDocument.Factory.parse(Ddi32Compatibility.asDdi33(fragmentXml));
             return lifecycle33ToDdi4.toStudyUnit(fragment);
         } catch (XmlException e) {
             logger.error("Error parsing StudyUnit fragment", e);
@@ -160,7 +160,7 @@ public class DDI3toDDI4ConverterServiceImpl implements DDI3toDDI4ConverterServic
     @Override
     public Ddi4ManagedRepresentationScheme toManagedRepresentationScheme(String fragmentXml) {
         try {
-            FragmentDocument fragment = FragmentDocument.Factory.parse(fragmentXml);
+            FragmentDocument fragment = FragmentDocument.Factory.parse(Ddi32Compatibility.asDdi33(fragmentXml));
             return lifecycle33ToDdi4.toManagedRepresentationScheme(fragment);
         } catch (XmlException e) {
             logger.error("Error parsing ManagedRepresentationScheme fragment", e);
@@ -171,7 +171,7 @@ public class DDI3toDDI4ConverterServiceImpl implements DDI3toDDI4ConverterServic
     @Override
     public Ddi4ManagedMissingValuesRepresentation toManagedMissingValuesRepresentation(String fragmentXml) {
         try {
-            FragmentDocument fragment = FragmentDocument.Factory.parse(fragmentXml);
+            FragmentDocument fragment = FragmentDocument.Factory.parse(Ddi32Compatibility.asDdi33(fragmentXml));
             return lifecycle33ToDdi4.toManagedMissingValuesRepresentation(fragment);
         } catch (XmlException e) {
             logger.error("Error parsing ManagedMissingValuesRepresentation fragment", e);
@@ -182,7 +182,7 @@ public class DDI3toDDI4ConverterServiceImpl implements DDI3toDDI4ConverterServic
     @Override
     public Ddi4CodeList toCodeList(String fragmentXml) {
         try {
-            FragmentDocument fragment = FragmentDocument.Factory.parse(fragmentXml);
+            FragmentDocument fragment = FragmentDocument.Factory.parse(Ddi32Compatibility.asDdi33(fragmentXml));
             return lifecycle33ToDdi4.toCodeList(fragment);
         } catch (XmlException e) {
             logger.error("Error parsing CodeList fragment", e);

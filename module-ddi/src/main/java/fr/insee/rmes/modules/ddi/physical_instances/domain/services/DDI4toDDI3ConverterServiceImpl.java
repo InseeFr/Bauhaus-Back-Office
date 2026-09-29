@@ -335,7 +335,8 @@ public class DDI4toDDI3ConverterServiceImpl implements DDI4toDDI3ConverterServic
             if (item.item() != null && !item.item().isEmpty()) {
                 try {
                     fiType.addNewFragment()
-                            .set(FragmentDocument.Factory.parse(item.item()).getFragment());
+                            .set(FragmentDocument.Factory.parse(Ddi32Compatibility.asDdi33(item.item()))
+                                    .getFragment());
                 } catch (XmlException e) {
                     throw new IllegalArgumentException("Failed to parse fragment XML for item " + item.identifier(), e);
                 }
