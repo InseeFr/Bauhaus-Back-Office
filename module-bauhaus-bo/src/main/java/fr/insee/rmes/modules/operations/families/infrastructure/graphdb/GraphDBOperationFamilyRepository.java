@@ -95,7 +95,7 @@ public class GraphDBOperationFamilyRepository implements OperationFamilyReposito
         var family = this.repositoryGestion.getResponseAsObject(operationFamilyQueries.familyQuery(id));
 
         if (family.isEmpty()) {
-            throw new RmesException(HttpStatus.SC_BAD_REQUEST, "Family " + id + " not found", "Maybe id is wrong");
+            throw new RmesNotFoundException("Family " + id + " not found", "Maybe id is wrong");
         }
         XhtmlToMarkdownUtils.convertJSONObject(family);
 

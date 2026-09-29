@@ -34,6 +34,6 @@ public class RmesBadRequestException extends RmesException {
     }
 
     public RmesBadRequestException(int errorCode, String message, JSONObject details) {
-        super(HttpStatus.SC_FORBIDDEN, errorCode, message, details);
+        super(HttpStatus.SC_BAD_REQUEST, errorCode, message, details);
     }
 }

@@ -123,7 +123,7 @@ class GraphDBOperationFamilyRepositoryTest {
     }
 
     @Test
-    void get_family_throws_exception_when_family_not_found() throws RmesException {
+    void get_family_throws_a_not_found_exception_when_family_not_found() throws RmesException {
         String familyId = "nonexistent";
         JSONObject emptyJson = new JSONObject();
 
@@ -132,7 +132,7 @@ class GraphDBOperationFamilyRepositoryTest {
 
         RmesException exception = assertThrows(RmesException.class, () -> repository.getFamily(familyId));
 
-        assertEquals(HttpStatus.SC_BAD_REQUEST, exception.getStatus());
+        assertEquals(HttpStatus.SC_NOT_FOUND, exception.getStatus());
         assertTrue(exception.getDetails().contains("Family " + familyId + " not found"));
     }
 

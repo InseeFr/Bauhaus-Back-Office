@@ -19,7 +19,8 @@ public class Deserializer {
         try {
             return mapper.readValue(json, target);
         } catch (IOException e) {
-            throw new RmesException(HttpStatus.SC_BAD_REQUEST, "while ", e.getMessage(), e);
+            // Le message de Jackson cite les classes Java : il reste dans la cause, pour les logs.
+            throw new RmesException(HttpStatus.SC_BAD_REQUEST, "The submitted data is invalid", null, e);
         }
     }
 
