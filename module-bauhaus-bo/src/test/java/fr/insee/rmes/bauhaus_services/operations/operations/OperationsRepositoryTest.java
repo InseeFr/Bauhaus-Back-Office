@@ -1,16 +1,23 @@
 package fr.insee.rmes.bauhaus_services.operations.operations;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.*;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
 import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.bauhaus_services.operations.OperationsParentRepository;
+import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationsUtils;
 import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.OperationsObjectMapper;
 import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesNotAcceptableException;
 import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.graphdb.ontologies.ADMS;
@@ -32,6 +39,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 
 @ExtendWith(MockitoExtension.class)
@@ -56,6 +64,9 @@ class OperationsRepositoryTest {
 
     @Mock
     ApplicationEventPublisher events;
+
+    @Mock
+    DocumentationsUtils documentationsUtils;
 
     @Spy
     BauhausUriBuilder bauhausUriBuilder =
@@ -206,5 +217,54 @@ class OperationsRepositoryTest {
                         "http://id.insee.fr/operations/operation/s1001",
                         new BilingualLabel("Enquête emploi", "Labour survey"),
                         new BilingualLabel("EEC", "LFS")));
+    }
+
+    /**
+     * Stubs qui laisseraient la mise à jour aller jusqu'à l'écriture : {@code lenient} car un corps
+     * illisible doit justement l'interrompre avant qu'ils ne servent.
+     */
+    private void stubUpdateOfAPublishedOperation() throws RmesException {
+        lenient().when(operationsParentRepository.getValidationStatus("o1500")).thenReturn("Published");
+        lenient().when(repositoryGestion.getResponseAsBoolean(any())).thenReturn(false);
+    }
+
+    @Test
+    void updateOperation_whenTheBodyIsNotValidJson_shouldRejectWithBadRequestWithoutWriting() throws RmesException {
+        stubUpdateOfAPublishedOperation();
+
+        assertThatThrownBy(() -> operationsRepository.setOperation("o1500", "{not json"))
+                .isInstanceOf(RmesBadRequestException.class)
+                .extracting(e -> ((RmesException) e).getDetails())
+                .asString()
+                .contains("The submitted data is invalid");
+
+        verify(repositoryGestion, never()).loadSimpleObject(any(), any());
+        verifyNoInteractions(documentationsUtils, events);
+    }
+
+    @Test
+    void updateOperation_whenTheBodyIsNotValidJson_shouldLogTheErrorWithItsCause() throws RmesException {
+        stubUpdateOfAPublishedOperation();
+        Logger logger = (Logger) LoggerFactory.getLogger(OperationsRepository.class);
+        ListAppender<ILoggingEvent> logs = new ListAppender<>();
+        logs.start();
+        logger.addAppender(logs);
+        try {
+            assertThatThrownBy(() -> operationsRepository.setOperation("o1500", "{not json"))
+                    .isInstanceOf(RmesException.class);
+
+            assertThat(logs.list)
+                    .filteredOn(event -> event.getLevel() == Level.ERROR)
+                    .singleElement()
+                    .satisfies(event -> {
+                        assertThat(event.getFormattedMessage()).contains("o1500");
+                        assertThat(event.getThrowableProxy()).isNotNull();
+                        assertThat(event.getThrowableProxy().getCause())
+                                .as("l'erreur Jackson d'origine doit figurer dans la trace")
+                                .isNotNull();
+                    });
+        } finally {
+            logger.detachAppender(logs);
+        }
     }
 }

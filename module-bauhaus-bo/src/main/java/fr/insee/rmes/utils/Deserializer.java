@@ -19,7 +19,7 @@ public class Deserializer {
         try {
             return mapper.readValue(json, target);
         } catch (IOException e) {
-            throw new RmesException(HttpStatus.SC_BAD_REQUEST, "while ", e.getMessage());
+            throw new RmesException(HttpStatus.SC_BAD_REQUEST, "while ", e.getMessage(), e);
         }
     }
 

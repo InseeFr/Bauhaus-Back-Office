@@ -157,11 +157,12 @@ public class OperationsRepository extends RdfService {
     }
 
     public void setOperation(String id, String body) throws RmesException {
-        Operation operation = Operation.of(id);
+        Operation operation;
         try {
             operation = Deserializer.deserializeJsonString(body, Operation.class);
         } catch (RmesException e) {
-            logger.error(e.getMessage());
+            logger.error("Update of operation {} rejected: unreadable body", id, e);
+            throw new RmesBadRequestException("The submitted data is invalid");
         }
 
         operation.setModified(DateUtils.getCurrentDate());
