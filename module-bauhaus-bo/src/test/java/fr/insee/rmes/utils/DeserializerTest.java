@@ -1,10 +1,12 @@
 package fr.insee.rmes.utils;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertThrows;
 
 import fr.insee.rmes.domain.exceptions.RmesException;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -30,5 +32,17 @@ class DeserializerTest {
     @ValueSource(classes = {String.class, Integer.class})
     void shouldNotDeserializeJSONObject(Class target) {
         assertThrows(RmesException.class, () -> Deserializer.deserializeJSONObject(jsonObjectSecond, target));
+    }
+
+    @Test
+    void shouldReportAnUnreadableBodyWithATranslatableCode() {
+        RmesException exception =
+                assertThrows(RmesException.class, () -> Deserializer.deserializeJsonString("{not json", Integer.class));
+
+        assertThat(exception.getStatus()).isEqualTo(400);
+        JSONObject body = new JSONObject(exception.getDetails());
+        assertThat(body.getString("code")).isEqualTo("INVALID_REQUEST_BODY");
+        assertThat(body.getString("message")).isEqualTo("The submitted data is invalid");
+        assertThat(exception.getCause()).isNotNull();
     }
 }

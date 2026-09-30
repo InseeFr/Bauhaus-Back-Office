@@ -2,6 +2,7 @@ package fr.insee.rmes.utils;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import fr.insee.rmes.domain.exceptions.CodedRmesException;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import java.io.IOException;
 import org.apache.http.HttpStatus;
@@ -9,6 +10,8 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class Deserializer {
+    public static final String INVALID_REQUEST_BODY = "INVALID_REQUEST_BODY";
+
     private static final ObjectMapper mapper = new ObjectMapper();
 
     static {
@@ -20,7 +23,8 @@ public class Deserializer {
             return mapper.readValue(json, target);
         } catch (IOException e) {
             // Le message de Jackson cite les classes Java : il reste dans la cause, pour les logs.
-            throw new RmesException(HttpStatus.SC_BAD_REQUEST, "The submitted data is invalid", null, e);
+            throw new CodedRmesException(
+                    HttpStatus.SC_BAD_REQUEST, INVALID_REQUEST_BODY, "The submitted data is invalid", e);
         }
     }
 

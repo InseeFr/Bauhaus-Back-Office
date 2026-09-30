@@ -1,9 +1,13 @@
 package fr.insee.rmes.exceptions;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
+import fr.insee.rmes.domain.exceptions.CodedRmesException;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import java.nio.file.NoSuchFileException;
+import org.json.JSONObject;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.http.HttpStatus;
@@ -42,5 +46,19 @@ class RmesExceptionHandlerTest {
         String expected =
                 "<404 NOT_FOUND Not Found," + infos[0] + " -> " + infos[1] + ": " + infos[2] + " does not exist,[]>";
         assertEquals(expected, actual.toString());
+    }
+
+    @Test
+    void a_coded_exception_answers_its_status_and_its_code_without_the_technical_cause() {
+        CodedRmesException exception = new CodedRmesException(
+                503, "PUBLICATION_REPOSITORY_UNAVAILABLE", "Publication failed", new IllegalStateException("rdf4j"));
+
+        ResponseEntity<String> actual = rmesExceptionHandler.handleRmesException(exception);
+
+        assertEquals(HttpStatus.SERVICE_UNAVAILABLE, actual.getStatusCode());
+        JSONObject body = new JSONObject(actual.getBody());
+        assertEquals("PUBLICATION_REPOSITORY_UNAVAILABLE", body.getString("code"));
+        assertEquals("Publication failed", body.getString("message"));
+        assertFalse(actual.getBody().contains("rdf4j"));
     }
 }
