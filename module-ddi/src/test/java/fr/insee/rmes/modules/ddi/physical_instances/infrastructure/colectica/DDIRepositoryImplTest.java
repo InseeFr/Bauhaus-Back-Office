@@ -5601,12 +5601,12 @@ class DDIRepositoryImplTest {
 
         assertThatThrownBy(() -> ddiRepository.updateFullPhysicalInstance("fr.insee", "pi-1", ddi4))
                 .isInstanceOf(MissingSchemeException.class)
-                .hasMessageContaining("fr.insee/group-1")
+                .hasMessageContaining("Série Emploi")
                 .hasMessageContaining("CodeListScheme")
                 .satisfies(e -> {
                     MissingSchemeException ex = (MissingSchemeException) e;
                     assertThat(ex.code()).isEqualTo(MissingSchemeException.Code.GROUP_MISSING_CODE_LIST_SCHEME);
-                    assertThat(ex.params()).isEqualTo(Map.of("group", "fr.insee/group-1"));
+                    assertThat(ex.params()).isEqualTo(Map.of("group", "Série Emploi"));
                 });
         verify(colecticaClient, never()).createOrUpdateItems(any());
     }
@@ -5635,12 +5635,12 @@ class DDIRepositoryImplTest {
 
         assertThatThrownBy(() -> ddiRepository.updateFullPhysicalInstance("fr.insee", "pi-1", ddi4))
                 .isInstanceOf(MissingSchemeException.class)
-                .hasMessageContaining("fr.insee/group-1")
+                .hasMessageContaining("Série Emploi")
                 .hasMessageContaining("CategoryScheme")
                 .satisfies(e -> {
                     MissingSchemeException ex = (MissingSchemeException) e;
                     assertThat(ex.code()).isEqualTo(MissingSchemeException.Code.GROUP_MISSING_CATEGORY_SCHEME);
-                    assertThat(ex.params()).isEqualTo(Map.of("group", "fr.insee/group-1"));
+                    assertThat(ex.params()).isEqualTo(Map.of("group", "Série Emploi"));
                 });
         verify(colecticaClient, never()).createOrUpdateItems(any());
     }
@@ -5676,13 +5676,13 @@ class DDIRepositoryImplTest {
 
         assertThatThrownBy(() -> ddiRepository.updateFullPhysicalInstance("fr.insee", "pi-1", ddi4))
                 .isInstanceOf(MissingSchemeException.class)
-                .hasMessageContaining("fr.insee/group-1")
+                .hasMessageContaining("Série Emploi")
                 .hasMessageContaining("ManagedRepresentationScheme")
                 .satisfies(e -> {
                     MissingSchemeException ex = (MissingSchemeException) e;
                     assertThat(ex.code())
                             .isEqualTo(MissingSchemeException.Code.GROUP_MISSING_MANAGED_REPRESENTATION_SCHEME);
-                    assertThat(ex.params()).isEqualTo(Map.of("group", "fr.insee/group-1"));
+                    assertThat(ex.params()).isEqualTo(Map.of("group", "Série Emploi"));
                 });
         verify(colecticaClient, never()).createOrUpdateItems(any());
     }
@@ -5699,12 +5699,12 @@ class DDIRepositoryImplTest {
 
         assertThatThrownBy(() -> ddiRepository.updateFullPhysicalInstance("fr.insee", "pi-1", ddi4WithOneVariable()))
                 .isInstanceOf(MissingSchemeException.class)
-                .hasMessageContaining("fr.insee/su-1")
+                .hasMessageContaining("Enquête Emploi")
                 .hasMessageContaining("LogicalProduct")
                 .satisfies(e -> {
                     MissingSchemeException ex = (MissingSchemeException) e;
                     assertThat(ex.code()).isEqualTo(MissingSchemeException.Code.STUDY_UNIT_MISSING_LOGICAL_PRODUCT);
-                    assertThat(ex.params()).isEqualTo(Map.of("studyUnit", "fr.insee/su-1"));
+                    assertThat(ex.params()).isEqualTo(Map.of("studyUnit", "Enquête Emploi"));
                 });
         verify(colecticaClient, never()).createOrUpdateItems(any());
     }
@@ -5721,12 +5721,12 @@ class DDIRepositoryImplTest {
 
         assertThatThrownBy(() -> ddiRepository.updateFullPhysicalInstance("fr.insee", "pi-1", ddi4WithOneVariable()))
                 .isInstanceOf(MissingSchemeException.class)
-                .hasMessageContaining("fr.insee/su-1")
+                .hasMessageContaining("Enquête Emploi")
                 .hasMessageContaining("2 LogicalProducts")
                 .satisfies(e -> {
                     MissingSchemeException ex = (MissingSchemeException) e;
                     assertThat(ex.code()).isEqualTo(MissingSchemeException.Code.STUDY_UNIT_SEVERAL_LOGICAL_PRODUCTS);
-                    assertThat(ex.params()).isEqualTo(Map.of("studyUnit", "fr.insee/su-1", "count", "2"));
+                    assertThat(ex.params()).isEqualTo(Map.of("studyUnit", "Enquête Emploi", "count", "2"));
                 });
         verify(colecticaClient, never()).createOrUpdateItems(any());
     }
@@ -5746,12 +5746,12 @@ class DDIRepositoryImplTest {
 
         assertThatThrownBy(() -> ddiRepository.updateFullPhysicalInstance("fr.insee", "pi-1", ddi4WithOneVariable()))
                 .isInstanceOf(MissingSchemeException.class)
-                .hasMessageContaining("fr.insee/su-1")
+                .hasMessageContaining("Enquête Emploi")
                 .hasMessageContaining("VariableScheme")
                 .satisfies(e -> {
                     MissingSchemeException ex = (MissingSchemeException) e;
                     assertThat(ex.code()).isEqualTo(MissingSchemeException.Code.STUDY_UNIT_MISSING_VARIABLE_SCHEME);
-                    assertThat(ex.params()).isEqualTo(Map.of("studyUnit", "fr.insee/su-1"));
+                    assertThat(ex.params()).isEqualTo(Map.of("studyUnit", "Enquête Emploi"));
                 });
         verify(colecticaClient, never()).createOrUpdateItems(any());
     }
@@ -5770,12 +5770,12 @@ class DDIRepositoryImplTest {
                         RelationshipDirection.BY_OBJECT,
                         new ItemReference("fr.insee", "pi-1"),
                         List.of(STUDY_UNIT_ITEM_TYPE)))
-                .thenReturn(List.of(labelItem(STUDY_UNIT_ITEM_TYPE, "fr.insee", "su-1", "su-1")));
+                .thenReturn(List.of(labelItem(STUDY_UNIT_ITEM_TYPE, "fr.insee", "su-1", "Enquête Emploi")));
         when(colecticaClient.findRelatedItems(
                         RelationshipDirection.BY_OBJECT,
                         new ItemReference("fr.insee", "su-1"),
                         List.of(GROUP_ITEM_TYPE)))
-                .thenReturn(List.of(labelItem(GROUP_ITEM_TYPE, "fr.insee", "group-1", "group-1")));
+                .thenReturn(List.of(labelItem(GROUP_ITEM_TYPE, "fr.insee", "group-1", "Série Emploi")));
     }
 
     private static Ddi4Response ddi4WithOneVariable() {
