@@ -144,18 +144,6 @@ public class CollectionsResources {
         }
     }
 
-    @DeleteMapping("/{id}")
-    @HasAccess(module = RBAC.Module.CONCEPT_COLLECTION, privilege = RBAC.Privilege.DELETE)
-    ResponseEntity<String> delete(@PathVariable String id) {
-        return null;
-    }
-
-    @GetMapping("/search")
-    @HasAccess(module = RBAC.Module.CONCEPT_COLLECTION, privilege = RBAC.Privilege.READ)
-    ResponseEntity<String> search() {
-        return null;
-    }
-
     @GetMapping(
             value = "/{id}/export/{type}",
             produces = {MediaType.APPLICATION_OCTET_STREAM_VALUE, "application/vnd.oasis.opendocument.text"})

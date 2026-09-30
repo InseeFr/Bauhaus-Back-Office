@@ -97,14 +97,6 @@ class CollectionsResourcesHasAccessIntegrationTest extends AbstractResourcesEnvP
                         """.formatted(collectionId)), code);
     }
 
-    @MethodSource("provideCollectionData")
-    @ParameterizedTest
-    void deleteCollection(Integer code, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
-        givenAccess(hasAccessReturn);
-
-        performJsonRequest(delete("/concepts/collections/" + collectionId), code);
-    }
-
     @MethodSource("providePublishCollectionData")
     @ParameterizedTest
     void publishCollection(Integer code, boolean hasAccessReturn)
@@ -158,14 +150,6 @@ class CollectionsResourcesHasAccessIntegrationTest extends AbstractResourcesEnvP
         when(collectionsService.getCollectionMembers(any())).thenReturn(List.of());
 
         performJsonRequest(get("/concepts/collections/" + collectionId + "/members"), code);
-    }
-
-    @MethodSource("provideCollectionData")
-    @ParameterizedTest
-    void searchCollections(Integer code, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
-        givenAccess(hasAccessReturn);
-
-        performJsonRequest(get("/concepts/collections/search"), code);
     }
 
     private void givenAccess(boolean hasAccessReturn) throws MissingUserInformationException {
