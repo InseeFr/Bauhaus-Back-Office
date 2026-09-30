@@ -903,4 +903,129 @@ class LocalColecticaGroupInitConfigurationTest {
         verify(ddiService, never()).createLogicalProduct(any());
         verify(ddiService, never()).createVariableScheme(any());
     }
+
+    @Test
+    void danglingLogicalProductExample_createsAGroupAndAStudyUnitReferencingLogicalProductsThatDoNotExist()
+            throws Exception {
+        when(ddiService.createPhysicalInstance(any(), any())).thenReturn(piResponse("fr.insee", "pi-dangling-lp"));
+
+        LocalColecticaGroupInitConfiguration config = new LocalColecticaGroupInitConfiguration();
+        CommandLineRunner runner = config.initColecticaDanglingLogicalProductExample(
+                groupService, studyUnitService, ddiService, createColecticaConfig());
+
+        runner.run();
+
+        String studyUnitSeed = LocalColecticaGroupInitConfiguration.DANGLING_LOGICAL_PRODUCT_EXAMPLE_STUDY_UNIT_SEED;
+        String groupSeed = LocalColecticaGroupInitConfiguration.DANGLING_LOGICAL_PRODUCT_EXAMPLE_GROUP_SEED;
+
+        // La StudyUnit porte la PI et référence un LogicalProduct qui n'a jamais été créé.
+        ArgumentCaptor<Ddi4StudyUnit> suCaptor = ArgumentCaptor.forClass(Ddi4StudyUnit.class);
+        verify(studyUnitService).createOrUpdate(suCaptor.capture());
+        Ddi4StudyUnit studyUnit = suCaptor.getValue();
+        assertThat(studyUnit.id()).isEqualTo(generateDeterministicUuid(studyUnitSeed));
+        assertThat(studyUnit.physicalInstanceReferences())
+                .extracting(Reference::id)
+                .containsExactly("pi-dangling-lp");
+        assertThat(studyUnit.logicalProductReferences())
+                .extracting(Reference::id)
+                .containsExactly(generateDeterministicUuid(studyUnitSeed + "#logicalproduct"));
+
+        // Le Group classe la StudyUnit et référence, lui aussi, un LogicalProduct inexistant.
+        ArgumentCaptor<Ddi4Group> groupCaptor = ArgumentCaptor.forClass(Ddi4Group.class);
+        verify(groupService).createOrUpdate(groupCaptor.capture());
+        Ddi4Group group = groupCaptor.getValue();
+        assertThat(group.id()).isEqualTo(generateDeterministicUuid(groupSeed));
+        assertThat(group.studyUnitReference()).extracting(Reference::id).containsExactly(studyUnit.id());
+        assertThat(group.logicalProductReference())
+                .extracting(Reference::id)
+                .containsExactly(generateDeterministicUuid(groupSeed + "#logicalproduct"));
+
+        // Les LogicalProducts référencés ne sont jamais créés.
+        verify(ddiService, never()).createLogicalProduct(any());
+    }
+
+    @Test
+    void groupWithoutCategorySchemeExample_filesOnlyACodeListSchemeInTheGroupLogicalProduct() throws Exception {
+        when(ddiService.createPhysicalInstance(any(), any())).thenReturn(piResponse("fr.insee", "pi"));
+
+        LocalColecticaGroupInitConfiguration config = new LocalColecticaGroupInitConfiguration();
+        config.initColecticaIncompleteGroupSchemesExample(
+                        groupService, studyUnitService, ddiService, createColecticaConfig())
+                .run();
+
+        String groupId = generateDeterministicUuid(
+                LocalColecticaGroupInitConfiguration.WITHOUT_CATEGORY_SCHEME_EXAMPLE_GROUP_SEED);
+        Ddi4LogicalProduct logicalProduct = groupLogicalProduct(groupId);
+        assertThat(logicalProduct.codeListSchemeReference()).hasSize(1);
+        assertThat(logicalProduct.categorySchemeReference()).isNullOrEmpty();
+        assertThat(logicalProduct.managedRepresentationSchemeReference()).isNullOrEmpty();
+    }
+
+    @Test
+    void
+            groupWithoutManagedRepresentationSchemeExample_filesACodeListAndACategorySchemeButNoManagedRepresentationScheme()
+                    throws Exception {
+        when(ddiService.createPhysicalInstance(any(), any())).thenReturn(piResponse("fr.insee", "pi"));
+
+        LocalColecticaGroupInitConfiguration config = new LocalColecticaGroupInitConfiguration();
+        config.initColecticaIncompleteGroupSchemesExample(
+                        groupService, studyUnitService, ddiService, createColecticaConfig())
+                .run();
+
+        String groupId = generateDeterministicUuid(
+                LocalColecticaGroupInitConfiguration.WITHOUT_MANAGED_REPRESENTATION_SCHEME_EXAMPLE_GROUP_SEED);
+        Ddi4LogicalProduct logicalProduct = groupLogicalProduct(groupId);
+        assertThat(logicalProduct.codeListSchemeReference()).hasSize(1);
+        assertThat(logicalProduct.categorySchemeReference()).hasSize(1);
+        assertThat(logicalProduct.managedRepresentationSchemeReference()).isNullOrEmpty();
+        verify(ddiService, never()).createManagedRepresentationScheme(any());
+    }
+
+    @Test
+    void incompleteGroupSchemesExample_givesEachStudyUnitACompleteLogicalProductAndAPhysicalInstance()
+            throws Exception {
+        when(ddiService.createPhysicalInstance(any(), any())).thenReturn(piResponse("fr.insee", "pi"));
+
+        LocalColecticaGroupInitConfiguration config = new LocalColecticaGroupInitConfiguration();
+        config.initColecticaIncompleteGroupSchemesExample(
+                        groupService, studyUnitService, ddiService, createColecticaConfig())
+                .run();
+
+        // Les StudyUnits sont complètes (LogicalProduct + VariableScheme) : seules les erreurs côté
+        // Group sont reproduites, ajouter une variable reste possible.
+        ArgumentCaptor<Ddi4StudyUnit> suCaptor = ArgumentCaptor.forClass(Ddi4StudyUnit.class);
+        verify(studyUnitService, times(2)).createOrUpdate(suCaptor.capture());
+        assertThat(suCaptor.getAllValues()).allSatisfy(studyUnit -> {
+            assertThat(studyUnit.physicalInstanceReferences()).hasSize(1);
+            assertThat(studyUnit.logicalProductReferences()).hasSize(1);
+        });
+        verify(ddiService, times(2)).createVariableScheme(any());
+        verify(ddiService, times(2)).createPhysicalInstance(any(), any());
+
+        ArgumentCaptor<Ddi4Group> groupCaptor = ArgumentCaptor.forClass(Ddi4Group.class);
+        verify(groupService, times(2)).createOrUpdate(groupCaptor.capture());
+        assertThat(groupCaptor.getAllValues())
+                .extracting(group -> group.studyUnitReference().getFirst().id())
+                .containsExactlyInAnyOrderElementsOf(
+                        suCaptor.getAllValues().stream().map(Ddi4StudyUnit::id).toList());
+    }
+
+    /** Le LogicalProduct référencé par le Group d'id {@code groupId}, parmi ceux créés par l'init. */
+    private Ddi4LogicalProduct groupLogicalProduct(String groupId) {
+        ArgumentCaptor<Ddi4Group> groupCaptor = ArgumentCaptor.forClass(Ddi4Group.class);
+        verify(groupService, atLeastOnce()).createOrUpdate(groupCaptor.capture());
+        String logicalProductId = groupCaptor.getAllValues().stream()
+                .filter(group -> group.id().equals(groupId))
+                .findFirst()
+                .orElseThrow()
+                .logicalProductReference()
+                .getFirst()
+                .id();
+        ArgumentCaptor<Ddi4LogicalProduct> lpCaptor = ArgumentCaptor.forClass(Ddi4LogicalProduct.class);
+        verify(ddiService, atLeastOnce()).createLogicalProduct(lpCaptor.capture());
+        return lpCaptor.getAllValues().stream()
+                .filter(lp -> lp.id().equals(logicalProductId))
+                .findFirst()
+                .orElseThrow();
+    }
 }
