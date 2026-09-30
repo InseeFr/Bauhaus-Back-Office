@@ -95,18 +95,21 @@ public class UserConfiguration {
                 .cors(withDefaults())
                 .csrf(AbstractHttpConfigurer::disable);
 
-        if (!isProd) {
+        if (isProd) {
+            http.oauth2ResourceServer(oauth2ResourceServer -> oauth2ResourceServer.jwt(withDefaults()));
+        } else {
+            // Pas de resource server hors PROD : son filtre passe après celui-ci et substituerait
+            // au FAKE_USER le porteur de tout jeton reçu (ex. SSO silencieux sur une session prod).
             http.addFilterBefore(new DevAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
         }
 
-        http.oauth2ResourceServer(oauth2ResourceServer -> oauth2ResourceServer.jwt(withDefaults()))
-                .authorizeHttpRequests(authorizeHttpRequest -> authorizeHttpRequest
-                        .requestMatchers(publicEndpointsMatcher)
-                        .permitAll()
-                        .requestMatchers(HttpMethod.OPTIONS)
-                        .permitAll()
-                        .anyRequest()
-                        .authenticated());
+        http.authorizeHttpRequests(authorizeHttpRequest -> authorizeHttpRequest
+                .requestMatchers(publicEndpointsMatcher)
+                .permitAll()
+                .requestMatchers(HttpMethod.OPTIONS)
+                .permitAll()
+                .anyRequest()
+                .authenticated());
 
         logger.info(isProd ? "OpenID authentication activated" : "Development mode with FAKE_USER");
 
