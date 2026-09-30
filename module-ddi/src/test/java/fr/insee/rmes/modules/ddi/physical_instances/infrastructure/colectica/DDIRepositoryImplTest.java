@@ -2465,14 +2465,14 @@ class DDIRepositoryImplTest {
         String agencyId = "fr.insee";
         String piId = "pi-111";
 
-        // PI → StudyUnit
-        when(colecticaClient.findRelatedDescriptions(
+        // PI → StudyUnit : l'endpoint /descriptions renvoie aussi le libellé
+        when(colecticaClient.findRelatedItems(
                         RelationshipDirection.BY_OBJECT, new ItemReference(agencyId, piId), List.of(studyUnitType)))
-                .thenReturn(List.of(new ItemReference("fr.insee", "su-222")));
+                .thenReturn(List.of(labelItem(studyUnitType, "fr.insee", "su-222", "Enquête emploi 2024")));
         // StudyUnit → Group
-        when(colecticaClient.findRelatedDescriptions(
+        when(colecticaClient.findRelatedItems(
                         RelationshipDirection.BY_OBJECT, new ItemReference("fr.insee", "su-222"), List.of(groupType)))
-                .thenReturn(List.of(new ItemReference("fr.insee", "grp-333")));
+                .thenReturn(List.of(labelItem(groupType, "fr.insee", "grp-333", "Enquête emploi")));
 
         // When
         PhysicalInstanceParents result = ddiRepository.getPhysicalInstanceParents(agencyId, piId);
@@ -2483,8 +2483,26 @@ class DDIRepositoryImplTest {
         assertEquals("fr.insee", result.studyUnitAgency());
         assertEquals("grp-333", result.groupId());
         assertEquals("fr.insee", result.groupAgency());
-        verify(colecticaClient, times(2))
-                .findRelatedDescriptions(eq(RelationshipDirection.BY_OBJECT), any(), anyList());
+        verify(colecticaClient, times(2)).findRelatedItems(eq(RelationshipDirection.BY_OBJECT), any(), anyList());
+    }
+
+    @Test
+    void getPhysicalInstanceParents_keepsTheLabelsReturnedByTheRelationshipQuery() {
+        String studyUnitType = "30ea0200-7121-4f01-8d21-a931a182b86d";
+        String groupType = "4bd6eef6-99df-40e6-9b11-5b8f64e5cb23";
+        when(colecticaClient.findRelatedItems(
+                        RelationshipDirection.BY_OBJECT,
+                        new ItemReference("fr.insee", "pi-111"),
+                        List.of(studyUnitType)))
+                .thenReturn(List.of(labelItem(studyUnitType, "fr.insee", "su-222", "Enquête emploi 2024")));
+        when(colecticaClient.findRelatedItems(
+                        RelationshipDirection.BY_OBJECT, new ItemReference("fr.insee", "su-222"), List.of(groupType)))
+                .thenReturn(List.of(labelItem(groupType, "fr.insee", "grp-333", "Enquête emploi")));
+
+        PhysicalInstanceParents result = ddiRepository.getPhysicalInstanceParents("fr.insee", "pi-111");
+
+        assertEquals("Enquête emploi 2024", result.studyUnitLabel());
+        assertEquals("Enquête emploi", result.groupLabel());
     }
 
     @Test
@@ -2494,7 +2512,7 @@ class DDIRepositoryImplTest {
         String agencyId = "fr.insee";
         String piId = "pi-111";
 
-        when(colecticaClient.findRelatedDescriptions(
+        when(colecticaClient.findRelatedItems(
                         RelationshipDirection.BY_OBJECT, new ItemReference(agencyId, piId), List.of(studyUnitType)))
                 .thenReturn(List.of());
 
@@ -2502,6 +2520,36 @@ class DDIRepositoryImplTest {
         StudyUnitNotFoundException exception = assertThrows(
                 StudyUnitNotFoundException.class, () -> ddiRepository.getPhysicalInstanceParents(agencyId, piId));
         assertThat(exception.getMessage()).isEqualTo("No study unit found for physical instance fr.insee/pi-111");
+    }
+
+    @Test
+    void getGroupSeriesIris_readsTheUserIdsOfTheGroupItemAloneWithoutFetchingItsDdiSet() {
+        String groupXml = """
+                <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3" xmlns:g="ddi:group:3_3">
+                  <g:Group>
+                    <r:Agency>fr.insee</r:Agency>
+                    <r:ID>grp-333</r:ID>
+                    <r:UserID typeOfUserID="StatisticalOperationSeries">http://id.insee.fr/operations/serie/s1001</r:UserID>
+                  </g:Group>
+                </Fragment>""";
+        when(colecticaClient.getItem("fr.insee", "grp-333", null))
+                .thenReturn(new ColecticaItemResponse(
+                        GROUP_ITEM_TYPE,
+                        "fr.insee",
+                        1,
+                        "grp-333",
+                        groupXml,
+                        "2025-01-01T00:00:00",
+                        null,
+                        false,
+                        false,
+                        false,
+                        null));
+
+        List<String> seriesIris = ddiRepository.getGroupSeriesIris("fr.insee", "grp-333");
+
+        assertThat(seriesIris).containsExactly("http://id.insee.fr/operations/serie/s1001");
+        verify(colecticaClient, never()).getDdiSet(anyString(), anyString());
     }
 
     // ---- #485 : getCodeList / getCodeListXml (CodeList + Categories, versioned) ----
@@ -4810,16 +4858,16 @@ class DDIRepositoryImplTest {
         stubChildren("fr.insee", "GROUP_M", CODE_LIST_TYPE, new ItemReference("fr.insee", "CL_MUT"));
 
         // Parents: PI -> StudyUnit -> Group
-        when(colecticaClient.findRelatedDescriptions(
+        when(colecticaClient.findRelatedItems(
                         RelationshipDirection.BY_OBJECT,
                         new ItemReference("fr.insee", "pi-1"),
                         List.of(STUDY_UNIT_ITEM_TYPE)))
-                .thenReturn(List.of(new ItemReference("fr.insee", "su-1")));
-        when(colecticaClient.findRelatedDescriptions(
+                .thenReturn(List.of(labelItem(STUDY_UNIT_ITEM_TYPE, "fr.insee", "su-1", "su-1")));
+        when(colecticaClient.findRelatedItems(
                         RelationshipDirection.BY_OBJECT,
                         new ItemReference("fr.insee", "su-1"),
                         List.of(GROUP_ITEM_TYPE)))
-                .thenReturn(List.of(new ItemReference("fr.insee", "group-1")));
+                .thenReturn(List.of(labelItem(GROUP_ITEM_TYPE, "fr.insee", "group-1", "group-1")));
 
         // Scheme resolution: Group -> LogicalProduct -> CodeListScheme
         when(colecticaClient.findRelatedDescriptions(
@@ -4928,16 +4976,16 @@ class DDIRepositoryImplTest {
                         MANAGED_REPRESENTATION_SCHEME_TYPE));
 
         // Parents: PI -> StudyUnit -> Group
-        when(colecticaClient.findRelatedDescriptions(
+        when(colecticaClient.findRelatedItems(
                         RelationshipDirection.BY_OBJECT,
                         new ItemReference("fr.insee", "pi-1"),
                         List.of(STUDY_UNIT_ITEM_TYPE)))
-                .thenReturn(List.of(new ItemReference("fr.insee", "su-1")));
-        when(colecticaClient.findRelatedDescriptions(
+                .thenReturn(List.of(labelItem(STUDY_UNIT_ITEM_TYPE, "fr.insee", "su-1", "su-1")));
+        when(colecticaClient.findRelatedItems(
                         RelationshipDirection.BY_OBJECT,
                         new ItemReference("fr.insee", "su-1"),
                         List.of(GROUP_ITEM_TYPE)))
-                .thenReturn(List.of(new ItemReference("fr.insee", "group-1")));
+                .thenReturn(List.of(labelItem(GROUP_ITEM_TYPE, "fr.insee", "group-1", "group-1")));
 
         // Scheme resolution: Group -> LogicalProduct -> ManagedRepresentationScheme
         when(colecticaClient.findRelatedDescriptions(
@@ -5078,16 +5126,16 @@ class DDIRepositoryImplTest {
         when(instanceConfiguration.itemTypes())
                 .thenReturn(Map.of("LogicalProduct", "lp-type", "CategoryScheme", "cats-type"));
 
-        when(colecticaClient.findRelatedDescriptions(
+        when(colecticaClient.findRelatedItems(
                         RelationshipDirection.BY_OBJECT,
                         new ItemReference("fr.insee", "pi-1"),
                         List.of(STUDY_UNIT_ITEM_TYPE)))
-                .thenReturn(List.of(new ItemReference("fr.insee", "su-1")));
-        when(colecticaClient.findRelatedDescriptions(
+                .thenReturn(List.of(labelItem(STUDY_UNIT_ITEM_TYPE, "fr.insee", "su-1", "su-1")));
+        when(colecticaClient.findRelatedItems(
                         RelationshipDirection.BY_OBJECT,
                         new ItemReference("fr.insee", "su-1"),
                         List.of(GROUP_ITEM_TYPE)))
-                .thenReturn(List.of(new ItemReference("fr.insee", "group-1")));
+                .thenReturn(List.of(labelItem(GROUP_ITEM_TYPE, "fr.insee", "group-1", "group-1")));
         // Group -> LogicalProduct -> CategoryScheme
         when(colecticaClient.findRelatedDescriptions(
                         RelationshipDirection.BY_SUBJECT, new ItemReference("fr.insee", "group-1"), List.of("lp-type")))
@@ -5168,7 +5216,7 @@ class DDIRepositoryImplTest {
                 .thenReturn(
                         new Ddi3Response(new Ddi3Response.Ddi3Options(List.of("RegisterOrReplace")), List.of(piItem)));
 
-        when(colecticaClient.findRelatedDescriptions(
+        when(colecticaClient.findRelatedItems(
                         RelationshipDirection.BY_OBJECT,
                         new ItemReference("fr.insee", "pi-1"),
                         List.of(STUDY_UNIT_ITEM_TYPE)))
@@ -5718,16 +5766,16 @@ class DDIRepositoryImplTest {
 
     /** PhysicalInstance pi-1 → StudyUnit su-1 → Group group-1. */
     private void stubPhysicalInstanceParents() {
-        when(colecticaClient.findRelatedDescriptions(
+        when(colecticaClient.findRelatedItems(
                         RelationshipDirection.BY_OBJECT,
                         new ItemReference("fr.insee", "pi-1"),
                         List.of(STUDY_UNIT_ITEM_TYPE)))
-                .thenReturn(List.of(new ItemReference("fr.insee", "su-1")));
-        when(colecticaClient.findRelatedDescriptions(
+                .thenReturn(List.of(labelItem(STUDY_UNIT_ITEM_TYPE, "fr.insee", "su-1", "su-1")));
+        when(colecticaClient.findRelatedItems(
                         RelationshipDirection.BY_OBJECT,
                         new ItemReference("fr.insee", "su-1"),
                         List.of(GROUP_ITEM_TYPE)))
-                .thenReturn(List.of(new ItemReference("fr.insee", "group-1")));
+                .thenReturn(List.of(labelItem(GROUP_ITEM_TYPE, "fr.insee", "group-1", "group-1")));
     }
 
     private static Ddi4Response ddi4WithOneVariable() {

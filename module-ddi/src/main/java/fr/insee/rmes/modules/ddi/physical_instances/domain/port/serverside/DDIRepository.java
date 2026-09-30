@@ -169,6 +169,12 @@ public interface DDIRepository {
     String getItemXml(String agency, String id);
 
     PhysicalInstanceParents getPhysicalInstanceParents(String agencyId, String id);
+
+    /**
+     * Les IRIs des séries d'opérations d'un Group (ses {@code r:UserID}), lues sur le seul item du
+     * Group — sans télécharger le ddiset de toute sa descendance.
+     */
+    List<String> getGroupSeriesIris(String agencyId, String groupId);
     /**
      * Le DDI 3.3 de la StudyUnit d'une opération, dans une {@code <FragmentInstance>} qui porte aussi
      * les fragments des PhysicalInstances qu'elle référence (#1145).

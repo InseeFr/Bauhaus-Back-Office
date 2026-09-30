@@ -180,6 +180,11 @@ public class DDIRepositoryImpl implements DDIRepository {
     }
 
     @Override
+    public List<String> getGroupSeriesIris(String agencyId, String groupId) {
+        return itemByIdReader.groupSeriesIris(agencyId, groupId);
+    }
+
+    @Override
     public Optional<String> findStudyUnitXmlByOperationIri(String operationIri) {
         return catalog.findStudyUnitXmlByOperationIri(operationIri);
     }

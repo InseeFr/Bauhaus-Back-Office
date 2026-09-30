@@ -13,7 +13,6 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Category;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CategoryScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeListScheme;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4GroupResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4LogicalProduct;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedMissingValuesRepresentation;
@@ -520,49 +519,11 @@ public class DDIServiceImpl implements DDIService {
     @Override
     public PhysicalInstanceParents getPhysicalInstanceParents(String agencyId, String id) {
         logger.info("Getting parents for physical instance {}/{}", forLog(agencyId), forLog(id));
+        // Les libellés (groupe, étude) arrivent avec la remontée des relations ; seuls les stamps
+        // créateurs demandent de lire le groupe, et encore : ses seules IRIs de séries.
         PhysicalInstanceParents parents = ddiRepository.getPhysicalInstanceParents(agencyId, id);
-        // Un seul appel Colectica pour le groupe parent : il sert à la fois au label
-        // affiché (section « groupe » du sélecteur de listes de codes) et aux stamps créateurs.
-        Ddi4GroupResponse groupResponse = ddiRepository.getGroup(parents.groupAgency(), parents.groupId());
-        return parents.withGroupLabel(extractGroupLabel(groupResponse))
-                .withStudyUnitLabel(extractStudyUnitLabel(groupResponse, parents.studyUnitId()))
-                .withStamps(resolveGroupCreatorStamps(groupResponse));
-    }
-
-    /**
-     * Libellé de l'étude (StudyUnit) rattachée à la PI : le groupe parent files ses study units,
-     * on retrouve celle de la PI par son ID dans cette même réponse (aucun appel Colectica en plus),
-     * ou {@code null} si elle n'y figure pas ou n'a pas de titre.
-     */
-    private String extractStudyUnitLabel(Ddi4GroupResponse groupResponse, String studyUnitId) {
-        if (groupResponse == null || groupResponse.studyUnit() == null || studyUnitId == null) {
-            return null;
-        }
-        return groupResponse.studyUnit().stream()
-                .filter(studyUnit -> studyUnitId.equals(studyUnit.id()))
-                .map(DDIServiceImpl::studyUnitLabel)
-                .filter(label -> label != null && !label.isBlank())
-                .findFirst()
-                .orElse(null);
-    }
-
-    /**
-     * Libellé du groupe parent : premier titre de la {@code Citation} disponible
-     * (peu importe la langue), ou {@code null} si le groupe n'a pas de titre.
-     */
-    private String extractGroupLabel(Ddi4GroupResponse groupResponse) {
-        if (groupResponse == null || groupResponse.group() == null) {
-            return null;
-        }
-        return groupResponse.group().stream()
-                .map(Ddi4Group::citation)
-                .filter(citation -> citation != null
-                        && citation.title() != null
-                        && !citation.title().isEmpty())
-                .map(citation -> citation.title().getFirst().value())
-                .filter(value -> value != null && !value.isBlank())
-                .findFirst()
-                .orElse(null);
+        List<String> seriesIris = ddiRepository.getGroupSeriesIris(parents.groupAgency(), parents.groupId());
+        return parents.withStamps(creatorStampsOfSeries(seriesIris));
     }
 
     private List<String> resolveGroupCreatorStamps(String groupAgency, String groupId) {
@@ -580,12 +541,17 @@ public class DDIServiceImpl implements DDIService {
                 : groupResponse.group().stream()
                         .filter(g -> g.seriesIris() != null)
                         .flatMap(g -> g.seriesIris().stream())
-                        .distinct()
                         .toList();
-        if (seriesIris.isEmpty()) {
+        return creatorStampsOfSeries(seriesIris);
+    }
+
+    /** Stamps créateurs (distincts) des séries données, via GraphDB ; vide sans série. */
+    private List<String> creatorStampsOfSeries(List<String> seriesIris) {
+        List<String> distinctSeriesIris = seriesIris.stream().distinct().toList();
+        if (distinctSeriesIris.isEmpty()) {
             return List.of();
         }
-        return seriesCreatorsPort.getCreatorsForSeries(seriesIris).values().stream()
+        return seriesCreatorsPort.getCreatorsForSeries(distinctSeriesIris).values().stream()
                 .flatMap(Collection::stream)
                 .distinct()
                 .toList();

@@ -4,6 +4,7 @@ import fr.insee.rmes.colectica.client.ColecticaClient;
 import fr.insee.rmes.colectica.client.dto.ColecticaItemResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3toDDI4ConverterService;
+import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,5 +45,18 @@ class ColecticaItemByIdReader {
             return Optional.empty();
         }
         return Optional.of(ddi3ToDdi4Converter.toStudyUnit(ColecticaXml.stripLeadingGarbage(item.item())));
+    }
+
+    /**
+     * Les IRIs des séries d'un Group (ses {@code r:UserID}), lues sur le seul item du Group. Le ddiset
+     * du Group embarquerait toute sa descendance (StudyUnits, PI, variables, listes de codes…) pour
+     * n'en garder que ces quelques valeurs.
+     */
+    List<String> groupSeriesIris(String agencyId, String groupId) {
+        ColecticaItemResponse item = colecticaClient.getItem(agencyId, groupId, null);
+        if (item == null) {
+            return List.of();
+        }
+        return ColecticaXml.userIds(ColecticaXml.stripLeadingGarbage(item.item()));
     }
 }

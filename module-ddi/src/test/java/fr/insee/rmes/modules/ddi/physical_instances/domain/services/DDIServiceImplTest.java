@@ -1033,21 +1033,7 @@ class DDIServiceImplTest {
 
         when(ddiRepository.getPhysicalInstanceParents(agencyId, id))
                 .thenReturn(new PhysicalInstanceParents("fr.insee", "su-456", "fr.insee", "grp-789"));
-
-        Ddi4Group group = new Ddi4Group(
-                Ddi4Group.TYPE,
-                CogsDate.ofDateTime("2025-01-09T09:00:00Z"),
-                "urn:ddi:fr.insee:grp-789:1",
-                "fr.insee",
-                "grp-789",
-                "1",
-                "bauhaus",
-                null,
-                List.of(),
-                List.of(seriesIri),
-                "insee:StatisticalOperationSeries");
-        when(ddiRepository.getGroup("fr.insee", "grp-789"))
-                .thenReturn(new Ddi4GroupResponse("ddi:4.0", List.of(), List.of(group), List.of()));
+        when(ddiRepository.getGroupSeriesIris("fr.insee", "grp-789")).thenReturn(List.of(seriesIri));
         when(seriesCreatorsPort.getCreatorsForSeries(List.of(seriesIri)))
                 .thenReturn(Map.of(seriesIri, List.of("stamp-A", "stamp-B")));
 
@@ -1059,67 +1045,39 @@ class DDIServiceImplTest {
     }
 
     @Test
-    void shouldGetPhysicalInstanceParents_resolvesParentGroupLabel() {
+    void shouldGetPhysicalInstanceParents_keepsTheLabelsResolvedByTheRepository() {
         String agencyId = "fr.insee";
         String id = "pi-123";
 
         when(ddiRepository.getPhysicalInstanceParents(agencyId, id))
-                .thenReturn(new PhysicalInstanceParents("fr.insee", "su-456", "fr.insee", "grp-789"));
-
-        Ddi4Group group = new Ddi4Group(
-                Ddi4Group.TYPE,
-                CogsDate.ofDateTime("2025-01-09T09:00:00Z"),
-                "urn:ddi:fr.insee:grp-789:1",
-                "fr.insee",
-                "grp-789",
-                "1",
-                "bauhaus",
-                new Citation(LangStrings.of("fr-FR", "Base permanente des équipements")),
-                null,
-                List.of(),
-                "insee:StatisticalOperationSeries");
-        when(ddiRepository.getGroup("fr.insee", "grp-789"))
-                .thenReturn(new Ddi4GroupResponse("ddi:4.0", List.of(), List.of(group), List.of()));
+                .thenReturn(new PhysicalInstanceParents(
+                        "fr.insee",
+                        "su-456",
+                        "Enquête emploi 2024",
+                        "fr.insee",
+                        "grp-789",
+                        "Base permanente des équipements",
+                        List.of()));
+        when(ddiRepository.getGroupSeriesIris("fr.insee", "grp-789")).thenReturn(List.of());
 
         PhysicalInstanceParents result = ddiService.getPhysicalInstanceParents(agencyId, id);
 
         assertEquals("Base permanente des équipements", result.groupLabel());
+        assertEquals("Enquête emploi 2024", result.studyUnitLabel());
     }
 
     @Test
-    void shouldGetPhysicalInstanceParents_resolvesStudyUnitLabel() {
+    void shouldGetPhysicalInstanceParents_doesNotFetchTheWholeGroup() {
         String agencyId = "fr.insee";
         String id = "pi-123";
 
         when(ddiRepository.getPhysicalInstanceParents(agencyId, id))
                 .thenReturn(new PhysicalInstanceParents("fr.insee", "su-456", "fr.insee", "grp-789"));
+        when(ddiRepository.getGroupSeriesIris("fr.insee", "grp-789")).thenReturn(List.of());
 
-        Ddi4Group group = new Ddi4Group(
-                Ddi4Group.TYPE,
-                CogsDate.ofDateTime("2025-01-09T09:00:00Z"),
-                "urn:ddi:fr.insee:grp-789:1",
-                "fr.insee",
-                "grp-789",
-                "1",
-                "bauhaus",
-                null,
-                null,
-                List.of(),
-                "insee:StatisticalOperationSeries");
-        // Le groupe parent files ses study units ; on retrouve le label de l'étude rattachée
-        // à la PI (su-456) dans cette même liste, sans appel Colectica supplémentaire.
-        when(ddiRepository.getGroup("fr.insee", "grp-789"))
-                .thenReturn(new Ddi4GroupResponse(
-                        "ddi:4.0",
-                        List.of(),
-                        List.of(group),
-                        List.of(
-                                studyUnitWithTitle("su-000", "Autre enquête"),
-                                studyUnitWithTitle("su-456", "Enquête emploi 2024"))));
+        ddiService.getPhysicalInstanceParents(agencyId, id);
 
-        PhysicalInstanceParents result = ddiService.getPhysicalInstanceParents(agencyId, id);
-
-        assertEquals("Enquête emploi 2024", result.studyUnitLabel());
+        verify(ddiRepository, never()).getGroup(anyString(), anyString());
     }
 
     @Test
