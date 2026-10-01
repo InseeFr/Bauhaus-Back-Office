@@ -229,6 +229,18 @@
         </exclusion>
       </exclusions>
     </dependency>
+    <!-- SPARQLRepository : accès aux bases qui ne parlent que SPARQL 1.1 (Fuseki), fr.insee.rmes.rdf.backend -->
+    <dependency>
+      <groupId>org.eclipse.rdf4j</groupId>
+      <artifactId>rdf4j-repository-sparql</artifactId>
+      <version>${rdf4j.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>jcl-over-slf4j</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
     <dependency>
       <groupId>org.eclipse.rdf4j</groupId>
       <artifactId>rdf4j-queryresultio-sparqljson</artifactId>

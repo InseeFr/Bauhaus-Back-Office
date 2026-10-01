@@ -31,6 +31,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -48,10 +49,17 @@ public class RepositoryUtils {
     private final RepositoryInitiator repositoryInitiator;
     private final RepositoryInitiator.Type authType;
 
+    @Autowired
     public RepositoryUtils(
-            TokenService tokenService, @Value("${fr.insee.rmes.bauhaus.rdf.auth}") RepositoryInitiator.Type type) {
+            TokenService tokenService,
+            @Value("${fr.insee.rmes.bauhaus.rdf.auth}") RepositoryInitiator.Type type,
+            @Value("${" + RdfBackend.PROPERTY + ":}") String backend) {
         this.authType = type;
-        repositoryInitiator = RepositoryInitiator.newInstance(type, tokenService);
+        repositoryInitiator = RepositoryInitiator.newInstance(RdfBackend.fromProperty(backend), type, tokenService);
+    }
+
+    public RepositoryUtils(TokenService tokenService, RepositoryInitiator.Type type) {
+        this(tokenService, type, null);
     }
 
     /**
