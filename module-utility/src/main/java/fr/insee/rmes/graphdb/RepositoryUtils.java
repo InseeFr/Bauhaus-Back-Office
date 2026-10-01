@@ -9,11 +9,14 @@ import fr.insee.rmes.graphdb.exceptions.DatabaseQueryException;
 import fr.insee.rmes.graphdb.exceptions.GraphDbUnauthorizedException;
 import fr.insee.rmes.graphdb.ontologies.QB;
 import fr.insee.rmes.keycloak.TokenService;
+import jakarta.annotation.PreDestroy;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import org.eclipse.rdf4j.common.exception.RDF4JException;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
@@ -49,6 +52,11 @@ public class RepositoryUtils {
     private final RepositoryInitiator repositoryInitiator;
     private final RepositoryInitiator.Type authType;
 
+    /** Un dépôt par base, créé à la première requête et partagé ensuite : il porte le pool de connexions HTTP. */
+    private final Map<RepositoryKey, Repository> repositories = new ConcurrentHashMap<>();
+
+    private record RepositoryKey(String rdfServer, String repositoryID) {}
+
     @Autowired
     public RepositoryUtils(
             TokenService tokenService,
@@ -77,13 +85,29 @@ public class RepositoryUtils {
                     repositoryID);
             return null;
         }
-        Repository repository = null;
         try {
-            repository = this.repositoryInitiator.initRepository(rdfServer, repositoryID);
-        } catch (Exception e) {
+            Repository repository = repositories.computeIfAbsent(
+                    new RepositoryKey(rdfServer, repositoryID),
+                    key -> repositoryInitiator.initRepository(key.rdfServer(), key.repositoryID()));
+            repositoryInitiator.beforeLending(repository);
+            return repository;
+        } catch (RuntimeException e) {
             logger.error("Initialisation de la connection à la base RDF {} impossible", rdfServer, e);
+            return null;
         }
-        return repository;
+    }
+
+    /** Ferme les dépôts, et avec eux leurs connexions HTTP, à l'arrêt de l'application. */
+    @PreDestroy
+    public void shutDownRepositories() {
+        repositories.values().forEach(repository -> {
+            try {
+                repository.shutDown();
+            } catch (RepositoryException e) {
+                logger.warn("Fermeture du dépôt RDF {} impossible", repository, e);
+            }
+        });
+        repositories.clear();
     }
 
     public RepositoryConnection getConnection(Repository repository) throws RmesException {

@@ -5,6 +5,7 @@ import static org.mockito.Mockito.mock;
 
 import fr.insee.rmes.keycloak.TokenService;
 import org.eclipse.rdf4j.repository.http.HTTPRepository;
+import org.eclipse.rdf4j.repository.sparql.SPARQLRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 
@@ -33,13 +34,11 @@ class RepositoryUtilsBackendPropertyTest {
     }
 
     @Test
-    void refuses_to_start_on_fuseki_until_an_initiator_can_talk_to_it() {
+    void talks_to_fuseki_through_the_sparql_protocol_when_the_property_says_so() {
         contextRunner
                 .withPropertyValues("fr.insee.rmes.rdf.backend=fuseki")
-                .run(context -> assertThat(context)
-                        .hasFailed()
-                        .getFailure()
-                        .rootCause()
-                        .hasMessageContaining("fr.insee.rmes.rdf.backend=fuseki"));
+                .run(context -> assertThat(context.getBean(RepositoryUtils.class)
+                                .initRepository("http://localhost:3030", "bauhaus"))
+                        .isInstanceOf(SPARQLRepository.class));
     }
 }

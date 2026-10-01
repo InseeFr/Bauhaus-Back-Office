@@ -34,9 +34,9 @@ public class FusekiContainer extends GenericContainer<FusekiContainer> implement
     static final int FUSEKI_PORT = 3030;
 
     /** Identifiants de test : l'image protège par authentification les écritures et l'administration. */
-    static final String ADMIN_USER = "admin";
+    public static final String ADMIN_USER = "admin";
 
-    static final String ADMIN_PASSWORD = "admin";
+    public static final String ADMIN_PASSWORD = "admin";
 
     private final HttpClient httpClient =
             HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
