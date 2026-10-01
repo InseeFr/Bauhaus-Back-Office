@@ -1,5 +1,6 @@
 package fr.insee.rmes.graphdb;
 
+import org.eclipse.rdf4j.http.client.HttpClientSessionManager;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.sparql.SPARQLConnection;
@@ -12,9 +13,11 @@ import org.eclipse.rdf4j.repository.sparql.SPARQLRepository;
 public class FusekiRepositoryInitiator implements RepositoryInitiator {
 
     @Override
-    public Repository initRepository(String rdfServer, String repositoryID) {
+    public Repository initRepository(
+            String rdfServer, String repositoryID, HttpClientSessionManager httpClientSessionManager) {
         String datasetUrl = rdfServer + "/" + repositoryID;
-        Repository repository = new SilentClearSparqlRepository(datasetUrl + "/sparql", datasetUrl + "/update");
+        var repository = new SilentClearSparqlRepository(datasetUrl + "/sparql", datasetUrl + "/update");
+        repository.setHttpClientSessionManager(httpClientSessionManager);
         repository.init();
         return repository;
     }

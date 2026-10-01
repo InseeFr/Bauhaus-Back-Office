@@ -1,6 +1,7 @@
 package fr.insee.rmes.graphdb;
 
 import fr.insee.rmes.keycloak.TokenService;
+import org.eclipse.rdf4j.http.client.HttpClientSessionManager;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.http.HTTPRepository;
 
@@ -27,10 +28,13 @@ public interface RepositoryInitiator {
 
     /**
      * Crée et initialise le dépôt d'une base. {@link RepositoryUtils} ne l'appelle qu'une fois par base et garde le
-     * dépôt jusqu'à l'arrêt de l'application.
+     * dépôt jusqu'à l'arrêt de l'application. Le client HTTP est partagé entre les dépôts et appartient à
+     * l'appelant : fermer le dépôt ne le ferme pas.
      */
-    default Repository initRepository(String rdfServer, String repositoryID) {
-        Repository repo = new HTTPRepository(rdfServer, repositoryID);
+    default Repository initRepository(
+            String rdfServer, String repositoryID, HttpClientSessionManager httpClientSessionManager) {
+        var repo = new HTTPRepository(rdfServer, repositoryID);
+        repo.setHttpClientSessionManager(httpClientSessionManager);
         repo.init();
 
         return repo;

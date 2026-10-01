@@ -12,6 +12,7 @@ import fr.insee.rmes.keycloak.TokenService;
 import jakarta.annotation.PreDestroy;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -42,6 +43,11 @@ import org.springframework.stereotype.Service;
 @Service
 public class RepositoryUtils {
 
+    public static final String SOCKET_TIMEOUT_PROPERTY = "fr.insee.rmes.rdf.socket-timeout";
+
+    /** Silence maximal du triplestore entre deux paquets d'une réponse, au-delà duquel la requête échoue. */
+    static final Duration DEFAULT_SOCKET_TIMEOUT = Duration.ofMinutes(5);
+
     public static final String RDF_REPOSITORY_UNAVAILABLE = "RDF_REPOSITORY_UNAVAILABLE";
 
     private static final String BINDINGS = "bindings";
@@ -52,8 +58,11 @@ public class RepositoryUtils {
     private final RepositoryInitiator repositoryInitiator;
     private final RepositoryInitiator.Type authType;
 
-    /** Un dépôt par base, créé à la première requête et partagé ensuite : il porte le pool de connexions HTTP. */
+    /** Un dépôt par base, créé à la première requête et partagé ensuite. */
     private final Map<RepositoryKey, Repository> repositories = new ConcurrentHashMap<>();
+
+    /** Client HTTP commun aux dépôts, fermé après eux. */
+    private final RdfHttpClientSessionManager httpClientSessionManager;
 
     private record RepositoryKey(String rdfServer, String repositoryID) {}
 
@@ -61,9 +70,16 @@ public class RepositoryUtils {
     public RepositoryUtils(
             TokenService tokenService,
             @Value("${fr.insee.rmes.bauhaus.rdf.auth}") RepositoryInitiator.Type type,
-            @Value("${" + RdfBackend.PROPERTY + ":}") String backend) {
+            @Value("${" + RdfBackend.PROPERTY + ":}") String backend,
+            @Value("${" + SOCKET_TIMEOUT_PROPERTY + ":#{null}}") Duration socketTimeout) {
         this.authType = type;
         repositoryInitiator = RepositoryInitiator.newInstance(RdfBackend.fromProperty(backend), type, tokenService);
+        httpClientSessionManager =
+                new RdfHttpClientSessionManager(socketTimeout == null ? DEFAULT_SOCKET_TIMEOUT : socketTimeout);
+    }
+
+    public RepositoryUtils(TokenService tokenService, RepositoryInitiator.Type type, String backend) {
+        this(tokenService, type, backend, null);
     }
 
     public RepositoryUtils(TokenService tokenService, RepositoryInitiator.Type type) {
@@ -88,7 +104,8 @@ public class RepositoryUtils {
         try {
             Repository repository = repositories.computeIfAbsent(
                     new RepositoryKey(rdfServer, repositoryID),
-                    key -> repositoryInitiator.initRepository(key.rdfServer(), key.repositoryID()));
+                    key -> repositoryInitiator.initRepository(
+                            key.rdfServer(), key.repositoryID(), httpClientSessionManager));
             repositoryInitiator.beforeLending(repository);
             return repository;
         } catch (RuntimeException e) {
@@ -97,7 +114,7 @@ public class RepositoryUtils {
         }
     }
 
-    /** Ferme les dépôts, et avec eux leurs connexions HTTP, à l'arrêt de l'application. */
+    /** Ferme les dépôts, puis le client HTTP qu'ils partagent, à l'arrêt de l'application. */
     @PreDestroy
     public void shutDownRepositories() {
         repositories.values().forEach(repository -> {
@@ -108,6 +125,7 @@ public class RepositoryUtils {
             }
         });
         repositories.clear();
+        httpClientSessionManager.shutDown();
     }
 
     public RepositoryConnection getConnection(Repository repository) throws RmesException {

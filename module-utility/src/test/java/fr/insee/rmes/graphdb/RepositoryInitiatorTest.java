@@ -3,6 +3,7 @@ package fr.insee.rmes.graphdb;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import org.eclipse.rdf4j.http.client.SharedHttpClientSessionManager;
 import org.eclipse.rdf4j.repository.http.HTTPRepository;
 import org.eclipse.rdf4j.repository.sparql.SPARQLRepository;
 import org.junit.jupiter.api.Test;
@@ -13,7 +14,8 @@ class RepositoryInitiatorTest {
     void talks_to_graphdb_through_the_rdf4j_rest_protocol() throws Exception {
         var initiator = RepositoryInitiator.newInstance(RdfBackend.GRAPHDB, RepositoryInitiator.Type.DISABLED, null);
 
-        assertThat(initiator.initRepository("http://localhost:7200", "gestion")).isInstanceOf(HTTPRepository.class);
+        assertThat(initiator.initRepository("http://localhost:7200", "gestion", new SharedHttpClientSessionManager()))
+                .isInstanceOf(HTTPRepository.class);
     }
 
     @Test
@@ -27,7 +29,8 @@ class RepositoryInitiatorTest {
     void talks_to_fuseki_through_the_sparql_protocol() throws Exception {
         var initiator = RepositoryInitiator.newInstance(RdfBackend.FUSEKI, RepositoryInitiator.Type.DISABLED, null);
 
-        assertThat(initiator.initRepository("http://localhost:3030", "bauhaus")).isInstanceOf(SPARQLRepository.class);
+        assertThat(initiator.initRepository("http://localhost:3030", "bauhaus", new SharedHttpClientSessionManager()))
+                .isInstanceOf(SPARQLRepository.class);
     }
 
     @Test
