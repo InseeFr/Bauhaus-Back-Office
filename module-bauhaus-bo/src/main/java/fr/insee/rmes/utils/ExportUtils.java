@@ -113,13 +113,16 @@ public class ExportUtils {
 
         fileName = fileName.replace(extension, ""); // Remove extension if exists
 
-        File output = null;
+        File output;
         try {
             output = File.createTempFile(Constants.OUTPUT, FilesUtils.getExtension(Constants.XML));
-            output.deleteOnExit();
-        } catch (IOException ioe) {
-            logger.error(ioe.getMessage());
+        } catch (IOException e) {
+            throw new RmesException(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    e.getMessage(),
+                    e.getClass().getSimpleName());
         }
+        output.deleteOnExit();
 
         URL xslUrl = getClass().getResource(xslFile);
         String xslSystemId = (xslUrl != null) ? xslUrl.toString() : null;
@@ -157,14 +160,12 @@ public class ExportUtils {
             tempDir = Files.createTempDirectory("xmlFiles");
 
             // Add all files in a tempDirectory
-            xmlContent.forEach((paramName, xmlData) -> {
-                try {
-                    Path tempFile = Files.createTempFile(tempDir, paramName, FilesUtils.XML_EXTENSION);
-                    Files.write(tempFile, xmlData.getBytes(StandardCharsets.UTF_8), StandardOpenOption.APPEND);
-                } catch (IOException e) {
-                    logger.error(e.getMessage());
-                }
-            });
+            for (Map.Entry<String, String> entry : xmlContent.entrySet()) {
+                String paramName = entry.getKey();
+                String xmlData = entry.getValue();
+                Path tempFile = Files.createTempFile(tempDir, paramName, FilesUtils.XML_EXTENSION);
+                Files.write(tempFile, xmlData.getBytes(StandardCharsets.UTF_8), StandardOpenOption.APPEND);
+            }
 
             // zip tempDirectory
             FilesUtils.zipDirectory(tempDir.toFile());
