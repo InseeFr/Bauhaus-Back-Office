@@ -482,6 +482,28 @@ class DDI4toDDI3ConverterServiceImplTest {
 
     @Test
     void shouldBuildFragmentInstanceDocumentWithTopLevelReference() {
+        String result = converter.convertDdi4ToDdi3Xml(physicalInstanceWithTopLevelReference());
+
+        assertThat(result)
+                .startsWith("<?xml version=\"1.0\" encoding=\"utf-8\"?>")
+                .contains("<ddi:FragmentInstance")
+                .contains("<ddi:TopLevelReference")
+                .contains(">test-id<")
+                .contains(">PhysicalInstance<");
+    }
+
+    @Test
+    void shouldPrettyPrintTheFragmentInstanceDocument() {
+        String result = converter.convertDdi4ToDdi3Xml(physicalInstanceWithTopLevelReference());
+
+        assertThat(result)
+                .doesNotContain("><")
+                .containsPattern("\n {2}<ddi:TopLevelReference")
+                .containsPattern("\n {4}<r:Agency");
+    }
+
+    /** A single physical instance, declared as the top-level reference of the response. */
+    private static Ddi4Response physicalInstanceWithTopLevelReference() {
         Ddi4PhysicalInstance pi = new Ddi4PhysicalInstance(
                 Ddi4PhysicalInstance.TYPE,
                 CogsDate.ofDateTime("2025-01-21T13:48:46.363"),
@@ -493,17 +515,8 @@ class DDI4toDDI3ConverterServiceImplTest {
                 new Citation(LangStrings.of("fr-FR", "Test")),
                 List.of(Reference.of("fr.insee", "test", "1", "DataRelationship")));
         Reference topLevelRef = Reference.of("fr.insee", "test-id", "1", "PhysicalInstance");
-        Ddi4Response ddi4 = new Ddi4Response(
+        return new Ddi4Response(
                 "file:/jsonSchema.json", List.of(topLevelRef), List.of(pi), null, null, null, null, null);
-
-        String result = converter.convertDdi4ToDdi3Xml(ddi4);
-
-        assertThat(result)
-                .startsWith("<?xml version=\"1.0\" encoding=\"utf-8\"?>")
-                .contains("<ddi:FragmentInstance")
-                .contains("<ddi:TopLevelReference")
-                .contains(">test-id<")
-                .contains(">PhysicalInstance<");
     }
 
     /** Converts the response, which must yield exactly one DDI 3 item, and returns it. */

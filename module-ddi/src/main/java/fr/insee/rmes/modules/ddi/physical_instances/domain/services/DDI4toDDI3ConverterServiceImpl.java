@@ -347,6 +347,8 @@ public class DDI4toDDI3ConverterServiceImpl implements DDI4toDDI3ConverterServic
         prefixes.put(DDI_INSTANCE_NS, "ddi");
         prefixes.put(DDI_REUSABLE_NS, "r");
         options.setSaveSuggestedPrefixes(prefixes);
+        options.setSavePrettyPrint();
+        options.setSavePrettyPrintIndent(2);
 
         return "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" + doc.xmlText(options);
     }
