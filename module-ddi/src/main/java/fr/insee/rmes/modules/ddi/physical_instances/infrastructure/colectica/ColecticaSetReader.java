@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import org.springframework.web.client.HttpClientErrorException;
 
 /**
  * Pipeline commun de lecture d'un « set » Colectica ({@code set/} puis {@code item/_getList}) et des
@@ -28,10 +29,16 @@ class ColecticaSetReader {
 
     /**
      * Les items d'un set Colectica pour une {@code version} optionnelle (la dernière quand elle est
-     * {@code null}). {@code null} quand le set est vide.
+     * {@code null}). {@code null} quand le set est vide ou que Colectica ne connaît pas l'item racine
+     * (404) ; toute autre défaillance remonte.
      */
     ColecticaItemResponse[] fetchSetItems(String agencyId, String id, String version) {
-        ColecticaSetItem[] setItems = colecticaClient.getSet(agencyId, id, version);
+        ColecticaSetItem[] setItems;
+        try {
+            setItems = colecticaClient.getSet(agencyId, id, version);
+        } catch (HttpClientErrorException.NotFound _) {
+            return null;
+        }
         if (setItems == null || setItems.length == 0) {
             return null;
         }

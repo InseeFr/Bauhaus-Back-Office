@@ -37,25 +37,15 @@ public class StudyUnitResources {
     @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.READ)
     public ResponseEntity<List<PartialStudyUnit>> getStudyUnits() {
         logger.info("GET /ddi/study-units - Getting all study units");
-        try {
-            List<PartialStudyUnit> studyUnits = studyUnitService.getAll();
-            return ResponseEntity.ok(studyUnits);
-        } catch (Exception e) {
-            logger.error("Failed to get study units", e);
-            return ResponseEntity.internalServerError().build();
-        }
+        List<PartialStudyUnit> studyUnits = studyUnitService.getAll();
+        return ResponseEntity.ok(studyUnits);
     }
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.CREATE)
     public ResponseEntity<Void> createOrUpdateStudyUnit(@RequestBody Ddi4StudyUnit studyUnit) {
         logger.info("POST /ddi/study-units - Creating/updating study unit: id={}", studyUnit.id());
-        try {
-            studyUnitService.createOrUpdate(studyUnit);
-            return ResponseEntity.status(201).build();
-        } catch (Exception e) {
-            logger.error("Failed to create/update study unit: id={}", studyUnit.id(), e);
-            return ResponseEntity.internalServerError().build();
-        }
+        studyUnitService.createOrUpdate(studyUnit);
+        return ResponseEntity.status(201).build();
     }
 }

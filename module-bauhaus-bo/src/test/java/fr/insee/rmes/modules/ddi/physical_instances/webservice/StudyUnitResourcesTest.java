@@ -1,7 +1,6 @@
 package fr.insee.rmes.modules.ddi.physical_instances.webservice;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -46,15 +45,6 @@ class StudyUnitResourcesTest {
     }
 
     @Test
-    void getStudyUnits_shouldReturn500OnError() {
-        when(studyUnitService.getAll()).thenThrow(new RuntimeException("Colectica error"));
-
-        ResponseEntity<List<PartialStudyUnit>> response = studyUnitResources.getStudyUnits();
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-
-    @Test
     void createOrUpdateStudyUnit_shouldReturn201() {
         Ddi4StudyUnit studyUnit = new Ddi4StudyUnit(
                 Ddi4StudyUnit.TYPE,
@@ -71,25 +61,5 @@ class StudyUnitResourcesTest {
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         verify(studyUnitService).createOrUpdate(studyUnit);
-    }
-
-    @Test
-    void createOrUpdateStudyUnit_shouldReturn500OnError() {
-        Ddi4StudyUnit studyUnit = new Ddi4StudyUnit(
-                Ddi4StudyUnit.TYPE,
-                CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
-                "urn:ddi:fr.insee:su-id:1",
-                "fr.insee",
-                "su-id",
-                "1",
-                new Citation(LangStrings.of("fr-FR", "Test StudyUnit")),
-                "http://id.insee.fr/operations/operation/op1",
-                null);
-
-        doThrow(new RuntimeException("Colectica error")).when(studyUnitService).createOrUpdate(studyUnit);
-
-        ResponseEntity<Void> response = studyUnitResources.createOrUpdateStudyUnit(studyUnit);
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

@@ -12,6 +12,7 @@ import fr.insee.rmes.colectica.client.ColecticaClient;
 import fr.insee.rmes.colectica.client.ItemReference;
 import fr.insee.rmes.colectica.client.RelationshipDirection;
 import fr.insee.rmes.colectica.client.dto.*;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.DdiItemNotFoundException;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.StudyUnitNotFoundException;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.*;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3toDDI4ConverterService;
@@ -33,6 +34,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.client.HttpClientErrorException;
 
 @ExtendWith(MockitoExtension.class)
 class DDIRepositoryImplTest {
@@ -584,6 +587,69 @@ class DDIRepositoryImplTest {
                 .orElseThrow(() -> new AssertionError("No StudyUnit item sent to Colectica during PATCH"));
         assertTrue(savedStudyUnit.item().contains("PhysicalInstanceReference"));
         assertTrue(savedStudyUnit.item().contains(instanceId));
+    }
+
+    @Test
+    void updatePhysicalInstance_throwsPhysicalInstanceNotFoundWhenColecticaDoesNotKnowIt() {
+        when(colecticaClient.getSet(anyString(), anyString(), any()))
+                .thenThrow(HttpClientErrorException.create(HttpStatus.NOT_FOUND, "Not Found", null, null, null));
+        UpdatePhysicalInstanceRequest updateRequest = new UpdatePhysicalInstanceRequest("label", "dr", "lr");
+
+        DdiItemNotFoundException exception = assertThrows(
+                DdiItemNotFoundException.class,
+                () -> ddiRepository.updatePhysicalInstance("fr.insee", "unknown", updateRequest));
+
+        assertEquals(DdiItemNotFoundException.Code.DDI_PHYSICAL_INSTANCE_NOT_FOUND, exception.code());
+    }
+
+    @Test
+    void updatePhysicalInstance_throwsStudyUnitNotFoundWhenAttachingToAnUnknownStudyUnit() {
+        String agencyId = "fr.insee";
+        String instanceId = "pi-1";
+        stubExistingPhysicalInstanceWithDataRelationship(agencyId, instanceId);
+        when(colecticaClient.getItem(anyString(), anyString(), any()))
+                .thenThrow(HttpClientErrorException.create(HttpStatus.NOT_FOUND, "Not Found", null, null, null));
+        UpdatePhysicalInstanceRequest updateRequest =
+                new UpdatePhysicalInstanceRequest("label", "dr", "lr", "su-unknown", "fr.insee", "group-1", "fr.insee");
+
+        DdiItemNotFoundException exception = assertThrows(
+                DdiItemNotFoundException.class,
+                () -> ddiRepository.updatePhysicalInstance(agencyId, instanceId, updateRequest));
+
+        assertEquals(DdiItemNotFoundException.Code.DDI_STUDY_UNIT_NOT_FOUND, exception.code());
+        assertEquals(Map.of("agencyId", "fr.insee", "id", "su-unknown"), exception.params());
+    }
+
+    @Test
+    void getPhysicalInstance_returnsNullWhenColecticaDoesNotKnowTheSet() {
+        when(colecticaClient.getSet(anyString(), anyString(), any()))
+                .thenThrow(HttpClientErrorException.create(HttpStatus.NOT_FOUND, "Not Found", null, null, null));
+
+        assertNull(ddiRepository.getPhysicalInstance("fr.insee", "00000000-0000-0000-0000-000000000000"));
+    }
+
+    @Test
+    void getPhysicalInstance_returnsNullWithoutCallingColecticaWhenTheIdIsNotAnIdentifier() {
+        // Colectica n'accepte que des UUID : il répond 400 à un autre identifiant.
+        assertNull(ddiRepository.getPhysicalInstance("fr.insee", "nexistepas"));
+
+        verifyNoInteractions(colecticaClient);
+    }
+
+    @Test
+    void getGroup_returnsNullWhenColecticaDoesNotKnowTheGroup() {
+        when(colecticaClient.getDdiSet(anyString(), anyString()))
+                .thenThrow(HttpClientErrorException.create(HttpStatus.NOT_FOUND, "Not Found", null, null, null));
+
+        assertNull(ddiRepository.getGroup("fr.insee", "00000000-0000-0000-0000-000000000000"));
+    }
+
+    @Test
+    void getGroup_returnsNullWithoutCallingColecticaWhenTheIdIsNotAnIdentifier() {
+        // Colectica n'accepte que des UUID : son ddiset répond 500 à un autre identifiant.
+        assertNull(ddiRepository.getGroup("fr.insee", "nexistepas"));
+
+        verifyNoInteractions(colecticaClient);
     }
 
     @Test

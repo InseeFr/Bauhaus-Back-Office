@@ -10,6 +10,7 @@ import static fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colect
 import fr.insee.rmes.colectica.client.ColecticaClient;
 import fr.insee.rmes.colectica.client.dto.ColecticaCreateItemRequest;
 import fr.insee.rmes.colectica.client.dto.ColecticaItemResponse;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.DdiItemNotFoundException;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Citation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CogsDate;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CreatePhysicalInstanceRequest;
@@ -30,6 +31,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.client.HttpClientErrorException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -132,7 +134,7 @@ class ColecticaPhysicalInstanceWriter {
         if (currentInstance == null
                 || currentInstance.physicalInstance() == null
                 || currentInstance.physicalInstance().isEmpty()) {
-            throw new RuntimeException("Physical instance not found: " + agencyId + "/" + id);
+            throw DdiItemNotFoundException.physicalInstance(agencyId, id);
         }
 
         Ddi4PhysicalInstance currentPI = currentInstance.physicalInstance().getFirst();
@@ -278,9 +280,14 @@ class ColecticaPhysicalInstanceWriter {
      */
     private ColecticaItemResponse addPhysicalInstanceReferenceToStudyUnit(
             String studyUnitAgency, String studyUnitId, String physicalInstanceAgency, String physicalInstanceId) {
-        ColecticaItemResponse studyUnitItem = colecticaClient.getItem(studyUnitAgency, studyUnitId, null);
+        ColecticaItemResponse studyUnitItem;
+        try {
+            studyUnitItem = colecticaClient.getItem(studyUnitAgency, studyUnitId, null);
+        } catch (HttpClientErrorException.NotFound _) {
+            studyUnitItem = null;
+        }
         if (studyUnitItem == null) {
-            throw new RuntimeException("StudyUnit not found: agency=" + studyUnitAgency + " id=" + studyUnitId);
+            throw DdiItemNotFoundException.studyUnit(studyUnitAgency, studyUnitId);
         }
         try {
             Document doc = ColecticaXml.parse(studyUnitItem.item());

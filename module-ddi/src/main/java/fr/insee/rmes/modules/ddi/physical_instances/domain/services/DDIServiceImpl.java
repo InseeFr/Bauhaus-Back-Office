@@ -2,6 +2,7 @@ package fr.insee.rmes.modules.ddi.physical_instances.domain.services;
 
 import static fr.insee.rmes.domain.logging.LogSanitizer.forLog;
 
+import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.DdiItemNotFoundException;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.InvalidSentinelValuesException;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CategoryCodeListUsage;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Citation;
@@ -253,7 +254,10 @@ public class DDIServiceImpl implements DDIService {
     @Override
     public Ddi4GroupResponse getDdi4Group(String agencyId, String id) {
         Ddi4GroupResponse response = ddiRepository.getGroup(agencyId, id);
-        if (response == null || response.studyUnit() == null) {
+        if (response == null) {
+            throw DdiItemNotFoundException.group(agencyId, id);
+        }
+        if (response.studyUnit() == null) {
             return response;
         }
         List<Ddi4StudyUnit> sortedStudyUnits = response.studyUnit().stream()
@@ -274,7 +278,10 @@ public class DDIServiceImpl implements DDIService {
     @Override
     public Ddi4Response getDdi4PhysicalInstance(String agencyId, String id) {
         Ddi4Response response = this.ddiRepository.getPhysicalInstance(agencyId, id);
-        if (response == null || response.variable() == null) {
+        if (response == null) {
+            throw DdiItemNotFoundException.physicalInstance(agencyId, id);
+        }
+        if (response.variable() == null) {
             return response;
         }
         // Tri par défaut des variables sur le nom (VariableName), ascendant.

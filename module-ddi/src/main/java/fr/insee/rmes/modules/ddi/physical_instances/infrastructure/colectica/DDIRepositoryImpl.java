@@ -37,6 +37,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.web.client.HttpClientErrorException;
 
 /**
  * Adaptateur Colectica du port {@link DDIRepository}.
@@ -202,6 +203,9 @@ public class DDIRepositoryImpl implements DDIRepository {
 
     @Override
     public Ddi4Response getPhysicalInstance(String agencyId, String id) {
+        if (!ColecticaIdentifiers.isIdentifier(id)) {
+            return null;
+        }
         return physicalInstanceReader.getPhysicalInstance(agencyId, id);
     }
 
@@ -253,7 +257,14 @@ public class DDIRepositoryImpl implements DDIRepository {
 
     @Override
     public Ddi4GroupResponse getGroup(String agencyId, String id) {
-        return groupReader.getGroup(agencyId, id);
+        if (!ColecticaIdentifiers.isIdentifier(id)) {
+            return null;
+        }
+        try {
+            return groupReader.getGroup(agencyId, id);
+        } catch (HttpClientErrorException.NotFound _) {
+            return null;
+        }
     }
 
     @Override

@@ -52,6 +52,7 @@ public interface DDIRepository {
 
     List<PartialStudyUnit> getStudyUnits();
 
+    /** L'instance physique, ou {@code null} si Colectica ne la connaît pas. */
     Ddi4Response getPhysicalInstance(String agencyId, String id);
 
     List<Ddi4CodeList> getPhysicalInstanceCodeLists(String agencyId, String id);
@@ -64,6 +65,7 @@ public interface DDIRepository {
      */
     Ddi4Response getFullPhysicalInstance(String agencyId, String id);
 
+    /** Le groupe et ses études, ou {@code null} si Colectica ne connaît pas le groupe. */
     Ddi4GroupResponse getGroup(String agencyId, String id);
 
     /** Le Group d'identifiant {@code id}, ou {@link Optional#empty()} s'il n'existe pas encore. */

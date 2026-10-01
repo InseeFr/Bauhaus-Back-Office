@@ -17,6 +17,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.DdiItemNotFoundException;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.InvalidSentinelValuesException;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CategoryCodeListUsage;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Citation;
@@ -840,6 +841,27 @@ class DDIServiceImplTest {
                 result.studyUnit().stream()
                         .map(su -> su.citation().title().get(0).value())
                         .toList());
+    }
+
+    @Test
+    void getDdi4Group_shouldThrowGroupNotFoundWhenColecticaDoesNotKnowTheGroup() {
+        when(ddiRepository.getGroup("fr.insee", "unknown")).thenReturn(null);
+
+        DdiItemNotFoundException exception =
+                assertThrows(DdiItemNotFoundException.class, () -> ddiService.getDdi4Group("fr.insee", "unknown"));
+
+        assertEquals(DdiItemNotFoundException.Code.DDI_GROUP_NOT_FOUND, exception.code());
+        assertEquals(Map.of("agencyId", "fr.insee", "id", "unknown"), exception.params());
+    }
+
+    @Test
+    void getDdi4PhysicalInstance_shouldThrowPhysicalInstanceNotFoundWhenColecticaDoesNotKnowIt() {
+        when(ddiRepository.getPhysicalInstance("fr.insee", "unknown")).thenReturn(null);
+
+        DdiItemNotFoundException exception = assertThrows(
+                DdiItemNotFoundException.class, () -> ddiService.getDdi4PhysicalInstance("fr.insee", "unknown"));
+
+        assertEquals(DdiItemNotFoundException.Code.DDI_PHYSICAL_INSTANCE_NOT_FOUND, exception.code());
     }
 
     private Ddi4StudyUnit studyUnitWithTitle(String id, String title) {
