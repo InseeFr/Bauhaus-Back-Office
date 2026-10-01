@@ -91,9 +91,9 @@ public class StructureImpl extends RdfService implements StructureService {
         JSONObject structure = repoGestion.getResponseAsObject(structureQueries.getStructureById(id));
         JSONObject structureWithComponentSpecifications = structureRepository.formatStructure(structure, id);
         JSONArray componentDefinitions = (JSONArray) structureWithComponentSpecifications.get("componentDefinitions");
-        componentDefinitions.forEach(o -> {
+        for (Object o : componentDefinitions) {
             JSONObject cd = (JSONObject) o;
-            removeEmptyAttachment((JSONObject) o);
+            removeEmptyAttachment(cd);
             cd.remove(Constants.ID);
             cd.remove("created");
             cd.remove("modified");
@@ -116,29 +116,19 @@ public class StructureImpl extends RdfService implements StructureService {
 
                 JSONObject codeList = new JSONObject();
                 codeList.put(Constants.ID, component.getString(Constants.CODELIST));
-                try {
-                    codeList.put(
-                            "codes",
-                            new JSONArray(
-                                    this.codeListService.getCodesListByIRI(component.getString(Constants.CODELIST))));
-                } catch (RmesException e) {
-                    logger.error("Cannot fetch code list of the structure " + id, e);
-                }
+                codeList.put(
+                        "codes",
+                        new JSONArray(this.codeListService.getCodesListByIRI(component.getString(Constants.CODELIST))));
 
                 component.put(Constants.CODELIST, codeList);
             }
 
             if (!component.isNull(Constants.CONCEPT)) {
-                try {
-                    JSONObject concept =
-                            repoGestion.getResponseAsObject(conceptConceptsQueries.conceptQueryForDetailStructure(
-                                    component.getString(Constants.CONCEPT)));
-                    component.put(Constants.CONCEPT, concept);
-                } catch (RmesException e) {
-                    logger.error("Cannot fetch concept of the structure " + id, e);
-                }
+                JSONObject concept = repoGestion.getResponseAsObject(
+                        conceptConceptsQueries.conceptQueryForDetailStructure(component.getString(Constants.CONCEPT)));
+                component.put(Constants.CONCEPT, concept);
             }
-        });
+        }
 
         return structureWithComponentSpecifications.toString();
     }
