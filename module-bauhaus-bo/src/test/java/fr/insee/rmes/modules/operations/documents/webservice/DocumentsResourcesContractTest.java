@@ -1,12 +1,16 @@
 package fr.insee.rmes.modules.operations.documents.webservice;
 
 import static fr.insee.rmes.modules.commons.webservice.ApiErrorContract.apiError;
+import static fr.insee.rmes.modules.commons.webservice.ValidationMessages.REQUIRED;
 import static fr.insee.rmes.modules.operations.documents.domain.InMemoryDocumentFileStorage.URL_PREFIX;
 import static fr.insee.rmes.modules.operations.documents.domain.InMemoryManagedDocumentRepository.form;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.endsWith;
+import static org.hamcrest.Matchers.everyItem;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
@@ -230,9 +234,11 @@ class DocumentsResourcesContractTest {
 
     @Test
     void should_update_a_document_and_keep_its_size() throws Exception {
-        mvc.perform(put("/documents/document/12")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"id\": \"12\", \"labelLg1\": \"Note révisée\", \"sims\": [], \"url\": \"x\"}"))
+        mvc.perform(
+                        put("/documents/document/12")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(
+                                        "{\"id\": \"12\", \"labelLg1\": \"Note révisée\", \"labelLg2\": \"Note EN\", \"lang\": \"fr\", \"sims\": [], \"url\": \"x\"}"))
                 .andExpect(status().isOk())
                 .andExpect(content().string("12"));
 
@@ -244,11 +250,27 @@ class DocumentsResourcesContractTest {
 
     @Test
     void should_update_a_link() throws Exception {
-        mvc.perform(put("/documents/link/13")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"labelLg1\": \"Page\", \"url\": \"https://www.insee.fr/autre\"}"))
+        mvc.perform(
+                        put("/documents/link/13")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(
+                                        "{\"labelLg1\": \"Page\", \"labelLg2\": \"Page EN\", \"lang\": \"fr\", \"url\": \"https://www.insee.fr/autre\"}"))
                 .andExpect(status().isOk())
                 .andExpect(content().string("13"));
+    }
+
+    @Test
+    void should_refuse_an_update_without_titles_nor_lang_with_the_invalid_fields() throws Exception {
+        mvc.perform(put("/documents/link/13")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"labelLg1\": \" \", \"url\": \"https://www.insee.fr/autre\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("INVALID_REQUEST_BODY"))
+                .andExpect(jsonPath("$.errors[*].field", containsInAnyOrder("labelLg1", "labelLg2", "lang")))
+                .andExpect(jsonPath("$.errors[*].message", everyItem(is(REQUIRED))));
+
+        assertThat(repository.stored(DocumentKind.LINK, "13"))
+                .hasValueSatisfying(link -> assertThat(link.form().labelLg1()).isEqualTo("Page"));
     }
 
     @Test

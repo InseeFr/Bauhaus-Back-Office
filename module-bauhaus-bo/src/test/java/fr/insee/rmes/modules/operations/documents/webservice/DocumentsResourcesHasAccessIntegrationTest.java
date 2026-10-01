@@ -124,7 +124,8 @@ class DocumentsResourcesHasAccessIntegrationTest extends AbstractHasAccessResour
             throws Exception, MissingUserInformationException {
         var request = put(url).contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content("{\"id\": \"1\", \"labelLg1\": \"Libellé\", \"url\": \"https://www.insee.fr/page\"}");
+                .content(
+                        "{\"id\": \"1\", \"labelLg1\": \"Libellé\", \"labelLg2\": \"Label\", \"lang\": \"fr\", \"url\": \"https://www.insee.fr/page\"}");
 
         assertStatusWithAccess(request, code, hasAccessReturn);
     }
