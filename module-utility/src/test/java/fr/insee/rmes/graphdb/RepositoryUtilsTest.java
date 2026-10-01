@@ -7,6 +7,7 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
+import fr.insee.rmes.domain.exceptions.CodedRmesException;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.keycloak.TokenService;
 import org.eclipse.rdf4j.model.Resource;
@@ -97,12 +98,18 @@ class RepositoryUtilsTest {
         assertEquals(HttpStatus.OK, result);
     }
 
+    /* Un dépôt non initialisé est une dépendance indisponible : 503 et un code traduisible, plus un
+    417 au corps vide (ticket 11 de l'audit #1264). */
     @Test
-    void shouldReturnExpectationFailedForNullRepository() throws RmesException {
+    void shouldThrowServiceUnavailableWithCodeForNullRepository() {
         String updateQuery = "INSERT DATA { <http://example.org/subject> <http://example.org/predicate> \"object\" . }";
 
-        HttpStatus result = repositoryUtils.executeUpdate(updateQuery, null);
-        assertEquals(HttpStatus.EXPECTATION_FAILED, result);
+        CodedRmesException exception =
+                assertThrows(CodedRmesException.class, () -> repositoryUtils.executeUpdate(updateQuery, null));
+
+        assertEquals(HttpStatus.SERVICE_UNAVAILABLE.value(), exception.getStatus());
+        assertEquals(RepositoryUtils.RDF_REPOSITORY_UNAVAILABLE, exception.getCode());
+        assertFalse(exception.getMessage().isBlank());
     }
 
     /* Le corps d'une 500 part au client : il ne doit porter ni la requête SPARQL ni le

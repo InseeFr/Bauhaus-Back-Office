@@ -455,16 +455,12 @@ public class DocumentationsUtils {
         return buildMSDFromJson(repoGestion.getResponseAsArray(documentationQueries.msdQuery()));
     }
 
-    public HttpStatus deleteMetadataReport(String id) throws RmesException {
+    public void deleteMetadataReport(String id) throws RmesException {
         getExistingDocumentationTitle(id);
         Resource graph = RdfUtils.simsGraph(id);
 
-        HttpStatus result = repoGestion.executeUpdate(documentationQueries.deleteGraph(graph));
-        if (result.equals(HttpStatus.OK)) {
-            result = repositoryPublication.executeUpdate(documentationQueries.deleteGraph(graph));
-        }
-
-        return result;
+        repoGestion.executeUpdate(documentationQueries.deleteGraph(graph));
+        repositoryPublication.executeUpdate(documentationQueries.deleteGraph(graph));
     }
 
     public void updateDocumentationTitle(String idSims, String prefLabeLg1, String prefLabelLg2) throws RmesException {

@@ -2,6 +2,7 @@ package fr.insee.rmes.graphdb;
 
 import static fr.insee.rmes.graphdb.exceptions.DatabaseQueryException.GENERIC_MESSAGE;
 
+import fr.insee.rmes.domain.exceptions.CodedRmesException;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.exceptions.DatabaseQueryException;
 import fr.insee.rmes.graphdb.exceptions.GraphDbUnauthorizedException;
@@ -35,6 +36,8 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class RepositoryUtils {
+
+    public static final String RDF_REPOSITORY_UNAVAILABLE = "RDF_REPOSITORY_UNAVAILABLE";
 
     private static final String BINDINGS = "bindings";
     private static final String RESULTS = "results";
@@ -102,7 +105,11 @@ public class RepositoryUtils {
      */
     public HttpStatus executeUpdate(String updateQuery, Repository repository) throws RmesException {
         if (repository == null) {
-            return HttpStatus.EXPECTATION_FAILED;
+            throw new CodedRmesException(
+                    HttpStatus.SERVICE_UNAVAILABLE.value(),
+                    RDF_REPOSITORY_UNAVAILABLE,
+                    "The RDF repository is unavailable. Please try again later.",
+                    null);
         }
         try (RepositoryConnection conn = repository.getConnection()) {
             Update update = conn.prepareUpdate(QueryLanguage.SPARQL, updateQuery);

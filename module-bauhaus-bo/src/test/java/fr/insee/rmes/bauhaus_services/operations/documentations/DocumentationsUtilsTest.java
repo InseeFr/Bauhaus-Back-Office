@@ -1,7 +1,6 @@
 package fr.insee.rmes.bauhaus_services.operations.documentations;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -46,7 +45,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
 
 @ExtendWith(MockitoExtension.class)
 class DocumentationsUtilsTest {
@@ -130,12 +128,11 @@ class DocumentationsUtilsTest {
         when(repoGestion.getResponseAsObject("mock-title-query"))
                 .thenReturn(new JSONObject().put(Constants.LABEL_LG1, "Sims"));
         when(documentationQueries.deleteGraph(any(Resource.class))).thenReturn("delete-graph-query");
-        when(repoGestion.executeUpdate("delete-graph-query")).thenReturn(HttpStatus.OK);
-        when(repositoryPublication.executeUpdate("delete-graph-query")).thenReturn(HttpStatus.OK);
 
-        HttpStatus result = documentationsUtils.deleteMetadataReport(id);
+        documentationsUtils.deleteMetadataReport(id);
 
-        assertEquals(HttpStatus.OK, result);
+        verify(repoGestion).executeUpdate("delete-graph-query");
+        verify(repositoryPublication).executeUpdate("delete-graph-query");
     }
 
     @Test
