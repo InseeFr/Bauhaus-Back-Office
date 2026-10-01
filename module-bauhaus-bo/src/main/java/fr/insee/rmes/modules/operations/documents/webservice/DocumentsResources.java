@@ -3,7 +3,6 @@ package fr.insee.rmes.modules.operations.documents.webservice;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
-import fr.insee.rmes.exceptions.RmesNotAcceptableException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.modules.commons.configuration.ConditionalOnModule;
 import fr.insee.rmes.modules.commons.security.PublicEndpoint;
@@ -216,15 +215,15 @@ public class DocumentsResources {
         String detail = e.detail();
         return switch (e.violation()) {
             case LABEL_LG1_ALREADY_USED ->
-                new RmesBadRequestException(ErrorCodes.OPERATION_DOCUMENT_LINK_EXISTING_LABEL_LG1, message);
+                RmesBadRequestException.coded(ErrorCodes.OPERATION_DOCUMENT_LINK_EXISTING_LABEL_LG1, message);
             case LABEL_LG2_ALREADY_USED ->
-                new RmesBadRequestException(ErrorCodes.OPERATION_DOCUMENT_LINK_EXISTING_LABEL_LG2, message);
-            case LINK_EMPTY_URL -> new RmesNotAcceptableException(ErrorCodes.LINK_EMPTY_URL, message, detail);
-            case LINK_BAD_URL -> new RmesNotAcceptableException(ErrorCodes.LINK_BAD_URL, message, detail);
-            case LINK_URL_ALREADY_USED -> new RmesNotAcceptableException(ErrorCodes.LINK_EXISTING_URL, message, detail);
-            case FILE_EMPTY_NAME -> new RmesNotAcceptableException(ErrorCodes.DOCUMENT_EMPTY_NAME, message, detail);
+                RmesBadRequestException.coded(ErrorCodes.OPERATION_DOCUMENT_LINK_EXISTING_LABEL_LG2, message);
+            case LINK_EMPTY_URL -> new RmesBadRequestException(ErrorCodes.LINK_EMPTY_URL, message, detail);
+            case LINK_BAD_URL -> new RmesBadRequestException(ErrorCodes.LINK_BAD_URL, message, detail);
+            case LINK_URL_ALREADY_USED -> new RmesBadRequestException(ErrorCodes.LINK_EXISTING_URL, message, detail);
+            case FILE_EMPTY_NAME -> new RmesBadRequestException(ErrorCodes.DOCUMENT_EMPTY_NAME, message, detail);
             case FILE_FORBIDDEN_CHARACTERS ->
-                new RmesNotAcceptableException(ErrorCodes.DOCUMENT_FORBIDDEN_CHARACTER_NAME, message, detail);
+                new RmesBadRequestException(ErrorCodes.DOCUMENT_FORBIDDEN_CHARACTER_NAME, message, detail);
             case FILE_ALREADY_EXISTS ->
                 new RmesBadRequestException(ErrorCodes.DOCUMENT_CREATION_EXISTING_FILE, message, detail);
             case FILE_EXTENSION_NOT_ALLOWED -> new RmesBadRequestException(message, detail);

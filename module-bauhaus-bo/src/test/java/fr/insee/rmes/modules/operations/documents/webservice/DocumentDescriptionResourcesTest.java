@@ -1,5 +1,6 @@
 package fr.insee.rmes.modules.operations.documents.webservice;
 
+import static fr.insee.rmes.modules.commons.webservice.ApiErrorContract.apiError;
 import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -160,6 +161,8 @@ class DocumentDescriptionResourcesTest {
     void should_answer_404_for_an_unknown_document() throws Exception {
         mockMvc.perform(get("/operations/documents/404").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.message").value("Document 404 doesn't exist"));
+                .andExpect(apiError())
+                .andExpect(jsonPath("$.message").value("Document 404 doesn't exist"))
+                .andExpect(jsonPath("$.code").value("NOT_FOUND"));
     }
 }

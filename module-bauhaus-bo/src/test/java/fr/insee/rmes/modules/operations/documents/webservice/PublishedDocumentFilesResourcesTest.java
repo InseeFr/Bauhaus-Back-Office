@@ -1,5 +1,6 @@
 package fr.insee.rmes.modules.operations.documents.webservice;
 
+import static fr.insee.rmes.modules.commons.webservice.ApiErrorContract.apiError;
 import static org.hamcrest.Matchers.startsWith;
 import static org.springframework.security.config.Customizer.withDefaults;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -77,14 +78,18 @@ class PublishedDocumentFilesResourcesTest {
     void should_answer_404_for_a_file_that_is_not_published() throws Exception {
         mvc.perform(get("/documents/fichier/Brouillon.pdf"))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.message").value("File Brouillon.pdf is not published"));
+                .andExpect(apiError())
+                .andExpect(jsonPath("$.message").value("File Brouillon.pdf is not published"))
+                .andExpect(jsonPath("$.code").value("NOT_FOUND"));
     }
 
     @Test
     void should_answer_500_rather_than_404_when_the_storage_cannot_tell_whether_the_file_exists() throws Exception {
         mvc.perform(get("/documents/fichier/" + UNREACHABLE_FILE))
                 .andExpect(status().isInternalServerError())
-                .andExpect(jsonPath("$.message").value("The file storage could not be read"));
+                .andExpect(apiError())
+                .andExpect(jsonPath("$.message").value("The file storage could not be read"))
+                .andExpect(jsonPath("$.code").value("INTERNAL_SERVER_ERROR"));
     }
 
     @org.springframework.boot.test.context.TestConfiguration

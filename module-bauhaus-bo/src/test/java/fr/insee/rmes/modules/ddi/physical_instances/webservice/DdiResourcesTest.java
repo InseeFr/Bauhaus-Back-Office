@@ -5,7 +5,7 @@ import static fr.insee.rmes.modules.ddi.physical_instances.webservice.DdiResourc
 import static fr.insee.rmes.modules.ddi.physical_instances.webservice.DdiResourcesTestSupport.givenStampUserReadingPhysicalInstances;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -47,6 +47,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Named;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.function.Executable;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InOrder;
@@ -57,6 +58,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.server.ResponseStatusException;
 
 @ExtendWith({MockitoExtension.class, LocalhostRequestContextExtension.class})
 class DdiResourcesTest {
@@ -471,9 +473,7 @@ class DdiResourcesTest {
     void getItemXmlByVersion_shouldReturn404_whenItemNotFound() {
         when(ddiService.getItemXml("fr.insee", "unknown-id", "1")).thenReturn(null);
 
-        ResponseEntity<String> response = ddiResources.getItemXmlByVersion("fr.insee", "unknown-id", "1");
-
-        assertNotFound(response);
+        assertNotFound(() -> ddiResources.getItemXmlByVersion("fr.insee", "unknown-id", "1"));
     }
 
     @Test
@@ -496,9 +496,7 @@ class DdiResourcesTest {
     void getItemJsonByVersion_shouldReturn404_whenItemNotFound() {
         when(ddiService.getItemXml("fr.insee", "unknown-id", "1")).thenReturn(null);
 
-        ResponseEntity<String> response = ddiResources.getItemJsonByVersion("fr.insee", "unknown-id", "1");
-
-        assertNotFound(response);
+        assertNotFound(() -> ddiResources.getItemJsonByVersion("fr.insee", "unknown-id", "1"));
     }
 
     @Test
@@ -518,9 +516,7 @@ class DdiResourcesTest {
     void getItemXml_shouldReturn404_whenItemNotFound() {
         when(ddiService.getItemXml("fr.insee", "unknown-id")).thenReturn(null);
 
-        ResponseEntity<String> response = ddiResources.getItemXml("fr.insee", "unknown-id");
-
-        assertNotFound(response);
+        assertNotFound(() -> ddiResources.getItemXml("fr.insee", "unknown-id"));
     }
 
     @Test
@@ -542,9 +538,7 @@ class DdiResourcesTest {
     void getItemJson_shouldReturn404_whenItemNotFound() {
         when(ddiService.getItemXml("fr.insee", "unknown-id")).thenReturn(null);
 
-        ResponseEntity<String> response = ddiResources.getItemJson("fr.insee", "unknown-id");
-
-        assertNotFound(response);
+        assertNotFound(() -> ddiResources.getItemJson("fr.insee", "unknown-id"));
     }
 
     @Test
@@ -767,9 +761,7 @@ class DdiResourcesTest {
     void getCodeListXml_returns404WhenNull() {
         when(ddiService.getCodeListXml(CL_AGENCY, "unknown", null)).thenReturn(null);
 
-        ResponseEntity<String> response = ddiResources.getCodeListXml(CL_AGENCY, "unknown");
-
-        assertNotFound(response);
+        assertNotFound(() -> ddiResources.getCodeListXml(CL_AGENCY, "unknown"));
     }
 
     @Test
@@ -787,9 +779,7 @@ class DdiResourcesTest {
     void getCodeListJson_returns404WhenNull() {
         when(ddiService.getCodeList(CL_AGENCY, "unknown", null)).thenReturn(null);
 
-        ResponseEntity<Ddi4Response> response = ddiResources.getCodeListJson(CL_AGENCY, "unknown");
-
-        assertNotFound(response);
+        assertNotFound(() -> ddiResources.getCodeListJson(CL_AGENCY, "unknown"));
     }
 
     @Test
@@ -836,9 +826,7 @@ class DdiResourcesTest {
         String operationIri = givenOperationIri(id);
         when(ddiService.getStudyUnitByOperationIri(operationIri)).thenReturn(Optional.empty());
 
-        ResponseEntity<Ddi4StudyUnitResponse> response = ddiResources.getOperationStudyUnitJson(id);
-
-        assertNotFound(response);
+        assertNotFound(() -> ddiResources.getOperationStudyUnitJson(id));
     }
 
     /** #1145 : la sortie JSON porte la StudyUnit et les PhysicalInstances qu'elle référence. */
@@ -902,9 +890,7 @@ class DdiResourcesTest {
         String operationIri = givenOperationIri(id);
         when(ddiService.getStudyUnitXmlByOperationIri(operationIri)).thenReturn(Optional.empty());
 
-        ResponseEntity<String> response = ddiResources.getOperationStudyUnitXml(id);
-
-        assertNotFound(response);
+        assertNotFound(() -> ddiResources.getOperationStudyUnitXml(id));
     }
 
     // #1143 : le endpoint est exposé sous /ddi/public/operation/{id}/fichiers (et plus sous /studyUnit).
@@ -999,8 +985,9 @@ class DdiResourcesTest {
         assertEquals(expectedBody, response.getBody());
     }
 
-    private static void assertNotFound(ResponseEntity<?> response) {
-        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-        assertNull(response.getBody());
+    /** Un item introuvable lève un 404, que le filet des erreurs sert au format {@code ApiError}. */
+    private static void assertNotFound(Executable call) {
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, call);
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
     }
 }

@@ -350,9 +350,7 @@ public class DDIServiceImpl implements DDIService {
         }
         for (Ddi4ManagedMissingValuesRepresentation mmvr : mmvrs) {
             if (hasNoLabel(mmvr.label())) {
-                throw new InvalidSentinelValuesException(
-                        "Le label de la liste de valeurs sentinelles %s/%s est obligatoire"
-                                .formatted(mmvr.agency(), mmvr.id()));
+                throw InvalidSentinelValuesException.missingRepresentationLabel(mmvr.agency(), mmvr.id());
             }
             for (CodeRepresentation rep : mmvr.missingCodeRepresentation() != null
                     ? mmvr.missingCodeRepresentation()
@@ -363,9 +361,8 @@ public class DDIServiceImpl implements DDIService {
                 }
                 Ddi4CodeList sentinelCodeList = codeListsByKey.get(codeListRef.agency() + "/" + codeListRef.id());
                 if (sentinelCodeList != null && hasNoLabel(sentinelCodeList.label())) {
-                    throw new InvalidSentinelValuesException(
-                            "Le label de la liste de codes de valeurs sentinelles %s/%s est obligatoire"
-                                    .formatted(sentinelCodeList.agency(), sentinelCodeList.id()));
+                    throw InvalidSentinelValuesException.missingCodeListLabel(
+                            sentinelCodeList.agency(), sentinelCodeList.id());
                 }
             }
         }

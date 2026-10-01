@@ -18,7 +18,6 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
-import fr.insee.rmes.exceptions.RmesNotAcceptableException;
 import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.graphdb.ontologies.ADMS;
 import fr.insee.rmes.model.operations.Operation;
@@ -160,7 +159,7 @@ class OperationsRepositoryTest {
 
             try {
                 operationsRepository.setOperation(operation.toString());
-            } catch (RmesNotAcceptableException e) {
+            } catch (RmesBadRequestException e) {
                 if (e.getDetails().contains("A series cannot have both a Sims and Operation(s)")) {
                     fail("La création d'une opération sur une série avec SIMS ne devrait plus lever 406 : "
                             + e.getDetails());

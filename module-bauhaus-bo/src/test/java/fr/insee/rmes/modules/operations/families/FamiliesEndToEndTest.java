@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import fr.insee.rmes.modules.commons.webservice.ApiErrorContract;
 import fr.insee.rmes.testcontainers.WithGraphDBContainer;
 import org.json.JSONObject;
 import org.junit.jupiter.api.DisplayName;
@@ -209,8 +210,8 @@ class FamiliesEndToEndTest extends WithGraphDBContainer {
                 "406_OPERATION_FAMILY_OPERATION_FAMILY_EXISTING_PREF_LABEL_LG2");
     }
 
-    /** La création de la famille décrite par {@code body} est refusée en 400 avec ce message. */
-    private void assertCreationRejectedWith(RestClient restClient, String body, String expectedMessage) {
+    /** La création de la famille décrite par {@code body} est refusée en 400 avec ce code. */
+    private void assertCreationRejectedWith(RestClient restClient, String body, String expectedCode) {
         restClient
                 .post()
                 .uri(familiesEndpoint() + "/family")
@@ -218,8 +219,9 @@ class FamiliesEndToEndTest extends WithGraphDBContainer {
                 .contentType(MediaType.APPLICATION_JSON)
                 .exchange((request, response) -> {
                     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-                    assertThat(new JSONObject(response.bodyTo(String.class)).getString("message"))
-                            .isEqualTo(expectedMessage);
+                    String error = response.bodyTo(String.class);
+                    ApiErrorContract.assertApiError(error);
+                    assertThat(new JSONObject(error).getString("code")).isEqualTo(expectedCode);
                     return null;
                 });
     }

@@ -1,5 +1,6 @@
 package fr.insee.rmes.modules.commons.webservice;
 
+import static fr.insee.rmes.modules.commons.webservice.ApiErrorContract.apiError;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -47,6 +48,9 @@ class ValidationErrorContractTest {
                         .content("""
                                 {"numObservations": -1}"""))
                 .andExpect(status().isBadRequest())
+                .andExpect(apiError())
+                .andExpect(jsonPath("$.code").value("INVALID_REQUEST_BODY"))
+                .andExpect(jsonPath("$.message").value("The submitted data is invalid"))
                 .andExpect(jsonPath("$.errors[0].field").value("numObservations"))
                 .andExpect(jsonPath("$.errors[0].message").value("La valeur doit être strictement positive."));
     }
@@ -62,6 +66,9 @@ class ValidationErrorContractTest {
                         .content("""
                                 {"numObservations": "pas-un-entier"}"""))
                 .andExpect(status().isBadRequest())
+                .andExpect(apiError())
+                .andExpect(jsonPath("$.code").value("INVALID_REQUEST_BODY"))
+                .andExpect(jsonPath("$.message").value("The submitted data is invalid"))
                 .andExpect(jsonPath("$.errors[0].field").value("numObservations"))
                 .andExpect(jsonPath("$.errors[0].message").value("La valeur doit être un nombre entier."));
     }
@@ -73,6 +80,9 @@ class ValidationErrorContractTest {
                         .contentType(APPLICATION_JSON)
                         .content("{\"numObservations\": "))
                 .andExpect(status().isBadRequest())
+                .andExpect(apiError())
+                .andExpect(jsonPath("$.code").value("INVALID_REQUEST_BODY"))
+                .andExpect(jsonPath("$.message").value("The submitted data is invalid"))
                 .andExpect(jsonPath("$.errors[0].field").value("body"))
                 .andExpect(jsonPath("$.errors[0].message").value("Le corps de la requête n'a pas pu être lu."));
     }
@@ -84,6 +94,9 @@ class ValidationErrorContractTest {
                         .contentType(APPLICATION_JSON)
                         .content("{}"))
                 .andExpect(status().isBadRequest())
+                .andExpect(apiError())
+                .andExpect(jsonPath("$.code").value("INVALID_REQUEST_BODY"))
+                .andExpect(jsonPath("$.message").value("The submitted data is invalid"))
                 .andExpect(jsonPath("$.errors[0].field").value("body"))
                 .andExpect(jsonPath("$.errors[0].message")
                         .value("Renseignez au moins un de ces champs : updated, issued, numObservations,"

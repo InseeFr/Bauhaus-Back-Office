@@ -2,6 +2,7 @@ package fr.insee.rmes.modules.operations.documents.webservice;
 
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.commons.configuration.ConditionalOnModule;
+import fr.insee.rmes.modules.commons.webservice.ApiError;
 import fr.insee.rmes.modules.operations.documents.domain.exceptions.DocumentNotFoundException;
 import fr.insee.rmes.modules.operations.documents.domain.model.DocumentKind;
 import fr.insee.rmes.modules.operations.documents.domain.port.clientside.DocumentDescriptionService;
@@ -20,8 +21,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/operations")
 @ConditionalOnModule("operations")
 public class DocumentDescriptionResources {
-
-    public record ErrorMessageResponse(String message) {}
 
     private final DocumentDescriptionService documentDescriptionService;
 
@@ -44,8 +43,10 @@ public class DocumentDescriptionResources {
     }
 
     @ExceptionHandler(DocumentNotFoundException.class)
-    public ResponseEntity<ErrorMessageResponse> handleDocumentNotFound(DocumentNotFoundException e) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorMessageResponse(e.getMessage()));
+    public ResponseEntity<ApiError> handleDocumentNotFound(DocumentNotFoundException e) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(ApiError.of(HttpStatus.NOT_FOUND, e.getMessage()));
     }
 
     private ResponseEntity<DocumentDescriptionResponse> describe(DocumentKind kind, String id)

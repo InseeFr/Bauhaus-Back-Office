@@ -1,8 +1,9 @@
 package fr.insee.rmes.modules.codeslists.codeslists.webservice;
 
+import static fr.insee.rmes.modules.commons.webservice.ApiErrorContract.apiError;
 import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import fr.insee.rmes.bauhaus_services.code_list.CodeListKind;
@@ -24,8 +25,8 @@ class CodesListsResourcesPublishTest extends AbstractCodesListsResourcesWebMvcTe
 
         mockMvc.perform(put("/codeList/{id}/validate", "CL_TEST"))
                 .andExpect(status().isBadRequest())
-                .andExpect(content()
-                        .string(org.hamcrest.Matchers.containsString("\"code\":" + ErrorCodes.ALREADY_PUBLISHED)));
+                .andExpect(apiError())
+                .andExpect(jsonPath("$.code").value(String.valueOf(ErrorCodes.ALREADY_PUBLISHED)));
     }
 
     @Test
@@ -37,8 +38,8 @@ class CodesListsResourcesPublishTest extends AbstractCodesListsResourcesWebMvcTe
 
         mockMvc.perform(put("/codeList/partial/{id}/validate", "CL_PARTIAL"))
                 .andExpect(status().isBadRequest())
-                .andExpect(content()
-                        .string(org.hamcrest.Matchers.containsString("\"code\":" + ErrorCodes.ALREADY_PUBLISHED)));
+                .andExpect(apiError())
+                .andExpect(jsonPath("$.code").value(String.valueOf(ErrorCodes.ALREADY_PUBLISHED)));
     }
 
     private static RmesBadRequestException alreadyPublished(String id) {

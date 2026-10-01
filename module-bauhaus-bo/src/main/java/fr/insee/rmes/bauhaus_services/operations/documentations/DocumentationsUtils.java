@@ -12,7 +12,6 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
-import fr.insee.rmes.exceptions.RmesNotAcceptableException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.graphdb.ontologies.ADMS;
@@ -175,7 +174,7 @@ public class DocumentationsUtils {
             sims = mapper.readValue(body, Documentation.class);
         } catch (IOException e) {
             logger.error(e.getMessage());
-            throw new RmesNotAcceptableException(
+            throw new RmesBadRequestException(
                     ErrorCodes.SIMS_INCORRECT, e.getMessage(), "IOException: cannot parse input");
         }
 
@@ -256,7 +255,7 @@ public class DocumentationsUtils {
             throw new RmesBadRequestException(
                     ErrorCodes.OPERATION_VALIDATION_UNPUBLISHED_PARENT,
                     "This metadataReport cannot be published before its target is published. ",
-                    "MetadataReport: " + id + " ; Indicator/Series/Operation: " + targetId);
+                    new JSONObject().put("id", targetId));
         }
 
         documentationPublication.publishSims(id);

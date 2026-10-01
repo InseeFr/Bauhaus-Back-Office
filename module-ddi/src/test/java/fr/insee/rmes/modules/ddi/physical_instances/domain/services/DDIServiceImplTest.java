@@ -604,6 +604,8 @@ class DDIServiceImplTest {
                 () -> ddiService.updateFullPhysicalInstance("fr.insee", "pi-1", incoming));
 
         assertTrue(exception.getMessage().contains("mmvr-1"));
+        assertEquals(InvalidSentinelValuesException.Code.DDI_SENTINEL_REPRESENTATION_LABEL_REQUIRED, exception.code());
+        assertEquals("mmvr-1", exception.params().get("id"));
         verify(ddiRepository, never()).updateFullPhysicalInstance(anyString(), anyString(), any());
     }
 
@@ -620,6 +622,8 @@ class DDIServiceImplTest {
                 () -> ddiService.updateFullPhysicalInstance("fr.insee", "pi-1", incoming));
 
         assertTrue(exception.getMessage().contains("cl-sent"));
+        assertEquals(InvalidSentinelValuesException.Code.DDI_SENTINEL_CODE_LIST_LABEL_REQUIRED, exception.code());
+        assertEquals("cl-sent", exception.params().get("id"));
         verify(ddiRepository, never()).updateFullPhysicalInstance(anyString(), anyString(), any());
     }
 

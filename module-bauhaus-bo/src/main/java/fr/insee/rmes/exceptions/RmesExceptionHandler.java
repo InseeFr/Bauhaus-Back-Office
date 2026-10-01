@@ -3,6 +3,9 @@ package fr.insee.rmes.exceptions;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.commons.webservice.ApiError;
 import java.nio.file.NoSuchFileException;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -19,9 +22,14 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
  * {@code assignableTypes} : un contrôleur oublié laissait sortir l'exception brute (ticket 1 de
  * l'audit #1264).
  * <p>
- * Une {@link RmesException} garde son statut et son message (ticket 2) : le corps reste celui de
- * {@link RmesException#getDetails()}, que le front lit déjà ({@code code}, {@code message},
- * {@code details} et paramètres de traduction), complété d'un {@code message} quand il en manque.
+ * Une {@link RmesException} garde son statut et son message (ticket 2) et répond un
+ * {@link ApiError} (ADR-1264, ticket 18), construit à partir de {@link RmesException#getDetails()} :
+ * <ul>
+ *   <li>{@code code}, entier ou chaîne, est relayé en chaîne ;</li>
+ *   <li>les autres clés de premier niveau (constructeur {@code JSONObject}) sont les paramètres de
+ *       traduction ;</li>
+ *   <li>{@code details} ne part que dans les logs : il est souvent technique.</li>
+ * </ul>
  */
 @ControllerAdvice
 @Order(2)
@@ -31,8 +39,12 @@ public class RmesExceptionHandler {
 
     private static final String MESSAGE = "message";
 
+    private static final String CODE = "code";
+
+    private static final String DETAILS = "details";
+
     @ExceptionHandler(RmesException.class)
-    public final ResponseEntity<String> handleRmesException(RmesException exception) {
+    public final ResponseEntity<ApiError> handleRmesException(RmesException exception) {
         HttpStatus status = statusOf(exception);
         if (status.is5xxServerError()) {
             logger.error("RmesException (status {}): {}", status.value(), exception.getDetails(), exception);
@@ -41,19 +53,23 @@ public class RmesExceptionHandler {
         }
         return ResponseEntity.status(status)
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(bodyOf(exception, status).toString());
+                .body(bodyOf(exception, status));
     }
 
     @ExceptionHandler(RmesFileException.class)
     public final ResponseEntity<ApiError> handleRmesFileException(RmesFileException exception) {
         logger.error("File error on {}", exception.getFileName(), exception);
-        return ResponseEntity.internalServerError().body(ApiError.of(HttpStatus.INTERNAL_SERVER_ERROR));
+        return ResponseEntity.internalServerError()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(ApiError.of(HttpStatus.INTERNAL_SERVER_ERROR));
     }
 
     @ExceptionHandler(NoSuchFileException.class)
-    public final ResponseEntity<String> handleRmesException(NoSuchFileException exception) {
-        logger.error("NoSuchFileException " + exception.getMessage(), exception);
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getMessage() + " does not exist");
+    public final ResponseEntity<ApiError> handleRmesException(NoSuchFileException exception) {
+        logger.error("NoSuchFileException {}", exception.getMessage(), exception);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(ApiError.of(HttpStatus.NOT_FOUND, "The requested file does not exist."));
     }
 
     /** Un statut hors des erreurs HTTP (0, 200…) ne peut pas décrire un échec : c'est une panne. */
@@ -62,25 +78,31 @@ public class RmesExceptionHandler {
         return status != null && status.isError() ? status : HttpStatus.INTERNAL_SERVER_ERROR;
     }
 
+    private static ApiError bodyOf(RmesException exception, HttpStatus status) {
+        JSONObject json = parse(exception.getDetails(), status);
+        String message = json.optString(MESSAGE);
+        String code = json.has(CODE) ? String.valueOf(json.get(CODE)) : null;
+        Map<String, String> params = new TreeMap<>();
+        json.keySet().stream()
+                .filter(key -> !Set.of(MESSAGE, CODE, DETAILS).contains(key))
+                .forEach(key -> params.put(key, String.valueOf(json.get(key))));
+        return new ApiError(message.isBlank() ? ApiError.of(status).message() : message, code, params);
+    }
+
     /**
      * Des {@code details} qui ne sont pas du JSON sont un texte brut : relayé pour une erreur de
      * saisie, écrite pour l'utilisateur ; remplacé par un message générique pour une panne, où
      * c'est le message technique d'une cause ({@code RmesException(String, Exception)}).
      */
-    private static JSONObject bodyOf(RmesException exception, HttpStatus status) {
-        String details = exception.getDetails();
-        JSONObject body;
+    private static JSONObject parse(String details, HttpStatus status) {
         try {
-            body = details == null ? new JSONObject() : new JSONObject(details);
+            return details == null ? new JSONObject() : new JSONObject(details);
         } catch (JSONException notJson) {
-            body = new JSONObject();
+            JSONObject json = new JSONObject();
             if (status.is4xxClientError()) {
-                body.put(MESSAGE, details);
+                json.put(MESSAGE, details);
             }
+            return json;
         }
-        if (body.optString(MESSAGE).isBlank()) {
-            body.put(MESSAGE, ApiError.of(status).message());
-        }
-        return body;
     }
 }

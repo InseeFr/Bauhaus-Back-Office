@@ -1,5 +1,6 @@
 package fr.insee.rmes.modules.operations.documents.webservice;
 
+import static fr.insee.rmes.modules.commons.webservice.ApiErrorContract.apiError;
 import static fr.insee.rmes.modules.operations.documents.domain.InMemoryDocumentFileStorage.URL_PREFIX;
 import static fr.insee.rmes.modules.operations.documents.domain.InMemoryManagedDocumentRepository.form;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -192,7 +193,9 @@ class DocumentsResourcesContractTest {
                         .param("body", "{\"labelLg1\": \"Note\"}")
                         .file(file("Autre.pdf", "x")))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string(containsString("OPERATION_DOCUMENT_LINK_EXISTING_LABEL_LG1")));
+                .andExpect(apiError())
+                .andExpect(
+                        jsonPath("$.code").value("406_OPERATION_DOCUMENT_OPERATION_DOCUMENT_LINK_EXISTING_LABEL_LG1"));
     }
 
     @Test
@@ -220,8 +223,9 @@ class DocumentsResourcesContractTest {
     @Test
     void should_refuse_a_link_without_url_with_its_error_code() throws Exception {
         mvc.perform(multipart("/documents/link").param("body", "{\"labelLg1\": \"Nouvelle page\"}"))
-                .andExpect(status().isNotAcceptable())
-                .andExpect(content().string(containsString("461")));
+                .andExpect(status().isBadRequest())
+                .andExpect(apiError())
+                .andExpect(jsonPath("$.code").value("461"));
     }
 
     @Test

@@ -99,7 +99,8 @@ public class ErrorCodes {
     public static final int DATASET_DELETE_ONLY_WITHOUT_DERIVED_DATASET = 1205;
 
     /*
-     *  406 NOTACCEPTABLEEXCEPTIONS
+     *  Refus de saisie (400). Les codes chaînes gardent leur préfixe historique « 406_ » : ce sont
+     *  des clés de traduction du front, pas un statut HTTP.
      */
 
     // FAMILY

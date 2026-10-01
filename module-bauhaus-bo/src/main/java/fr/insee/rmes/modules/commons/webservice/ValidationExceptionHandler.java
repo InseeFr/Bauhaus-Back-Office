@@ -6,6 +6,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
@@ -18,7 +19,7 @@ import tools.jackson.databind.exc.ValueInstantiationException;
 
 /**
  * Format d'erreur contractuel de la validation des corps de requête, commun à tous les modules :
- * {@code 400} et {@code {"errors":[{"field","message"}]}}.
+ * {@code 400} et {@link ApiError} {@code {message, code: "INVALID_REQUEST_BODY", errors: [{field, message}]}}.
  * <p>
  * {@link Order}({@link Ordered#HIGHEST_PRECEDENCE}) est indispensable : sans lui, le filet
  * {@link UnexpectedErrorHandler}, qui traite toutes les exceptions de Spring MVC, pourrait répondre
@@ -32,9 +33,6 @@ import tools.jackson.databind.exc.ValueInstantiationException;
 @RestControllerAdvice
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class ValidationExceptionHandler {
-
-    /** Erreur portant sur le corps entier, faute de champ identifiable. */
-    static final String WHOLE_BODY = "body";
 
     private static final String UNREADABLE_BODY = "Le corps de la requête n'a pas pu être lu.";
 
@@ -50,17 +48,13 @@ public class ValidationExceptionHandler {
             Long.class, "un nombre entier",
             long.class, "un nombre entier");
 
-    public record ValidationError(String field, String message) {}
-
-    public record ValidationErrors(List<ValidationError> errors) {}
-
     /** Contrainte Bean Validation violée sur un {@code @Valid @RequestBody}. */
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ValidationErrors> handleInvalidArgument(MethodArgumentNotValidException exception) {
-        List<ValidationError> errors = exception.getBindingResult().getFieldErrors().stream()
-                .map(fieldError -> new ValidationError(fieldError.getField(), messageOf(fieldError)))
+    public ResponseEntity<ApiError> handleInvalidArgument(MethodArgumentNotValidException exception) {
+        List<ApiError.FieldError> errors = exception.getBindingResult().getFieldErrors().stream()
+                .map(fieldError -> new ApiError.FieldError(fieldError.getField(), messageOf(fieldError)))
                 .toList();
-        return ResponseEntity.badRequest().body(new ValidationErrors(errors));
+        return invalid(errors);
     }
 
     /**
@@ -69,24 +63,30 @@ public class ValidationExceptionHandler {
      * hors contrat.
      */
     @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<ValidationErrors> handleUnreadableBody(HttpMessageNotReadableException exception) {
-        return ResponseEntity.badRequest().body(new ValidationErrors(List.of(errorOf(exception.getCause()))));
+    public ResponseEntity<ApiError> handleUnreadableBody(HttpMessageNotReadableException exception) {
+        return invalid(List.of(errorOf(exception.getCause())));
+    }
+
+    private static ResponseEntity<ApiError> invalid(List<ApiError.FieldError> errors) {
+        return ResponseEntity.badRequest()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(ApiError.invalid(ApiError.INVALID_REQUEST_BODY, errors));
     }
 
     private static String messageOf(FieldError fieldError) {
         return Objects.requireNonNullElse(fieldError.getDefaultMessage(), INVALID_VALUE);
     }
 
-    private static ValidationError errorOf(Throwable cause) {
+    private static ApiError.FieldError errorOf(Throwable cause) {
         // Le DTO s'est refusé lui-même (contrôle dans le constructeur) : son message est le plus parlant.
         if (cause instanceof ValueInstantiationException valueInstantiation) {
-            return new ValidationError(fieldOf(valueInstantiation), rootMessageOf(valueInstantiation));
+            return new ApiError.FieldError(fieldOf(valueInstantiation), rootMessageOf(valueInstantiation));
         }
         if (cause instanceof MismatchedInputException mismatchedInput) {
-            return new ValidationError(fieldOf(mismatchedInput), typeMismatchMessageOf(mismatchedInput));
+            return new ApiError.FieldError(fieldOf(mismatchedInput), typeMismatchMessageOf(mismatchedInput));
         }
         // JSON malformé : le message de Jackson expose l'état du parseur, on ne le relaie pas.
-        return new ValidationError(WHOLE_BODY, UNREADABLE_BODY);
+        return ApiError.FieldError.onWholeBody(UNREADABLE_BODY);
     }
 
     /** {@code getPath()} est porté par {@link JacksonException}, parent commun des deux cas traités. */
@@ -95,7 +95,7 @@ public class ValidationExceptionHandler {
                 .map(JacksonException.Reference::getPropertyName)
                 .filter(Objects::nonNull)
                 .collect(Collectors.joining("."));
-        return path.isEmpty() ? WHOLE_BODY : path;
+        return path.isEmpty() ? ApiError.FieldError.WHOLE_BODY : path;
     }
 
     private static String typeMismatchMessageOf(MismatchedInputException exception) {

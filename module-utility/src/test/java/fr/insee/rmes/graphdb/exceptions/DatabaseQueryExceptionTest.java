@@ -25,7 +25,8 @@ class DatabaseQueryExceptionTest {
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR.value(), exception.getStatus());
         assertEquals(errorMessage, exception.getMessage());
-        assertEquals(DatabaseQueryException.GENERIC_MESSAGE, exception.getDetails());
+        assertEquals(DatabaseQueryException.RDF_QUERY_FAILED, exception.getCode());
+        assertFalse(exception.getDetails().contains(errorMessage));
     }
 
     @Test

@@ -113,6 +113,12 @@ public class OpenApiConfiguration {
         return openAPI;
     }
 
+    /** Format unique des réponses d'erreur (ADR-1264) : schéma {@code ApiError} et réponse {@code default}. */
+    @Bean
+    public ApiErrorOpenApiCustomizer apiErrorOpenApiCustomizer() {
+        return new ApiErrorOpenApiCustomizer();
+    }
+
     /**
      * Flow « authorization code » : l'UI ouvre Keycloak, récupère le code sur
      * {@value #OAUTH_REDIRECT_PATH}, l'échange contre un jeton et le pose en en-tête

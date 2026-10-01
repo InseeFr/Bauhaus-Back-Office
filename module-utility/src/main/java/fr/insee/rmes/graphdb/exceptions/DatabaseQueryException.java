@@ -1,16 +1,18 @@
 package fr.insee.rmes.graphdb.exceptions;
 
-import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.domain.exceptions.CodedRmesException;
 import fr.insee.rmes.graphdb.RepositoryInitiator;
 import org.eclipse.rdf4j.common.exception.RDF4JException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 
-public class DatabaseQueryException extends RmesException {
+public class DatabaseQueryException extends CodedRmesException {
     static final Logger logger = LoggerFactory.getLogger(DatabaseQueryException.class);
 
-    public static final String GENERIC_MESSAGE = "Erreur lors de l'accès à la base RDF";
+    public static final String GENERIC_MESSAGE = "The RDF database could not be queried.";
+
+    public static final String RDF_QUERY_FAILED = "RDF_QUERY_FAILED";
 
     private static final String EXECUTE_QUERY_FAILED = "Execute query failed : ";
 
@@ -19,15 +21,17 @@ public class DatabaseQueryException extends RmesException {
     private final String message;
 
     public DatabaseQueryException(RDF4JException exception, String query) {
-        this(exception, query, exception.getMessage(), GENERIC_MESSAGE);
+        this(exception, query, exception.getMessage(), RDF_QUERY_FAILED, GENERIC_MESSAGE);
     }
 
     /**
      * @param message message journalisé, qui peut citer la requête ou GraphDB
-     * @param clientMessage corps de la réponse HTTP : ni requête SPARQL, ni message RDF4J
+     * @param code code de l'erreur, clé de traduction du front
+     * @param clientMessage message de la réponse HTTP : ni requête SPARQL, ni message RDF4J
      */
-    protected DatabaseQueryException(RDF4JException exception, String query, String message, String clientMessage) {
-        super(HttpStatus.INTERNAL_SERVER_ERROR.value(), clientMessage);
+    protected DatabaseQueryException(
+            RDF4JException exception, String query, String message, String code, String clientMessage) {
+        super(HttpStatus.INTERNAL_SERVER_ERROR.value(), code, clientMessage, exception);
         this.exception = exception;
         this.message = message;
 

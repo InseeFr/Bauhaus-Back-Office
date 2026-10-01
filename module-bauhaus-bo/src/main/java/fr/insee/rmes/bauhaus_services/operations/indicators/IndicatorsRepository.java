@@ -95,18 +95,18 @@ public class IndicatorsRepository {
 
     void validate(Indicator indicator) throws RmesException {
         if (indicator.isWasGeneratedByEmpty()) {
-            throw new RmesBadRequestException(
+            throw RmesBadRequestException.coded(
                     IndicatorErrorCode.EMPTY_WAS_GENERATED_BY, "An indicator should be linked to a series.");
         }
         if (repositoryGestion.getResponseAsBoolean(operationIndicatorsQueries.checkPrefLabelUnicity(
                 indicator.getId(), indicator.getPrefLabelLg1(), languages.lg1()))) {
-            throw new RmesBadRequestException(
+            throw RmesBadRequestException.coded(
                     IndicatorErrorCode.EXISTING_PREF_LABEL_LG1,
                     "This prefLabelLg1 is already used by another indicator.");
         }
         if (repositoryGestion.getResponseAsBoolean(operationIndicatorsQueries.checkPrefLabelUnicity(
                 indicator.getId(), indicator.getPrefLabelLg2(), languages.lg2()))) {
-            throw new RmesBadRequestException(
+            throw RmesBadRequestException.coded(
                     IndicatorErrorCode.EXISTING_PREF_LABEL_LG2,
                     "This prefLabelLg2 is already used by another indicator.");
         }

@@ -1,6 +1,7 @@
 package fr.insee.rmes.modules.checks.webservice;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
 import fr.insee.rmes.modules.checks.domain.model.CheckResult;
@@ -25,17 +26,6 @@ class ChecksResourcesTest {
     @BeforeEach
     void setUp() {
         checksResources = new ChecksResources(checkerService);
-    }
-
-    private void assertSystemErrorContaining(String expectedMessage) {
-        ResponseEntity<List<CheckResult>> response = checksResources.runAllChecks();
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
-        assertThat(response.getBody()).hasSize(1);
-
-        CheckResult errorResult = response.getBody().get(0);
-        assertThat(errorResult.getName()).isEqualTo("system_error");
-        assertThat(errorResult.getValue()).asString().contains(expectedMessage);
     }
 
     @Test
@@ -69,21 +59,11 @@ class ChecksResourcesTest {
         assertThat(response.getBody()).isEmpty();
     }
 
+    /** Une panne remonte au filet des erreurs imprévues : 500 générique, détail dans les logs. */
     @Test
-    void runAllChecks_shouldReturnError_whenServiceThrowsException() {
-        // Given
+    void runAllChecks_shouldLetAFailureReachTheErrorHandlers() {
         when(checkerService.checks()).thenThrow(new RuntimeException("Service error"));
 
-        // When / Then
-        assertSystemErrorContaining("Failed to execute checks: Service error");
-    }
-
-    @Test
-    void runAllChecks_shouldReturnError_whenServiceThrowsNullPointerException() {
-        // Given
-        when(checkerService.checks()).thenThrow(new NullPointerException("Null pointer"));
-
-        // When / Then
-        assertSystemErrorContaining("Null pointer");
+        assertThatThrownBy(() -> checksResources.runAllChecks()).hasMessage("Service error");
     }
 }

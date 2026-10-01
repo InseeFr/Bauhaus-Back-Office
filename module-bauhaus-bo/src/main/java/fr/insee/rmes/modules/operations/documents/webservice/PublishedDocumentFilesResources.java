@@ -3,6 +3,7 @@ package fr.insee.rmes.modules.operations.documents.webservice;
 import fr.insee.rmes.exceptions.RmesFileException;
 import fr.insee.rmes.modules.commons.configuration.ConditionalOnModule;
 import fr.insee.rmes.modules.commons.security.PublicEndpoint;
+import fr.insee.rmes.modules.commons.webservice.ApiError;
 import fr.insee.rmes.modules.operations.documents.domain.exceptions.PublishedFileNotFoundException;
 import fr.insee.rmes.modules.operations.documents.domain.model.PublishedFile;
 import fr.insee.rmes.modules.operations.documents.domain.port.clientside.PublishedDocumentFileService;
@@ -29,8 +30,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class PublishedDocumentFilesResources {
 
     private static final Logger logger = LoggerFactory.getLogger(PublishedDocumentFilesResources.class);
-
-    public record ErrorMessageResponse(String message) {}
 
     private final PublishedDocumentFileService publishedDocumentFileService;
 
@@ -62,18 +61,18 @@ public class PublishedDocumentFilesResources {
     }
 
     @ExceptionHandler(PublishedFileNotFoundException.class)
-    public ResponseEntity<ErrorMessageResponse> handlePublishedFileNotFound(PublishedFileNotFoundException e) {
+    public ResponseEntity<ApiError> handlePublishedFileNotFound(PublishedFileNotFoundException e) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(new ErrorMessageResponse(e.getMessage()));
+                .body(ApiError.of(HttpStatus.NOT_FOUND, e.getMessage()));
     }
 
     /** Stockage illisible (MinIO en panne…) : ni un 404 mensonger, ni le détail interne à un anonyme. */
     @ExceptionHandler(RmesFileException.class)
-    public ResponseEntity<ErrorMessageResponse> handleUnreadableStorage(RmesFileException e) {
+    public ResponseEntity<ApiError> handleUnreadableStorage(RmesFileException e) {
         logger.error(e.getMessage(), e);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(new ErrorMessageResponse("The file storage could not be read"));
+                .body(ApiError.of(HttpStatus.INTERNAL_SERVER_ERROR, "The file storage could not be read"));
     }
 }

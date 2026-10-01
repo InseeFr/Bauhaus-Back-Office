@@ -6,6 +6,7 @@ import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.commons.security.PublicEndpoint;
+import fr.insee.rmes.modules.commons.webservice.ApiError;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.InvalidDdi4JsonException;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CreatePhysicalInstanceRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi3Response;
@@ -54,6 +55,8 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
         value = "/ddi",
         produces = {"application/hal+json", MediaType.APPLICATION_JSON_VALUE})
 public class DdiResources {
+
+    static final String DDI4_INVALID = "DDI4_INVALID";
 
     private final DDIService ddiService;
     private final DDI4toDDI3ConverterService ddi4toDdi3ConverterService;
@@ -269,10 +272,7 @@ public class DdiResources {
     @PublicEndpoint
     public ResponseEntity<String> getItemXmlByVersion(
             @PathVariable String agency, @PathVariable String id, @PathVariable String version) {
-        String xml = ddiService.getItemXml(agency, id, version);
-        if (xml == null) {
-            return ResponseEntity.notFound().build();
-        }
+        String xml = DdiResponses.found(ddiService.getItemXml(agency, id, version));
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML).body(xml);
     }
 
@@ -280,10 +280,7 @@ public class DdiResources {
     @PublicEndpoint
     public ResponseEntity<String> getItemJsonByVersion(
             @PathVariable String agency, @PathVariable String id, @PathVariable String version) {
-        String xml = ddiService.getItemXml(agency, id, version);
-        if (xml == null) {
-            return ResponseEntity.notFound().build();
-        }
+        String xml = DdiResponses.found(ddiService.getItemXml(agency, id, version));
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(ddiItemConvertService.convert(xml).toString());
@@ -292,20 +289,14 @@ public class DdiResources {
     @GetMapping(value = "/public/item/{agency}/{id}", produces = MediaType.APPLICATION_XML_VALUE)
     @PublicEndpoint
     public ResponseEntity<String> getItemXml(@PathVariable String agency, @PathVariable String id) {
-        String xml = ddiService.getItemXml(agency, id);
-        if (xml == null) {
-            return ResponseEntity.notFound().build();
-        }
+        String xml = DdiResponses.found(ddiService.getItemXml(agency, id));
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML).body(xml);
     }
 
     @GetMapping(value = "/public/item/{agency}/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @PublicEndpoint
     public ResponseEntity<String> getItemJson(@PathVariable String agency, @PathVariable String id) {
-        String xml = ddiService.getItemXml(agency, id);
-        if (xml == null) {
-            return ResponseEntity.notFound().build();
-        }
+        String xml = DdiResponses.found(ddiService.getItemXml(agency, id));
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(ddiItemConvertService.convert(xml).toString());
@@ -371,7 +362,7 @@ public class DdiResources {
 
     @PostMapping("/validate")
     @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.PUBLISH)
-    public ResponseEntity<ValidationResponse> validateDdi4(@RequestBody String jsonData) {
+    public ResponseEntity<Object> validateDdi4(@RequestBody String jsonData) {
         try {
             // Le DDI 4 circule déjà sous l'enveloppe du schéma ({topLevelReferences, items}) :
             // rien à traduire ici. Le schéma est compilé une fois pour toutes par le validateur.
@@ -382,16 +373,24 @@ public class DdiResources {
                         .contentType(MediaType.APPLICATION_JSON)
                         .body(ValidationResponse.success());
             } else {
-                return ResponseEntity.badRequest()
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .body(ValidationResponse.failure(errors));
+                return invalidDdi4(errors);
             }
         } catch (InvalidDdi4JsonException e) {
             // Seul un document mal formé vaut un 400 : une panne de chargement du schéma doit
             // remonter en 500 plutôt que de se déguiser en erreur de saisie.
-            return ResponseEntity.badRequest()
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(ValidationResponse.failure(List.of("Invalid JSON: " + e.getMessage())));
+            return invalidDdi4(List.of("Invalid JSON: " + e.getMessage()));
         }
+    }
+
+    /**
+     * Document hors schéma : 400 {@link ApiError}, une erreur par écart. Les écarts portent leur
+     * propre chemin JSON dans leur texte : ils sont rattachés au corps entier.
+     */
+    private static ResponseEntity<Object> invalidDdi4(List<String> violations) {
+        List<ApiError.FieldError> errors =
+                violations.stream().map(ApiError.FieldError::onWholeBody).toList();
+        return ResponseEntity.badRequest()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(ApiError.invalid(DDI4_INVALID, errors));
     }
 }

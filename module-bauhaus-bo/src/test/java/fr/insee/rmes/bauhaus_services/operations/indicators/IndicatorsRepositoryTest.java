@@ -20,6 +20,7 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.utils.OrganisationLookup;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
+import fr.insee.rmes.exceptions.errors.IndicatorErrorCode;
 import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.graphdb.ontologies.ADMS;
 import fr.insee.rmes.model.links.OperationsLink;
@@ -115,6 +116,8 @@ class IndicatorsRepositoryTest {
         when(repositoryGestion.getResponseAsBoolean("query")).thenReturn(true);
         RmesBadRequestException exception = rejectionOfIndicatorWithBothLabels();
         assertThat(exception.getDetails()).contains("This prefLabelLg1 is already used by another indicator.");
+        assertThat(new JSONObject(exception.getDetails()).getString("code"))
+                .isEqualTo(IndicatorErrorCode.EXISTING_PREF_LABEL_LG1);
     }
 
     @Test
@@ -127,6 +130,8 @@ class IndicatorsRepositoryTest {
         when(repositoryGestion.getResponseAsBoolean("query2")).thenReturn(true);
         RmesBadRequestException exception = rejectionOfIndicatorWithBothLabels();
         assertThat(exception.getDetails()).contains("This prefLabelLg2 is already used by another indicator.");
+        assertThat(new JSONObject(exception.getDetails()).getString("code"))
+                .isEqualTo(IndicatorErrorCode.EXISTING_PREF_LABEL_LG2);
     }
 
     private RmesBadRequestException rejectionOfIndicatorWithBothLabels() throws RmesException {

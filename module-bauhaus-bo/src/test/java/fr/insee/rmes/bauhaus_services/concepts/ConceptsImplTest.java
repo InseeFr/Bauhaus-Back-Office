@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -17,6 +18,7 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
+import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.model.concepts.CollectionForExport;
 import fr.insee.rmes.model.concepts.PartialConcept;
 import fr.insee.rmes.modules.concepts.collections.domain.port.serverside.CollectionRepository;
@@ -124,6 +126,19 @@ class ConceptsImplTest {
 
         assertEquals("1Lg1collec", conceptsImpl.getFileNameForExport(collection, Language.lg1));
         assertEquals("1Lg2collec", conceptsImpl.getFileNameForExport(collection, Language.lg2));
+    }
+
+    /** Un échec de lecture remonte aux gestionnaires d'erreur au lieu d'un corps texte (ADR-1264). */
+    @Test
+    void shouldLetAFailedExportReadReachTheErrorHandlers() throws RmesException {
+        ConceptsExportBuilder conceptsExport = mock(ConceptsExportBuilder.class);
+        when(conceptsExport.getConceptData("c1000")).thenThrow(new RmesNotFoundException("Concept not found", "c1000"));
+        ConceptsImpl conceptsImpl = new ConceptsImpl(
+                null, null, null, null, null, conceptsExport, null, null, 10, null, conceptConceptsQueries);
+
+        assertThrows(
+                RmesNotFoundException.class,
+                () -> conceptsImpl.exportConcept("c1000", MediaType.APPLICATION_OCTET_STREAM_VALUE));
     }
 
     @Test
@@ -257,6 +272,9 @@ class ConceptsImplTest {
                 assertThrows(RmesBadRequestException.class, () -> conceptsImpl().deleteConcept("c1000"));
 
         assertThat(exception.getDetails()).contains("cannot be deleted because it is used in several graphs");
+        assertThat(new JSONObject(exception.getDetails()).toMap())
+                .containsOnlyKeys("code", "message", "idConcept")
+                .containsEntry("idConcept", "c1000");
     }
 
     @Test
@@ -269,6 +287,9 @@ class ConceptsImplTest {
                 assertThrows(RmesBadRequestException.class, () -> conceptsImpl().deleteConcept("c1000"));
 
         assertThat(exception.getDetails()).contains("cannot be deleted because it is linked to other concepts");
+        assertThat(new JSONObject(exception.getDetails()).toMap())
+                .containsOnlyKeys("code", "message", "idConcept")
+                .containsEntry("idConcept", "c1000");
     }
 
     @Test

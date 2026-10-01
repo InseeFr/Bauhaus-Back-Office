@@ -3,9 +3,18 @@ package fr.insee.rmes.modules.commons.webservice;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import fr.insee.rmes.exceptions.RmesRuntimeBadRequestException;
+import fr.insee.rmes.graphdb.RepositoryInitiator;
+import fr.insee.rmes.graphdb.exceptions.DatabaseQueryException;
+import fr.insee.rmes.graphdb.exceptions.GraphDbUnauthorizedException;
+import fr.insee.rmes.modules.commons.domain.GenericInternalServerException;
+import fr.insee.rmes.modules.operations.msd.domain.NotFoundAttributeException;
+import fr.insee.rmes.modules.operations.msd.domain.OperationDocumentationRubricWithoutRangeException;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.nio.file.NoSuchFileException;
 import java.util.List;
+import org.eclipse.rdf4j.http.protocol.UnauthorizedException;
+import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -72,6 +81,37 @@ class UnexpectedErrorContractTest {
         String badRequest() {
             throw new RmesRuntimeBadRequestException("specific handler message");
         }
+
+        @GetMapping("/database-query")
+        String databaseQuery() throws DatabaseQueryException {
+            throw new DatabaseQueryException(new MalformedQueryException(TECHNICAL_DETAIL), TECHNICAL_DETAIL);
+        }
+
+        @GetMapping("/graphdb-unauthorized")
+        String graphDbUnauthorized() throws DatabaseQueryException {
+            throw new GraphDbUnauthorizedException(
+                    new UnauthorizedException(), TECHNICAL_DETAIL, RepositoryInitiator.Type.DISABLED);
+        }
+
+        @GetMapping("/generic-internal")
+        String genericInternal() throws GenericInternalServerException {
+            throw new GenericInternalServerException("{\"message\":\"" + TECHNICAL_DETAIL + "\"}");
+        }
+
+        @GetMapping("/attribute-not-found")
+        String attributeNotFound() throws NotFoundAttributeException {
+            throw new NotFoundAttributeException("I.1.1");
+        }
+
+        @GetMapping("/rubric-without-range")
+        String rubricWithoutRange() throws OperationDocumentationRubricWithoutRangeException {
+            throw new OperationDocumentationRubricWithoutRangeException("I.6.4");
+        }
+
+        @GetMapping("/no-such-file")
+        String noSuchFile() throws NoSuchFileException {
+            throw new NoSuchFileException("/var/bauhaus/storage/" + TECHNICAL_DETAIL);
+        }
     }
 
     @LocalServerPort
@@ -99,15 +139,21 @@ class UnexpectedErrorContractTest {
                 .toEntity(String.class);
     }
 
+    private static String messageOf(ResponseEntity<String> response) {
+        return new JSONObject(response.getBody()).getString("message");
+    }
+
     private static void assertApiError(ResponseEntity<String> response, HttpStatus status) {
+        assertApiError(response, status, status.name());
+    }
+
+    private static void assertApiError(ResponseEntity<String> response, HttpStatus status, String code) {
         assertThat(response.getStatusCode()).isEqualTo(status);
         assertThat(response.getHeaders().getContentType()).isNotNull();
         assertThat(response.getHeaders().getContentType().isCompatibleWith(MediaType.APPLICATION_JSON))
                 .isTrue();
-        JSONObject body = new JSONObject(response.getBody());
-        assertThat(body.keySet()).containsExactlyInAnyOrder("message", "code");
-        assertThat(body.getString("message")).isNotBlank();
-        assertThat(body.getString("code")).isEqualTo(status.name());
+        ApiErrorContract.assertApiError(response.getBody());
+        assertThat(new JSONObject(response.getBody()).getString("code")).isEqualTo(code);
         assertThat(response.getBody()).doesNotContain(TECHNICAL_DETAIL);
     }
 
@@ -146,8 +192,51 @@ class UnexpectedErrorContractTest {
     void a_specialised_handler_still_wins_over_the_fallback() {
         ResponseEntity<String> response = get("/test-errors/bad-request");
 
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-        assertThat(response.getBody()).isEqualTo("specific handler message");
+        assertApiError(response, HttpStatus.BAD_REQUEST, "BAD_REQUEST");
+        assertThat(messageOf(response)).isEqualTo("specific handler message");
+    }
+
+    @Test
+    void a_failed_rdf_query_answers_a_coded_error_without_the_query() {
+        assertApiError(get("/test-errors/database-query"), HttpStatus.INTERNAL_SERVER_ERROR, "RDF_QUERY_FAILED");
+    }
+
+    /** Diagnostic de configuration écrit pour l'exploitant : il reste le message de l'erreur. */
+    @Test
+    void a_graphdb_401_answers_its_configuration_diagnostic() {
+        ResponseEntity<String> response = get("/test-errors/graphdb-unauthorized");
+
+        assertApiError(response, HttpStatus.INTERNAL_SERVER_ERROR, "RDF_AUTHENTICATION_FAILED");
+        assertThat(messageOf(response)).contains("fr.insee.rmes.bauhaus.rdf.auth=DISABLED");
+    }
+
+    @Test
+    void a_generic_internal_server_exception_does_not_relay_its_details() {
+        assertApiError(get("/test-errors/generic-internal"), HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_SERVER_ERROR");
+    }
+
+    @Test
+    void an_unknown_msd_attribute_answers_404_naming_the_attribute() {
+        ResponseEntity<String> response = get("/test-errors/attribute-not-found");
+
+        assertApiError(response, HttpStatus.NOT_FOUND, "NOT_FOUND");
+        assertThat(messageOf(response)).contains("I.1.1");
+    }
+
+    @Test
+    void a_rubric_without_range_answers_400_naming_the_rubric() {
+        ResponseEntity<String> response = get("/test-errors/rubric-without-range");
+
+        assertApiError(response, HttpStatus.BAD_REQUEST, "BAD_REQUEST");
+        assertThat(messageOf(response)).contains("I.6.4");
+    }
+
+    @Test
+    void a_missing_file_answers_404_without_its_storage_path() {
+        ResponseEntity<String> response = get("/test-errors/no-such-file");
+
+        assertApiError(response, HttpStatus.NOT_FOUND, "NOT_FOUND");
+        assertThat(response.getBody()).doesNotContain("/var/bauhaus/storage");
     }
 
     /**

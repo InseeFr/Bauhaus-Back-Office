@@ -91,13 +91,13 @@ public class OperationsRepository extends RdfService {
     private void validate(Operation operation) throws RmesException {
         if (repoGestion.getResponseAsBoolean(operationsOperationQueries.checkPrefLabelUnicity(
                 operation.getId(), operation.getPrefLabelLg1(), languages.lg1()))) {
-            throw new RmesBadRequestException(
+            throw RmesBadRequestException.coded(
                     ErrorCodes.OPERATION_OPERATION_EXISTING_PREF_LABEL_LG1,
                     "This prefLabelLg1 is already used by another operation.");
         }
         if (repoGestion.getResponseAsBoolean(operationsOperationQueries.checkPrefLabelUnicity(
                 operation.getId(), operation.getPrefLabelLg2(), languages.lg2()))) {
-            throw new RmesBadRequestException(
+            throw RmesBadRequestException.coded(
                     ErrorCodes.OPERATION_OPERATION_EXISTING_PREF_LABEL_LG2,
                     "This prefLabelLg2 is already used by another operation.");
         }

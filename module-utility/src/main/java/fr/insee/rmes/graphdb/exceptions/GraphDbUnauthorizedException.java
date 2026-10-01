@@ -19,6 +19,9 @@ public class GraphDbUnauthorizedException extends DatabaseQueryException {
 
     public static final String RDF_AUTH_PROPERTY = "fr.insee.rmes.bauhaus.rdf.auth";
 
+    /** Sans traduction côté front : c'est le diagnostic du message qui doit s'afficher. */
+    public static final String RDF_AUTHENTICATION_FAILED = "RDF_AUTHENTICATION_FAILED";
+
     private static final int MAX_CAUSE_DEPTH = 10;
 
     private static final Logger logger = LoggerFactory.getLogger(GraphDbUnauthorizedException.class);
@@ -29,7 +32,7 @@ public class GraphDbUnauthorizedException extends DatabaseQueryException {
 
     private GraphDbUnauthorizedException(RDF4JException exception, String query, String message) {
         // message construit ici, sans la requête : il peut partir tel quel au client
-        super(exception, query, message, message);
+        super(exception, query, message, RDF_AUTHENTICATION_FAILED, message);
         logger.error(message);
     }
 

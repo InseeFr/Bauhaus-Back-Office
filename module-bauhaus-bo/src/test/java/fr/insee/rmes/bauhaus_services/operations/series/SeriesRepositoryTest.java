@@ -16,7 +16,7 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.utils.OrganisationLookup;
 import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.exceptions.RmesNotAcceptableException;
+import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.graphdb.ontologies.ADMS;
 import fr.insee.rmes.json.JSONUtils;
@@ -167,7 +167,7 @@ class SeriesRepositoryTest {
 
         try {
             seriesRepository.setSeries("1", body);
-        } catch (RmesNotAcceptableException e) {
+        } catch (RmesBadRequestException e) {
             if (e.getDetails().contains("A series cannot have both a Sims and Operation(s)")) {
                 fail("La mise à jour d'une série combinant idSims et operations ne devrait plus lever 406 : "
                         + e.getDetails());

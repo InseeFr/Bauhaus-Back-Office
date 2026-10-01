@@ -1,6 +1,7 @@
 package fr.insee.rmes.graphdb;
 
 import static fr.insee.rmes.graphdb.exceptions.DatabaseQueryException.GENERIC_MESSAGE;
+import static fr.insee.rmes.graphdb.exceptions.DatabaseQueryException.RDF_QUERY_FAILED;
 
 import fr.insee.rmes.domain.exceptions.CodedRmesException;
 import fr.insee.rmes.domain.exceptions.RmesException;
@@ -91,7 +92,8 @@ public class RepositoryUtils {
             con = repository.getConnection();
         } catch (RepositoryException e) {
             logger.error("Connection au repository impossible : {}", repository.getDataDir(), e);
-            throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), GENERIC_MESSAGE, null, e);
+            throw new CodedRmesException(
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(), RDF_QUERY_FAILED, GENERIC_MESSAGE, e);
         }
         return con;
     }
@@ -120,7 +122,8 @@ public class RepositoryUtils {
                 throw new GraphDbUnauthorizedException(e, updateQuery, authType);
             }
             logger.error("{} {} {}", EXECUTE_QUERY_FAILED, updateQuery, repository, e);
-            throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), GENERIC_MESSAGE, null, e);
+            throw new CodedRmesException(
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(), RDF_QUERY_FAILED, GENERIC_MESSAGE, e);
         }
         return (HttpStatus.OK);
     }
@@ -141,7 +144,8 @@ public class RepositoryUtils {
             statements = con.getStatements(null, null, null, context); // get the complete Graph
         } catch (RepositoryException e) {
             logger.error("Failure get following graph : {}", context, e);
-            throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), GENERIC_MESSAGE, null, e);
+            throw new CodedRmesException(
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(), RDF_QUERY_FAILED, GENERIC_MESSAGE, e);
         }
         return statements;
     }
@@ -356,7 +360,8 @@ public class RepositoryUtils {
             });
         } catch (RepositoryException e) {
             logger.error("Failure deletion : {}", structure, e);
-            throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), GENERIC_MESSAGE, null, e);
+            throw new CodedRmesException(
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(), RDF_QUERY_FAILED, GENERIC_MESSAGE, e);
         }
     }
 }

@@ -11,9 +11,12 @@ public class CodedRmesException extends RmesException {
 
     private final String code;
 
+    private final String clientMessage;
+
     public CodedRmesException(int status, String code, String message, Throwable cause) {
         super(status, message, null, cause);
         this.code = code;
+        this.clientMessage = message;
     }
 
     public String getCode() {
@@ -22,6 +25,7 @@ public class CodedRmesException extends RmesException {
 
     @Override
     public String getDetails() {
-        return new JSONObject().put("message", getMessage()).put("code", code).toString();
+        // getMessage() peut être redéfini pour les logs : le corps garde le message écrit pour le client
+        return new JSONObject().put("message", clientMessage).put("code", code).toString();
     }
 }

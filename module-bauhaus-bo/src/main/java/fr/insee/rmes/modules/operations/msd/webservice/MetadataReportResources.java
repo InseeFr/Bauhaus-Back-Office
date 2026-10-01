@@ -8,7 +8,7 @@ import fr.insee.rmes.bauhaus_services.OperationsService;
 import fr.insee.rmes.domain.exceptions.CodedRmesException;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.ErrorCodes;
-import fr.insee.rmes.exceptions.RmesNotAcceptableException;
+import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.modules.commons.configuration.ConditionalOnModule;
 import fr.insee.rmes.modules.commons.configuration.swagger.model.Accept;
 import fr.insee.rmes.modules.commons.domain.GenericInternalServerException;
@@ -77,7 +77,6 @@ public class MetadataReportResources {
                 var jsonResultat = documentationsService.getMSDJson();
                 yield ResponseEntity.ok(jsonResultat);
             }
-            default -> ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE).build();
         };
     }
 
@@ -143,7 +142,6 @@ public class MetadataReportResources {
                 var jsonResultat = documentationsService.getFullSimsForJson(id);
                 yield ResponseEntity.ok(jsonResultat);
             }
-            default -> ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE).build();
         };
     }
 
@@ -202,7 +200,7 @@ public class MetadataReportResources {
             @RequestParam(name = "document", defaultValue = "true") boolean document)
             throws RmesException {
         if (!lg1 && !lg2) {
-            throw new RmesNotAcceptableException(
+            throw new RmesBadRequestException(
                     ErrorCodes.SIMS_EXPORT_WITHOUT_LANGUAGE,
                     "at least one language must be selected for export",
                     "in export of sims: " + id);

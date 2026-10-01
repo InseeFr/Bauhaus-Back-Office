@@ -1,5 +1,6 @@
 package fr.insee.rmes.modules.codeslists.codeslists.webservice;
 
+import static fr.insee.rmes.modules.commons.webservice.ApiErrorContract.apiError;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 import static org.mockito.ArgumentMatchers.any;
@@ -18,10 +19,12 @@ import fr.insee.rmes.bauhaus_services.code_list.CodeListKind;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesFileException;
+import fr.insee.rmes.exceptions.RmesMissingDocumentsException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.modules.codeslists.partialcodeslists.model.PartialCodesList;
 import fr.insee.rmes.utils.Deserializer;
 import java.io.IOException;
+import java.util.List;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
@@ -43,6 +46,7 @@ class RmesExceptionStatusTest extends AbstractCodesListsResourcesWebMvcTest {
 
         mockMvc.perform(get("/codeList/partial/{notation}", "CL_TEST"))
                 .andExpect(status().isBadRequest())
+                .andExpect(apiError())
                 .andExpect(jsonPath("$.message").value(MESSAGE));
     }
 
@@ -63,9 +67,10 @@ class RmesExceptionStatusTest extends AbstractCodesListsResourcesWebMvcTest {
 
         mockMvc.perform(get("/codeList/partial/{notation}", "CL_TEST"))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(804))
+                .andExpect(apiError())
+                .andExpect(jsonPath("$.code").value("804"))
                 .andExpect(jsonPath("$.message").value(MESSAGE))
-                .andExpect(jsonPath("$.id").value("CL_TEST"));
+                .andExpect(jsonPath("$.params.id").value("CL_TEST"));
     }
 
     @Test
@@ -75,8 +80,20 @@ class RmesExceptionStatusTest extends AbstractCodesListsResourcesWebMvcTest {
 
         mockMvc.perform(get("/codeList/partial/{notation}", "CL_TEST"))
                 .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.code").value(812))
-                .andExpect(jsonPath("$.message").isNotEmpty());
+                .andExpect(apiError())
+                .andExpect(jsonPath("$.code").value("812"));
+    }
+
+    @Test
+    void the_ids_of_the_missing_documents_are_a_translation_parameter() throws Exception {
+        when(codeListService.getDetailedPartialCodesList("CL_TEST"))
+                .thenThrow(new RmesMissingDocumentsException(List.of("1001", "1002")));
+
+        mockMvc.perform(get("/codeList/partial/{notation}", "CL_TEST"))
+                .andExpect(status().isBadRequest())
+                .andExpect(apiError())
+                .andExpect(jsonPath("$.code").value("862"))
+                .andExpect(jsonPath("$.params.documents").value("1001,1002"));
     }
 
     @Test
@@ -86,7 +103,7 @@ class RmesExceptionStatusTest extends AbstractCodesListsResourcesWebMvcTest {
 
         mockMvc.perform(get("/codeList/partial/{notation}", "CL_TEST"))
                 .andExpect(status().isInternalServerError())
-                .andExpect(jsonPath("$.message").isNotEmpty())
+                .andExpect(apiError())
                 .andExpect(content().string(not(containsString("java."))));
     }
 

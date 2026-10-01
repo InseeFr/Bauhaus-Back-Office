@@ -7,6 +7,7 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -41,7 +42,9 @@ public class UnexpectedErrorHandler {
     public ResponseEntity<ApiError> handle(Exception exception, HttpServletRequest request) {
         if (!(exception instanceof ErrorResponse errorResponse)) {
             logger.error("Unexpected error on {} {}", request.getMethod(), request.getRequestURI(), exception);
-            return ResponseEntity.internalServerError().body(ApiError.of(HttpStatus.INTERNAL_SERVER_ERROR));
+            return ResponseEntity.internalServerError()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(ApiError.of(HttpStatus.INTERNAL_SERVER_ERROR));
         }
         HttpStatusCode status = errorResponse.getStatusCode();
         if (status.is5xxServerError()) {
@@ -51,6 +54,9 @@ public class UnexpectedErrorHandler {
             logger.debug(
                     "{} {} rejected with status {}", request.getMethod(), request.getRequestURI(), status, exception);
         }
-        return ResponseEntity.status(status).headers(errorResponse.getHeaders()).body(ApiError.of(status));
+        return ResponseEntity.status(status)
+                .headers(errorResponse.getHeaders())
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(ApiError.of(status));
     }
 }
