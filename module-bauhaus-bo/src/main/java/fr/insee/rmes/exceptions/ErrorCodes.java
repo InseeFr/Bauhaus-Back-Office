@@ -39,6 +39,7 @@ public class ErrorCodes {
     public static final int COMPONENT_PUBLICATION_VALIDATED_CONCEPT = 1006;
     public static final int COMPONENT_PUBLICATION_VALIDATED_CODESLIST = 1007;
     public static final int STRUCTURE_PUBLICATION_VALIDATED_COMPONENT = 1008;
+    public static final int STRUCTURE_DELETE_ONLY_UNPUBLISHED = 1009;
 
     /*
      *  400 BADREQUESTEXCEPTIONS

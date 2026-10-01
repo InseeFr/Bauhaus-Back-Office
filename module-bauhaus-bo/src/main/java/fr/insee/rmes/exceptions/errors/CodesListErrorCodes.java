@@ -13,5 +13,4 @@ public class CodesListErrorCodes {
     public static final int CODE_LIST_CODE_LINKED_TO_ITSELF = 1110;
     public static final int CODE_LIST_CODE_BOTH_PARENT_AND_CHILD = 1111;
     public static final int CODE_LIST_UNKNOWN_LINKED_CODE = 1112;
-    public static final int STRUCTURE_DELETE_ONLY_UNPUBLISHED = 1103;
 }

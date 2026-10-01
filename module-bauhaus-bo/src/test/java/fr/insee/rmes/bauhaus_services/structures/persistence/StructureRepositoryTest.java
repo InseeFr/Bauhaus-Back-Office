@@ -71,7 +71,7 @@ class StructureRepositoryTest {
     public String fakeJsonObjectBody = "This a fake body of JsonObject";
 
     @Test
-    void shouldReturnBadRequestExceptionIfPublishedStructure() throws RmesException {
+    void shouldRejectTheDeletionOfAPublishedStructureWithAStructureErrorCode() throws RmesException {
         JSONObject mockJSON = new JSONObject(VALIDATION_STATUS);
         when(structureQueries.getValidationStatus(anyString())).thenReturn("validation-status-query");
         Structure structure = new Structure();
@@ -80,7 +80,7 @@ class StructureRepositoryTest {
         RmesException exception =
                 assertThrows(RmesBadRequestException.class, () -> structureRepository.deleteStructure("id"));
         Assertions.assertEquals(
-                "{\"code\":1103,\"message\":\"Only unpublished codelist can be deleted\"}", exception.getDetails());
+                "{\"code\":1009,\"message\":\"Only unpublished structures can be deleted\"}", exception.getDetails());
     }
 
     @Test

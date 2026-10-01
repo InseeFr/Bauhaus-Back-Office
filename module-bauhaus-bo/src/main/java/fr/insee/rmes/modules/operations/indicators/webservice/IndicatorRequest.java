@@ -1,5 +1,7 @@
 package fr.insee.rmes.modules.operations.indicators.webservice;
 
+import static fr.insee.rmes.modules.commons.webservice.ValidationMessages.REQUIRED;
+
 import fr.insee.rmes.modules.operations.indicators.domain.model.IndicatorLink;
 import fr.insee.rmes.modules.operations.indicators.domain.model.commands.IndicatorCommand;
 import jakarta.validation.constraints.NotBlank;
@@ -20,7 +22,7 @@ import java.util.List;
  * liée, unicité des libellés, organisations connues — restent au dépôt.
  */
 public record IndicatorRequest(
-        @NotBlank(message = "prefLabelLg1 is required") String prefLabelLg1,
+        @NotBlank(message = REQUIRED) String prefLabelLg1,
         String prefLabelLg2,
         String altLabelLg1,
         String altLabelLg2,

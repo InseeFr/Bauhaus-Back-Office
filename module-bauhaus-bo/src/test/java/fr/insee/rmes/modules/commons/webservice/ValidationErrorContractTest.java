@@ -48,7 +48,7 @@ class ValidationErrorContractTest {
                                 {"numObservations": -1}"""))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.errors[0].field").value("numObservations"))
-                .andExpect(jsonPath("$.errors[0].message").isNotEmpty());
+                .andExpect(jsonPath("$.errors[0].message").value("La valeur doit être strictement positive."));
     }
 
     /**
@@ -63,6 +63,30 @@ class ValidationErrorContractTest {
                                 {"numObservations": "pas-un-entier"}"""))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.errors[0].field").value("numObservations"))
-                .andExpect(jsonPath("$.errors[0].message").isNotEmpty());
+                .andExpect(jsonPath("$.errors[0].message").value("La valeur doit être un nombre entier."));
+    }
+
+    /** JSON malformé : l'erreur porte sur le corps entier, sans exposer l'état du parseur. */
+    @Test
+    void malformed_body_should_be_reported_on_the_whole_body() throws Exception {
+        mockMvc.perform(patch("/datasets/{id}", "d1")
+                        .contentType(APPLICATION_JSON)
+                        .content("{\"numObservations\": "))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors[0].field").value("body"))
+                .andExpect(jsonPath("$.errors[0].message").value("Le corps de la requête n'a pas pu être lu."));
+    }
+
+    /** Le DTO se refuse lui-même dans son constructeur : son message est relayé tel quel. */
+    @Test
+    void body_refused_by_the_dto_should_carry_its_message() throws Exception {
+        mockMvc.perform(patch("/datasets/{id}", "d1")
+                        .contentType(APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors[0].field").value("body"))
+                .andExpect(jsonPath("$.errors[0].message")
+                        .value("Renseignez au moins un de ces champs : updated, issued, numObservations,"
+                                + " numSeries, temporal."));
     }
 }

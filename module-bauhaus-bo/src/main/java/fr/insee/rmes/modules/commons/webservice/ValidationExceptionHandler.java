@@ -1,6 +1,7 @@
 package fr.insee.rmes.modules.commons.webservice;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import org.springframework.core.Ordered;
@@ -35,7 +36,19 @@ public class ValidationExceptionHandler {
     /** Erreur portant sur le corps entier, faute de champ identifiable. */
     static final String WHOLE_BODY = "body";
 
-    private static final String UNREADABLE_BODY = "the request body could not be read";
+    private static final String UNREADABLE_BODY = "Le corps de la requête n'a pas pu être lu.";
+
+    private static final String INVALID_VALUE = "La valeur n'est pas valide.";
+
+    /**
+     * Nature attendue d'une valeur mal typée, pour les types que les corps de requête déclarent ;
+     * un type absent d'ici donne {@link #INVALID_VALUE}.
+     */
+    private static final Map<Class<?>, String> EXPECTED_VALUES = Map.of(
+            Integer.class, "un nombre entier",
+            int.class, "un nombre entier",
+            Long.class, "un nombre entier",
+            long.class, "un nombre entier");
 
     public record ValidationError(String field, String message) {}
 
@@ -61,7 +74,7 @@ public class ValidationExceptionHandler {
     }
 
     private static String messageOf(FieldError fieldError) {
-        return Objects.requireNonNullElse(fieldError.getDefaultMessage(), "is invalid");
+        return Objects.requireNonNullElse(fieldError.getDefaultMessage(), INVALID_VALUE);
     }
 
     private static ValidationError errorOf(Throwable cause) {
@@ -86,8 +99,8 @@ public class ValidationExceptionHandler {
     }
 
     private static String typeMismatchMessageOf(MismatchedInputException exception) {
-        Class<?> targetType = exception.getTargetType();
-        return targetType == null ? UNREADABLE_BODY : "is not a valid " + targetType.getSimpleName();
+        String expectedValue = EXPECTED_VALUES.get(exception.getTargetType());
+        return expectedValue == null ? INVALID_VALUE : "La valeur doit être " + expectedValue + ".";
     }
 
     private static String rootMessageOf(ValueInstantiationException exception) {

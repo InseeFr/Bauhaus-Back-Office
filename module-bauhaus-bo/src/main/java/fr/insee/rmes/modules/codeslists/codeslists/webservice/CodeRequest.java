@@ -1,5 +1,7 @@
 package fr.insee.rmes.modules.codeslists.codeslists.webservice;
 
+import static fr.insee.rmes.modules.commons.webservice.ValidationMessages.REQUIRED;
+
 import jakarta.validation.constraints.NotBlank;
 import java.util.List;
 
@@ -16,9 +18,9 @@ import java.util.List;
  * dans la même liste. Absents, ils valent une liste vide : le code n'a alors plus aucun lien.
  */
 public record CodeRequest(
-        @NotBlank(message = "code is required") String code,
-        @NotBlank(message = "labelLg1 is required") String labelLg1,
-        @NotBlank(message = "labelLg2 is required") String labelLg2,
+        @NotBlank(message = REQUIRED) String code,
+        @NotBlank(message = REQUIRED) String labelLg1,
+        @NotBlank(message = REQUIRED) String labelLg2,
         String descriptionLg1,
         String descriptionLg2,
         List<String> broader,

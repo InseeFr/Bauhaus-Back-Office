@@ -54,7 +54,8 @@ class IndicatorsResourcesValidationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.errors[*].field").value("prefLabelLg1"));
+                .andExpect(jsonPath("$.errors[*].field").value("prefLabelLg1"))
+                .andExpect(jsonPath("$.errors[0].message").value("Ce champ est obligatoire."));
 
         verify(operationsService, never()).setIndicator(any(), any());
     }

@@ -162,8 +162,8 @@ class FamiliesEndToEndTest extends WithGraphDBContainer {
                     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
                     JSONAssert.assertEquals("""
                             {"errors":[
-                              {"field":"prefLabelLg1","message":"prefLabelLg1 is required"},
-                              {"field":"prefLabelLg2","message":"prefLabelLg2 is required"}
+                              {"field":"prefLabelLg1","message":"Ce champ est obligatoire."},
+                              {"field":"prefLabelLg2","message":"Ce champ est obligatoire."}
                             ]}
                             """, response.bodyTo(String.class), false);
                     return null;
@@ -177,7 +177,7 @@ class FamiliesEndToEndTest extends WithGraphDBContainer {
                 .exchange((request, response) -> {
                     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
                     JSONAssert.assertEquals("""
-                            {"errors":[{"field":"prefLabelLg2","message":"prefLabelLg2 is required"}]}
+                            {"errors":[{"field":"prefLabelLg2","message":"Ce champ est obligatoire."}]}
                             """, response.bodyTo(String.class), false);
                     return null;
                 });

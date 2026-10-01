@@ -514,7 +514,7 @@ class DatasetServiceImplTest {
                 RmesRuntimeBadRequestException.class,
                 () -> datasetService.patchDataset("jd0001", new PatchDataset(null, null, null, null, null)));
         Assertions.assertEquals(
-                "One of these attributes is required : updated, issued, numObservations, numSeries, temporal",
+                "Renseignez au moins un de ces champs : updated, issued, numObservations, numSeries, temporal.",
                 exception.getMessage());
     }
 
@@ -611,7 +611,7 @@ class DatasetServiceImplTest {
 
         assertThat(exception.getMessage())
                 .contains(
-                        "One of these attributes is required : updated, issued, numObservations, numSeries, temporal");
+                        "Renseignez au moins un de ces champs : updated, issued, numObservations, numSeries, temporal.");
     }
 
     @Test
