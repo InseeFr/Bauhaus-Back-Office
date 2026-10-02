@@ -48,6 +48,13 @@
       <artifactId>module-ddi</artifactId>
       <version>1.0.0</version>
     </dependency>
+    <dependency>
+      <groupId>fr.insee.rmes</groupId>
+      <artifactId>colectica-client</artifactId>
+      <version>1.0.0</version>
+      <type>test-jar</type>
+      <scope>test</scope>
+    </dependency>
     <!-- Cache des code lists mutualisées : abstraction Spring Cache + provider Caffeine
          (in-process, supporte expireAfterWrite/TTL). Voir ColecticaCacheConfiguration. -->
     <dependency>

@@ -29,6 +29,23 @@
           <useModulePath>false</useModulePath>
         </configuration>
       </plugin>
+      <!-- Publie les utilitaires de test (ColecticaItemBuilder) pour les modules qui consomment le SDK.
+           skip=false : sous -Dmaven.test.skip=true (build Docker), le test-jar doit tout de même exister
+           (vide) pour que la dépendance de scope test des modules consommateurs se résolve. -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>test-jar</goal>
+            </goals>
+            <configuration>
+              <skip>false</skip>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
 </project>

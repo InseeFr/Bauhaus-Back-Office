@@ -1,5 +1,6 @@
 package fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica;
 
+import static fr.insee.rmes.colectica.client.dto.ColecticaItemBuilder.aColecticaItem;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.*;
@@ -87,57 +88,18 @@ class DDIRepositoryImplTest {
         // Given
         Map<String, String> itemTypes = Map.of("PhysicalInstance", "a51e85bb-6259-4488-8df2-f08cb43485f8");
 
-        ColecticaItem item1 = new ColecticaItem(
-                null, // summary
-                Map.of("fr-FR", "Instance Physique 1", "en", "Physical Instance 1"), // itemName
-                Map.of("fr-FR", "Label 1", "en", "Label 1"), // value
-                null, // description
-                null, // versionRationale
-                0, // metadataRank
-                "test-repo", // repositoryName
-                true, // isAuthoritative
-                List.of(), // tags
-                "PhysicalInstance", // itemType
-                "agency1", // agencyId
-                1, // version
-                "pi-1", // identifier
-                null, // item
-                null, // notes
-                "2025-01-01T00:00:00", // versionDate
-                null, // versionResponsibility
-                true, // isPublished
-                false, // isDeprecated
-                false, // isProvisional
-                "DDI", // itemFormat
-                1L, // transactionId
-                0 // versionCreationType
-                );
+        ColecticaItem item1 = aColecticaItem("PhysicalInstance", "pi-1")
+                .itemName(Map.of("fr-FR", "Instance Physique 1", "en", "Physical Instance 1"))
+                .label(Map.of("fr-FR", "Label 1", "en", "Label 1"))
+                .agency("agency1")
+                .versionDate("2025-01-01T00:00:00")
+                .build();
 
-        ColecticaItem item2 = new ColecticaItem(
-                null, // summary
-                Map.of("fr-FR", "Instance Physique 2", "en", "Physical Instance 2"), // itemName
-                Map.of("fr-FR", "Label 2", "en", "Label 2"), // value
-                null, // description
-                null, // versionRationale
-                0, // metadataRank
-                "test-repo", // repositoryName
-                true, // isAuthoritative
-                List.of(), // tags
-                "PhysicalInstance", // itemType
-                "agency2", // agencyId
-                1, // version
-                "pi-2", // identifier
-                null, // item
-                null, // notes
-                null, // versionDate
-                null, // versionResponsibility
-                true, // isPublished
-                false, // isDeprecated
-                false, // isProvisional
-                "DDI", // itemFormat
-                2L, // transactionId
-                0 // versionCreationType
-                );
+        ColecticaItem item2 = aColecticaItem("PhysicalInstance", "pi-2")
+                .itemName(Map.of("fr-FR", "Instance Physique 2", "en", "Physical Instance 2"))
+                .label(Map.of("fr-FR", "Label 2", "en", "Label 2"))
+                .agency("agency2")
+                .build();
 
         ColecticaResponse mockResponse = new ColecticaResponse(List.of(item1, item2), 2, 2, null, null, null);
 
@@ -226,57 +188,18 @@ class DDIRepositoryImplTest {
         // Given
         Map<String, String> itemTypes = Map.of("LogicalProduct", "965c8d28-7d48-4950-bea7-04b27e52bb9b");
 
-        ColecticaItem item1 = new ColecticaItem(
-                null, // summary
-                Map.of("fr-FR", "Produit Logique 1", "en", "Logical Product 1"), // itemName
-                Map.of("fr-FR", "Label 1", "en", "Label 1"), // value
-                null, // description
-                null, // versionRationale
-                0, // metadataRank
-                "test-repo", // repositoryName
-                true, // isAuthoritative
-                List.of(), // tags
-                "LogicalProduct", // itemType
-                "agency1", // agencyId
-                1, // version
-                "lp-1", // identifier
-                null, // item
-                null, // notes
-                "2025-01-01T00:00:00", // versionDate
-                null, // versionResponsibility
-                true, // isPublished
-                false, // isDeprecated
-                false, // isProvisional
-                "DDI", // itemFormat
-                1L, // transactionId
-                0 // versionCreationType
-                );
+        ColecticaItem item1 = aColecticaItem("LogicalProduct", "lp-1")
+                .itemName(Map.of("fr-FR", "Produit Logique 1", "en", "Logical Product 1"))
+                .label(Map.of("fr-FR", "Label 1", "en", "Label 1"))
+                .agency("agency1")
+                .versionDate("2025-01-01T00:00:00")
+                .build();
 
-        ColecticaItem item2 = new ColecticaItem(
-                null, // summary
-                Map.of("fr-FR", "Produit Logique 2", "en", "Logical Product 2"), // itemName
-                Map.of("fr-FR", "Label 2", "en", "Label 2"), // value
-                null, // description
-                null, // versionRationale
-                0, // metadataRank
-                "test-repo", // repositoryName
-                true, // isAuthoritative
-                List.of(), // tags
-                "LogicalProduct", // itemType
-                "agency2", // agencyId
-                1, // version
-                "lp-2", // identifier
-                null, // item
-                null, // notes
-                null, // versionDate
-                null, // versionResponsibility
-                true, // isPublished
-                false, // isDeprecated
-                false, // isProvisional
-                "DDI", // itemFormat
-                2L, // transactionId
-                0 // versionCreationType
-                );
+        ColecticaItem item2 = aColecticaItem("LogicalProduct", "lp-2")
+                .itemName(Map.of("fr-FR", "Produit Logique 2", "en", "Logical Product 2"))
+                .label(Map.of("fr-FR", "Label 2", "en", "Label 2"))
+                .agency("agency2")
+                .build();
 
         ColecticaResponse mockResponse = new ColecticaResponse(List.of(item1, item2), 2, 2, null, null, null);
 
@@ -1160,61 +1083,17 @@ class DDIRepositoryImplTest {
     void shouldGetGroups() {
         // Given
 
-        ColecticaItem group1 = new ColecticaItem(
-                null, // summary
-                Map.of(
-                        "fr-FR",
-                        "Base permanente des équipements",
-                        "en",
-                        "Permanent Database of Facilities"), // itemName
-                Map.of("fr-FR", "BPE", "en", "BPE"), // value
-                null, // description
-                null, // versionRationale
-                0, // metadataRank
-                "test-repo", // repositoryName
-                true, // isAuthoritative
-                List.of(), // tags
-                "Group", // itemType
-                "fr.insee", // agencyId
-                1, // version
-                "group-1", // identifier
-                null, // item
-                null, // notes
-                "2025-01-09T00:00:00", // versionDate
-                null, // versionResponsibility
-                true, // isPublished
-                false, // isDeprecated
-                false, // isProvisional
-                "DDI", // itemFormat
-                1L, // transactionId
-                0 // versionCreationType
-                );
+        ColecticaItem group1 = aColecticaItem("Group", "group-1")
+                .itemName(Map.of("fr-FR", "Base permanente des équipements", "en", "Permanent Database of Facilities"))
+                .label(Map.of("fr-FR", "BPE", "en", "BPE"))
+                .versionDate("2025-01-09T00:00:00")
+                .build();
 
-        ColecticaItem group2 = new ColecticaItem(
-                null, // summary
-                Map.of("fr-FR", "Recensement de la population", "en", "Population Census"), // itemName
-                Map.of("fr-FR", "RP", "en", "PC"), // value
-                null, // description
-                null, // versionRationale
-                0, // metadataRank
-                "test-repo", // repositoryName
-                true, // isAuthoritative
-                List.of(), // tags
-                "Group", // itemType
-                "fr.insee", // agencyId
-                1, // version
-                "group-2", // identifier
-                null, // item
-                null, // notes
-                "2025-01-08T00:00:00", // versionDate
-                null, // versionResponsibility
-                true, // isPublished
-                false, // isDeprecated
-                false, // isProvisional
-                "DDI", // itemFormat
-                2L, // transactionId
-                0 // versionCreationType
-                );
+        ColecticaItem group2 = aColecticaItem("Group", "group-2")
+                .itemName(Map.of("fr-FR", "Recensement de la population", "en", "Population Census"))
+                .label(Map.of("fr-FR", "RP", "en", "PC"))
+                .versionDate("2025-01-08T00:00:00")
+                .build();
 
         ColecticaResponse mockResponse = new ColecticaResponse(List.of(group1, group2), 2, 2, null, null, null);
 
@@ -1428,34 +1307,11 @@ class DDIRepositoryImplTest {
     }
 
     private static ColecticaItem codeListItem(String identifier, String labelFr, String versionDate) {
-        return itemOfType(identifier, CODE_LIST_TYPE, labelFr, versionDate);
-    }
-
-    private static ColecticaItem itemOfType(String identifier, String itemType, String labelFr, String versionDate) {
-        return new ColecticaItem(
-                null,
-                labelFr == null ? null : Map.of("fr-FR", labelFr),
-                null,
-                null,
-                null,
-                0,
-                "test-repo",
-                true,
-                List.of(),
-                itemType,
-                "fr.insee",
-                1,
-                identifier,
-                null,
-                null,
-                versionDate,
-                null,
-                false,
-                false,
-                false,
-                "DDI",
-                1L,
-                0);
+        return aColecticaItem(CODE_LIST_TYPE, identifier)
+                .itemName(labelFr)
+                .versionDate(versionDate)
+                .published(false)
+                .build();
     }
 
     @Test
@@ -1586,30 +1442,13 @@ class DDIRepositoryImplTest {
         stubChildren(agencyId, schemeId, CODE_LIST_GROUP_TYPE, new ItemReference(agencyId, groupId));
         stubChildren(agencyId, groupId, CODE_LIST_TYPE, new ItemReference(agencyId, clId));
 
-        ColecticaItem withNameAndLabel = new ColecticaItem(
-                null,
-                Map.of("fr-FR", "CL_NOM_TECHNIQUE"), // itemName
-                Map.of("fr-FR", "Libellé lisible"), // label
-                null,
-                null,
-                0,
-                "test-repo",
-                true,
-                List.of(),
-                CODE_LIST_TYPE,
-                agencyId,
-                1,
-                clId,
-                null,
-                null,
-                "2024-10-31T10:43:38",
-                null,
-                false,
-                false,
-                false,
-                "DDI",
-                1L,
-                0);
+        ColecticaItem withNameAndLabel = aColecticaItem(CODE_LIST_TYPE, clId)
+                .itemName("CL_NOM_TECHNIQUE")
+                .label("Libellé lisible")
+                .agency(agencyId)
+                .versionDate("2024-10-31T10:43:38")
+                .published(false)
+                .build();
         when(colecticaClient.query(List.of(CODE_LIST_TYPE)))
                 .thenReturn(new ColecticaResponse(List.of(withNameAndLabel), 1, 1, null, null, null));
 
@@ -1661,30 +1500,13 @@ class DDIRepositoryImplTest {
                 new ItemReference(agencyId, labelledId),
                 new ItemReference(agencyId, blankId));
 
-        ColecticaItem blank = new ColecticaItem(
-                null,
-                Map.of("fr-FR", "   "),
-                Map.of("fr-FR", ""),
-                null,
-                null,
-                0,
-                "test-repo",
-                true,
-                List.of(),
-                CODE_LIST_TYPE,
-                agencyId,
-                1,
-                blankId,
-                null,
-                null,
-                "2024-10-31T10:43:38",
-                null,
-                false,
-                false,
-                false,
-                "DDI",
-                1L,
-                0);
+        ColecticaItem blank = aColecticaItem(CODE_LIST_TYPE, blankId)
+                .itemName("   ")
+                .label("")
+                .agency(agencyId)
+                .versionDate("2024-10-31T10:43:38")
+                .published(false)
+                .build();
         when(colecticaClient.query(List.of(CODE_LIST_TYPE)))
                 .thenReturn(new ColecticaResponse(
                         List.of(codeListItem(labelledId, "Has label", "2024-10-31T10:43:38"), blank),
@@ -2364,30 +2186,13 @@ class DDIRepositoryImplTest {
     }
 
     private static ColecticaResponse studyUnitQueryResponse(String agency, String id) {
-        ColecticaItem suItem = new ColecticaItem(
-                null,
-                Map.of("fr-FR", "BPE 2021"),
-                Map.of(),
-                null,
-                null,
-                0,
-                "repo",
-                true,
-                List.of(),
-                "30ea0200-7121-4f01-8d21-a931a182b86d",
-                agency,
-                1,
-                id,
-                null,
-                null,
-                "2025-01-01T00:00:00",
-                null,
-                false,
-                false,
-                false,
-                "DDI",
-                1L,
-                0);
+        ColecticaItem suItem = aColecticaItem("30ea0200-7121-4f01-8d21-a931a182b86d", id)
+                .itemName("BPE 2021")
+                .label(Map.of())
+                .agency(agency)
+                .versionDate("2025-01-01T00:00:00")
+                .published(false)
+                .build();
         return new ColecticaResponse(List.of(suItem), 1, 1, null, null, null);
     }
 
@@ -3517,54 +3322,16 @@ class DDIRepositoryImplTest {
 
         // Repository-wide LogicalProduct query carries the labels. lp-2 exists globally but is not
         // referenced by the group, so it must be filtered out.
-        ColecticaItem lp1 = new ColecticaItem(
-                null,
-                Map.of("fr-FR", "Produit Logique 1"),
-                Map.of("fr-FR", "Produit Logique 1"),
-                null,
-                null,
-                0,
-                "test-repo",
-                true,
-                List.of(),
-                "LogicalProduct",
-                agencyId,
-                1,
-                "lp-1",
-                null,
-                null,
-                "2025-01-01T00:00:00",
-                null,
-                true,
-                false,
-                false,
-                "DDI",
-                1L,
-                0);
-        ColecticaItem lp2 = new ColecticaItem(
-                null,
-                Map.of("fr-FR", "Produit hors groupe"),
-                Map.of("fr-FR", "Produit hors groupe"),
-                null,
-                null,
-                0,
-                "test-repo",
-                true,
-                List.of(),
-                "LogicalProduct",
-                agencyId,
-                1,
-                "lp-2",
-                null,
-                null,
-                "2025-01-01T00:00:00",
-                null,
-                true,
-                false,
-                false,
-                "DDI",
-                2L,
-                0);
+        ColecticaItem lp1 = aColecticaItem("LogicalProduct", "lp-1")
+                .named("Produit Logique 1")
+                .agency(agencyId)
+                .versionDate("2025-01-01T00:00:00")
+                .build();
+        ColecticaItem lp2 = aColecticaItem("LogicalProduct", "lp-2")
+                .named("Produit hors groupe")
+                .agency(agencyId)
+                .versionDate("2025-01-01T00:00:00")
+                .build();
         when(colecticaClient.query(anyList()))
                 .thenReturn(new ColecticaResponse(List.of(lp1, lp2), 2, 2, null, null, null));
 
@@ -3611,54 +3378,16 @@ class DDIRepositoryImplTest {
 
         // Repository-wide CodeListScheme query carries the labels. cls-2 exists globally but is not
         // referenced by the logical product, so it must be filtered out.
-        ColecticaItem cls1 = new ColecticaItem(
-                null,
-                Map.of("fr-FR", "Schéma 1"),
-                Map.of("fr-FR", "Schéma 1"),
-                null,
-                null,
-                0,
-                "test-repo",
-                true,
-                List.of(),
-                "CodeListScheme",
-                agencyId,
-                1,
-                "cls-1",
-                null,
-                null,
-                "2025-01-01T00:00:00",
-                null,
-                true,
-                false,
-                false,
-                "DDI",
-                1L,
-                0);
-        ColecticaItem cls2 = new ColecticaItem(
-                null,
-                Map.of("fr-FR", "Schéma hors LP"),
-                Map.of("fr-FR", "Schéma hors LP"),
-                null,
-                null,
-                0,
-                "test-repo",
-                true,
-                List.of(),
-                "CodeListScheme",
-                agencyId,
-                1,
-                "cls-2",
-                null,
-                null,
-                "2025-01-01T00:00:00",
-                null,
-                true,
-                false,
-                false,
-                "DDI",
-                2L,
-                0);
+        ColecticaItem cls1 = aColecticaItem("CodeListScheme", "cls-1")
+                .named("Schéma 1")
+                .agency(agencyId)
+                .versionDate("2025-01-01T00:00:00")
+                .build();
+        ColecticaItem cls2 = aColecticaItem("CodeListScheme", "cls-2")
+                .named("Schéma hors LP")
+                .agency(agencyId)
+                .versionDate("2025-01-01T00:00:00")
+                .build();
         when(colecticaClient.query(anyList()))
                 .thenReturn(new ColecticaResponse(List.of(cls1, cls2), 2, 2, null, null, null));
 
@@ -3698,54 +3427,16 @@ class DDIRepositoryImplTest {
 
         when(instanceConfiguration.itemTypes()).thenReturn(Map.of("CodeListScheme", clsType));
 
-        ColecticaItem cls1 = new ColecticaItem(
-                null,
-                Map.of("fr-FR", "Schéma 1"),
-                Map.of("fr-FR", "Schéma 1"),
-                null,
-                null,
-                0,
-                "test-repo",
-                true,
-                List.of(),
-                "CodeListScheme",
-                agencyId,
-                1,
-                "cls-1",
-                null,
-                null,
-                "2025-01-01T00:00:00",
-                null,
-                true,
-                false,
-                false,
-                "DDI",
-                1L,
-                0);
-        ColecticaItem cls2 = new ColecticaItem(
-                null,
-                Map.of("fr-FR", "Schéma 2"),
-                Map.of("fr-FR", "Schéma 2"),
-                null,
-                null,
-                0,
-                "test-repo",
-                true,
-                List.of(),
-                "CodeListScheme",
-                agencyId,
-                1,
-                "cls-2",
-                null,
-                null,
-                "2025-01-01T00:00:00",
-                null,
-                true,
-                false,
-                false,
-                "DDI",
-                2L,
-                0);
+        ColecticaItem cls1 = aColecticaItem("CodeListScheme", "cls-1")
+                .named("Schéma 1")
+                .agency(agencyId)
+                .versionDate("2025-01-01T00:00:00")
+                .build();
+        ColecticaItem cls2 = aColecticaItem("CodeListScheme", "cls-2")
+                .named("Schéma 2")
+                .agency(agencyId)
+                .versionDate("2025-01-01T00:00:00")
+                .build();
         when(colecticaClient.query(List.of(clsType)))
                 .thenReturn(new ColecticaResponse(List.of(cls1, cls2), 2, 2, null, null, null));
 
@@ -3775,54 +3466,16 @@ class DDIRepositoryImplTest {
 
         // Repository-wide CodeList query carries the labels. code-list-2 exists globally but is not
         // referenced by the scheme, so it must be filtered out.
-        ColecticaItem codeList1 = new ColecticaItem(
-                null,
-                Map.of("fr-FR", "Liste 1"),
-                Map.of("fr-FR", "Liste 1"),
-                null,
-                null,
-                0,
-                "test-repo",
-                true,
-                List.of(),
-                "CodeList",
-                agencyId,
-                1,
-                "code-list-1",
-                null,
-                null,
-                "2025-01-01T00:00:00",
-                null,
-                true,
-                false,
-                false,
-                "DDI",
-                1L,
-                0);
-        ColecticaItem codeList2 = new ColecticaItem(
-                null,
-                Map.of("fr-FR", "Liste hors scheme"),
-                Map.of("fr-FR", "Liste hors scheme"),
-                null,
-                null,
-                0,
-                "test-repo",
-                true,
-                List.of(),
-                "CodeList",
-                agencyId,
-                1,
-                "code-list-2",
-                null,
-                null,
-                "2025-01-01T00:00:00",
-                null,
-                true,
-                false,
-                false,
-                "DDI",
-                2L,
-                0);
+        ColecticaItem codeList1 = aColecticaItem("CodeList", "code-list-1")
+                .named("Liste 1")
+                .agency(agencyId)
+                .versionDate("2025-01-01T00:00:00")
+                .build();
+        ColecticaItem codeList2 = aColecticaItem("CodeList", "code-list-2")
+                .named("Liste hors scheme")
+                .agency(agencyId)
+                .versionDate("2025-01-01T00:00:00")
+                .build();
         when(colecticaClient.query(anyList()))
                 .thenReturn(new ColecticaResponse(List.of(codeList1, codeList2), 2, 2, null, null, null));
 
@@ -3849,30 +3502,11 @@ class DDIRepositoryImplTest {
                         List.of(codeListType)))
                 .thenReturn(List.of(new ItemReference(agencyId, "code-list-1")));
 
-        ColecticaItem codeList1 = new ColecticaItem(
-                null,
-                Map.of("fr-FR", "Liste 1"),
-                Map.of("fr-FR", "Liste 1"),
-                null,
-                null,
-                0,
-                "test-repo",
-                true,
-                List.of(),
-                "CodeList",
-                agencyId,
-                1,
-                "code-list-1",
-                null,
-                null,
-                "0001-01-01T00:00:00",
-                null,
-                true,
-                false,
-                false,
-                "DDI",
-                1L,
-                0);
+        ColecticaItem codeList1 = aColecticaItem("CodeList", "code-list-1")
+                .named("Liste 1")
+                .agency(agencyId)
+                .versionDate("0001-01-01T00:00:00")
+                .build();
         when(colecticaClient.query(anyList()))
                 .thenReturn(new ColecticaResponse(List.of(codeList1), 1, 1, null, null, null));
 
@@ -3960,79 +3594,22 @@ class DDIRepositoryImplTest {
                 new ItemReference(agencyId, "code-list-2"),
                 new ItemReference(agencyId, "code-list-1"));
 
-        ColecticaItem codeList1 = new ColecticaItem(
-                null,
-                Map.of("fr-FR", "Sentinelles âge"),
-                Map.of("fr-FR", "Sentinelles âge"),
-                null,
-                null,
-                0,
-                "test-repo",
-                true,
-                List.of(),
-                "CodeList",
-                agencyId,
-                1,
-                "code-list-1",
-                null,
-                null,
-                "0001-01-01T00:00:00",
-                null,
-                true,
-                false,
-                false,
-                "DDI",
-                1L,
-                0);
-        ColecticaItem codeList2 = new ColecticaItem(
-                null,
-                Map.of("fr-FR", "Sentinelles revenu"),
-                Map.of("fr-FR", "Sentinelles revenu"),
-                null,
-                null,
-                0,
-                "test-repo",
-                true,
-                List.of(),
-                "CodeList",
-                agencyId,
-                1,
-                "code-list-2",
-                null,
-                null,
-                "0001-01-01T00:00:00",
-                null,
-                true,
-                false,
-                false,
-                "DDI",
-                1L,
-                0);
+        ColecticaItem codeList1 = aColecticaItem("CodeList", "code-list-1")
+                .named("Sentinelles âge")
+                .agency(agencyId)
+                .versionDate("0001-01-01T00:00:00")
+                .build();
+        ColecticaItem codeList2 = aColecticaItem("CodeList", "code-list-2")
+                .named("Sentinelles revenu")
+                .agency(agencyId)
+                .versionDate("0001-01-01T00:00:00")
+                .build();
         // Une CodeList du référentiel non référencée par un MMVR : écartée.
-        ColecticaItem unrelated = new ColecticaItem(
-                null,
-                Map.of("fr-FR", "Liste ordinaire"),
-                Map.of("fr-FR", "Liste ordinaire"),
-                null,
-                null,
-                0,
-                "test-repo",
-                true,
-                List.of(),
-                "CodeList",
-                agencyId,
-                1,
-                "code-list-other",
-                null,
-                null,
-                "0001-01-01T00:00:00",
-                null,
-                true,
-                false,
-                false,
-                "DDI",
-                1L,
-                0);
+        ColecticaItem unrelated = aColecticaItem("CodeList", "code-list-other")
+                .named("Liste ordinaire")
+                .agency(agencyId)
+                .versionDate("0001-01-01T00:00:00")
+                .build();
         when(colecticaClient.query(List.of(CODE_LIST_ITEM_TYPE)))
                 .thenReturn(new ColecticaResponse(List.of(codeList1, codeList2, unrelated), 3, 3, null, null, null));
 
@@ -4814,58 +4391,15 @@ class DDIRepositoryImplTest {
 
     private static ColecticaItem versionedLabelItem(
             String itemType, String agency, String id, String label, int version) {
-        return new ColecticaItem(
-                null,
-                Map.of("fr-FR", label),
-                null,
-                null,
-                null,
-                0,
-                "test-repo",
-                true,
-                List.of(),
-                itemType,
-                agency,
-                version,
-                id,
-                null,
-                null,
-                null,
-                null,
-                true,
-                false,
-                false,
-                "DDI",
-                1L,
-                0);
+        return aColecticaItem(itemType, id)
+                .itemName(label)
+                .agency(agency)
+                .version(version)
+                .build();
     }
 
     private static ColecticaItem labelItem(String itemType, String agency, String id, String label) {
-        return new ColecticaItem(
-                null, // summary
-                Map.of("fr-FR", label), // itemName
-                null, // label
-                null, // description
-                null, // versionRationale
-                0, // metadataRank
-                "test-repo", // repositoryName
-                true, // isAuthoritative
-                List.of(), // tags
-                itemType, // itemType
-                agency, // agencyId
-                1, // version
-                id, // identifier
-                null, // item
-                null, // notes
-                null, // versionDate
-                null, // versionResponsibility
-                true, // isPublished
-                false, // isDeprecated
-                false, // isProvisional
-                "DDI", // itemFormat
-                1L, // transactionId
-                0 // versionCreationType
-                );
+        return aColecticaItem(itemType, id).itemName(label).agency(agency).build();
     }
 
     private static final String STUDY_UNIT_ITEM_TYPE = "30ea0200-7121-4f01-8d21-a931a182b86d";

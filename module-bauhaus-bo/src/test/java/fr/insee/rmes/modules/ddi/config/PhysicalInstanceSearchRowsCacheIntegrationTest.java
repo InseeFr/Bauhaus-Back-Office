@@ -1,5 +1,6 @@
 package fr.insee.rmes.modules.ddi.config;
 
+import static fr.insee.rmes.colectica.client.dto.ColecticaItemBuilder.aColecticaItem;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
@@ -15,7 +16,6 @@ import fr.insee.rmes.colectica.client.ItemReference;
 import fr.insee.rmes.colectica.client.RelationshipDirection;
 import fr.insee.rmes.colectica.client.dto.ColecticaAdvancedItem;
 import fr.insee.rmes.colectica.client.dto.ColecticaAdvancedResponse;
-import fr.insee.rmes.colectica.client.dto.ColecticaItem;
 import fr.insee.rmes.colectica.client.dto.ColecticaResponse;
 import fr.insee.rmes.colectica.client.dto.LocalizedText;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Citation;
@@ -132,11 +132,20 @@ class PhysicalInstanceSearchRowsCacheIntegrationTest {
     void updateFullPhysicalInstance_refreshesItsSearchRowFromTheSavedInstanceWithoutCallingColectica() {
         when(client.queryAdvanced(anyList())).thenReturn(advancedResponse("Ancien libellé"));
         when(client.query(List.of(GROUP_TYPE)))
-                .thenReturn(
-                        new ColecticaResponse(List.of(item(GROUP_TYPE, "g1", "Groupe BPE")), 1, 1, null, null, null));
+                .thenReturn(new ColecticaResponse(
+                        List.of(aColecticaItem(GROUP_TYPE, "g1")
+                                .itemName("Groupe BPE")
+                                .build()),
+                        1,
+                        1,
+                        null,
+                        null,
+                        null));
         when(client.findRelatedItems(
                         RelationshipDirection.BY_SUBJECT, new ItemReference(AGENCY, "g1"), List.of(STUDY_UNIT_TYPE)))
-                .thenReturn(List.of(item(STUDY_UNIT_TYPE, "su-1", "Recensement 2024")));
+                .thenReturn(List.of(aColecticaItem(STUDY_UNIT_TYPE, "su-1")
+                        .itemName("Recensement 2024")
+                        .build()));
         when(client.findRelatedDescriptions(
                         RelationshipDirection.BY_SUBJECT, new ItemReference(AGENCY, "su-1"), List.of(PI_TYPE)))
                 .thenReturn(List.of(new ItemReference(AGENCY, "pi-1")));
@@ -198,32 +207,5 @@ class PhysicalInstanceSearchRowsCacheIntegrationTest {
                         Map.of("isPublished", false))),
                 1,
                 null);
-    }
-
-    private static ColecticaItem item(String itemType, String id, String label) {
-        return new ColecticaItem(
-                null,
-                Map.of("fr-FR", label),
-                null,
-                null,
-                null,
-                0,
-                "test-repo",
-                true,
-                List.of(),
-                itemType,
-                AGENCY,
-                1,
-                id,
-                null,
-                null,
-                null,
-                null,
-                true,
-                false,
-                false,
-                "DDI",
-                1L,
-                0);
     }
 }
