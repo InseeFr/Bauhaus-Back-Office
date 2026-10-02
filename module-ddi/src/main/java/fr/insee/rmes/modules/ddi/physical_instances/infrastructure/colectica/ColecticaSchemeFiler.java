@@ -80,8 +80,9 @@ class ColecticaSchemeFiler {
      * y a quelque chose à ranger, préservant le comportement pour les instances dont toutes les listes
      * de codes sont mutualisées (aucune résolution de parent, rien d'ajouté).
      *
-     * @param knownParents les parents quand l'appelant les connaît déjà (le PATCH qui rattache
-     *                     l'instance à une StudyUnit les porte dans sa requête) ; {@code null} pour les
+     * @param knownParents les parents quand l'appelant les connaît déjà (la duplication, qui rattache
+     *                     la copie à une StudyUnit dans le même lot, les porte dans sa requête) ;
+     *                     {@code null} pour les
      *                     résoudre via les relations Colectica
      * @throws MissingSchemeException quand un parent n'expose pas le scheme attendu
      */
@@ -111,9 +112,8 @@ class ColecticaSchemeFiler {
             try {
                 parents = catalog.getPhysicalInstanceParents(agencyId, id);
             } catch (StudyUnitNotFoundException _) {
-                // Duplication étape 1 : le PUT brut part avant que l'instance ne soit rattachée à une
-                // StudyUnit. On saute le rangement — le PATCH qui rattache l'instance réenregistre le
-                // même contenu avec les parents portés par sa requête, et range tout à ce moment-là.
+                // Instance rattachée à aucune StudyUnit : il n'y a nulle part où ranger ses objets.
+                // On enregistre l'instance telle quelle plutôt que de refuser la sauvegarde.
                 logger.warn(
                         "Skipping scheme filing for physical instance {}/{}: no study unit attached yet", agencyId, id);
                 return;
@@ -139,23 +139,25 @@ class ColecticaSchemeFiler {
             List<ColecticaItemResponse> colecticaItems) {
         String groupAgency = parents.groupAgency();
         String groupId = parents.groupId();
+        String group = displayName(parents.groupLabel(), groupAgency, groupId);
         List<ItemReference> logicalProducts = findContainerLogicalProducts(groupAgency, groupId);
 
         if (!nonMutualized.isEmpty()) {
-            fileGroupCodeLists(groupAgency, groupId, logicalProducts, nonMutualized, colecticaItems);
+            fileGroupCodeLists(groupAgency, groupId, group, logicalProducts, nonMutualized, colecticaItems);
         }
         if (!categories.isEmpty()) {
-            fileGroupCategories(groupAgency, groupId, logicalProducts, categories, colecticaItems);
+            fileGroupCategories(groupAgency, groupId, group, logicalProducts, categories, colecticaItems);
         }
         if (!missingValuesRepresentations.isEmpty()) {
             fileGroupManagedMissingValues(
-                    groupAgency, groupId, logicalProducts, missingValuesRepresentations, colecticaItems);
+                    groupAgency, groupId, group, logicalProducts, missingValuesRepresentations, colecticaItems);
         }
     }
 
     private void fileGroupCodeLists(
             String groupAgency,
             String groupId,
+            String group,
             List<ItemReference> logicalProducts,
             List<Ddi4CodeList> nonMutualized,
             List<ColecticaItemResponse> colecticaItems) {
@@ -163,8 +165,7 @@ class ColecticaSchemeFiler {
                 .map(cl -> Reference.of(cl.agency(), cl.id(), cl.version(), Ddi4CodeList.TYPE))
                 .toList();
         ItemReference schemeRef = requireGroupScheme(
-                groupAgency,
-                groupId,
+                group,
                 logicalProducts,
                 CODE_LIST_SCHEME,
                 MissingSchemeException.Code.GROUP_MISSING_CODE_LIST_SCHEME,
@@ -196,6 +197,7 @@ class ColecticaSchemeFiler {
     private void fileGroupCategories(
             String groupAgency,
             String groupId,
+            String group,
             List<ItemReference> logicalProducts,
             List<Ddi4Category> categories,
             List<ColecticaItemResponse> colecticaItems) {
@@ -203,8 +205,7 @@ class ColecticaSchemeFiler {
                 .map(cat -> Reference.of(cat.agency(), cat.id(), cat.version(), Ddi4Category.TYPE))
                 .toList();
         ItemReference schemeRef = requireGroupScheme(
-                groupAgency,
-                groupId,
+                group,
                 logicalProducts,
                 CATEGORY_SCHEME,
                 MissingSchemeException.Code.GROUP_MISSING_CATEGORY_SCHEME,
@@ -240,6 +241,7 @@ class ColecticaSchemeFiler {
     private void fileGroupManagedMissingValues(
             String groupAgency,
             String groupId,
+            String group,
             List<ItemReference> logicalProducts,
             List<Ddi4ManagedMissingValuesRepresentation> missingValuesRepresentations,
             List<ColecticaItemResponse> colecticaItems) {
@@ -248,8 +250,7 @@ class ColecticaSchemeFiler {
                         mmvr.agency(), mmvr.id(), mmvr.version(), Ddi4ManagedMissingValuesRepresentation.TYPE))
                 .toList();
         ItemReference schemeRef = requireGroupScheme(
-                groupAgency,
-                groupId,
+                group,
                 logicalProducts,
                 MANAGED_REPRESENTATION_SCHEME,
                 MissingSchemeException.Code.GROUP_MISSING_MANAGED_REPRESENTATION_SCHEME,
@@ -281,8 +282,7 @@ class ColecticaSchemeFiler {
     }
 
     private ItemReference requireGroupScheme(
-            String groupAgency,
-            String groupId,
+            String group,
             List<ItemReference> logicalProducts,
             String schemeTypeKey,
             MissingSchemeException.Code code,
@@ -290,9 +290,9 @@ class ColecticaSchemeFiler {
         return findScheme(logicalProducts, schemeTypeKey)
                 .orElseThrow(() -> new MissingSchemeException(
                         code,
-                        Map.of("group", groupAgency + "/" + groupId),
-                        "La série (Group %s/%s) n'a pas de %s pour ranger %s : il doit être créé en amont."
-                                .formatted(groupAgency, groupId, schemeTypeKey, filedObjects)));
+                        Map.of("group", group),
+                        "La série « %s » n'a pas de %s pour ranger %s : il doit être créé en amont."
+                                .formatted(group, schemeTypeKey, filedObjects)));
     }
 
     /**
@@ -309,27 +309,27 @@ class ColecticaSchemeFiler {
                 .toList();
 
         List<ItemReference> logicalProducts = findContainerLogicalProducts(suAgency, suId);
-        String studyUnit = suAgency + "/" + suId;
+        String studyUnit = displayName(parents.studyUnitLabel(), suAgency, suId);
         if (logicalProducts.isEmpty()) {
             throw new MissingSchemeException(
                     MissingSchemeException.Code.STUDY_UNIT_MISSING_LOGICAL_PRODUCT,
                     Map.of("studyUnit", studyUnit),
-                    "L'opération (StudyUnit %s/%s) n'a pas de LogicalProduct pour ranger ses variables : il doit être créé en amont."
-                            .formatted(suAgency, suId));
+                    "L'opération « %s » n'a pas de LogicalProduct pour ranger ses variables : il doit être créé en amont."
+                            .formatted(studyUnit));
         }
         if (logicalProducts.size() > 1) {
             throw new MissingSchemeException(
                     MissingSchemeException.Code.STUDY_UNIT_SEVERAL_LOGICAL_PRODUCTS,
                     Map.of("studyUnit", studyUnit, "count", String.valueOf(logicalProducts.size())),
-                    "L'opération (StudyUnit %s/%s) a %d LogicalProducts : un seul est attendu pour ranger ses variables."
-                            .formatted(suAgency, suId, logicalProducts.size()));
+                    "L'opération « %s » a %d LogicalProducts : un seul est attendu pour ranger ses variables."
+                            .formatted(studyUnit, logicalProducts.size()));
         }
         ItemReference schemeRef = findScheme(logicalProducts, VARIABLE_SCHEME)
                 .orElseThrow(() -> new MissingSchemeException(
                         MissingSchemeException.Code.STUDY_UNIT_MISSING_VARIABLE_SCHEME,
                         Map.of("studyUnit", studyUnit),
-                        "L'opération (StudyUnit %s/%s) n'a pas de VariableScheme pour ranger ses variables : il doit être créé en amont."
-                                .formatted(suAgency, suId)));
+                        "L'opération « %s » n'a pas de VariableScheme pour ranger ses variables : il doit être créé en amont."
+                                .formatted(studyUnit)));
 
         Ddi4VariableScheme current = ddi3ToDdi4Converter.toVariableScheme(itemXml(schemeRef));
         List<Reference> merged = mergeReferences(current.variableReference(), newRefs);
@@ -422,6 +422,14 @@ class ColecticaSchemeFiler {
 
     private String itemType(String typeKey) {
         return instanceConfiguration.itemTypes().get(typeKey);
+    }
+
+    /**
+     * Nom d'un conteneur pour les messages d'erreur : son libellé, ou {@code agence/id} quand il n'est
+     * pas résolu (la duplication fournit les parents sans libellé).
+     */
+    private static String displayName(String label, String agency, String id) {
+        return label != null && !label.isBlank() ? label : agency + "/" + id;
     }
 
     private static <T> List<T> orEmpty(List<T> list) {

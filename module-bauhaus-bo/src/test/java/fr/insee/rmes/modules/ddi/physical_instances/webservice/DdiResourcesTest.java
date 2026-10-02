@@ -354,28 +354,39 @@ class DdiResourcesTest {
     }
 
     @Test
-    void shouldReplacePhysicalInstance() {
+    void shouldReplacePhysicalInstanceWithoutReturningIt() {
         // Given
         String agencyId = "fr.insee";
         String instanceId = "test-id";
         Ddi4Response request = createMockDdi4Response(); // Use full Ddi4Response for PUT
-        Ddi4Response expectedResponse = createMockDdi4Response();
-        when(ddiService.updateFullPhysicalInstance(agencyId, instanceId, request))
-                .thenReturn(expectedResponse);
 
         // When
-        ResponseEntity<Ddi4Response> result = ddiResources.replacePhysicalInstance(agencyId, instanceId, request);
+        var result = ddiResources.replacePhysicalInstance(agencyId, instanceId, request);
 
-        // Then
-        assertNotNull(result);
-        assertEquals(HttpStatus.OK, result.getStatusCode());
-        assertEquals(MediaType.APPLICATION_JSON, result.getHeaders().getContentType());
-
-        Ddi4Response responseBody = result.getBody();
-        assertNotNull(responseBody);
-        assertEquals("test-schema", responseBody.schema());
+        // Then : 204 sans corps — le front relit la PI par le GET, seule source de vérité
+        assertEquals(HttpStatus.NO_CONTENT, result.getStatusCode());
+        assertNull(result.getBody());
 
         verify(ddiService).updateFullPhysicalInstance(agencyId, instanceId, request);
+    }
+
+    @Test
+    void shouldDuplicatePhysicalInstance() {
+        PhysicalInstanceDuplicationRequest request = new PhysicalInstanceDuplicationRequest(
+                "PI (copy)", "DR", "LR", "su-1", "fr.insee", "group-1", "fr.insee");
+        Ddi4Response copy = createMockDdi4Response();
+        when(ddiService.duplicatePhysicalInstance(
+                        "fr.insee",
+                        "pi-src",
+                        new DuplicatePhysicalInstanceRequest(
+                                "PI (copy)", "DR", "LR", "su-1", "fr.insee", "group-1", "fr.insee")))
+                .thenReturn(copy);
+
+        ResponseEntity<Ddi4Response> result = ddiResources.duplicatePhysicalInstance("fr.insee", "pi-src", request);
+
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertEquals(MediaType.APPLICATION_JSON, result.getHeaders().getContentType());
+        assertEquals(copy, result.getBody());
     }
 
     @Test

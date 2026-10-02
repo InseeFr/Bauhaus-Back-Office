@@ -242,26 +242,42 @@ class ColecticaCatalogRepository {
         return rows;
     }
 
-    /** Remontée {@code byobject} PhysicalInstance ← StudyUnit ← Group. */
+    /**
+     * Remontée {@code byobject} PhysicalInstance ← StudyUnit ← Group. L'endpoint
+     * {@code /descriptions} renvoie aussi le libellé de chaque item : les deux libellés sont donc
+     * connus sans lire le Group ni la StudyUnit.
+     */
     PhysicalInstanceParents getPhysicalInstanceParents(String agencyId, String id) {
-        ItemReference studyUnitItem = firstRelated(new ItemReference(agencyId, id), STUDY_UNIT_UUID)
+        ColecticaItem studyUnitItem = firstRelated(new ItemReference(agencyId, id), STUDY_UNIT_UUID)
                 .orElseThrow(() -> new StudyUnitNotFoundException(
                         "No study unit found for physical instance " + agencyId + "/" + id));
 
-        ItemReference groupItem = firstRelated(
-                        new ItemReference(studyUnitItem.agencyId(), studyUnitItem.identifier()), GROUP_UUID)
+        ColecticaItem groupItem = firstRelated(ColecticaItems.itemRef(studyUnitItem), GROUP_UUID)
                 .orElseThrow(() -> new RuntimeException("No group found for study unit " + studyUnitItem.agencyId()
                         + "/" + studyUnitItem.identifier()));
 
         return new PhysicalInstanceParents(
-                studyUnitItem.agencyId(), studyUnitItem.identifier(), groupItem.agencyId(), groupItem.identifier());
+                studyUnitItem.agencyId(),
+                studyUnitItem.identifier(),
+                displayLabel(studyUnitItem),
+                groupItem.agencyId(),
+                groupItem.identifier(),
+                displayLabel(groupItem),
+                List.of());
     }
 
-    private Optional<ItemReference> firstRelated(ItemReference from, String itemTypeUuid) {
-        return colecticaClient
-                .findRelatedDescriptions(RelationshipDirection.BY_OBJECT, from, List.of(itemTypeUuid))
+    private Optional<ColecticaItem> firstRelated(ItemReference from, String itemTypeUuid) {
+        return ColecticaItems.latestVersions(
+                        colecticaClient.findRelatedItems(RelationshipDirection.BY_OBJECT, from, List.of(itemTypeUuid)))
                 .stream()
                 .findFirst();
+    }
+
+    /** Libellé d'affichage d'un parent, ou {@code null} s'il n'en a pas (pas de repli sur l'identifiant). */
+    private String displayLabel(ColecticaItem item) {
+        return labels.firstNonBlank(item.itemName())
+                .or(() -> labels.firstNonBlank(item.label()))
+                .orElse(null);
     }
 
     /**

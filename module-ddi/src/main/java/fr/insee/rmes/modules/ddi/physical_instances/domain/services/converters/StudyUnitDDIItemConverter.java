@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import fr.insee.ddi.lifecycle33.instance.FragmentDocument;
 import fr.insee.ddi.lifecycle33.studyunit.StudyUnitType;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.services.Ddi32Compatibility;
 import java.util.Objects;
 import org.apache.xmlbeans.XmlException;
 
@@ -18,8 +19,9 @@ public class StudyUnitDDIItemConverter extends AbstractDDIItemConverter {
     @Override
     public JsonNode convert(String xmlFragment) {
         try {
-            StudyUnitType studyUnit =
-                    FragmentDocument.Factory.parse(xmlFragment).getFragment().getStudyUnit();
+            StudyUnitType studyUnit = FragmentDocument.Factory.parse(Ddi32Compatibility.asDdi33(xmlFragment))
+                    .getFragment()
+                    .getStudyUnit();
             Objects.requireNonNull(studyUnit, "No StudyUnit element found in fragment");
 
             ObjectNode result = MAPPER.createObjectNode();

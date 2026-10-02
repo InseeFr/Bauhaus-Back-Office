@@ -9,9 +9,12 @@ import fr.insee.rmes.colectica.client.dto.ColecticaItem;
 import fr.insee.rmes.colectica.client.dto.ColecticaItemResponse;
 import fr.insee.rmes.colectica.client.dto.ColecticaResponse;
 import fr.insee.rmes.colectica.client.dto.ColecticaSetItem;
+import fr.insee.rmes.colectica.client.dto.ColecticaTypedSetItem;
 import fr.insee.rmes.colectica.client.dto.GetDescriptionsRequest;
+import fr.insee.rmes.colectica.client.dto.GetLatestItemsRequest;
 import fr.insee.rmes.colectica.client.dto.QueryAdvancedRequest;
 import fr.insee.rmes.colectica.client.dto.QueryRequest;
+import fr.insee.rmes.colectica.client.dto.SetQueryRequest;
 import fr.insee.rmes.colectica.client.dto.UpdateItemStateRequest;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -105,6 +108,38 @@ public class ColecticaClient {
     }
 
     /**
+     * Batch-fetches the latest version of each referenced item via {@code POST item/_getListLatest}.
+     * Identifiers unknown to Colectica are silently left out of the response.
+     */
+    public ColecticaItemResponse[] getLatestItems(List<ItemReference> references) {
+        return withAuth(token -> restClient
+                .post()
+                .uri(baseApiUrl + "item/_getListLatest")
+                .contentType(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token)
+                .body(new GetLatestItemsRequest(references))
+                .retrieve()
+                .body(ColecticaItemResponse[].class));
+    }
+
+    /**
+     * Resolves the latest version number of each referenced item via
+     * {@code POST item/_getLatestVersionNumbers}, without fetching the items' content. Colectica answers
+     * {@code null} for an unknown identifier: such entries are dropped.
+     */
+    public List<ColecticaSetItem> getLatestVersionNumbers(List<ItemReference> references) {
+        ColecticaSetItem[] response = withAuth(token -> restClient
+                .post()
+                .uri(baseApiUrl + "item/_getLatestVersionNumbers")
+                .contentType(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token)
+                .body(new GetLatestItemsRequest(references))
+                .retrieve()
+                .body(ColecticaSetItem[].class));
+        return nonNullEntries(response);
+    }
+
+    /**
      * Fetches a single item via {@code GET item/{agency}/{id}[/{version}]} (URL-encoded segments).
      */
     public ColecticaItemResponse getItem(String agency, String id, String version) {
@@ -154,6 +189,25 @@ public class ColecticaClient {
                 .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token)
                 .retrieve()
                 .body(ColecticaSetItem[].class));
+    }
+
+    /**
+     * Walks the set of {@code root} like {@link #getSet}, but keeps only the items of the given types,
+     * filtered server-side, via {@code POST _query/set}. {@code root} must carry an actual version: with
+     * version {@code 0} Colectica returns an empty result.
+     */
+    public ColecticaTypedSetItem[] querySet(ColecticaSetItem root, List<String> itemTypes) {
+        SetQueryRequest query = new SetQueryRequest(
+                new SetQueryRequest.RootItem(root.agencyId(), root.identifier(), root.version()),
+                new SetQueryRequest.Facet(itemTypes, false, true, true));
+        return withAuth(token -> restClient
+                .post()
+                .uri(baseApiUrl + "_query/set")
+                .contentType(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token)
+                .body(query)
+                .retrieve()
+                .body(ColecticaTypedSetItem[].class));
     }
 
     /**

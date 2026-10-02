@@ -20,6 +20,7 @@ import fr.insee.rmes.colectica.client.dto.ColecticaItem;
 import fr.insee.rmes.colectica.client.dto.ColecticaItemResponse;
 import fr.insee.rmes.colectica.client.dto.ColecticaResponse;
 import fr.insee.rmes.colectica.client.dto.ColecticaSetItem;
+import fr.insee.rmes.colectica.client.dto.ColecticaTypedSetItem;
 import fr.insee.rmes.colectica.client.dto.GetDescriptionsRequest;
 import fr.insee.rmes.colectica.client.dto.UpdateItemStateRequest;
 import java.nio.charset.StandardCharsets;
@@ -260,6 +261,73 @@ class ColecticaClientTest {
         f.server.verify();
         assertThat(set).hasSize(1);
         assertThat(set[0].identifier()).isEqualTo("lp-1");
+    }
+
+    @Test
+    void getLatestItems_postsVersionlessReferencesAndMapsLatestItems() {
+        Fixture f = newFixture();
+        f.server
+                .expect(requestTo(BASE_API_URL + "item/_getListLatest"))
+                .andExpect(method(HttpMethod.POST))
+                .andExpect(header("Authorization", "Bearer " + TOKEN))
+                .andExpect(jsonPath("$.Identifiers[0].AgencyId").value("fr.insee"))
+                .andExpect(jsonPath("$.Identifiers[0].Identifier").value("var-1"))
+                .andRespond(withSuccess(
+                        "[{\"Identifier\":\"var-1\",\"AgencyId\":\"fr.insee\",\"Version\":4,\"Item\":\"<x/>\","
+                                + "\"IsPublished\":false,\"IsDeprecated\":false,\"IsProvisional\":false}]",
+                        MediaType.APPLICATION_JSON));
+
+        ColecticaItemResponse[] items = f.client.getLatestItems(List.of(new ItemReference("fr.insee", "var-1")));
+
+        f.server.verify();
+        assertThat(items).hasSize(1);
+        assertThat(items[0].identifier()).isEqualTo("var-1");
+        assertThat(items[0].version()).isEqualTo(4);
+    }
+
+    @Test
+    void getLatestVersionNumbers_postsReferencesAndDropsTheNullEntriesOfUnknownItems() {
+        Fixture f = newFixture();
+        f.server
+                .expect(requestTo(BASE_API_URL + "item/_getLatestVersionNumbers"))
+                .andExpect(method(HttpMethod.POST))
+                .andExpect(header("Authorization", "Bearer " + TOKEN))
+                .andExpect(jsonPath("$.Identifiers[0].Identifier").value("cl-1"))
+                .andExpect(jsonPath("$.Identifiers[1].Identifier").value("unknown"))
+                .andRespond(withSuccess(
+                        "[{\"Item1\":\"cl-1\",\"Item2\":4,\"Item3\":\"fr.insee\"},null]", MediaType.APPLICATION_JSON));
+
+        List<ColecticaSetItem> versions = f.client.getLatestVersionNumbers(
+                List.of(new ItemReference("fr.insee", "cl-1"), new ItemReference("fr.insee", "unknown")));
+
+        f.server.verify();
+        assertThat(versions).containsExactly(new ColecticaSetItem("cl-1", 4, "fr.insee"));
+    }
+
+    @Test
+    void querySet_postsRootItemWithItemTypesFacetAndMapsTypedReferences() {
+        Fixture f = newFixture();
+        f.server
+                .expect(requestTo(BASE_API_URL + "_query/set"))
+                .andExpect(method(HttpMethod.POST))
+                .andExpect(header("Authorization", "Bearer " + TOKEN))
+                .andExpect(jsonPath("$.RootItem.AgencyId").value("fr.insee"))
+                .andExpect(jsonPath("$.RootItem.Identifier").value("pi-1"))
+                .andExpect(jsonPath("$.RootItem.Version").value(3))
+                .andExpect(jsonPath("$.Facet.ItemTypes[0]").value(PHYSICAL_INSTANCE_TYPE))
+                .andExpect(jsonPath("$.Facet.ReverseTraversal").value(false))
+                .andRespond(withSuccess(
+                        "[{\"Item1\":{\"Item1\":\"pi-1\",\"Item2\":3,\"Item3\":\"fr.insee\"},\"Item2\":\""
+                                + PHYSICAL_INSTANCE_TYPE + "\"}]",
+                        MediaType.APPLICATION_JSON));
+
+        ColecticaTypedSetItem[] set =
+                f.client.querySet(new ColecticaSetItem("pi-1", 3, "fr.insee"), List.of(PHYSICAL_INSTANCE_TYPE));
+
+        f.server.verify();
+        assertThat(set)
+                .containsExactly(
+                        new ColecticaTypedSetItem(new ColecticaSetItem("pi-1", 3, "fr.insee"), PHYSICAL_INSTANCE_TYPE));
     }
 
     @Test

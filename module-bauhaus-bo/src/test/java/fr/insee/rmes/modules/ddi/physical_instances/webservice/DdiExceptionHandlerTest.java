@@ -2,9 +2,10 @@ package fr.insee.rmes.modules.ddi.physical_instances.webservice;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -73,8 +74,9 @@ class DdiExceptionHandlerTest {
 
     @Test
     void shouldReturnNotFoundWithMessageWhenStudyUnitIsMissing() throws Exception {
-        when(ddiService.updateFullPhysicalInstance(eq("fr.insee"), eq("pi-111"), any()))
-                .thenThrow(new StudyUnitNotFoundException("No study unit found for physical instance fr.insee/pi-111"));
+        doThrow(new StudyUnitNotFoundException("No study unit found for physical instance fr.insee/pi-111"))
+                .when(ddiService)
+                .updateFullPhysicalInstance(eq("fr.insee"), eq("pi-111"), any());
 
         mockMvc.perform(put("/ddi/physical-instance/fr.insee/pi-111")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -84,17 +86,20 @@ class DdiExceptionHandlerTest {
     }
 
     @Test
-    void shouldReturnConflictWithMessageWhenPatchedInstanceHasNoScheme() throws Exception {
+    void shouldReturnConflictWithMessageWhenDuplicationTargetHasNoScheme() throws Exception {
         String message = "L'opération (StudyUnit fr.insee/su-1) n'a pas de VariableScheme pour ranger ses variables";
-        when(ddiService.updatePhysicalInstance(eq("fr.insee"), eq("pi-111"), any()))
+        when(ddiService.duplicatePhysicalInstance(eq("fr.insee"), eq("pi-111"), any()))
                 .thenThrow(new MissingSchemeException(
                         MissingSchemeException.Code.STUDY_UNIT_MISSING_VARIABLE_SCHEME,
                         Map.of("studyUnit", "fr.insee/su-1"),
                         message));
 
-        mockMvc.perform(patch("/ddi/physical-instance/fr.insee/pi-111")
+        mockMvc.perform(post("/ddi/physical-instance/fr.insee/pi-111/duplicate")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{}"))
+                        .content("""
+                                {"physicalInstanceLabel": "PI (copy)", "groupId": "group-1", "groupAgency": "fr.insee",
+                                 "studyUnitId": "su-1", "studyUnitAgency": "fr.insee"}
+                                """))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.message").value(message))
                 .andExpect(jsonPath("$.code").value("STUDY_UNIT_MISSING_VARIABLE_SCHEME"))
@@ -104,11 +109,12 @@ class DdiExceptionHandlerTest {
     @Test
     void shouldReturnConflictWithMessageWhenSavedInstanceHasNoScheme() throws Exception {
         String message = "La série (Group fr.insee/group-1) n'a pas de CodeListScheme pour ranger ses listes de codes";
-        when(ddiService.updateFullPhysicalInstance(eq("fr.insee"), eq("pi-111"), any()))
-                .thenThrow(new MissingSchemeException(
+        doThrow(new MissingSchemeException(
                         MissingSchemeException.Code.GROUP_MISSING_CODE_LIST_SCHEME,
                         Map.of("group", "fr.insee/group-1"),
-                        message));
+                        message))
+                .when(ddiService)
+                .updateFullPhysicalInstance(eq("fr.insee"), eq("pi-111"), any());
 
         mockMvc.perform(put("/ddi/physical-instance/fr.insee/pi-111")
                         .contentType(MediaType.APPLICATION_JSON)

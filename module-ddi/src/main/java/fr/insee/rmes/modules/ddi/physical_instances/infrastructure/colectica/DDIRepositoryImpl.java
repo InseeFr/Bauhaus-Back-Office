@@ -17,6 +17,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnitResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4VariableScheme;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.DuplicatePhysicalInstanceRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodesList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialGroup;
@@ -27,6 +28,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialStudyUni
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceIds;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceParents;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceSearchRow;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UpdatePhysicalInstanceRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3toDDI4ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI4toDDI3ConverterService;
@@ -88,8 +90,8 @@ public class DDIRepositoryImpl implements DDIRepository {
 
         this.catalog =
                 new ColecticaCatalogRepository(instanceConfiguration, colecticaClient, labels, ddi3ToDdi4Converter);
-        this.physicalInstanceReader =
-                new ColecticaPhysicalInstanceReader(instanceConfiguration, ddi3ToDdi4Converter, setReader);
+        this.physicalInstanceReader = new ColecticaPhysicalInstanceReader(
+                instanceConfiguration, ddi3ToDdi4Converter, setReader, colecticaClient);
         this.groupReader = new ColecticaGroupSetReader(colecticaClient, defaultLang);
         this.itemByIdReader = new ColecticaItemByIdReader(colecticaClient, ddi3ToDdi4Converter);
         this.codeLists = new ColecticaCodeListRepository(
@@ -178,6 +180,11 @@ public class DDIRepositoryImpl implements DDIRepository {
     }
 
     @Override
+    public List<String> getGroupSeriesIris(String agencyId, String groupId) {
+        return itemByIdReader.groupSeriesIris(agencyId, groupId);
+    }
+
+    @Override
     public Optional<String> findStudyUnitXmlByOperationIri(String operationIri) {
         return catalog.findStudyUnitXmlByOperationIri(operationIri);
     }
@@ -210,8 +217,13 @@ public class DDIRepositoryImpl implements DDIRepository {
     }
 
     @Override
-    public Ddi4Response getFullPhysicalInstance(String agencyId, String id) {
-        return physicalInstanceReader.getFullPhysicalInstance(agencyId, id);
+    public Ddi4Response getStoredItems(Ddi4Response items) {
+        return physicalInstanceReader.getStoredItems(items);
+    }
+
+    @Override
+    public List<Reference> getLatestVersions(List<Reference> references) {
+        return physicalInstanceReader.getLatestVersions(references);
     }
 
     @Override
@@ -240,6 +252,12 @@ public class DDIRepositoryImpl implements DDIRepository {
     @CacheEvict(cacheNames = ColecticaCacheNames.PHYSICAL_INSTANCE_SEARCH_ROWS, allEntries = true)
     public void updatePhysicalInstance(String agencyId, String id, UpdatePhysicalInstanceRequest request) {
         physicalInstanceWriter.updatePhysicalInstance(agencyId, id, request);
+    }
+
+    @Override
+    @CacheEvict(cacheNames = ColecticaCacheNames.PHYSICAL_INSTANCE_SEARCH_ROWS, allEntries = true)
+    public Reference duplicatePhysicalInstance(String agencyId, String id, DuplicatePhysicalInstanceRequest request) {
+        return physicalInstanceWriter.duplicatePhysicalInstance(agencyId, id, request);
     }
 
     @Override
