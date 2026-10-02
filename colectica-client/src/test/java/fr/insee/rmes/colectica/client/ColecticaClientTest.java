@@ -87,6 +87,7 @@ class ColecticaClientTest {
                 .andExpect(jsonPath("$.itemTypes[0]").value(PHYSICAL_INSTANCE_TYPE))
                 .andExpect(jsonPath("$.searchLatestVersion").value(true))
                 .andExpect(jsonPath("$.resultsIncludeAll").value(true))
+                .andExpect(jsonPath("$.searchDepricatedItems").value(false))
                 .andRespond(withSuccess("""
                 {
                   "Results": [

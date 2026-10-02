@@ -215,12 +215,16 @@ class ColecticaCatalogRepository {
                 for (ItemReference piRef : piRefs) {
                     String piKey = ColecticaItems.key(piRef.agencyId(), piRef.identifier());
                     PartialPhysicalInstance pi = piByKey.get(piKey);
+                    // Absente de _query/advanced (dépréciée) : la relation subsiste, la PI ne s'affiche plus.
+                    if (pi == null) {
+                        continue;
+                    }
                     attachedKeys.add(piKey);
                     rows.add(new PhysicalInstanceSearchRow(
                             piRef.agencyId(),
                             piRef.identifier(),
-                            pi != null ? pi.label() : piRef.identifier(),
-                            pi != null ? pi.versionDate() : null,
+                            pi.label(),
+                            pi.versionDate(),
                             studyUnit.agencyId(),
                             studyUnit.identifier(),
                             studyUnitLabel,
