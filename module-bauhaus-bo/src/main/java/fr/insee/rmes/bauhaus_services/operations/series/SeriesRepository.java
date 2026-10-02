@@ -136,7 +136,7 @@ public class SeriesRepository {
                 series = mapper.readValue(XMLUtils.solveSpecialXmlcharacters(seriesJson.toString()), Series.class);
             else series = mapper.readValue(seriesJson.toString(), Series.class);
         } catch (IOException e) {
-            logger.error(e.getMessage());
+            throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Can't parse series", e.getMessage());
         }
         if (StringUtils.isEmpty(series.getId())) {
             series.id = id;

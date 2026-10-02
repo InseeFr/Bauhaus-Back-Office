@@ -3,6 +3,7 @@ package fr.insee.rmes.bauhaus_services.operations.series;
 import static fr.insee.rmes.bauhaus_services.operations.OperationsRdfModelAssertions.assertAbstractsWrittenAsPlainMarkdownLiterals;
 import static fr.insee.rmes.bauhaus_services.operations.OperationsRdfModelAssertions.assertSingleIriObject;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.*;
 
@@ -131,6 +132,22 @@ class SeriesRepositoryTest {
 
         assertThat(JSONUtils.jsonArrayToList(series.getJSONArray("themes")))
                 .containsExactly("http://bauhaus/concepts/themes/th1");
+    }
+
+    @Test
+    void getSeriesById_whenTheStoredSeriesCannotBeMapped_shouldThrowInsteadOfReturningAnEmptySeries()
+            throws RmesException {
+        // Un texte ne se lit pas comme une liste d'opérations : avant, l'erreur était journalisée et
+        // une série vide renvoyée à l'appelant (export SIMS, libellés des opérations…).
+        when(repositoryGestion.getResponseAsObject(any()))
+                .thenReturn(
+                        new JSONObject(Map.of("id", "s2000", "operations", "not a list")),
+                        new JSONObject(Map.of("id", "f1")));
+        when(repositoryGestion.getResponseAsArray(any())).thenReturn(new JSONArray());
+        when(repositoryGestion.getResponseAsJSONList(any())).thenReturn(new JSONArray());
+        SeriesRepository seriesRepository = seriesRepository(null, null);
+
+        assertThrows(RmesException.class, () -> seriesRepository.getSeriesById("s2000", EncodingType.XML));
     }
 
     @Test
