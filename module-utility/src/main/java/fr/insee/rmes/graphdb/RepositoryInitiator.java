@@ -1,25 +1,32 @@
 package fr.insee.rmes.graphdb;
 
 import fr.insee.rmes.keycloak.TokenService;
+import java.util.Optional;
 import org.eclipse.rdf4j.http.client.HttpClientSessionManager;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.http.HTTPRepository;
 
 public interface RepositoryInitiator {
-    static RepositoryInitiator newInstance(RdfBackend backend, Type type, TokenService tokenService) {
+    static RepositoryInitiator newInstance(
+            RdfBackend backend, Type type, TokenService tokenService, Optional<RdfBasicCredentials> credentials) {
         if (backend == RdfBackend.FUSEKI) {
-            return fuseki(type);
+            return fuseki(type, credentials);
+        }
+        if (credentials.isPresent()) {
+            throw new IllegalStateException(RdfBackend.PROPERTY
+                    + "=graphdb : " + RdfBasicCredentials.USERNAME_PROPERTY + " ne sert qu'à Fuseki, GraphDB"
+                    + " s'authentifie par jeton Keycloak (fr.insee.rmes.bauhaus.rdf.auth=ENABLED).");
         }
         return graphDb(type, tokenService);
     }
 
-    private static RepositoryInitiator fuseki(Type type) {
+    private static RepositoryInitiator fuseki(Type type, Optional<RdfBasicCredentials> credentials) {
         if (type == Type.ENABLED) {
             throw new IllegalStateException(RdfBackend.PROPERTY
                     + "=fuseki : fr.insee.rmes.bauhaus.rdf.auth=ENABLED envoie un jeton Keycloak, que Fuseki ne sait pas"
                     + " vérifier. Passer l'authentification à DISABLED.");
         }
-        return new FusekiRepositoryInitiator();
+        return new FusekiRepositoryInitiator(credentials);
     }
 
     private static RepositoryInitiator graphDb(Type type, TokenService tokenService) {

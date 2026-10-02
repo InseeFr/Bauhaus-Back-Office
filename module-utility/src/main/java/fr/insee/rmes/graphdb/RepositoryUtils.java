@@ -16,6 +16,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import org.eclipse.rdf4j.common.exception.RDF4JException;
@@ -71,15 +72,37 @@ public class RepositoryUtils {
             TokenService tokenService,
             @Value("${fr.insee.rmes.bauhaus.rdf.auth}") RepositoryInitiator.Type type,
             @Value("${" + RdfBackend.PROPERTY + ":}") String backend,
-            @Value("${" + SOCKET_TIMEOUT_PROPERTY + ":#{null}}") Duration socketTimeout) {
-        this.authType = type;
-        repositoryInitiator = RepositoryInitiator.newInstance(RdfBackend.fromProperty(backend), type, tokenService);
-        httpClientSessionManager =
-                new RdfHttpClientSessionManager(socketTimeout == null ? DEFAULT_SOCKET_TIMEOUT : socketTimeout);
+            @Value("${" + SOCKET_TIMEOUT_PROPERTY + ":#{null}}") Duration socketTimeout,
+            @Value("${" + RdfBasicCredentials.USERNAME_PROPERTY + ":}") String username,
+            @Value("${" + RdfBasicCredentials.PASSWORD_PROPERTY + ":}") String password) {
+        this(tokenService, type, backend, socketTimeout, RdfBasicCredentials.fromProperties(username, password));
+    }
+
+    public RepositoryUtils(
+            TokenService tokenService, RepositoryInitiator.Type type, String backend, RdfBasicCredentials credentials) {
+        this(tokenService, type, backend, null, Optional.of(credentials));
+    }
+
+    public RepositoryUtils(
+            TokenService tokenService, RepositoryInitiator.Type type, String backend, Duration socketTimeout) {
+        this(tokenService, type, backend, socketTimeout, Optional.empty());
     }
 
     public RepositoryUtils(TokenService tokenService, RepositoryInitiator.Type type, String backend) {
-        this(tokenService, type, backend, null);
+        this(tokenService, type, backend, (Duration) null);
+    }
+
+    private RepositoryUtils(
+            TokenService tokenService,
+            RepositoryInitiator.Type type,
+            String backend,
+            Duration socketTimeout,
+            Optional<RdfBasicCredentials> credentials) {
+        this.authType = type;
+        repositoryInitiator =
+                RepositoryInitiator.newInstance(RdfBackend.fromProperty(backend), type, tokenService, credentials);
+        httpClientSessionManager =
+                new RdfHttpClientSessionManager(socketTimeout == null ? DEFAULT_SOCKET_TIMEOUT : socketTimeout);
     }
 
     public RepositoryUtils(TokenService tokenService, RepositoryInitiator.Type type) {

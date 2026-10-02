@@ -10,10 +10,8 @@ import java.util.stream.IntStream;
 import org.eclipse.rdf4j.model.util.Values;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
-import org.eclipse.rdf4j.repository.sparql.SPARQLRepository;
 import org.json.JSONArray;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
@@ -26,20 +24,15 @@ class RepositoryUtilsFusekiIntegrationTest extends WithFusekiContainer {
 
     private static final String CODES_GRAPH = "http://rdf.insee.fr/graphes/codes";
 
-    private final RepositoryUtils repositoryUtils =
-            new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED, "fuseki");
+    private final RepositoryUtils repositoryUtils = new RepositoryUtils(
+            null,
+            RepositoryInitiator.Type.DISABLED,
+            "fuseki",
+            new RdfBasicCredentials(FusekiContainer.ADMIN_USER, FusekiContainer.ADMIN_PASSWORD));
 
     private final Repository repository = repositoryUtils.initRepository(
             getRdfGestionConnectionDetails().getUrlServer(),
             getRdfGestionConnectionDetails().repositoryId());
-
-    @BeforeEach
-    void authenticateTheWrites() {
-        // L'image protège /update par mot de passe, et l'application ne sait pas encore en envoyer un à
-        // Fuseki (F5) : le test pose les identifiants lui-même. À retirer en F5.
-        ((SPARQLRepository) repository)
-                .setUsernameAndPassword(FusekiContainer.ADMIN_USER, FusekiContainer.ADMIN_PASSWORD);
-    }
 
     @BeforeAll
     static void initData() {
