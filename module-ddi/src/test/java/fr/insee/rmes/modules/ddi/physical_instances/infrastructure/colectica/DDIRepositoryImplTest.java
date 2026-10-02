@@ -4826,6 +4826,46 @@ class DDIRepositoryImplTest {
     }
 
     @Test
+    void updateFullPhysicalInstance_refreshesItsCachedSearchRowFromTheSavedPhysicalInstance() {
+        searchRowsCache.put(SimpleKey.EMPTY, List.of(searchRow("Old PI")));
+        Ddi3Response.Ddi3Item piItem = new Ddi3Response.Ddi3Item(
+                "pi-type", "fr.insee", "2", "pi-1", "<pi/>", "2026-01-01T00:00:00", "resp", false, false, false, "fmt");
+        when(ddi4ToDdi3Converter.convertDdi4ToDdi3(any()))
+                .thenReturn(
+                        new Ddi3Response(new Ddi3Response.Ddi3Options(List.of("RegisterOrReplace")), List.of(piItem)));
+
+        Ddi4Response ddi4 = new Ddi4Response(
+                "schema",
+                null,
+                List.of(physicalInstance("pi-other", "Other PI"), physicalInstance("pi-1", "New PI")),
+                null,
+                null,
+                null,
+                null,
+                null);
+
+        ddiRepository.updateFullPhysicalInstance("fr.insee", "pi-1", ddi4);
+
+        @SuppressWarnings("unchecked")
+        List<PhysicalInstanceSearchRow> rows = searchRowsCache.get(SimpleKey.EMPTY, List.class);
+        assertThat(rows).extracting(PhysicalInstanceSearchRow::label).containsExactly("New PI");
+        assertThat(rows.getFirst().versionDate()).isNotNull();
+    }
+
+    private static Ddi4PhysicalInstance physicalInstance(String id, String label) {
+        return new Ddi4PhysicalInstance(
+                Ddi4PhysicalInstance.TYPE,
+                CogsDate.ofDateTime("2026-10-02T10:00:00"),
+                "urn:ddi:fr.insee:" + id + ":2",
+                "fr.insee",
+                id,
+                "2",
+                null,
+                new Citation(LangStrings.of("fr-FR", label)),
+                List.of());
+    }
+
+    @Test
     void updatePhysicalInstance_rewritesOnlyPhysicalInstanceAndDataRelationshipWithoutSchemeFiling() {
         // Le PATCH ne touche qu'au libellé et au rattachement (Groupe/Étude) : il ne réécrit ni les
         // variables ni les listes de codes, et ne vérifie donc aucun LogicalProduct ni scheme.

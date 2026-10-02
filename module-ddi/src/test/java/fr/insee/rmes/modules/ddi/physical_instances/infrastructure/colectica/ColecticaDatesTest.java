@@ -24,4 +24,9 @@ class ColecticaDatesTest {
     void parseInstant_returnsNullForAnUnreadableValue() {
         assertThat(ColecticaDates.parseInstant("pas une date")).isNull();
     }
+
+    @Test
+    void parseInstant_returnsNullForAMissingValue() {
+        assertThat(ColecticaDates.parseInstant(null)).isNull();
+    }
 }
