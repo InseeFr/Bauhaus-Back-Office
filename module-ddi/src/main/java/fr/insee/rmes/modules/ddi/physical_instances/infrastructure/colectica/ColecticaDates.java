@@ -2,8 +2,12 @@ package fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Date;
 import java.util.TimeZone;
 import org.slf4j.Logger;
@@ -34,6 +38,26 @@ final class ColecticaDates {
         } catch (ParseException _) {
             logger.debug("Impossible to parse {}", raw);
             return null;
+        }
+    }
+
+    /**
+     * Parse un instant ISO 8601 tel que Bauhaus le pose en {@code versionDate} ({@code nowIso()}, avec
+     * décalage) ; sans décalage, l'heure est lue en UTC. {@code null} si la valeur est absente ou illisible.
+     */
+    static Date parseInstant(String raw) {
+        if (raw == null) {
+            return null;
+        }
+        try {
+            return Date.from(OffsetDateTime.parse(raw).toInstant());
+        } catch (DateTimeParseException _) {
+            try {
+                return Date.from(LocalDateTime.parse(raw).toInstant(ZoneOffset.UTC));
+            } catch (DateTimeParseException _) {
+                logger.debug("Impossible to parse {}", raw);
+                return null;
+            }
         }
     }
 

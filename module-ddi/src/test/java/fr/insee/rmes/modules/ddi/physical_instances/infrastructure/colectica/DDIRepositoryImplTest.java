@@ -37,6 +37,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.cache.Cache;
+import org.springframework.cache.concurrent.ConcurrentMapCache;
+import org.springframework.cache.interceptor.SimpleKey;
 
 @ExtendWith(MockitoExtension.class)
 class DDIRepositoryImplTest {
@@ -58,6 +61,8 @@ class DDIRepositoryImplTest {
 
     private DDIRepositoryImpl ddiRepository;
 
+    private final Cache searchRowsCache = new ConcurrentMapCache(ColecticaCacheNames.PHYSICAL_INSTANCE_SEARCH_ROWS);
+
     @BeforeEach
     void setUp() {
         lenient().when(colecticaConfiguration.langs()).thenReturn(List.of("fr-FR"));
@@ -73,7 +78,8 @@ class DDIRepositoryImplTest {
                 ddi4ToDdi3Converter,
                 colecticaConfiguration,
                 colecticaClient,
-                refsProvider);
+                refsProvider,
+                searchRowsCache);
     }
 
     @Test
@@ -5294,7 +5300,27 @@ class DDIRepositoryImplTest {
         UpdatePhysicalInstanceRequest updateRequest = new UpdatePhysicalInstanceRequest(
                 "New PI", "New DR", "New LR", "su-1", "fr.insee", "group-1", "fr.insee");
 
-        when(instanceConfiguration.itemTypes()).thenReturn(Map.of("StudyUnit", STUDY_UNIT_ITEM_TYPE));
+        ArgumentCaptor<Ddi4Response> ddi4Captor = stubPhysicalInstancePatch(agencyId, instanceId);
+
+        ddiRepository.updatePhysicalInstance(agencyId, instanceId, updateRequest);
+
+        // Seules la PhysicalInstance et la DataRelationship sont converties : pas de variables.
+        assertThat(ddi4Captor.getValue().variable()).isNullOrEmpty();
+        // Aucune résolution de LogicalProduct ni de scheme.
+        verify(colecticaClient, never()).findRelatedDescriptions(any(), any(), anyList());
+        verify(ddi4ToDdi3Converter, never()).toVariableSchemeItem(any());
+        ArgumentCaptor<ColecticaCreateItemRequest> reqCaptor =
+                ArgumentCaptor.forClass(ColecticaCreateItemRequest.class);
+        verify(colecticaClient).createOrUpdateItems(reqCaptor.capture());
+        assertThat(reqCaptor.getValue().items())
+                .extracting(ColecticaItemResponse::identifier)
+                .containsExactly(instanceId, "dr-1", "su-1");
+    }
+
+    /** Stubs d'un PATCH de la PI {@code instanceId} : lecture de l'existant, conversion, enregistrement. */
+    private ArgumentCaptor<Ddi4Response> stubPhysicalInstancePatch(String agencyId, String instanceId) {
+        when(instanceConfiguration.itemTypes())
+                .thenReturn(Map.of("StudyUnit", STUDY_UNIT_ITEM_TYPE, "PhysicalInstance", PI_ITEM_TYPE));
 
         Ddi4PhysicalInstance currentPhysicalInstance = new Ddi4PhysicalInstance(
                 Ddi4PhysicalInstance.TYPE,
@@ -5347,7 +5373,9 @@ class DDIRepositoryImplTest {
         String studyUnitXml = "<Fragment xmlns:r=\"ddi:reusable:3_3\" xmlns=\"ddi:instance:3_3\">"
                 + "<StudyUnit xmlns=\"ddi:studyunit:3_3\" isUniversallyUnique=\"true\"/>"
                 + "</Fragment>";
-        when(colecticaClient.getItem("fr.insee", "su-1", null))
+        // Relue seulement quand le PATCH rattache la PI à une StudyUnit.
+        lenient()
+                .when(colecticaClient.getItem("fr.insee", "su-1", null))
                 .thenReturn(new ColecticaItemResponse(
                         STUDY_UNIT_ITEM_TYPE,
                         "fr.insee",
@@ -5391,20 +5419,52 @@ class DDIRepositoryImplTest {
                                         false,
                                         "fmt"))));
         when(colecticaClient.createOrUpdateItems(any())).thenReturn("{}");
+        return ddi4Captor;
+    }
 
-        ddiRepository.updatePhysicalInstance(agencyId, instanceId, updateRequest);
+    private static final String PI_ITEM_TYPE = "a51e85bb-6259-4488-8df2-f08cb43485f8";
 
-        // Seules la PhysicalInstance et la DataRelationship sont converties : pas de variables.
-        assertThat(ddi4Captor.getValue().variable()).isNullOrEmpty();
-        // Aucune résolution de LogicalProduct ni de scheme.
-        verify(colecticaClient, never()).findRelatedDescriptions(any(), any(), anyList());
-        verify(ddi4ToDdi3Converter, never()).toVariableSchemeItem(any());
-        ArgumentCaptor<ColecticaCreateItemRequest> reqCaptor =
-                ArgumentCaptor.forClass(ColecticaCreateItemRequest.class);
-        verify(colecticaClient).createOrUpdateItems(reqCaptor.capture());
-        assertThat(reqCaptor.getValue().items())
-                .extracting(ColecticaItemResponse::identifier)
-                .containsExactly(instanceId, "dr-1", "su-1");
+    private static PhysicalInstanceSearchRow searchRow(String piLabel) {
+        return new PhysicalInstanceSearchRow(
+                "fr.insee",
+                "pi-1",
+                piLabel,
+                null,
+                "fr.insee",
+                "su-1",
+                "Recensement 2024",
+                "fr.insee",
+                "g1",
+                "Groupe BPE");
+    }
+
+    @Test
+    void updatePhysicalInstance_refreshesItsCachedSearchRowWithoutCallingColecticaWhenParentsAreUnchanged() {
+        searchRowsCache.put(SimpleKey.EMPTY, List.of(searchRow("Old PI")));
+        stubPhysicalInstancePatch("fr.insee", "pi-1");
+
+        ddiRepository.updatePhysicalInstance(
+                "fr.insee", "pi-1", new UpdatePhysicalInstanceRequest("New PI", "New DR", "New LR"));
+
+        @SuppressWarnings("unchecked")
+        List<PhysicalInstanceSearchRow> rows = searchRowsCache.get(SimpleKey.EMPTY, List.class);
+        assertThat(rows).extracting(PhysicalInstanceSearchRow::label).containsExactly("New PI");
+        assertThat(rows.getFirst().versionDate()).isNotNull();
+        assertThat(rows.getFirst().studyUnitLabel()).isEqualTo("Recensement 2024");
+        verify(colecticaClient, never()).queryAdvanced(anyList());
+    }
+
+    @Test
+    void updatePhysicalInstance_clearsCachedSearchRowsWhenAttachingToAStudyUnit() {
+        searchRowsCache.put(SimpleKey.EMPTY, List.of(searchRow("Old PI")));
+        stubPhysicalInstancePatch("fr.insee", "pi-1");
+
+        ddiRepository.updatePhysicalInstance(
+                "fr.insee",
+                "pi-1",
+                new UpdatePhysicalInstanceRequest("New PI", "New DR", "New LR", "su-1", "fr.insee", "g1", "fr.insee"));
+
+        assertThat(searchRowsCache.get(SimpleKey.EMPTY)).isNull();
     }
 
     @Test
