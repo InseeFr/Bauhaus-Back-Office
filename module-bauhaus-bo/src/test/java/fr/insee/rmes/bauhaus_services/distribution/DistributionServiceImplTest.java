@@ -15,6 +15,7 @@ import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.modules.datasets.distributions.model.Distribution;
 import fr.insee.rmes.modules.datasets.distributions.model.PatchDistribution;
+import fr.insee.rmes.modules.shared_kernel.infrastructure.publication.ObjectPublished;
 import fr.insee.rmes.persistance.sparql_queries.datasets.DatasetDistributionQueries;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.utils.DateUtils;
@@ -35,8 +36,11 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.event.ApplicationEvents;
+import org.springframework.test.context.event.RecordApplicationEvents;
 
 @AppSpringBootTest
+@RecordApplicationEvents
 class DistributionServiceImplTest {
     @MockitoBean
     RepositoryGestion repositoryGestion;
@@ -52,6 +56,9 @@ class DistributionServiceImplTest {
 
     @Autowired
     DistributionServiceImpl distributionService;
+
+    @Autowired
+    ApplicationEvents events;
 
     private static final String EMPTY_JSON_OBJECT = "{}";
     private static final String DISTRIB = "{\"id\":\"d1000\"}";
@@ -265,7 +272,7 @@ class DistributionServiceImplTest {
         assertThat(exception.getDetails()).contains("\"code\":1301");
         assertThat(exception.getDetails()).contains("This distribution is already published");
         assertThat(exception.getDetails()).contains("Distribution: 1");
-        verify(repositoryGestion, never()).objectValidation(any(), any());
+        assertThat(events.stream(ObjectPublished.class).toList()).isEmpty();
     }
 
     @Test
@@ -293,11 +300,23 @@ class DistributionServiceImplTest {
         String id = distributionService.publishDistribution("1");
         ArgumentCaptor<Model> model = ArgumentCaptor.forClass(Model.class);
 
-        verify(repositoryGestion, times(1)).objectValidation(eq(iri), model.capture());
+        verify(repositoryGestion).loadSimpleObjectWithoutDeletion(eq(iri), model.capture(), any());
         Assertions.assertEquals(
                 "[(http://distributionIRI/1, http://rdf.insee.fr/def/base#validationState, \"Validated\") [http://rdf.insee.fr/graphes/datasetGraph/]]",
                 model.getValue().toString());
         Assertions.assertEquals("1", id);
+    }
+
+    @Test
+    void shouldAnnounceThePublicationWithTheDistributionGraph() throws RmesException {
+        givenDistributionWithValidationState("Unpublished");
+
+        distributionService.publishDistribution("1");
+
+        assertThat(events.stream(ObjectPublished.class).toList())
+                .containsExactly(new ObjectPublished(
+                        SimpleValueFactory.getInstance().createIRI("http://distributionIRI/1"),
+                        SimpleValueFactory.getInstance().createIRI("http://rdf.insee.fr/graphes/datasetGraph/")));
     }
 
     @Test

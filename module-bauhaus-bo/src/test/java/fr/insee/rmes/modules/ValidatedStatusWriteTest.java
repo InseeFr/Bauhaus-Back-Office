@@ -42,7 +42,6 @@ class ValidatedStatusWriteTest {
             "module-bauhaus-bo/src/main/java/fr/insee/rmes/bauhaus_services/concepts/collections/LegacyCollectionsRepository.java",
             "module-bauhaus-bo/src/main/java/fr/insee/rmes/bauhaus_services/concepts/concepts/LegacyConceptsRepository.java",
             "module-bauhaus-bo/src/main/java/fr/insee/rmes/bauhaus_services/datasets/DatasetServiceImpl.java",
-            "module-bauhaus-bo/src/main/java/fr/insee/rmes/bauhaus_services/distribution/DistributionServiceImpl.java",
             "module-bauhaus-bo/src/main/java/fr/insee/rmes/bauhaus_services/operations/documentations/DocumentationsUtils.java",
             "module-bauhaus-bo/src/main/java/fr/insee/rmes/bauhaus_services/operations/indicators/IndicatorsRepository.java",
             "module-bauhaus-bo/src/main/java/fr/insee/rmes/bauhaus_services/operations/operations/OperationsRepository.java",
