@@ -27,6 +27,8 @@ import fr.insee.rmes.modules.commons.configuration.swagger.model.IdLabelTwoLangs
 import fr.insee.rmes.modules.operation.domain.event.BilingualLabel;
 import fr.insee.rmes.modules.operation.domain.event.SeriesSaved;
 import fr.insee.rmes.modules.operations.series.domain.model.Series;
+import fr.insee.rmes.modules.operations.series.domain.model.SeriesLink;
+import fr.insee.rmes.modules.operations.series.domain.model.commands.SeriesCommand;
 import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationSeriesQueries;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
@@ -469,12 +471,12 @@ public class SeriesRepository {
         }
     }
 
-    public String createSeries(String body) throws RmesException {
-
-        Series series = buildSeriesFromJson(new JSONObject(body), EncodingType.MARKDOWN);
+    /** Création : l'identifiant est généré, le reste vient de la commande. */
+    public String createSeries(SeriesCommand command) throws RmesException {
+        Series series = toSeries(operationsObjectMapper.createId(), command);
 
         // Tester l'existence de la famille
-        String idFamily = series.getFamily().getId();
+        String idFamily = command.familyId();
         if (!operationsObjectMapper.checkIfObjectExists(ObjectType.FAMILY, idFamily)) {
             throw new RmesBadRequestException(
                     ErrorCodes.SERIES_UNKNOWN_FAMILY, "Unknown family: " + idFamily, new JSONArray());
@@ -491,20 +493,9 @@ public class SeriesRepository {
         return series.getId();
     }
 
-    /* Update Series */
-    public void setSeries(String id, String body) throws RmesException {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        mapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
-
-        Series series = new Series();
-        try {
-            series = mapper.readerForUpdating(series).readValue(body);
-        } catch (IOException e) {
-            logger.error(e.getMessage());
-            throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Can't parse series", e.getMessage());
-        }
-
+    /** Mise à jour : l'identifiant vient de l'appelant, la commande réécrit la série entière. */
+    public void setSeries(String id, SeriesCommand command) throws RmesException {
+        Series series = toSeries(id, command);
         series.setUpdated(DateUtils.getCurrentDate());
 
         String status = operationsParentRepository.getFamOpSerValidationStatus(id);
@@ -517,6 +508,48 @@ public class SeriesRepository {
         }
         logger.info("Update series : {} - {}", series.getId(), series.getPrefLabelLg1());
         publishSeriesSaved(series);
+    }
+
+    /**
+     * Projette la commande sur le modèle du dépôt. {@code created} (en création) et {@code updated}
+     * sont posés par les appelants ci-dessus ; la famille n'est liée qu'à la création, par
+     * {@code createRdfSeries}.
+     */
+    private static Series toSeries(String id, SeriesCommand command) {
+        Series series = new Series();
+        series.setId(id);
+        series.setPrefLabelLg1(command.prefLabelLg1());
+        series.setPrefLabelLg2(command.prefLabelLg2());
+        series.setAltLabelLg1(command.altLabelLg1());
+        series.setAltLabelLg2(command.altLabelLg2());
+        series.setAbstractLg1(command.abstractLg1());
+        series.setAbstractLg2(command.abstractLg2());
+        series.setHistoryNoteLg1(command.historyNoteLg1());
+        series.setHistoryNoteLg2(command.historyNoteLg2());
+        series.setTypeCode(command.typeCode());
+        series.setTypeList(command.typeList());
+        series.setAccrualPeriodicityCode(command.accrualPeriodicityCode());
+        series.setAccrualPeriodicityList(command.accrualPeriodicityList());
+        series.setPublishers(toOperationsLinks(command.publishers()));
+        series.setContributors(toOperationsLinks(command.contributors()));
+        series.setDataCollectors(toOperationsLinks(command.dataCollectors()));
+        series.setCreators(command.creators());
+        series.setSeeAlso(toOperationsLinks(command.seeAlso()));
+        series.setReplaces(toOperationsLinks(command.replaces()));
+        series.setIsReplacedBy(toOperationsLinks(command.isReplacedBy()));
+        series.setThemes(command.themes());
+        series.setIdSims(command.idSims());
+        series.setCreated(command.created());
+        return series;
+    }
+
+    private static List<OperationsLink> toOperationsLinks(List<SeriesLink> links) {
+        if (links == null) {
+            return null;
+        }
+        return links.stream()
+                .map(link -> OperationsLink.of(link.id(), link.type(), null, null))
+                .toList();
     }
 
     /**

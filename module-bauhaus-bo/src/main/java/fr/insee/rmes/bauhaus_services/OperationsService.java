@@ -4,6 +4,7 @@ import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.model.operations.*;
 import fr.insee.rmes.modules.operations.indicators.domain.model.commands.IndicatorCommand;
 import fr.insee.rmes.modules.operations.series.domain.model.Series;
+import fr.insee.rmes.modules.operations.series.domain.model.commands.SeriesCommand;
 import java.util.List;
 
 public interface OperationsService {
@@ -23,9 +24,9 @@ public interface OperationsService {
 
     String getSeriesWithStamp() throws RmesException;
 
-    void setSeries(String id, String body) throws RmesException;
+    void setSeries(String id, SeriesCommand command) throws RmesException;
 
-    String createSeries(String body) throws RmesException;
+    String createSeries(SeriesCommand command) throws RmesException;
 
     void setSeriesValidation(String body) throws RmesException;
 

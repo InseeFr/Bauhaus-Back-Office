@@ -11,6 +11,7 @@ import fr.insee.rmes.json.JSONUtils;
 import fr.insee.rmes.model.operations.*;
 import fr.insee.rmes.modules.operations.indicators.domain.model.commands.IndicatorCommand;
 import fr.insee.rmes.modules.operations.series.domain.model.Series;
+import fr.insee.rmes.modules.operations.series.domain.model.commands.SeriesCommand;
 import fr.insee.rmes.modules.shared_kernel.domain.model.Roles;
 import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
 import fr.insee.rmes.modules.users.domain.model.Stamp;
@@ -142,8 +143,8 @@ public class OperationsImpl implements OperationsService {
     }
 
     @Override
-    public void setSeries(String id, String body) throws RmesException {
-        seriesRepository.setSeries(id, body);
+    public void setSeries(String id, SeriesCommand command) throws RmesException {
+        seriesRepository.setSeries(id, command);
     }
 
     @Override
@@ -167,8 +168,8 @@ public class OperationsImpl implements OperationsService {
     }
 
     @Override
-    public String createSeries(String body) throws RmesException {
-        return seriesRepository.createSeries(body);
+    public String createSeries(SeriesCommand command) throws RmesException {
+        return seriesRepository.createSeries(command);
     }
 
     @Override

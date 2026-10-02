@@ -25,6 +25,7 @@ import fr.insee.rmes.model.links.OperationsLink;
 import fr.insee.rmes.modules.operation.domain.event.BilingualLabel;
 import fr.insee.rmes.modules.operation.domain.event.SeriesSaved;
 import fr.insee.rmes.modules.operations.series.domain.model.Series;
+import fr.insee.rmes.modules.operations.series.domain.model.commands.SeriesCommand;
 import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationSeriesQueries;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
@@ -179,11 +180,8 @@ class SeriesRepositoryTest {
     @Test
     void setSeries_shouldNotRejectWith406_whenBodyContainsBothIdSimsAndOperations() {
         SeriesRepository seriesRepository = seriesRepository(null, null);
-        String body =
-                "{\"idSims\":\"sims-1\",\"operations\":[{\"id\":\"op1\",\"labelLg1\":\"L1\",\"labelLg2\":\"L2\"}]}";
-
         try {
-            seriesRepository.setSeries("1", body);
+            seriesRepository.setSeries("1", command("Série", null, null, null, "sims-1"));
         } catch (RmesBadRequestException e) {
             if (e.getDetails().contains("A series cannot have both a Sims and Operation(s)")) {
                 fail("La mise à jour d'une série combinant idSims et operations ne devrait plus lever 406 : "
@@ -242,8 +240,7 @@ class SeriesRepositoryTest {
                 null,
                 events);
 
-        seriesRepository.setSeries("s1001", """
-                {"id":"s1001","prefLabelLg1":"Recensement","prefLabelLg2":"Census",                "altLabelLg1":"RP","altLabelLg2":"CENS"}""");
+        seriesRepository.setSeries("s1001", command("Recensement", "Census", "RP", "CENS", null));
 
         ArgumentCaptor<SeriesSaved> captor = ArgumentCaptor.forClass(SeriesSaved.class);
         verify(events).publishEvent(captor.capture());
@@ -262,6 +259,7 @@ class SeriesRepositoryTest {
         when(uriBuilder.getCompleteUriPublication("series", "s1001"))
                 .thenReturn("http://id.insee.fr/operations/serie/s1001");
         OperationsObjectMapper objectMapper = mock(OperationsObjectMapper.class);
+        when(objectMapper.createId()).thenReturn("s1001");
         when(objectMapper.checkIfObjectExists(ObjectType.FAMILY, "f1")).thenReturn(true);
         SeriesRepository seriesRepository = new SeriesRepository(
                 new BauhausLanguagesProperties("fr", "en"),
@@ -278,13 +276,67 @@ class SeriesRepositoryTest {
                 null,
                 events);
 
-        seriesRepository.createSeries("""
-                {"id":"s1001","prefLabelLg1":"Recensement","family":{"id":"f1"}}""");
+        seriesRepository.createSeries(commandInFamily("Recensement", "f1"));
 
         ArgumentCaptor<SeriesSaved> captor = ArgumentCaptor.forClass(SeriesSaved.class);
         verify(events).publishEvent(captor.capture());
         assertThat(captor.getValue().iri()).isEqualTo("http://id.insee.fr/operations/serie/s1001");
         assertThat(captor.getValue().prefLabel()).isEqualTo(new BilingualLabel("Recensement", null));
+    }
+
+    private static SeriesCommand command(
+            String prefLabelLg1, String prefLabelLg2, String altLabelLg1, String altLabelLg2, String idSims) {
+        return new SeriesCommand(
+                prefLabelLg1,
+                prefLabelLg2,
+                altLabelLg1,
+                altLabelLg2,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                idSims,
+                null);
+    }
+
+    private static SeriesCommand commandInFamily(String prefLabelLg1, String familyId) {
+        return new SeriesCommand(
+                prefLabelLg1,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                familyId,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null);
     }
 
     private SeriesRepository seriesRepository(SeriesValidator validator, OrganisationLookup organisationLookup) {

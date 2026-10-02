@@ -27,8 +27,6 @@ fr.insee.rmes.modules.operations.msd.webservice.MetadataReportResources.setMetad
 fr.insee.rmes.modules.operations.msd.webservice.MetadataReportResources.setMetadataReportById(java.lang.String, java.lang.String) takes a @RequestBody that is not annotated with @Valid
 fr.insee.rmes.modules.operations.operations.webservice.OperationsResources.createOperation(java.lang.String) takes a @RequestBody that is not annotated with @Valid
 fr.insee.rmes.modules.operations.operations.webservice.OperationsResources.setOperationById(java.lang.String, java.lang.String) takes a @RequestBody that is not annotated with @Valid
-fr.insee.rmes.modules.operations.series.webservice.SeriesResources.createSeries(java.lang.String) takes a @RequestBody that is not annotated with @Valid
-fr.insee.rmes.modules.operations.series.webservice.SeriesResources.setSeriesById(java.lang.String, java.lang.String) takes a @RequestBody that is not annotated with @Valid
 fr.insee.rmes.modules.structures.components.webservice.ComponentResources.createComponent(java.lang.String) takes a @RequestBody that is not annotated with @Valid
 fr.insee.rmes.modules.structures.components.webservice.ComponentResources.updateComponentById(java.lang.String, java.lang.String) takes a @RequestBody that is not annotated with @Valid
 fr.insee.rmes.modules.structures.structures.webservice.StructureResources.setStructure(java.lang.String) takes a @RequestBody that is not annotated with @Valid
