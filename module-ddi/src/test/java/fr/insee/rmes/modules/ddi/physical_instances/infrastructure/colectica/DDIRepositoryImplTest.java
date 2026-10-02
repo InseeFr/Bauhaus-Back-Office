@@ -4663,6 +4663,42 @@ class DDIRepositoryImplTest {
     }
 
     @Test
+    void getPhysicalInstanceSearchRows_skipsAttachedPhysicalInstanceMissingFromTheAdvancedQuery() {
+        // Une PI dépréciée reste liée à sa StudyUnit, mais _query/advanced ne la renvoie plus.
+        String agency = "agency1";
+        String piType = "a51e85bb-6259-4488-8df2-f08cb43485f8";
+        when(instanceConfiguration.itemTypes()).thenReturn(Map.of("PhysicalInstance", piType));
+        ColecticaAdvancedItem pi = new ColecticaAdvancedItem(
+                agency,
+                "pi-1",
+                1,
+                piType,
+                false,
+                Map.of("label", List.of(new LocalizedText("Fichier détail", "fr-FR"))),
+                Map.of(),
+                Map.of("isPublished", false));
+        when(colecticaClient.queryAdvanced(anyList())).thenReturn(new ColecticaAdvancedResponse(List.of(pi), 1, null));
+        when(colecticaClient.query(List.of(GROUP_ITEM_TYPE)))
+                .thenReturn(new ColecticaResponse(
+                        List.of(labelItem(GROUP_ITEM_TYPE, agency, "g1", "Groupe BPE")), 1, 1, null, null, null));
+        when(colecticaClient.getDescriptions(anyList())).thenReturn(null);
+        when(colecticaClient.findRelatedItems(
+                        RelationshipDirection.BY_SUBJECT,
+                        new ItemReference(agency, "g1"),
+                        List.of(STUDY_UNIT_ITEM_TYPE)))
+                .thenReturn(List.of(labelItem(STUDY_UNIT_ITEM_TYPE, agency, "su-1", "Recensement 2024")));
+        when(colecticaClient.findRelatedDescriptions(
+                        RelationshipDirection.BY_SUBJECT, new ItemReference(agency, "su-1"), List.of(piType)))
+                .thenReturn(List.of(new ItemReference(agency, "pi-1"), new ItemReference(agency, "pi-deprecated")));
+
+        List<PhysicalInstanceSearchRow> rows = ddiRepository.getPhysicalInstanceSearchRows();
+
+        assertEquals(
+                List.of("pi-1"),
+                rows.stream().map(PhysicalInstanceSearchRow::id).toList());
+    }
+
+    @Test
     void getStudyUnits_keepsOnlyTheLatestVersionOfEachStudyUnit() {
         when(colecticaClient.query(anyList()))
                 .thenReturn(new ColecticaResponse(
