@@ -10,6 +10,7 @@ import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.stubs.RepositoryGestionStub;
 import fr.insee.rmes.stubs.RepositoryPublicationStub;
 import fr.insee.rmes.stubs.RepositoryPublicationStubInternalError;
+import java.util.List;
 import java.util.StringJoiner;
 import org.junit.jupiter.api.Test;
 
@@ -53,7 +54,7 @@ class HealthcheckApiTest {
                         + " " + " - Publication Z" + " " + OK_STATE
                         + " " + " - Publication I" + " " + KO_STATE
                         + " " + " - Gestion" + " " + OK_STATE);
-        assertThat(errorMessage).hasToString("- Publication I " + null + " \n");
+        assertThat(errorMessage).hasToString("- Publication I unreachable \n");
     }
 
     private void checkDatabaseWith(RepositoryPublication repoPublicationStub) {
@@ -63,7 +64,8 @@ class HealthcheckApiTest {
                 repoPublicationStub,
                 documentsStoragePublicationInterne,
                 documentsStoragePublicationExterne,
-                documentsStorageGestion);
+                documentsStorageGestion,
+                List.of());
         healthcheckApi.checkDatabase(errorMessage, stateResult);
     }
 }

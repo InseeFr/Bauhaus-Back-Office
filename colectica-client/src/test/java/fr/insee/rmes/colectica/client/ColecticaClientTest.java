@@ -72,6 +72,22 @@ class ColecticaClientTest {
                 .andRespond(withStatus(HttpStatus.UNAUTHORIZED));
     }
 
+    /** Le healthcheck sonde Colectica par la recherche la moins coûteuse : un seul résultat, tous types confondus. */
+    @Test
+    void ping_postsAnAuthenticatedQueryLimitedToOneResult() {
+        Fixture f = newFixture();
+        f.server
+                .expect(requestTo(BASE_API_URL + "_query"))
+                .andExpect(method(HttpMethod.POST))
+                .andExpect(header("Authorization", "Bearer " + TOKEN))
+                .andExpect(jsonPath("$.maxResults").value(1))
+                .andRespond(withSuccess(EMPTY_QUERY_RESPONSE, MediaType.APPLICATION_JSON));
+
+        f.client.ping();
+
+        f.server.verify();
+    }
+
     @Test
     void query_postsItemTypesWithBearerTokenAndMapsResponse() {
         Fixture f = newFixture();
