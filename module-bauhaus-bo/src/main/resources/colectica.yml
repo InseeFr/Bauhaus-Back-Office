@@ -81,3 +81,7 @@ fr.insee.rmes.bauhaus.colectica:
   # Préchargement du cache des code lists mutualisées au démarrage de l'application (ApplicationReadyEvent).
   # Le chargement est non bloquant et tolérant aux pannes. true par défaut ; mettre à false pour désactiver.
   cache-warmup-enabled: true
+
+  # Sonde Colectica de /api/healthcheck : un Colectica injoignable (ou sans identifiants) fait sortir le
+  # healthcheck en 500. true par défaut ; mettre à false là où il n'y a pas de Colectica (e2e).
+  healthcheck-enabled: true
