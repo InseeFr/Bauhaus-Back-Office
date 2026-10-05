@@ -11,8 +11,9 @@ import java.util.List;
 public record QueryAdvancedRequest(
         @JsonProperty("itemTypes") List<String> itemTypes,
         @JsonProperty("searchLatestVersion") boolean searchLatestVersion,
-        @JsonProperty("resultsIncludeAll") boolean resultsIncludeAll) {
+        @JsonProperty("resultsIncludeAll") boolean resultsIncludeAll,
+        @JsonProperty("searchDepricatedItems") boolean searchDepricatedItems) {
     public QueryAdvancedRequest(List<String> itemTypes) {
-        this(itemTypes, true, true);
+        this(itemTypes, true, true, false);
     }
 }

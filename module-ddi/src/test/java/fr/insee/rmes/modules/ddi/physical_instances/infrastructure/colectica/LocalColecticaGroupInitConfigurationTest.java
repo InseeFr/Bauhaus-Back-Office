@@ -861,6 +861,55 @@ class LocalColecticaGroupInitConfigurationTest {
     }
 
     @Test
+    void sixVersionsStudyUnitExample_createsAStudyUnitInSixVersionsAllReferencingTheSameLogicalProduct()
+            throws Exception {
+        when(ddiService.createPhysicalInstance(any(), any())).thenReturn(piResponse("fr.insee", "pi-six-versions"));
+
+        LocalColecticaGroupInitConfiguration config = new LocalColecticaGroupInitConfiguration();
+        config.initColecticaSixVersionsStudyUnitExample(
+                        groupService, studyUnitService, ddiService, createColecticaConfig())
+                .run();
+
+        String studyUnitSeed = LocalColecticaGroupInitConfiguration.SIX_VERSIONS_EXAMPLE_STUDY_UNIT_SEED;
+
+        // Un seul LogicalProduct, classant une VariableScheme : la StudyUnit est complète.
+        ArgumentCaptor<Ddi4LogicalProduct> lpCaptor = ArgumentCaptor.forClass(Ddi4LogicalProduct.class);
+        verify(ddiService).createLogicalProduct(lpCaptor.capture());
+        Ddi4LogicalProduct logicalProduct = lpCaptor.getValue();
+        assertThat(logicalProduct.variableSchemeReference()).hasSize(1);
+        verify(ddiService).createVariableScheme(any());
+
+        // Une seule PhysicalInstance, à ids déterministes : une relance la réécrit.
+        ArgumentCaptor<PhysicalInstanceIds> idsCaptor = ArgumentCaptor.forClass(PhysicalInstanceIds.class);
+        verify(ddiService).createPhysicalInstance(any(), idsCaptor.capture());
+        assertThat(idsCaptor.getValue().physicalInstance())
+                .isEqualTo(generateDeterministicUuid(studyUnitSeed + "#physicalinstance"));
+
+        // La MÊME StudyUnit enregistrée en versions 1 à 6, chacune référençant ce LogicalProduct et la PI :
+        // la descente bysubject renvoie une relation par version, donc 6 « LogicalProducts ».
+        ArgumentCaptor<Ddi4StudyUnit> suCaptor = ArgumentCaptor.forClass(Ddi4StudyUnit.class);
+        verify(studyUnitService, times(6)).createOrUpdate(suCaptor.capture());
+        List<Ddi4StudyUnit> versions = suCaptor.getAllValues();
+        String expectedStudyUnitId = generateDeterministicUuid(studyUnitSeed);
+        assertThat(versions).extracting(Ddi4StudyUnit::id).containsOnly(expectedStudyUnitId);
+        assertThat(versions).extracting(Ddi4StudyUnit::version).containsExactly("1", "2", "3", "4", "5", "6");
+        assertThat(versions).allSatisfy(su -> {
+            assertThat(su.urn()).isEqualTo("urn:ddi:fr.insee:%s:%s".formatted(su.id(), su.version()));
+            assertThat(su.logicalProductReferences()).extracting(Reference::id).containsExactly(logicalProduct.id());
+            assertThat(su.physicalInstanceReferences())
+                    .extracting(Reference::id)
+                    .containsExactly("pi-six-versions");
+        });
+
+        // Un groupe dédié, pour que la PI soit atteignable depuis l'écran (descente Group -> StudyUnit -> PI).
+        ArgumentCaptor<Ddi4Group> groupCaptor = ArgumentCaptor.forClass(Ddi4Group.class);
+        verify(groupService).createOrUpdate(groupCaptor.capture());
+        assertThat(groupCaptor.getValue().studyUnitReference())
+                .extracting(Reference::id)
+                .containsExactly(expectedStudyUnitId);
+    }
+
+    @Test
     void withoutLogicalProductExample_createsAGroupAndAStudyUnitWithoutLogicalProductHoldingAPhysicalInstance()
             throws Exception {
         when(ddiService.createPhysicalInstance(any(), any())).thenReturn(piResponse("fr.insee", "pi-without-lp"));

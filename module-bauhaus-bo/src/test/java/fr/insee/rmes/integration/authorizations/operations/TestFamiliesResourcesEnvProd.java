@@ -22,9 +22,9 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.security.autoconfigure.web.servlet.ServletWebSecurityAutoConfiguration;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
@@ -43,7 +43,7 @@ import org.springframework.test.web.servlet.MockMvc;
 @Import({FamilyResources.class, UserAuthTestConfiguration.class})
 @ImportAutoConfiguration(ServletWebSecurityAutoConfiguration.class)
 class TestFamiliesResourcesEnvProd {
-    @Configuration
+    @TestConfiguration
     @EnableMethodSecurity(securedEnabled = true)
     static class TestSecurityConfiguration {
         // Configuration minimale pour activer method security

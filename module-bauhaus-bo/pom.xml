@@ -8,7 +8,7 @@
   </parent>
 
   <artifactId>module-bauhaus-bo</artifactId>
-  <version>4.21.5</version>
+  <version>4.21.6</version>
   <name>module-bauhaus-bo</name>
 
   <dependencies>
@@ -47,6 +47,13 @@
       <groupId>fr.insee.rmes</groupId>
       <artifactId>module-ddi</artifactId>
       <version>1.0.0</version>
+    </dependency>
+    <dependency>
+      <groupId>fr.insee.rmes</groupId>
+      <artifactId>colectica-client</artifactId>
+      <version>1.0.0</version>
+      <type>test-jar</type>
+      <scope>test</scope>
     </dependency>
     <!-- Cache des code lists mutualisées : abstraction Spring Cache + provider Caffeine
          (in-process, supporte expireAfterWrite/TTL). Voir ColecticaCacheConfiguration. -->

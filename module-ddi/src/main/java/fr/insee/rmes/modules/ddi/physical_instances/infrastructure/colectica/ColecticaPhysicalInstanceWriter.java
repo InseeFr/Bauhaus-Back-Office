@@ -143,8 +143,10 @@ class ColecticaPhysicalInstanceWriter {
      * Ne réécrit que la PhysicalInstance, sa DataRelationship et, le cas échéant, la StudyUnit de
      * rattachement : variables, listes de codes et catégories restent intactes dans Colectica, et
      * aucun LogicalProduct ni scheme n'est donc requis.
+     *
+     * @return la PhysicalInstance telle qu'enregistrée (libellé et {@code versionDate} à jour)
      */
-    void updatePhysicalInstance(String agencyId, String id, UpdatePhysicalInstanceRequest request) {
+    Ddi4PhysicalInstance updatePhysicalInstance(String agencyId, String id, UpdatePhysicalInstanceRequest request) {
         Ddi4Response currentInstance = reader.getPhysicalInstance(agencyId, id);
 
         if (currentInstance == null
@@ -187,13 +189,14 @@ class ColecticaPhysicalInstanceWriter {
                 null);
 
         List<ColecticaItemResponse> colecticaItems = toColecticaItems(updatedResponse);
-        if (request.studyUnitId() != null && request.studyUnitAgency() != null) {
+        if (request.attachesToStudyUnit()) {
             colecticaItems.add(addPhysicalInstanceReferenceToStudyUnit(
                     request.studyUnitAgency(), request.studyUnitId(), agencyId, id));
         }
 
         logger.info("Sending physical instance update to Colectica with {} items", colecticaItems.size());
         colecticaClient.createOrUpdateItems(new ColecticaCreateItemRequest(colecticaItems));
+        return updatedPI;
     }
 
     /**
