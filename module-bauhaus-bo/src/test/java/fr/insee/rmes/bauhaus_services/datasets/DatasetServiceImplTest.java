@@ -21,6 +21,7 @@ import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.exceptions.RmesRuntimeBadRequestException;
 import fr.insee.rmes.modules.datasets.datasets.model.Dataset;
 import fr.insee.rmes.modules.datasets.datasets.model.PatchDataset;
+import fr.insee.rmes.modules.shared_kernel.infrastructure.publication.ObjectPublished;
 import fr.insee.rmes.persistance.sparql_queries.datasets.DatasetDistributionQueries;
 import fr.insee.rmes.persistance.sparql_queries.datasets.DatasetQueries;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
@@ -43,6 +44,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
+import org.springframework.context.ApplicationEventPublisher;
 
 class DatasetServiceImplTest {
 
@@ -53,6 +55,7 @@ class DatasetServiceImplTest {
     private DatasetQueries datasetQueries;
     private DatasetDistributionQueries datasetDistributionQueries;
     private OrganizationsService organizationsService;
+    private ApplicationEventPublisher events;
     private DatasetServiceImpl datasetService;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -72,6 +75,7 @@ class DatasetServiceImplTest {
         datasetQueries = mock(DatasetQueries.class);
         datasetDistributionQueries = mock(DatasetDistributionQueries.class);
         organizationsService = mock(OrganizationsService.class);
+        events = mock(ApplicationEventPublisher.class);
 
         datasetService = new DatasetServiceImpl(
                 repositoryGestion,
@@ -90,7 +94,8 @@ class DatasetServiceImplTest {
                 "http://",
                 "distributionIRI",
                 "adms",
-                "identifiantsAlternatifs/jeuDeDonnees");
+                "identifiantsAlternatifs/jeuDeDonnees",
+                events);
     }
 
     @Test
@@ -458,7 +463,7 @@ class DatasetServiceImplTest {
         assertThat(exception.getDetails()).contains("\"code\":1301");
         assertThat(exception.getDetails()).contains("This dataset is already published");
         assertThat(exception.getDetails()).contains("Dataset: 1");
-        verify(repositoryGestion, never()).objectValidation(any(), any());
+        verify(events, never()).publishEvent(any());
     }
 
     @Test
@@ -482,20 +487,28 @@ class DatasetServiceImplTest {
     @Test
     void shouldPublishADataset() throws RmesException {
         IRI iri = SimpleValueFactory.getInstance().createIRI("http://datasetIRI/1");
-        IRI catalogRecordIri = SimpleValueFactory.getInstance().createIRI("http://catalogRecordIRI/1");
+        IRI catalogRecordIri = SimpleValueFactory.getInstance().createIRI("http://recordIRI/1");
         givenDatasetWithValidationState("Unpublished");
 
-        doNothing().when(publicationUtils).publishResource(iri, Set.of());
-        doNothing().when(publicationUtils).publishResource(catalogRecordIri, Set.of("creator", "contributor"));
-
         String id = datasetService.publishDataset("1");
-        ArgumentCaptor<Model> modelIri = ArgumentCaptor.forClass(Model.class);
 
-        verify(repositoryGestion, times(1)).objectValidation(eq(iri), modelIri.capture());
-        Assertions.assertEquals(
-                "[(http://datasetIRI/1, http://rdf.insee.fr/def/base#validationState, \"Validated\") [http://rdf.insee.fr/graphes/datasetGraph/]]",
-                modelIri.getValue().toString());
+        verify(publicationUtils).publishResource(iri, Set.of("processStep", "archiveUnit", "validationState"));
+        verify(publicationUtils).publishResource(catalogRecordIri, Set.of("creator", "contributor"));
         Assertions.assertEquals("1", id);
+    }
+
+    @Test
+    void shouldAnnounceThePublicationWithTheDatasetGraph() throws RmesException {
+        givenDatasetWithValidationState("Unpublished");
+
+        datasetService.publishDataset("1");
+
+        ArgumentCaptor<ObjectPublished> event = ArgumentCaptor.forClass(ObjectPublished.class);
+        verify(events).publishEvent(event.capture());
+        assertThat(event.getValue())
+                .isEqualTo(new ObjectPublished(
+                        SimpleValueFactory.getInstance().createIRI("http://datasetIRI/1"),
+                        SimpleValueFactory.getInstance().createIRI("http://rdf.insee.fr/graphes/datasetGraph/")));
     }
 
     @Test

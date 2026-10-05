@@ -18,6 +18,7 @@ import fr.insee.rmes.graphdb.ontologies.INSEE;
 import fr.insee.rmes.json.JSONUtils;
 import fr.insee.rmes.modules.datasets.datasets.model.*;
 import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
+import fr.insee.rmes.modules.shared_kernel.infrastructure.publication.ObjectPublished;
 import fr.insee.rmes.persistance.sparql_queries.datasets.DatasetDistributionQueries;
 import fr.insee.rmes.persistance.sparql_queries.datasets.DatasetQueries;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
@@ -37,6 +38,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -78,6 +80,8 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
 
     private final String identifiantsAlternatifsBaseUri;
 
+    private final ApplicationEventPublisher events;
+
     public DatasetServiceImpl(
             RepositoryGestion repoGestion,
             IdGenerator idGenerator,
@@ -96,7 +100,8 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
             @Value("${fr.insee.rmes.bauhaus.distribution.baseURI}") String distributionsBaseUriSuffix,
             @Value("${fr.insee.rmes.bauhaus.adms.graph}") String admsGraphSuffix,
             @Value("${fr.insee.rmes.bauhaus.adms.identifiantsAlternatifs.baseURI}")
-                    String identifiantsAlternatifsBaseUri) {
+                    String identifiantsAlternatifsBaseUri,
+            ApplicationEventPublisher events) {
         super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
         this.languages = languages;
         this.seriesRepository = seriesRepository;
@@ -111,6 +116,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         this.distributionsBaseUriSuffix = distributionsBaseUriSuffix;
         this.admsGraphSuffix = admsGraphSuffix;
         this.identifiantsAlternatifsBaseUri = identifiantsAlternatifsBaseUri;
+        this.events = events;
     }
 
     private String getDatasetsGraph() {
@@ -156,29 +162,12 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         PublicationUtils.rejectIfAlreadyPublished(
                 "Dataset", id, getDatasetByID(id).getValidationState());
 
-        Model model = new LinkedHashModel();
         IRI iri = RdfUtils.createIRI(getDatasetsBaseUri() + "/" + id);
         IRI catalogRecordIri = RdfUtils.createIRI(getCatalogRecordBaseUri() + "/" + id);
 
         publicationUtils.publishResource(iri, Set.of("processStep", "archiveUnit", "validationState"));
         publicationUtils.publishResource(catalogRecordIri, Set.of(CREATOR, CONTRIBUTOR));
-        model.add(
-                iri,
-                INSEE.VALIDATION_STATE,
-                RdfUtils.setLiteralString(ValidationStatus.VALIDATED),
-                RdfUtils.createIRI(getDatasetsGraph()));
-        model.remove(
-                iri,
-                INSEE.VALIDATION_STATE,
-                RdfUtils.setLiteralString(ValidationStatus.UNPUBLISHED),
-                RdfUtils.createIRI(getDatasetsGraph()));
-        model.remove(
-                iri,
-                INSEE.VALIDATION_STATE,
-                RdfUtils.setLiteralString(ValidationStatus.MODIFIED),
-                RdfUtils.createIRI(getDatasetsGraph()));
-
-        repoGestion.objectValidation(iri, model);
+        events.publishEvent(new ObjectPublished(iri, RdfUtils.createIRI(getDatasetsGraph())));
 
         return id;
     }
