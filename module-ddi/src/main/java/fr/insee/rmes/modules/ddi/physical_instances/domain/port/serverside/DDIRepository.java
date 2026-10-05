@@ -16,6 +16,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnitResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4VariableScheme;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.DuplicatePhysicalInstanceRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodesList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialGroup;
@@ -26,6 +27,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialStudyUni
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceIds;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceParents;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceSearchRow;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UpdatePhysicalInstanceRequest;
 import java.util.List;
 import java.util.Optional;
@@ -57,19 +59,24 @@ public interface DDIRepository {
 
     List<Ddi4CodeList> getPhysicalInstanceCodeLists(String agencyId, String id);
 
-    /**
-     * Tous les items du set de la PhysicalInstance, listes de codes et catégories comprises —
-     * contrairement à {@link #getPhysicalInstance(String, String)} qui les écarte pour alléger le
-     * GET. Sert de référence à la réconciliation des {@code VersionDate} : un item absent de cette
-     * référence est réellement nouveau, et non simplement hors périmètre de lecture.
-     */
-    Ddi4Response getFullPhysicalInstance(String agencyId, String id);
-
     /** Le groupe et ses études, ou {@code null} si Colectica ne connaît pas le groupe. */
     Ddi4GroupResponse getGroup(String agencyId, String id);
 
     /** Le Group d'identifiant {@code id}, ou {@link Optional#empty()} s'il n'existe pas encore. */
     Optional<Ddi4Group> findGroup(String agencyId, String id);
+
+    /**
+     * L'état stocké (dernière version) des items que ce payload réécrit, et d'eux seuls : ce qu'une
+     * sauvegarde compare pour réconcilier versions et dates. Les items inconnus du stockage sont absents
+     * de la réponse.
+     */
+    Ddi4Response getStoredItems(Ddi4Response items);
+
+    /**
+     * Les mêmes références pointant la dernière version stockée de leur cible, sans en lire le contenu.
+     * Les cibles inconnues du stockage sont omises.
+     */
+    List<Reference> getLatestVersions(List<Reference> references);
 
     /** La StudyUnit d'identifiant {@code id}, ou {@link Optional#empty()} si elle n'existe pas encore. */
     Optional<Ddi4StudyUnit> findStudyUnit(String agencyId, String id);
@@ -77,6 +84,15 @@ public interface DDIRepository {
     void updatePhysicalInstance(String agencyId, String id, UpdatePhysicalInstanceRequest request);
 
     void updateFullPhysicalInstance(String agencyId, String id, Ddi4Response ddi4Response);
+
+    /**
+     * Copie la PhysicalInstance {@code agencyId/id} (nouveaux identifiants pour la PI, sa
+     * DataRelationship, son LogicalRecord et ses variables ; listes de codes et catégories
+     * référencées telles quelles) et la rattache à l'Étude de la requête, en un seul enregistrement.
+     *
+     * @return la référence de la PhysicalInstance créée
+     */
+    Reference duplicatePhysicalInstance(String agencyId, String id, DuplicatePhysicalInstanceRequest request);
 
     Ddi4Response createPhysicalInstance(CreatePhysicalInstanceRequest request);
 
@@ -168,6 +184,12 @@ public interface DDIRepository {
     String getItemXml(String agency, String id);
 
     PhysicalInstanceParents getPhysicalInstanceParents(String agencyId, String id);
+
+    /**
+     * Les IRIs des séries d'opérations d'un Group (ses {@code r:UserID}), lues sur le seul item du
+     * Group — sans télécharger le ddiset de toute sa descendance.
+     */
+    List<String> getGroupSeriesIris(String agencyId, String groupId);
     /**
      * Le DDI 3.3 de la StudyUnit d'une opération, dans une {@code <FragmentInstance>} qui porte aussi
      * les fragments des PhysicalInstances qu'elle référence (#1145).

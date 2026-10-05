@@ -519,6 +519,47 @@ class DDI3toDDI4ConverterServiceImplTest {
         assertEquals("CAT_1", code1.categoryReference().id());
     }
 
+    /**
+     * Des PI importées contiennent des items DDI 3.2 : ils sont lus comme du 3.3, dont le schéma
+     * ne diffère que par les espaces de noms.
+     */
+    @Test
+    void shouldConvertDdi32CategoryAsDdi33() {
+        String categoryXml = """
+                <Fragment xmlns:r="ddi:reusable:3_2" xmlns="ddi:instance:3_2">
+                    <Category isUniversallyUnique="true" versionDate="2021-04-09T14:30:19.7319698Z" xmlns="ddi:logicalproduct:3_2">
+                        <r:URN>urn:ddi:fr.insee:CAT_32:1</r:URN>
+                        <r:Agency>fr.insee</r:Agency>
+                        <r:ID>CAT_32</r:ID>
+                        <r:Version>1</r:Version>
+                        <r:Label>
+                            <r:Content xml:lang="fr-FR">Rue</r:Content>
+                        </r:Label>
+                    </Category>
+                </Fragment>
+                """;
+        Ddi3Response ddi3 = new Ddi3Response(
+                null,
+                List.of(new Ddi3Response.Ddi3Item(
+                        "7e47c269-bcab-40f7-a778-af7bbc4e3d00",
+                        "fr.insee",
+                        "1",
+                        "CAT_32",
+                        categoryXml,
+                        null,
+                        null,
+                        false,
+                        false,
+                        false,
+                        null)));
+
+        Ddi4Response result = converter.convertDdi3ToDdi4(ddi3, SCHEMA_URL);
+
+        Ddi4Category category = result.category().getFirst();
+        assertEquals("CAT_32", category.id());
+        assertEquals("Rue", category.label().getFirst().value());
+    }
+
     @Test
     void shouldConvertCategoryFromDdi3() {
         // Given

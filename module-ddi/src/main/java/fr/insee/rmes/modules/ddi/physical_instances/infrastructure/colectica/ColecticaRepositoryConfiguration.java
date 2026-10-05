@@ -12,6 +12,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.Study
 import fr.insee.rmes.modules.ddi.physical_instances.domain.services.Ddi4ToLifecycle33;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cache.CacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestClient;
@@ -74,14 +75,16 @@ public class ColecticaRepositoryConfiguration {
             DDI3toDDI4ConverterService ddi3ToDdi4Converter,
             DDI4toDDI3ConverterService ddi4ToDdi3Converter,
             ColecticaClient colecticaClient,
-            MutualizedCodeListRefsStrategy mutualizedCodeListRefsProvider) {
+            MutualizedCodeListRefsStrategy mutualizedCodeListRefsProvider,
+            CacheManager cacheManager) {
         return new DDIRepositoryImpl(
                 colecticaConfiguration.server(),
                 ddi3ToDdi4Converter,
                 ddi4ToDdi3Converter,
                 colecticaConfiguration,
                 colecticaClient,
-                mutualizedCodeListRefsProvider);
+                mutualizedCodeListRefsProvider,
+                cacheManager.getCache(ColecticaCacheNames.PHYSICAL_INSTANCE_SEARCH_ROWS));
     }
 
     @Bean

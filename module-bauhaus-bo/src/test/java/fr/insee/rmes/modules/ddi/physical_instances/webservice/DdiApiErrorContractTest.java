@@ -3,6 +3,7 @@ package fr.insee.rmes.modules.ddi.physical_instances.webservice;
 import static fr.insee.rmes.modules.commons.webservice.ApiErrorContract.apiError;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -97,8 +98,9 @@ class DdiApiErrorContractTest {
 
     @Test
     void a_sentinel_list_without_label_answers_400_with_a_translatable_code() throws Exception {
-        when(ddiService.updateFullPhysicalInstance(eq("fr.insee"), eq("pi-1"), any()))
-                .thenThrow(InvalidSentinelValuesException.missingRepresentationLabel("fr.insee", "mmvr-1"));
+        doThrow(InvalidSentinelValuesException.missingRepresentationLabel("fr.insee", "mmvr-1"))
+                .when(ddiService)
+                .updateFullPhysicalInstance(eq("fr.insee"), eq("pi-1"), any());
 
         mockMvc.perform(put("/ddi/physical-instance/{agencyId}/{id}", "fr.insee", "pi-1")
                         .contentType(MediaType.APPLICATION_JSON)

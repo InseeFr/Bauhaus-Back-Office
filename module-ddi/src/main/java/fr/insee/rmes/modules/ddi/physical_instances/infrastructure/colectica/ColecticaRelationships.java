@@ -32,8 +32,16 @@ final class ColecticaRelationships {
         return refs;
     }
 
-    /** Identifiants des items de {@code childType} directement référencés par {@code parent}. */
+    /**
+     * Identifiants des items de {@code childType} directement référencés par {@code parent}, sans
+     * doublon : {@code bysubject} renvoie une relation par version du parent, donc le même enfant
+     * autant de fois que le parent a de versions qui le référencent.
+     */
     static List<ItemReference> childrenOfType(ColecticaClient colecticaClient, ItemReference parent, String childType) {
-        return colecticaClient.findRelatedDescriptions(RelationshipDirection.BY_SUBJECT, parent, List.of(childType));
+        return colecticaClient
+                .findRelatedDescriptions(RelationshipDirection.BY_SUBJECT, parent, List.of(childType))
+                .stream()
+                .distinct()
+                .toList();
     }
 }

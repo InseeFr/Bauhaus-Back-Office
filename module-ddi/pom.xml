@@ -19,6 +19,13 @@
     </dependency>
     <dependency>
       <groupId>fr.insee.rmes</groupId>
+      <artifactId>colectica-client</artifactId>
+      <version>1.0.0</version>
+      <type>test-jar</type>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>fr.insee.rmes</groupId>
       <artifactId>module-utility</artifactId>
       <version>1.0.0</version>
     </dependency>

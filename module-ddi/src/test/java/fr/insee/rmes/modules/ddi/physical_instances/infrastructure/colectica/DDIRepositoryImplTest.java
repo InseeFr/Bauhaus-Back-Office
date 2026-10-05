@@ -1,18 +1,23 @@
 package fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica;
 
+import static fr.insee.rmes.colectica.client.dto.ColecticaItemBuilder.aColecticaItem;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.*;
 
 import fr.insee.rmes.colectica.client.ColecticaClient;
 import fr.insee.rmes.colectica.client.ItemReference;
 import fr.insee.rmes.colectica.client.RelationshipDirection;
 import fr.insee.rmes.colectica.client.dto.*;
+import fr.insee.rmes.colectica.client.dto.ColecticaTypedSetItem;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.DdiItemNotFoundException;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.MissingSchemeException;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.StudyUnitNotFoundException;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.*;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3toDDI4ConverterService;
@@ -21,7 +26,7 @@ import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -34,6 +39,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.cache.Cache;
+import org.springframework.cache.concurrent.ConcurrentMapCache;
+import org.springframework.cache.interceptor.SimpleKey;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
 
@@ -57,6 +65,8 @@ class DDIRepositoryImplTest {
 
     private DDIRepositoryImpl ddiRepository;
 
+    private final Cache searchRowsCache = new ConcurrentMapCache(ColecticaCacheNames.PHYSICAL_INSTANCE_SEARCH_ROWS);
+
     @BeforeEach
     void setUp() {
         lenient().when(colecticaConfiguration.langs()).thenReturn(List.of("fr-FR"));
@@ -72,7 +82,8 @@ class DDIRepositoryImplTest {
                 ddi4ToDdi3Converter,
                 colecticaConfiguration,
                 colecticaClient,
-                refsProvider);
+                refsProvider,
+                searchRowsCache);
     }
 
     @Test
@@ -80,29 +91,20 @@ class DDIRepositoryImplTest {
         // Given
         Map<String, String> itemTypes = Map.of("PhysicalInstance", "a51e85bb-6259-4488-8df2-f08cb43485f8");
 
-        ColecticaItem item1 = colecticaItem(
-                "PhysicalInstance",
-                "agency1",
-                1,
-                "pi-1",
-                Map.of("fr-FR", "Instance Physique 1", "en", "Physical Instance 1"),
-                Map.of("fr-FR", "Label 1", "en", "Label 1"),
-                "2025-01-01T00:00:00",
-                true,
-                1L);
+        ColecticaItem item1 = aColecticaItem("PhysicalInstance", "pi-1")
+                .itemName(Map.of("fr-FR", "Instance Physique 1", "en", "Physical Instance 1"))
+                .label(Map.of("fr-FR", "Label 1", "en", "Label 1"))
+                .agency("agency1")
+                .versionDate("2025-01-01T00:00:00")
+                .build();
 
-        ColecticaItem item2 = colecticaItem(
-                "PhysicalInstance",
-                "agency2",
-                1,
-                "pi-2",
-                Map.of("fr-FR", "Instance Physique 2", "en", "Physical Instance 2"),
-                Map.of("fr-FR", "Label 2", "en", "Label 2"),
-                null,
-                true,
-                2L);
+        ColecticaItem item2 = aColecticaItem("PhysicalInstance", "pi-2")
+                .itemName(Map.of("fr-FR", "Instance Physique 2", "en", "Physical Instance 2"))
+                .label(Map.of("fr-FR", "Label 2", "en", "Label 2"))
+                .agency("agency2")
+                .build();
 
-        ColecticaResponse mockResponse = queryResponse(item1, item2);
+        ColecticaResponse mockResponse = new ColecticaResponse(List.of(item1, item2), 2, 2, null, null, null);
 
         // Mock configuration
         when(instanceConfiguration.itemTypes()).thenReturn(itemTypes);
@@ -114,7 +116,14 @@ class DDIRepositoryImplTest {
         List<PartialPhysicalInstance> result = ddiRepository.getPhysicalInstances();
 
         // Then
-        assertFirstOfTwoPhysicalInstances(result, "2025-01-01 00:00:00");
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertEquals("pi-1", result.get(0).id());
+        assertEquals("Instance Physique 1", result.get(0).label());
+        assertEquals("agency1", result.get(0).agency());
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+        assertEquals("2025-01-01 00:00:00", sdf.format(result.get(0).versionDate()));
         assertEquals("pi-2", result.get(1).id());
         assertEquals("Instance Physique 2", result.get(1).label());
         assertEquals("agency2", result.get(1).agency());
@@ -162,7 +171,14 @@ class DDIRepositoryImplTest {
         List<PartialPhysicalInstance> result = ddiRepository.getPhysicalInstancesViaAdvancedQuery();
 
         // Then
-        assertFirstOfTwoPhysicalInstances(result, "2026-06-29 14:26:32");
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertEquals("pi-1", result.get(0).id());
+        assertEquals("Instance Physique 1", result.get(0).label());
+        assertEquals("agency1", result.get(0).agency());
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+        assertEquals("2026-06-29 14:26:32", sdf.format(result.get(0).versionDate()));
         assertEquals("pi-2", result.get(1).id());
         assertEquals("Titre 2", result.get(1).label());
         assertNull(result.get(1).versionDate());
@@ -175,29 +191,20 @@ class DDIRepositoryImplTest {
         // Given
         Map<String, String> itemTypes = Map.of("LogicalProduct", "965c8d28-7d48-4950-bea7-04b27e52bb9b");
 
-        ColecticaItem item1 = colecticaItem(
-                "LogicalProduct",
-                "agency1",
-                1,
-                "lp-1",
-                Map.of("fr-FR", "Produit Logique 1", "en", "Logical Product 1"),
-                Map.of("fr-FR", "Label 1", "en", "Label 1"),
-                "2025-01-01T00:00:00",
-                true,
-                1L);
+        ColecticaItem item1 = aColecticaItem("LogicalProduct", "lp-1")
+                .itemName(Map.of("fr-FR", "Produit Logique 1", "en", "Logical Product 1"))
+                .label(Map.of("fr-FR", "Label 1", "en", "Label 1"))
+                .agency("agency1")
+                .versionDate("2025-01-01T00:00:00")
+                .build();
 
-        ColecticaItem item2 = colecticaItem(
-                "LogicalProduct",
-                "agency2",
-                1,
-                "lp-2",
-                Map.of("fr-FR", "Produit Logique 2", "en", "Logical Product 2"),
-                Map.of("fr-FR", "Label 2", "en", "Label 2"),
-                null,
-                true,
-                2L);
+        ColecticaItem item2 = aColecticaItem("LogicalProduct", "lp-2")
+                .itemName(Map.of("fr-FR", "Produit Logique 2", "en", "Logical Product 2"))
+                .label(Map.of("fr-FR", "Label 2", "en", "Label 2"))
+                .agency("agency2")
+                .build();
 
-        ColecticaResponse mockResponse = queryResponse(item1, item2);
+        ColecticaResponse mockResponse = new ColecticaResponse(List.of(item1, item2), 2, 2, null, null, null);
 
         when(instanceConfiguration.itemTypes()).thenReturn(itemTypes);
         when(colecticaClient.query(anyList())).thenReturn(mockResponse);
@@ -211,7 +218,9 @@ class DDIRepositoryImplTest {
         assertEquals("lp-1", result.get(0).id());
         assertEquals("Produit Logique 1", result.get(0).label());
         assertEquals("agency1", result.get(0).agency());
-        assertEquals("2025-01-01 00:00:00", utcSeconds(result.get(0).versionDate()));
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+        assertEquals("2025-01-01 00:00:00", sdf.format(result.get(0).versionDate()));
         assertEquals("lp-2", result.get(1).id());
         assertEquals("Produit Logique 2", result.get(1).label());
         assertEquals("agency2", result.get(1).agency());
@@ -227,15 +236,52 @@ class DDIRepositoryImplTest {
         String agencyId = "fr.inserm.constances";
         int version = 1;
 
-        stubSet(
-                new ColecticaSetItem(instanceId, version, agencyId),
-                new ColecticaSetItem("var-1", 1, agencyId),
-                new ColecticaSetItem("dr-123", 1, agencyId));
+        ColecticaSetItem[] setItems = {
+            new ColecticaSetItem(instanceId, version, agencyId),
+            new ColecticaSetItem("var-1", 1, agencyId),
+            new ColecticaSetItem("dr-123", 1, agencyId)
+        };
+        stubPhysicalInstanceSet(setItems);
 
-        stubDescriptions(
-                description(PHYSICAL_INSTANCE_TYPE, agencyId, version, instanceId, fragment("PhysicalInstance")),
-                description(VARIABLE_TYPE, agencyId, 1, "var-1", fragment("Variable")),
-                description(DATA_RELATIONSHIP_TYPE, agencyId, 1, "dr-123", fragment("DataRelationship")));
+        ColecticaItemResponse[] itemResponses = {
+            new ColecticaItemResponse(
+                    "a51e85bb-6259-4488-8df2-f08cb43485f8",
+                    agencyId,
+                    version,
+                    instanceId,
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><PhysicalInstance/></Fragment>",
+                    null,
+                    null,
+                    false,
+                    false,
+                    false,
+                    null),
+            new ColecticaItemResponse(
+                    "683889c6-f74b-4d5e-92ed-908c0a42bb2d",
+                    agencyId,
+                    1,
+                    "var-1",
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><Variable/></Fragment>",
+                    null,
+                    null,
+                    false,
+                    false,
+                    false,
+                    null),
+            new ColecticaItemResponse(
+                    "f39ff278-8500-45fe-a850-3906da2d242b",
+                    agencyId,
+                    1,
+                    "dr-123",
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><DataRelationship/></Fragment>",
+                    null,
+                    null,
+                    false,
+                    false,
+                    false,
+                    null)
+        };
+        when(colecticaClient.getDescriptions(anyList())).thenReturn(itemResponses);
 
         Ddi4PhysicalInstance mockPhysicalInstance = new Ddi4PhysicalInstance(
                 Ddi4PhysicalInstance.TYPE,
@@ -248,7 +294,18 @@ class DDIRepositoryImplTest {
                 new Citation(LangStrings.of("fr-FR", "Radon et gamma")),
                 null);
 
-        stubDdi3ToDdi4Conversion(physicalInstanceResponse(agencyId, instanceId, mockPhysicalInstance));
+        Ddi4Response mockDdi4Response = new Ddi4Response(
+                "ddi:4.0",
+                List.of(Reference.of(agencyId, instanceId, "1", "PhysicalInstance")),
+                List.of(mockPhysicalInstance),
+                List.of(),
+                List.of(),
+                List.of(),
+                List.of(),
+                null);
+
+        when(ddi3ToDdi4Converter.convertDdi3ToDdi4(any(Ddi3Response.class), eq("ddi:4.0")))
+                .thenReturn(mockDdi4Response);
 
         // When
         Ddi4Response result = ddiRepository.getPhysicalInstance(agencyId, instanceId);
@@ -263,7 +320,7 @@ class DDIRepositoryImplTest {
                 "Radon et gamma",
                 result.physicalInstance().get(0).citation().title().get(0).value());
 
-        verify(colecticaClient).getSet(eq(agencyId), eq(instanceId), any());
+        verify(colecticaClient).querySet(any(), anyList());
         verify(colecticaClient).getDescriptions(anyList());
         verify(ddi3ToDdi4Converter).convertDdi3ToDdi4(any(Ddi3Response.class), eq("ddi:4.0"));
     }
@@ -313,22 +370,54 @@ class DDIRepositoryImplTest {
                 null);
 
         // Mock configuration
-        stubCreationConfiguration(creationItemTypesWithStudyUnit());
+        when(instanceConfiguration.defaultAgencyId()).thenReturn("fr.insee");
+        when(instanceConfiguration.itemTypes())
+                .thenReturn(Map.of(
+                        "PhysicalInstance", "a51e85bb-6259-4488-8df2-f08cb43485f8",
+                        "DataRelationship", "f39ff278-8500-45fe-a850-3906da2d242b",
+                        "StudyUnit", "30ea0200-7121-4f01-8d21-a931a182b86d"));
+        when(instanceConfiguration.itemFormat()).thenReturn("dc337820-af3a-4c0b-82f9-cf02535cde83");
 
         // Mock StudyUnit fetch
         String studyUnitXml = "<Fragment xmlns:r=\"ddi:reusable:3_3\" xmlns=\"ddi:instance:3_3\">"
                 + "<StudyUnit xmlns=\"ddi:studyunit:3_3\" isUniversallyUnique=\"true\" versionDate=\"2025-01-01T00:00:00\"/>"
                 + "</Fragment>";
-        when(colecticaClient.getItem(anyString(), anyString(), any()))
-                .thenReturn(studyUnitToUpdate(studyUnitAgency, 2, studyUnitId, studyUnitXml));
+        ColecticaItemResponse studyUnitResponse = new ColecticaItemResponse(
+                "30ea0200-7121-4f01-8d21-a931a182b86d",
+                studyUnitAgency,
+                2,
+                studyUnitId,
+                studyUnitXml,
+                "2025-01-01T00:00:00",
+                null,
+                false,
+                false,
+                false,
+                null);
+        when(colecticaClient.getItem(anyString(), anyString(), any())).thenReturn(studyUnitResponse);
 
         // Mock item creation
         when(colecticaClient.createOrUpdateItems(any())).thenReturn("{}");
 
         // Mock set and _getList responses for getPhysicalInstance call after creation
-        stubSet(new ColecticaSetItem("test-id", 1, "fr.insee"));
+        ColecticaSetItem[] setItems = {new ColecticaSetItem("test-id", 1, "fr.insee")};
+        stubPhysicalInstanceSet(setItems);
 
-        stubDescriptions(description(PHYSICAL_INSTANCE_TYPE, "fr.insee", 1, "test-id", fragment("PhysicalInstance")));
+        ColecticaItemResponse[] getListResponses = {
+            new ColecticaItemResponse(
+                    "a51e85bb-6259-4488-8df2-f08cb43485f8",
+                    "fr.insee",
+                    1,
+                    "test-id",
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><PhysicalInstance/></Fragment>",
+                    null,
+                    null,
+                    false,
+                    false,
+                    false,
+                    null)
+        };
+        when(colecticaClient.getDescriptions(anyList())).thenReturn(getListResponses);
         // Mock converter
         Ddi4PhysicalInstance mockPhysicalInstance = new Ddi4PhysicalInstance(
                 Ddi4PhysicalInstance.TYPE,
@@ -341,7 +430,18 @@ class DDIRepositoryImplTest {
                 new Citation(LangStrings.of("fr-FR", physicalInstanceLabel)),
                 null);
 
-        stubDdi3ToDdi4Conversion(physicalInstanceResponse("fr.insee", "test-id", mockPhysicalInstance));
+        Ddi4Response mockDdi4Response = new Ddi4Response(
+                "ddi:4.0",
+                List.of(Reference.of("fr.insee", "test-id", "1", "PhysicalInstance")),
+                List.of(mockPhysicalInstance),
+                List.of(),
+                List.of(),
+                List.of(),
+                List.of(),
+                null);
+
+        when(ddi3ToDdi4Converter.convertDdi3ToDdi4(any(Ddi3Response.class), eq("ddi:4.0")))
+                .thenReturn(mockDdi4Response);
 
         // When
         Ddi4Response result = ddiRepository.createPhysicalInstance(request);
@@ -355,7 +455,10 @@ class DDIRepositoryImplTest {
                 result.physicalInstance().get(0).citation().title().get(0).value());
 
         // Verify item creation was sent through the SDK
-        ColecticaCreateItemRequest createRequest = sentRequest();
+        ArgumentCaptor<ColecticaCreateItemRequest> bodyCaptor =
+                ArgumentCaptor.forClass(ColecticaCreateItemRequest.class);
+        verify(colecticaClient).createOrUpdateItems(bodyCaptor.capture());
+        ColecticaCreateItemRequest createRequest = bodyCaptor.getValue();
         assertNotNull(createRequest);
         assertEquals(3, createRequest.items().size()); // PhysicalInstance + DataRelationship + StudyUnit
 
@@ -387,7 +490,13 @@ class DDIRepositoryImplTest {
         CreatePhysicalInstanceRequest request = new CreatePhysicalInstanceRequest(
                 "New PI", "New DR", "New LR", studyUnitId, studyUnitAgency, null, null);
 
-        stubCreationConfiguration(creationItemTypesWithStudyUnit());
+        when(instanceConfiguration.defaultAgencyId()).thenReturn("fr.insee");
+        when(instanceConfiguration.itemTypes())
+                .thenReturn(Map.of(
+                        "PhysicalInstance", "a51e85bb-6259-4488-8df2-f08cb43485f8",
+                        "DataRelationship", "f39ff278-8500-45fe-a850-3906da2d242b",
+                        "StudyUnit", "30ea0200-7121-4f01-8d21-a931a182b86d"));
+        when(instanceConfiguration.itemFormat()).thenReturn("dc337820-af3a-4c0b-82f9-cf02535cde83");
 
         String studyUnitXml = "<Fragment xmlns:r=\"ddi:reusable:3_3\" xmlns=\"ddi:instance:3_3\">"
                 + "<StudyUnit xmlns=\"ddi:studyunit:3_3\" isUniversallyUnique=\"true\">"
@@ -399,16 +508,30 @@ class DDIRepositoryImplTest {
                 + "</r:PhysicalInstanceReference>"
                 + "</StudyUnit>"
                 + "</Fragment>";
-        when(colecticaClient.getItem(anyString(), anyString(), any()))
-                .thenReturn(studyUnitToUpdate(studyUnitAgency, 3, studyUnitId, studyUnitXml));
+        ColecticaItemResponse studyUnitResponse = new ColecticaItemResponse(
+                "30ea0200-7121-4f01-8d21-a931a182b86d",
+                studyUnitAgency,
+                3,
+                studyUnitId,
+                studyUnitXml,
+                "2025-01-01T00:00:00",
+                null,
+                false,
+                false,
+                false,
+                null);
+        when(colecticaClient.getItem(anyString(), anyString(), any())).thenReturn(studyUnitResponse);
 
-        stubSaveWithEmptyReload();
+        when(colecticaClient.createOrUpdateItems(any())).thenReturn("{}");
 
         // When
         ddiRepository.createPhysicalInstance(request);
 
         // Then: the StudyUnit item sent contains both the existing and the new PhysicalInstanceReference
-        ColecticaCreateItemRequest createRequest = sentRequest();
+        ArgumentCaptor<ColecticaCreateItemRequest> bodyCaptor3 =
+                ArgumentCaptor.forClass(ColecticaCreateItemRequest.class);
+        verify(colecticaClient).createOrUpdateItems(bodyCaptor3.capture());
+        ColecticaCreateItemRequest createRequest = bodyCaptor3.getValue();
 
         ColecticaItemResponse suItem = createRequest.items().get(2);
         // Each PhysicalInstanceReference element contributes one open + one close tag = 2 occurrences per reference
@@ -418,31 +541,53 @@ class DDIRepositoryImplTest {
 
     @Test
     void shouldStampConfiguredVersionResponsibilityOnCreatedItems() {
-        assertThat(createPhysicalInstanceWithConfiguredVersionResponsibility())
+        CreatePhysicalInstanceRequest request =
+                new CreatePhysicalInstanceRequest("New PI", "New DR", "New LR", null, null, null, null);
+
+        when(instanceConfiguration.defaultAgencyId()).thenReturn("fr.insee");
+        when(instanceConfiguration.itemTypes())
+                .thenReturn(Map.of(
+                        "PhysicalInstance", "a51e85bb-6259-4488-8df2-f08cb43485f8",
+                        "DataRelationship", "f39ff278-8500-45fe-a850-3906da2d242b"));
+        when(instanceConfiguration.itemFormat()).thenReturn("dc337820-af3a-4c0b-82f9-cf02535cde83");
+        when(instanceConfiguration.versionResponsibility()).thenReturn("responsable-configure");
+
+        when(colecticaClient.createOrUpdateItems(any())).thenReturn("{}");
+
+        ddiRepository.createPhysicalInstance(request);
+
+        ArgumentCaptor<ColecticaCreateItemRequest> bodyCaptor =
+                ArgumentCaptor.forClass(ColecticaCreateItemRequest.class);
+        verify(colecticaClient).createOrUpdateItems(bodyCaptor.capture());
+        assertThat(bodyCaptor.getValue().items())
                 .isNotEmpty()
                 .allSatisfy(item -> assertThat(item.versionResponsibility()).isEqualTo("responsable-configure"));
     }
 
     @Test
     void shouldWriteConfiguredVersionResponsibilityInTheXmlOfCreatedItems() {
-        assertThat(createPhysicalInstanceWithConfiguredVersionResponsibility())
-                .isNotEmpty()
-                .allSatisfy(item -> assertThat(item.item())
-                        .contains("<r:VersionResponsibility>responsable-configure</r:VersionResponsibility>"));
-    }
-
-    /** Creates a PhysicalInstance with a configured version responsibility and returns the items sent. */
-    private List<ColecticaItemResponse> createPhysicalInstanceWithConfiguredVersionResponsibility() {
         CreatePhysicalInstanceRequest request =
                 new CreatePhysicalInstanceRequest("New PI", "New DR", "New LR", null, null, null, null);
 
-        stubCreationConfiguration(creationItemTypes());
+        when(instanceConfiguration.defaultAgencyId()).thenReturn("fr.insee");
+        when(instanceConfiguration.itemTypes())
+                .thenReturn(Map.of(
+                        "PhysicalInstance", "a51e85bb-6259-4488-8df2-f08cb43485f8",
+                        "DataRelationship", "f39ff278-8500-45fe-a850-3906da2d242b"));
+        when(instanceConfiguration.itemFormat()).thenReturn("dc337820-af3a-4c0b-82f9-cf02535cde83");
         when(instanceConfiguration.versionResponsibility()).thenReturn("responsable-configure");
-        stubSaveWithEmptyReload();
+
+        when(colecticaClient.createOrUpdateItems(any())).thenReturn("{}");
 
         ddiRepository.createPhysicalInstance(request);
 
-        return sentItems();
+        ArgumentCaptor<ColecticaCreateItemRequest> bodyCaptor =
+                ArgumentCaptor.forClass(ColecticaCreateItemRequest.class);
+        verify(colecticaClient).createOrUpdateItems(bodyCaptor.capture());
+        assertThat(bodyCaptor.getValue().items())
+                .isNotEmpty()
+                .allSatisfy(item -> assertThat(item.item())
+                        .contains("<r:VersionResponsibility>responsable-configure</r:VersionResponsibility>"));
     }
 
     @Test
@@ -451,12 +596,21 @@ class DDIRepositoryImplTest {
                 new CreatePhysicalInstanceRequest("New PI", "New DR", "New LR", null, null, null, null);
         PhysicalInstanceIds imposedIds = new PhysicalInstanceIds("pi-impose", "dr-impose", "lr-impose");
 
-        stubCreationConfiguration(creationItemTypes());
-        stubSaveWithEmptyReload();
+        when(instanceConfiguration.defaultAgencyId()).thenReturn("fr.insee");
+        when(instanceConfiguration.itemTypes())
+                .thenReturn(Map.of(
+                        "PhysicalInstance", "a51e85bb-6259-4488-8df2-f08cb43485f8",
+                        "DataRelationship", "f39ff278-8500-45fe-a850-3906da2d242b"));
+        when(instanceConfiguration.itemFormat()).thenReturn("dc337820-af3a-4c0b-82f9-cf02535cde83");
+
+        when(colecticaClient.createOrUpdateItems(any())).thenReturn("{}");
 
         ddiRepository.createPhysicalInstance(request, imposedIds);
 
-        List<ColecticaItemResponse> items = sentItems();
+        ArgumentCaptor<ColecticaCreateItemRequest> bodyCaptor =
+                ArgumentCaptor.forClass(ColecticaCreateItemRequest.class);
+        verify(colecticaClient).createOrUpdateItems(bodyCaptor.capture());
+        List<ColecticaItemResponse> items = bodyCaptor.getValue().items();
 
         ColecticaItemResponse physicalInstance = items.get(0);
         ColecticaItemResponse dataRelationship = items.get(1);
@@ -479,24 +633,101 @@ class DDIRepositoryImplTest {
         UpdatePhysicalInstanceRequest updateRequest =
                 new UpdatePhysicalInstanceRequest(newLabel, newDataRelationshipLabel, newLogicalRecordLabel);
 
-        // Mock set, _getList and converter responses for getPhysicalInstance call
-        stubExistingPhysicalInstanceWithDataRelationship(agencyId, instanceId);
+        // Mock set and _getList responses for getPhysicalInstance call
+        ColecticaSetItem[] existingSetItems = {
+            new ColecticaSetItem(instanceId, 1, agencyId), new ColecticaSetItem("dr-123", 1, agencyId)
+        };
+        stubPhysicalInstanceSet(existingSetItems);
+
+        ColecticaItemResponse[] existingItemResponses = {
+            new ColecticaItemResponse(
+                    "a51e85bb-6259-4488-8df2-f08cb43485f8",
+                    agencyId,
+                    1,
+                    instanceId,
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><PhysicalInstance/></Fragment>",
+                    null,
+                    null,
+                    false,
+                    false,
+                    false,
+                    null),
+            new ColecticaItemResponse(
+                    "f39ff278-8500-45fe-a850-3906da2d242b",
+                    agencyId,
+                    1,
+                    "dr-123",
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><DataRelationship/></Fragment>",
+                    null,
+                    null,
+                    false,
+                    false,
+                    false,
+                    null)
+        };
+        when(colecticaClient.getDescriptions(anyList())).thenReturn(existingItemResponses);
+        // Mock converter
+        Ddi4PhysicalInstance mockPhysicalInstance = new Ddi4PhysicalInstance(
+                Ddi4PhysicalInstance.TYPE,
+                CogsDate.ofDateTime("2025-01-01T00:00:00"),
+                "urn:ddi:fr.insee:" + instanceId + ":1",
+                agencyId,
+                instanceId,
+                "1",
+                null,
+                new Citation(LangStrings.of("fr-FR", "Old Label")),
+                List.of(Reference.of(agencyId, "dr-123", "1", "DataRelationship")));
+
+        Ddi4DataRelationship mockDataRelationship = new Ddi4DataRelationship(
+                Ddi4DataRelationship.TYPE,
+                CogsDate.ofDateTime("2025-01-01T00:00:00"),
+                "urn:ddi:fr.insee:dr-123:1",
+                agencyId,
+                "dr-123",
+                "1",
+                null,
+                null,
+                List.of(new LogicalRecord(
+                        LogicalRecord.TYPE, "urn:ddi:fr.insee:lr-123:1", agencyId, "lr-123", "1", null, null)));
+
+        Ddi4Response mockDdi4Response = new Ddi4Response(
+                "ddi:4.0",
+                List.of(Reference.of(agencyId, instanceId, "1", "PhysicalInstance")),
+                List.of(mockPhysicalInstance),
+                List.of(mockDataRelationship),
+                List.of(),
+                List.of(),
+                List.of(),
+                null);
+
+        when(ddi3ToDdi4Converter.convertDdi3ToDdi4(any(Ddi3Response.class), eq("ddi:4.0")))
+                .thenReturn(mockDdi4Response);
 
         // Mock DDI4 to DDI3 conversion for updateFullPhysicalInstance
-        Ddi3Response.Ddi3Item mockPiDdi3Item = legacyDdi3Item(
-                PHYSICAL_INSTANCE_TYPE,
+        Ddi3Response.Ddi3Item mockPiDdi3Item = new Ddi3Response.Ddi3Item(
+                "a51e85bb-6259-4488-8df2-f08cb43485f8",
                 agencyId,
                 "1",
                 instanceId,
                 "<PhysicalInstance>" + newLabel + "</PhysicalInstance>",
-                true);
-        Ddi3Response.Ddi3Item mockDrDdi3Item = legacyDdi3Item(
-                DATA_RELATIONSHIP_TYPE,
+                "2025-01-01T00:00:00",
+                null,
+                true,
+                false,
+                false,
+                "DDI");
+        Ddi3Response.Ddi3Item mockDrDdi3Item = new Ddi3Response.Ddi3Item(
+                "f39ff278-8500-45fe-a850-3906da2d242b",
                 agencyId,
                 "1",
                 "dr-123",
                 "<DataRelationship>" + newDataRelationshipLabel + "</DataRelationship>",
-                true);
+                "2025-01-01T00:00:00",
+                null,
+                true,
+                false,
+                false,
+                "DDI");
         Ddi3Response mockDdi3Response = new Ddi3Response(null, List.of(mockPiDdi3Item, mockDrDdi3Item));
         ArgumentCaptor<Ddi4Response> ddi4Captor = ArgumentCaptor.forClass(Ddi4Response.class);
         when(ddi4ToDdi3Converter.convertDdi4ToDdi3(ddi4Captor.capture())).thenReturn(mockDdi3Response);
@@ -522,7 +753,10 @@ class DDIRepositoryImplTest {
         assertThat(piVersionDate).isBetween(beforeUpdate, OffsetDateTime.now());
         assertThat(drVersionDate).isBetween(beforeUpdate, OffsetDateTime.now());
 
-        ColecticaCreateItemRequest createRequest = sentRequest();
+        ArgumentCaptor<ColecticaCreateItemRequest> bodyCaptor2 =
+                ArgumentCaptor.forClass(ColecticaCreateItemRequest.class);
+        verify(colecticaClient).createOrUpdateItems(bodyCaptor2.capture());
+        ColecticaCreateItemRequest createRequest = bodyCaptor2.getValue();
         assertNotNull(createRequest);
         assertEquals(2, createRequest.items().size()); // PhysicalInstance + DataRelationship
 
@@ -541,9 +775,8 @@ class DDIRepositoryImplTest {
 
     @Test
     void shouldAttachPhysicalInstanceToStudyUnitWhenUpdateCarriesStudyUnit() {
-        // Given a PATCH that carries a StudyUnit (duplication workflow, cf. #1555):
-        // the PI must be attached to that StudyUnit so that GET .../parents can resolve
-        // its Group & Study afterwards.
+        // Given a PATCH that carries a StudyUnit: the PI must be attached to that StudyUnit so that
+        // GET .../parents can resolve its Group & Study afterwards.
         String instanceId = "duplicated-pi-id";
         String agencyId = "fr.insee";
         String studyUnitId = "su-target";
@@ -552,18 +785,97 @@ class DDIRepositoryImplTest {
         UpdatePhysicalInstanceRequest updateRequest = new UpdatePhysicalInstanceRequest(
                 "Dup PI (copy)", "Dup DR", "Dup LR", studyUnitId, studyUnitAgency, "group-1", "fr.insee");
 
-        // Mock getPhysicalInstance (getSet + _getList + converter), mirroring shouldUpdatePhysicalInstance
-        stubExistingPhysicalInstanceWithDataRelationship(agencyId, instanceId);
+        // Mock getPhysicalInstance (_query/set + _getList + converter), mirroring shouldUpdatePhysicalInstance
+        ColecticaSetItem[] existingSetItems = {
+            new ColecticaSetItem(instanceId, 1, agencyId), new ColecticaSetItem("dr-123", 1, agencyId)
+        };
+        stubPhysicalInstanceSet(existingSetItems);
 
-        Ddi3Response.Ddi3Item mockPiDdi3Item = legacyDdi3Item(
-                PHYSICAL_INSTANCE_TYPE,
+        ColecticaItemResponse[] existingItemResponses = {
+            new ColecticaItemResponse(
+                    "a51e85bb-6259-4488-8df2-f08cb43485f8",
+                    agencyId,
+                    1,
+                    instanceId,
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><PhysicalInstance/></Fragment>",
+                    null,
+                    null,
+                    false,
+                    false,
+                    false,
+                    null),
+            new ColecticaItemResponse(
+                    "f39ff278-8500-45fe-a850-3906da2d242b",
+                    agencyId,
+                    1,
+                    "dr-123",
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><DataRelationship/></Fragment>",
+                    null,
+                    null,
+                    false,
+                    false,
+                    false,
+                    null)
+        };
+        when(colecticaClient.getDescriptions(anyList())).thenReturn(existingItemResponses);
+
+        Ddi4PhysicalInstance mockPhysicalInstance = new Ddi4PhysicalInstance(
+                Ddi4PhysicalInstance.TYPE,
+                CogsDate.ofDateTime("2025-01-01T00:00:00"),
+                "urn:ddi:fr.insee:" + instanceId + ":1",
+                agencyId,
+                instanceId,
+                "1",
+                null,
+                new Citation(LangStrings.of("fr-FR", "Old Label")),
+                List.of(Reference.of(agencyId, "dr-123", "1", "DataRelationship")));
+        Ddi4DataRelationship mockDataRelationship = new Ddi4DataRelationship(
+                Ddi4DataRelationship.TYPE,
+                CogsDate.ofDateTime("2025-01-01T00:00:00"),
+                "urn:ddi:fr.insee:dr-123:1",
+                agencyId,
+                "dr-123",
+                "1",
+                null,
+                null,
+                List.of(new LogicalRecord(
+                        LogicalRecord.TYPE, "urn:ddi:fr.insee:lr-123:1", agencyId, "lr-123", "1", null, null)));
+        Ddi4Response mockDdi4Response = new Ddi4Response(
+                "ddi:4.0",
+                List.of(Reference.of(agencyId, instanceId, "1", "PhysicalInstance")),
+                List.of(mockPhysicalInstance),
+                List.of(mockDataRelationship),
+                List.of(),
+                List.of(),
+                List.of(),
+                null);
+        when(ddi3ToDdi4Converter.convertDdi3ToDdi4(any(Ddi3Response.class), eq("ddi:4.0")))
+                .thenReturn(mockDdi4Response);
+
+        Ddi3Response.Ddi3Item mockPiDdi3Item = new Ddi3Response.Ddi3Item(
+                "a51e85bb-6259-4488-8df2-f08cb43485f8",
                 agencyId,
                 "1",
                 instanceId,
                 "<PhysicalInstance>Dup PI (copy)</PhysicalInstance>",
-                false);
-        Ddi3Response.Ddi3Item mockDrDdi3Item = legacyDdi3Item(
-                DATA_RELATIONSHIP_TYPE, agencyId, "1", "dr-123", "<DataRelationship>Dup DR</DataRelationship>", false);
+                "2025-01-01T00:00:00",
+                null,
+                false,
+                false,
+                false,
+                "DDI");
+        Ddi3Response.Ddi3Item mockDrDdi3Item = new Ddi3Response.Ddi3Item(
+                "f39ff278-8500-45fe-a850-3906da2d242b",
+                agencyId,
+                "1",
+                "dr-123",
+                "<DataRelationship>Dup DR</DataRelationship>",
+                "2025-01-01T00:00:00",
+                null,
+                false,
+                false,
+                false,
+                "DDI");
         when(ddi4ToDdi3Converter.convertDdi4ToDdi3(any()))
                 .thenReturn(new Ddi3Response(null, List.of(mockPiDdi3Item, mockDrDdi3Item)));
 
@@ -571,8 +883,19 @@ class DDIRepositoryImplTest {
         String studyUnitXml = "<Fragment xmlns:r=\"ddi:reusable:3_3\" xmlns=\"ddi:instance:3_3\">"
                 + "<StudyUnit xmlns=\"ddi:studyunit:3_3\" isUniversallyUnique=\"true\"></StudyUnit>"
                 + "</Fragment>";
-        when(colecticaClient.getItem(anyString(), anyString(), any()))
-                .thenReturn(studyUnitToUpdate(studyUnitAgency, 2, studyUnitId, studyUnitXml));
+        ColecticaItemResponse studyUnitResponse = new ColecticaItemResponse(
+                "30ea0200-7121-4f01-8d21-a931a182b86d",
+                studyUnitAgency,
+                2,
+                studyUnitId,
+                studyUnitXml,
+                "2025-01-01T00:00:00",
+                null,
+                false,
+                false,
+                false,
+                null);
+        when(colecticaClient.getItem(anyString(), anyString(), any())).thenReturn(studyUnitResponse);
         when(instanceConfiguration.itemTypes()).thenReturn(Map.of("StudyUnit", "30ea0200-7121-4f01-8d21-a931a182b86d"));
 
         when(colecticaClient.createOrUpdateItems(any())).thenReturn("{}");
@@ -581,266 +904,15 @@ class DDIRepositoryImplTest {
         ddiRepository.updatePhysicalInstance(agencyId, instanceId, updateRequest);
 
         // Then: the saved batch includes the StudyUnit carrying a PhysicalInstanceReference to the PI
-        ColecticaItemResponse savedStudyUnit = sentItems().stream()
+        ArgumentCaptor<ColecticaCreateItemRequest> bodyCaptor =
+                ArgumentCaptor.forClass(ColecticaCreateItemRequest.class);
+        verify(colecticaClient).createOrUpdateItems(bodyCaptor.capture());
+        ColecticaItemResponse savedStudyUnit = bodyCaptor.getValue().items().stream()
                 .filter(item -> "30ea0200-7121-4f01-8d21-a931a182b86d".equals(item.itemType()))
                 .findFirst()
                 .orElseThrow(() -> new AssertionError("No StudyUnit item sent to Colectica during PATCH"));
         assertTrue(savedStudyUnit.item().contains("PhysicalInstanceReference"));
         assertTrue(savedStudyUnit.item().contains(instanceId));
-    }
-
-    @Test
-    void updatePhysicalInstance_throwsPhysicalInstanceNotFoundWhenColecticaDoesNotKnowIt() {
-        when(colecticaClient.getSet(anyString(), anyString(), any()))
-                .thenThrow(HttpClientErrorException.create(HttpStatus.NOT_FOUND, "Not Found", null, null, null));
-        UpdatePhysicalInstanceRequest updateRequest = new UpdatePhysicalInstanceRequest("label", "dr", "lr");
-
-        DdiItemNotFoundException exception = assertThrows(
-                DdiItemNotFoundException.class,
-                () -> ddiRepository.updatePhysicalInstance("fr.insee", "unknown", updateRequest));
-
-        assertEquals(DdiItemNotFoundException.Code.DDI_PHYSICAL_INSTANCE_NOT_FOUND, exception.code());
-    }
-
-    @Test
-    void updatePhysicalInstance_throwsStudyUnitNotFoundWhenAttachingToAnUnknownStudyUnit() {
-        String agencyId = "fr.insee";
-        String instanceId = "pi-1";
-        stubExistingPhysicalInstanceWithDataRelationship(agencyId, instanceId);
-        when(colecticaClient.getItem(anyString(), anyString(), any()))
-                .thenThrow(HttpClientErrorException.create(HttpStatus.NOT_FOUND, "Not Found", null, null, null));
-        UpdatePhysicalInstanceRequest updateRequest =
-                new UpdatePhysicalInstanceRequest("label", "dr", "lr", "su-unknown", "fr.insee", "group-1", "fr.insee");
-
-        DdiItemNotFoundException exception = assertThrows(
-                DdiItemNotFoundException.class,
-                () -> ddiRepository.updatePhysicalInstance(agencyId, instanceId, updateRequest));
-
-        assertEquals(DdiItemNotFoundException.Code.DDI_STUDY_UNIT_NOT_FOUND, exception.code());
-        assertEquals(Map.of("agencyId", "fr.insee", "id", "su-unknown"), exception.params());
-    }
-
-    @Test
-    void getPhysicalInstance_returnsNullWhenColecticaDoesNotKnowTheSet() {
-        when(colecticaClient.getSet(anyString(), anyString(), any()))
-                .thenThrow(HttpClientErrorException.create(HttpStatus.NOT_FOUND, "Not Found", null, null, null));
-
-        assertNull(ddiRepository.getPhysicalInstance("fr.insee", "00000000-0000-0000-0000-000000000000"));
-    }
-
-    @Test
-    void getPhysicalInstance_returnsNullWithoutCallingColecticaWhenTheIdIsNotAnIdentifier() {
-        // Colectica n'accepte que des UUID : il répond 400 à un autre identifiant.
-        assertNull(ddiRepository.getPhysicalInstance("fr.insee", "nexistepas"));
-
-        verifyNoInteractions(colecticaClient);
-    }
-
-    @Test
-    void getGroup_returnsNullWhenColecticaDoesNotKnowTheGroup() {
-        when(colecticaClient.getDdiSet(anyString(), anyString()))
-                .thenThrow(HttpClientErrorException.create(HttpStatus.NOT_FOUND, "Not Found", null, null, null));
-
-        assertNull(ddiRepository.getGroup("fr.insee", "00000000-0000-0000-0000-000000000000"));
-    }
-
-    @Test
-    void getGroup_returnsNullWithoutCallingColecticaWhenTheIdIsNotAnIdentifier() {
-        // Colectica n'accepte que des UUID : son ddiset répond 500 à un autre identifiant.
-        assertNull(ddiRepository.getGroup("fr.insee", "nexistepas"));
-
-        verifyNoInteractions(colecticaClient);
-    }
-
-    @Test
-    void getPhysicalInstance_skipsCodeListAndCategoryItemTypes() {
-        // Les CodeList et Category sont volontairement omises de la réponse GET PI
-        // (chargées paresseusement au clic d'une variable) pour réduire le payload
-        // et le coût de conversion DDI3 -> DDI4 sur ce endpoint.
-        String instanceId = "32799021-0663-41cd-aca6-3ad8dbdae3e3";
-        String agencyId = "fr.insee";
-
-        when(instanceConfiguration.itemTypes()).thenReturn(physicalInstanceItemTypesWithCodeLists());
-
-        stubSet(
-                new ColecticaSetItem(instanceId, 1, agencyId),
-                new ColecticaSetItem("2636d17c-d59d-4aa7-bd02-9cab5c0bbc7d", 1, agencyId),
-                new ColecticaSetItem("795aa4b8-acec-4ef8-8f08-3a200c7bdb10", 1, agencyId),
-                new ColecticaSetItem("2f70f505-4a9e-4abe-82d4-c4ddfed25d52", 1, agencyId),
-                new ColecticaSetItem("d363a730-14d4-4c54-9464-982312cf9330", 1, agencyId));
-
-        stubDescriptions(
-                description(PHYSICAL_INSTANCE_TYPE, agencyId, 1, instanceId, fragment("PhysicalInstance")),
-                description(VARIABLE_TYPE, agencyId, 1, "2636d17c-d59d-4aa7-bd02-9cab5c0bbc7d", fragment("Variable")),
-                description(
-                        DATA_RELATIONSHIP_TYPE,
-                        agencyId,
-                        1,
-                        "795aa4b8-acec-4ef8-8f08-3a200c7bdb10",
-                        fragment("DataRelationship")),
-                description(CODE_LIST_TYPE, agencyId, 1, "2f70f505-4a9e-4abe-82d4-c4ddfed25d52", fragment("CodeList")),
-                description(CATEGORY_TYPE, agencyId, 1, "d363a730-14d4-4c54-9464-982312cf9330", fragment("Category")));
-
-        Ddi4PhysicalInstance mockPhysicalInstance = new Ddi4PhysicalInstance(
-                Ddi4PhysicalInstance.TYPE,
-                CogsDate.ofDateTime("2025-12-10T11:55:14.251595Z"),
-                "urn:ddi:fr.insee:32799021-0663-41cd-aca6-3ad8dbdae3e3:1",
-                agencyId,
-                instanceId,
-                "1",
-                null,
-                new Citation(LangStrings.of("fr-FR", "test")),
-                List.of(Reference.of(agencyId, "795aa4b8-acec-4ef8-8f08-3a200c7bdb10", "1", "DataRelationship")));
-
-        Ddi4Variable mockVariable = new Ddi4Variable(
-                Ddi4Variable.TYPE,
-                CogsDate.ofDateTime("2025-12-10T11:55:33.138Z"),
-                "urn:ddi:fr.insee:2636d17c-d59d-4aa7-bd02-9cab5c0bbc7d:1",
-                agencyId,
-                "2636d17c-d59d-4aa7-bd02-9cab5c0bbc7d",
-                "1",
-                null,
-                LangStrings.of("fr-FR", "name"),
-                LangStrings.of("fr-FR", "Test Label"),
-                null,
-                new VariableRepresentation(
-                        null,
-                        new CodeRepresentation(
-                                CodeRepresentation.TYPE,
-                                false,
-                                Reference.of(agencyId, "2f70f505-4a9e-4abe-82d4-c4ddfed25d52", "1", "CodeList")),
-                        null,
-                        null,
-                        null,
-                        null),
-                null);
-
-        Ddi4DataRelationship mockDataRelationship = new Ddi4DataRelationship(
-                Ddi4DataRelationship.TYPE,
-                CogsDate.ofDateTime("2025-12-10T11:55:14.251595Z"),
-                "urn:ddi:fr.insee:795aa4b8-acec-4ef8-8f08-3a200c7bdb10:1",
-                agencyId,
-                "795aa4b8-acec-4ef8-8f08-3a200c7bdb10",
-                "1",
-                null,
-                null,
-                List.of(new LogicalRecord(
-                        LogicalRecord.TYPE,
-                        "urn:ddi:fr.insee:8585972f-2dc2-4125-87b2-60fd3f243cf3:1",
-                        agencyId,
-                        "8585972f-2dc2-4125-87b2-60fd3f243cf3",
-                        "1",
-                        null,
-                        new VariablesInRecord(List.of(
-                                Reference.of(agencyId, "2636d17c-d59d-4aa7-bd02-9cab5c0bbc7d", "1", "Variable"))))));
-
-        Ddi4Response mockDdi4Response = new Ddi4Response(
-                "ddi:4.0",
-                List.of(Reference.of(agencyId, instanceId, "1", "PhysicalInstance")),
-                List.of(mockPhysicalInstance),
-                List.of(mockDataRelationship),
-                List.of(mockVariable),
-                null,
-                null,
-                null);
-
-        stubDdi3ToDdi4Conversion(mockDdi4Response);
-
-        // When
-        Ddi4Response result = ddiRepository.getPhysicalInstance(agencyId, instanceId);
-
-        // Then : la réponse contient PI / DR / Variable mais ni CodeList ni Category
-        assertNotNull(result);
-        assertNotNull(result.physicalInstance());
-        assertEquals(1, result.physicalInstance().size());
-        assertEquals(instanceId, result.physicalInstance().get(0).id());
-
-        assertNotNull(result.variable());
-        assertEquals(1, result.variable().size());
-
-        assertNull(result.codeList(), "CodeList ne doit pas être renvoyée par GET PI");
-        assertNull(result.category(), "Category ne doit pas être renvoyée par GET PI");
-
-        verify(colecticaClient).getSet(eq(agencyId), eq(instanceId), any());
-        verify(colecticaClient).getDescriptions(anyList());
-
-        // Et surtout : les items CodeList/Category ne sont pas passés au converter
-        // (économie du coût de conversion DDI3 -> DDI4 sur ces items souvent volumineux)
-        ArgumentCaptor<Ddi3Response> ddi3Captor = ArgumentCaptor.forClass(Ddi3Response.class);
-        verify(ddi3ToDdi4Converter).convertDdi3ToDdi4(ddi3Captor.capture(), eq("ddi:4.0"));
-
-        Ddi3Response capturedDdi3 = ddi3Captor.getValue();
-        assertNotNull(capturedDdi3.items());
-        assertEquals(3, capturedDdi3.items().size(), "Seuls PI, Variable et DR sont convertis");
-        assertTrue(capturedDdi3.items().stream().noneMatch(i -> CODE_LIST_TYPE.equals(i.itemType())));
-        assertTrue(capturedDdi3.items().stream().noneMatch(i -> CATEGORY_TYPE.equals(i.itemType())));
-    }
-
-    /**
-     * Valeurs sentinelles (#1566) : les items ManagedMissingValuesRepresentation du set de la PI ne
-     * sont PAS filtrés par le GET (contrairement aux CodeList/Category) — ils sont passés au
-     * converter, qui les agrège dans la réponse DDI 4.
-     */
-    @Test
-    void getPhysicalInstance_passesManagedMissingValuesItemsToConverter() {
-        String instanceId = "32799021-0663-41cd-aca6-3ad8dbdae3e3";
-        String agencyId = "fr.insee";
-        String mmvrType = "c29c3125-2a53-4179-8fa6-aa3beb2bb5ed";
-
-        when(instanceConfiguration.itemTypes())
-                .thenReturn(Map.of(
-                        "PhysicalInstance", "a51e85bb-6259-4488-8df2-f08cb43485f8",
-                        "CodeList", "8b108ef8-b642-4484-9c49-f88e4bf7cf1d",
-                        "Category", "7e47c269-bcab-40f7-a778-af7bbc4e3d00",
-                        "ManagedMissingValuesRepresentation", mmvrType));
-
-        stubSet(new ColecticaSetItem(instanceId, 1, agencyId), new ColecticaSetItem("mmvr-1", 1, agencyId));
-
-        stubDescriptions(
-                description(PHYSICAL_INSTANCE_TYPE, agencyId, 1, instanceId, fragment("PhysicalInstance")),
-                description(mmvrType, agencyId, 1, "mmvr-1", fragment("ManagedMissingValuesRepresentation")));
-
-        stubDdi3ToDdi4Conversion(new Ddi4Response("ddi:4.0", null, null, null, null, null, null, null));
-
-        ddiRepository.getPhysicalInstance(agencyId, instanceId);
-
-        ArgumentCaptor<Ddi3Response> ddi3Captor = ArgumentCaptor.forClass(Ddi3Response.class);
-        verify(ddi3ToDdi4Converter).convertDdi3ToDdi4(ddi3Captor.capture(), eq("ddi:4.0"));
-        assertTrue(
-                ddi3Captor.getValue().items().stream().anyMatch(i -> mmvrType.equals(i.itemType())),
-                "L'item MMVR du set doit être passé au converter DDI3 -> DDI4");
-    }
-
-    @Test
-    void getFullPhysicalInstance_convertsEveryItemOfTheSetIncludingCodeListsAndCategories() {
-        // Référence de la réconciliation des VersionDate : contrairement à getPhysicalInstance,
-        // rien n'est écarté — sans quoi les listes de codes passeraient pour de nouveaux items.
-        String instanceId = "32799021-0663-41cd-aca6-3ad8dbdae3e3";
-        String agencyId = "fr.insee";
-        String codeListId = "2f70f505-4a9e-4abe-82d4-c4ddfed25d52";
-        String categoryId = "d363a730-14d4-4c54-9464-982312cf9330";
-        String codeListType = "8b108ef8-b642-4484-9c49-f88e4bf7cf1d";
-        String categoryType = "7e47c269-bcab-40f7-a778-af7bbc4e3d00";
-
-        stubSet(
-                new ColecticaSetItem(instanceId, 1, agencyId),
-                new ColecticaSetItem(codeListId, 1, agencyId),
-                new ColecticaSetItem(categoryId, 1, agencyId));
-        stubDescriptions(
-                description(PHYSICAL_INSTANCE_TYPE, agencyId, 1, instanceId, fragment("PhysicalInstance")),
-                description(codeListType, agencyId, 1, codeListId, fragment("CodeList")),
-                description(categoryType, agencyId, 1, categoryId, fragment("Category")));
-        stubDdi3ToDdi4Conversion(new Ddi4Response("ddi:4.0", null, null, null, null, null, null, null));
-
-        ddiRepository.getFullPhysicalInstance(agencyId, instanceId);
-
-        ArgumentCaptor<Ddi3Response> ddi3Captor = ArgumentCaptor.forClass(Ddi3Response.class);
-        verify(ddi3ToDdi4Converter).convertDdi3ToDdi4(ddi3Captor.capture(), eq("ddi:4.0"));
-        assertEquals(
-                List.of(instanceId, codeListId, categoryId),
-                ddi3Captor.getValue().items().stream()
-                        .map(Ddi3Response.Ddi3Item::identifier)
-                        .toList());
     }
 
     @Test
@@ -852,20 +924,76 @@ class DDIRepositoryImplTest {
         String agencyId = "fr.insee";
         String codeListId = "2f70f505-4a9e-4abe-82d4-c4ddfed25d52";
         String categoryId = "d363a730-14d4-4c54-9464-982312cf9330";
+        String codeListType = "8b108ef8-b642-4484-9c49-f88e4bf7cf1d";
+        String categoryType = "7e47c269-bcab-40f7-a778-af7bbc4e3d00";
 
-        when(instanceConfiguration.itemTypes()).thenReturn(physicalInstanceItemTypesWithCodeLists());
+        when(instanceConfiguration.itemTypes())
+                .thenReturn(Map.of(
+                        "PhysicalInstance", "a51e85bb-6259-4488-8df2-f08cb43485f8",
+                        "DataRelationship", "f39ff278-8500-45fe-a850-3906da2d242b",
+                        "Variable", "683889c6-f74b-4d5e-92ed-908c0a42bb2d",
+                        "CodeList", codeListType,
+                        "Category", categoryType));
 
-        stubSet(
-                new ColecticaSetItem(instanceId, 1, agencyId),
-                new ColecticaSetItem("2636d17c-d59d-4aa7-bd02-9cab5c0bbc7d", 1, agencyId),
-                new ColecticaSetItem(codeListId, 1, agencyId),
-                new ColecticaSetItem(categoryId, 1, agencyId));
+        ColecticaSetItem[] setItems = {
+            new ColecticaSetItem(instanceId, 1, agencyId),
+            new ColecticaSetItem("2636d17c-d59d-4aa7-bd02-9cab5c0bbc7d", 1, agencyId),
+            new ColecticaSetItem(codeListId, 1, agencyId),
+            new ColecticaSetItem(categoryId, 1, agencyId)
+        };
+        when(colecticaClient.getSet(anyString(), anyString(), any())).thenReturn(setItems);
 
-        stubDescriptions(
-                description(PHYSICAL_INSTANCE_TYPE, agencyId, 1, instanceId, fragment("PhysicalInstance")),
-                description(VARIABLE_TYPE, agencyId, 1, "2636d17c-d59d-4aa7-bd02-9cab5c0bbc7d", fragment("Variable")),
-                description(CODE_LIST_TYPE, agencyId, 1, codeListId, fragment("CodeList")),
-                description(CATEGORY_TYPE, agencyId, 1, categoryId, fragment("Category")));
+        ColecticaItemResponse[] itemResponses = {
+            new ColecticaItemResponse(
+                    "a51e85bb-6259-4488-8df2-f08cb43485f8",
+                    agencyId,
+                    1,
+                    instanceId,
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><PhysicalInstance/></Fragment>",
+                    null,
+                    null,
+                    false,
+                    false,
+                    false,
+                    null),
+            new ColecticaItemResponse(
+                    "683889c6-f74b-4d5e-92ed-908c0a42bb2d",
+                    agencyId,
+                    1,
+                    "2636d17c-d59d-4aa7-bd02-9cab5c0bbc7d",
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><Variable/></Fragment>",
+                    null,
+                    null,
+                    false,
+                    false,
+                    false,
+                    null),
+            new ColecticaItemResponse(
+                    codeListType,
+                    agencyId,
+                    1,
+                    codeListId,
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><CodeList/></Fragment>",
+                    null,
+                    null,
+                    false,
+                    false,
+                    false,
+                    null),
+            new ColecticaItemResponse(
+                    categoryType,
+                    agencyId,
+                    1,
+                    categoryId,
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><Category/></Fragment>",
+                    null,
+                    null,
+                    false,
+                    false,
+                    false,
+                    null)
+        };
+        when(colecticaClient.getDescriptions(anyList())).thenReturn(itemResponses);
 
         Ddi4CodeList mockCodeList = new Ddi4CodeList(
                 Ddi4CodeList.TYPE,
@@ -896,7 +1024,8 @@ class DDIRepositoryImplTest {
 
         Ddi4Response mockDdi4Response =
                 new Ddi4Response("ddi:4.0", null, null, null, null, List.of(mockCodeList), List.of(mockCategory), null);
-        stubDdi3ToDdi4Conversion(mockDdi4Response);
+        when(ddi3ToDdi4Converter.convertDdi3ToDdi4(any(Ddi3Response.class), eq("ddi:4.0")))
+                .thenReturn(mockDdi4Response);
 
         // When
         List<Ddi4CodeList> result = ddiRepository.getPhysicalInstanceCodeLists(agencyId, instanceId);
@@ -913,8 +1042,8 @@ class DDIRepositoryImplTest {
 
         Ddi3Response capturedDdi3 = ddi3Captor.getValue();
         assertEquals(2, capturedDdi3.items().size(), "Seules CodeList et Category sont converties");
-        assertTrue(capturedDdi3.items().stream().anyMatch(i -> CODE_LIST_TYPE.equals(i.itemType())));
-        assertTrue(capturedDdi3.items().stream().anyMatch(i -> CATEGORY_TYPE.equals(i.itemType())));
+        assertTrue(capturedDdi3.items().stream().anyMatch(i -> codeListType.equals(i.itemType())));
+        assertTrue(capturedDdi3.items().stream().anyMatch(i -> categoryType.equals(i.itemType())));
     }
 
     @Test
@@ -927,9 +1056,24 @@ class DDIRepositoryImplTest {
                         "CodeList", "8b108ef8-b642-4484-9c49-f88e4bf7cf1d",
                         "Category", "7e47c269-bcab-40f7-a778-af7bbc4e3d00"));
 
-        stubSet(new ColecticaSetItem(instanceId, 1, agencyId));
+        ColecticaSetItem[] setItems = {new ColecticaSetItem(instanceId, 1, agencyId)};
+        when(colecticaClient.getSet(anyString(), anyString(), any())).thenReturn(setItems);
 
-        stubDescriptions(description(PHYSICAL_INSTANCE_TYPE, agencyId, 1, instanceId, fragment("PhysicalInstance")));
+        ColecticaItemResponse[] itemResponses = {
+            new ColecticaItemResponse(
+                    "a51e85bb-6259-4488-8df2-f08cb43485f8",
+                    agencyId,
+                    1,
+                    instanceId,
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><PhysicalInstance/></Fragment>",
+                    null,
+                    null,
+                    false,
+                    false,
+                    false,
+                    null)
+        };
+        when(colecticaClient.getDescriptions(anyList())).thenReturn(itemResponses);
 
         List<Ddi4CodeList> result = ddiRepository.getPhysicalInstanceCodeLists(agencyId, instanceId);
 
@@ -942,29 +1086,19 @@ class DDIRepositoryImplTest {
     void shouldGetGroups() {
         // Given
 
-        ColecticaItem group1 = colecticaItem(
-                "Group",
-                "fr.insee",
-                1,
-                "group-1",
-                Map.of("fr-FR", "Base permanente des équipements", "en", "Permanent Database of Facilities"),
-                Map.of("fr-FR", "BPE", "en", "BPE"),
-                "2025-01-09T00:00:00",
-                true,
-                1L);
+        ColecticaItem group1 = aColecticaItem("Group", "group-1")
+                .itemName(Map.of("fr-FR", "Base permanente des équipements", "en", "Permanent Database of Facilities"))
+                .label(Map.of("fr-FR", "BPE", "en", "BPE"))
+                .versionDate("2025-01-09T00:00:00")
+                .build();
 
-        ColecticaItem group2 = colecticaItem(
-                "Group",
-                "fr.insee",
-                1,
-                "group-2",
-                Map.of("fr-FR", "Recensement de la population", "en", "Population Census"),
-                Map.of("fr-FR", "RP", "en", "PC"),
-                "2025-01-08T00:00:00",
-                true,
-                2L);
+        ColecticaItem group2 = aColecticaItem("Group", "group-2")
+                .itemName(Map.of("fr-FR", "Recensement de la population", "en", "Population Census"))
+                .label(Map.of("fr-FR", "RP", "en", "PC"))
+                .versionDate("2025-01-08T00:00:00")
+                .build();
 
-        ColecticaResponse mockResponse = queryResponse(group1, group2);
+        ColecticaResponse mockResponse = new ColecticaResponse(List.of(group1, group2), 2, 2, null, null, null);
 
         // Mock query call - should query for Group itemType (4bd6eef6-99df-40e6-9b11-5b8f64e5cb23)
         when(colecticaClient.query(anyList())).thenReturn(mockResponse);
@@ -1176,20 +1310,11 @@ class DDIRepositoryImplTest {
     }
 
     private static ColecticaItem codeListItem(String identifier, String labelFr, String versionDate) {
-        return itemOfType(identifier, CODE_LIST_TYPE, labelFr, versionDate);
-    }
-
-    private static ColecticaItem itemOfType(String identifier, String itemType, String labelFr, String versionDate) {
-        return colecticaItem(
-                itemType,
-                "fr.insee",
-                1,
-                identifier,
-                labelFr == null ? null : Map.of("fr-FR", labelFr),
-                null,
-                versionDate,
-                false,
-                1L);
+        return aColecticaItem(CODE_LIST_TYPE, identifier)
+                .itemName(labelFr)
+                .versionDate(versionDate)
+                .published(false)
+                .build();
     }
 
     @Test
@@ -1225,20 +1350,30 @@ class DDIRepositoryImplTest {
         String cl1Id = "cl-1";
         String cl2Id = "cl-2";
 
-        stubMutualizedPackage(agencyId, packageId);
-        stubPackageTree(
+        when(colecticaConfiguration.mutualizedCodesPackage())
+                .thenReturn(new ColecticaConfiguration.PackageRef(agencyId, packageId, 1));
+        when(instanceConfiguration.itemTypes()).thenReturn(standardItemTypes());
+
+        stubChildren(agencyId, packageId, CODE_LIST_SCHEME_TYPE, new ItemReference(agencyId, schemeId));
+        stubChildren(agencyId, schemeId, CODE_LIST_GROUP_TYPE, new ItemReference(agencyId, groupId));
+        stubChildren(
                 agencyId,
-                packageId,
-                schemeId,
                 groupId,
+                CODE_LIST_TYPE,
                 new ItemReference(agencyId, cl1Id),
                 new ItemReference(agencyId, cl2Id));
 
         // Labels are resolved through a single repository-wide CodeList query.
         when(colecticaClient.query(List.of(CODE_LIST_TYPE)))
-                .thenReturn(queryResponse(
-                        codeListItem(cl1Id, "Niveau 1", "2024-10-31T10:43:38"),
-                        codeListItem(cl2Id, "Niveau 2", "2024-10-31T10:43:38")));
+                .thenReturn(new ColecticaResponse(
+                        List.of(
+                                codeListItem(cl1Id, "Niveau 1", "2024-10-31T10:43:38"),
+                                codeListItem(cl2Id, "Niveau 2", "2024-10-31T10:43:38")),
+                        2,
+                        2,
+                        null,
+                        null,
+                        null));
 
         List<PartialCodesList> result = ddiRepository.getMutualizedCodesLists();
 
@@ -1257,13 +1392,23 @@ class DDIRepositoryImplTest {
         // Le versionDate du _query n'est pas fiable (Colectica renvoie 0001-01-01) : on le lit
         // depuis l'attribut versionDate du XML de l'item, récupéré via un item/_getList.
         String agencyId = "fr.insee";
+        String packageId = "pkg-1";
+        String schemeId = "scheme-1";
+        String groupId = "group-1";
         String clId = "cl-1";
 
-        stubMutualizedPackageWithSingleCodeList(agencyId, clId);
+        when(colecticaConfiguration.mutualizedCodesPackage())
+                .thenReturn(new ColecticaConfiguration.PackageRef(agencyId, packageId, 1));
+        when(instanceConfiguration.itemTypes()).thenReturn(standardItemTypes());
+
+        stubChildren(agencyId, packageId, CODE_LIST_SCHEME_TYPE, new ItemReference(agencyId, schemeId));
+        stubChildren(agencyId, schemeId, CODE_LIST_GROUP_TYPE, new ItemReference(agencyId, groupId));
+        stubChildren(agencyId, groupId, CODE_LIST_TYPE, new ItemReference(agencyId, clId));
 
         // _query carries the (unreliable) envelope versionDate — must be ignored.
         when(colecticaClient.query(List.of(CODE_LIST_TYPE)))
-                .thenReturn(queryResponse(codeListItem(clId, "Ma code list", "0001-01-01T00:00:00")));
+                .thenReturn(new ColecticaResponse(
+                        List.of(codeListItem(clId, "Ma code list", "0001-01-01T00:00:00")), 1, 1, null, null, null));
 
         // The item XML carries the real versionDate attribute.
         String xml = "<Fragment xmlns:r=\"ddi:reusable:3_3\" xmlns=\"ddi:instance:3_3\">"
@@ -1277,7 +1422,9 @@ class DDIRepositoryImplTest {
 
         assertEquals(1, result.size());
         assertEquals(clId, result.get(0).id());
-        assertEquals("2026-06-29 14:26:32", utcSeconds(result.get(0).versionDate()));
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+        assertEquals("2026-06-29 14:26:32", sdf.format(result.get(0).versionDate()));
     }
 
     @Test
@@ -1285,21 +1432,28 @@ class DDIRepositoryImplTest {
         // Une liste de codes mutualisée porte à la fois un nom technique (itemName) et un libellé
         // lisible (label). Le sélecteur doit afficher le libellé, pas le nom.
         String agencyId = "fr.insee";
+        String packageId = "pkg-1";
+        String schemeId = "scheme-1";
+        String groupId = "group-1";
         String clId = "cl-1";
 
-        stubMutualizedPackageWithSingleCodeList(agencyId, clId);
+        when(colecticaConfiguration.mutualizedCodesPackage())
+                .thenReturn(new ColecticaConfiguration.PackageRef(agencyId, packageId, 1));
+        when(instanceConfiguration.itemTypes()).thenReturn(standardItemTypes());
 
-        ColecticaItem withNameAndLabel = colecticaItem(
-                CODE_LIST_TYPE,
-                agencyId,
-                1,
-                clId,
-                Map.of("fr-FR", "CL_NOM_TECHNIQUE"), // itemName
-                Map.of("fr-FR", "Libellé lisible"), // label
-                "2024-10-31T10:43:38",
-                false,
-                1L);
-        when(colecticaClient.query(List.of(CODE_LIST_TYPE))).thenReturn(queryResponse(withNameAndLabel));
+        stubChildren(agencyId, packageId, CODE_LIST_SCHEME_TYPE, new ItemReference(agencyId, schemeId));
+        stubChildren(agencyId, schemeId, CODE_LIST_GROUP_TYPE, new ItemReference(agencyId, groupId));
+        stubChildren(agencyId, groupId, CODE_LIST_TYPE, new ItemReference(agencyId, clId));
+
+        ColecticaItem withNameAndLabel = aColecticaItem(CODE_LIST_TYPE, clId)
+                .itemName("CL_NOM_TECHNIQUE")
+                .label("Libellé lisible")
+                .agency(agencyId)
+                .versionDate("2024-10-31T10:43:38")
+                .published(false)
+                .build();
+        when(colecticaClient.query(List.of(CODE_LIST_TYPE)))
+                .thenReturn(new ColecticaResponse(List.of(withNameAndLabel), 1, 1, null, null, null));
 
         List<PartialCodesList> result = ddiRepository.getMutualizedCodesLists();
 
@@ -1314,7 +1468,9 @@ class DDIRepositoryImplTest {
         String agencyId = "fr.insee";
         String packageId = "pkg-1";
 
-        stubMutualizedPackage(agencyId, packageId);
+        when(colecticaConfiguration.mutualizedCodesPackage())
+                .thenReturn(new ColecticaConfiguration.PackageRef(agencyId, packageId, 1));
+        when(instanceConfiguration.itemTypes()).thenReturn(standardItemTypes());
 
         stubChildren(agencyId, packageId, CODE_LIST_SCHEME_TYPE /* no children */);
 
@@ -1334,27 +1490,34 @@ class DDIRepositoryImplTest {
         String labelledId = "cl-labelled";
         String blankId = "cl-blank";
 
-        stubMutualizedPackage(agencyId, packageId);
-        stubPackageTree(
+        when(colecticaConfiguration.mutualizedCodesPackage())
+                .thenReturn(new ColecticaConfiguration.PackageRef(agencyId, packageId, 1));
+        when(instanceConfiguration.itemTypes()).thenReturn(standardItemTypes());
+
+        stubChildren(agencyId, packageId, CODE_LIST_SCHEME_TYPE, new ItemReference(agencyId, schemeId));
+        stubChildren(agencyId, schemeId, CODE_LIST_GROUP_TYPE, new ItemReference(agencyId, groupId));
+        stubChildren(
                 agencyId,
-                packageId,
-                schemeId,
                 groupId,
+                CODE_LIST_TYPE,
                 new ItemReference(agencyId, labelledId),
                 new ItemReference(agencyId, blankId));
 
-        ColecticaItem blank = colecticaItem(
-                CODE_LIST_TYPE,
-                agencyId,
-                1,
-                blankId,
-                Map.of("fr-FR", "   "),
-                Map.of("fr-FR", ""),
-                "2024-10-31T10:43:38",
-                false,
-                1L);
+        ColecticaItem blank = aColecticaItem(CODE_LIST_TYPE, blankId)
+                .itemName("   ")
+                .label("")
+                .agency(agencyId)
+                .versionDate("2024-10-31T10:43:38")
+                .published(false)
+                .build();
         when(colecticaClient.query(List.of(CODE_LIST_TYPE)))
-                .thenReturn(queryResponse(codeListItem(labelledId, "Has label", "2024-10-31T10:43:38"), blank));
+                .thenReturn(new ColecticaResponse(
+                        List.of(codeListItem(labelledId, "Has label", "2024-10-31T10:43:38"), blank),
+                        2,
+                        2,
+                        null,
+                        null,
+                        null));
 
         List<PartialCodesList> result = ddiRepository.getMutualizedCodesLists();
 
@@ -1371,7 +1534,9 @@ class DDIRepositoryImplTest {
         String groupBId = "group-b";
         String sharedClId = "cl-shared";
 
-        stubMutualizedPackage(agencyId, packageId);
+        when(colecticaConfiguration.mutualizedCodesPackage())
+                .thenReturn(new ColecticaConfiguration.PackageRef(agencyId, packageId, 1));
+        when(instanceConfiguration.itemTypes()).thenReturn(standardItemTypes());
 
         stubChildren(agencyId, packageId, CODE_LIST_SCHEME_TYPE, new ItemReference(agencyId, schemeId));
         stubChildren(
@@ -1383,7 +1548,13 @@ class DDIRepositoryImplTest {
         stubChildren(agencyId, groupAId, CODE_LIST_TYPE, new ItemReference(agencyId, sharedClId));
         stubChildren(agencyId, groupBId, CODE_LIST_TYPE, new ItemReference(agencyId, sharedClId));
         when(colecticaClient.query(List.of(CODE_LIST_TYPE)))
-                .thenReturn(queryResponse(codeListItem(sharedClId, "Shared label", "2024-10-31T10:43:38")));
+                .thenReturn(new ColecticaResponse(
+                        List.of(codeListItem(sharedClId, "Shared label", "2024-10-31T10:43:38")),
+                        1,
+                        1,
+                        null,
+                        null,
+                        null));
 
         List<PartialCodesList> result = ddiRepository.getMutualizedCodesLists();
 
@@ -1400,9 +1571,68 @@ class DDIRepositoryImplTest {
         int version = 1;
 
         when(instanceConfiguration.itemTypes()).thenReturn(standardItemTypes());
-        stubCodeListSet(agencyId, codeListId, categoryId, version, fragment("CodeList"), fragment("Category"));
+        ColecticaSetItem[] setItems = {
+            new ColecticaSetItem(codeListId, version, agencyId), new ColecticaSetItem(categoryId, version, agencyId)
+        };
+        when(colecticaClient.getSet(anyString(), anyString(), any())).thenReturn(setItems);
 
-        stubDdi3ToDdi4Conversion(codeListResponse(agencyId, codeListId, categoryId, "1"));
+        ColecticaItemResponse[] itemResponses = {
+            new ColecticaItemResponse(
+                    "8b108ef8-b642-4484-9c49-f88e4bf7cf1d", // CodeList type
+                    agencyId,
+                    version,
+                    codeListId,
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><CodeList/></Fragment>",
+                    null,
+                    null,
+                    false,
+                    false,
+                    false,
+                    null),
+            new ColecticaItemResponse(
+                    "fa1d4dca-f6dc-4d80-8b94-de1063a64d6d", // Category type
+                    agencyId,
+                    version,
+                    categoryId,
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><Category/></Fragment>",
+                    null,
+                    null,
+                    false,
+                    false,
+                    false,
+                    null)
+        };
+        when(colecticaClient.getDescriptions(anyList())).thenReturn(itemResponses);
+
+        Ddi4CodeList mockCodeList = new Ddi4CodeList(
+                Ddi4CodeList.TYPE,
+                CogsDate.ofDateTime("2024-10-31T10:43:38"),
+                "urn:ddi:fr.insee:" + codeListId + ":1",
+                agencyId,
+                codeListId,
+                "1",
+                LangStrings.of("fr-FR", "NAF rév. 2"),
+                null,
+                List.of());
+        Ddi4Category mockCategory = new Ddi4Category(
+                Ddi4Category.TYPE,
+                CogsDate.ofDateTime("2024-10-31T10:43:38"),
+                "urn:ddi:fr.insee:" + categoryId + ":1",
+                agencyId,
+                categoryId,
+                "1",
+                LangStrings.of("fr-FR", "Agriculture"));
+        Ddi4Response mockDdi4Response = new Ddi4Response(
+                "ddi:4.0",
+                List.of(Reference.of(agencyId, codeListId, "1", "CodeList")),
+                List.of(),
+                List.of(),
+                List.of(),
+                List.of(mockCodeList),
+                List.of(mockCategory),
+                null);
+        when(ddi3ToDdi4Converter.convertDdi3ToDdi4(any(Ddi3Response.class), eq("ddi:4.0")))
+                .thenReturn(mockDdi4Response);
 
         // When
         Ddi4Response result = ddiRepository.getMutualizedCodesList(agencyId, codeListId);
@@ -1436,13 +1666,86 @@ class DDIRepositoryImplTest {
                 );
 
         // Mock existing instance with a Label on DataRelationship
+        Ddi4PhysicalInstance mockPhysicalInstance = new Ddi4PhysicalInstance(
+                Ddi4PhysicalInstance.TYPE,
+                CogsDate.ofDateTime("2025-01-01T00:00:00"),
+                "urn:ddi:fr.insee:" + instanceId + ":1",
+                agencyId,
+                instanceId,
+                "1",
+                null,
+                new Citation(LangStrings.of("fr-FR", "Old Label")),
+                List.of(Reference.of(agencyId, "dr-123", "1", "DataRelationship")));
+
         // Existing DataRelationship has a Label with "en-US" language
         List<LangString> existingDrLabel = LangStrings.of("en-US", "Existing DR Label");
         List<LangString> existingLrLabel = LangStrings.of("de-DE", "Existing LR Label");
 
+        Ddi4DataRelationship mockDataRelationship = new Ddi4DataRelationship(
+                Ddi4DataRelationship.TYPE,
+                CogsDate.ofDateTime("2025-01-01T00:00:00"),
+                "urn:ddi:fr.insee:dr-123:1",
+                agencyId,
+                "dr-123",
+                "1",
+                null,
+                existingDrLabel,
+                List.of(new LogicalRecord(
+                        LogicalRecord.TYPE,
+                        "urn:ddi:fr.insee:lr-123:1",
+                        agencyId,
+                        "lr-123",
+                        "1",
+                        existingLrLabel,
+                        null)));
+
+        Ddi4Response mockDdi4Response = new Ddi4Response(
+                "ddi:4.0",
+                List.of(Reference.of(agencyId, instanceId, "1", "PhysicalInstance")),
+                List.of(mockPhysicalInstance),
+                List.of(mockDataRelationship),
+                List.of(),
+                List.of(),
+                List.of(),
+                null);
+
+        ColecticaSetItem[] updateSetItems = {new ColecticaSetItem(instanceId, 1, agencyId)};
+        stubPhysicalInstanceSet(updateSetItems);
+        ColecticaItemResponse[] updateItemResponses = {
+            new ColecticaItemResponse(
+                    "a51e85bb-6259-4488-8df2-f08cb43485f8",
+                    agencyId,
+                    1,
+                    instanceId,
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><PhysicalInstance/></Fragment>",
+                    null,
+                    null,
+                    false,
+                    false,
+                    false,
+                    null)
+        };
+        when(colecticaClient.getDescriptions(anyList())).thenReturn(updateItemResponses);
+        when(ddi3ToDdi4Converter.convertDdi3ToDdi4(any(Ddi3Response.class), eq("ddi:4.0")))
+                .thenReturn(mockDdi4Response);
+
         // Capture what's passed to the DDI4 to DDI3 converter
-        ArgumentCaptor<Ddi4Response> ddi4Captor =
-                stubPhysicalInstanceLabelUpdate(agencyId, instanceId, existingDrLabel, existingLrLabel);
+        ArgumentCaptor<Ddi4Response> ddi4Captor = ArgumentCaptor.forClass(Ddi4Response.class);
+        Ddi3Response.Ddi3Item mockItem = new Ddi3Response.Ddi3Item(
+                "a51e85bb-6259-4488-8df2-f08cb43485f8",
+                agencyId,
+                "2",
+                instanceId,
+                "<PhysicalInstance></PhysicalInstance>",
+                "2025-01-01T00:00:00",
+                null,
+                true,
+                false,
+                false,
+                "DDI");
+        when(ddi4ToDdi3Converter.convertDdi4ToDdi3(ddi4Captor.capture()))
+                .thenReturn(new Ddi3Response(null, List.of(mockItem)));
+        when(colecticaClient.createOrUpdateItems(any())).thenReturn("{}");
 
         // When
         ddiRepository.updatePhysicalInstance(agencyId, instanceId, updateRequest);
@@ -1472,8 +1775,83 @@ class DDIRepositoryImplTest {
                 "New DR Label", // New label text
                 "New LR Label");
 
-        // DataRelationship and LogicalRecord have NO existing Label (null)
-        ArgumentCaptor<Ddi4Response> ddi4Captor = stubPhysicalInstanceLabelUpdate(agencyId, instanceId, null, null);
+        Ddi4PhysicalInstance mockPhysicalInstance = new Ddi4PhysicalInstance(
+                Ddi4PhysicalInstance.TYPE,
+                CogsDate.ofDateTime("2025-01-01T00:00:00"),
+                "urn:ddi:fr.insee:" + instanceId + ":1",
+                agencyId,
+                instanceId,
+                "1",
+                null,
+                new Citation(LangStrings.of("fr-FR", "Old Label")),
+                List.of(Reference.of(agencyId, "dr-123", "1", "DataRelationship")));
+
+        // DataRelationship has NO existing Label (null)
+        Ddi4DataRelationship mockDataRelationship = new Ddi4DataRelationship(
+                Ddi4DataRelationship.TYPE,
+                CogsDate.ofDateTime("2025-01-01T00:00:00"),
+                "urn:ddi:fr.insee:dr-123:1",
+                agencyId,
+                "dr-123",
+                "1",
+                null,
+                null, // No existing label
+                List.of(new LogicalRecord(
+                        LogicalRecord.TYPE,
+                        "urn:ddi:fr.insee:lr-123:1",
+                        agencyId,
+                        "lr-123",
+                        "1",
+                        null,
+                        null)) // No existing label
+                );
+
+        Ddi4Response mockDdi4Response = new Ddi4Response(
+                "ddi:4.0",
+                List.of(Reference.of(agencyId, instanceId, "1", "PhysicalInstance")),
+                List.of(mockPhysicalInstance),
+                List.of(mockDataRelationship),
+                List.of(),
+                List.of(),
+                List.of(),
+                null);
+
+        ColecticaSetItem[] updateSetItems = {new ColecticaSetItem(instanceId, 1, agencyId)};
+        stubPhysicalInstanceSet(updateSetItems);
+        ColecticaItemResponse[] updateItemResponses = {
+            new ColecticaItemResponse(
+                    "a51e85bb-6259-4488-8df2-f08cb43485f8",
+                    agencyId,
+                    1,
+                    instanceId,
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><PhysicalInstance/></Fragment>",
+                    null,
+                    null,
+                    false,
+                    false,
+                    false,
+                    null)
+        };
+        when(colecticaClient.getDescriptions(anyList())).thenReturn(updateItemResponses);
+        when(ddi3ToDdi4Converter.convertDdi3ToDdi4(any(Ddi3Response.class), eq("ddi:4.0")))
+                .thenReturn(mockDdi4Response);
+
+        ArgumentCaptor<Ddi4Response> ddi4Captor = ArgumentCaptor.forClass(Ddi4Response.class);
+        Ddi3Response.Ddi3Item mockItem = new Ddi3Response.Ddi3Item(
+                "a51e85bb-6259-4488-8df2-f08cb43485f8",
+                agencyId,
+                "2",
+                instanceId,
+                "<PhysicalInstance></PhysicalInstance>",
+                "2025-01-01T00:00:00",
+                null,
+                true,
+                false,
+                false,
+                "DDI");
+        when(ddi4ToDdi3Converter.convertDdi4ToDdi3(ddi4Captor.capture()))
+                .thenReturn(new Ddi3Response(null, List.of(mockItem)));
+        when(colecticaClient.createOrUpdateItems(any())).thenReturn("{}");
 
         // When
         ddiRepository.updatePhysicalInstance(agencyId, instanceId, updateRequest);
@@ -1509,12 +1887,85 @@ class DDIRepositoryImplTest {
                 "Updated DR Label", // New text for existing label
                 "Updated LR Label");
 
+        Ddi4PhysicalInstance mockPhysicalInstance = new Ddi4PhysicalInstance(
+                Ddi4PhysicalInstance.TYPE,
+                CogsDate.ofDateTime("2025-01-01T00:00:00"),
+                "urn:ddi:fr.insee:" + instanceId + ":1",
+                agencyId,
+                instanceId,
+                "1",
+                null,
+                new Citation(LangStrings.of("fr-FR", "Old Label")),
+                List.of(Reference.of(agencyId, "dr-123", "1", "DataRelationship")));
+
         // Existing labels with specific languages (not fr-FR)
         List<LangString> existingDrLabel = LangStrings.of("en-GB", "Old DR Label");
         List<LangString> existingLrLabel = LangStrings.of("es-ES", "Old LR Label");
 
-        ArgumentCaptor<Ddi4Response> ddi4Captor =
-                stubPhysicalInstanceLabelUpdate(agencyId, instanceId, existingDrLabel, existingLrLabel);
+        Ddi4DataRelationship mockDataRelationship = new Ddi4DataRelationship(
+                Ddi4DataRelationship.TYPE,
+                CogsDate.ofDateTime("2025-01-01T00:00:00"),
+                "urn:ddi:fr.insee:dr-123:1",
+                agencyId,
+                "dr-123",
+                "1",
+                null,
+                existingDrLabel,
+                List.of(new LogicalRecord(
+                        LogicalRecord.TYPE,
+                        "urn:ddi:fr.insee:lr-123:1",
+                        agencyId,
+                        "lr-123",
+                        "1",
+                        existingLrLabel,
+                        null)));
+
+        Ddi4Response mockDdi4Response = new Ddi4Response(
+                "ddi:4.0",
+                List.of(Reference.of(agencyId, instanceId, "1", "PhysicalInstance")),
+                List.of(mockPhysicalInstance),
+                List.of(mockDataRelationship),
+                List.of(),
+                List.of(),
+                List.of(),
+                null);
+
+        ColecticaSetItem[] updateSetItems = {new ColecticaSetItem(instanceId, 1, agencyId)};
+        stubPhysicalInstanceSet(updateSetItems);
+        ColecticaItemResponse[] updateItemResponses = {
+            new ColecticaItemResponse(
+                    "a51e85bb-6259-4488-8df2-f08cb43485f8",
+                    agencyId,
+                    1,
+                    instanceId,
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><PhysicalInstance/></Fragment>",
+                    null,
+                    null,
+                    false,
+                    false,
+                    false,
+                    null)
+        };
+        when(colecticaClient.getDescriptions(anyList())).thenReturn(updateItemResponses);
+        when(ddi3ToDdi4Converter.convertDdi3ToDdi4(any(Ddi3Response.class), eq("ddi:4.0")))
+                .thenReturn(mockDdi4Response);
+
+        ArgumentCaptor<Ddi4Response> ddi4Captor = ArgumentCaptor.forClass(Ddi4Response.class);
+        Ddi3Response.Ddi3Item mockItem = new Ddi3Response.Ddi3Item(
+                "a51e85bb-6259-4488-8df2-f08cb43485f8",
+                agencyId,
+                "2",
+                instanceId,
+                "<PhysicalInstance></PhysicalInstance>",
+                "2025-01-01T00:00:00",
+                null,
+                true,
+                false,
+                false,
+                "DDI");
+        when(ddi4ToDdi3Converter.convertDdi4ToDdi3(ddi4Captor.capture()))
+                .thenReturn(new Ddi3Response(null, List.of(mockItem)));
+        when(colecticaClient.createOrUpdateItems(any())).thenReturn("{}");
 
         // When
         ddiRepository.updatePhysicalInstance(agencyId, instanceId, updateRequest);
@@ -1621,8 +2072,11 @@ class DDIRepositoryImplTest {
         String suId = "su-abc";
         String suAgency = "fr.insee";
 
+        when(colecticaClient.query(anyList())).thenReturn(studyUnitQueryResponse(suAgency, suId));
+
         String studyUnitXml = studyUnitFragment(operationIri, "");
-        stubStudyUnitDescription(suAgency, suId, studyUnitXml);
+        when(colecticaClient.getDescriptions(List.of(new GetDescriptionsRequest.IdentifierRef(suAgency, suId, 1))))
+                .thenReturn(new ColecticaItemResponse[] {studyUnitItemResponse(suAgency, suId, studyUnitXml)});
 
         Optional<String> result = ddiRepository.findStudyUnitXmlByOperationIri(operationIri);
 
@@ -1643,10 +2097,13 @@ class DDIRepositoryImplTest {
         String suId = "su-abc";
         String suAgency = "fr.insee";
 
+        when(colecticaClient.query(anyList())).thenReturn(studyUnitQueryResponse(suAgency, suId));
+
         String studyUnitXml = studyUnitFragment(
                 operationIri,
                 physicalInstanceReference(suAgency, "pi-1", "1") + physicalInstanceReference(suAgency, "pi-2", "3"));
-        stubStudyUnitDescription(suAgency, suId, studyUnitXml);
+        when(colecticaClient.getDescriptions(List.of(new GetDescriptionsRequest.IdentifierRef(suAgency, suId, 1))))
+                .thenReturn(new ColecticaItemResponse[] {studyUnitItemResponse(suAgency, suId, studyUnitXml)});
 
         String firstPiXml = physicalInstanceFragment("pi-1");
         String secondPiXml = physicalInstanceFragment("pi-2");
@@ -1672,8 +2129,11 @@ class DDIRepositoryImplTest {
         String suId = "su-abc";
         String suAgency = "fr.insee";
 
+        when(colecticaClient.query(anyList())).thenReturn(studyUnitQueryResponse(suAgency, suId));
+
         String studyUnitXml = studyUnitFragment(operationIri, physicalInstanceReference(suAgency, "pi-1", "1"));
-        stubStudyUnitDescription(suAgency, suId, studyUnitXml);
+        when(colecticaClient.getDescriptions(List.of(new GetDescriptionsRequest.IdentifierRef(suAgency, suId, 1))))
+                .thenReturn(new ColecticaItemResponse[] {studyUnitItemResponse(suAgency, suId, studyUnitXml)});
 
         String piXml = physicalInstanceFragment("pi-1");
         when(colecticaClient.getDescriptions(List.of(new GetDescriptionsRequest.IdentifierRef(suAgency, "pi-1", 1))))
@@ -1719,36 +2179,23 @@ class DDIRepositoryImplTest {
         String suId = "su-xyz";
         String suAgency = "fr.insee";
 
-        stubStudyUnitOfAnotherOperation(suAgency, suId);
+        when(colecticaClient.query(anyList())).thenReturn(studyUnitQueryResponse(suAgency, suId));
+        when(colecticaClient.getDescriptions(anyList())).thenReturn(new ColecticaItemResponse[] {
+            studyUnitItemResponse(
+                    suAgency, suId, studyUnitFragment("http://id.insee.fr/operations/operation/other", ""))
+        });
 
         assertFalse(ddiRepository.findStudyUnitByOperationIri(operationIri).isPresent());
     }
 
     private static ColecticaResponse studyUnitQueryResponse(String agency, String id) {
-        ColecticaItem suItem = new ColecticaItem(
-                null,
-                Map.of("fr-FR", "BPE 2021"),
-                Map.of(),
-                null,
-                null,
-                0,
-                "repo",
-                true,
-                List.of(),
-                "30ea0200-7121-4f01-8d21-a931a182b86d",
-                agency,
-                1,
-                id,
-                null,
-                null,
-                "2025-01-01T00:00:00",
-                null,
-                false,
-                false,
-                false,
-                "DDI",
-                1L,
-                0);
+        ColecticaItem suItem = aColecticaItem("30ea0200-7121-4f01-8d21-a931a182b86d", id)
+                .itemName("BPE 2021")
+                .label(Map.of())
+                .agency(agency)
+                .versionDate("2025-01-01T00:00:00")
+                .published(false)
+                .build();
         return new ColecticaResponse(List.of(suItem), 1, 1, null, null, null);
     }
 
@@ -1813,7 +2260,11 @@ class DDIRepositoryImplTest {
         String suId = "su-xyz";
         String suAgency = "fr.insee";
 
-        stubStudyUnitOfAnotherOperation(suAgency, suId);
+        when(colecticaClient.query(anyList())).thenReturn(studyUnitQueryResponse(suAgency, suId));
+        when(colecticaClient.getDescriptions(anyList())).thenReturn(new ColecticaItemResponse[] {
+            studyUnitItemResponse(
+                    suAgency, suId, studyUnitFragment("http://id.insee.fr/operations/operation/other", ""))
+        });
 
         Optional<String> result = ddiRepository.findStudyUnitXmlByOperationIri(operationIri);
 
@@ -1828,10 +2279,14 @@ class DDIRepositoryImplTest {
         String agencyId = "fr.insee";
         String piId = "pi-111";
 
-        // PI → StudyUnit
-        stubParents(agencyId, piId, studyUnitType, new ItemReference("fr.insee", "su-222"));
+        // PI → StudyUnit : l'endpoint /descriptions renvoie aussi le libellé
+        when(colecticaClient.findRelatedItems(
+                        RelationshipDirection.BY_OBJECT, new ItemReference(agencyId, piId), List.of(studyUnitType)))
+                .thenReturn(List.of(labelItem(studyUnitType, "fr.insee", "su-222", "Enquête emploi 2024")));
         // StudyUnit → Group
-        stubParents("fr.insee", "su-222", groupType, new ItemReference("fr.insee", "grp-333"));
+        when(colecticaClient.findRelatedItems(
+                        RelationshipDirection.BY_OBJECT, new ItemReference("fr.insee", "su-222"), List.of(groupType)))
+                .thenReturn(List.of(labelItem(groupType, "fr.insee", "grp-333", "Enquête emploi")));
 
         // When
         PhysicalInstanceParents result = ddiRepository.getPhysicalInstanceParents(agencyId, piId);
@@ -1842,8 +2297,26 @@ class DDIRepositoryImplTest {
         assertEquals("fr.insee", result.studyUnitAgency());
         assertEquals("grp-333", result.groupId());
         assertEquals("fr.insee", result.groupAgency());
-        verify(colecticaClient, times(2))
-                .findRelatedDescriptions(eq(RelationshipDirection.BY_OBJECT), any(), anyList());
+        verify(colecticaClient, times(2)).findRelatedItems(eq(RelationshipDirection.BY_OBJECT), any(), anyList());
+    }
+
+    @Test
+    void getPhysicalInstanceParents_keepsTheLabelsReturnedByTheRelationshipQuery() {
+        String studyUnitType = "30ea0200-7121-4f01-8d21-a931a182b86d";
+        String groupType = "4bd6eef6-99df-40e6-9b11-5b8f64e5cb23";
+        when(colecticaClient.findRelatedItems(
+                        RelationshipDirection.BY_OBJECT,
+                        new ItemReference("fr.insee", "pi-111"),
+                        List.of(studyUnitType)))
+                .thenReturn(List.of(labelItem(studyUnitType, "fr.insee", "su-222", "Enquête emploi 2024")));
+        when(colecticaClient.findRelatedItems(
+                        RelationshipDirection.BY_OBJECT, new ItemReference("fr.insee", "su-222"), List.of(groupType)))
+                .thenReturn(List.of(labelItem(groupType, "fr.insee", "grp-333", "Enquête emploi")));
+
+        PhysicalInstanceParents result = ddiRepository.getPhysicalInstanceParents("fr.insee", "pi-111");
+
+        assertEquals("Enquête emploi 2024", result.studyUnitLabel());
+        assertEquals("Enquête emploi", result.groupLabel());
     }
 
     @Test
@@ -1853,12 +2326,44 @@ class DDIRepositoryImplTest {
         String agencyId = "fr.insee";
         String piId = "pi-111";
 
-        stubParents(agencyId, piId, studyUnitType);
+        when(colecticaClient.findRelatedItems(
+                        RelationshipDirection.BY_OBJECT, new ItemReference(agencyId, piId), List.of(studyUnitType)))
+                .thenReturn(List.of());
 
         // When / Then
         StudyUnitNotFoundException exception = assertThrows(
                 StudyUnitNotFoundException.class, () -> ddiRepository.getPhysicalInstanceParents(agencyId, piId));
         assertThat(exception.getMessage()).isEqualTo("No study unit found for physical instance fr.insee/pi-111");
+    }
+
+    @Test
+    void getGroupSeriesIris_readsTheUserIdsOfTheGroupItemAloneWithoutFetchingItsDdiSet() {
+        String groupXml = """
+                <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3" xmlns:g="ddi:group:3_3">
+                  <g:Group>
+                    <r:Agency>fr.insee</r:Agency>
+                    <r:ID>grp-333</r:ID>
+                    <r:UserID typeOfUserID="StatisticalOperationSeries">http://id.insee.fr/operations/serie/s1001</r:UserID>
+                  </g:Group>
+                </Fragment>""";
+        when(colecticaClient.getItem("fr.insee", "grp-333", null))
+                .thenReturn(new ColecticaItemResponse(
+                        GROUP_ITEM_TYPE,
+                        "fr.insee",
+                        1,
+                        "grp-333",
+                        groupXml,
+                        "2025-01-01T00:00:00",
+                        null,
+                        false,
+                        false,
+                        false,
+                        null));
+
+        List<String> seriesIris = ddiRepository.getGroupSeriesIris("fr.insee", "grp-333");
+
+        assertThat(seriesIris).containsExactly("http://id.insee.fr/operations/serie/s1001");
+        verify(colecticaClient, never()).getDdiSet(anyString(), anyString());
     }
 
     // ---- #485 : getCodeList / getCodeListXml (CodeList + Categories, versioned) ----
@@ -1871,9 +2376,68 @@ class DDIRepositoryImplTest {
         String version = "2";
 
         when(instanceConfiguration.itemTypes()).thenReturn(standardItemTypes());
-        stubCodeListSet(agencyId, codeListId, categoryId, 2, fragment("CodeList"), fragment("Category"));
+        ColecticaSetItem[] setItems = {
+            new ColecticaSetItem(codeListId, 2, agencyId), new ColecticaSetItem(categoryId, 2, agencyId)
+        };
+        when(colecticaClient.getSet(anyString(), anyString(), any())).thenReturn(setItems);
 
-        stubDdi3ToDdi4Conversion(codeListResponse(agencyId, codeListId, categoryId, "2"));
+        ColecticaItemResponse[] itemResponses = {
+            new ColecticaItemResponse(
+                    "8b108ef8-b642-4484-9c49-f88e4bf7cf1d",
+                    agencyId,
+                    2,
+                    codeListId,
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><CodeList/></Fragment>",
+                    null,
+                    null,
+                    false,
+                    false,
+                    false,
+                    null),
+            new ColecticaItemResponse(
+                    "fa1d4dca-f6dc-4d80-8b94-de1063a64d6d",
+                    agencyId,
+                    2,
+                    categoryId,
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><Category/></Fragment>",
+                    null,
+                    null,
+                    false,
+                    false,
+                    false,
+                    null)
+        };
+        when(colecticaClient.getDescriptions(anyList())).thenReturn(itemResponses);
+
+        Ddi4CodeList mockCodeList = new Ddi4CodeList(
+                Ddi4CodeList.TYPE,
+                CogsDate.ofDateTime("2024-10-31T10:43:38"),
+                "urn:ddi:fr.insee:" + codeListId + ":2",
+                agencyId,
+                codeListId,
+                "2",
+                LangStrings.of("fr-FR", "NAF rév. 2"),
+                null,
+                List.of());
+        Ddi4Category mockCategory = new Ddi4Category(
+                Ddi4Category.TYPE,
+                CogsDate.ofDateTime("2024-10-31T10:43:38"),
+                "urn:ddi:fr.insee:" + categoryId + ":2",
+                agencyId,
+                categoryId,
+                "2",
+                LangStrings.of("fr-FR", "Agriculture"));
+        Ddi4Response mockDdi4Response = new Ddi4Response(
+                "ddi:4.0",
+                List.of(Reference.of(agencyId, codeListId, "2", "CodeList")),
+                List.of(),
+                List.of(),
+                List.of(),
+                List.of(mockCodeList),
+                List.of(mockCategory),
+                null);
+        when(ddi3ToDdi4Converter.convertDdi3ToDdi4(any(Ddi3Response.class), eq("ddi:4.0")))
+                .thenReturn(mockDdi4Response);
 
         Ddi4Response result = ddiRepository.getCodeList(agencyId, codeListId, version);
 
@@ -1892,13 +2456,38 @@ class DDIRepositoryImplTest {
         String categoryId = "cat-1";
 
         when(instanceConfiguration.itemTypes()).thenReturn(standardItemTypes());
-        stubCodeListSet(
-                agencyId,
-                codeListId,
-                categoryId,
-                1,
-                fragment("CodeList xmlns=\"ddi:logicalproduct:3_3\""),
-                fragment("Category xmlns=\"ddi:logicalproduct:3_3\""));
+        ColecticaSetItem[] setItems = {
+            new ColecticaSetItem(codeListId, 1, agencyId), new ColecticaSetItem(categoryId, 1, agencyId)
+        };
+        when(colecticaClient.getSet(anyString(), anyString(), any())).thenReturn(setItems);
+
+        ColecticaItemResponse[] itemResponses = {
+            new ColecticaItemResponse(
+                    "8b108ef8-b642-4484-9c49-f88e4bf7cf1d",
+                    agencyId,
+                    1,
+                    codeListId,
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><CodeList xmlns=\"ddi:logicalproduct:3_3\"/></Fragment>",
+                    null,
+                    null,
+                    false,
+                    false,
+                    false,
+                    null),
+            new ColecticaItemResponse(
+                    "fa1d4dca-f6dc-4d80-8b94-de1063a64d6d",
+                    agencyId,
+                    1,
+                    categoryId,
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><Category xmlns=\"ddi:logicalproduct:3_3\"/></Fragment>",
+                    null,
+                    null,
+                    false,
+                    false,
+                    false,
+                    null)
+        };
+        when(colecticaClient.getDescriptions(anyList())).thenReturn(itemResponses);
 
         String xml = ddiRepository.getCodeListXml(agencyId, codeListId, null);
 
@@ -1921,7 +2510,24 @@ class DDIRepositoryImplTest {
         // #493 : un {id} pointant vers un autre type (ici PhysicalInstance) ne renvoie aucun contenu.
         String agencyId = "fr.insee";
         String id = "not-a-codelist";
-        stubStandardSetWithSingleRoot(agencyId, id, PHYSICAL_INSTANCE_TYPE, "PhysicalInstance");
+        when(instanceConfiguration.itemTypes()).thenReturn(standardItemTypes());
+
+        when(colecticaClient.getSet(anyString(), anyString(), any()))
+                .thenReturn(new ColecticaSetItem[] {new ColecticaSetItem(id, 1, agencyId)});
+        when(colecticaClient.getDescriptions(anyList())).thenReturn(new ColecticaItemResponse[] {
+            new ColecticaItemResponse(
+                    PHYSICAL_INSTANCE_TYPE,
+                    agencyId,
+                    1,
+                    id,
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><PhysicalInstance/></Fragment>",
+                    null,
+                    null,
+                    false,
+                    false,
+                    false,
+                    null)
+        });
 
         assertNull(ddiRepository.getCodeList(agencyId, id, null));
         verify(ddi3ToDdi4Converter, never()).convertDdi3ToDdi4(any(), any());
@@ -1932,7 +2538,24 @@ class DDIRepositoryImplTest {
         // #493 : même garde de type sur la variante XML.
         String agencyId = "fr.insee";
         String id = "not-a-codelist";
-        stubStandardSetWithSingleRoot(agencyId, id, PHYSICAL_INSTANCE_TYPE, "PhysicalInstance");
+        when(instanceConfiguration.itemTypes()).thenReturn(standardItemTypes());
+
+        when(colecticaClient.getSet(anyString(), anyString(), any()))
+                .thenReturn(new ColecticaSetItem[] {new ColecticaSetItem(id, 1, agencyId)});
+        when(colecticaClient.getDescriptions(anyList())).thenReturn(new ColecticaItemResponse[] {
+            new ColecticaItemResponse(
+                    PHYSICAL_INSTANCE_TYPE,
+                    agencyId,
+                    1,
+                    id,
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><PhysicalInstance/></Fragment>",
+                    null,
+                    null,
+                    false,
+                    false,
+                    false,
+                    null)
+        });
 
         assertNull(ddiRepository.getCodeListXml(agencyId, id, null));
     }
@@ -1946,20 +2569,99 @@ class DDIRepositoryImplTest {
         // CodeList/Category référencées.
         String agencyId = "fr.insee";
         String piId = "pi-1";
+        String piType = "a51e85bb-6259-4488-8df2-f08cb43485f8";
+        String drType = "f39ff278-8500-45fe-a850-3906da2d242b";
+        String variableType = "683889c6-f74b-4d5e-92ed-908c0a42bb2d";
+        String codeListType = "8b108ef8-b642-4484-9c49-f88e4bf7cf1d";
+        String categoryType = "7e47c269-bcab-40f7-a778-af7bbc4e3d00";
 
-        when(instanceConfiguration.itemTypes()).thenReturn(physicalInstanceItemTypesWithCodeLists());
+        when(instanceConfiguration.itemTypes())
+                .thenReturn(Map.of(
+                        "PhysicalInstance", piType,
+                        "DataRelationship", drType,
+                        "Variable", variableType,
+                        "CodeList", codeListType,
+                        "Category", categoryType));
 
-        stubSet(setItems(agencyId, piId, "dr-1", "var-1", "cl-1", "cat-1"));
+        ColecticaSetItem[] setItems = {
+            new ColecticaSetItem(piId, 1, agencyId),
+            new ColecticaSetItem("dr-1", 1, agencyId),
+            new ColecticaSetItem("var-1", 1, agencyId),
+            new ColecticaSetItem("cl-1", 1, agencyId),
+            new ColecticaSetItem("cat-1", 1, agencyId)
+        };
+        when(colecticaClient.getSet(anyString(), anyString(), any())).thenReturn(setItems);
 
-        stubDescriptions(
-                description(PHYSICAL_INSTANCE_TYPE, agencyId, 1, piId, fragment("PhysicalInstance")),
-                description(DATA_RELATIONSHIP_TYPE, agencyId, 1, "dr-1", fragment("DataRelationship")),
-                description(VARIABLE_TYPE, agencyId, 1, "var-1", fragment("Variable")),
-                description(CODE_LIST_TYPE, agencyId, 1, "cl-1", fragment("CodeList")),
-                description(CATEGORY_TYPE, agencyId, 1, "cat-1", fragment("Category")));
+        ColecticaItemResponse[] itemResponses = {
+            new ColecticaItemResponse(
+                    piType,
+                    agencyId,
+                    1,
+                    piId,
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><PhysicalInstance/></Fragment>",
+                    null,
+                    null,
+                    false,
+                    false,
+                    false,
+                    null),
+            new ColecticaItemResponse(
+                    drType,
+                    agencyId,
+                    1,
+                    "dr-1",
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><DataRelationship/></Fragment>",
+                    null,
+                    null,
+                    false,
+                    false,
+                    false,
+                    null),
+            new ColecticaItemResponse(
+                    variableType,
+                    agencyId,
+                    1,
+                    "var-1",
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><Variable/></Fragment>",
+                    null,
+                    null,
+                    false,
+                    false,
+                    false,
+                    null),
+            new ColecticaItemResponse(
+                    codeListType,
+                    agencyId,
+                    1,
+                    "cl-1",
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><CodeList/></Fragment>",
+                    null,
+                    null,
+                    false,
+                    false,
+                    false,
+                    null),
+            new ColecticaItemResponse(
+                    categoryType,
+                    agencyId,
+                    1,
+                    "cat-1",
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><Category/></Fragment>",
+                    null,
+                    null,
+                    false,
+                    false,
+                    false,
+                    null)
+        };
+        when(colecticaClient.getDescriptions(anyList())).thenReturn(itemResponses);
 
-        ArgumentCaptor<Ddi3Response> captor = captureDdi3ToDdi4Conversion(
-                new Ddi4Response("ddi:4.0", null, List.of(), List.of(), List.of(), List.of(), List.of(), null));
+        Ddi4Response mockDdi4 =
+                new Ddi4Response("ddi:4.0", null, List.of(), List.of(), List.of(), List.of(), List.of(), null);
+
+        ArgumentCaptor<Ddi3Response> captor = ArgumentCaptor.forClass(Ddi3Response.class);
+        when(ddi3ToDdi4Converter.convertDdi3ToDdi4(captor.capture(), eq("ddi:4.0")))
+                .thenReturn(mockDdi4);
 
         ddiRepository.getDataRelationships(agencyId, piId, null);
 
@@ -1967,11 +2669,11 @@ class DDIRepositoryImplTest {
         List<Ddi3Response.Ddi3Item> converted = captor.getValue().items();
         assertEquals(3, converted.size());
         // #1146 : la PhysicalInstance ouvre la liste, avant les éléments qui la composent.
-        assertEquals(PHYSICAL_INSTANCE_TYPE, converted.get(0).itemType());
-        assertTrue(converted.stream().anyMatch(i -> DATA_RELATIONSHIP_TYPE.equals(i.itemType())));
-        assertTrue(converted.stream().anyMatch(i -> VARIABLE_TYPE.equals(i.itemType())));
-        assertTrue(converted.stream().noneMatch(i -> CODE_LIST_TYPE.equals(i.itemType())));
-        assertTrue(converted.stream().noneMatch(i -> CATEGORY_TYPE.equals(i.itemType())));
+        assertEquals(piType, converted.get(0).itemType());
+        assertTrue(converted.stream().anyMatch(i -> drType.equals(i.itemType())));
+        assertTrue(converted.stream().anyMatch(i -> variableType.equals(i.itemType())));
+        assertTrue(converted.stream().noneMatch(i -> codeListType.equals(i.itemType())));
+        assertTrue(converted.stream().noneMatch(i -> categoryType.equals(i.itemType())));
     }
 
     @Test
@@ -1981,33 +2683,161 @@ class DDIRepositoryImplTest {
         // Category de ses codes. Les CodeList/Category de représentation restent écartées.
         String agencyId = "fr.insee";
         String piId = "pi-1";
+        String piType = "a51e85bb-6259-4488-8df2-f08cb43485f8";
+        String drType = "f39ff278-8500-45fe-a850-3906da2d242b";
+        String variableType = "683889c6-f74b-4d5e-92ed-908c0a42bb2d";
+        String codeListType = "8b108ef8-b642-4484-9c49-f88e4bf7cf1d";
+        String categoryType = "7e47c269-bcab-40f7-a778-af7bbc4e3d00";
         String mmvrType = "c9ec9f5b-b9b4-4a1a-a5b6-2a89b1a52ffe";
 
-        when(instanceConfiguration.itemTypes()).thenReturn(dataRelationshipItemTypesWithSentinels(mmvrType));
+        when(instanceConfiguration.itemTypes())
+                .thenReturn(Map.of(
+                        "PhysicalInstance", piType,
+                        "DataRelationship", drType,
+                        "Variable", variableType,
+                        "CodeList", codeListType,
+                        "Category", categoryType,
+                        "ManagedMissingValuesRepresentation", mmvrType));
 
-        stubSet(setItems(
-                agencyId,
-                piId,
-                "dr-1",
-                "var-1",
-                "mmvr-1",
-                "cl-sentinel",
-                "cat-sentinel",
-                "cl-representation",
-                "cat-representation"));
+        when(colecticaClient.getSet(anyString(), anyString(), any())).thenReturn(new ColecticaSetItem[] {
+            new ColecticaSetItem(piId, 1, agencyId),
+            new ColecticaSetItem("dr-1", 1, agencyId),
+            new ColecticaSetItem("var-1", 1, agencyId),
+            new ColecticaSetItem("mmvr-1", 1, agencyId),
+            new ColecticaSetItem("cl-sentinel", 1, agencyId),
+            new ColecticaSetItem("cat-sentinel", 1, agencyId),
+            new ColecticaSetItem("cl-representation", 1, agencyId),
+            new ColecticaSetItem("cat-representation", 1, agencyId)
+        });
 
-        List<ColecticaItemResponse> descriptions = new ArrayList<>(List.of(
-                description(PHYSICAL_INSTANCE_TYPE, agencyId, 1, piId, fragment("PhysicalInstance")),
-                description(DATA_RELATIONSHIP_TYPE, agencyId, 1, "dr-1", fragment("DataRelationship"))));
-        descriptions.addAll(variableWithSentinelValuesDescriptions(agencyId, mmvrType));
-        descriptions.add(description(
-                CATEGORY_TYPE, agencyId, 1, "cat-representation", fragment("Category ID=\"cat-representation\"")));
-        stubDescriptions(descriptions.toArray(ColecticaItemResponse[]::new));
+        String mmvrXml = "<Fragment xmlns=\"ddi:instance:3_3\"><ManagedMissingValuesRepresentation/></Fragment>";
+        String sentinelCodeListXml = "<Fragment xmlns=\"ddi:instance:3_3\"><CodeList ID=\"cl-sentinel\"/></Fragment>";
+        when(colecticaClient.getDescriptions(anyList())).thenReturn(new ColecticaItemResponse[] {
+            new ColecticaItemResponse(
+                    piType,
+                    agencyId,
+                    1,
+                    piId,
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><PhysicalInstance/></Fragment>",
+                    null,
+                    null,
+                    false,
+                    false,
+                    false,
+                    null),
+            new ColecticaItemResponse(
+                    drType,
+                    agencyId,
+                    1,
+                    "dr-1",
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><DataRelationship/></Fragment>",
+                    null,
+                    null,
+                    false,
+                    false,
+                    false,
+                    null),
+            new ColecticaItemResponse(
+                    variableType,
+                    agencyId,
+                    1,
+                    "var-1",
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><Variable/></Fragment>",
+                    null,
+                    null,
+                    false,
+                    false,
+                    false,
+                    null),
+            new ColecticaItemResponse(mmvrType, agencyId, 1, "mmvr-1", mmvrXml, null, null, false, false, false, null),
+            new ColecticaItemResponse(
+                    codeListType,
+                    agencyId,
+                    1,
+                    "cl-sentinel",
+                    sentinelCodeListXml,
+                    null,
+                    null,
+                    false,
+                    false,
+                    false,
+                    null),
+            new ColecticaItemResponse(
+                    categoryType,
+                    agencyId,
+                    1,
+                    "cat-sentinel",
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><Category ID=\"cat-sentinel\"/></Fragment>",
+                    null,
+                    null,
+                    false,
+                    false,
+                    false,
+                    null),
+            new ColecticaItemResponse(
+                    codeListType,
+                    agencyId,
+                    1,
+                    "cl-representation",
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><CodeList ID=\"cl-representation\"/></Fragment>",
+                    null,
+                    null,
+                    false,
+                    false,
+                    false,
+                    null),
+            new ColecticaItemResponse(
+                    categoryType,
+                    agencyId,
+                    1,
+                    "cat-representation",
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><Category ID=\"cat-representation\"/></Fragment>",
+                    null,
+                    null,
+                    false,
+                    false,
+                    false,
+                    null)
+        });
 
-        stubSentinelValuesConversion(agencyId);
+        when(ddi3ToDdi4Converter.toManagedMissingValuesRepresentation(mmvrXml))
+                .thenReturn(new Ddi4ManagedMissingValuesRepresentation(
+                        Ddi4ManagedMissingValuesRepresentation.TYPE,
+                        null,
+                        null,
+                        agencyId,
+                        "mmvr-1",
+                        "1",
+                        null,
+                        List.of(new CodeRepresentation(
+                                CodeRepresentation.TYPE,
+                                false,
+                                Reference.of(agencyId, "cl-sentinel", "1", "CodeList")))));
+        when(ddi3ToDdi4Converter.toCodeList(sentinelCodeListXml))
+                .thenReturn(new Ddi4CodeList(
+                        Ddi4CodeList.TYPE,
+                        null,
+                        null,
+                        agencyId,
+                        "cl-sentinel",
+                        "1",
+                        null,
+                        null,
+                        List.of(new Code(
+                                Code.TYPE,
+                                null,
+                                agencyId,
+                                "code-1",
+                                "1",
+                                Reference.of(agencyId, "cat-sentinel", "1", "Category"),
+                                null,
+                                null))));
 
-        ArgumentCaptor<Ddi3Response> captor = captureDdi3ToDdi4Conversion(
-                new Ddi4Response("ddi:4.0", null, List.of(), List.of(), List.of(), List.of(), List.of(), List.of()));
+        Ddi4Response mockDdi4 =
+                new Ddi4Response("ddi:4.0", null, List.of(), List.of(), List.of(), List.of(), List.of(), List.of());
+        ArgumentCaptor<Ddi3Response> captor = ArgumentCaptor.forClass(Ddi3Response.class);
+        when(ddi3ToDdi4Converter.convertDdi3ToDdi4(captor.capture(), eq("ddi:4.0")))
+                .thenReturn(mockDdi4);
 
         ddiRepository.getDataRelationships(agencyId, piId, null);
 
@@ -2025,18 +2855,129 @@ class DDIRepositoryImplTest {
         // associées figurent dans la FragmentInstance.
         String agencyId = "fr.insee";
         String piId = "pi-1";
+        String piType = "a51e85bb-6259-4488-8df2-f08cb43485f8";
+        String drType = "f39ff278-8500-45fe-a850-3906da2d242b";
+        String variableType = "683889c6-f74b-4d5e-92ed-908c0a42bb2d";
+        String codeListType = "8b108ef8-b642-4484-9c49-f88e4bf7cf1d";
+        String categoryType = "7e47c269-bcab-40f7-a778-af7bbc4e3d00";
         String mmvrType = "c9ec9f5b-b9b4-4a1a-a5b6-2a89b1a52ffe";
 
-        when(instanceConfiguration.itemTypes()).thenReturn(dataRelationshipItemTypesWithSentinels(mmvrType));
+        when(instanceConfiguration.itemTypes())
+                .thenReturn(Map.of(
+                        "PhysicalInstance", piType,
+                        "DataRelationship", drType,
+                        "Variable", variableType,
+                        "CodeList", codeListType,
+                        "Category", categoryType,
+                        "ManagedMissingValuesRepresentation", mmvrType));
 
-        stubSet(setItems(agencyId, piId, "var-1", "mmvr-1", "cl-sentinel", "cat-sentinel", "cl-representation"));
+        when(colecticaClient.getSet(anyString(), anyString(), any())).thenReturn(new ColecticaSetItem[] {
+            new ColecticaSetItem(piId, 1, agencyId),
+            new ColecticaSetItem("var-1", 1, agencyId),
+            new ColecticaSetItem("mmvr-1", 1, agencyId),
+            new ColecticaSetItem("cl-sentinel", 1, agencyId),
+            new ColecticaSetItem("cat-sentinel", 1, agencyId),
+            new ColecticaSetItem("cl-representation", 1, agencyId)
+        });
 
-        List<ColecticaItemResponse> descriptions = new ArrayList<>(
-                List.of(description(PHYSICAL_INSTANCE_TYPE, agencyId, 1, piId, fragment("PhysicalInstance"))));
-        descriptions.addAll(variableWithSentinelValuesDescriptions(agencyId, mmvrType));
-        stubDescriptions(descriptions.toArray(ColecticaItemResponse[]::new));
+        String mmvrXml = "<Fragment xmlns=\"ddi:instance:3_3\"><ManagedMissingValuesRepresentation/></Fragment>";
+        String sentinelCodeListXml = "<Fragment xmlns=\"ddi:instance:3_3\"><CodeList ID=\"cl-sentinel\"/></Fragment>";
+        when(colecticaClient.getDescriptions(anyList())).thenReturn(new ColecticaItemResponse[] {
+            new ColecticaItemResponse(
+                    piType,
+                    agencyId,
+                    1,
+                    piId,
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><PhysicalInstance/></Fragment>",
+                    null,
+                    null,
+                    false,
+                    false,
+                    false,
+                    null),
+            new ColecticaItemResponse(
+                    variableType,
+                    agencyId,
+                    1,
+                    "var-1",
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><Variable/></Fragment>",
+                    null,
+                    null,
+                    false,
+                    false,
+                    false,
+                    null),
+            new ColecticaItemResponse(mmvrType, agencyId, 1, "mmvr-1", mmvrXml, null, null, false, false, false, null),
+            new ColecticaItemResponse(
+                    codeListType,
+                    agencyId,
+                    1,
+                    "cl-sentinel",
+                    sentinelCodeListXml,
+                    null,
+                    null,
+                    false,
+                    false,
+                    false,
+                    null),
+            new ColecticaItemResponse(
+                    categoryType,
+                    agencyId,
+                    1,
+                    "cat-sentinel",
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><Category ID=\"cat-sentinel\"/></Fragment>",
+                    null,
+                    null,
+                    false,
+                    false,
+                    false,
+                    null),
+            new ColecticaItemResponse(
+                    codeListType,
+                    agencyId,
+                    1,
+                    "cl-representation",
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><CodeList ID=\"cl-representation\"/></Fragment>",
+                    null,
+                    null,
+                    false,
+                    false,
+                    false,
+                    null)
+        });
 
-        stubSentinelValuesConversion(agencyId);
+        when(ddi3ToDdi4Converter.toManagedMissingValuesRepresentation(mmvrXml))
+                .thenReturn(new Ddi4ManagedMissingValuesRepresentation(
+                        Ddi4ManagedMissingValuesRepresentation.TYPE,
+                        null,
+                        null,
+                        agencyId,
+                        "mmvr-1",
+                        "1",
+                        null,
+                        List.of(new CodeRepresentation(
+                                CodeRepresentation.TYPE,
+                                false,
+                                Reference.of(agencyId, "cl-sentinel", "1", "CodeList")))));
+        when(ddi3ToDdi4Converter.toCodeList(sentinelCodeListXml))
+                .thenReturn(new Ddi4CodeList(
+                        Ddi4CodeList.TYPE,
+                        null,
+                        null,
+                        agencyId,
+                        "cl-sentinel",
+                        "1",
+                        null,
+                        null,
+                        List.of(new Code(
+                                Code.TYPE,
+                                null,
+                                agencyId,
+                                "code-1",
+                                "1",
+                                Reference.of(agencyId, "cat-sentinel", "1", "Category"),
+                                null,
+                                null))));
 
         String xml = ddiRepository.getDataRelationshipsXml(agencyId, piId, null);
 
@@ -2053,23 +2994,54 @@ class DDIRepositoryImplTest {
         // pas rester null (la PI est écartée de la sortie mais reste la racine du FragmentInstance).
         String agencyId = "fr.insee";
         String piId = "pi-1";
+        String piType = "a51e85bb-6259-4488-8df2-f08cb43485f8";
+        String drType = "f39ff278-8500-45fe-a850-3906da2d242b";
+        String variableType = "683889c6-f74b-4d5e-92ed-908c0a42bb2d";
 
         when(instanceConfiguration.itemTypes())
                 .thenReturn(Map.of(
-                        "PhysicalInstance", PHYSICAL_INSTANCE_TYPE,
-                        "DataRelationship", DATA_RELATIONSHIP_TYPE,
-                        "Variable", VARIABLE_TYPE));
+                        "PhysicalInstance", piType,
+                        "DataRelationship", drType,
+                        "Variable", variableType));
 
-        stubSet(new ColecticaSetItem(piId, 3, agencyId), new ColecticaSetItem("dr-1", 3, agencyId));
+        ColecticaSetItem[] setItems = {
+            new ColecticaSetItem(piId, 3, agencyId), new ColecticaSetItem("dr-1", 3, agencyId)
+        };
+        when(colecticaClient.getSet(anyString(), anyString(), any())).thenReturn(setItems);
 
-        stubDescriptions(
-                description(PHYSICAL_INSTANCE_TYPE, agencyId, 3, piId, fragment("PhysicalInstance")),
-                description(DATA_RELATIONSHIP_TYPE, agencyId, 3, "dr-1", fragment("DataRelationship")));
+        ColecticaItemResponse[] itemResponses = {
+            new ColecticaItemResponse(
+                    piType,
+                    agencyId,
+                    3,
+                    piId,
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><PhysicalInstance/></Fragment>",
+                    null,
+                    null,
+                    false,
+                    false,
+                    false,
+                    null),
+            new ColecticaItemResponse(
+                    drType,
+                    agencyId,
+                    3,
+                    "dr-1",
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><DataRelationship/></Fragment>",
+                    null,
+                    null,
+                    false,
+                    false,
+                    false,
+                    null)
+        };
+        when(colecticaClient.getDescriptions(anyList())).thenReturn(itemResponses);
 
         // Le convertisseur renvoie ici un TopLevelReference null : la référence est alors reconstruite
         // depuis les descriptions brutes du set.
         Ddi4Response mockDdi4 = new Ddi4Response("ddi:4.0", null, null, List.of(), List.of(), null, null, null);
-        stubDdi3ToDdi4Conversion(mockDdi4);
+        when(ddi3ToDdi4Converter.convertDdi3ToDdi4(any(Ddi3Response.class), eq("ddi:4.0")))
+                .thenReturn(mockDdi4);
 
         Ddi4Response result = ddiRepository.getDataRelationships(agencyId, piId, null);
 
@@ -2088,20 +3060,50 @@ class DDIRepositoryImplTest {
         String agencyId = "fr.insee";
         String codeListId = "cl-1";
         String categoryId = "cat-1";
+        String codeListType = "8b108ef8-b642-4484-9c49-f88e4bf7cf1d";
+        String categoryType = "7e47c269-bcab-40f7-a778-af7bbc4e3d00";
 
         when(instanceConfiguration.itemTypes())
                 .thenReturn(Map.of(
-                        "CodeList", CODE_LIST_TYPE,
-                        "Category", CATEGORY_TYPE));
+                        "CodeList", codeListType,
+                        "Category", categoryType));
 
-        stubSet(new ColecticaSetItem(codeListId, 5, agencyId), new ColecticaSetItem(categoryId, 5, agencyId));
+        ColecticaSetItem[] setItems = {
+            new ColecticaSetItem(codeListId, 5, agencyId), new ColecticaSetItem(categoryId, 5, agencyId)
+        };
+        when(colecticaClient.getSet(anyString(), anyString(), any())).thenReturn(setItems);
 
-        stubDescriptions(
-                description(CODE_LIST_TYPE, agencyId, 5, codeListId, fragment("CodeList")),
-                description(CATEGORY_TYPE, agencyId, 5, categoryId, fragment("Category")));
+        ColecticaItemResponse[] itemResponses = {
+            new ColecticaItemResponse(
+                    codeListType,
+                    agencyId,
+                    5,
+                    codeListId,
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><CodeList/></Fragment>",
+                    null,
+                    null,
+                    false,
+                    false,
+                    false,
+                    null),
+            new ColecticaItemResponse(
+                    categoryType,
+                    agencyId,
+                    5,
+                    categoryId,
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><Category/></Fragment>",
+                    null,
+                    null,
+                    false,
+                    false,
+                    false,
+                    null)
+        };
+        when(colecticaClient.getDescriptions(anyList())).thenReturn(itemResponses);
 
         Ddi4Response mockDdi4 = new Ddi4Response("ddi:4.0", null, null, null, null, List.of(), List.of(), null);
-        stubDdi3ToDdi4Conversion(mockDdi4);
+        when(ddi3ToDdi4Converter.convertDdi3ToDdi4(any(Ddi3Response.class), eq("ddi:4.0")))
+                .thenReturn(mockDdi4);
 
         Ddi4Response result = ddiRepository.getCodeList(agencyId, codeListId, null);
 
@@ -2118,30 +3120,77 @@ class DDIRepositoryImplTest {
     void getDataRelationshipsXml_includesPhysicalInstanceThenDataRelationshipAndVariableFragments() {
         String agencyId = "fr.insee";
         String piId = "pi-1";
+        String piType = "a51e85bb-6259-4488-8df2-f08cb43485f8";
+        String drType = "f39ff278-8500-45fe-a850-3906da2d242b";
+        String variableType = "683889c6-f74b-4d5e-92ed-908c0a42bb2d";
+        String codeListType = "8b108ef8-b642-4484-9c49-f88e4bf7cf1d";
 
         when(instanceConfiguration.itemTypes())
                 .thenReturn(Map.of(
-                        "PhysicalInstance", PHYSICAL_INSTANCE_TYPE,
-                        "DataRelationship", DATA_RELATIONSHIP_TYPE,
-                        "Variable", VARIABLE_TYPE,
-                        "CodeList", CODE_LIST_TYPE));
+                        "PhysicalInstance", piType,
+                        "DataRelationship", drType,
+                        "Variable", variableType,
+                        "CodeList", codeListType));
 
-        stubSet(
-                new ColecticaSetItem(piId, 1, agencyId),
-                new ColecticaSetItem("dr-1", 1, agencyId),
-                new ColecticaSetItem("var-1", 1, agencyId),
-                new ColecticaSetItem("cl-1", 1, agencyId));
+        ColecticaSetItem[] setItems = {
+            new ColecticaSetItem(piId, 1, agencyId),
+            new ColecticaSetItem("dr-1", 1, agencyId),
+            new ColecticaSetItem("var-1", 1, agencyId),
+            new ColecticaSetItem("cl-1", 1, agencyId)
+        };
+        when(colecticaClient.getSet(anyString(), anyString(), any())).thenReturn(setItems);
 
-        stubDescriptions(
-                description(PHYSICAL_INSTANCE_TYPE, agencyId, 1, piId, fragment("PhysicalInstance")),
-                description(
-                        DATA_RELATIONSHIP_TYPE,
-                        agencyId,
-                        1,
-                        "dr-1",
-                        fragment("DataRelationship xmlns=\"ddi:logicalproduct:3_3\"")),
-                description(VARIABLE_TYPE, agencyId, 1, "var-1", fragment("Variable")),
-                description(CODE_LIST_TYPE, agencyId, 1, "cl-1", fragment("CodeList")));
+        ColecticaItemResponse[] itemResponses = {
+            new ColecticaItemResponse(
+                    piType,
+                    agencyId,
+                    1,
+                    piId,
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><PhysicalInstance/></Fragment>",
+                    null,
+                    null,
+                    false,
+                    false,
+                    false,
+                    null),
+            new ColecticaItemResponse(
+                    drType,
+                    agencyId,
+                    1,
+                    "dr-1",
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><DataRelationship xmlns=\"ddi:logicalproduct:3_3\"/></Fragment>",
+                    null,
+                    null,
+                    false,
+                    false,
+                    false,
+                    null),
+            new ColecticaItemResponse(
+                    variableType,
+                    agencyId,
+                    1,
+                    "var-1",
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><Variable/></Fragment>",
+                    null,
+                    null,
+                    false,
+                    false,
+                    false,
+                    null),
+            new ColecticaItemResponse(
+                    codeListType,
+                    agencyId,
+                    1,
+                    "cl-1",
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><CodeList/></Fragment>",
+                    null,
+                    null,
+                    false,
+                    false,
+                    false,
+                    null)
+        };
+        when(colecticaClient.getDescriptions(anyList())).thenReturn(itemResponses);
 
         String xml = ddiRepository.getDataRelationshipsXml(agencyId, piId, null);
 
@@ -2160,16 +3209,43 @@ class DDIRepositoryImplTest {
         // #1146 : l'ordre de la sortie ne dépend pas de celui des descriptions Colectica.
         String agencyId = "fr.insee";
         String piId = "pi-1";
+        String piType = "a51e85bb-6259-4488-8df2-f08cb43485f8";
+        String drType = "f39ff278-8500-45fe-a850-3906da2d242b";
 
         when(instanceConfiguration.itemTypes())
                 .thenReturn(Map.of(
-                        "PhysicalInstance", PHYSICAL_INSTANCE_TYPE,
-                        "DataRelationship", DATA_RELATIONSHIP_TYPE));
+                        "PhysicalInstance", piType,
+                        "DataRelationship", drType));
 
-        stubSet(new ColecticaSetItem("dr-1", 1, agencyId), new ColecticaSetItem(piId, 1, agencyId));
-        stubDescriptions(
-                description(DATA_RELATIONSHIP_TYPE, agencyId, 1, "dr-1", fragment("DataRelationship")),
-                description(PHYSICAL_INSTANCE_TYPE, agencyId, 1, piId, fragment("PhysicalInstance")));
+        when(colecticaClient.getSet(anyString(), anyString(), any())).thenReturn(new ColecticaSetItem[] {
+            new ColecticaSetItem("dr-1", 1, agencyId), new ColecticaSetItem(piId, 1, agencyId)
+        });
+        when(colecticaClient.getDescriptions(anyList())).thenReturn(new ColecticaItemResponse[] {
+            new ColecticaItemResponse(
+                    drType,
+                    agencyId,
+                    1,
+                    "dr-1",
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><DataRelationship/></Fragment>",
+                    null,
+                    null,
+                    false,
+                    false,
+                    false,
+                    null),
+            new ColecticaItemResponse(
+                    piType,
+                    agencyId,
+                    1,
+                    piId,
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><PhysicalInstance/></Fragment>",
+                    null,
+                    null,
+                    false,
+                    false,
+                    false,
+                    null)
+        });
 
         String xml = ddiRepository.getDataRelationshipsXml(agencyId, piId, null);
 
@@ -2183,7 +3259,24 @@ class DDIRepositoryImplTest {
         // #493 : /variables sur un {id} qui n'est pas une PhysicalInstance (ici CodeList) ne renvoie rien.
         String agencyId = "fr.insee";
         String id = "not-a-pi";
-        stubStandardSetWithSingleRoot(agencyId, id, CODE_LIST_TYPE, "CodeList");
+        when(instanceConfiguration.itemTypes()).thenReturn(standardItemTypes());
+
+        when(colecticaClient.getSet(anyString(), anyString(), any()))
+                .thenReturn(new ColecticaSetItem[] {new ColecticaSetItem(id, 1, agencyId)});
+        when(colecticaClient.getDescriptions(anyList())).thenReturn(new ColecticaItemResponse[] {
+            new ColecticaItemResponse(
+                    CODE_LIST_TYPE,
+                    agencyId,
+                    1,
+                    id,
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><CodeList/></Fragment>",
+                    null,
+                    null,
+                    false,
+                    false,
+                    false,
+                    null)
+        });
 
         assertNull(ddiRepository.getDataRelationships(agencyId, id, null));
         verify(ddi3ToDdi4Converter, never()).convertDdi3ToDdi4(any(), any());
@@ -2194,7 +3287,24 @@ class DDIRepositoryImplTest {
         // #493 : même garde de type sur la variante XML.
         String agencyId = "fr.insee";
         String id = "not-a-pi";
-        stubStandardSetWithSingleRoot(agencyId, id, CODE_LIST_TYPE, "CodeList");
+        when(instanceConfiguration.itemTypes()).thenReturn(standardItemTypes());
+
+        when(colecticaClient.getSet(anyString(), anyString(), any()))
+                .thenReturn(new ColecticaSetItem[] {new ColecticaSetItem(id, 1, agencyId)});
+        when(colecticaClient.getDescriptions(anyList())).thenReturn(new ColecticaItemResponse[] {
+            new ColecticaItemResponse(
+                    CODE_LIST_TYPE,
+                    agencyId,
+                    1,
+                    id,
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><CodeList/></Fragment>",
+                    null,
+                    null,
+                    false,
+                    false,
+                    false,
+                    null)
+        });
 
         assertNull(ddiRepository.getDataRelationshipsXml(agencyId, id, null));
     }
@@ -2209,15 +3319,24 @@ class DDIRepositoryImplTest {
 
         // Colectica returns only the LogicalProduct directly referenced by the group, filtered
         // server-side by item type.
-        stubChildren(agencyId, groupId, lpType, new ItemReference(agencyId, "lp-1"));
+        when(colecticaClient.findRelatedDescriptions(
+                        RelationshipDirection.BY_SUBJECT, new ItemReference(agencyId, groupId), List.of(lpType)))
+                .thenReturn(List.of(new ItemReference(agencyId, "lp-1")));
 
         // Repository-wide LogicalProduct query carries the labels. lp-2 exists globally but is not
         // referenced by the group, so it must be filtered out.
-        ColecticaItem lp1 =
-                labelledItem("LogicalProduct", agencyId, "lp-1", "Produit Logique 1", "2025-01-01T00:00:00", 1L);
-        ColecticaItem lp2 =
-                labelledItem("LogicalProduct", agencyId, "lp-2", "Produit hors groupe", "2025-01-01T00:00:00", 2L);
-        when(colecticaClient.query(anyList())).thenReturn(queryResponse(lp1, lp2));
+        ColecticaItem lp1 = aColecticaItem("LogicalProduct", "lp-1")
+                .named("Produit Logique 1")
+                .agency(agencyId)
+                .versionDate("2025-01-01T00:00:00")
+                .build();
+        ColecticaItem lp2 = aColecticaItem("LogicalProduct", "lp-2")
+                .named("Produit hors groupe")
+                .agency(agencyId)
+                .versionDate("2025-01-01T00:00:00")
+                .build();
+        when(colecticaClient.query(anyList()))
+                .thenReturn(new ColecticaResponse(List.of(lp1, lp2), 2, 2, null, null, null));
 
         List<PartialLogicalProduct> result = ddiRepository.getLogicalProductsByGroup(agencyId, groupId);
 
@@ -2234,7 +3353,9 @@ class DDIRepositoryImplTest {
         String lpType = "965c8d28-7d48-4950-bea7-04b27e52bb9b";
 
         when(instanceConfiguration.itemTypes()).thenReturn(Map.of("LogicalProduct", lpType));
-        stubChildren(agencyId, groupId, lpType);
+        when(colecticaClient.findRelatedDescriptions(
+                        RelationshipDirection.BY_SUBJECT, new ItemReference(agencyId, groupId), List.of(lpType)))
+                .thenReturn(List.of());
 
         List<PartialLogicalProduct> result = ddiRepository.getLogicalProductsByGroup(agencyId, groupId);
 
@@ -2252,14 +3373,26 @@ class DDIRepositoryImplTest {
 
         // Colectica returns only the CodeListScheme directly referenced by the logical product,
         // filtered server-side by item type.
-        stubChildren(agencyId, logicalProductId, clsType, new ItemReference(agencyId, "cls-1"));
+        when(colecticaClient.findRelatedDescriptions(
+                        RelationshipDirection.BY_SUBJECT,
+                        new ItemReference(agencyId, logicalProductId),
+                        List.of(clsType)))
+                .thenReturn(List.of(new ItemReference(agencyId, "cls-1")));
 
         // Repository-wide CodeListScheme query carries the labels. cls-2 exists globally but is not
         // referenced by the logical product, so it must be filtered out.
-        ColecticaItem cls1 = labelledItem("CodeListScheme", agencyId, "cls-1", "Schéma 1", "2025-01-01T00:00:00", 1L);
-        ColecticaItem cls2 =
-                labelledItem("CodeListScheme", agencyId, "cls-2", "Schéma hors LP", "2025-01-01T00:00:00", 2L);
-        when(colecticaClient.query(anyList())).thenReturn(queryResponse(cls1, cls2));
+        ColecticaItem cls1 = aColecticaItem("CodeListScheme", "cls-1")
+                .named("Schéma 1")
+                .agency(agencyId)
+                .versionDate("2025-01-01T00:00:00")
+                .build();
+        ColecticaItem cls2 = aColecticaItem("CodeListScheme", "cls-2")
+                .named("Schéma hors LP")
+                .agency(agencyId)
+                .versionDate("2025-01-01T00:00:00")
+                .build();
+        when(colecticaClient.query(anyList()))
+                .thenReturn(new ColecticaResponse(List.of(cls1, cls2), 2, 2, null, null, null));
 
         List<PartialCodeListScheme> result =
                 ddiRepository.getCodeListSchemesByLogicalProduct(agencyId, logicalProductId);
@@ -2277,7 +3410,11 @@ class DDIRepositoryImplTest {
         String clsType = "4193d389-b5ae-4368-b399-cd5a7ee3653c";
 
         when(instanceConfiguration.itemTypes()).thenReturn(Map.of("CodeListScheme", clsType));
-        stubChildren(agencyId, logicalProductId, clsType);
+        when(colecticaClient.findRelatedDescriptions(
+                        RelationshipDirection.BY_SUBJECT,
+                        new ItemReference(agencyId, logicalProductId),
+                        List.of(clsType)))
+                .thenReturn(List.of());
 
         List<PartialCodeListScheme> result =
                 ddiRepository.getCodeListSchemesByLogicalProduct(agencyId, logicalProductId);
@@ -2293,9 +3430,18 @@ class DDIRepositoryImplTest {
 
         when(instanceConfiguration.itemTypes()).thenReturn(Map.of("CodeListScheme", clsType));
 
-        ColecticaItem cls1 = labelledItem("CodeListScheme", agencyId, "cls-1", "Schéma 1", "2025-01-01T00:00:00", 1L);
-        ColecticaItem cls2 = labelledItem("CodeListScheme", agencyId, "cls-2", "Schéma 2", "2025-01-01T00:00:00", 2L);
-        when(colecticaClient.query(List.of(clsType))).thenReturn(queryResponse(cls1, cls2));
+        ColecticaItem cls1 = aColecticaItem("CodeListScheme", "cls-1")
+                .named("Schéma 1")
+                .agency(agencyId)
+                .versionDate("2025-01-01T00:00:00")
+                .build();
+        ColecticaItem cls2 = aColecticaItem("CodeListScheme", "cls-2")
+                .named("Schéma 2")
+                .agency(agencyId)
+                .versionDate("2025-01-01T00:00:00")
+                .build();
+        when(colecticaClient.query(List.of(clsType)))
+                .thenReturn(new ColecticaResponse(List.of(cls1, cls2), 2, 2, null, null, null));
 
         List<PartialCodeListScheme> result = ddiRepository.getCodeListSchemes();
 
@@ -2315,15 +3461,26 @@ class DDIRepositoryImplTest {
         when(instanceConfiguration.itemTypes()).thenReturn(Map.of("CodeList", codeListType));
 
         // Colectica returns only the CodeList directly referenced by the scheme, filtered server-side.
-        stubChildren(agencyId, codeListSchemeId, codeListType, new ItemReference(agencyId, "code-list-1"));
+        when(colecticaClient.findRelatedDescriptions(
+                        RelationshipDirection.BY_SUBJECT,
+                        new ItemReference(agencyId, codeListSchemeId),
+                        List.of(codeListType)))
+                .thenReturn(List.of(new ItemReference(agencyId, "code-list-1")));
 
         // Repository-wide CodeList query carries the labels. code-list-2 exists globally but is not
         // referenced by the scheme, so it must be filtered out.
-        ColecticaItem codeList1 =
-                labelledItem("CodeList", agencyId, "code-list-1", "Liste 1", "2025-01-01T00:00:00", 1L);
-        ColecticaItem codeList2 =
-                labelledItem("CodeList", agencyId, "code-list-2", "Liste hors scheme", "2025-01-01T00:00:00", 2L);
-        when(colecticaClient.query(anyList())).thenReturn(queryResponse(codeList1, codeList2));
+        ColecticaItem codeList1 = aColecticaItem("CodeList", "code-list-1")
+                .named("Liste 1")
+                .agency(agencyId)
+                .versionDate("2025-01-01T00:00:00")
+                .build();
+        ColecticaItem codeList2 = aColecticaItem("CodeList", "code-list-2")
+                .named("Liste hors scheme")
+                .agency(agencyId)
+                .versionDate("2025-01-01T00:00:00")
+                .build();
+        when(colecticaClient.query(anyList()))
+                .thenReturn(new ColecticaResponse(List.of(codeList1, codeList2), 2, 2, null, null, null));
 
         List<PartialCodesList> result = ddiRepository.getCodeListsByCodeListScheme(agencyId, codeListSchemeId);
 
@@ -2342,11 +3499,19 @@ class DDIRepositoryImplTest {
         String codeListType = "8b108ef8-b642-4484-9c49-f88e4bf7cf1d";
 
         when(instanceConfiguration.itemTypes()).thenReturn(Map.of("CodeList", codeListType));
-        stubChildren(agencyId, codeListSchemeId, codeListType, new ItemReference(agencyId, "code-list-1"));
+        when(colecticaClient.findRelatedDescriptions(
+                        RelationshipDirection.BY_SUBJECT,
+                        new ItemReference(agencyId, codeListSchemeId),
+                        List.of(codeListType)))
+                .thenReturn(List.of(new ItemReference(agencyId, "code-list-1")));
 
-        ColecticaItem codeList1 =
-                labelledItem("CodeList", agencyId, "code-list-1", "Liste 1", "0001-01-01T00:00:00", 1L);
-        when(colecticaClient.query(anyList())).thenReturn(queryResponse(codeList1));
+        ColecticaItem codeList1 = aColecticaItem("CodeList", "code-list-1")
+                .named("Liste 1")
+                .agency(agencyId)
+                .versionDate("0001-01-01T00:00:00")
+                .build();
+        when(colecticaClient.query(anyList()))
+                .thenReturn(new ColecticaResponse(List.of(codeList1), 1, 1, null, null, null));
 
         String xml = "<Fragment xmlns:r=\"ddi:reusable:3_3\" xmlns=\"ddi:instance:3_3\">"
                 + "<CodeList xmlns=\"ddi:logicalproduct:3_3\" versionDate=\"2026-06-29T14:26:32.961778\">"
@@ -2360,7 +3525,9 @@ class DDIRepositoryImplTest {
 
         assertEquals(1, result.size());
         assertEquals("code-list-1", result.get(0).id());
-        assertEquals("2026-06-29 14:26:32", utcSeconds(result.get(0).versionDate()));
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+        assertEquals("2026-06-29 14:26:32", sdf.format(result.get(0).versionDate()));
     }
 
     @Test
@@ -2370,7 +3537,11 @@ class DDIRepositoryImplTest {
         String codeListType = "8b108ef8-b642-4484-9c49-f88e4bf7cf1d";
 
         when(instanceConfiguration.itemTypes()).thenReturn(Map.of("CodeList", codeListType));
-        stubChildren(agencyId, codeListSchemeId, codeListType);
+        when(colecticaClient.findRelatedDescriptions(
+                        RelationshipDirection.BY_SUBJECT,
+                        new ItemReference(agencyId, codeListSchemeId),
+                        List.of(codeListType)))
+                .thenReturn(List.of());
 
         List<PartialCodesList> result = ddiRepository.getCodeListsByCodeListScheme(agencyId, codeListSchemeId);
 
@@ -2394,6 +3565,12 @@ class DDIRepositoryImplTest {
                         "CodeList", CODE_LIST_ITEM_TYPE));
     }
 
+    private void mockBySubjectChildren(String agencyId, String parentId, String childType, ItemReference... children) {
+        when(colecticaClient.findRelatedDescriptions(
+                        RelationshipDirection.BY_SUBJECT, new ItemReference(agencyId, parentId), List.of(childType)))
+                .thenReturn(List.of(children));
+    }
+
     @Test
     void getMissingCodesListsByGroup_walksManagedRepresentationChainAndDeduplicates() {
         // Group → LogicalProduct → ManagedRepresentationScheme → ManagedMissingValuesRepresentation
@@ -2403,25 +3580,41 @@ class DDIRepositoryImplTest {
         String groupId = "group-1";
         mockMissingCodesItemTypes();
 
-        stubManagedMissingValuesChain(
-                agencyId, groupId, new ItemReference(agencyId, "mmvr-1"), new ItemReference(agencyId, "mmvr-2"));
-        stubChildren(agencyId, "mmvr-1", CODE_LIST_ITEM_TYPE, new ItemReference(agencyId, "code-list-1"));
-        stubChildren(
+        mockBySubjectChildren(agencyId, groupId, LOGICAL_PRODUCT_TYPE, new ItemReference(agencyId, "lp-1"));
+        mockBySubjectChildren(
+                agencyId, "lp-1", MANAGED_REPRESENTATION_SCHEME_TYPE, new ItemReference(agencyId, "mrs-1"));
+        mockBySubjectChildren(
+                agencyId,
+                "mrs-1",
+                MANAGED_MISSING_VALUES_REPRESENTATION_TYPE,
+                new ItemReference(agencyId, "mmvr-1"),
+                new ItemReference(agencyId, "mmvr-2"));
+        mockBySubjectChildren(agencyId, "mmvr-1", CODE_LIST_ITEM_TYPE, new ItemReference(agencyId, "code-list-1"));
+        mockBySubjectChildren(
                 agencyId,
                 "mmvr-2",
                 CODE_LIST_ITEM_TYPE,
                 new ItemReference(agencyId, "code-list-2"),
                 new ItemReference(agencyId, "code-list-1"));
 
-        ColecticaItem codeList1 =
-                labelledItem("CodeList", agencyId, "code-list-1", "Sentinelles âge", "0001-01-01T00:00:00", 1L);
-        ColecticaItem codeList2 =
-                labelledItem("CodeList", agencyId, "code-list-2", "Sentinelles revenu", "0001-01-01T00:00:00", 1L);
+        ColecticaItem codeList1 = aColecticaItem("CodeList", "code-list-1")
+                .named("Sentinelles âge")
+                .agency(agencyId)
+                .versionDate("0001-01-01T00:00:00")
+                .build();
+        ColecticaItem codeList2 = aColecticaItem("CodeList", "code-list-2")
+                .named("Sentinelles revenu")
+                .agency(agencyId)
+                .versionDate("0001-01-01T00:00:00")
+                .build();
         // Une CodeList du référentiel non référencée par un MMVR : écartée.
-        ColecticaItem unrelated =
-                labelledItem("CodeList", agencyId, "code-list-other", "Liste ordinaire", "0001-01-01T00:00:00", 1L);
+        ColecticaItem unrelated = aColecticaItem("CodeList", "code-list-other")
+                .named("Liste ordinaire")
+                .agency(agencyId)
+                .versionDate("0001-01-01T00:00:00")
+                .build();
         when(colecticaClient.query(List.of(CODE_LIST_ITEM_TYPE)))
-                .thenReturn(queryResponse(codeList1, codeList2, unrelated));
+                .thenReturn(new ColecticaResponse(List.of(codeList1, codeList2, unrelated), 3, 3, null, null, null));
 
         // versionDate fiable lu depuis le XML de l'item (comme les autres listings de CodeLists).
         String xml = "<Fragment xmlns:r=\"ddi:reusable:3_3\" xmlns=\"ddi:instance:3_3\">"
@@ -2444,7 +3637,9 @@ class DDIRepositoryImplTest {
                 .findFirst()
                 .orElseThrow();
         assertEquals("Sentinelles âge", first.label());
-        assertEquals("2026-06-29 14:26:32", utcSeconds(first.versionDate()));
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+        assertEquals("2026-06-29 14:26:32", sdf.format(first.versionDate()));
     }
 
     /**
@@ -2458,7 +3653,11 @@ class DDIRepositoryImplTest {
         String groupId = "group-1";
         mockMissingCodesItemTypes();
 
-        stubManagedMissingValuesChain(agencyId, groupId, new ItemReference(agencyId, "mmvr-1"));
+        mockBySubjectChildren(agencyId, groupId, LOGICAL_PRODUCT_TYPE, new ItemReference(agencyId, "lp-1"));
+        mockBySubjectChildren(
+                agencyId, "lp-1", MANAGED_REPRESENTATION_SCHEME_TYPE, new ItemReference(agencyId, "mrs-1"));
+        mockBySubjectChildren(
+                agencyId, "mrs-1", MANAGED_MISSING_VALUES_REPRESENTATION_TYPE, new ItemReference(agencyId, "mmvr-1"));
 
         // Le fragment MMVR est récupéré et parsé : libellé + référence de la CodeList de sentinelles.
         lenient()
@@ -2555,7 +3754,10 @@ class DDIRepositoryImplTest {
         String groupId = "group-1";
         mockMissingCodesItemTypes();
 
-        stubManagedMissingValuesChain(agencyId, groupId);
+        mockBySubjectChildren(agencyId, groupId, LOGICAL_PRODUCT_TYPE, new ItemReference(agencyId, "lp-1"));
+        mockBySubjectChildren(
+                agencyId, "lp-1", MANAGED_REPRESENTATION_SCHEME_TYPE, new ItemReference(agencyId, "mrs-1"));
+        mockBySubjectChildren(agencyId, "mrs-1", MANAGED_MISSING_VALUES_REPRESENTATION_TYPE);
 
         List<PartialCodesList> result = ddiRepository.getMissingCodesListsByGroup(agencyId, groupId);
 
@@ -2568,14 +3770,39 @@ class DDIRepositoryImplTest {
     void getVariablesUsingCodeList_returnsStudyUnitPhysicalInstanceVariableWithLabels() {
         String agencyId = "fr.insee";
         String codeListId = "cl-1";
+        String variableType = "683889c6-f74b-4d5e-92ed-908c0a42bb2d";
+        String dataRelationshipType = "f39ff278-8500-45fe-a850-3906da2d242b";
+        String physicalInstanceType = "a51e85bb-6259-4488-8df2-f08cb43485f8";
+        String studyUnitType = STUDY_UNIT_ITEM_TYPE;
 
-        when(instanceConfiguration.itemTypes()).thenReturn(usageItemTypes(DATA_RELATIONSHIP_TYPE));
+        when(instanceConfiguration.itemTypes())
+                .thenReturn(Map.of(
+                        "Variable", variableType,
+                        "DataRelationship", dataRelationshipType,
+                        "PhysicalInstance", physicalInstanceType,
+                        "StudyUnit", studyUnitType));
 
         // CodeList ← Variable ← DataRelationship ← PhysicalInstance ← StudyUnit.
         // Labels come from the /descriptions endpoint directly (findRelatedItems → ColecticaItem),
         // so no separate label query is made. DataRelationships are only intermediate (bare refs).
-        stubRelatedItems(agencyId, codeListId, VARIABLE_TYPE, labelItem(VARIABLE_TYPE, agencyId, "var-1", "Sexe"));
-        stubVariableUsageParents(agencyId);
+        when(colecticaClient.findRelatedItems(
+                        RelationshipDirection.BY_OBJECT,
+                        new ItemReference(agencyId, codeListId),
+                        List.of(variableType)))
+                .thenReturn(List.of(labelItem(variableType, agencyId, "var-1", "Sexe")));
+        when(colecticaClient.findRelatedDescriptions(
+                        RelationshipDirection.BY_OBJECT,
+                        new ItemReference(agencyId, "var-1"),
+                        List.of(dataRelationshipType)))
+                .thenReturn(List.of(new ItemReference(agencyId, "dr-1")));
+        when(colecticaClient.findRelatedItems(
+                        RelationshipDirection.BY_OBJECT,
+                        new ItemReference(agencyId, "dr-1"),
+                        List.of(physicalInstanceType)))
+                .thenReturn(List.of(labelItem(physicalInstanceType, agencyId, "pi-1", "Fichier détail")));
+        when(colecticaClient.findRelatedItems(
+                        RelationshipDirection.BY_OBJECT, new ItemReference(agencyId, "pi-1"), List.of(studyUnitType)))
+                .thenReturn(List.of(labelItem(studyUnitType, agencyId, "su-1", "Recensement 2024")));
 
         List<CodeListVariableUsage> result = ddiRepository.getVariablesUsingCodeList(agencyId, codeListId);
 
@@ -2597,9 +3824,23 @@ class DDIRepositoryImplTest {
     void getVariablesUsingCodeList_returnsEmptyWhenNoVariableUsesIt() {
         String agencyId = "fr.insee";
         String codeListId = "cl-unused";
+        String variableType = "683889c6-f74b-4d5e-92ed-908c0a42bb2d";
 
-        when(instanceConfiguration.itemTypes()).thenReturn(usageItemTypes(DATA_RELATIONSHIP_TYPE));
-        stubRelatedItems(agencyId, codeListId, VARIABLE_TYPE);
+        when(instanceConfiguration.itemTypes())
+                .thenReturn(Map.of(
+                        "Variable",
+                        variableType,
+                        "DataRelationship",
+                        "f39ff278-8500-45fe-a850-3906da2d242b",
+                        "PhysicalInstance",
+                        "a51e85bb-6259-4488-8df2-f08cb43485f8",
+                        "StudyUnit",
+                        STUDY_UNIT_ITEM_TYPE));
+        when(colecticaClient.findRelatedItems(
+                        RelationshipDirection.BY_OBJECT,
+                        new ItemReference(agencyId, codeListId),
+                        List.of(variableType)))
+                .thenReturn(List.of());
 
         List<CodeListVariableUsage> result = ddiRepository.getVariablesUsingCodeList(agencyId, codeListId);
 
@@ -2611,22 +3852,54 @@ class DDIRepositoryImplTest {
     void getCodeListsUsingCategory_returnsCodeListsJoinedToVariablesWithParents() {
         String agencyId = "fr.insee";
         String categoryId = "cat-1";
+        String codeListType = "8b108ef8-b642-4484-9c49-f88e4bf7cf1d";
+        String variableType = "683889c6-f74b-4d5e-92ed-908c0a42bb2d";
+        String dataRelationshipType = "f39ff278-8500-45fe-a850-3906da2d242b";
+        String physicalInstanceType = "a51e85bb-6259-4488-8df2-f08cb43485f8";
         // Le type Group n'est PAS dans la map itemTypes de la configuration réelle : l'impl doit
         // utiliser sa constante GROUP_ITEM_TYPE, pas types.get("Group").
         String groupType = "4bd6eef6-99df-40e6-9b11-5b8f64e5cb23";
 
-        when(instanceConfiguration.itemTypes()).thenReturn(categoryUsageItemTypes());
+        when(instanceConfiguration.itemTypes())
+                .thenReturn(Map.of(
+                        "CodeList", codeListType,
+                        "Variable", variableType,
+                        "DataRelationship", dataRelationshipType,
+                        "PhysicalInstance", physicalInstanceType,
+                        "StudyUnit", STUDY_UNIT_ITEM_TYPE));
 
         // Category ← CodeList (via les codes de la liste) : marche byobject, type-filtrée.
-        stubRelatedItems(agencyId, categoryId, CODE_LIST_TYPE, labelItem(CODE_LIST_TYPE, agencyId, "cl-1", "Pays"));
+        when(colecticaClient.findRelatedItems(
+                        RelationshipDirection.BY_OBJECT,
+                        new ItemReference(agencyId, categoryId),
+                        List.of(codeListType)))
+                .thenReturn(List.of(labelItem(codeListType, agencyId, "cl-1", "Pays")));
 
         // CodeList ← Variable ← DataRelationship ← PhysicalInstance ← StudyUnit (même marche que
         // getVariablesUsingCodeList)…
-        stubRelatedItems(agencyId, "cl-1", VARIABLE_TYPE, labelItem(VARIABLE_TYPE, agencyId, "var-1", "Sexe"));
-        stubVariableUsageParents(agencyId);
+        when(colecticaClient.findRelatedItems(
+                        RelationshipDirection.BY_OBJECT, new ItemReference(agencyId, "cl-1"), List.of(variableType)))
+                .thenReturn(List.of(labelItem(variableType, agencyId, "var-1", "Sexe")));
+        when(colecticaClient.findRelatedDescriptions(
+                        RelationshipDirection.BY_OBJECT,
+                        new ItemReference(agencyId, "var-1"),
+                        List.of(dataRelationshipType)))
+                .thenReturn(List.of(new ItemReference(agencyId, "dr-1")));
+        when(colecticaClient.findRelatedItems(
+                        RelationshipDirection.BY_OBJECT,
+                        new ItemReference(agencyId, "dr-1"),
+                        List.of(physicalInstanceType)))
+                .thenReturn(List.of(labelItem(physicalInstanceType, agencyId, "pi-1", "Fichier détail")));
+        when(colecticaClient.findRelatedItems(
+                        RelationshipDirection.BY_OBJECT,
+                        new ItemReference(agencyId, "pi-1"),
+                        List.of(STUDY_UNIT_ITEM_TYPE)))
+                .thenReturn(List.of(labelItem(STUDY_UNIT_ITEM_TYPE, agencyId, "su-1", "Recensement 2024")));
 
         // …puis StudyUnit ← Group pour le niveau racine de l'arbre du front.
-        stubRelatedItems(agencyId, "su-1", groupType, labelItem(groupType, agencyId, "grp-1", "Groupe démographie"));
+        when(colecticaClient.findRelatedItems(
+                        RelationshipDirection.BY_OBJECT, new ItemReference(agencyId, "su-1"), List.of(groupType)))
+                .thenReturn(List.of(labelItem(groupType, agencyId, "grp-1", "Groupe démographie")));
 
         List<CategoryCodeListUsage> result = ddiRepository.getCodeListsUsingCategory(agencyId, categoryId);
 
@@ -2644,12 +3917,27 @@ class DDIRepositoryImplTest {
     void getCodeListsUsingCategory_returnsListOnlyRowWhenNoVariableUsesTheList() {
         String agencyId = "fr.insee";
         String categoryId = "cat-1";
+        String codeListType = "8b108ef8-b642-4484-9c49-f88e4bf7cf1d";
+        String variableType = "683889c6-f74b-4d5e-92ed-908c0a42bb2d";
 
-        when(instanceConfiguration.itemTypes()).thenReturn(categoryUsageItemTypes());
+        when(instanceConfiguration.itemTypes())
+                .thenReturn(Map.of(
+                        "CodeList", codeListType,
+                        "Variable", variableType,
+                        "DataRelationship", "f39ff278-8500-45fe-a850-3906da2d242b",
+                        "PhysicalInstance", "a51e85bb-6259-4488-8df2-f08cb43485f8",
+                        "StudyUnit", STUDY_UNIT_ITEM_TYPE));
 
-        stubRelatedItems(
-                agencyId, categoryId, CODE_LIST_TYPE, labelItem(CODE_LIST_TYPE, agencyId, "cl-orpheline", "Pays"));
-        stubRelatedItems(agencyId, "cl-orpheline", VARIABLE_TYPE);
+        when(colecticaClient.findRelatedItems(
+                        RelationshipDirection.BY_OBJECT,
+                        new ItemReference(agencyId, categoryId),
+                        List.of(codeListType)))
+                .thenReturn(List.of(labelItem(codeListType, agencyId, "cl-orpheline", "Pays")));
+        when(colecticaClient.findRelatedItems(
+                        RelationshipDirection.BY_OBJECT,
+                        new ItemReference(agencyId, "cl-orpheline"),
+                        List.of(variableType)))
+                .thenReturn(List.of());
 
         List<CategoryCodeListUsage> result = ddiRepository.getCodeListsUsingCategory(agencyId, categoryId);
 
@@ -2674,38 +3962,55 @@ class DDIRepositoryImplTest {
     void getCodeListsUsingCategory_resolvesEachStudyUnitAndGroupOnlyOnce() {
         String agencyId = "fr.insee";
         String categoryId = "cat-1";
+        String codeListType = "8b108ef8-b642-4484-9c49-f88e4bf7cf1d";
+        String variableType = "683889c6-f74b-4d5e-92ed-908c0a42bb2d";
+        String dataRelationshipType = "f39ff278-8500-45fe-a850-3906da2d242b";
+        String physicalInstanceType = "a51e85bb-6259-4488-8df2-f08cb43485f8";
         String groupType = "4bd6eef6-99df-40e6-9b11-5b8f64e5cb23";
 
-        when(instanceConfiguration.itemTypes()).thenReturn(categoryUsageItemTypes());
+        when(instanceConfiguration.itemTypes())
+                .thenReturn(Map.of(
+                        "CodeList", codeListType,
+                        "Variable", variableType,
+                        "DataRelationship", dataRelationshipType,
+                        "PhysicalInstance", physicalInstanceType,
+                        "StudyUnit", STUDY_UNIT_ITEM_TYPE));
 
         // Deux listes de codes utilisent la catégorie…
-        stubRelatedItems(
-                agencyId,
-                categoryId,
-                CODE_LIST_TYPE,
-                labelItem(CODE_LIST_TYPE, agencyId, "cl-1", "Pays"),
-                labelItem(CODE_LIST_TYPE, agencyId, "cl-2", "Pays de naissance"));
+        when(colecticaClient.findRelatedItems(
+                        RelationshipDirection.BY_OBJECT,
+                        new ItemReference(agencyId, categoryId),
+                        List.of(codeListType)))
+                .thenReturn(List.of(
+                        labelItem(codeListType, agencyId, "cl-1", "Pays"),
+                        labelItem(codeListType, agencyId, "cl-2", "Pays de naissance")));
 
         // …chacune par une variable différente, mais du MÊME fichier, donc de la même StudyUnit
         // et du même Group.
-        stubRelatedItems(agencyId, "cl-1", VARIABLE_TYPE, labelItem(VARIABLE_TYPE, agencyId, "var-1", "Sexe"));
-        stubRelatedItems(agencyId, "cl-2", VARIABLE_TYPE, labelItem(VARIABLE_TYPE, agencyId, "var-2", "Âge"));
+        when(colecticaClient.findRelatedItems(
+                        RelationshipDirection.BY_OBJECT, new ItemReference(agencyId, "cl-1"), List.of(variableType)))
+                .thenReturn(List.of(labelItem(variableType, agencyId, "var-1", "Sexe")));
+        when(colecticaClient.findRelatedItems(
+                        RelationshipDirection.BY_OBJECT, new ItemReference(agencyId, "cl-2"), List.of(variableType)))
+                .thenReturn(List.of(labelItem(variableType, agencyId, "var-2", "Âge")));
         when(colecticaClient.findRelatedDescriptions(
                         eq(RelationshipDirection.BY_OBJECT),
                         any(ItemReference.class),
-                        eq(List.of(DATA_RELATIONSHIP_TYPE))))
+                        eq(List.of(dataRelationshipType))))
                 .thenReturn(List.of(new ItemReference(agencyId, "dr-1")));
-        stubRelatedItems(
-                agencyId,
-                "dr-1",
-                PHYSICAL_INSTANCE_TYPE,
-                labelItem(PHYSICAL_INSTANCE_TYPE, agencyId, "pi-1", "Fichier détail"));
-        stubRelatedItems(
-                agencyId,
-                "pi-1",
-                STUDY_UNIT_ITEM_TYPE,
-                labelItem(STUDY_UNIT_ITEM_TYPE, agencyId, "su-1", "Recensement 2024"));
-        stubRelatedItems(agencyId, "su-1", groupType, labelItem(groupType, agencyId, "grp-1", "Groupe démographie"));
+        when(colecticaClient.findRelatedItems(
+                        RelationshipDirection.BY_OBJECT,
+                        new ItemReference(agencyId, "dr-1"),
+                        List.of(physicalInstanceType)))
+                .thenReturn(List.of(labelItem(physicalInstanceType, agencyId, "pi-1", "Fichier détail")));
+        when(colecticaClient.findRelatedItems(
+                        RelationshipDirection.BY_OBJECT,
+                        new ItemReference(agencyId, "pi-1"),
+                        List.of(STUDY_UNIT_ITEM_TYPE)))
+                .thenReturn(List.of(labelItem(STUDY_UNIT_ITEM_TYPE, agencyId, "su-1", "Recensement 2024")));
+        when(colecticaClient.findRelatedItems(
+                        RelationshipDirection.BY_OBJECT, new ItemReference(agencyId, "su-1"), List.of(groupType)))
+                .thenReturn(List.of(labelItem(groupType, agencyId, "grp-1", "Groupe démographie")));
 
         List<CategoryCodeListUsage> result = ddiRepository.getCodeListsUsingCategory(agencyId, categoryId);
 
@@ -2728,9 +4033,14 @@ class DDIRepositoryImplTest {
     void getCodeListsUsingCategory_returnsEmptyWhenNoCodeListUsesIt() {
         String agencyId = "fr.insee";
         String categoryId = "cat-unused";
+        String codeListType = "8b108ef8-b642-4484-9c49-f88e4bf7cf1d";
 
-        when(instanceConfiguration.itemTypes()).thenReturn(Map.of("CodeList", CODE_LIST_TYPE));
-        stubRelatedItems(agencyId, categoryId, CODE_LIST_TYPE);
+        when(instanceConfiguration.itemTypes()).thenReturn(Map.of("CodeList", codeListType));
+        when(colecticaClient.findRelatedItems(
+                        RelationshipDirection.BY_OBJECT,
+                        new ItemReference(agencyId, categoryId),
+                        List.of(codeListType)))
+                .thenReturn(List.of());
 
         List<CategoryCodeListUsage> result = ddiRepository.getCodeListsUsingCategory(agencyId, categoryId);
 
@@ -2747,11 +4057,35 @@ class DDIRepositoryImplTest {
     void getVariablesUsingMissingValuesRepresentation_returnsUsagesWithLabels() {
         String agencyId = "fr.insee";
         String mmvrId = "mmvr-1";
+        String variableType = "683889c6-f74b-4d5e-92ed-908c0a42bb2d";
+        String dataRelationshipType = "f39ff278-8500-45fe-a850-3906da2d242b";
+        String physicalInstanceType = "a51e85bb-6259-4488-8df2-f08cb43485f8";
 
-        when(instanceConfiguration.itemTypes()).thenReturn(usageItemTypes(DATA_RELATIONSHIP_TYPE));
+        when(instanceConfiguration.itemTypes())
+                .thenReturn(Map.of(
+                        "Variable", variableType,
+                        "DataRelationship", dataRelationshipType,
+                        "PhysicalInstance", physicalInstanceType,
+                        "StudyUnit", STUDY_UNIT_ITEM_TYPE));
 
-        stubRelatedItems(agencyId, mmvrId, VARIABLE_TYPE, labelItem(VARIABLE_TYPE, agencyId, "var-1", "Sexe"));
-        stubVariableUsageParents(agencyId);
+        when(colecticaClient.findRelatedItems(
+                        RelationshipDirection.BY_OBJECT, new ItemReference(agencyId, mmvrId), List.of(variableType)))
+                .thenReturn(List.of(labelItem(variableType, agencyId, "var-1", "Sexe")));
+        when(colecticaClient.findRelatedDescriptions(
+                        RelationshipDirection.BY_OBJECT,
+                        new ItemReference(agencyId, "var-1"),
+                        List.of(dataRelationshipType)))
+                .thenReturn(List.of(new ItemReference(agencyId, "dr-1")));
+        when(colecticaClient.findRelatedItems(
+                        RelationshipDirection.BY_OBJECT,
+                        new ItemReference(agencyId, "dr-1"),
+                        List.of(physicalInstanceType)))
+                .thenReturn(List.of(labelItem(physicalInstanceType, agencyId, "pi-1", "Fichier détail")));
+        when(colecticaClient.findRelatedItems(
+                        RelationshipDirection.BY_OBJECT,
+                        new ItemReference(agencyId, "pi-1"),
+                        List.of(STUDY_UNIT_ITEM_TYPE)))
+                .thenReturn(List.of(labelItem(STUDY_UNIT_ITEM_TYPE, agencyId, "su-1", "Recensement 2024")));
 
         List<CodeListVariableUsage> result =
                 ddiRepository.getVariablesUsingMissingValuesRepresentation(agencyId, mmvrId);
@@ -2768,11 +4102,31 @@ class DDIRepositoryImplTest {
     @Test
     void getPhysicalInstanceSearchRows_joinsPiWithStudyUnitAndGroupLabels() {
         String agency = "agency1";
-        stubAdvancedPhysicalInstance(agency, "pi-1", "Fichier détail");
+        String piType = "a51e85bb-6259-4488-8df2-f08cb43485f8";
+        when(instanceConfiguration.itemTypes()).thenReturn(Map.of("PhysicalInstance", piType));
+        ColecticaAdvancedItem pi = new ColecticaAdvancedItem(
+                agency,
+                "pi-1",
+                1,
+                piType,
+                false,
+                Map.of("label", List.of(new LocalizedText("Fichier détail", "fr-FR"))),
+                Map.of(),
+                Map.of("isPublished", false));
+        when(colecticaClient.queryAdvanced(anyList())).thenReturn(new ColecticaAdvancedResponse(List.of(pi), 1, null));
         // Descente : Groups (query) -> StudyUnits (bysubject) -> PhysicalInstances (bysubject).
-        stubSingleGroup(agency);
-        stubStudyUnitsOfGroup(agency, labelItem(STUDY_UNIT_ITEM_TYPE, agency, "su-1", "Recensement 2024"));
-        stubChildren(agency, "su-1", PHYSICAL_INSTANCE_TYPE, new ItemReference(agency, "pi-1"));
+        when(colecticaClient.query(List.of(GROUP_ITEM_TYPE)))
+                .thenReturn(new ColecticaResponse(
+                        List.of(labelItem(GROUP_ITEM_TYPE, agency, "g1", "Groupe BPE")), 1, 1, null, null, null));
+        when(colecticaClient.getDescriptions(anyList())).thenReturn(null);
+        when(colecticaClient.findRelatedItems(
+                        RelationshipDirection.BY_SUBJECT,
+                        new ItemReference(agency, "g1"),
+                        List.of(STUDY_UNIT_ITEM_TYPE)))
+                .thenReturn(List.of(labelItem(STUDY_UNIT_ITEM_TYPE, agency, "su-1", "Recensement 2024")));
+        when(colecticaClient.findRelatedDescriptions(
+                        RelationshipDirection.BY_SUBJECT, new ItemReference(agency, "su-1"), List.of(piType)))
+                .thenReturn(List.of(new ItemReference(agency, "pi-1")));
 
         List<PhysicalInstanceSearchRow> rows = ddiRepository.getPhysicalInstanceSearchRows();
 
@@ -2789,9 +4143,21 @@ class DDIRepositoryImplTest {
     @Test
     void getPhysicalInstanceSearchRows_leavesParentsNullForPiAttachedToNoGroup() {
         String agency = "agency1";
-        stubAdvancedPhysicalInstance(agency, "pi-9", "Orpheline");
+        String piType = "a51e85bb-6259-4488-8df2-f08cb43485f8";
+        when(instanceConfiguration.itemTypes()).thenReturn(Map.of("PhysicalInstance", piType));
+        ColecticaAdvancedItem pi = new ColecticaAdvancedItem(
+                agency,
+                "pi-9",
+                1,
+                piType,
+                false,
+                Map.of("label", List.of(new LocalizedText("Orpheline", "fr-FR"))),
+                Map.of(),
+                Map.of("isPublished", false));
+        when(colecticaClient.queryAdvanced(anyList())).thenReturn(new ColecticaAdvancedResponse(List.of(pi), 1, null));
         // Aucun groupe : la PI ne peut être rattachée -> orpheline (parents null), mais présente.
-        when(colecticaClient.query(List.of(GROUP_ITEM_TYPE))).thenReturn(queryResponse());
+        when(colecticaClient.query(List.of(GROUP_ITEM_TYPE)))
+                .thenReturn(new ColecticaResponse(List.of(), 0, 0, null, null, null));
 
         List<PhysicalInstanceSearchRow> rows = ddiRepository.getPhysicalInstanceSearchRows();
 
@@ -2807,13 +4173,32 @@ class DDIRepositoryImplTest {
         // Colectica indexe les relations par PAIRE VERSIONNÉE : une StudyUnit en 2 versions sous le
         // même groupe ressort deux fois de _query/relationship/bysubject/descriptions.
         String agency = "agency1";
-        stubAdvancedPhysicalInstance(agency, "pi-1", "Fichier détail");
-        stubSingleGroup(agency);
-        stubStudyUnitsOfGroup(
+        String piType = "a51e85bb-6259-4488-8df2-f08cb43485f8";
+        when(instanceConfiguration.itemTypes()).thenReturn(Map.of("PhysicalInstance", piType));
+        ColecticaAdvancedItem pi = new ColecticaAdvancedItem(
                 agency,
-                versionedLabelItem(STUDY_UNIT_ITEM_TYPE, agency, "su-1", "Recensement 2024", 1),
-                versionedLabelItem(STUDY_UNIT_ITEM_TYPE, agency, "su-1", "Recensement 2024 (v2)", 2));
-        stubChildren(agency, "su-1", PHYSICAL_INSTANCE_TYPE, new ItemReference(agency, "pi-1"));
+                "pi-1",
+                1,
+                piType,
+                false,
+                Map.of("label", List.of(new LocalizedText("Fichier détail", "fr-FR"))),
+                Map.of(),
+                Map.of("isPublished", false));
+        when(colecticaClient.queryAdvanced(anyList())).thenReturn(new ColecticaAdvancedResponse(List.of(pi), 1, null));
+        when(colecticaClient.query(List.of(GROUP_ITEM_TYPE)))
+                .thenReturn(new ColecticaResponse(
+                        List.of(labelItem(GROUP_ITEM_TYPE, agency, "g1", "Groupe BPE")), 1, 1, null, null, null));
+        when(colecticaClient.getDescriptions(anyList())).thenReturn(null);
+        when(colecticaClient.findRelatedItems(
+                        RelationshipDirection.BY_SUBJECT,
+                        new ItemReference(agency, "g1"),
+                        List.of(STUDY_UNIT_ITEM_TYPE)))
+                .thenReturn(List.of(
+                        versionedLabelItem(STUDY_UNIT_ITEM_TYPE, agency, "su-1", "Recensement 2024", 1),
+                        versionedLabelItem(STUDY_UNIT_ITEM_TYPE, agency, "su-1", "Recensement 2024 (v2)", 2)));
+        when(colecticaClient.findRelatedDescriptions(
+                        RelationshipDirection.BY_SUBJECT, new ItemReference(agency, "su-1"), List.of(piType)))
+                .thenReturn(List.of(new ItemReference(agency, "pi-1")));
 
         List<PhysicalInstanceSearchRow> rows = ddiRepository.getPhysicalInstanceSearchRows();
 
@@ -2824,9 +4209,7 @@ class DDIRepositoryImplTest {
         // Une seule descente par StudyUnit, pas une par version.
         verify(colecticaClient, times(1))
                 .findRelatedDescriptions(
-                        RelationshipDirection.BY_SUBJECT,
-                        new ItemReference(agency, "su-1"),
-                        List.of(PHYSICAL_INSTANCE_TYPE));
+                        RelationshipDirection.BY_SUBJECT, new ItemReference(agency, "su-1"), List.of(piType));
     }
 
     @Test
@@ -2834,15 +4217,30 @@ class DDIRepositoryImplTest {
         // Même cause côté StudyUnit -> PhysicalInstance : une PI en plusieurs versions produit
         // autant de descriptions de relation, que le DTO ItemReference rend indiscernables.
         String agency = "agency1";
-        stubAdvancedPhysicalInstance(agency, "pi-1", "Fichier détail");
-        stubSingleGroup(agency);
-        stubStudyUnitsOfGroup(agency, labelItem(STUDY_UNIT_ITEM_TYPE, agency, "su-1", "Recensement 2024"));
-        stubChildren(
+        String piType = "a51e85bb-6259-4488-8df2-f08cb43485f8";
+        when(instanceConfiguration.itemTypes()).thenReturn(Map.of("PhysicalInstance", piType));
+        ColecticaAdvancedItem pi = new ColecticaAdvancedItem(
                 agency,
-                "su-1",
-                PHYSICAL_INSTANCE_TYPE,
-                new ItemReference(agency, "pi-1"),
-                new ItemReference(agency, "pi-1"));
+                "pi-1",
+                1,
+                piType,
+                false,
+                Map.of("label", List.of(new LocalizedText("Fichier détail", "fr-FR"))),
+                Map.of(),
+                Map.of("isPublished", false));
+        when(colecticaClient.queryAdvanced(anyList())).thenReturn(new ColecticaAdvancedResponse(List.of(pi), 1, null));
+        when(colecticaClient.query(List.of(GROUP_ITEM_TYPE)))
+                .thenReturn(new ColecticaResponse(
+                        List.of(labelItem(GROUP_ITEM_TYPE, agency, "g1", "Groupe BPE")), 1, 1, null, null, null));
+        when(colecticaClient.getDescriptions(anyList())).thenReturn(null);
+        when(colecticaClient.findRelatedItems(
+                        RelationshipDirection.BY_SUBJECT,
+                        new ItemReference(agency, "g1"),
+                        List.of(STUDY_UNIT_ITEM_TYPE)))
+                .thenReturn(List.of(labelItem(STUDY_UNIT_ITEM_TYPE, agency, "su-1", "Recensement 2024")));
+        when(colecticaClient.findRelatedDescriptions(
+                        RelationshipDirection.BY_SUBJECT, new ItemReference(agency, "su-1"), List.of(piType)))
+                .thenReturn(List.of(new ItemReference(agency, "pi-1"), new ItemReference(agency, "pi-1")));
 
         List<PhysicalInstanceSearchRow> rows = ddiRepository.getPhysicalInstanceSearchRows();
 
@@ -2851,13 +4249,57 @@ class DDIRepositoryImplTest {
     }
 
     @Test
+    void getPhysicalInstanceSearchRows_skipsAttachedPhysicalInstanceMissingFromTheAdvancedQuery() {
+        // Une PI dépréciée reste liée à sa StudyUnit, mais _query/advanced ne la renvoie plus.
+        String agency = "agency1";
+        String piType = "a51e85bb-6259-4488-8df2-f08cb43485f8";
+        when(instanceConfiguration.itemTypes()).thenReturn(Map.of("PhysicalInstance", piType));
+        ColecticaAdvancedItem pi = new ColecticaAdvancedItem(
+                agency,
+                "pi-1",
+                1,
+                piType,
+                false,
+                Map.of("label", List.of(new LocalizedText("Fichier détail", "fr-FR"))),
+                Map.of(),
+                Map.of("isPublished", false));
+        when(colecticaClient.queryAdvanced(anyList())).thenReturn(new ColecticaAdvancedResponse(List.of(pi), 1, null));
+        when(colecticaClient.query(List.of(GROUP_ITEM_TYPE)))
+                .thenReturn(new ColecticaResponse(
+                        List.of(labelItem(GROUP_ITEM_TYPE, agency, "g1", "Groupe BPE")), 1, 1, null, null, null));
+        when(colecticaClient.getDescriptions(anyList())).thenReturn(null);
+        when(colecticaClient.findRelatedItems(
+                        RelationshipDirection.BY_SUBJECT,
+                        new ItemReference(agency, "g1"),
+                        List.of(STUDY_UNIT_ITEM_TYPE)))
+                .thenReturn(List.of(labelItem(STUDY_UNIT_ITEM_TYPE, agency, "su-1", "Recensement 2024")));
+        when(colecticaClient.findRelatedDescriptions(
+                        RelationshipDirection.BY_SUBJECT, new ItemReference(agency, "su-1"), List.of(piType)))
+                .thenReturn(List.of(new ItemReference(agency, "pi-1"), new ItemReference(agency, "pi-deprecated")));
+
+        List<PhysicalInstanceSearchRow> rows = ddiRepository.getPhysicalInstanceSearchRows();
+
+        assertEquals(
+                List.of("pi-1"),
+                rows.stream().map(PhysicalInstanceSearchRow::id).toList());
+    }
+
+    @Test
     void getStudyUnits_keepsOnlyTheLatestVersionOfEachStudyUnit() {
         when(colecticaClient.query(anyList()))
-                .thenReturn(queryResponse(
-                        versionedLabelItem(STUDY_UNIT_ITEM_TYPE, "fr.insee", "su-1", "Recensement 2024", 1),
-                        versionedLabelItem(STUDY_UNIT_ITEM_TYPE, "fr.insee", "su-1", "Recensement 2024 (v3)", 3),
-                        versionedLabelItem(STUDY_UNIT_ITEM_TYPE, "fr.insee", "su-1", "Recensement 2024 (v2)", 2),
-                        versionedLabelItem(STUDY_UNIT_ITEM_TYPE, "fr.insee", "su-2", "BPE 2023", 1)));
+                .thenReturn(new ColecticaResponse(
+                        List.of(
+                                versionedLabelItem(STUDY_UNIT_ITEM_TYPE, "fr.insee", "su-1", "Recensement 2024", 1),
+                                versionedLabelItem(
+                                        STUDY_UNIT_ITEM_TYPE, "fr.insee", "su-1", "Recensement 2024 (v3)", 3),
+                                versionedLabelItem(
+                                        STUDY_UNIT_ITEM_TYPE, "fr.insee", "su-1", "Recensement 2024 (v2)", 2),
+                                versionedLabelItem(STUDY_UNIT_ITEM_TYPE, "fr.insee", "su-2", "BPE 2023", 1)),
+                        4,
+                        4,
+                        null,
+                        null,
+                        null));
 
         List<PartialStudyUnit> result = ddiRepository.getStudyUnits();
 
@@ -2905,34 +4347,41 @@ class DDIRepositoryImplTest {
     @Test
     void getVariablesUsingCodeList_keepsOnlyTheLatestVersionOfEachVariableAndPhysicalInstance() {
         String agencyId = "fr.insee";
+        String variableType = "683889c6-f74b-4d5e-92ed-908c0a42bb2d";
         String dataRelationshipType = "e5bf1809-e5f2-4e7a-b9f9-f1e7c6e0b1e0";
-        when(instanceConfiguration.itemTypes()).thenReturn(usageItemTypes(dataRelationshipType));
+        String physicalInstanceType = "a51e85bb-6259-4488-8df2-f08cb43485f8";
+        when(instanceConfiguration.itemTypes())
+                .thenReturn(Map.of(
+                        "Variable", variableType,
+                        "DataRelationship", dataRelationshipType,
+                        "PhysicalInstance", physicalInstanceType,
+                        "StudyUnit", STUDY_UNIT_ITEM_TYPE));
 
         // La variable et la PI sont chacune en 2 versions : autant de descriptions de relation.
-        stubRelatedItems(
-                agencyId,
-                "cl-1",
-                VARIABLE_TYPE,
-                versionedLabelItem(VARIABLE_TYPE, agencyId, "var-1", "Sexe", 1),
-                versionedLabelItem(VARIABLE_TYPE, agencyId, "var-1", "Sexe (v2)", 2));
-        stubParents(
-                agencyId,
-                "var-1",
-                dataRelationshipType,
-                new ItemReference(agencyId, "dr-1"),
-                new ItemReference(agencyId, "dr-1"));
-        stubRelatedItems(
-                agencyId,
-                "dr-1",
-                PHYSICAL_INSTANCE_TYPE,
-                versionedLabelItem(PHYSICAL_INSTANCE_TYPE, agencyId, "pi-1", "Fichier détail", 1),
-                versionedLabelItem(PHYSICAL_INSTANCE_TYPE, agencyId, "pi-1", "Fichier détail (v2)", 2));
-        stubRelatedItems(
-                agencyId,
-                "pi-1",
-                STUDY_UNIT_ITEM_TYPE,
-                versionedLabelItem(STUDY_UNIT_ITEM_TYPE, agencyId, "su-1", "Recensement 2024", 1),
-                versionedLabelItem(STUDY_UNIT_ITEM_TYPE, agencyId, "su-1", "Recensement 2024 (v2)", 2));
+        when(colecticaClient.findRelatedItems(
+                        RelationshipDirection.BY_OBJECT, new ItemReference(agencyId, "cl-1"), List.of(variableType)))
+                .thenReturn(List.of(
+                        versionedLabelItem(variableType, agencyId, "var-1", "Sexe", 1),
+                        versionedLabelItem(variableType, agencyId, "var-1", "Sexe (v2)", 2)));
+        when(colecticaClient.findRelatedDescriptions(
+                        RelationshipDirection.BY_OBJECT,
+                        new ItemReference(agencyId, "var-1"),
+                        List.of(dataRelationshipType)))
+                .thenReturn(List.of(new ItemReference(agencyId, "dr-1"), new ItemReference(agencyId, "dr-1")));
+        when(colecticaClient.findRelatedItems(
+                        RelationshipDirection.BY_OBJECT,
+                        new ItemReference(agencyId, "dr-1"),
+                        List.of(physicalInstanceType)))
+                .thenReturn(List.of(
+                        versionedLabelItem(physicalInstanceType, agencyId, "pi-1", "Fichier détail", 1),
+                        versionedLabelItem(physicalInstanceType, agencyId, "pi-1", "Fichier détail (v2)", 2)));
+        when(colecticaClient.findRelatedItems(
+                        RelationshipDirection.BY_OBJECT,
+                        new ItemReference(agencyId, "pi-1"),
+                        List.of(STUDY_UNIT_ITEM_TYPE)))
+                .thenReturn(List.of(
+                        versionedLabelItem(STUDY_UNIT_ITEM_TYPE, agencyId, "su-1", "Recensement 2024", 1),
+                        versionedLabelItem(STUDY_UNIT_ITEM_TYPE, agencyId, "su-1", "Recensement 2024 (v2)", 2)));
 
         List<CodeListVariableUsage> result = ddiRepository.getVariablesUsingCodeList(agencyId, "cl-1");
 
@@ -2945,11 +4394,15 @@ class DDIRepositoryImplTest {
 
     private static ColecticaItem versionedLabelItem(
             String itemType, String agency, String id, String label, int version) {
-        return colecticaItem(itemType, agency, version, id, Map.of("fr-FR", label), null, null, true, 1L);
+        return aColecticaItem(itemType, id)
+                .itemName(label)
+                .agency(agency)
+                .version(version)
+                .build();
     }
 
     private static ColecticaItem labelItem(String itemType, String agency, String id, String label) {
-        return versionedLabelItem(itemType, agency, id, label, 1);
+        return aColecticaItem(itemType, id).itemName(label).agency(agency).build();
     }
 
     private static final String STUDY_UNIT_ITEM_TYPE = "30ea0200-7121-4f01-8d21-a931a182b86d";
@@ -2957,7 +4410,12 @@ class DDIRepositoryImplTest {
 
     @Test
     void updateFullPhysicalInstance_attachesNonMutualizedCodeListsToGroupCodeListScheme() {
-        stubConvertedPhysicalInstance();
+        // The converted PhysicalInstance produces at least one item so the save proceeds.
+        Ddi3Response.Ddi3Item piItem = new Ddi3Response.Ddi3Item(
+                "pi-type", "fr.insee", "1", "pi-1", "<pi/>", "2026-01-01T00:00:00", "resp", false, false, false, "fmt");
+        when(ddi4ToDdi3Converter.convertDdi4ToDdi3(any()))
+                .thenReturn(
+                        new Ddi3Response(new Ddi3Response.Ddi3Options(List.of("RegisterOrReplace")), List.of(piItem)));
 
         when(instanceConfiguration.itemTypes())
                 .thenReturn(Map.of(
@@ -2972,18 +4430,48 @@ class DDIRepositoryImplTest {
 
         // Mutualized package: walking it top-down (scheme → group → code list) reaches CL_MUT only;
         // CL_NEW is not part of the package tree.
-        stubMutualizedPackageReachingOnlyClMut();
+        when(colecticaConfiguration.mutualizedCodesPackage())
+                .thenReturn(new ColecticaConfiguration.PackageRef("fr.insee", "PKG", 1));
+        stubChildren("fr.insee", "PKG", CODE_LIST_SCHEME_TYPE, new ItemReference("fr.insee", "SCHEME_M"));
+        stubChildren("fr.insee", "SCHEME_M", CODE_LIST_GROUP_TYPE, new ItemReference("fr.insee", "GROUP_M"));
+        stubChildren("fr.insee", "GROUP_M", CODE_LIST_TYPE, new ItemReference("fr.insee", "CL_MUT"));
 
         // Parents: PI -> StudyUnit -> Group
-        stubPhysicalInstanceParents();
+        when(colecticaClient.findRelatedItems(
+                        RelationshipDirection.BY_OBJECT,
+                        new ItemReference("fr.insee", "pi-1"),
+                        List.of(STUDY_UNIT_ITEM_TYPE)))
+                .thenReturn(List.of(labelItem(STUDY_UNIT_ITEM_TYPE, "fr.insee", "su-1", "su-1")));
+        when(colecticaClient.findRelatedItems(
+                        RelationshipDirection.BY_OBJECT,
+                        new ItemReference("fr.insee", "su-1"),
+                        List.of(GROUP_ITEM_TYPE)))
+                .thenReturn(List.of(labelItem(GROUP_ITEM_TYPE, "fr.insee", "group-1", "group-1")));
 
         // Scheme resolution: Group -> LogicalProduct -> CodeListScheme
-        stubChildren("fr.insee", "group-1", "lp-type", new ItemReference("fr.insee", "lp-1"));
-        stubChildren("fr.insee", "lp-1", CODE_LIST_SCHEME_TYPE, new ItemReference("fr.insee", "CLS_1"));
+        when(colecticaClient.findRelatedDescriptions(
+                        RelationshipDirection.BY_SUBJECT, new ItemReference("fr.insee", "group-1"), List.of("lp-type")))
+                .thenReturn(List.of(new ItemReference("fr.insee", "lp-1")));
+        when(colecticaClient.findRelatedDescriptions(
+                        RelationshipDirection.BY_SUBJECT,
+                        new ItemReference("fr.insee", "lp-1"),
+                        List.of(CODE_LIST_SCHEME_TYPE)))
+                .thenReturn(List.of(new ItemReference("fr.insee", "CLS_1")));
 
         // Existing scheme already references CL_EXISTING.
-        when(colecticaClient.getItem("fr.insee", "CLS_1", null))
-                .thenReturn(storedItem("cls-type", "CLS_1", "<scheme/>"));
+        ColecticaItemResponse existingScheme = new ColecticaItemResponse(
+                "cls-type",
+                "fr.insee",
+                1,
+                "CLS_1",
+                "<scheme/>",
+                "2026-01-01T00:00:00",
+                "resp",
+                false,
+                false,
+                false,
+                "fmt");
+        when(colecticaClient.getItem("fr.insee", "CLS_1", null)).thenReturn(existingScheme);
         Ddi4CodeListScheme parsedScheme = new Ddi4CodeListScheme(
                 Ddi4CodeListScheme.TYPE,
                 CogsDate.ofDateTime("2026-01-01T00:00:00"),
@@ -2992,15 +4480,44 @@ class DDIRepositoryImplTest {
                 "CLS_1",
                 "1",
                 LangStrings.of("fr-FR", "Scheme"),
-                new ArrayList<>(List.of(Reference.of("fr.insee", "CL_EXISTING", "1", "CodeList"))));
+                new java.util.ArrayList<>(List.of(Reference.of("fr.insee", "CL_EXISTING", "1", "CodeList"))));
         when(ddi3ToDdi4Converter.toCodeListScheme("<scheme/>")).thenReturn(parsedScheme);
 
+        Ddi3Response.Ddi3Item schemeItem = new Ddi3Response.Ddi3Item(
+                "cls-type",
+                "fr.insee",
+                "1",
+                "CLS_1",
+                "<scheme-updated/>",
+                "2026-01-01T00:00:00",
+                "resp",
+                false,
+                false,
+                false,
+                "fmt");
         ArgumentCaptor<Ddi4CodeListScheme> schemeCaptor = ArgumentCaptor.forClass(Ddi4CodeListScheme.class);
-        when(ddi4ToDdi3Converter.toCodeListSchemeItem(schemeCaptor.capture()))
-                .thenReturn(ddi3Item("cls-type", "CLS_1", "<scheme-updated/>"));
+        when(ddi4ToDdi3Converter.toCodeListSchemeItem(schemeCaptor.capture())).thenReturn(schemeItem);
 
-        Ddi4CodeList clMut = codeList("CL_MUT", "mut");
-        Ddi4CodeList clNew = codeList("CL_NEW", "new");
+        Ddi4CodeList clMut = new Ddi4CodeList(
+                Ddi4CodeList.TYPE,
+                CogsDate.ofDateTime("2026-01-01T00:00:00"),
+                "urn:ddi:fr.insee:CL_MUT:1",
+                "fr.insee",
+                "CL_MUT",
+                "1",
+                LangStrings.of("fr-FR", "mut"),
+                null,
+                null);
+        Ddi4CodeList clNew = new Ddi4CodeList(
+                Ddi4CodeList.TYPE,
+                CogsDate.ofDateTime("2026-01-01T00:00:00"),
+                "urn:ddi:fr.insee:CL_NEW:1",
+                "fr.insee",
+                "CL_NEW",
+                "1",
+                LangStrings.of("fr-FR", "new"),
+                null,
+                null);
         Ddi4Response ddi4 = new Ddi4Response("schema", null, null, null, null, List.of(clMut, clNew), null, null);
 
         ddiRepository.updateFullPhysicalInstance("fr.insee", "pi-1", ddi4);
@@ -3010,59 +4527,12 @@ class DDIRepositoryImplTest {
                 .extracting(Reference::id)
                 .containsExactlyInAnyOrder("CL_EXISTING", "CL_NEW");
 
-        assertThat(sentItems()).extracting(ColecticaItemResponse::identifier).contains("CLS_1");
-    }
-
-    @Test
-    void updateFullPhysicalInstance_autoProvisionsGroupCodeListSchemeWhenGroupHasNone() {
-        stubConvertedPhysicalInstance();
-
-        when(instanceConfiguration.itemTypes())
-                .thenReturn(Map.of("LogicalProduct", "lp-type", "CodeListScheme", CODE_LIST_SCHEME_TYPE));
-
-        // No mutualized package configured: every code list is non-mutualized.
-        when(colecticaConfiguration.mutualizedCodesPackage()).thenReturn(null);
-
-        // Parents: PI -> StudyUnit -> Group
-        stubPhysicalInstanceParents();
-
-        // The group has NO LogicalProduct at all -> no CodeListScheme reachable
-        stubChildren("fr.insee", "group-1", "lp-type");
-
-        // The existing group can be fetched and parsed (to re-register it with a LogicalProductReference)
-        stubExistingGroup();
-
-        // Capture the provisioned scheme / LP / re-registered group
-        ArgumentCaptor<Ddi4CodeListScheme> schemeCaptor = ArgumentCaptor.forClass(Ddi4CodeListScheme.class);
-        ArgumentCaptor<Ddi4LogicalProduct> lpCaptor = ArgumentCaptor.forClass(Ddi4LogicalProduct.class);
-        ArgumentCaptor<Ddi4Group> groupCaptor = ArgumentCaptor.forClass(Ddi4Group.class);
-        when(ddi4ToDdi3Converter.toCodeListSchemeItem(schemeCaptor.capture()))
-                .thenReturn(ddi3Item("cls-type", "CLS_AUTO", "<cls/>"));
-        when(ddi4ToDdi3Converter.toLogicalProductItem(lpCaptor.capture()))
-                .thenReturn(ddi3Item("lp-type", "LP_AUTO", "<lp/>"));
-        when(ddi4ToDdi3Converter.toGroupItem(groupCaptor.capture(), anyString()))
-                .thenReturn(ddi3Item("group-type", "group-1", "<group-updated/>"));
-
-        Ddi4CodeList clNew = codeList("CL_NEW", "new");
-        Ddi4Response ddi4 = new Ddi4Response("schema", null, null, null, null, List.of(clNew), null, null);
-
-        ddiRepository.updateFullPhysicalInstance("fr.insee", "pi-1", ddi4);
-
-        // A fresh CodeListScheme is created holding the new code list...
-        Ddi4CodeListScheme scheme = schemeCaptor.getValue();
-        assertThat(scheme.codeListReference()).extracting(Reference::id).containsExactly("CL_NEW");
-        // ...filed under a fresh LogicalProduct that references it...
-        Ddi4LogicalProduct lp = lpCaptor.getValue();
-        assertThat(lp.codeListSchemeReference()).extracting(Reference::id).containsExactly(scheme.id());
-        // ...and the group is re-registered pointing at that LogicalProduct.
-        Ddi4Group group = groupCaptor.getValue();
-        assertThat(group.logicalProductReference()).extracting(Reference::id).containsExactly(lp.id());
-        assertThat(group.studyUnitReference()).extracting(Reference::id).containsExactly("su-1");
-
-        // All three provisioned items ship in the same batch as the PhysicalInstance.
-        assertThat(sentItems())
+        ArgumentCaptor<ColecticaCreateItemRequest> reqCaptor =
+                ArgumentCaptor.forClass(ColecticaCreateItemRequest.class);
+        verify(colecticaClient).createOrUpdateItems(reqCaptor.capture());
+        assertThat(reqCaptor.getValue().items())
                 .extracting(ColecticaItemResponse::identifier)
-                .contains("pi-1", "CLS_AUTO", "LP_AUTO", "group-1");
+                .contains("CLS_1");
     }
 
     /**
@@ -3071,14 +4541,55 @@ class DDIRepositoryImplTest {
      */
     @Test
     void updateFullPhysicalInstance_filesManagedMissingValuesUnderExistingScheme() {
+        Ddi3Response.Ddi3Item piItem = new Ddi3Response.Ddi3Item(
+                "pi-type", "fr.insee", "1", "pi-1", "<pi/>", "2026-01-01T00:00:00", "resp", false, false, false, "fmt");
+        when(ddi4ToDdi3Converter.convertDdi4ToDdi3(any()))
+                .thenReturn(
+                        new Ddi3Response(new Ddi3Response.Ddi3Options(List.of("RegisterOrReplace")), List.of(piItem)));
+
+        when(instanceConfiguration.itemTypes())
+                .thenReturn(Map.of(
+                        "LogicalProduct",
+                        "lp-type",
+                        "ManagedRepresentationScheme",
+                        MANAGED_REPRESENTATION_SCHEME_TYPE));
+
+        // Parents: PI -> StudyUnit -> Group
+        when(colecticaClient.findRelatedItems(
+                        RelationshipDirection.BY_OBJECT,
+                        new ItemReference("fr.insee", "pi-1"),
+                        List.of(STUDY_UNIT_ITEM_TYPE)))
+                .thenReturn(List.of(labelItem(STUDY_UNIT_ITEM_TYPE, "fr.insee", "su-1", "su-1")));
+        when(colecticaClient.findRelatedItems(
+                        RelationshipDirection.BY_OBJECT,
+                        new ItemReference("fr.insee", "su-1"),
+                        List.of(GROUP_ITEM_TYPE)))
+                .thenReturn(List.of(labelItem(GROUP_ITEM_TYPE, "fr.insee", "group-1", "group-1")));
+
         // Scheme resolution: Group -> LogicalProduct -> ManagedRepresentationScheme
-        stubGroupLogicalProductForManagedRepresentations();
-        stubChildren("fr.insee", "lp-1", MANAGED_REPRESENTATION_SCHEME_TYPE, new ItemReference("fr.insee", "MRS_1"));
+        when(colecticaClient.findRelatedDescriptions(
+                        RelationshipDirection.BY_SUBJECT, new ItemReference("fr.insee", "group-1"), List.of("lp-type")))
+                .thenReturn(List.of(new ItemReference("fr.insee", "lp-1")));
+        when(colecticaClient.findRelatedDescriptions(
+                        RelationshipDirection.BY_SUBJECT,
+                        new ItemReference("fr.insee", "lp-1"),
+                        List.of(MANAGED_REPRESENTATION_SCHEME_TYPE)))
+                .thenReturn(List.of(new ItemReference("fr.insee", "MRS_1")));
 
         // Existing scheme already references MMVR_EXISTING.
-        lenient()
-                .when(colecticaClient.getItem("fr.insee", "MRS_1", null))
-                .thenReturn(storedItem("mrs-type", "MRS_1", "<mrs/>"));
+        ColecticaItemResponse existingScheme = new ColecticaItemResponse(
+                "mrs-type",
+                "fr.insee",
+                1,
+                "MRS_1",
+                "<mrs/>",
+                "2026-01-01T00:00:00",
+                "resp",
+                false,
+                false,
+                false,
+                "fmt");
+        lenient().when(colecticaClient.getItem("fr.insee", "MRS_1", null)).thenReturn(existingScheme);
         Ddi4ManagedRepresentationScheme parsedScheme = new Ddi4ManagedRepresentationScheme(
                 Ddi4ManagedRepresentationScheme.TYPE,
                 CogsDate.ofDateTime("2026-01-01T00:00:00"),
@@ -3087,7 +4598,7 @@ class DDIRepositoryImplTest {
                 "MRS_1",
                 "1",
                 LangStrings.of("fr-FR", "MRS"),
-                new ArrayList<>(
+                new java.util.ArrayList<>(
                         List.of(Reference.of("fr.insee", "MMVR_EXISTING", "1", "ManagedMissingValuesRepresentation"))));
         lenient()
                 .when(ddi3ToDdi4Converter.toManagedRepresentationScheme("<mrs/>"))
@@ -3097,74 +4608,51 @@ class DDIRepositoryImplTest {
                 ArgumentCaptor.forClass(Ddi4ManagedRepresentationScheme.class);
         lenient()
                 .when(ddi4ToDdi3Converter.toManagedRepresentationSchemeItem(schemeCaptor.capture()))
-                .thenReturn(ddi3Item("mrs-type", "MRS_1", "<mrs-updated/>"));
+                .thenReturn(new Ddi3Response.Ddi3Item(
+                        "mrs-type",
+                        "fr.insee",
+                        "1",
+                        "MRS_1",
+                        "<mrs-updated/>",
+                        "2026-01-01T00:00:00",
+                        "resp",
+                        false,
+                        false,
+                        false,
+                        "fmt"));
 
-        ddiRepository.updateFullPhysicalInstance("fr.insee", "pi-1", newMissingValuesRepresentationPayload());
+        Ddi4ManagedMissingValuesRepresentation mmvrNew = new Ddi4ManagedMissingValuesRepresentation(
+                Ddi4ManagedMissingValuesRepresentation.TYPE,
+                CogsDate.ofDateTime("2026-01-01T00:00:00"),
+                "urn:ddi:fr.insee:MMVR_NEW:1",
+                "fr.insee",
+                "MMVR_NEW",
+                "1",
+                LangStrings.of("fr-FR", "Valeurs sentinelles NSP/REF"),
+                null);
+        Ddi4Response ddi4 = new Ddi4Response("schema", null, null, null, null, null, null, List.of(mmvrNew));
+
+        ddiRepository.updateFullPhysicalInstance("fr.insee", "pi-1", ddi4);
 
         // The scheme item ships in the batch, merged with the pre-existing member reference.
-        assertThat(sentItems()).extracting(ColecticaItemResponse::identifier).contains("MRS_1");
+        ArgumentCaptor<ColecticaCreateItemRequest> reqCaptor =
+                ArgumentCaptor.forClass(ColecticaCreateItemRequest.class);
+        verify(colecticaClient).createOrUpdateItems(reqCaptor.capture());
+        assertThat(reqCaptor.getValue().items())
+                .extracting(ColecticaItemResponse::identifier)
+                .contains("MRS_1");
         assertThat(schemeCaptor.getValue().managedRepresentationReference())
                 .extracting(Reference::id)
                 .containsExactlyInAnyOrder("MMVR_EXISTING", "MMVR_NEW");
     }
 
-    /**
-     * Valeurs sentinelles (#1566) : quand le groupe n'a pas encore de ManagedRepresentationScheme,
-     * il est auto-provisionné et rangé sous le LogicalProduct existant du groupe.
-     */
-    @Test
-    void updateFullPhysicalInstance_autoProvisionsManagedRepresentationSchemeWhenGroupHasNone() {
-        // The group exposes a LogicalProduct, but no ManagedRepresentationScheme under it.
-        stubGroupLogicalProductForManagedRepresentations();
-        stubChildren("fr.insee", "lp-1", MANAGED_REPRESENTATION_SCHEME_TYPE);
-
-        // The existing LogicalProduct is fetched and completed with the new scheme reference.
-        lenient()
-                .when(colecticaClient.getItem("fr.insee", "lp-1", null))
-                .thenReturn(storedItem("lp-type", "lp-1", "<lp/>"));
-        Ddi4LogicalProduct parsedLp = new Ddi4LogicalProduct(
-                Ddi4LogicalProduct.TYPE,
-                CogsDate.ofDateTime("2026-01-01T00:00:00"),
-                "urn:ddi:fr.insee:lp-1:1",
-                "fr.insee",
-                "lp-1",
-                "1",
-                LangStrings.of("fr-FR", "LP"),
-                List.of(Reference.of("fr.insee", "CLS_1", "1", "CodeListScheme")),
-                null,
-                null,
-                null);
-        lenient().when(ddi3ToDdi4Converter.toLogicalProduct("<lp/>")).thenReturn(parsedLp);
-
-        ArgumentCaptor<Ddi4ManagedRepresentationScheme> schemeCaptor =
-                ArgumentCaptor.forClass(Ddi4ManagedRepresentationScheme.class);
-        lenient()
-                .when(ddi4ToDdi3Converter.toManagedRepresentationSchemeItem(schemeCaptor.capture()))
-                .thenReturn(ddi3Item("mrs-type", "MRS_AUTO", "<mrs/>"));
-        ArgumentCaptor<Ddi4LogicalProduct> lpCaptor = ArgumentCaptor.forClass(Ddi4LogicalProduct.class);
-        lenient()
-                .when(ddi4ToDdi3Converter.toLogicalProductItem(lpCaptor.capture()))
-                .thenReturn(ddi3Item("lp-type", "lp-1", "<lp-updated/>"));
-
-        ddiRepository.updateFullPhysicalInstance("fr.insee", "pi-1", newMissingValuesRepresentationPayload());
-
-        // A fresh ManagedRepresentationScheme is created holding the MMVR reference...
-        Ddi4ManagedRepresentationScheme scheme = schemeCaptor.getValue();
-        assertThat(scheme.managedRepresentationReference())
-                .extracting(Reference::id)
-                .containsExactly("MMVR_NEW");
-        // ...and the existing LogicalProduct now references it (its other schemes preserved).
-        Ddi4LogicalProduct lp = lpCaptor.getValue();
-        assertThat(lp.managedRepresentationSchemeReference())
-                .extracting(Reference::id)
-                .containsExactly(scheme.id());
-        assertThat(lp.codeListSchemeReference()).extracting(Reference::id).containsExactly("CLS_1");
-        assertThat(sentItems()).extracting(ColecticaItemResponse::identifier).contains("pi-1", "MRS_AUTO", "lp-1");
-    }
-
     @Test
     void updateFullPhysicalInstance_doesNotTouchSchemeWhenAllCodeListsAreMutualized() {
-        stubConvertedPhysicalInstance();
+        Ddi3Response.Ddi3Item piItem = new Ddi3Response.Ddi3Item(
+                "pi-type", "fr.insee", "1", "pi-1", "<pi/>", "2026-01-01T00:00:00", "resp", false, false, false, "fmt");
+        when(ddi4ToDdi3Converter.convertDdi4ToDdi3(any()))
+                .thenReturn(
+                        new Ddi3Response(new Ddi3Response.Ddi3Options(List.of("RegisterOrReplace")), List.of(piItem)));
 
         when(instanceConfiguration.itemTypes())
                 .thenReturn(Map.of(
@@ -3176,9 +4664,22 @@ class DDIRepositoryImplTest {
                         CODE_LIST_TYPE));
 
         // CL_MUT belongs to the package tree (package → scheme → group → CL_MUT).
-        stubMutualizedPackageReachingOnlyClMut();
+        when(colecticaConfiguration.mutualizedCodesPackage())
+                .thenReturn(new ColecticaConfiguration.PackageRef("fr.insee", "PKG", 1));
+        stubChildren("fr.insee", "PKG", CODE_LIST_SCHEME_TYPE, new ItemReference("fr.insee", "SCHEME_M"));
+        stubChildren("fr.insee", "SCHEME_M", CODE_LIST_GROUP_TYPE, new ItemReference("fr.insee", "GROUP_M"));
+        stubChildren("fr.insee", "GROUP_M", CODE_LIST_TYPE, new ItemReference("fr.insee", "CL_MUT"));
 
-        Ddi4CodeList clMut = codeList("CL_MUT", "mut");
+        Ddi4CodeList clMut = new Ddi4CodeList(
+                Ddi4CodeList.TYPE,
+                CogsDate.ofDateTime("2026-01-01T00:00:00"),
+                "urn:ddi:fr.insee:CL_MUT:1",
+                "fr.insee",
+                "CL_MUT",
+                "1",
+                LangStrings.of("fr-FR", "mut"),
+                null,
+                null);
         Ddi4Response ddi4 = new Ddi4Response("schema", null, null, null, null, List.of(clMut), null, null);
 
         ddiRepository.updateFullPhysicalInstance("fr.insee", "pi-1", ddi4);
@@ -3186,22 +4687,55 @@ class DDIRepositoryImplTest {
         // No scheme resolution, no scheme item: only the converted items are sent.
         verify(colecticaClient, never()).getItem(anyString(), anyString(), any());
         verify(ddi4ToDdi3Converter, never()).toCodeListSchemeItem(any());
-        assertThat(sentItems()).extracting(ColecticaItemResponse::identifier).containsExactly("pi-1");
+        ArgumentCaptor<ColecticaCreateItemRequest> reqCaptor =
+                ArgumentCaptor.forClass(ColecticaCreateItemRequest.class);
+        verify(colecticaClient).createOrUpdateItems(reqCaptor.capture());
+        assertThat(reqCaptor.getValue().items())
+                .extracting(ColecticaItemResponse::identifier)
+                .containsExactly("pi-1");
     }
 
     @Test
     void updateFullPhysicalInstance_filesCategoriesUnderExistingGroupCategoryScheme() {
-        stubConvertedPhysicalInstance();
+        Ddi3Response.Ddi3Item piItem = new Ddi3Response.Ddi3Item(
+                "pi-type", "fr.insee", "1", "pi-1", "<pi/>", "2026-01-01T00:00:00", "resp", false, false, false, "fmt");
+        when(ddi4ToDdi3Converter.convertDdi4ToDdi3(any()))
+                .thenReturn(
+                        new Ddi3Response(new Ddi3Response.Ddi3Options(List.of("RegisterOrReplace")), List.of(piItem)));
         when(instanceConfiguration.itemTypes())
                 .thenReturn(Map.of("LogicalProduct", "lp-type", "CategoryScheme", "cats-type"));
 
-        stubPhysicalInstanceParents();
+        when(colecticaClient.findRelatedItems(
+                        RelationshipDirection.BY_OBJECT,
+                        new ItemReference("fr.insee", "pi-1"),
+                        List.of(STUDY_UNIT_ITEM_TYPE)))
+                .thenReturn(List.of(labelItem(STUDY_UNIT_ITEM_TYPE, "fr.insee", "su-1", "su-1")));
+        when(colecticaClient.findRelatedItems(
+                        RelationshipDirection.BY_OBJECT,
+                        new ItemReference("fr.insee", "su-1"),
+                        List.of(GROUP_ITEM_TYPE)))
+                .thenReturn(List.of(labelItem(GROUP_ITEM_TYPE, "fr.insee", "group-1", "group-1")));
         // Group -> LogicalProduct -> CategoryScheme
-        stubChildren("fr.insee", "group-1", "lp-type", new ItemReference("fr.insee", "lp-1"));
-        stubChildren("fr.insee", "lp-1", "cats-type", new ItemReference("fr.insee", "CATS_1"));
+        when(colecticaClient.findRelatedDescriptions(
+                        RelationshipDirection.BY_SUBJECT, new ItemReference("fr.insee", "group-1"), List.of("lp-type")))
+                .thenReturn(List.of(new ItemReference("fr.insee", "lp-1")));
+        when(colecticaClient.findRelatedDescriptions(
+                        RelationshipDirection.BY_SUBJECT, new ItemReference("fr.insee", "lp-1"), List.of("cats-type")))
+                .thenReturn(List.of(new ItemReference("fr.insee", "CATS_1")));
 
         when(colecticaClient.getItem("fr.insee", "CATS_1", null))
-                .thenReturn(storedItem("cats-type", "CATS_1", "<cats/>"));
+                .thenReturn(new ColecticaItemResponse(
+                        "cats-type",
+                        "fr.insee",
+                        1,
+                        "CATS_1",
+                        "<cats/>",
+                        "2026-01-01T00:00:00",
+                        "resp",
+                        false,
+                        false,
+                        false,
+                        "fmt"));
         Ddi4CategoryScheme parsed = new Ddi4CategoryScheme(
                 Ddi4CategoryScheme.TYPE,
                 CogsDate.ofDateTime("2026-01-01T00:00:00"),
@@ -3210,109 +4744,162 @@ class DDIRepositoryImplTest {
                 "CATS_1",
                 "1",
                 LangStrings.of("fr-FR", "Cats"),
-                new ArrayList<>(List.of(Reference.of("fr.insee", "CAT_OLD", "1", "Category"))));
+                new java.util.ArrayList<>(List.of(Reference.of("fr.insee", "CAT_OLD", "1", "Category"))));
         when(ddi3ToDdi4Converter.toCategoryScheme("<cats/>")).thenReturn(parsed);
 
         ArgumentCaptor<Ddi4CategoryScheme> schemeCaptor = ArgumentCaptor.forClass(Ddi4CategoryScheme.class);
         when(ddi4ToDdi3Converter.toCategorySchemeItem(schemeCaptor.capture()))
-                .thenReturn(ddi3Item("cats-type", "CATS_1", "<cats-updated/>"));
+                .thenReturn(new Ddi3Response.Ddi3Item(
+                        "cats-type",
+                        "fr.insee",
+                        "1",
+                        "CATS_1",
+                        "<cats-updated/>",
+                        "2026-01-01T00:00:00",
+                        "resp",
+                        false,
+                        false,
+                        false,
+                        "fmt"));
 
-        updateFullPhysicalInstanceWithNewCategory();
+        Ddi4Category cat = new Ddi4Category(
+                Ddi4Category.TYPE,
+                CogsDate.ofDateTime("2026-01-01T00:00:00"),
+                "urn:ddi:fr.insee:CAT_NEW:1",
+                "fr.insee",
+                "CAT_NEW",
+                "1",
+                LangStrings.of("fr-FR", "cat"));
+        Ddi4Response ddi4 = new Ddi4Response("schema", null, null, null, null, null, List.of(cat), null);
+
+        ddiRepository.updateFullPhysicalInstance("fr.insee", "pi-1", ddi4);
 
         assertThat(schemeCaptor.getValue().categoryReference())
                 .extracting(Reference::id)
                 .containsExactlyInAnyOrder("CAT_OLD", "CAT_NEW");
-        assertThat(sentItems()).extracting(ColecticaItemResponse::identifier).contains("CATS_1");
-    }
-
-    @Test
-    void updateFullPhysicalInstance_autoProvisionsStudyUnitVariableSchemeWhenMissing() {
-        stubConvertedPhysicalInstance();
-        when(instanceConfiguration.itemTypes())
-                .thenReturn(Map.of("LogicalProduct", "lp-type", "VariableScheme", "vs-type"));
-
-        stubPhysicalInstanceParents();
-        // StudyUnit has no LogicalProduct -> no VariableScheme
-        stubChildren("fr.insee", "su-1", "lp-type");
-
-        when(colecticaClient.getItem("fr.insee", "su-1", null)).thenReturn(storedItem("su-type", "su-1", "<su/>"));
-        Ddi4StudyUnit parsedSu = new Ddi4StudyUnit(
-                Ddi4StudyUnit.TYPE,
-                CogsDate.ofDateTime("2026-01-01T00:00:00"),
-                "urn:ddi:fr.insee:su-1:1",
-                "fr.insee",
-                "su-1",
-                "1",
-                new Citation(LangStrings.of("fr-FR", "SU")),
-                "http://id.insee.fr/operations/operation/op1",
-                List.of(Reference.of("fr.insee", "pi-1", "1", "PhysicalInstance")));
-        when(ddi3ToDdi4Converter.toStudyUnit("<su/>")).thenReturn(parsedSu);
-
-        ArgumentCaptor<Ddi4VariableScheme> vsCaptor = ArgumentCaptor.forClass(Ddi4VariableScheme.class);
-        ArgumentCaptor<Ddi4LogicalProduct> lpCaptor = ArgumentCaptor.forClass(Ddi4LogicalProduct.class);
-        ArgumentCaptor<Ddi4StudyUnit> suCaptor = ArgumentCaptor.forClass(Ddi4StudyUnit.class);
-        when(ddi4ToDdi3Converter.toVariableSchemeItem(vsCaptor.capture()))
-                .thenReturn(ddi3Item("vs-type", "VS_AUTO", "<vs/>"));
-        when(ddi4ToDdi3Converter.toLogicalProductItem(lpCaptor.capture()))
-                .thenReturn(ddi3Item("lp-type", "LP_AUTO", "<lp/>"));
-        when(ddi4ToDdi3Converter.toStudyUnitItem(suCaptor.capture(), anyString()))
-                .thenReturn(ddi3Item("su-type", "su-1", "<su-updated/>"));
-
-        Ddi4Response ddi4 = new Ddi4Response("schema", null, null, null, List.of(variable("VAR_1")), null, null, null);
-
-        ddiRepository.updateFullPhysicalInstance("fr.insee", "pi-1", ddi4);
-
-        assertThat(vsCaptor.getValue().variableReference())
-                .extracting(Reference::id)
-                .containsExactly("VAR_1");
-        Ddi4LogicalProduct lp = lpCaptor.getValue();
-        assertThat(lp.variableSchemeReference())
-                .extracting(Reference::id)
-                .containsExactly(vsCaptor.getValue().id());
-        assertThat(lp.codeListSchemeReference()).isNullOrEmpty();
-        Ddi4StudyUnit su = suCaptor.getValue();
-        assertThat(su.logicalProductReferences()).extracting(Reference::id).containsExactly(lp.id());
-        // the PhysicalInstanceReference already on the study unit is preserved
-        assertThat(su.physicalInstanceReferences()).extracting(Reference::id).containsExactly("pi-1");
-
-        assertThat(sentItems())
+        ArgumentCaptor<ColecticaCreateItemRequest> reqCaptor =
+                ArgumentCaptor.forClass(ColecticaCreateItemRequest.class);
+        verify(colecticaClient).createOrUpdateItems(reqCaptor.capture());
+        assertThat(reqCaptor.getValue().items())
                 .extracting(ColecticaItemResponse::identifier)
-                .contains("pi-1", "VS_AUTO", "LP_AUTO", "su-1");
+                .contains("CATS_1");
     }
 
     @Test
     void updateFullPhysicalInstance_savesWithoutSchemeFilingWhenPhysicalInstanceHasNoStudyUnitYet() {
-        // Duplication step 1: the raw PUT of a duplicated PI (with variables) happens BEFORE the
-        // instance is attached to a StudyUnit — parents resolution must not make the save fail.
-        stubConvertedPhysicalInstance();
+        // A PI attached to no StudyUnit has nowhere to file its variables: parents resolution must
+        // not make the save fail.
+        Ddi3Response.Ddi3Item piItem = new Ddi3Response.Ddi3Item(
+                "pi-type", "fr.insee", "1", "pi-1", "<pi/>", "2026-01-01T00:00:00", "resp", false, false, false, "fmt");
+        when(ddi4ToDdi3Converter.convertDdi4ToDdi3(any()))
+                .thenReturn(
+                        new Ddi3Response(new Ddi3Response.Ddi3Options(List.of("RegisterOrReplace")), List.of(piItem)));
 
-        stubParents("fr.insee", "pi-1", STUDY_UNIT_ITEM_TYPE);
+        when(colecticaClient.findRelatedItems(
+                        RelationshipDirection.BY_OBJECT,
+                        new ItemReference("fr.insee", "pi-1"),
+                        List.of(STUDY_UNIT_ITEM_TYPE)))
+                .thenReturn(List.of());
 
-        Ddi4Response ddi4 = new Ddi4Response("schema", null, null, null, List.of(variable("VAR_1")), null, null, null);
+        Ddi4Variable variable = new Ddi4Variable(
+                Ddi4Variable.TYPE,
+                CogsDate.ofDateTime("2026-01-01T00:00:00"),
+                "urn:ddi:fr.insee:VAR_1:1",
+                "fr.insee",
+                "VAR_1",
+                "1",
+                null,
+                null,
+                null,
+                null,
+                null,
+                null);
+        Ddi4Response ddi4 = new Ddi4Response("schema", null, null, null, List.of(variable), null, null, null);
 
         ddiRepository.updateFullPhysicalInstance("fr.insee", "pi-1", ddi4);
 
         // The instance is saved as-is; the variable filing is simply skipped (no study unit yet).
         verify(ddi4ToDdi3Converter, never()).toVariableSchemeItem(any());
-        assertThat(sentItems()).extracting(ColecticaItemResponse::identifier).containsExactly("pi-1");
+        ArgumentCaptor<ColecticaCreateItemRequest> reqCaptor =
+                ArgumentCaptor.forClass(ColecticaCreateItemRequest.class);
+        verify(colecticaClient).createOrUpdateItems(reqCaptor.capture());
+        assertThat(reqCaptor.getValue().items())
+                .extracting(ColecticaItemResponse::identifier)
+                .containsExactly("pi-1");
     }
 
     @Test
-    void updatePhysicalInstance_filesVariablesUsingRequestParentsWhenAttachingToStudyUnit() {
-        // Duplication step 2: the PATCH attaches the PI to its StudyUnit in the same batch, so the
-        // parents cannot be resolved through Colectica relationships yet — the request carries them.
+    void updateFullPhysicalInstance_refreshesItsCachedSearchRowFromTheSavedPhysicalInstance() {
+        searchRowsCache.put(SimpleKey.EMPTY, List.of(searchRow("Old PI")));
+        Ddi3Response.Ddi3Item piItem = new Ddi3Response.Ddi3Item(
+                "pi-type", "fr.insee", "2", "pi-1", "<pi/>", "2026-01-01T00:00:00", "resp", false, false, false, "fmt");
+        when(ddi4ToDdi3Converter.convertDdi4ToDdi3(any()))
+                .thenReturn(
+                        new Ddi3Response(new Ddi3Response.Ddi3Options(List.of("RegisterOrReplace")), List.of(piItem)));
+
+        Ddi4Response ddi4 = new Ddi4Response(
+                "schema",
+                null,
+                List.of(physicalInstance("pi-other", "Other PI"), physicalInstance("pi-1", "New PI")),
+                null,
+                null,
+                null,
+                null,
+                null);
+
+        ddiRepository.updateFullPhysicalInstance("fr.insee", "pi-1", ddi4);
+
+        @SuppressWarnings("unchecked")
+        List<PhysicalInstanceSearchRow> rows = searchRowsCache.get(SimpleKey.EMPTY, List.class);
+        assertThat(rows).extracting(PhysicalInstanceSearchRow::label).containsExactly("New PI");
+        assertThat(rows.getFirst().versionDate()).isNotNull();
+    }
+
+    private static Ddi4PhysicalInstance physicalInstance(String id, String label) {
+        return new Ddi4PhysicalInstance(
+                Ddi4PhysicalInstance.TYPE,
+                CogsDate.ofDateTime("2026-10-02T10:00:00"),
+                "urn:ddi:fr.insee:" + id + ":2",
+                "fr.insee",
+                id,
+                "2",
+                null,
+                new Citation(LangStrings.of("fr-FR", label)),
+                List.of());
+    }
+
+    @Test
+    void updatePhysicalInstance_rewritesOnlyPhysicalInstanceAndDataRelationshipWithoutSchemeFiling() {
+        // Le PATCH ne touche qu'au libellé et au rattachement (Groupe/Étude) : il ne réécrit ni les
+        // variables ni les listes de codes, et ne vérifie donc aucun LogicalProduct ni scheme.
         String agencyId = "fr.insee";
         String instanceId = "pi-1";
         UpdatePhysicalInstanceRequest updateRequest = new UpdatePhysicalInstanceRequest(
-                "Copied PI", "Copied DR", "Copied LR", "su-1", "fr.insee", "group-1", "fr.insee");
+                "New PI", "New DR", "New LR", "su-1", "fr.insee", "group-1", "fr.insee");
 
+        ArgumentCaptor<Ddi4Response> ddi4Captor = stubPhysicalInstancePatch(agencyId, instanceId);
+
+        ddiRepository.updatePhysicalInstance(agencyId, instanceId, updateRequest);
+
+        // Seules la PhysicalInstance et la DataRelationship sont converties : pas de variables.
+        assertThat(ddi4Captor.getValue().variable()).isNullOrEmpty();
+        // Aucune résolution de LogicalProduct ni de scheme.
+        verify(colecticaClient, never()).findRelatedDescriptions(any(), any(), anyList());
+        verify(ddi4ToDdi3Converter, never()).toVariableSchemeItem(any());
+        ArgumentCaptor<ColecticaCreateItemRequest> reqCaptor =
+                ArgumentCaptor.forClass(ColecticaCreateItemRequest.class);
+        verify(colecticaClient).createOrUpdateItems(reqCaptor.capture());
+        assertThat(reqCaptor.getValue().items())
+                .extracting(ColecticaItemResponse::identifier)
+                .containsExactly(instanceId, "dr-1", "su-1");
+    }
+
+    /** Stubs d'un PATCH de la PI {@code instanceId} : lecture de l'existant, conversion, enregistrement. */
+    private ArgumentCaptor<Ddi4Response> stubPhysicalInstancePatch(String agencyId, String instanceId) {
         when(instanceConfiguration.itemTypes())
-                .thenReturn(Map.of(
-                        "StudyUnit", STUDY_UNIT_ITEM_TYPE, "LogicalProduct", "lp-type", "VariableScheme", "vs-type"));
-        when(instanceConfiguration.itemFormat()).thenReturn("fmt");
+                .thenReturn(Map.of("StudyUnit", STUDY_UNIT_ITEM_TYPE, "PhysicalInstance", PI_ITEM_TYPE));
 
-        // getPhysicalInstance: the freshly duplicated instance carries one variable
-        Ddi4PhysicalInstance mockPhysicalInstance = new Ddi4PhysicalInstance(
+        Ddi4PhysicalInstance currentPhysicalInstance = new Ddi4PhysicalInstance(
                 Ddi4PhysicalInstance.TYPE,
                 CogsDate.ofDateTime("2026-01-01T00:00:00"),
                 "urn:ddi:fr.insee:pi-1:1",
@@ -3320,22 +4907,214 @@ class DDIRepositoryImplTest {
                 instanceId,
                 "1",
                 null,
-                new Citation(LangStrings.of("fr-FR", "Copied PI")),
-                null);
-        Ddi4Response mockDdi4Response = new Ddi4Response(
+                new Citation(LangStrings.of("fr-FR", "Old PI")),
+                List.of(Reference.of(agencyId, "dr-1", "1", "DataRelationship")));
+        Ddi4DataRelationship currentDataRelationship = new Ddi4DataRelationship(
+                Ddi4DataRelationship.TYPE,
+                CogsDate.ofDateTime("2026-01-01T00:00:00"),
+                "urn:ddi:fr.insee:dr-1:1",
+                agencyId,
+                "dr-1",
+                "1",
+                null,
+                null,
+                List.of(new LogicalRecord(
+                        LogicalRecord.TYPE, "urn:ddi:fr.insee:lr-1:1", agencyId, "lr-1", "1", null, null)));
+        Ddi4Response currentInstance = new Ddi4Response(
                 "ddi:4.0",
                 List.of(Reference.of(agencyId, instanceId, "1", "PhysicalInstance")),
-                List.of(mockPhysicalInstance),
-                List.of(),
-                List.of(variable("VAR_1")),
-                List.of(),
-                List.of(),
+                List.of(currentPhysicalInstance),
+                List.of(currentDataRelationship),
+                ddi4WithOneVariable().variable(),
+                null,
+                null,
                 null);
-        stubSet(new ColecticaSetItem(instanceId, 1, agencyId));
-        stubDescriptions(description(PHYSICAL_INSTANCE_TYPE, agencyId, 1, instanceId, fragment("PhysicalInstance")));
-        stubDdi3ToDdi4Conversion(mockDdi4Response);
+        stubPhysicalInstanceSet(new ColecticaSetItem[] {new ColecticaSetItem(instanceId, 1, agencyId)});
+        when(colecticaClient.getDescriptions(anyList())).thenReturn(new ColecticaItemResponse[] {
+            new ColecticaItemResponse(
+                    "a51e85bb-6259-4488-8df2-f08cb43485f8",
+                    agencyId,
+                    1,
+                    instanceId,
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><PhysicalInstance/></Fragment>",
+                    null,
+                    null,
+                    false,
+                    false,
+                    false,
+                    null)
+        });
+        when(ddi3ToDdi4Converter.convertDdi3ToDdi4(any(Ddi3Response.class), eq("ddi:4.0")))
+                .thenReturn(currentInstance);
 
-        // StudyUnit fetched to inject the PhysicalInstanceReference
+        String studyUnitXml = "<Fragment xmlns:r=\"ddi:reusable:3_3\" xmlns=\"ddi:instance:3_3\">"
+                + "<StudyUnit xmlns=\"ddi:studyunit:3_3\" isUniversallyUnique=\"true\"/>"
+                + "</Fragment>";
+        // Relue seulement quand le PATCH rattache la PI à une StudyUnit.
+        lenient()
+                .when(colecticaClient.getItem("fr.insee", "su-1", null))
+                .thenReturn(new ColecticaItemResponse(
+                        STUDY_UNIT_ITEM_TYPE,
+                        "fr.insee",
+                        2,
+                        "su-1",
+                        studyUnitXml,
+                        "2026-01-01T00:00:00",
+                        "resp",
+                        false,
+                        false,
+                        false,
+                        "fmt"));
+
+        ArgumentCaptor<Ddi4Response> ddi4Captor = ArgumentCaptor.forClass(Ddi4Response.class);
+        when(ddi4ToDdi3Converter.convertDdi4ToDdi3(ddi4Captor.capture()))
+                .thenReturn(new Ddi3Response(
+                        new Ddi3Response.Ddi3Options(List.of("RegisterOrReplace")),
+                        List.of(
+                                new Ddi3Response.Ddi3Item(
+                                        "pi-type",
+                                        agencyId,
+                                        "1",
+                                        instanceId,
+                                        "<pi/>",
+                                        "2026-01-01T00:00:00",
+                                        "resp",
+                                        false,
+                                        false,
+                                        false,
+                                        "fmt"),
+                                new Ddi3Response.Ddi3Item(
+                                        "dr-type",
+                                        agencyId,
+                                        "1",
+                                        "dr-1",
+                                        "<dr/>",
+                                        "2026-01-01T00:00:00",
+                                        "resp",
+                                        false,
+                                        false,
+                                        false,
+                                        "fmt"))));
+        // Lenient : un patch refusé (étude inconnue) n'atteint jamais la sauvegarde.
+        lenient().when(colecticaClient.createOrUpdateItems(any())).thenReturn("{}");
+        return ddi4Captor;
+    }
+
+    private static final String PI_ITEM_TYPE = "a51e85bb-6259-4488-8df2-f08cb43485f8";
+
+    private static PhysicalInstanceSearchRow searchRow(String piLabel) {
+        return new PhysicalInstanceSearchRow(
+                "fr.insee",
+                "pi-1",
+                piLabel,
+                null,
+                "fr.insee",
+                "su-1",
+                "Recensement 2024",
+                "fr.insee",
+                "g1",
+                "Groupe BPE");
+    }
+
+    @Test
+    void updatePhysicalInstance_refreshesItsCachedSearchRowWithoutCallingColecticaWhenParentsAreUnchanged() {
+        searchRowsCache.put(SimpleKey.EMPTY, List.of(searchRow("Old PI")));
+        stubPhysicalInstancePatch("fr.insee", "pi-1");
+
+        ddiRepository.updatePhysicalInstance(
+                "fr.insee", "pi-1", new UpdatePhysicalInstanceRequest("New PI", "New DR", "New LR"));
+
+        @SuppressWarnings("unchecked")
+        List<PhysicalInstanceSearchRow> rows = searchRowsCache.get(SimpleKey.EMPTY, List.class);
+        assertThat(rows).extracting(PhysicalInstanceSearchRow::label).containsExactly("New PI");
+        assertThat(rows.getFirst().versionDate()).isNotNull();
+        assertThat(rows.getFirst().studyUnitLabel()).isEqualTo("Recensement 2024");
+        verify(colecticaClient, never()).queryAdvanced(anyList());
+    }
+
+    @Test
+    void updatePhysicalInstance_clearsCachedSearchRowsWhenAttachingToAStudyUnit() {
+        searchRowsCache.put(SimpleKey.EMPTY, List.of(searchRow("Old PI")));
+        stubPhysicalInstancePatch("fr.insee", "pi-1");
+
+        ddiRepository.updatePhysicalInstance(
+                "fr.insee",
+                "pi-1",
+                new UpdatePhysicalInstanceRequest("New PI", "New DR", "New LR", "su-1", "fr.insee", "g1", "fr.insee"));
+
+        assertThat(searchRowsCache.get(SimpleKey.EMPTY)).isNull();
+    }
+
+    @Test
+    void duplicatePhysicalInstance_savesCopyAttachedToStudyUnitAndFilesItsVariablesInOneBatch() {
+        // La copie reçoit de nouveaux identifiants (PI, DataRelationship, LogicalRecord, variables),
+        // chacun pointant sur son original via BasedOnObject, puis part dans un seul lot avec la
+        // StudyUnit de rattachement et le VariableScheme qui range les nouvelles variables.
+        String agencyId = "fr.insee";
+        DuplicatePhysicalInstanceRequest request = new DuplicatePhysicalInstanceRequest(
+                "Source PI (copy)", "Copied DR", null, "su-1", "fr.insee", "group-1", "fr.insee");
+
+        when(instanceConfiguration.itemTypes())
+                .thenReturn(Map.of(
+                        "StudyUnit", STUDY_UNIT_ITEM_TYPE, "LogicalProduct", "lp-type", "VariableScheme", "vs-type"));
+        when(instanceConfiguration.itemFormat()).thenReturn("fmt");
+
+        // Instance source : une PI, sa DR (un LogicalRecord) et une variable
+        Ddi4PhysicalInstance sourcePhysicalInstance = new Ddi4PhysicalInstance(
+                Ddi4PhysicalInstance.TYPE,
+                CogsDate.ofDateTime("2026-01-01T00:00:00"),
+                "urn:ddi:fr.insee:pi-src:3",
+                agencyId,
+                "pi-src",
+                "3",
+                null,
+                new Citation(LangStrings.of("en-GB", "Source PI")),
+                List.of(Reference.of(agencyId, "dr-src", "1", "DataRelationship")));
+        Ddi4DataRelationship sourceDataRelationship = new Ddi4DataRelationship(
+                Ddi4DataRelationship.TYPE,
+                CogsDate.ofDateTime("2026-01-01T00:00:00"),
+                "urn:ddi:fr.insee:dr-src:1",
+                agencyId,
+                "dr-src",
+                "1",
+                null,
+                LangStrings.of("en-GB", "Source DR"),
+                List.of(new LogicalRecord(
+                        LogicalRecord.TYPE,
+                        "urn:ddi:fr.insee:lr-src:1",
+                        agencyId,
+                        "lr-src",
+                        "1",
+                        LangStrings.of("en-GB", "Source LR"),
+                        new VariablesInRecord(List.of(Reference.of(agencyId, "VAR_1", "1", "Variable"))))));
+        Ddi4Response sourceInstance = new Ddi4Response(
+                "ddi:4.0",
+                List.of(Reference.of(agencyId, "pi-src", "3", "PhysicalInstance")),
+                List.of(sourcePhysicalInstance),
+                List.of(sourceDataRelationship),
+                ddi4WithOneVariable().variable(),
+                null,
+                null,
+                null);
+        stubPhysicalInstanceSet(new ColecticaSetItem[] {new ColecticaSetItem("pi-src", 3, agencyId)});
+        when(colecticaClient.getDescriptions(anyList())).thenReturn(new ColecticaItemResponse[] {
+            new ColecticaItemResponse(
+                    "a51e85bb-6259-4488-8df2-f08cb43485f8",
+                    agencyId,
+                    3,
+                    "pi-src",
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><PhysicalInstance/></Fragment>",
+                    null,
+                    null,
+                    false,
+                    false,
+                    false,
+                    null)
+        });
+        when(ddi3ToDdi4Converter.convertDdi3ToDdi4(any(Ddi3Response.class), eq("ddi:4.0")))
+                .thenReturn(sourceInstance);
+
+        // StudyUnit cible, relue pour y injecter la PhysicalInstanceReference
         String studyUnitXml = "<Fragment xmlns:r=\"ddi:reusable:3_3\" xmlns=\"ddi:instance:3_3\">"
                 + "<StudyUnit xmlns=\"ddi:studyunit:3_3\" isUniversallyUnique=\"true\"/>"
                 + "</Fragment>";
@@ -3353,201 +5132,570 @@ class DDIRepositoryImplTest {
                         false,
                         "fmt"));
 
-        // The StudyUnit from the request already files a VariableScheme (StudyUnit -> LP -> VS)
-        stubChildren("fr.insee", "su-1", "lp-type", new ItemReference("fr.insee", "lp-1"));
-        stubChildren("fr.insee", "lp-1", "vs-type", new ItemReference("fr.insee", "VS_1"));
-        when(colecticaClient.getItem("fr.insee", "VS_1", null)).thenReturn(storedItem("vs-type", "VS_1", "<vs/>"));
-        Ddi4VariableScheme parsedScheme = new Ddi4VariableScheme(
-                Ddi4VariableScheme.TYPE,
-                CogsDate.ofDateTime("2026-01-01T00:00:00"),
-                "urn:ddi:fr.insee:VS_1:1",
-                "fr.insee",
-                "VS_1",
-                "1",
-                LangStrings.of("fr-FR", "VS"),
-                new ArrayList<>(List.of(Reference.of("fr.insee", "VAR_OLD", "1", "Variable"))));
-        when(ddi3ToDdi4Converter.toVariableScheme("<vs/>")).thenReturn(parsedScheme);
-
+        // La StudyUnit cible expose déjà un VariableScheme (StudyUnit -> LP -> VS)
+        when(colecticaClient.findRelatedDescriptions(
+                        RelationshipDirection.BY_SUBJECT, new ItemReference("fr.insee", "su-1"), List.of("lp-type")))
+                .thenReturn(List.of(new ItemReference("fr.insee", "lp-1")));
+        when(colecticaClient.findRelatedDescriptions(
+                        RelationshipDirection.BY_SUBJECT, new ItemReference("fr.insee", "lp-1"), List.of("vs-type")))
+                .thenReturn(List.of(new ItemReference("fr.insee", "VS_1")));
+        when(colecticaClient.getItem("fr.insee", "VS_1", null))
+                .thenReturn(new ColecticaItemResponse(
+                        "vs-type",
+                        "fr.insee",
+                        1,
+                        "VS_1",
+                        "<vs/>",
+                        "2026-01-01T00:00:00",
+                        "resp",
+                        false,
+                        false,
+                        false,
+                        "fmt"));
+        when(ddi3ToDdi4Converter.toVariableScheme("<vs/>"))
+                .thenReturn(new Ddi4VariableScheme(
+                        Ddi4VariableScheme.TYPE,
+                        CogsDate.ofDateTime("2026-01-01T00:00:00"),
+                        "urn:ddi:fr.insee:VS_1:1",
+                        "fr.insee",
+                        "VS_1",
+                        "1",
+                        LangStrings.of("fr-FR", "VS"),
+                        new ArrayList<>(List.of(Reference.of("fr.insee", "VAR_OLD", "1", "Variable")))));
         ArgumentCaptor<Ddi4VariableScheme> vsCaptor = ArgumentCaptor.forClass(Ddi4VariableScheme.class);
         when(ddi4ToDdi3Converter.toVariableSchemeItem(vsCaptor.capture()))
-                .thenReturn(ddi3Item("vs-type", "VS_1", "<vs-updated/>"));
+                .thenReturn(new Ddi3Response.Ddi3Item(
+                        "vs-type",
+                        "fr.insee",
+                        "1",
+                        "VS_1",
+                        "<vs-updated/>",
+                        "2026-01-01T00:00:00",
+                        "resp",
+                        false,
+                        false,
+                        false,
+                        "fmt"));
 
-        stubConvertedPhysicalInstance();
+        ArgumentCaptor<Ddi4Response> ddi4Captor = ArgumentCaptor.forClass(Ddi4Response.class);
+        when(ddi4ToDdi3Converter.convertDdi4ToDdi3(ddi4Captor.capture()))
+                .thenReturn(new Ddi3Response(
+                        new Ddi3Response.Ddi3Options(List.of("RegisterOrReplace")),
+                        List.of(new Ddi3Response.Ddi3Item(
+                                "pi-type",
+                                agencyId,
+                                "1",
+                                "pi-copy",
+                                "<pi/>",
+                                "2026-01-01T00:00:00",
+                                "resp",
+                                false,
+                                false,
+                                false,
+                                "fmt"))));
         when(colecticaClient.createOrUpdateItems(any())).thenReturn("{}");
 
-        ddiRepository.updatePhysicalInstance(agencyId, instanceId, updateRequest);
+        Reference duplicated = ddiRepository.duplicatePhysicalInstance(agencyId, "pi-src", request);
 
-        // The parents come from the request: no Colectica relationship lookup for them.
+        assertThat(duplicated).isNotNull();
+        assertThat(duplicated.agency()).isEqualTo(agencyId);
+        assertThat(duplicated.id()).isNotEqualTo("pi-src");
+
+        Ddi4Response copy = ddi4Captor.getValue();
+        Ddi4PhysicalInstance copiedPhysicalInstance = copy.physicalInstance().getFirst();
+        Ddi4DataRelationship copiedDataRelationship = copy.dataRelationship().getFirst();
+        LogicalRecord copiedLogicalRecord =
+                copiedDataRelationship.logicalRecord().getFirst();
+        Ddi4Variable copiedVariable = copy.variable().getFirst();
+
+        assertThat(copiedPhysicalInstance.id()).isEqualTo(duplicated.id());
+        assertThat(copiedPhysicalInstance.version()).isEqualTo("1");
+        assertThat(copiedPhysicalInstance.urn()).isEqualTo("urn:ddi:fr.insee:" + duplicated.id() + ":1");
+        assertThat(copiedPhysicalInstance.citation().title())
+                .containsExactly(new LangString("en-GB", "Source PI (copy)"));
+        assertThat(copiedPhysicalInstance.basedOnObject().basedOnReferences())
+                .containsExactly(Reference.of(agencyId, "pi-src", "3", "PhysicalInstance"));
+        assertThat(copiedPhysicalInstance.dataRelationshipReference())
+                .extracting(Reference::id)
+                .containsExactly(copiedDataRelationship.id());
+
+        assertThat(copiedDataRelationship.id()).isNotEqualTo("dr-src");
+        assertThat(copiedDataRelationship.label()).containsExactly(new LangString("en-GB", "Copied DR"));
+        assertThat(copiedDataRelationship.basedOnObject().basedOnReferences())
+                .containsExactly(Reference.of(agencyId, "dr-src", "1", "DataRelationship"));
+
+        assertThat(copiedLogicalRecord.id()).isNotEqualTo("lr-src");
+        assertThat(copiedLogicalRecord.label())
+                .containsExactly(new LangString("en-GB", "Enregistrement logique : Source PI (copy)"));
+        assertThat(copiedLogicalRecord.variablesInRecord().variableUsedReference())
+                .extracting(Reference::id)
+                .containsExactly(copiedVariable.id());
+
+        assertThat(copiedVariable.id()).isNotEqualTo("VAR_1");
+        assertThat(copiedVariable.basedOnObject().basedOnReferences())
+                .containsExactly(Reference.of("fr.insee", "VAR_1", "1", "Variable"));
+
+        // Les parents viennent de la requête : aucune résolution par les relations Colectica.
         verify(colecticaClient, never()).findRelatedDescriptions(eq(RelationshipDirection.BY_OBJECT), any(), anyList());
-        // The variable is merged into the study unit's existing VariableScheme...
         assertThat(vsCaptor.getValue().variableReference())
                 .extracting(Reference::id)
-                .containsExactlyInAnyOrder("VAR_OLD", "VAR_1");
-        // ...and the batch ships the PI, the updated scheme and the re-registered StudyUnit together.
-        assertThat(sentItems()).extracting(ColecticaItemResponse::identifier).contains(instanceId, "VS_1", "su-1");
+                .containsExactlyInAnyOrder("VAR_OLD", copiedVariable.id());
+        ArgumentCaptor<ColecticaCreateItemRequest> reqCaptor =
+                ArgumentCaptor.forClass(ColecticaCreateItemRequest.class);
+        verify(colecticaClient).createOrUpdateItems(reqCaptor.capture());
+        assertThat(reqCaptor.getValue().items())
+                .extracting(ColecticaItemResponse::identifier)
+                .contains("pi-copy", "VS_1", "su-1");
+    }
+
+    // --- Plus de création à la volée : les LogicalProducts et schemes sont créés en amont (init,
+    // miroir des opérations). Un scheme introuvable fait échouer le save avant tout envoi.
+
+    @Test
+    void updateFullPhysicalInstance_rejectsCodeListsWhenGroupHasNoLogicalProduct() {
+        stubPhysicalInstanceConversion();
+        when(instanceConfiguration.itemTypes())
+                .thenReturn(Map.of("LogicalProduct", "lp-type", "CodeListScheme", CODE_LIST_SCHEME_TYPE));
+        when(colecticaConfiguration.mutualizedCodesPackage()).thenReturn(null);
+        stubPhysicalInstanceParents();
+        when(colecticaClient.findRelatedDescriptions(
+                        RelationshipDirection.BY_SUBJECT, new ItemReference("fr.insee", "group-1"), List.of("lp-type")))
+                .thenReturn(List.of());
+        Ddi4CodeList codeList = new Ddi4CodeList(
+                Ddi4CodeList.TYPE,
+                CogsDate.ofDateTime("2026-01-01T00:00:00"),
+                "urn:ddi:fr.insee:CL_NEW:1",
+                "fr.insee",
+                "CL_NEW",
+                "1",
+                LangStrings.of("fr-FR", "new"),
+                null,
+                null);
+        Ddi4Response ddi4 = new Ddi4Response("schema", null, null, null, null, List.of(codeList), null, null);
+
+        assertThatThrownBy(() -> ddiRepository.updateFullPhysicalInstance("fr.insee", "pi-1", ddi4))
+                .isInstanceOf(MissingSchemeException.class)
+                .hasMessageContaining("Série Emploi")
+                .hasMessageContaining("CodeListScheme")
+                .satisfies(e -> {
+                    MissingSchemeException ex = (MissingSchemeException) e;
+                    assertThat(ex.code()).isEqualTo(MissingSchemeException.Code.GROUP_MISSING_CODE_LIST_SCHEME);
+                    assertThat(ex.params()).isEqualTo(Map.of("group", "Série Emploi"));
+                });
+        verify(colecticaClient, never()).createOrUpdateItems(any());
     }
 
     @Test
-    void updateFullPhysicalInstance_filesProvisionedCategorySchemeUnderTheGroupExistingLogicalProduct() {
-        stubConvertedPhysicalInstance();
+    void updateFullPhysicalInstance_rejectsCategoriesWhenGroupLogicalProductHasNoCategoryScheme() {
+        stubPhysicalInstanceConversion();
         when(instanceConfiguration.itemTypes())
                 .thenReturn(Map.of("LogicalProduct", "lp-type", "CategoryScheme", "cats-type"));
-
         stubPhysicalInstanceParents();
-        // The group already exposes a LogicalProduct (filing its CodeListScheme), but no CategoryScheme yet.
-        stubChildren("fr.insee", "group-1", "lp-type", new ItemReference("fr.insee", "lp-1"));
-        stubChildren("fr.insee", "lp-1", "cats-type");
-
-        when(colecticaClient.getItem("fr.insee", "lp-1", null)).thenReturn(storedItem("lp-type", "lp-1", "<lp/>"));
-        Ddi4LogicalProduct existingLp = new Ddi4LogicalProduct(
-                Ddi4LogicalProduct.TYPE,
+        when(colecticaClient.findRelatedDescriptions(
+                        RelationshipDirection.BY_SUBJECT, new ItemReference("fr.insee", "group-1"), List.of("lp-type")))
+                .thenReturn(List.of(new ItemReference("fr.insee", "lp-1")));
+        when(colecticaClient.findRelatedDescriptions(
+                        RelationshipDirection.BY_SUBJECT, new ItemReference("fr.insee", "lp-1"), List.of("cats-type")))
+                .thenReturn(List.of());
+        Ddi4Category category = new Ddi4Category(
+                Ddi4Category.TYPE,
                 CogsDate.ofDateTime("2026-01-01T00:00:00"),
-                "urn:ddi:fr.insee:lp-1:1",
+                "urn:ddi:fr.insee:CAT_NEW:1",
                 "fr.insee",
-                "lp-1",
+                "CAT_NEW",
                 "1",
-                LangStrings.of("fr-FR", "Logical Product"),
-                List.of(Reference.of("fr.insee", "CLS_1", "1", "CodeListScheme")),
-                null,
-                null,
-                List.of(Reference.of("fr.insee", "MRS_1", "1", "ManagedRepresentationScheme")));
-        when(ddi3ToDdi4Converter.toLogicalProduct("<lp/>")).thenReturn(existingLp);
+                LangStrings.of("fr-FR", "cat"));
+        Ddi4Response ddi4 = new Ddi4Response("schema", null, null, null, null, null, List.of(category), null);
 
-        ArgumentCaptor<Ddi4CategoryScheme> schemeCaptor = ArgumentCaptor.forClass(Ddi4CategoryScheme.class);
-        when(ddi4ToDdi3Converter.toCategorySchemeItem(schemeCaptor.capture()))
-                .thenReturn(ddi3Item("cats-type", "CATS_AUTO", "<cats/>"));
-        ArgumentCaptor<Ddi4LogicalProduct> lpCaptor = ArgumentCaptor.forClass(Ddi4LogicalProduct.class);
-        when(ddi4ToDdi3Converter.toLogicalProductItem(lpCaptor.capture()))
-                .thenReturn(ddi3Item("lp-type", "lp-1", "<lp-updated/>"));
-
-        updateFullPhysicalInstanceWithNewCategory();
-
-        // The existing LogicalProduct is completed with the fresh CategoryScheme, keeping its
-        // CodeListScheme and ManagedRepresentationScheme: all schemes stay under the SAME
-        // Group > LogicalProduct.
-        Ddi4LogicalProduct lp = lpCaptor.getValue();
-        assertThat(lp.id()).isEqualTo("lp-1");
-        assertThat(lp.codeListSchemeReference()).extracting(Reference::id).containsExactly("CLS_1");
-        assertThat(lp.categorySchemeReference())
-                .extracting(Reference::id)
-                .containsExactly(schemeCaptor.getValue().id());
-        assertThat(lp.managedRepresentationSchemeReference())
-                .extracting(Reference::id)
-                .containsExactly("MRS_1");
-        // The group already references that LogicalProduct: no re-registration needed.
-        verify(ddi4ToDdi3Converter, never()).toGroupItem(any(), anyString());
-
-        assertThat(sentItems()).extracting(ColecticaItemResponse::identifier).contains("pi-1", "CATS_AUTO", "lp-1");
+        assertThatThrownBy(() -> ddiRepository.updateFullPhysicalInstance("fr.insee", "pi-1", ddi4))
+                .isInstanceOf(MissingSchemeException.class)
+                .hasMessageContaining("Série Emploi")
+                .hasMessageContaining("CategoryScheme")
+                .satisfies(e -> {
+                    MissingSchemeException ex = (MissingSchemeException) e;
+                    assertThat(ex.code()).isEqualTo(MissingSchemeException.Code.GROUP_MISSING_CATEGORY_SCHEME);
+                    assertThat(ex.params()).isEqualTo(Map.of("group", "Série Emploi"));
+                });
+        verify(colecticaClient, never()).createOrUpdateItems(any());
     }
 
     @Test
-    void updateFullPhysicalInstance_reRegistersGroupOnceWhenBothCodeListAndCategorySchemesAreProvisioned() {
-        stubConvertedPhysicalInstance();
+    void updateFullPhysicalInstance_rejectsMissingValuesWhenGroupHasNoManagedRepresentationScheme() {
+        stubPhysicalInstanceConversion();
         when(instanceConfiguration.itemTypes())
                 .thenReturn(Map.of(
                         "LogicalProduct",
                         "lp-type",
-                        "CodeListScheme",
-                        CODE_LIST_SCHEME_TYPE,
-                        "CategoryScheme",
-                        "cats-type"));
-        when(colecticaConfiguration.mutualizedCodesPackage()).thenReturn(null);
-
+                        "ManagedRepresentationScheme",
+                        MANAGED_REPRESENTATION_SCHEME_TYPE));
         stubPhysicalInstanceParents();
-        // Group has no LogicalProduct -> neither CodeListScheme nor CategoryScheme
-        stubChildren("fr.insee", "group-1", "lp-type");
+        when(colecticaClient.findRelatedDescriptions(
+                        RelationshipDirection.BY_SUBJECT, new ItemReference("fr.insee", "group-1"), List.of("lp-type")))
+                .thenReturn(List.of(new ItemReference("fr.insee", "lp-1")));
+        when(colecticaClient.findRelatedDescriptions(
+                        RelationshipDirection.BY_SUBJECT,
+                        new ItemReference("fr.insee", "lp-1"),
+                        List.of(MANAGED_REPRESENTATION_SCHEME_TYPE)))
+                .thenReturn(List.of());
+        Ddi4ManagedMissingValuesRepresentation mmvr = new Ddi4ManagedMissingValuesRepresentation(
+                Ddi4ManagedMissingValuesRepresentation.TYPE,
+                CogsDate.ofDateTime("2026-01-01T00:00:00"),
+                "urn:ddi:fr.insee:MMVR_NEW:1",
+                "fr.insee",
+                "MMVR_NEW",
+                "1",
+                LangStrings.of("fr-FR", "Valeurs sentinelles NSP/REF"),
+                null);
+        Ddi4Response ddi4 = new Ddi4Response("schema", null, null, null, null, null, null, List.of(mmvr));
 
-        stubExistingGroup();
+        assertThatThrownBy(() -> ddiRepository.updateFullPhysicalInstance("fr.insee", "pi-1", ddi4))
+                .isInstanceOf(MissingSchemeException.class)
+                .hasMessageContaining("Série Emploi")
+                .hasMessageContaining("ManagedRepresentationScheme")
+                .satisfies(e -> {
+                    MissingSchemeException ex = (MissingSchemeException) e;
+                    assertThat(ex.code())
+                            .isEqualTo(MissingSchemeException.Code.GROUP_MISSING_MANAGED_REPRESENTATION_SCHEME);
+                    assertThat(ex.params()).isEqualTo(Map.of("group", "Série Emploi"));
+                });
+        verify(colecticaClient, never()).createOrUpdateItems(any());
+    }
 
-        when(ddi4ToDdi3Converter.toCodeListSchemeItem(any())).thenReturn(ddi3Item("cls-type", "CLS_AUTO", "<cls/>"));
-        when(ddi4ToDdi3Converter.toCategorySchemeItem(any())).thenReturn(ddi3Item("cats-type", "CATS_AUTO", "<cats/>"));
-        ArgumentCaptor<Ddi4LogicalProduct> lpCaptor = ArgumentCaptor.forClass(Ddi4LogicalProduct.class);
-        when(ddi4ToDdi3Converter.toLogicalProductItem(lpCaptor.capture()))
-                .thenReturn(ddi3Item("lp-type", "LP_AUTO", "<lp/>"));
-        ArgumentCaptor<Ddi4Group> groupCaptor = ArgumentCaptor.forClass(Ddi4Group.class);
-        when(ddi4ToDdi3Converter.toGroupItem(groupCaptor.capture(), anyString()))
-                .thenReturn(ddi3Item("group-type", "group-1", "<group-updated/>"));
+    @Test
+    void updateFullPhysicalInstance_rejectsVariablesWhenStudyUnitHasNoLogicalProduct() {
+        stubPhysicalInstanceConversion();
+        when(instanceConfiguration.itemTypes())
+                .thenReturn(Map.of("LogicalProduct", "lp-type", "VariableScheme", "vs-type"));
+        stubPhysicalInstanceParents();
+        when(colecticaClient.findRelatedDescriptions(
+                        RelationshipDirection.BY_SUBJECT, new ItemReference("fr.insee", "su-1"), List.of("lp-type")))
+                .thenReturn(List.of());
 
-        Ddi4CodeList cl = codeList("CL_NEW", "cl");
-        Ddi4Category cat = category("CAT_NEW", "cat");
-        Ddi4Response ddi4 = new Ddi4Response("schema", null, null, null, null, List.of(cl), List.of(cat), null);
+        assertThatThrownBy(() -> ddiRepository.updateFullPhysicalInstance("fr.insee", "pi-1", ddi4WithOneVariable()))
+                .isInstanceOf(MissingSchemeException.class)
+                .hasMessageContaining("Enquête Emploi")
+                .hasMessageContaining("LogicalProduct")
+                .satisfies(e -> {
+                    MissingSchemeException ex = (MissingSchemeException) e;
+                    assertThat(ex.code()).isEqualTo(MissingSchemeException.Code.STUDY_UNIT_MISSING_LOGICAL_PRODUCT);
+                    assertThat(ex.params()).isEqualTo(Map.of("studyUnit", "Enquête Emploi"));
+                });
+        verify(colecticaClient, never()).createOrUpdateItems(any());
+    }
 
-        ddiRepository.updateFullPhysicalInstance("fr.insee", "pi-1", ddi4);
+    @Test
+    void updateFullPhysicalInstance_rejectsVariablesWhenStudyUnitHasSeveralLogicalProducts() {
+        stubPhysicalInstanceConversion();
+        when(instanceConfiguration.itemTypes())
+                .thenReturn(Map.of("LogicalProduct", "lp-type", "VariableScheme", "vs-type"));
+        stubPhysicalInstanceParents();
+        when(colecticaClient.findRelatedDescriptions(
+                        RelationshipDirection.BY_SUBJECT, new ItemReference("fr.insee", "su-1"), List.of("lp-type")))
+                .thenReturn(List.of(new ItemReference("fr.insee", "lp-1"), new ItemReference("fr.insee", "lp-2")));
 
-        // A SINGLE LogicalProduct is provisioned, filing both the CodeListScheme and the CategoryScheme...
-        assertThat(lpCaptor.getAllValues()).hasSize(1);
-        Ddi4LogicalProduct lp = lpCaptor.getValue();
-        assertThat(lp.codeListSchemeReference()).hasSize(1);
-        assertThat(lp.categorySchemeReference()).hasSize(1);
-        // ...and the group is re-registered exactly once, pointing at that single LogicalProduct.
-        verify(ddi4ToDdi3Converter, times(1)).toGroupItem(any(), anyString());
-        assertThat(groupCaptor.getValue().logicalProductReference())
+        assertThatThrownBy(() -> ddiRepository.updateFullPhysicalInstance("fr.insee", "pi-1", ddi4WithOneVariable()))
+                .isInstanceOf(MissingSchemeException.class)
+                .hasMessageContaining("Enquête Emploi")
+                .hasMessageContaining("2 LogicalProducts")
+                .satisfies(e -> {
+                    MissingSchemeException ex = (MissingSchemeException) e;
+                    assertThat(ex.code()).isEqualTo(MissingSchemeException.Code.STUDY_UNIT_SEVERAL_LOGICAL_PRODUCTS);
+                    assertThat(ex.params()).isEqualTo(Map.of("studyUnit", "Enquête Emploi", "count", "2"));
+                });
+        verify(colecticaClient, never()).createOrUpdateItems(any());
+    }
+
+    @Test
+    void updateFullPhysicalInstance_filesVariablesWhenEveryStudyUnitVersionReferencesTheSameLogicalProduct() {
+        stubPhysicalInstanceConversion();
+        when(instanceConfiguration.itemTypes())
+                .thenReturn(Map.of("LogicalProduct", "lp-type", "VariableScheme", "vs-type"));
+        stubPhysicalInstanceParents();
+        // Une relation par version de la StudyUnit : le même LogicalProduct ressort autant de fois.
+        when(colecticaClient.findRelatedDescriptions(
+                        RelationshipDirection.BY_SUBJECT, new ItemReference("fr.insee", "su-1"), List.of("lp-type")))
+                .thenReturn(List.of(
+                        new ItemReference("fr.insee", "lp-1"),
+                        new ItemReference("fr.insee", "lp-1"),
+                        new ItemReference("fr.insee", "lp-1")));
+        when(colecticaClient.findRelatedDescriptions(
+                        RelationshipDirection.BY_SUBJECT, new ItemReference("fr.insee", "lp-1"), List.of("vs-type")))
+                .thenReturn(List.of(new ItemReference("fr.insee", "VS_1")));
+        when(colecticaClient.getItem("fr.insee", "VS_1", null))
+                .thenReturn(new ColecticaItemResponse(
+                        "vs-type",
+                        "fr.insee",
+                        1,
+                        "VS_1",
+                        "<vs/>",
+                        "2026-01-01T00:00:00",
+                        "resp",
+                        false,
+                        false,
+                        false,
+                        "fmt"));
+        when(ddi3ToDdi4Converter.toVariableScheme("<vs/>"))
+                .thenReturn(new Ddi4VariableScheme(
+                        Ddi4VariableScheme.TYPE,
+                        CogsDate.ofDateTime("2026-01-01T00:00:00"),
+                        "urn:ddi:fr.insee:VS_1:1",
+                        "fr.insee",
+                        "VS_1",
+                        "1",
+                        LangStrings.of("fr-FR", "VS"),
+                        List.of()));
+        ArgumentCaptor<Ddi4VariableScheme> vsCaptor = ArgumentCaptor.forClass(Ddi4VariableScheme.class);
+        when(ddi4ToDdi3Converter.toVariableSchemeItem(vsCaptor.capture()))
+                .thenReturn(new Ddi3Response.Ddi3Item(
+                        "vs-type",
+                        "fr.insee",
+                        "1",
+                        "VS_1",
+                        "<vs-updated/>",
+                        "2026-01-01T00:00:00",
+                        "resp",
+                        false,
+                        false,
+                        false,
+                        "fmt"));
+
+        ddiRepository.updateFullPhysicalInstance("fr.insee", "pi-1", ddi4WithOneVariable());
+
+        assertThat(vsCaptor.getValue().variableReference())
                 .extracting(Reference::id)
-                .containsExactly(lp.id());
-
-        assertThat(sentItems())
-                .extracting(ColecticaItemResponse::identifier)
-                .contains("pi-1", "CLS_AUTO", "CATS_AUTO", "LP_AUTO", "group-1");
+                .containsExactly("VAR_1");
+        verify(colecticaClient).createOrUpdateItems(any());
     }
 
-    // ---- Shared fixtures ----
+    @Test
+    void updateFullPhysicalInstance_rejectsVariablesWhenStudyUnitLogicalProductHasNoVariableScheme() {
+        stubPhysicalInstanceConversion();
+        when(instanceConfiguration.itemTypes())
+                .thenReturn(Map.of("LogicalProduct", "lp-type", "VariableScheme", "vs-type"));
+        stubPhysicalInstanceParents();
+        when(colecticaClient.findRelatedDescriptions(
+                        RelationshipDirection.BY_SUBJECT, new ItemReference("fr.insee", "su-1"), List.of("lp-type")))
+                .thenReturn(List.of(new ItemReference("fr.insee", "lp-1")));
+        when(colecticaClient.findRelatedDescriptions(
+                        RelationshipDirection.BY_SUBJECT, new ItemReference("fr.insee", "lp-1"), List.of("vs-type")))
+                .thenReturn(List.of());
 
-    private static final String SENTINEL_MMVR_XML =
-            "<Fragment xmlns=\"ddi:instance:3_3\"><ManagedMissingValuesRepresentation/></Fragment>";
-    private static final String SENTINEL_CODE_LIST_XML =
-            "<Fragment xmlns=\"ddi:instance:3_3\"><CodeList ID=\"cl-sentinel\"/></Fragment>";
-
-    private static ColecticaItem colecticaItem(
-            String itemType,
-            String agency,
-            int version,
-            String identifier,
-            Map<String, String> itemName,
-            Map<String, String> label,
-            String versionDate,
-            boolean isPublished,
-            long transactionId) {
-        return new ColecticaItem(
-                null, // summary
-                itemName, // itemName
-                label, // label
-                null, // description
-                null, // versionRationale
-                0, // metadataRank
-                "test-repo", // repositoryName
-                true, // isAuthoritative
-                List.of(), // tags
-                itemType, // itemType
-                agency, // agencyId
-                version, // version
-                identifier, // identifier
-                null, // item
-                null, // notes
-                versionDate, // versionDate
-                null, // versionResponsibility
-                isPublished, // isPublished
-                false, // isDeprecated
-                false, // isProvisional
-                "DDI", // itemFormat
-                transactionId, // transactionId
-                0 // versionCreationType
-                );
+        assertThatThrownBy(() -> ddiRepository.updateFullPhysicalInstance("fr.insee", "pi-1", ddi4WithOneVariable()))
+                .isInstanceOf(MissingSchemeException.class)
+                .hasMessageContaining("Enquête Emploi")
+                .hasMessageContaining("VariableScheme")
+                .satisfies(e -> {
+                    MissingSchemeException ex = (MissingSchemeException) e;
+                    assertThat(ex.code()).isEqualTo(MissingSchemeException.Code.STUDY_UNIT_MISSING_VARIABLE_SCHEME);
+                    assertThat(ex.params()).isEqualTo(Map.of("studyUnit", "Enquête Emploi"));
+                });
+        verify(colecticaClient, never()).createOrUpdateItems(any());
     }
 
-    /** A published item (version 1) whose itemName and label carry the same French text. */
-    private static ColecticaItem labelledItem(
-            String itemType, String agency, String identifier, String labelFr, String versionDate, long transactionId) {
-        Map<String, String> text = Map.of("fr-FR", labelFr);
-        return colecticaItem(itemType, agency, 1, identifier, text, text, versionDate, true, transactionId);
+    private void stubPhysicalInstanceConversion() {
+        Ddi3Response.Ddi3Item piItem = new Ddi3Response.Ddi3Item(
+                "pi-type", "fr.insee", "1", "pi-1", "<pi/>", "2026-01-01T00:00:00", "resp", false, false, false, "fmt");
+        when(ddi4ToDdi3Converter.convertDdi4ToDdi3(any()))
+                .thenReturn(
+                        new Ddi3Response(new Ddi3Response.Ddi3Options(List.of("RegisterOrReplace")), List.of(piItem)));
     }
 
-    private static ColecticaResponse queryResponse(ColecticaItem... items) {
-        return new ColecticaResponse(List.of(items), items.length, items.length, null, null, null);
+    /** PhysicalInstance pi-1 → StudyUnit su-1 → Group group-1. */
+    private void stubPhysicalInstanceParents() {
+        when(colecticaClient.findRelatedItems(
+                        RelationshipDirection.BY_OBJECT,
+                        new ItemReference("fr.insee", "pi-1"),
+                        List.of(STUDY_UNIT_ITEM_TYPE)))
+                .thenReturn(List.of(labelItem(STUDY_UNIT_ITEM_TYPE, "fr.insee", "su-1", "Enquête Emploi")));
+        when(colecticaClient.findRelatedItems(
+                        RelationshipDirection.BY_OBJECT,
+                        new ItemReference("fr.insee", "su-1"),
+                        List.of(GROUP_ITEM_TYPE)))
+                .thenReturn(List.of(labelItem(GROUP_ITEM_TYPE, "fr.insee", "group-1", "Série Emploi")));
     }
 
-    /** {@code <Fragment xmlns="ddi:instance:3_3"><element/></Fragment>} */
-    private static String fragment(String element) {
-        return "<Fragment xmlns=\"ddi:instance:3_3\"><" + element + "/></Fragment>";
+    private static Ddi4Response ddi4WithOneVariable() {
+        Ddi4Variable variable = new Ddi4Variable(
+                Ddi4Variable.TYPE,
+                CogsDate.ofDateTime("2026-01-01T00:00:00"),
+                "urn:ddi:fr.insee:VAR_1:1",
+                "fr.insee",
+                "VAR_1",
+                "1",
+                null,
+                null,
+                null,
+                null,
+                null,
+                null);
+        return new Ddi4Response("schema", null, null, null, List.of(variable), null, null, null);
+    }
+
+    /**
+     * Simule la lecture filtrée d'un set de PhysicalInstance ({@code item/} de la racine puis
+     * {@code _query/set}) : le premier élément est la racine. Les items téléchargés restent à stubber
+     * via {@code getDescriptions}.
+     */
+    private void stubPhysicalInstanceSet(ColecticaSetItem... setItems) {
+        ColecticaSetItem root = setItems[0];
+        lenient()
+                .when(colecticaClient.getItem(eq(root.agencyId()), eq(root.identifier()), isNull()))
+                .thenReturn(new ColecticaItemResponse(
+                        null,
+                        root.agencyId(),
+                        root.version(),
+                        root.identifier(),
+                        null,
+                        null,
+                        null,
+                        false,
+                        false,
+                        false,
+                        null));
+        lenient()
+                .when(colecticaClient.querySet(any(), anyList()))
+                .thenReturn(Arrays.stream(setItems)
+                        .map(item -> new ColecticaTypedSetItem(item, null))
+                        .toArray(ColecticaTypedSetItem[]::new));
+    }
+
+    @Test
+    void getGroup_returnsNullWhenColecticaDoesNotKnowTheGroup() {
+        when(colecticaClient.getDdiSet(anyString(), anyString()))
+                .thenThrow(HttpClientErrorException.create(HttpStatus.NOT_FOUND, "Not Found", null, null, null));
+
+        assertNull(ddiRepository.getGroup("fr.insee", "00000000-0000-0000-0000-000000000000"));
+    }
+
+    @Test
+    void getGroup_returnsNullWithoutCallingColecticaWhenTheIdIsNotAnIdentifier() {
+        // Colectica n'accepte que des UUID : son ddiset répond 500 à un autre identifiant.
+        assertNull(ddiRepository.getGroup("fr.insee", "nexistepas"));
+
+        verifyNoInteractions(colecticaClient);
+    }
+
+    @Test
+    void getPhysicalInstance_returnsNullWhenColecticaDoesNotKnowTheSet() {
+        when(colecticaClient.getItem(anyString(), anyString(), any()))
+                .thenThrow(HttpClientErrorException.create(HttpStatus.NOT_FOUND, "Not Found", null, null, null));
+
+        assertNull(ddiRepository.getPhysicalInstance("fr.insee", "00000000-0000-0000-0000-000000000000"));
+    }
+
+    @Test
+    void getPhysicalInstance_returnsNullWithoutCallingColecticaWhenTheIdIsNotAnIdentifier() {
+        // Colectica n'accepte que des UUID : il répond 400 à un autre identifiant.
+        assertNull(ddiRepository.getPhysicalInstance("fr.insee", "nexistepas"));
+
+        verifyNoInteractions(colecticaClient);
+    }
+
+    @Test
+    void getStudyUnitVariableUsages_returnsEachVariableOfEachPhysicalInstanceOfTheStudyUnit() {
+        String agencyId = "fr.insee";
+        when(instanceConfiguration.itemTypes()).thenReturn(studyUnitVariablesItemTypes());
+        // StudyUnit → PhysicalInstance → DataRelationship → Variable, en descente bysubject.
+        stubChildItems(
+                agencyId,
+                "su-1",
+                PHYSICAL_INSTANCE_TYPE,
+                labelItem(PHYSICAL_INSTANCE_TYPE, agencyId, "pi-1", "Fichier 2024"),
+                labelItem(PHYSICAL_INSTANCE_TYPE, agencyId, "pi-2", "Fichier 2025"));
+        stubChildren(agencyId, "pi-1", DATA_RELATIONSHIP_TYPE, new ItemReference(agencyId, "dr-1"));
+        stubChildren(agencyId, "pi-2", DATA_RELATIONSHIP_TYPE, new ItemReference(agencyId, "dr-2"));
+        stubChildItems(agencyId, "dr-1", VARIABLE_TYPE, labelItem(VARIABLE_TYPE, agencyId, "var-1", "Sexe"));
+        stubChildItems(
+                agencyId,
+                "dr-2",
+                VARIABLE_TYPE,
+                labelItem(VARIABLE_TYPE, agencyId, "var-1", "Sexe"),
+                labelItem(VARIABLE_TYPE, agencyId, "var-2", "Âge"));
+
+        List<CodeListVariableUsage> result = ddiRepository.getStudyUnitVariableUsages(agencyId, "su-1");
+
+        assertThat(result)
+                .containsExactlyInAnyOrder(
+                        new CodeListVariableUsage(
+                                agencyId, "su-1", null, agencyId, "pi-1", "Fichier 2024", agencyId, "var-1", "Sexe"),
+                        new CodeListVariableUsage(
+                                agencyId, "su-1", null, agencyId, "pi-2", "Fichier 2025", agencyId, "var-1", "Sexe"),
+                        new CodeListVariableUsage(
+                                agencyId, "su-1", null, agencyId, "pi-2", "Fichier 2025", agencyId, "var-2", "Âge"));
+    }
+
+    @Test
+    void getStudyUnitVariables_returnsNoVariableWhenTheStudyUnitHasNoVariableScheme() {
+        String agencyId = "fr.insee";
+        when(instanceConfiguration.itemTypes()).thenReturn(studyUnitVariablesItemTypes());
+        stubChildren(agencyId, "su-1", LOGICAL_PRODUCT_TYPE, new ItemReference(agencyId, "lp-1"));
+        stubChildren(agencyId, "lp-1", VARIABLE_SCHEME_TYPE);
+
+        Ddi4Response result = ddiRepository.getStudyUnitVariables(agencyId, "su-1");
+
+        assertThat(result.variable()).isEmpty();
+        verify(colecticaClient, never()).getDescriptions(anyList());
+        verifyNoInteractions(ddi3ToDdi4Converter);
+    }
+
+    @Test
+    void getStudyUnitVariables_returnsTheLatestVersionOfEachVariableOfTheStudyUnitVariableScheme() {
+        String agencyId = "fr.insee";
+        when(instanceConfiguration.itemTypes()).thenReturn(studyUnitVariablesItemTypes());
+        // StudyUnit → LogicalProduct → VariableScheme → Variable, en descente bysubject.
+        stubChildren(agencyId, "su-1", LOGICAL_PRODUCT_TYPE, new ItemReference(agencyId, "lp-1"));
+        stubChildren(agencyId, "lp-1", VARIABLE_SCHEME_TYPE, new ItemReference(agencyId, "vs-1"));
+        stubChildItems(
+                agencyId,
+                "vs-1",
+                VARIABLE_TYPE,
+                versionedLabelItem(VARIABLE_TYPE, agencyId, "var-1", "Sexe", 1),
+                versionedLabelItem(VARIABLE_TYPE, agencyId, "var-1", "Sexe", 2));
+        ColecticaItemResponse stored = description(VARIABLE_TYPE, agencyId, 2, "var-1", "<Fragment/>");
+        when(colecticaClient.getDescriptions(List.of(new GetDescriptionsRequest.IdentifierRef(agencyId, "var-1", 2))))
+                .thenReturn(new ColecticaItemResponse[] {stored});
+        Ddi4Variable sexe = variable(agencyId, "var-1", "2", "SEXE");
+        stubDdi3ToDdi4Conversion(new Ddi4Response("ddi:4.0", null, null, null, List.of(sexe), null, null, null));
+
+        Ddi4Response result = ddiRepository.getStudyUnitVariables(agencyId, "su-1");
+
+        assertThat(result.variable()).containsExactly(sexe);
+        ArgumentCaptor<Ddi3Response> converted = ArgumentCaptor.forClass(Ddi3Response.class);
+        verify(ddi3ToDdi4Converter).convertDdi3ToDdi4(converted.capture(), eq("ddi:4.0"));
+        assertThat(converted.getValue().items())
+                .extracting(Ddi3Response.Ddi3Item::identifier)
+                .containsExactly("var-1");
+    }
+
+    @Test
+    void updatePhysicalInstance_throwsPhysicalInstanceNotFoundWhenColecticaDoesNotKnowIt() {
+        when(colecticaClient.getItem(anyString(), anyString(), any()))
+                .thenThrow(HttpClientErrorException.create(HttpStatus.NOT_FOUND, "Not Found", null, null, null));
+        UpdatePhysicalInstanceRequest updateRequest = new UpdatePhysicalInstanceRequest("label", "dr", "lr");
+
+        DdiItemNotFoundException exception = assertThrows(
+                DdiItemNotFoundException.class,
+                () -> ddiRepository.updatePhysicalInstance("fr.insee", "unknown", updateRequest));
+
+        assertEquals(DdiItemNotFoundException.Code.DDI_PHYSICAL_INSTANCE_NOT_FOUND, exception.code());
+    }
+
+    @Test
+    void updatePhysicalInstance_throwsStudyUnitNotFoundWhenAttachingToAnUnknownStudyUnit() {
+        String agencyId = "fr.insee";
+        String instanceId = "pi-1";
+        stubPhysicalInstancePatch(agencyId, instanceId);
+        when(colecticaClient.getItem(agencyId, "su-unknown", null))
+                .thenThrow(HttpClientErrorException.create(HttpStatus.NOT_FOUND, "Not Found", null, null, null));
+        UpdatePhysicalInstanceRequest updateRequest =
+                new UpdatePhysicalInstanceRequest("label", "dr", "lr", "su-unknown", "fr.insee", "group-1", "fr.insee");
+
+        DdiItemNotFoundException exception = assertThrows(
+                DdiItemNotFoundException.class,
+                () -> ddiRepository.updatePhysicalInstance(agencyId, instanceId, updateRequest));
+
+        assertEquals(DdiItemNotFoundException.Code.DDI_STUDY_UNIT_NOT_FOUND, exception.code());
+        assertEquals(Map.of("agencyId", "fr.insee", "id", "su-unknown"), exception.params());
     }
 
     /** An item description as returned by item/_getList, without version date nor format. */
@@ -3557,595 +5705,9 @@ class DDIRepositoryImplTest {
                 itemType, agency, version, identifier, xml, null, null, false, false, false, null);
     }
 
-    /** A StudyUnit fetched to be updated with a new PhysicalInstanceReference. */
-    private static ColecticaItemResponse studyUnitToUpdate(String agency, int version, String identifier, String xml) {
-        return new ColecticaItemResponse(
-                STUDY_UNIT_TYPE,
-                agency,
-                version,
-                identifier,
-                xml,
-                "2025-01-01T00:00:00",
-                null,
-                false,
-                false,
-                false,
-                null);
-    }
-
-    /** An item already stored in Colectica, as fetched while filing items into their schemes. */
-    private static ColecticaItemResponse storedItem(String itemType, String identifier, String xml) {
-        return new ColecticaItemResponse(
-                itemType, "fr.insee", 1, identifier, xml, "2026-01-01T00:00:00", "resp", false, false, false, "fmt");
-    }
-
-    private static Ddi3Response.Ddi3Item ddi3Item(String itemType, String identifier, String xml) {
-        return new Ddi3Response.Ddi3Item(
-                itemType, "fr.insee", "1", identifier, xml, "2026-01-01T00:00:00", "resp", false, false, false, "fmt");
-    }
-
-    private static Ddi3Response.Ddi3Item legacyDdi3Item(
-            String itemType, String agency, String version, String identifier, String xml, boolean isPublished) {
-        return new Ddi3Response.Ddi3Item(
-                itemType,
-                agency,
-                version,
-                identifier,
-                xml,
-                "2025-01-01T00:00:00",
-                null,
-                isPublished,
-                false,
-                false,
-                "DDI");
-    }
-
-    private static String utcSeconds(Date date) {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
-        return sdf.format(date);
-    }
-
-    private static Map<String, String> creationItemTypes() {
-        return Map.of(
-                "PhysicalInstance", PHYSICAL_INSTANCE_TYPE,
-                "DataRelationship", DATA_RELATIONSHIP_TYPE);
-    }
-
-    private static Map<String, String> creationItemTypesWithStudyUnit() {
-        return Map.of(
-                "PhysicalInstance", PHYSICAL_INSTANCE_TYPE,
-                "DataRelationship", DATA_RELATIONSHIP_TYPE,
-                "StudyUnit", STUDY_UNIT_TYPE);
-    }
-
-    private static Map<String, String> physicalInstanceItemTypesWithCodeLists() {
-        return Map.of(
-                "PhysicalInstance", PHYSICAL_INSTANCE_TYPE,
-                "DataRelationship", DATA_RELATIONSHIP_TYPE,
-                "Variable", VARIABLE_TYPE,
-                "CodeList", CODE_LIST_TYPE,
-                "Category", CATEGORY_TYPE);
-    }
-
-    private static Map<String, String> dataRelationshipItemTypesWithSentinels(String mmvrType) {
-        return Map.of(
-                "PhysicalInstance", PHYSICAL_INSTANCE_TYPE,
-                "DataRelationship", DATA_RELATIONSHIP_TYPE,
-                "Variable", VARIABLE_TYPE,
-                "CodeList", CODE_LIST_TYPE,
-                "Category", CATEGORY_TYPE,
-                "ManagedMissingValuesRepresentation", mmvrType);
-    }
-
-    private static Map<String, String> usageItemTypes(String dataRelationshipType) {
-        return Map.of(
-                "Variable", VARIABLE_TYPE,
-                "DataRelationship", dataRelationshipType,
-                "PhysicalInstance", PHYSICAL_INSTANCE_TYPE,
-                "StudyUnit", STUDY_UNIT_ITEM_TYPE);
-    }
-
-    private static Map<String, String> categoryUsageItemTypes() {
-        return Map.of(
-                "CodeList", CODE_LIST_TYPE,
-                "Variable", VARIABLE_TYPE,
-                "DataRelationship", DATA_RELATIONSHIP_TYPE,
-                "PhysicalInstance", PHYSICAL_INSTANCE_TYPE,
-                "StudyUnit", STUDY_UNIT_ITEM_TYPE);
-    }
-
-    private static Ddi4Response physicalInstanceResponse(
-            String agencyId, String instanceId, Ddi4PhysicalInstance physicalInstance) {
-        return new Ddi4Response(
-                "ddi:4.0",
-                List.of(Reference.of(agencyId, instanceId, "1", "PhysicalInstance")),
-                List.of(physicalInstance),
-                List.of(),
-                List.of(),
-                List.of(),
-                List.of(),
-                null);
-    }
-
-    private static Ddi4Response physicalInstanceResponse(
-            String agencyId,
-            String instanceId,
-            Ddi4PhysicalInstance physicalInstance,
-            Ddi4DataRelationship dataRelationship) {
-        return new Ddi4Response(
-                "ddi:4.0",
-                List.of(Reference.of(agencyId, instanceId, "1", "PhysicalInstance")),
-                List.of(physicalInstance),
-                List.of(dataRelationship),
-                List.of(),
-                List.of(),
-                List.of(),
-                null);
-    }
-
-    /** The PhysicalInstance "Old Label" as read before an update, referencing DataRelationship dr-123. */
-    private static Ddi4PhysicalInstance existingPhysicalInstance(String agencyId, String instanceId) {
-        return new Ddi4PhysicalInstance(
-                Ddi4PhysicalInstance.TYPE,
-                CogsDate.ofDateTime("2025-01-01T00:00:00"),
-                "urn:ddi:fr.insee:" + instanceId + ":1",
-                agencyId,
-                instanceId,
-                "1",
-                null,
-                new Citation(LangStrings.of("fr-FR", "Old Label")),
-                List.of(Reference.of(agencyId, "dr-123", "1", "DataRelationship")));
-    }
-
-    /** The DataRelationship dr-123 as read before an update, holding LogicalRecord lr-123. */
-    private static Ddi4DataRelationship existingDataRelationship(
-            String agencyId, List<LangString> dataRelationshipLabel, List<LangString> logicalRecordLabel) {
-        return new Ddi4DataRelationship(
-                Ddi4DataRelationship.TYPE,
-                CogsDate.ofDateTime("2025-01-01T00:00:00"),
-                "urn:ddi:fr.insee:dr-123:1",
-                agencyId,
-                "dr-123",
-                "1",
-                null,
-                dataRelationshipLabel,
-                List.of(new LogicalRecord(
-                        LogicalRecord.TYPE,
-                        "urn:ddi:fr.insee:lr-123:1",
-                        agencyId,
-                        "lr-123",
-                        "1",
-                        logicalRecordLabel,
-                        null)));
-    }
-
-    private static Ddi4Response codeListResponse(
-            String agencyId, String codeListId, String categoryId, String version) {
-        Ddi4CodeList mockCodeList = new Ddi4CodeList(
-                Ddi4CodeList.TYPE,
-                CogsDate.ofDateTime("2024-10-31T10:43:38"),
-                "urn:ddi:fr.insee:" + codeListId + ":" + version,
-                agencyId,
-                codeListId,
-                version,
-                LangStrings.of("fr-FR", "NAF rév. 2"),
-                null,
-                List.of());
-        Ddi4Category mockCategory = new Ddi4Category(
-                Ddi4Category.TYPE,
-                CogsDate.ofDateTime("2024-10-31T10:43:38"),
-                "urn:ddi:fr.insee:" + categoryId + ":" + version,
-                agencyId,
-                categoryId,
-                version,
-                LangStrings.of("fr-FR", "Agriculture"));
-        return new Ddi4Response(
-                "ddi:4.0",
-                List.of(Reference.of(agencyId, codeListId, version, "CodeList")),
-                List.of(),
-                List.of(),
-                List.of(),
-                List.of(mockCodeList),
-                List.of(mockCategory),
-                null);
-    }
-
-    private static Ddi4CodeList codeList(String id, String label) {
-        return new Ddi4CodeList(
-                Ddi4CodeList.TYPE,
-                CogsDate.ofDateTime("2026-01-01T00:00:00"),
-                "urn:ddi:fr.insee:" + id + ":1",
-                "fr.insee",
-                id,
-                "1",
-                LangStrings.of("fr-FR", label),
-                null,
-                null);
-    }
-
-    private static Ddi4Category category(String id, String label) {
-        return new Ddi4Category(
-                Ddi4Category.TYPE,
-                CogsDate.ofDateTime("2026-01-01T00:00:00"),
-                "urn:ddi:fr.insee:" + id + ":1",
-                "fr.insee",
-                id,
-                "1",
-                LangStrings.of("fr-FR", label));
-    }
-
-    private static Ddi4Variable variable(String id) {
-        return new Ddi4Variable(
-                Ddi4Variable.TYPE,
-                CogsDate.ofDateTime("2026-01-01T00:00:00"),
-                "urn:ddi:fr.insee:" + id + ":1",
-                "fr.insee",
-                id,
-                "1",
-                null,
-                null,
-                null,
-                null,
-                null,
-                null);
-    }
-
-    /** A payload carrying only the new ManagedMissingValuesRepresentation MMVR_NEW. */
-    private static Ddi4Response newMissingValuesRepresentationPayload() {
-        Ddi4ManagedMissingValuesRepresentation mmvrNew = new Ddi4ManagedMissingValuesRepresentation(
-                Ddi4ManagedMissingValuesRepresentation.TYPE,
-                CogsDate.ofDateTime("2026-01-01T00:00:00"),
-                "urn:ddi:fr.insee:MMVR_NEW:1",
-                "fr.insee",
-                "MMVR_NEW",
-                "1",
-                LangStrings.of("fr-FR", "Valeurs sentinelles NSP/REF"),
-                null);
-        return new Ddi4Response("schema", null, null, null, null, null, null, List.of(mmvrNew));
-    }
-
-    /**
-     * The Variable of a PhysicalInstance set followed by its sentinel values items: the MMVR, the
-     * sentinel CodeList and its Category, plus a representation CodeList.
-     */
-    private static List<ColecticaItemResponse> variableWithSentinelValuesDescriptions(
-            String agencyId, String mmvrType) {
-        return List.of(
-                description(VARIABLE_TYPE, agencyId, 1, "var-1", fragment("Variable")),
-                description(mmvrType, agencyId, 1, "mmvr-1", SENTINEL_MMVR_XML),
-                description(CODE_LIST_TYPE, agencyId, 1, "cl-sentinel", SENTINEL_CODE_LIST_XML),
-                description(CATEGORY_TYPE, agencyId, 1, "cat-sentinel", fragment("Category ID=\"cat-sentinel\"")),
-                description(
-                        CODE_LIST_TYPE,
-                        agencyId,
-                        1,
-                        "cl-representation",
-                        fragment("CodeList ID=\"cl-representation\"")));
-    }
-
-    private void stubSet(ColecticaSetItem... items) {
-        when(colecticaClient.getSet(anyString(), anyString(), any())).thenReturn(items);
-    }
-
-    private void stubDescriptions(ColecticaItemResponse... items) {
-        when(colecticaClient.getDescriptions(anyList())).thenReturn(items);
-    }
-
     private void stubDdi3ToDdi4Conversion(Ddi4Response response) {
         when(ddi3ToDdi4Converter.convertDdi3ToDdi4(any(Ddi3Response.class), eq("ddi:4.0")))
                 .thenReturn(response);
-    }
-
-    /** The set is a single root item of the given type, with the standard item types configured. */
-    private void stubStandardSetWithSingleRoot(String agencyId, String id, String itemType, String element) {
-        when(instanceConfiguration.itemTypes()).thenReturn(standardItemTypes());
-        stubSet(new ColecticaSetItem(id, 1, agencyId));
-        stubDescriptions(description(itemType, agencyId, 1, id, fragment(element)));
-    }
-
-    /** A code list set holding the code list and one category, both at the given version. */
-    private void stubCodeListSet(
-            String agencyId,
-            String codeListId,
-            String categoryId,
-            int version,
-            String codeListXml,
-            String categoryXml) {
-        stubSet(
-                new ColecticaSetItem(codeListId, version, agencyId),
-                new ColecticaSetItem(categoryId, version, agencyId));
-        stubDescriptions(
-                description(CODE_LIST_TYPE, agencyId, version, codeListId, codeListXml),
-                description("fa1d4dca-f6dc-4d80-8b94-de1063a64d6d", agencyId, version, categoryId, categoryXml));
-    }
-
-    /** Sentinel values: parsing of the MMVR and of the sentinel CodeList it references. */
-    private void stubSentinelValuesConversion(String agencyId) {
-        when(ddi3ToDdi4Converter.toManagedMissingValuesRepresentation(SENTINEL_MMVR_XML))
-                .thenReturn(new Ddi4ManagedMissingValuesRepresentation(
-                        Ddi4ManagedMissingValuesRepresentation.TYPE,
-                        null,
-                        null,
-                        agencyId,
-                        "mmvr-1",
-                        "1",
-                        null,
-                        List.of(new CodeRepresentation(
-                                CodeRepresentation.TYPE,
-                                false,
-                                Reference.of(agencyId, "cl-sentinel", "1", "CodeList")))));
-        when(ddi3ToDdi4Converter.toCodeList(SENTINEL_CODE_LIST_XML))
-                .thenReturn(new Ddi4CodeList(
-                        Ddi4CodeList.TYPE,
-                        null,
-                        null,
-                        agencyId,
-                        "cl-sentinel",
-                        "1",
-                        null,
-                        null,
-                        List.of(new Code(
-                                Code.TYPE,
-                                null,
-                                agencyId,
-                                "code-1",
-                                "1",
-                                Reference.of(agencyId, "cat-sentinel", "1", "Category"),
-                                null,
-                                null))));
-    }
-
-    private void stubCreationConfiguration(Map<String, String> itemTypes) {
-        when(instanceConfiguration.defaultAgencyId()).thenReturn("fr.insee");
-        when(instanceConfiguration.itemTypes()).thenReturn(itemTypes);
-        when(instanceConfiguration.itemFormat()).thenReturn("dc337820-af3a-4c0b-82f9-cf02535cde83");
-    }
-
-    /** The items are saved, and the PhysicalInstance read back afterwards has an empty set. */
-    private void stubSaveWithEmptyReload() {
-        when(colecticaClient.createOrUpdateItems(any())).thenReturn("{}");
-        stubSet();
-    }
-
-    /** getPhysicalInstance reads the PhysicalInstance and its DataRelationship dr-123, without labels. */
-    private void stubExistingPhysicalInstanceWithDataRelationship(String agencyId, String instanceId) {
-        stubSet(new ColecticaSetItem(instanceId, 1, agencyId), new ColecticaSetItem("dr-123", 1, agencyId));
-        stubDescriptions(
-                description(PHYSICAL_INSTANCE_TYPE, agencyId, 1, instanceId, fragment("PhysicalInstance")),
-                description(DATA_RELATIONSHIP_TYPE, agencyId, 1, "dr-123", fragment("DataRelationship")));
-        stubDdi3ToDdi4Conversion(physicalInstanceResponse(
-                agencyId,
-                instanceId,
-                existingPhysicalInstance(agencyId, instanceId),
-                existingDataRelationship(agencyId, null, null)));
-    }
-
-    /**
-     * Stubs the read, conversion and save of a PhysicalInstance update whose DataRelationship and
-     * LogicalRecord carry the given labels, and captures what is passed to the DDI4 to DDI3 converter.
-     */
-    private ArgumentCaptor<Ddi4Response> stubPhysicalInstanceLabelUpdate(
-            String agencyId,
-            String instanceId,
-            List<LangString> dataRelationshipLabel,
-            List<LangString> logicalRecordLabel) {
-        stubSet(new ColecticaSetItem(instanceId, 1, agencyId));
-        stubDescriptions(description(PHYSICAL_INSTANCE_TYPE, agencyId, 1, instanceId, fragment("PhysicalInstance")));
-        stubDdi3ToDdi4Conversion(physicalInstanceResponse(
-                agencyId,
-                instanceId,
-                existingPhysicalInstance(agencyId, instanceId),
-                existingDataRelationship(agencyId, dataRelationshipLabel, logicalRecordLabel)));
-
-        ArgumentCaptor<Ddi4Response> ddi4Captor = ArgumentCaptor.forClass(Ddi4Response.class);
-        Ddi3Response.Ddi3Item mockItem = legacyDdi3Item(
-                PHYSICAL_INSTANCE_TYPE, agencyId, "2", instanceId, "<PhysicalInstance></PhysicalInstance>", true);
-        when(ddi4ToDdi3Converter.convertDdi4ToDdi3(ddi4Captor.capture()))
-                .thenReturn(new Ddi3Response(null, List.of(mockItem)));
-        when(colecticaClient.createOrUpdateItems(any())).thenReturn("{}");
-        return ddi4Captor;
-    }
-
-    private ColecticaCreateItemRequest sentRequest() {
-        ArgumentCaptor<ColecticaCreateItemRequest> bodyCaptor =
-                ArgumentCaptor.forClass(ColecticaCreateItemRequest.class);
-        verify(colecticaClient).createOrUpdateItems(bodyCaptor.capture());
-        return bodyCaptor.getValue();
-    }
-
-    private List<ColecticaItemResponse> sentItems() {
-        return sentRequest().items();
-    }
-
-    /** A mutualized codes package is configured, along with the standard item types. */
-    private void stubMutualizedPackage(String agencyId, String packageId) {
-        when(colecticaConfiguration.mutualizedCodesPackage())
-                .thenReturn(new ColecticaConfiguration.PackageRef(agencyId, packageId, 1));
-        when(instanceConfiguration.itemTypes()).thenReturn(standardItemTypes());
-    }
-
-    /** package → scheme → group → code lists */
-    private void stubPackageTree(
-            String agencyId, String packageId, String schemeId, String groupId, ItemReference... codeLists) {
-        stubChildren(agencyId, packageId, CODE_LIST_SCHEME_TYPE, new ItemReference(agencyId, schemeId));
-        stubChildren(agencyId, schemeId, CODE_LIST_GROUP_TYPE, new ItemReference(agencyId, groupId));
-        stubChildren(agencyId, groupId, CODE_LIST_TYPE, codeLists);
-    }
-
-    /** Mutualized package PKG: walking it top-down (scheme → group → code list) reaches CL_MUT only. */
-    private void stubMutualizedPackageReachingOnlyClMut() {
-        when(colecticaConfiguration.mutualizedCodesPackage())
-                .thenReturn(new ColecticaConfiguration.PackageRef("fr.insee", "PKG", 1));
-        stubPackageTree("fr.insee", "PKG", "SCHEME_M", "GROUP_M", new ItemReference("fr.insee", "CL_MUT"));
-    }
-
-    /** Group → LogicalProduct lp-1 → ManagedRepresentationScheme mrs-1 → the given MMVRs. */
-    private void stubManagedMissingValuesChain(String agencyId, String groupId, ItemReference... representations) {
-        stubChildren(agencyId, groupId, LOGICAL_PRODUCT_TYPE, new ItemReference(agencyId, "lp-1"));
-        stubChildren(agencyId, "lp-1", MANAGED_REPRESENTATION_SCHEME_TYPE, new ItemReference(agencyId, "mrs-1"));
-        stubChildren(agencyId, "mrs-1", MANAGED_MISSING_VALUES_REPRESENTATION_TYPE, representations);
-    }
-
-    /** child → parents, walked byobject and filtered by the parent type. */
-    private void stubParents(String agencyId, String childId, String parentType, ItemReference... parents) {
-        when(colecticaClient.findRelatedDescriptions(
-                        RelationshipDirection.BY_OBJECT, new ItemReference(agencyId, childId), List.of(parentType)))
-                .thenReturn(List.of(parents));
-    }
-
-    /** Items of the given type referencing the object, with their labels (byobject descriptions). */
-    private void stubRelatedItems(String agencyId, String objectId, String itemType, ColecticaItem... items) {
-        when(colecticaClient.findRelatedItems(
-                        RelationshipDirection.BY_OBJECT, new ItemReference(agencyId, objectId), List.of(itemType)))
-                .thenReturn(List.of(items));
-    }
-
-    /** var-1 ← DataRelationship dr-1 ← PhysicalInstance pi-1 ← StudyUnit su-1, with their labels. */
-    private void stubVariableUsageParents(String agencyId) {
-        stubParents(agencyId, "var-1", DATA_RELATIONSHIP_TYPE, new ItemReference(agencyId, "dr-1"));
-        stubRelatedItems(
-                agencyId,
-                "dr-1",
-                PHYSICAL_INSTANCE_TYPE,
-                labelItem(PHYSICAL_INSTANCE_TYPE, agencyId, "pi-1", "Fichier détail"));
-        stubRelatedItems(
-                agencyId,
-                "pi-1",
-                STUDY_UNIT_ITEM_TYPE,
-                labelItem(STUDY_UNIT_ITEM_TYPE, agencyId, "su-1", "Recensement 2024"));
-    }
-
-    /** The PhysicalInstance advanced query returns a single, unpublished PhysicalInstance. */
-    private void stubAdvancedPhysicalInstance(String agency, String id, String label) {
-        when(instanceConfiguration.itemTypes()).thenReturn(Map.of("PhysicalInstance", PHYSICAL_INSTANCE_TYPE));
-        ColecticaAdvancedItem pi = new ColecticaAdvancedItem(
-                agency,
-                id,
-                1,
-                PHYSICAL_INSTANCE_TYPE,
-                false,
-                Map.of("label", List.of(new LocalizedText(label, "fr-FR"))),
-                Map.of(),
-                Map.of("isPublished", false));
-        when(colecticaClient.queryAdvanced(anyList())).thenReturn(new ColecticaAdvancedResponse(List.of(pi), 1, null));
-    }
-
-    /** The repository holds a single Group g1 "Groupe BPE". */
-    private void stubSingleGroup(String agency) {
-        when(colecticaClient.query(List.of(GROUP_ITEM_TYPE)))
-                .thenReturn(queryResponse(labelItem(GROUP_ITEM_TYPE, agency, "g1", "Groupe BPE")));
-        when(colecticaClient.getDescriptions(anyList())).thenReturn(null);
-    }
-
-    private void stubStudyUnitsOfGroup(String agency, ColecticaItem... studyUnits) {
-        when(colecticaClient.findRelatedItems(
-                        RelationshipDirection.BY_SUBJECT,
-                        new ItemReference(agency, "g1"),
-                        List.of(STUDY_UNIT_ITEM_TYPE)))
-                .thenReturn(List.of(studyUnits));
-    }
-
-    private void stubStudyUnitDescription(String agency, String id, String xml) {
-        when(colecticaClient.query(anyList())).thenReturn(studyUnitQueryResponse(agency, id));
-        when(colecticaClient.getDescriptions(List.of(new GetDescriptionsRequest.IdentifierRef(agency, id, 1))))
-                .thenReturn(new ColecticaItemResponse[] {studyUnitItemResponse(agency, id, xml)});
-    }
-
-    /** The only StudyUnit of the repository belongs to another operation. */
-    private void stubStudyUnitOfAnotherOperation(String agency, String id) {
-        when(colecticaClient.query(anyList())).thenReturn(studyUnitQueryResponse(agency, id));
-        when(colecticaClient.getDescriptions(anyList())).thenReturn(new ColecticaItemResponse[] {
-            studyUnitItemResponse(agency, id, studyUnitFragment("http://id.insee.fr/operations/operation/other", ""))
-        });
-    }
-
-    /** The converted PhysicalInstance produces at least one item so the save proceeds. */
-    private void stubConvertedPhysicalInstance() {
-        Ddi3Response.Ddi3Item piItem = ddi3Item("pi-type", "pi-1", "<pi/>");
-        when(ddi4ToDdi3Converter.convertDdi4ToDdi3(any()))
-                .thenReturn(
-                        new Ddi3Response(new Ddi3Response.Ddi3Options(List.of("RegisterOrReplace")), List.of(piItem)));
-    }
-
-    /** Parents: PI pi-1 -> StudyUnit su-1 -> Group group-1 */
-    private void stubPhysicalInstanceParents() {
-        stubParents("fr.insee", "pi-1", STUDY_UNIT_ITEM_TYPE, new ItemReference("fr.insee", "su-1"));
-        stubParents("fr.insee", "su-1", GROUP_ITEM_TYPE, new ItemReference("fr.insee", "group-1"));
-    }
-
-    /**
-     * Saving MMVRs: the PhysicalInstance converts, its Group group-1 is resolved through its parents,
-     * and exposes the LogicalProduct lp-1.
-     */
-    private void stubGroupLogicalProductForManagedRepresentations() {
-        stubConvertedPhysicalInstance();
-        when(instanceConfiguration.itemTypes())
-                .thenReturn(Map.of(
-                        "LogicalProduct",
-                        "lp-type",
-                        "ManagedRepresentationScheme",
-                        MANAGED_REPRESENTATION_SCHEME_TYPE));
-        // Parents: PI -> StudyUnit -> Group
-        stubPhysicalInstanceParents();
-        stubChildren("fr.insee", "group-1", "lp-type", new ItemReference("fr.insee", "lp-1"));
-    }
-
-    /** The existing Group group-1 can be fetched and parsed. */
-    private void stubExistingGroup() {
-        when(colecticaClient.getItem("fr.insee", "group-1", null))
-                .thenReturn(storedItem("group-type", "group-1", "<group/>"));
-        Ddi4Group parsedGroup = new Ddi4Group(
-                Ddi4Group.TYPE,
-                CogsDate.ofDateTime("2026-01-01T00:00:00"),
-                "urn:ddi:fr.insee:group-1:1",
-                "fr.insee",
-                "group-1",
-                "1",
-                "resp",
-                new Citation(LangStrings.of("fr-FR", "Group")),
-                List.of(Reference.of("fr.insee", "su-1", "1", "StudyUnit")),
-                List.of("http://id.insee.fr/operations/serie/s1001"),
-                "insee:StatisticalOperationSeries");
-        when(ddi3ToDdi4Converter.toGroup("<group/>")).thenReturn(parsedGroup);
-    }
-
-    private static void assertFirstOfTwoPhysicalInstances(List<PartialPhysicalInstance> result, String versionDate) {
-        assertNotNull(result);
-        assertEquals(2, result.size());
-        assertEquals("pi-1", result.get(0).id());
-        assertEquals("Instance Physique 1", result.get(0).label());
-        assertEquals("agency1", result.get(0).agency());
-        assertEquals(versionDate, utcSeconds(result.get(0).versionDate()));
-    }
-
-    /** Set items, all at version 1. */
-    private static ColecticaSetItem[] setItems(String agencyId, String... identifiers) {
-        ColecticaSetItem[] items = new ColecticaSetItem[identifiers.length];
-        for (int i = 0; i < identifiers.length; i++) {
-            items[i] = new ColecticaSetItem(identifiers[i], 1, agencyId);
-        }
-        return items;
-    }
-
-    private ArgumentCaptor<Ddi3Response> captureDdi3ToDdi4Conversion(Ddi4Response response) {
-        ArgumentCaptor<Ddi3Response> captor = ArgumentCaptor.forClass(Ddi3Response.class);
-        when(ddi3ToDdi4Converter.convertDdi3ToDdi4(captor.capture(), eq("ddi:4.0")))
-                .thenReturn(response);
-        return captor;
-    }
-
-    /** Mutualized package pkg-1 → scheme-1 → group-1 → the single given code list. */
-    private void stubMutualizedPackageWithSingleCodeList(String agencyId, String codeListId) {
-        stubMutualizedPackage(agencyId, "pkg-1");
-        stubPackageTree(agencyId, "pkg-1", "scheme-1", "group-1", new ItemReference(agencyId, codeListId));
-    }
-
-    /** Saves the PhysicalInstance pi-1 with a payload carrying only the new Category CAT_NEW. */
-    private void updateFullPhysicalInstanceWithNewCategory() {
-        Ddi4Response ddi4 =
-                new Ddi4Response("schema", null, null, null, null, null, List.of(category("CAT_NEW", "cat")), null);
-        ddiRepository.updateFullPhysicalInstance("fr.insee", "pi-1", ddi4);
     }
 
     // --- Réutilisation de variables (#1387) ---------------------------------------------------
@@ -4182,81 +5744,5 @@ class DDIRepositoryImplTest {
         when(colecticaClient.findRelatedItems(
                         RelationshipDirection.BY_SUBJECT, new ItemReference(agencyId, subjectId), List.of(itemType)))
                 .thenReturn(List.of(items));
-    }
-
-    @Test
-    void getStudyUnitVariables_returnsTheLatestVersionOfEachVariableOfTheStudyUnitVariableScheme() {
-        String agencyId = "fr.insee";
-        when(instanceConfiguration.itemTypes()).thenReturn(studyUnitVariablesItemTypes());
-        // StudyUnit → LogicalProduct → VariableScheme → Variable, en descente bysubject.
-        stubChildren(agencyId, "su-1", LOGICAL_PRODUCT_TYPE, new ItemReference(agencyId, "lp-1"));
-        stubChildren(agencyId, "lp-1", VARIABLE_SCHEME_TYPE, new ItemReference(agencyId, "vs-1"));
-        stubChildItems(
-                agencyId,
-                "vs-1",
-                VARIABLE_TYPE,
-                versionedLabelItem(VARIABLE_TYPE, agencyId, "var-1", "Sexe", 1),
-                versionedLabelItem(VARIABLE_TYPE, agencyId, "var-1", "Sexe", 2));
-        ColecticaItemResponse stored = description(VARIABLE_TYPE, agencyId, 2, "var-1", "<Fragment/>");
-        when(colecticaClient.getDescriptions(List.of(new GetDescriptionsRequest.IdentifierRef(agencyId, "var-1", 2))))
-                .thenReturn(new ColecticaItemResponse[] {stored});
-        Ddi4Variable sexe = variable(agencyId, "var-1", "2", "SEXE");
-        stubDdi3ToDdi4Conversion(new Ddi4Response("ddi:4.0", null, null, null, List.of(sexe), null, null, null));
-
-        Ddi4Response result = ddiRepository.getStudyUnitVariables(agencyId, "su-1");
-
-        assertThat(result.variable()).containsExactly(sexe);
-        ArgumentCaptor<Ddi3Response> converted = ArgumentCaptor.forClass(Ddi3Response.class);
-        verify(ddi3ToDdi4Converter).convertDdi3ToDdi4(converted.capture(), eq("ddi:4.0"));
-        assertThat(converted.getValue().items())
-                .extracting(Ddi3Response.Ddi3Item::identifier)
-                .containsExactly("var-1");
-    }
-
-    @Test
-    void getStudyUnitVariables_returnsNoVariableWhenTheStudyUnitHasNoVariableScheme() {
-        String agencyId = "fr.insee";
-        when(instanceConfiguration.itemTypes()).thenReturn(studyUnitVariablesItemTypes());
-        stubChildren(agencyId, "su-1", LOGICAL_PRODUCT_TYPE, new ItemReference(agencyId, "lp-1"));
-        stubChildren(agencyId, "lp-1", VARIABLE_SCHEME_TYPE);
-
-        Ddi4Response result = ddiRepository.getStudyUnitVariables(agencyId, "su-1");
-
-        assertThat(result.variable()).isEmpty();
-        verify(colecticaClient, never()).getDescriptions(anyList());
-        verifyNoInteractions(ddi3ToDdi4Converter);
-    }
-
-    @Test
-    void getStudyUnitVariableUsages_returnsEachVariableOfEachPhysicalInstanceOfTheStudyUnit() {
-        String agencyId = "fr.insee";
-        when(instanceConfiguration.itemTypes()).thenReturn(studyUnitVariablesItemTypes());
-        // StudyUnit → PhysicalInstance → DataRelationship → Variable, en descente bysubject.
-        stubChildItems(
-                agencyId,
-                "su-1",
-                PHYSICAL_INSTANCE_TYPE,
-                labelItem(PHYSICAL_INSTANCE_TYPE, agencyId, "pi-1", "Fichier 2024"),
-                labelItem(PHYSICAL_INSTANCE_TYPE, agencyId, "pi-2", "Fichier 2025"));
-        stubChildren(agencyId, "pi-1", DATA_RELATIONSHIP_TYPE, new ItemReference(agencyId, "dr-1"));
-        stubChildren(agencyId, "pi-2", DATA_RELATIONSHIP_TYPE, new ItemReference(agencyId, "dr-2"));
-        stubChildItems(agencyId, "dr-1", VARIABLE_TYPE, labelItem(VARIABLE_TYPE, agencyId, "var-1", "Sexe"));
-        stubChildItems(
-                agencyId,
-                "dr-2",
-                VARIABLE_TYPE,
-                labelItem(VARIABLE_TYPE, agencyId, "var-1", "Sexe"),
-                labelItem(VARIABLE_TYPE, agencyId, "var-2", "Âge"));
-
-        List<CodeListVariableUsage> result = ddiRepository.getStudyUnitVariableUsages(agencyId, "su-1");
-
-        assertThat(result)
-                .containsExactlyInAnyOrder(
-                        new CodeListVariableUsage(
-                                agencyId, "su-1", null, agencyId, "pi-1", "Fichier 2024", agencyId, "var-1", "Sexe"),
-                        new CodeListVariableUsage(
-                                agencyId, "su-1", null, agencyId, "pi-2", "Fichier 2025", agencyId, "var-1", "Sexe"),
-                        new CodeListVariableUsage(
-                                agencyId, "su-1", null, agencyId, "pi-2", "Fichier 2025", agencyId, "var-2", "Âge"));
     }
 }

@@ -31,6 +31,7 @@ import org.springframework.test.web.servlet.MockMvc;
 @TestPropertySource(
         properties = {
             "fr.insee.rmes.bauhaus.swagger.enabled=true",
+            "fr.insee.rmes.bauhaus.env=PROD",
             "spring.security.oauth2.resourceserver.jwt.issuer-uri=https://auth.test/realms/bauhaus",
             "fr.insee.rmes.bauhaus.swagger.oauth.client-id=bauhaus-swagger"
         })

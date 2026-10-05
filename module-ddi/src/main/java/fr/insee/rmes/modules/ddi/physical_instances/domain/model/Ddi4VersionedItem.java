@@ -35,6 +35,8 @@ public interface Ddi4VersionedItem {
 
     String id();
 
+    String version();
+
     CogsDate versionDate();
 
     /** Copie de l'item avec la {@code VersionDate} donnée, le reste inchangé. */

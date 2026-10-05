@@ -25,6 +25,20 @@ public record BauhausConfiguration(
     }
 
     /**
+     * L'API n'exige un jeton qu'en mode {@link AuthenticationMode#OIDC} : en
+     * {@link AuthenticationMode#DEV}, le {@code DevAuthenticationFilter} authentifie chaque requête sans
+     * jeton. Seule source de ce critère, partagée par la chaîne de sécurité et par la documentation
+     * OpenAPI.
+     */
+    public static boolean isAuthenticated(String env) {
+        return AuthenticationMode.fromEnv(env) == AuthenticationMode.OIDC;
+    }
+
+    public boolean authenticated() {
+        return isAuthenticated(env);
+    }
+
+    /**
      * Les modules actifs, dans leur ordre de déclaration — c'est aussi l'ordre des tuiles sur
      * la page d'accueil.
      */

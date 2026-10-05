@@ -98,24 +98,27 @@ public class UserConfiguration {
                 .csrf(AbstractHttpConfigurer::disable);
 
         if (isDev) {
+            // Pas de resource server en DEV : son filtre passe après celui-ci et substituerait
+            // au FAKE_USER le porteur de tout jeton reçu (ex. SSO silencieux sur une session prod).
             http.addFilterBefore(new DevAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+        } else {
+            http.oauth2ResourceServer(oauth2ResourceServer -> oauth2ResourceServer.jwt(withDefaults()));
         }
 
-        http.oauth2ResourceServer(oauth2ResourceServer -> oauth2ResourceServer.jwt(withDefaults()))
-                .authorizeHttpRequests(authorizeHttpRequest -> authorizeHttpRequest
-                        // The error dispatch only renders the error of a request already let through;
-                        // refusing it turned every unhandled error into an empty 401 in DEV mode, where
-                        // DevAuthenticationFilter (OncePerRequestFilter) does not run on that dispatch.
-                        .dispatcherTypeMatchers(DispatcherType.ERROR)
-                        .permitAll()
-                        .requestMatchers("/error")
-                        .permitAll()
-                        .requestMatchers(publicEndpointsMatcher)
-                        .permitAll()
-                        .requestMatchers(HttpMethod.OPTIONS)
-                        .permitAll()
-                        .anyRequest()
-                        .authenticated());
+        http.authorizeHttpRequests(authorizeHttpRequest -> authorizeHttpRequest
+                // The error dispatch only renders the error of a request already let through;
+                // refusing it turned every unhandled error into an empty 401 in DEV mode, where
+                // DevAuthenticationFilter (OncePerRequestFilter) does not run on that dispatch.
+                .dispatcherTypeMatchers(DispatcherType.ERROR)
+                .permitAll()
+                .requestMatchers("/error")
+                .permitAll()
+                .requestMatchers(publicEndpointsMatcher)
+                .permitAll()
+                .requestMatchers(HttpMethod.OPTIONS)
+                .permitAll()
+                .anyRequest()
+                .authenticated());
 
         logger.info(isDev ? "Development mode with FAKE_USER" : "OpenID authentication activated");
 

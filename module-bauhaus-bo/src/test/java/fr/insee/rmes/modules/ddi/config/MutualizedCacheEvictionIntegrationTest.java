@@ -44,7 +44,7 @@ class MutualizedCacheEvictionIntegrationTest {
         }
 
         @Bean
-        DDIRepository ddiRepository(ColecticaConfiguration config) {
+        DDIRepository ddiRepository(ColecticaConfiguration config, CacheManager cacheManager) {
             var provider = new MutualizedCodeListRefsProvider(config.server(), config, mock(ColecticaClient.class));
             return new DDIRepositoryImpl(
                     config.server(),
@@ -52,7 +52,8 @@ class MutualizedCacheEvictionIntegrationTest {
                     mock(DDI4toDDI3ConverterService.class),
                     config,
                     mock(ColecticaClient.class),
-                    provider);
+                    provider,
+                    cacheManager.getCache(ColecticaCacheNames.PHYSICAL_INSTANCE_SEARCH_ROWS));
         }
     }
 

@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -31,6 +32,16 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class UnexpectedErrorHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(UnexpectedErrorHandler.class);
+
+    /**
+     * Un refus d'accès ({@code @HasAccess}) n'est pas une panne : relancé tel quel, il remonte au
+     * {@code ExceptionTranslationFilter} de Spring Security, qui répond 403 (401 sans authentification).
+     * Sans ce gestionnaire plus précis, le filet sur {@link Exception} le transformerait en 500.
+     */
+    @ExceptionHandler(AccessDeniedException.class)
+    public void rethrowAccessDenied(AccessDeniedException exception) {
+        throw exception;
+    }
 
     /**
      * Les exceptions de Spring MVC ({@code NoResourceFoundException}, {@code

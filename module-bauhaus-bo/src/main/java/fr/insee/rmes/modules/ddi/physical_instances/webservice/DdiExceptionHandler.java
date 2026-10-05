@@ -3,6 +3,7 @@ package fr.insee.rmes.modules.ddi.physical_instances.webservice;
 import fr.insee.rmes.modules.commons.webservice.ApiError;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.DdiItemNotFoundException;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.InvalidSentinelValuesException;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.MissingSchemeException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,5 +59,16 @@ public class DdiExceptionHandler {
                 .body(new ApiError(
                         "The DDI repository (Colectica) is unavailable. Please try again later.",
                         COLECTICA_UNAVAILABLE));
+    }
+
+    /**
+     * Le Group ou la StudyUnit de l'instance n'expose pas le scheme sous lequel ranger ses objets :
+     * ils sont créés en amont, le save n'en crée jamais à la volée.
+     */
+    @ExceptionHandler(MissingSchemeException.class)
+    public ResponseEntity<ApiError> handleMissingScheme(MissingSchemeException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(new ApiError(ex.getMessage(), ex.code().name(), ex.params()));
     }
 }

@@ -31,6 +31,7 @@ import fr.insee.rmes.modules.users.domain.model.User;
 import fr.insee.rmes.modules.users.domain.port.serverside.RbacFetcher;
 import fr.insee.rmes.modules.users.infrastructure.UserProvider;
 import fr.insee.rmes.modules.users.webservice.HasAccess;
+import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
@@ -237,12 +238,24 @@ public class DdiResources {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(updatedInstance);
     }
 
+    @PostMapping("/physical-instance/{agencyId}/{id}/duplicate")
+    @PreAuthorize(
+            "@propertiesAccessPrivilegesChecker.hasAccess('DDI_PHYSICALINSTANCE', 'CREATE', #request.groupAgency + '|' + #request.groupId, authentication.principal)")
+    public ResponseEntity<Ddi4Response> duplicatePhysicalInstance(
+            @PathVariable String agencyId,
+            @PathVariable String id,
+            @Valid @RequestBody PhysicalInstanceDuplicationRequest request) {
+        Ddi4Response copy = ddiService.duplicatePhysicalInstance(agencyId, id, request.toDomain());
+        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(copy);
+    }
+
     @PutMapping("/physical-instance/{agencyId}/{id}")
     @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.UPDATE)
-    public ResponseEntity<Ddi4Response> replacePhysicalInstance(
+    public ResponseEntity<Void> replacePhysicalInstance(
             @PathVariable String agencyId, @PathVariable String id, @RequestBody Ddi4Response ddi4Response) {
-        Ddi4Response updatedInstance = ddiService.updateFullPhysicalInstance(agencyId, id, ddi4Response);
-        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(updatedInstance);
+        // 204 : relire une grosse PI coûte des dizaines de secondes, le front la recharge par le GET.
+        ddiService.updateFullPhysicalInstance(agencyId, id, ddi4Response);
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/convert/ddi4-to-ddi3")

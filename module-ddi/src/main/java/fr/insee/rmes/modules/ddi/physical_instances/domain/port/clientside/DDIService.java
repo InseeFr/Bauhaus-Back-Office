@@ -14,6 +14,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedRepr
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnitResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4VariableScheme;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.DuplicatePhysicalInstanceRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodesList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialGroup;
@@ -51,7 +52,14 @@ public interface DDIService {
 
     Ddi4Response updatePhysicalInstance(String agencyId, String id, UpdatePhysicalInstanceRequest request);
 
-    Ddi4Response updateFullPhysicalInstance(String agencyId, String id, Ddi4Response ddi4Response);
+    /**
+     * Remplace le contenu de la PhysicalInstance. Rien n'est relu après l'écriture : sur une grosse
+     * instance, relire le set Colectica coûte des dizaines de secondes.
+     */
+    void updateFullPhysicalInstance(String agencyId, String id, Ddi4Response ddi4Response);
+
+    /** Duplique la PhysicalInstance {@code agencyId/id} sous l'Étude de la requête et renvoie la copie. */
+    Ddi4Response duplicatePhysicalInstance(String agencyId, String id, DuplicatePhysicalInstanceRequest request);
 
     Ddi4Response createPhysicalInstance(CreatePhysicalInstanceRequest request);
 

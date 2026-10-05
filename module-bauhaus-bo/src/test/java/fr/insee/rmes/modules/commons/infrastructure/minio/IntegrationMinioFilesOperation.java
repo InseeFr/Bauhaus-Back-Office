@@ -24,17 +24,18 @@ import org.testcontainers.utility.DockerImageName;
 class IntegrationMinioFilesOperation {
 
     /** Voir {@code WithGraphDBContainer#GRAPHDB_IMAGE} : annotation lue par le custom manager Renovate. */
-    // renovate: datasource=docker depName=quay.io/minio/minio
-    static final String MINIO_IMAGE = "quay.io/minio/minio:RELEASE.2024-11-07T00-52-20Z";
+    // renovate: datasource=docker depName=pgsty/minio
+    static final String MINIO_IMAGE = "pgsty/minio:RELEASE.2026-08-04T00-00-00Z";
 
     /**
      * Champ statique : un champ d'instance ferait démarrer puis arrêter un conteneur MinIO par
      * méthode de test. Les tests écrivent chacun sous des noms de fichiers distincts, ils peuvent
      * donc partager le même serveur.
      *
-     * <p>Image tirée de quay.io : MinIO ne publie plus sur Docker Hub, où {@code minio/minio} est
-     * refusé au pull. {@link MinIOContainer} n'accepte que {@code minio/minio} sans déclaration
-     * explicite de substitut.
+     * <p>Image {@code pgsty/minio} (fork communautaire maintenu) : MinIO ne publie plus d'image
+     * publique, {@code minio/minio} comme {@code quay.io/minio/minio} sont refusés au pull.
+     * {@link MinIOContainer} n'accepte que {@code minio/minio} sans déclaration explicite de
+     * substitut.
      */
     @Container
     static final MinIOContainer container =

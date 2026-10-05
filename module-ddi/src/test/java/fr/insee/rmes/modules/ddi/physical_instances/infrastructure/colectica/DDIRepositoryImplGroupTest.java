@@ -6,14 +6,12 @@ import static org.mockito.Mockito.*;
 
 import fr.insee.rmes.colectica.client.ColecticaClient;
 import fr.insee.rmes.colectica.client.dto.ColecticaCreateItemRequest;
-import fr.insee.rmes.colectica.client.dto.ColecticaItem;
 import fr.insee.rmes.colectica.client.dto.ColecticaItemResponse;
 import fr.insee.rmes.colectica.client.dto.UpdateItemStateRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.*;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.DDIRepository;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.services.Ddi4ToLifecycle33;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import javax.xml.stream.XMLStreamException;
 import org.junit.jupiter.api.BeforeEach;
@@ -229,32 +227,5 @@ class DDIRepositoryImplGroupTest {
         assertThat(request.items()).hasSize(1);
 
         return request.items().getFirst();
-    }
-
-    private ColecticaItem createColecticaItem(String identifier, String label) {
-        return new ColecticaItem(
-                null,
-                Map.of("fr-FR", label),
-                null,
-                null,
-                null,
-                0,
-                null,
-                false,
-                null,
-                "4bd6eef6-99df-40e6-9b11-5b8f64e5cb23",
-                "fr.insee",
-                1,
-                identifier,
-                null,
-                null,
-                "2026-04-02T00:00:00",
-                "bauhaus",
-                false,
-                false,
-                false,
-                "DC337820-AF3A-4C0B-82F9-CF02535CDE83",
-                0L,
-                0);
     }
 }
