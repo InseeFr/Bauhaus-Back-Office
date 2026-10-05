@@ -150,6 +150,19 @@ public interface DDIRepository {
      */
     List<CodeListVariableUsage> getVariablesUsingMissingValuesRepresentation(String agencyId, String mmvrId);
 
+    /**
+     * Les variables du VariableScheme de la StudyUnit (StudyUnit → LogicalProduct → VariableScheme),
+     * chacune dans sa dernière version : le vivier dans lequel une PhysicalInstance de l'étude peut
+     * réutiliser une variable (#1387).
+     */
+    Ddi4Response getStudyUnitVariables(String agencyId, String studyUnitId);
+
+    /**
+     * Pour chaque PhysicalInstance de la StudyUnit, une ligne par variable qu'elle utilise : permet de
+     * signaler qu'une variable réutilisée est partagée avec d'autres fichiers (#1387).
+     */
+    List<CodeListVariableUsage> getStudyUnitVariableUsages(String agencyId, String studyUnitId);
+
     String getItemXml(String agency, String id, String version);
 
     String getItemXml(String agency, String id);

@@ -52,7 +52,7 @@ class DdiErrorResponsesTest {
     void setUp() {
         mockMvc = MockMvcBuilders.standaloneSetup(
                         new GroupResources(groupService, ddiService, userProvider, rbacFetcher),
-                        new StudyUnitResources(studyUnitService),
+                        new StudyUnitResources(studyUnitService, ddiService),
                         new CodesListResources(ddiService))
                 .setControllerAdvice(new DdiExceptionHandler(), new UnexpectedErrorHandler())
                 .build();

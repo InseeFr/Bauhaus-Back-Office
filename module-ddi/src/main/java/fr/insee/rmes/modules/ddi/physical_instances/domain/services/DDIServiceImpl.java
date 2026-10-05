@@ -225,6 +225,18 @@ public class DDIServiceImpl implements DDIService {
     }
 
     @Override
+    public Ddi4Response getStudyUnitVariables(String agencyId, String studyUnitId) {
+        logger.info("Starting to get variables of study unit {}/{}", forLog(agencyId), forLog(studyUnitId));
+        return ddiRepository.getStudyUnitVariables(agencyId, studyUnitId);
+    }
+
+    @Override
+    public List<CodeListVariableUsage> getStudyUnitVariableUsages(String agencyId, String studyUnitId) {
+        logger.info("Starting to get variable usages of study unit {}/{}", forLog(agencyId), forLog(studyUnitId));
+        return ddiRepository.getStudyUnitVariableUsages(agencyId, studyUnitId);
+    }
+
+    @Override
     public List<PartialGroup> getGroups() {
         logger.info("Starting to get groups list");
         return ddiRepository.getGroups().stream()

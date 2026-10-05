@@ -56,6 +56,7 @@ import org.springframework.web.client.HttpClientErrorException;
  *   <li>{@link ColecticaCodeListRepository} / {@link ColecticaHierarchyBrowser} — listes de codes et
  *       navigation descendante</li>
  *   <li>{@link ColecticaUsageRepository} — « qui utilise cet objet ? »</li>
+ *   <li>{@link ColecticaStudyUnitVariablesReader} — variables réutilisables d'une StudyUnit</li>
  *   <li>{@link ColecticaMissingValuesRepository} — valeurs sentinelles</li>
  *   <li>{@link ColecticaItemCreator} — enregistrements unitaires</li>
  * </ul>
@@ -71,6 +72,7 @@ public class DDIRepositoryImpl implements DDIRepository {
     private final ColecticaCodeListRepository codeLists;
     private final ColecticaHierarchyBrowser hierarchy;
     private final ColecticaUsageRepository usages;
+    private final ColecticaStudyUnitVariablesReader studyUnitVariables;
     private final ColecticaMissingValuesRepository missingValues;
     private final ColecticaItemCreator itemCreator;
     private final ColecticaItemByIdReader itemByIdReader;
@@ -103,6 +105,8 @@ public class DDIRepositoryImpl implements DDIRepository {
                 mutualizedCodeListRefsProvider);
         this.hierarchy = new ColecticaHierarchyBrowser(instanceConfiguration, colecticaClient, catalog, codeLists);
         this.usages = new ColecticaUsageRepository(instanceConfiguration, colecticaClient, labels);
+        this.studyUnitVariables = new ColecticaStudyUnitVariablesReader(
+                instanceConfiguration, colecticaClient, ddi3ToDdi4Converter, labels);
         this.missingValues = new ColecticaMissingValuesRepository(colecticaClient, ddi3ToDdi4Converter, hierarchy);
         ColecticaSchemeFiler schemeFiler = new ColecticaSchemeFiler(
                 instanceConfiguration,
@@ -358,6 +362,18 @@ public class DDIRepositoryImpl implements DDIRepository {
     @Override
     public List<CodeListVariableUsage> getVariablesUsingMissingValuesRepresentation(String agencyId, String mmvrId) {
         return usages.getVariablesUsingMissingValuesRepresentation(agencyId, mmvrId);
+    }
+
+    // --- Réutilisation de variables ----------------------------------------------------------------
+
+    @Override
+    public Ddi4Response getStudyUnitVariables(String agencyId, String studyUnitId) {
+        return studyUnitVariables.getStudyUnitVariables(agencyId, studyUnitId);
+    }
+
+    @Override
+    public List<CodeListVariableUsage> getStudyUnitVariableUsages(String agencyId, String studyUnitId) {
+        return studyUnitVariables.getStudyUnitVariableUsages(agencyId, studyUnitId);
     }
 
     @Override

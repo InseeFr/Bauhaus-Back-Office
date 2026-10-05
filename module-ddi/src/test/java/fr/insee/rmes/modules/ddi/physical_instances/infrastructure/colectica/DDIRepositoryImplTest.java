@@ -4147,4 +4147,116 @@ class DDIRepositoryImplTest {
                 new Ddi4Response("schema", null, null, null, null, null, List.of(category("CAT_NEW", "cat")), null);
         ddiRepository.updateFullPhysicalInstance("fr.insee", "pi-1", ddi4);
     }
+
+    // --- Réutilisation de variables (#1387) ---------------------------------------------------
+
+    private static final String VARIABLE_SCHEME_TYPE = "vs-type";
+
+    private static Map<String, String> studyUnitVariablesItemTypes() {
+        return Map.of(
+                "LogicalProduct", LOGICAL_PRODUCT_TYPE,
+                "VariableScheme", VARIABLE_SCHEME_TYPE,
+                "Variable", VARIABLE_TYPE,
+                "DataRelationship", DATA_RELATIONSHIP_TYPE,
+                "PhysicalInstance", PHYSICAL_INSTANCE_TYPE);
+    }
+
+    private static Ddi4Variable variable(String agencyId, String id, String version, String name) {
+        return new Ddi4Variable(
+                Ddi4Variable.TYPE,
+                null,
+                "urn:ddi:" + agencyId + ":" + id + ":" + version,
+                agencyId,
+                id,
+                version,
+                null,
+                LangStrings.of("fr-FR", name),
+                LangStrings.of("fr-FR", name),
+                null,
+                null,
+                null);
+    }
+
+    /** Items of the given type directly referenced by the subject, with their labels. */
+    private void stubChildItems(String agencyId, String subjectId, String itemType, ColecticaItem... items) {
+        when(colecticaClient.findRelatedItems(
+                        RelationshipDirection.BY_SUBJECT, new ItemReference(agencyId, subjectId), List.of(itemType)))
+                .thenReturn(List.of(items));
+    }
+
+    @Test
+    void getStudyUnitVariables_returnsTheLatestVersionOfEachVariableOfTheStudyUnitVariableScheme() {
+        String agencyId = "fr.insee";
+        when(instanceConfiguration.itemTypes()).thenReturn(studyUnitVariablesItemTypes());
+        // StudyUnit → LogicalProduct → VariableScheme → Variable, en descente bysubject.
+        stubChildren(agencyId, "su-1", LOGICAL_PRODUCT_TYPE, new ItemReference(agencyId, "lp-1"));
+        stubChildren(agencyId, "lp-1", VARIABLE_SCHEME_TYPE, new ItemReference(agencyId, "vs-1"));
+        stubChildItems(
+                agencyId,
+                "vs-1",
+                VARIABLE_TYPE,
+                versionedLabelItem(VARIABLE_TYPE, agencyId, "var-1", "Sexe", 1),
+                versionedLabelItem(VARIABLE_TYPE, agencyId, "var-1", "Sexe", 2));
+        ColecticaItemResponse stored = description(VARIABLE_TYPE, agencyId, 2, "var-1", "<Fragment/>");
+        when(colecticaClient.getDescriptions(List.of(new GetDescriptionsRequest.IdentifierRef(agencyId, "var-1", 2))))
+                .thenReturn(new ColecticaItemResponse[] {stored});
+        Ddi4Variable sexe = variable(agencyId, "var-1", "2", "SEXE");
+        stubDdi3ToDdi4Conversion(new Ddi4Response("ddi:4.0", null, null, null, List.of(sexe), null, null, null));
+
+        Ddi4Response result = ddiRepository.getStudyUnitVariables(agencyId, "su-1");
+
+        assertThat(result.variable()).containsExactly(sexe);
+        ArgumentCaptor<Ddi3Response> converted = ArgumentCaptor.forClass(Ddi3Response.class);
+        verify(ddi3ToDdi4Converter).convertDdi3ToDdi4(converted.capture(), eq("ddi:4.0"));
+        assertThat(converted.getValue().items())
+                .extracting(Ddi3Response.Ddi3Item::identifier)
+                .containsExactly("var-1");
+    }
+
+    @Test
+    void getStudyUnitVariables_returnsNoVariableWhenTheStudyUnitHasNoVariableScheme() {
+        String agencyId = "fr.insee";
+        when(instanceConfiguration.itemTypes()).thenReturn(studyUnitVariablesItemTypes());
+        stubChildren(agencyId, "su-1", LOGICAL_PRODUCT_TYPE, new ItemReference(agencyId, "lp-1"));
+        stubChildren(agencyId, "lp-1", VARIABLE_SCHEME_TYPE);
+
+        Ddi4Response result = ddiRepository.getStudyUnitVariables(agencyId, "su-1");
+
+        assertThat(result.variable()).isEmpty();
+        verify(colecticaClient, never()).getDescriptions(anyList());
+        verifyNoInteractions(ddi3ToDdi4Converter);
+    }
+
+    @Test
+    void getStudyUnitVariableUsages_returnsEachVariableOfEachPhysicalInstanceOfTheStudyUnit() {
+        String agencyId = "fr.insee";
+        when(instanceConfiguration.itemTypes()).thenReturn(studyUnitVariablesItemTypes());
+        // StudyUnit → PhysicalInstance → DataRelationship → Variable, en descente bysubject.
+        stubChildItems(
+                agencyId,
+                "su-1",
+                PHYSICAL_INSTANCE_TYPE,
+                labelItem(PHYSICAL_INSTANCE_TYPE, agencyId, "pi-1", "Fichier 2024"),
+                labelItem(PHYSICAL_INSTANCE_TYPE, agencyId, "pi-2", "Fichier 2025"));
+        stubChildren(agencyId, "pi-1", DATA_RELATIONSHIP_TYPE, new ItemReference(agencyId, "dr-1"));
+        stubChildren(agencyId, "pi-2", DATA_RELATIONSHIP_TYPE, new ItemReference(agencyId, "dr-2"));
+        stubChildItems(agencyId, "dr-1", VARIABLE_TYPE, labelItem(VARIABLE_TYPE, agencyId, "var-1", "Sexe"));
+        stubChildItems(
+                agencyId,
+                "dr-2",
+                VARIABLE_TYPE,
+                labelItem(VARIABLE_TYPE, agencyId, "var-1", "Sexe"),
+                labelItem(VARIABLE_TYPE, agencyId, "var-2", "Âge"));
+
+        List<CodeListVariableUsage> result = ddiRepository.getStudyUnitVariableUsages(agencyId, "su-1");
+
+        assertThat(result)
+                .containsExactlyInAnyOrder(
+                        new CodeListVariableUsage(
+                                agencyId, "su-1", null, agencyId, "pi-1", "Fichier 2024", agencyId, "var-1", "Sexe"),
+                        new CodeListVariableUsage(
+                                agencyId, "su-1", null, agencyId, "pi-2", "Fichier 2025", agencyId, "var-1", "Sexe"),
+                        new CodeListVariableUsage(
+                                agencyId, "su-1", null, agencyId, "pi-2", "Fichier 2025", agencyId, "var-2", "Âge"));
+    }
 }
