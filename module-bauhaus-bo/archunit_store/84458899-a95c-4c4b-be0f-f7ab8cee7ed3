@@ -5,8 +5,6 @@ fr.insee.rmes.modules.codeslists.partialcodeslists.webservice.PartialCodeListsRe
 fr.insee.rmes.modules.concepts.collections.webservice.CollectionsResources.create(fr.insee.rmes.modules.concepts.collections.webservice.CreateCollectionRequest, jakarta.servlet.http.HttpServletResponse) takes a @RequestBody that is not annotated with @Valid
 fr.insee.rmes.modules.concepts.collections.webservice.CollectionsResources.publish(java.lang.String, java.util.List) takes a @RequestBody that is not annotated with @Valid
 fr.insee.rmes.modules.concepts.collections.webservice.CollectionsResources.update(java.lang.String, fr.insee.rmes.modules.concepts.collections.webservice.UpdateCollectionRequest) takes a @RequestBody that is not annotated with @Valid
-fr.insee.rmes.modules.concepts.concept.webservice.ConceptsResources.setConcept(java.lang.String) takes a @RequestBody that is not annotated with @Valid
-fr.insee.rmes.modules.concepts.concept.webservice.ConceptsResources.setConcept(java.lang.String, java.lang.String) takes a @RequestBody that is not annotated with @Valid
 fr.insee.rmes.modules.concepts.concept.webservice.ConceptsResources.setConceptsValidation(java.lang.String, java.util.List) takes a @RequestBody that is not annotated with @Valid
 fr.insee.rmes.modules.datasets.datasets.webservice.DatasetResources.setDataset(java.lang.String) takes a @RequestBody that is not annotated with @Valid
 fr.insee.rmes.modules.datasets.datasets.webservice.DatasetResources.setDataset(java.lang.String, java.lang.String) takes a @RequestBody that is not annotated with @Valid

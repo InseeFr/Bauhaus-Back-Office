@@ -30,6 +30,23 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 @AppSpringBootTest
 class ConceptsResourcesTest {
 
+    private static final ConceptRequest CONCEPT = new ConceptRequest(
+            "Concept",
+            null,
+            null,
+            null,
+            null,
+            null,
+            "http://id.insee.fr/codes/base/statutDiffusion/Prive",
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null);
+
     @MockitoBean
     fr.insee.rmes.bauhaus_services.ConceptsService legacyConceptsService;
 
@@ -131,9 +148,9 @@ class ConceptsResourcesTest {
         req.setScheme("http");
         RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(req));
 
-        when(legacyConceptsService.setConcept("mocked body")).thenReturn("test-concept-123");
+        when(legacyConceptsService.setConcept(CONCEPT.toLegacyJson())).thenReturn("test-concept-123");
 
-        var response = newController().setConcept("mocked body");
+        var response = newController().setConcept(CONCEPT);
 
         Assertions.assertEquals(HttpStatus.CREATED, response.getStatusCode());
         Assertions.assertEquals("test-concept-123", response.getBody());
@@ -144,9 +161,9 @@ class ConceptsResourcesTest {
 
     @Test
     void shouldReturnResponseWhenSetConceptWithIdAndConcept() throws RmesException {
-        doNothing().when(legacyConceptsService).setConcept("mocked id", "mocked body");
+        doNothing().when(legacyConceptsService).setConcept("mocked id", CONCEPT.toLegacyJson());
         Assertions.assertEquals(
                 "<204 NO_CONTENT No Content,[]>",
-                newController().setConcept("mocked id", "mocked body").toString());
+                newController().setConcept("mocked id", CONCEPT).toString());
     }
 }
