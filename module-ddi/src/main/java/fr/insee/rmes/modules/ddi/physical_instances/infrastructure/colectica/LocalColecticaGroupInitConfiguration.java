@@ -578,6 +578,104 @@ public class LocalColecticaGroupInitConfiguration {
         };
     }
 
+    /** Graines des ids déterministes de l'exemple « StudyUnit en 6 versions ». */
+    static final String SIX_VERSIONS_EXAMPLE_STUDY_UNIT_SEED = "example:studyunit:six-versions";
+
+    private static final String SIX_VERSIONS_EXAMPLE_GROUP_SEED = "example:group:six-versions";
+
+    private static final List<String> SIX_VERSIONS = List.of("1", "2", "3", "4", "5", "6");
+
+    /**
+     * Exemple de données volontairement versionnées, côté variables : un Group → une StudyUnit
+     * enregistrée en versions 1 à 6 → une PhysicalInstance, chaque version de la StudyUnit
+     * référençant le <em>même</em> LogicalProduct (et sa VariableScheme).
+     * <p>
+     * Il reproduit l'erreur observée sur « Base permanente des équipements 2024 » : ranger une
+     * variable de la PhysicalInstance passe par la recherche des LogicalProducts de la StudyUnit via
+     * {@code bysubject}, qui renvoie une description par relation <em>versionnée</em> — le même
+     * LogicalProduct ressort donc 6 fois, et le save refuse « 6 LogicalProducts : un seul est
+     * attendu ».
+     * <p>
+     * Indépendant de {@link #initColecticaGroups} : ids déterministes, donc l'init reste rejouable.
+     */
+    @Bean
+    @Order(Ordered.LOWEST_PRECEDENCE)
+    CommandLineRunner initColecticaSixVersionsStudyUnitExample(
+            GroupService groupService,
+            StudyUnitService studyUnitService,
+            DDIService ddiService,
+            ColecticaConfiguration colecticaConfiguration) {
+        return args -> {
+            logger.info("=== Creating the example study unit in six versions sharing one logical product ===");
+
+            String defaultAgencyId = colecticaConfiguration.server().defaultAgencyId();
+            String defaultLang = colecticaConfiguration.langs().getFirst();
+            String versionResponsibility = colecticaConfiguration.server().versionResponsibility();
+            String versionDate = ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+
+            try {
+                // LogicalProduct + VariableScheme, puis la PI, puis les versions de la StudyUnit qui
+                // les référencent — dans cet ordre, pour que Colectica ne fabrique pas de stubs.
+                Reference logicalProductRef = createStudyUnitLogicalProduct(
+                        ddiService,
+                        SIX_VERSIONS_EXAMPLE_STUDY_UNIT_SEED,
+                        "EXEMPLE - study unit en 6 versions",
+                        defaultAgencyId,
+                        defaultLang);
+
+                String physicalInstanceLabel = "EXEMPLE - PI d'une study unit en 6 versions";
+                Ddi4Response piResponse = ddiService.createPhysicalInstance(
+                        new CreatePhysicalInstanceRequest(
+                                physicalInstanceLabel, physicalInstanceLabel, null, null, null, null, null),
+                        physicalInstanceIds(SIX_VERSIONS_EXAMPLE_STUDY_UNIT_SEED));
+                Ddi4PhysicalInstance physicalInstance =
+                        piResponse.physicalInstance().getFirst();
+                Reference physicalInstanceReference = Reference.of(
+                        physicalInstance.agency(),
+                        physicalInstance.id(),
+                        physicalInstance.version(),
+                        "PhysicalInstance");
+
+                String studyUnitId = generateDeterministicUuid(SIX_VERSIONS_EXAMPLE_STUDY_UNIT_SEED);
+                for (String version : SIX_VERSIONS) {
+                    Ddi4StudyUnit studyUnit = new Ddi4StudyUnit(
+                            Ddi4StudyUnit.TYPE,
+                            CogsDate.ofDateTime(versionDate),
+                            "urn:ddi:%s:%s:%s".formatted(defaultAgencyId, studyUnitId, version),
+                            defaultAgencyId,
+                            studyUnitId,
+                            version,
+                            new Citation(LangStrings.of(
+                                    defaultLang, "EXEMPLE - study unit en 6 versions (v" + version + ")")),
+                            null,
+                            List.of(physicalInstanceReference),
+                            List.of(logicalProductRef));
+                    logger.info("Creating the example study unit: id={}, version={}", studyUnitId, version);
+                    studyUnitService.createOrUpdate(studyUnit);
+                }
+
+                String groupId = generateDeterministicUuid(SIX_VERSIONS_EXAMPLE_GROUP_SEED);
+                Ddi4Group group = new Ddi4Group(
+                        Ddi4Group.TYPE,
+                        CogsDate.ofDateTime(versionDate),
+                        "urn:ddi:%s:%s:1".formatted(defaultAgencyId, groupId),
+                        defaultAgencyId,
+                        groupId,
+                        "1",
+                        versionResponsibility,
+                        new Citation(LangStrings.of(defaultLang, "EXEMPLE - groupe de la study unit en 6 versions")),
+                        List.of(Reference.of(defaultAgencyId, studyUnitId, "1", "StudyUnit")),
+                        List.of(),
+                        "insee:StatisticalOperationSeries",
+                        null);
+                logger.info("Creating the example group: id={}, studyUnit={}", groupId, studyUnitId);
+                groupService.createOrUpdate(group);
+            } catch (Exception e) {
+                logger.error("Failed to create the example study unit in six versions", e);
+            }
+        };
+    }
+
     /** Graine des ids déterministes de l'exemple « Group et StudyUnit sans LogicalProduct ». */
     static final String WITHOUT_LOGICAL_PRODUCT_EXAMPLE_STUDY_UNIT_SEED = "example:studyunit:without-logical-product";
 
