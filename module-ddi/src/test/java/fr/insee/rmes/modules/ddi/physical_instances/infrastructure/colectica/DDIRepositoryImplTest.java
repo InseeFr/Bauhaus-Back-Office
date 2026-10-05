@@ -5402,6 +5402,68 @@ class DDIRepositoryImplTest {
     }
 
     @Test
+    void updateFullPhysicalInstance_filesVariablesWhenEveryStudyUnitVersionReferencesTheSameLogicalProduct() {
+        stubPhysicalInstanceConversion();
+        when(instanceConfiguration.itemTypes())
+                .thenReturn(Map.of("LogicalProduct", "lp-type", "VariableScheme", "vs-type"));
+        stubPhysicalInstanceParents();
+        // Une relation par version de la StudyUnit : le même LogicalProduct ressort autant de fois.
+        when(colecticaClient.findRelatedDescriptions(
+                        RelationshipDirection.BY_SUBJECT, new ItemReference("fr.insee", "su-1"), List.of("lp-type")))
+                .thenReturn(List.of(
+                        new ItemReference("fr.insee", "lp-1"),
+                        new ItemReference("fr.insee", "lp-1"),
+                        new ItemReference("fr.insee", "lp-1")));
+        when(colecticaClient.findRelatedDescriptions(
+                        RelationshipDirection.BY_SUBJECT, new ItemReference("fr.insee", "lp-1"), List.of("vs-type")))
+                .thenReturn(List.of(new ItemReference("fr.insee", "VS_1")));
+        when(colecticaClient.getItem("fr.insee", "VS_1", null))
+                .thenReturn(new ColecticaItemResponse(
+                        "vs-type",
+                        "fr.insee",
+                        1,
+                        "VS_1",
+                        "<vs/>",
+                        "2026-01-01T00:00:00",
+                        "resp",
+                        false,
+                        false,
+                        false,
+                        "fmt"));
+        when(ddi3ToDdi4Converter.toVariableScheme("<vs/>"))
+                .thenReturn(new Ddi4VariableScheme(
+                        Ddi4VariableScheme.TYPE,
+                        CogsDate.ofDateTime("2026-01-01T00:00:00"),
+                        "urn:ddi:fr.insee:VS_1:1",
+                        "fr.insee",
+                        "VS_1",
+                        "1",
+                        LangStrings.of("fr-FR", "VS"),
+                        List.of()));
+        ArgumentCaptor<Ddi4VariableScheme> vsCaptor = ArgumentCaptor.forClass(Ddi4VariableScheme.class);
+        when(ddi4ToDdi3Converter.toVariableSchemeItem(vsCaptor.capture()))
+                .thenReturn(new Ddi3Response.Ddi3Item(
+                        "vs-type",
+                        "fr.insee",
+                        "1",
+                        "VS_1",
+                        "<vs-updated/>",
+                        "2026-01-01T00:00:00",
+                        "resp",
+                        false,
+                        false,
+                        false,
+                        "fmt"));
+
+        ddiRepository.updateFullPhysicalInstance("fr.insee", "pi-1", ddi4WithOneVariable());
+
+        assertThat(vsCaptor.getValue().variableReference())
+                .extracting(Reference::id)
+                .containsExactly("VAR_1");
+        verify(colecticaClient).createOrUpdateItems(any());
+    }
+
+    @Test
     void updateFullPhysicalInstance_rejectsVariablesWhenStudyUnitLogicalProductHasNoVariableScheme() {
         stubPhysicalInstanceConversion();
         when(instanceConfiguration.itemTypes())
