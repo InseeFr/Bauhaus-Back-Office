@@ -3,6 +3,7 @@ package fr.insee.rmes.bauhaus_services;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.model.operations.*;
 import fr.insee.rmes.modules.operations.indicators.domain.model.commands.IndicatorCommand;
+import fr.insee.rmes.modules.operations.operations.domain.model.commands.OperationCommand;
 import fr.insee.rmes.modules.operations.series.domain.model.Series;
 import fr.insee.rmes.modules.operations.series.domain.model.commands.SeriesCommand;
 import java.util.List;
@@ -43,9 +44,9 @@ public interface OperationsService {
 
     String getOperationsWithReport(String id) throws RmesException;
 
-    void setOperation(String id, String body) throws RmesException;
+    void setOperation(String id, OperationCommand command) throws RmesException;
 
-    String createOperation(String body) throws RmesException;
+    String createOperation(OperationCommand command) throws RmesException;
 
     void setOperationValidation(String body) throws RmesException;
 

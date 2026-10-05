@@ -10,6 +10,7 @@ import fr.insee.rmes.graphdb.QueryUtils;
 import fr.insee.rmes.json.JSONUtils;
 import fr.insee.rmes.model.operations.*;
 import fr.insee.rmes.modules.operations.indicators.domain.model.commands.IndicatorCommand;
+import fr.insee.rmes.modules.operations.operations.domain.model.commands.OperationCommand;
 import fr.insee.rmes.modules.operations.series.domain.model.Series;
 import fr.insee.rmes.modules.operations.series.domain.model.commands.SeriesCommand;
 import fr.insee.rmes.modules.shared_kernel.domain.model.Roles;
@@ -199,16 +200,16 @@ public class OperationsImpl implements OperationsService {
      * UPDATE
      */
     @Override
-    public void setOperation(String id, String body) throws RmesException {
-        operationsRepository.setOperation(id, body);
+    public void setOperation(String id, OperationCommand command) throws RmesException {
+        operationsRepository.setOperation(id, command);
     }
 
     /**
      * CREATE
      */
     @Override
-    public String createOperation(String body) throws RmesException {
-        return operationsRepository.setOperation(body);
+    public String createOperation(OperationCommand command) throws RmesException {
+        return operationsRepository.createOperation(command);
     }
 
     @Override

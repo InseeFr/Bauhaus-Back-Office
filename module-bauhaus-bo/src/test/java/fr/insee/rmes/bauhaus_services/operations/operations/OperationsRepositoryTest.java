@@ -1,14 +1,9 @@
 package fr.insee.rmes.bauhaus_services.operations.operations;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.*;
 
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.Logger;
-import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.core.read.ListAppender;
 import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.bauhaus_services.operations.OperationsParentRepository;
 import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationsUtils;
@@ -23,6 +18,7 @@ import fr.insee.rmes.graphdb.ontologies.ADMS;
 import fr.insee.rmes.model.operations.Operation;
 import fr.insee.rmes.modules.operation.domain.event.BilingualLabel;
 import fr.insee.rmes.modules.operation.domain.event.OperationSaved;
+import fr.insee.rmes.modules.operations.operations.domain.model.commands.OperationCommand;
 import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationsOperationQueries;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
@@ -31,14 +27,12 @@ import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.XSD;
-import org.json.JSONObject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 
 @ExtendWith(MockitoExtension.class)
@@ -119,17 +113,8 @@ class OperationsRepositoryTest {
                     .when(() -> RdfUtils.createLiteral(anyString(), eq(XSD.GYEAR)))
                     .thenCallRealMethod();
             stubRdfUtilsForOperationOfSeries2(mockedFactory, operationIRI);
-            JSONObject operation = new JSONObject();
-            JSONObject series = new JSONObject().put("id", "2");
-            operation
-                    .put("prefLabelLg1", "prefLabelLg1")
-                    .put("prefLabelLg2", "prefLabelLg2")
-                    .put("altLabelLg1", "altLabelLg1")
-                    .put("altLabelLg2", "altLabelLg2")
-                    .put("year", 2024)
-                    .put("series", series);
-
-            operationsRepository.setOperation(operation.toString());
+            operationsRepository.createOperation(new OperationCommand(
+                    "prefLabelLg1", "prefLabelLg2", "altLabelLg1", "altLabelLg2", "2", 2024, null, null));
 
             ArgumentCaptor<Model> model = ArgumentCaptor.forClass(Model.class);
 
@@ -151,14 +136,9 @@ class OperationsRepositoryTest {
             SimpleValueFactory valueFactory = SimpleValueFactory.getInstance();
             stubRdfUtilsForOperationOfSeries2(mockedFactory, valueFactory.createIRI("http://operation/1"));
 
-            JSONObject series = new JSONObject().put("id", "2");
-            JSONObject operation = new JSONObject()
-                    .put("prefLabelLg1", "prefLabelLg1")
-                    .put("prefLabelLg2", "prefLabelLg2")
-                    .put("series", series);
-
             try {
-                operationsRepository.setOperation(operation.toString());
+                operationsRepository.createOperation(
+                        new OperationCommand("prefLabelLg1", "prefLabelLg2", null, null, "2", null, null, null));
             } catch (RmesBadRequestException e) {
                 if (e.getDetails().contains("A series cannot have both a Sims and Operation(s)")) {
                     fail("La création d'une opération sur une série avec SIMS ne devrait plus lever 406 : "
@@ -198,14 +178,8 @@ class OperationsRepositoryTest {
         when(operationsObjectMapper.createId()).thenReturn("o1500");
         when(operationsObjectMapper.checkIfObjectExists(ObjectType.SERIES, "s1001"))
                 .thenReturn(true);
-        JSONObject body = new JSONObject()
-                .put("prefLabelLg1", "Enquête emploi")
-                .put("prefLabelLg2", "Labour survey")
-                .put("altLabelLg1", "EEC")
-                .put("altLabelLg2", "LFS")
-                .put("series", new JSONObject().put("id", "s1001"));
-
-        operationsRepository.setOperation(body.toString());
+        operationsRepository.createOperation(
+                new OperationCommand("Enquête emploi", "Labour survey", "EEC", "LFS", "s1001", null, null, null));
 
         ArgumentCaptor<OperationSaved> captor = ArgumentCaptor.forClass(OperationSaved.class);
         verify(events).publishEvent(captor.capture());
@@ -218,52 +192,15 @@ class OperationsRepositoryTest {
                         new BilingualLabel("EEC", "LFS")));
     }
 
-    /**
-     * Stubs qui laisseraient la mise à jour aller jusqu'à l'écriture : {@code lenient} car un corps
-     * illisible doit justement l'interrompre avant qu'ils ne servent.
-     */
-    private void stubUpdateOfAPublishedOperation() throws RmesException {
-        lenient().when(operationsParentRepository.getValidationStatus("o1500")).thenReturn("Published");
-        lenient().when(repositoryGestion.getResponseAsBoolean(any())).thenReturn(false);
-    }
-
     @Test
-    void updateOperation_whenTheBodyIsNotValidJson_shouldRejectWithBadRequestWithoutWriting() throws RmesException {
-        stubUpdateOfAPublishedOperation();
+    void updateOperation_writesTheOperationUnderTheIdOfThePath() throws RmesException {
+        when(operationsParentRepository.getValidationStatus("o1500")).thenReturn("Published");
+        when(repositoryGestion.getResponseAsBoolean(any())).thenReturn(false);
 
-        assertThatThrownBy(() -> operationsRepository.setOperation("o1500", "{not json"))
-                .isInstanceOf(RmesBadRequestException.class)
-                .extracting(e -> ((RmesException) e).getDetails())
-                .asString()
-                .contains("The submitted data is invalid");
+        operationsRepository.setOperation(
+                "o1500",
+                new OperationCommand("Enquête emploi", null, null, null, null, null, null, "2026-01-01T00:00:00"));
 
-        verify(repositoryGestion, never()).loadSimpleObject(any(), any());
-        verifyNoInteractions(documentationsUtils, events);
-    }
-
-    @Test
-    void updateOperation_whenTheBodyIsNotValidJson_shouldLogTheErrorWithItsCause() throws RmesException {
-        stubUpdateOfAPublishedOperation();
-        Logger logger = (Logger) LoggerFactory.getLogger(OperationsRepository.class);
-        ListAppender<ILoggingEvent> logs = new ListAppender<>();
-        logs.start();
-        logger.addAppender(logs);
-        try {
-            assertThatThrownBy(() -> operationsRepository.setOperation("o1500", "{not json"))
-                    .isInstanceOf(RmesException.class);
-
-            assertThat(logs.list)
-                    .filteredOn(event -> event.getLevel() == Level.ERROR)
-                    .singleElement()
-                    .satisfies(event -> {
-                        assertThat(event.getFormattedMessage()).contains("o1500");
-                        assertThat(event.getThrowableProxy()).isNotNull();
-                        assertThat(event.getThrowableProxy().getCause())
-                                .as("l'erreur Jackson d'origine doit figurer dans la trace")
-                                .isNotNull();
-                    });
-        } finally {
-            logger.detachAppender(logs);
-        }
+        verify(repositoryGestion).loadSimpleObject(eq(RdfUtils.objectIRI(ObjectType.OPERATION, "o1500")), any());
     }
 }
