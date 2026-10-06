@@ -22,6 +22,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
+import tools.jackson.databind.json.JsonMapper;
 
 @ExtendWith(MockitoExtension.class)
 class ComponentResourcesTest {
@@ -199,17 +200,18 @@ class ComponentResourcesTest {
     void shouldUpdateComponentById() throws RmesException {
         // Given
         String id = "comp123";
-        String body = "{\"label\":\"Updated Component\"}";
+        ComponentRequest component = aComponent("Updated Component");
         String expectedResult = "{\"id\":\"comp123\",\"label\":\"Updated Component\"}";
-        when(structureComponentService.updateComponent(id, body)).thenReturn(expectedResult);
+        when(structureComponentService.updateComponent(id, component.toLegacyJson()))
+                .thenReturn(expectedResult);
 
         // When
-        ResponseEntity<Object> result = componentResources.updateComponentById(id, body);
+        ResponseEntity<Object> result = componentResources.updateComponentById(id, component);
 
         // Then
         assertEquals(HttpStatus.SC_OK, result.getStatusCode().value());
         assertEquals(expectedResult, result.getBody());
-        verify(structureComponentService, times(1)).updateComponent(id, body);
+        verify(structureComponentService, times(1)).updateComponent(id, component.toLegacyJson());
     }
 
     @Test
@@ -221,12 +223,13 @@ class ComponentResourcesTest {
         req.setScheme("http");
         RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(req));
 
-        String body = "{\"label\":\"New Component\"}";
+        ComponentRequest component = aComponent("New Component");
         String expectedId = "comp456";
-        when(structureComponentService.createComponent(body)).thenReturn(expectedId);
+        when(structureComponentService.createComponent(component.toLegacyJson()))
+                .thenReturn(expectedId);
 
         // When
-        ResponseEntity<Object> result = componentResources.createComponent(body);
+        ResponseEntity<Object> result = componentResources.createComponent(component);
 
         // Then
         assertEquals(HttpStatus.SC_CREATED, result.getStatusCode().value());
@@ -234,6 +237,12 @@ class ComponentResourcesTest {
         assertEquals(
                 "/structures/components/" + expectedId,
                 Objects.requireNonNull(result.getHeaders().getLocation()).getPath());
-        verify(structureComponentService, times(1)).createComponent(body);
+        verify(structureComponentService, times(1)).createComponent(component.toLegacyJson());
+    }
+
+    private static ComponentRequest aComponent(String labelLg1) {
+        return JsonMapper.builder().build().readValue("""
+                {"identifiant": "NOTATION", "labelLg1": "%s", "labelLg2": "Component",
+                 "type": "http://purl.org/linked-data/cube#AttributeProperty"}""".formatted(labelLg1), ComponentRequest.class);
     }
 }
