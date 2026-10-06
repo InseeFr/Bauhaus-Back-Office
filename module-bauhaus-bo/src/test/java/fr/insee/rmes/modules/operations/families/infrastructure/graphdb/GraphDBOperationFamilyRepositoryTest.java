@@ -5,30 +5,45 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import fr.insee.rmes.BauhausLanguagesProperties;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
+import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.operations.families.domain.model.OperationFamily;
 import fr.insee.rmes.modules.operations.families.domain.model.OperationFamilySeries;
 import fr.insee.rmes.modules.operations.families.domain.model.OperationFamilySubject;
 import fr.insee.rmes.modules.operations.families.domain.model.PartialOperationFamily;
+import fr.insee.rmes.modules.shared_kernel.infrastructure.publication.ObjectPublished;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationQueries;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.utils.DiacriticSorter;
 import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 import java.util.List;
+import java.util.Optional;
 import org.apache.http.HttpStatus;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Statement;
+import org.eclipse.rdf4j.model.ValueFactory;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
+import org.eclipse.rdf4j.model.vocabulary.SKOS;
+import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 @ExtendWith(MockitoExtension.class)
 class GraphDBOperationFamilyRepositoryTest {
+
+    private static final ValueFactory VALUES = SimpleValueFactory.getInstance();
 
     @Mock
     private RepositoryGestion repositoryGestion;
@@ -45,6 +60,9 @@ class GraphDBOperationFamilyRepositoryTest {
     @Mock
     private PublicationUtils publicationUtils;
 
+    @Mock
+    private ApplicationEventPublisher events;
+
     private GraphDBOperationFamilyRepository repository;
 
     @BeforeEach
@@ -55,7 +73,8 @@ class GraphDBOperationFamilyRepositoryTest {
                 operationQueries,
                 repositoryPublication,
                 publicationUtils,
-                new BauhausLanguagesProperties("fr", "en"));
+                new BauhausLanguagesProperties("fr", "en"),
+                events);
     }
 
     @Test
@@ -280,6 +299,23 @@ class GraphDBOperationFamilyRepositoryTest {
         assertTrue(repository.getSeriesWithReport("s1").isEmpty());
     }
 
+    @Test
+    void publish_announces_the_publication_with_the_operations_graph() throws RmesException {
+        RdfUtils.setGraphs(GraphsPropertiesStub.stub());
+        RdfUtils.setBauhausUriBuilder(
+                new BauhausUriBuilder("http://publication/", "http://bauhaus/", name -> Optional.of("famille")));
+        IRI familyIRI = VALUES.createIRI("http://bauhaus/famille/s1001");
+        givenManagementTriples(VALUES.createStatement(familyIRI, SKOS.PREF_LABEL, VALUES.createLiteral("Famille")));
+
+        repository.publish("s1001");
+
+        ArgumentCaptor<ObjectPublished> event = ArgumentCaptor.forClass(ObjectPublished.class);
+        verify(events).publishEvent(event.capture());
+        assertEquals(
+                new ObjectPublished(familyIRI, VALUES.createIRI("http://rdf.insee.fr/graphes/operations")),
+                event.getValue());
+    }
+
     private static MockedStatic<DiacriticSorter> diacriticSorterReturning(List<PartialOperationFamily> families) {
         MockedStatic<DiacriticSorter> mockedSorter = mockStatic(DiacriticSorter.class);
         mockedSorter
@@ -304,5 +340,15 @@ class GraphDBOperationFamilyRepositoryTest {
         when(repositoryGestion.getResponseAsObject("familyQuery")).thenReturn(familyJson);
         when(repositoryGestion.getResponseAsArray("seriesQuery")).thenReturn(series);
         when(repositoryGestion.getResponseAsArray("subjectsQuery")).thenReturn(subjects);
+    }
+
+    /** Les triplets de gestion que {@code publish} recopie vers le graphe de publication. */
+    @SuppressWarnings("unchecked")
+    private void givenManagementTriples(Statement statement) throws RmesException {
+        RepositoryResult<Statement> statements = mock(RepositoryResult.class);
+        when(statements.hasNext()).thenReturn(true, true, false);
+        when(statements.next()).thenReturn(statement);
+        when(repositoryGestion.getStatements(any(), any())).thenReturn(statements);
+        when(publicationUtils.tranformBaseURIToPublish(any())).thenAnswer(invocation -> invocation.getArgument(0));
     }
 }

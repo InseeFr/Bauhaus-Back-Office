@@ -21,6 +21,7 @@ import fr.insee.rmes.modules.operations.families.domain.model.PartialOperationFa
 import fr.insee.rmes.modules.operations.families.domain.port.serverside.OperationFamilyRepository;
 import fr.insee.rmes.modules.shared_kernel.domain.model.Language;
 import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
+import fr.insee.rmes.modules.shared_kernel.infrastructure.publication.ObjectPublished;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationQueries;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.utils.DiacriticSorter;
@@ -39,6 +40,7 @@ import org.eclipse.rdf4j.model.vocabulary.SKOS;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.RepositoryResult;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Repository;
 
 @ServerSideAdaptor
@@ -51,6 +53,7 @@ public class GraphDBOperationFamilyRepository implements OperationFamilyReposito
     private final RepositoryPublication repositoryPublication;
     private final PublicationUtils publicationUtils;
     private final BauhausLanguagesProperties languages;
+    private final ApplicationEventPublisher events;
 
     public GraphDBOperationFamilyRepository(
             RepositoryGestion repositoryGestion,
@@ -58,13 +61,15 @@ public class GraphDBOperationFamilyRepository implements OperationFamilyReposito
             OperationQueries operationQueries,
             RepositoryPublication repositoryPublication,
             PublicationUtils publicationUtils,
-            BauhausLanguagesProperties languages) {
+            BauhausLanguagesProperties languages,
+            ApplicationEventPublisher events) {
         this.repositoryGestion = repositoryGestion;
         this.operationFamilyQueries = operationFamilyQueries;
         this.operationQueries = operationQueries;
         this.repositoryPublication = repositoryPublication;
         this.publicationUtils = publicationUtils;
         this.languages = languages;
+        this.events = events;
     }
 
     @Override
@@ -200,13 +205,7 @@ public class GraphDBOperationFamilyRepository implements OperationFamilyReposito
         IRI familyURI = familyIRI(id);
         repositoryPublication.publishResource(
                 publicationUtils.tranformBaseURIToPublish(familyURI), triplesToPublish(familyURI), Constants.FAMILY);
-
-        Model model = new LinkedHashModel();
-        Resource graph = RdfUtils.operationsGraph();
-        model.add(familyURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.VALIDATED), graph);
-        model.remove(familyURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.UNPUBLISHED), graph);
-        model.remove(familyURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.MODIFIED), graph);
-        repositoryGestion.objectValidation(familyURI, model);
+        events.publishEvent(new ObjectPublished(familyURI, RdfUtils.operationsGraph()));
     }
 
     /**

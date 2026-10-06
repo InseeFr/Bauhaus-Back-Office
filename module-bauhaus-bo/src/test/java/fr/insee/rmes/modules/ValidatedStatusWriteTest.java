@@ -46,8 +46,7 @@ class ValidatedStatusWriteTest {
             "module-bauhaus-bo/src/main/java/fr/insee/rmes/bauhaus_services/operations/operations/OperationsRepository.java",
             "module-bauhaus-bo/src/main/java/fr/insee/rmes/bauhaus_services/operations/series/SeriesRepository.java",
             "module-bauhaus-bo/src/main/java/fr/insee/rmes/bauhaus_services/structures/persistence/StructureComponentRepository.java",
-            "module-bauhaus-bo/src/main/java/fr/insee/rmes/bauhaus_services/structures/persistence/StructureRepository.java",
-            "module-bauhaus-bo/src/main/java/fr/insee/rmes/modules/operations/families/infrastructure/graphdb/GraphDBOperationFamilyRepository.java");
+            "module-bauhaus-bo/src/main/java/fr/insee/rmes/bauhaus_services/structures/persistence/StructureRepository.java");
 
     private static final Pattern VALIDATED_WRITE =
             Pattern.compile("(?:setLiteralString|string)\\(\\s*ValidationStatus\\.VALIDATED\\s*\\)"
