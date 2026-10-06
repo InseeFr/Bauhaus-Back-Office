@@ -589,6 +589,136 @@ public class LocalColecticaGroupInitConfiguration {
         };
     }
 
+    /**
+     * Graines des ids déterministes de l'exemple « StudyUnit déplacée d'un groupe à un autre » : la
+     * StudyUnit et sa PhysicalInstance, le groupe d'origine et le groupe de destination.
+     */
+    static final String MOVED_EXAMPLE_STUDY_UNIT_SEED = "example:studyunit:moved-between-groups";
+
+    static final String MOVED_EXAMPLE_GROUP_1_SEED = "example:group:moved-study-unit-source";
+
+    static final String MOVED_EXAMPLE_GROUP_2_SEED = "example:group:moved-study-unit-target";
+
+    /**
+     * Exemple d'une StudyUnit déplacée d'un groupe à un autre : un Group 1 (v1) → une StudyUnit →
+     * une PhysicalInstance, puis un Group 2 (v1) qui reçoit la StudyUnit, et enfin le Group 1
+     * enregistré en version 2 <em>sans</em> StudyUnit.
+     * <p>
+     * La version 1 du Group 1 référence toujours la StudyUnit : ce jeu de données reproduit ce que
+     * l'on observe quand un rattachement a été retiré par une nouvelle version, et non effacé.
+     * <p>
+     * Volontairement indépendant de {@link #initColecticaGroups} : ses ids sont déterministes, donc
+     * l'init reste rejouable.
+     */
+    @Bean
+    @Order(Ordered.LOWEST_PRECEDENCE)
+    CommandLineRunner initColecticaMovedStudyUnitExample(
+            GroupService groupService,
+            StudyUnitService studyUnitService,
+            DDIService ddiService,
+            ColecticaConfiguration colecticaConfiguration) {
+        return args -> {
+            logger.info("=== Creating the example study unit moved from a first group to a second group ===");
+
+            String defaultAgencyId = colecticaConfiguration.server().defaultAgencyId();
+            String defaultLang = colecticaConfiguration.langs().getFirst();
+            String versionResponsibility = colecticaConfiguration.server().versionResponsibility();
+            String versionDate = ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+
+            try {
+                String physicalInstanceLabel = "EXEMPLE - PI d'une study unit déplacée de groupe";
+                Ddi4Response piResponse = ddiService.createPhysicalInstance(
+                        new CreatePhysicalInstanceRequest(
+                                physicalInstanceLabel, physicalInstanceLabel, null, null, null, null, null),
+                        physicalInstanceIds(MOVED_EXAMPLE_STUDY_UNIT_SEED));
+                Ddi4PhysicalInstance physicalInstance =
+                        piResponse.physicalInstance().getFirst();
+                Reference physicalInstanceReference = Reference.of(
+                        physicalInstance.agency(),
+                        physicalInstance.id(),
+                        physicalInstance.version(),
+                        "PhysicalInstance");
+
+                String studyUnitId = generateDeterministicUuid(MOVED_EXAMPLE_STUDY_UNIT_SEED);
+                studyUnitService.createOrUpdate(new Ddi4StudyUnit(
+                        Ddi4StudyUnit.TYPE,
+                        CogsDate.ofDateTime(versionDate),
+                        "urn:ddi:%s:%s:1".formatted(defaultAgencyId, studyUnitId),
+                        defaultAgencyId,
+                        studyUnitId,
+                        "1",
+                        new Citation(LangStrings.of(defaultLang, "EXEMPLE - study unit déplacée de groupe")),
+                        null,
+                        List.of(physicalInstanceReference),
+                        null));
+                List<Reference> studyUnitRefs = List.of(Reference.of(defaultAgencyId, studyUnitId, "1", "StudyUnit"));
+
+                String group1Id = generateDeterministicUuid(MOVED_EXAMPLE_GROUP_1_SEED);
+                String group1Label = "EXEMPLE - groupe d'origine de la study unit déplacée";
+                String group2Id = generateDeterministicUuid(MOVED_EXAMPLE_GROUP_2_SEED);
+                String group2Label = "EXEMPLE - groupe de destination de la study unit déplacée";
+
+                logger.info("Creating the example source group: id={}, studyUnit={}", group1Id, studyUnitId);
+                groupService.createOrUpdate(movedExampleGroup(
+                        defaultAgencyId,
+                        group1Id,
+                        "1",
+                        versionDate,
+                        versionResponsibility,
+                        defaultLang,
+                        group1Label,
+                        studyUnitRefs));
+                logger.info("Creating the example target group: id={}, studyUnit={}", group2Id, studyUnitId);
+                groupService.createOrUpdate(movedExampleGroup(
+                        defaultAgencyId,
+                        group2Id,
+                        "1",
+                        versionDate,
+                        versionResponsibility,
+                        defaultLang,
+                        group2Label,
+                        studyUnitRefs));
+                // La StudyUnit quitte le groupe d'origine par une nouvelle version : la v1 la garde.
+                logger.info("Removing the study unit from the example source group: id={}, version=2", group1Id);
+                groupService.createOrUpdate(movedExampleGroup(
+                        defaultAgencyId,
+                        group1Id,
+                        "2",
+                        versionDate,
+                        versionResponsibility,
+                        defaultLang,
+                        group1Label,
+                        List.of()));
+            } catch (Exception e) {
+                logger.error("Failed to create the example study unit moved between groups", e);
+            }
+        };
+    }
+
+    private static Ddi4Group movedExampleGroup(
+            String agencyId,
+            String groupId,
+            String version,
+            String versionDate,
+            String versionResponsibility,
+            String lang,
+            String label,
+            List<Reference> studyUnitRefs) {
+        return new Ddi4Group(
+                Ddi4Group.TYPE,
+                CogsDate.ofDateTime(versionDate),
+                "urn:ddi:%s:%s:%s".formatted(agencyId, groupId, version),
+                agencyId,
+                groupId,
+                version,
+                versionResponsibility,
+                new Citation(LangStrings.of(lang, label)),
+                studyUnitRefs,
+                List.of(),
+                "insee:StatisticalOperationSeries",
+                null);
+    }
+
     /** Graines des ids déterministes de l'exemple « StudyUnit en 6 versions ». */
     static final String SIX_VERSIONS_EXAMPLE_STUDY_UNIT_SEED = "example:studyunit:six-versions";
 

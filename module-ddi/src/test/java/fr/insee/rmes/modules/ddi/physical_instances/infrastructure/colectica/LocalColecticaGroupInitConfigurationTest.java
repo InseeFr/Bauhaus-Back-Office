@@ -869,6 +869,50 @@ class LocalColecticaGroupInitConfigurationTest {
     }
 
     @Test
+    void movedStudyUnitExample_attachesTheStudyUnitToAFirstGroupThenMovesItToASecondGroup() throws Exception {
+        when(ddiService.createPhysicalInstance(any(), any())).thenReturn(piResponse("fr.insee", "pi-moved"));
+
+        LocalColecticaGroupInitConfiguration config = new LocalColecticaGroupInitConfiguration();
+        CommandLineRunner runner = config.initColecticaMovedStudyUnitExample(
+                groupService, studyUnitService, ddiService, createColecticaConfig());
+
+        runner.run();
+
+        // Ids déterministes : une relance réécrit cette PI au lieu d'en créer une nouvelle
+        ArgumentCaptor<PhysicalInstanceIds> idsCaptor = ArgumentCaptor.forClass(PhysicalInstanceIds.class);
+        verify(ddiService).createPhysicalInstance(any(), idsCaptor.capture());
+        assertThat(idsCaptor.getValue().physicalInstance())
+                .isEqualTo(generateDeterministicUuid(
+                        LocalColecticaGroupInitConfiguration.MOVED_EXAMPLE_STUDY_UNIT_SEED + "#physicalinstance"));
+
+        // Une seule StudyUnit, en version 1, qui porte la PI.
+        String expectedStudyUnitId =
+                generateDeterministicUuid(LocalColecticaGroupInitConfiguration.MOVED_EXAMPLE_STUDY_UNIT_SEED);
+        ArgumentCaptor<Ddi4StudyUnit> suCaptor = ArgumentCaptor.forClass(Ddi4StudyUnit.class);
+        verify(studyUnitService).createOrUpdate(suCaptor.capture());
+        assertThat(suCaptor.getValue().id()).isEqualTo(expectedStudyUnitId);
+        assertThat(suCaptor.getValue().version()).isEqualTo("1");
+        assertThat(suCaptor.getValue().physicalInstanceReferences())
+                .extracting(Reference::id)
+                .containsExactly("pi-moved");
+
+        // Groupe 1 v1 avec la SU, puis groupe 2 v1 avec la SU, puis groupe 1 v2 sans SU.
+        String group1Id = generateDeterministicUuid(LocalColecticaGroupInitConfiguration.MOVED_EXAMPLE_GROUP_1_SEED);
+        String group2Id = generateDeterministicUuid(LocalColecticaGroupInitConfiguration.MOVED_EXAMPLE_GROUP_2_SEED);
+        ArgumentCaptor<Ddi4Group> groupCaptor = ArgumentCaptor.forClass(Ddi4Group.class);
+        verify(groupService, times(3)).createOrUpdate(groupCaptor.capture());
+        List<Ddi4Group> groups = groupCaptor.getAllValues();
+        assertThat(groups).extracting(Ddi4Group::id).containsExactly(group1Id, group2Id, group1Id);
+        assertThat(groups).extracting(Ddi4Group::version).containsExactly("1", "1", "2");
+        assertThat(groups)
+                .allSatisfy(
+                        g -> assertThat(g.urn()).isEqualTo("urn:ddi:fr.insee:%s:%s".formatted(g.id(), g.version())));
+        assertThat(groups.get(0).studyUnitReference()).extracting(Reference::id).containsExactly(expectedStudyUnitId);
+        assertThat(groups.get(1).studyUnitReference()).extracting(Reference::id).containsExactly(expectedStudyUnitId);
+        assertThat(groups.get(2).studyUnitReference()).isEmpty();
+    }
+
+    @Test
     void sixVersionsStudyUnitExample_createsAStudyUnitInSixVersionsAllReferencingTheSameLogicalProduct()
             throws Exception {
         when(ddiService.createPhysicalInstance(any(), any())).thenReturn(piResponse("fr.insee", "pi-six-versions"));
