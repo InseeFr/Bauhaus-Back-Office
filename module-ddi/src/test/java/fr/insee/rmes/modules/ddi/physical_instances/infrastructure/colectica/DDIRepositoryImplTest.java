@@ -1712,6 +1712,32 @@ class DDIRepositoryImplTest {
     }
 
     @Test
+    void mutualizedCodeListCodes_projectsTheCachedContentOfAMutualizedList() {
+        stubLatestVersions(3);
+        stubMutualizedCodeList(3);
+
+        MutualizedCodeListCodes codes =
+                ddiRepository.getMutualizedCodeListCodes(MUTUALIZED_AGENCY, MUTUALIZED_CODE_LIST_ID);
+
+        assertEquals(MUTUALIZED_CODE_LIST_ID, codes.id());
+        assertEquals("3", codes.version());
+        assertEquals("NAF rév. 2", codes.label());
+        // Même contenu que getMutualizedCodesList : servi par le même cache, sans nouvelle lecture.
+        ddiRepository.getMutualizedCodesList(MUTUALIZED_AGENCY, MUTUALIZED_CODE_LIST_ID);
+        verify(colecticaClient, times(1)).getItem(anyString(), anyString(), any());
+    }
+
+    @Test
+    void mutualizedCodeListCodes_isNullForAListThatIsNotMutualized() {
+        when(instanceConfiguration.itemTypes()).thenReturn(standardItemTypes());
+        stubMutualizedPackageContaining("another-mutualized-list");
+
+        assertNull(ddiRepository.getMutualizedCodeListCodes(MUTUALIZED_AGENCY, "group-list-1"));
+        verify(colecticaClient, never()).getSet(anyString(), anyString(), any());
+        verify(colecticaClient, never()).getItem(anyString(), anyString(), any());
+    }
+
+    @Test
     void nonMutualizedCodeList_keepsTheFullSetPipelineAndIsNeverCached() {
         // L'endpoint est générique : le front y lit aussi les listes de groupe, éditables. Pour elles,
         // ni catégories reconstruites depuis l'enveloppe (renvoyées telles quelles à l'écriture, elles

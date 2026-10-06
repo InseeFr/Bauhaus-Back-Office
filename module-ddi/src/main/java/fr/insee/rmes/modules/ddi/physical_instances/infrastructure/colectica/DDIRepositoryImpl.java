@@ -19,6 +19,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnitResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4VariableScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.DuplicatePhysicalInstanceRequest;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.MutualizedCodeListCodes;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodesList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialGroup;
@@ -79,6 +80,7 @@ public class DDIRepositoryImpl implements DDIRepository {
     private final ColecticaItemByIdReader itemByIdReader;
     private final PhysicalInstanceSearchRowsCache searchRowsCache;
     private final Cache mutualizedCodeListContents;
+    private final String defaultLang;
 
     public DDIRepositoryImpl(
             ColecticaConfiguration.ColecticaInstanceConfiguration instanceConfiguration,
@@ -90,6 +92,7 @@ public class DDIRepositoryImpl implements DDIRepository {
             Cache physicalInstanceSearchRowsCache,
             Cache mutualizedCodeListContentsCache) {
         String defaultLang = colecticaConfiguration.langs().getFirst();
+        this.defaultLang = defaultLang;
         ColecticaLabels labels = new ColecticaLabels(defaultLang);
         ColecticaSetReader setReader = new ColecticaSetReader(instanceConfiguration, colecticaClient);
         ColecticaVersionDates versionDates = new ColecticaVersionDates(colecticaClient, instanceConfiguration);
@@ -330,6 +333,20 @@ public class DDIRepositoryImpl implements DDIRepository {
         }
         return mutualizedCodeListContents.get(
                 agencyId + "/" + id + "/" + version, () -> codeLists.getMutualizedCodeList(agencyId, id, version));
+    }
+
+    /**
+     * Vue allégée (valeur + libellé par code) d'une liste mutualisée, projetée depuis le même contenu
+     * en cache que {@link #getMutualizedCodesList} ; {@code null} pour une liste non mutualisée ou
+     * inconnue.
+     */
+    @Override
+    public MutualizedCodeListCodes getMutualizedCodeListCodes(String agencyId, String id) {
+        if (!codeLists.isMutualized(agencyId, id)) {
+            return null;
+        }
+        Ddi4Response content = getMutualizedCodesList(agencyId, id);
+        return content == null ? null : MutualizedCodeListCodes.from(content, defaultLang);
     }
 
     @Override

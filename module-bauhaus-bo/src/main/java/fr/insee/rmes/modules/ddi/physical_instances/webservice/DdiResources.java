@@ -11,6 +11,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CreatePhysicalI
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi3Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnitResponse;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.MutualizedCodeListCodes;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodesList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialPhysicalInstance;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UpdatePhysicalInstanceRequest;
@@ -163,6 +164,19 @@ public class DdiResources {
             @PathVariable String agencyId, @PathVariable(Constants.ID) String id) {
         Ddi4Response response = ddiService.getMutualizedCodesList(agencyId, id);
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(response);
+    }
+
+    /**
+     * Vue allégée d'une liste de codes mutualisée (valeur + libellé par code), pour l'affichage en
+     * lecture seule : ~15 fois plus légère que le DDI4 complet de {@code /mutualized-codes-list/{agencyId}/{id}}.
+     * 404 pour une liste non mutualisée, qui garde l'endpoint complet.
+     */
+    @GetMapping("/mutualized-codes-list/{agencyId}/{id}/codes")
+    @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.READ)
+    public ResponseEntity<MutualizedCodeListCodes> getMutualizedCodeListCodes(
+            @PathVariable String agencyId, @PathVariable(Constants.ID) String id) {
+        MutualizedCodeListCodes codes = ddiService.getMutualizedCodeListCodes(agencyId, id);
+        return codes == null ? ResponseEntity.notFound().build() : ResponseEntity.ok(codes);
     }
 
     private List<PartialPhysicalInstance> resolvePhysicalInstances() {
