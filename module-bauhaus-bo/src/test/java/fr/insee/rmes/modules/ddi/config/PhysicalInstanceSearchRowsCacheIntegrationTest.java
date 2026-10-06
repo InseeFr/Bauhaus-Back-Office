@@ -143,12 +143,12 @@ class PhysicalInstanceSearchRowsCacheIntegrationTest {
                         null,
                         null));
         when(client.findRelatedItems(
-                        RelationshipDirection.BY_SUBJECT, new ItemReference(AGENCY, "g1"), List.of(STUDY_UNIT_TYPE)))
+                        RelationshipDirection.BY_SUBJECT, new ItemReference(AGENCY, "g1"), 1, List.of(STUDY_UNIT_TYPE)))
                 .thenReturn(List.of(aColecticaItem(STUDY_UNIT_TYPE, "su-1")
                         .itemName("Recensement 2024")
                         .build()));
         when(client.findRelatedDescriptions(
-                        RelationshipDirection.BY_SUBJECT, new ItemReference(AGENCY, "su-1"), List.of(PI_TYPE)))
+                        RelationshipDirection.BY_SUBJECT, new ItemReference(AGENCY, "su-1"), 1, List.of(PI_TYPE)))
                 .thenReturn(List.of(new ItemReference(AGENCY, "pi-1")));
         // Sauvegarde minimale : la PI seule, sans StudyUnit résolue donc sans rangement sous un scheme.
         when(ddi4ToDdi3Converter.convertDdi4ToDdi3(any()))
@@ -192,7 +192,8 @@ class PhysicalInstanceSearchRowsCacheIntegrationTest {
         // Seule la construction initiale lit Colectica : la ligne est reconstituée depuis la PI sauvegardée.
         verify(client, times(1)).queryAdvanced(anyList());
         verify(client, times(1))
-                .findRelatedItems(eq(RelationshipDirection.BY_SUBJECT), eq(new ItemReference(AGENCY, "g1")), anyList());
+                .findRelatedItems(
+                        eq(RelationshipDirection.BY_SUBJECT), eq(new ItemReference(AGENCY, "g1")), eq(1), anyList());
     }
 
     private static ColecticaAdvancedResponse advancedResponse(String label) {

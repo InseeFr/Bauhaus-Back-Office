@@ -4245,17 +4245,19 @@ class DDIRepositoryImplTest {
                 Map.of("isPublished", false));
         when(colecticaClient.queryAdvanced(anyList())).thenReturn(new ColecticaAdvancedResponse(List.of(pi), 1, null));
         // Descente : Groups (query) -> StudyUnits (bysubject) -> PhysicalInstances (bysubject).
+        when(colecticaClient.query(List.of(STUDY_UNIT_ITEM_TYPE)))
+                .thenReturn(new ColecticaResponse(List.of(), 0, 0, null, null, null));
         when(colecticaClient.query(List.of(GROUP_ITEM_TYPE)))
                 .thenReturn(new ColecticaResponse(
                         List.of(labelItem(GROUP_ITEM_TYPE, agency, "g1", "Groupe BPE")), 1, 1, null, null, null));
-        when(colecticaClient.getDescriptions(anyList())).thenReturn(null);
         when(colecticaClient.findRelatedItems(
                         RelationshipDirection.BY_SUBJECT,
                         new ItemReference(agency, "g1"),
+                        1,
                         List.of(STUDY_UNIT_ITEM_TYPE)))
                 .thenReturn(List.of(labelItem(STUDY_UNIT_ITEM_TYPE, agency, "su-1", "Recensement 2024")));
         when(colecticaClient.findRelatedDescriptions(
-                        RelationshipDirection.BY_SUBJECT, new ItemReference(agency, "su-1"), List.of(piType)))
+                        RelationshipDirection.BY_SUBJECT, new ItemReference(agency, "su-1"), 1, List.of(piType)))
                 .thenReturn(List.of(new ItemReference(agency, "pi-1")));
 
         List<PhysicalInstanceSearchRow> rows = ddiRepository.getPhysicalInstanceSearchRows();
@@ -4286,6 +4288,8 @@ class DDIRepositoryImplTest {
                 Map.of("isPublished", false));
         when(colecticaClient.queryAdvanced(anyList())).thenReturn(new ColecticaAdvancedResponse(List.of(pi), 1, null));
         // Aucun groupe : la PI ne peut être rattachée -> orpheline (parents null), mais présente.
+        when(colecticaClient.query(List.of(STUDY_UNIT_ITEM_TYPE)))
+                .thenReturn(new ColecticaResponse(List.of(), 0, 0, null, null, null));
         when(colecticaClient.query(List.of(GROUP_ITEM_TYPE)))
                 .thenReturn(new ColecticaResponse(List.of(), 0, 0, null, null, null));
 
@@ -4315,19 +4319,21 @@ class DDIRepositoryImplTest {
                 Map.of(),
                 Map.of("isPublished", false));
         when(colecticaClient.queryAdvanced(anyList())).thenReturn(new ColecticaAdvancedResponse(List.of(pi), 1, null));
+        when(colecticaClient.query(List.of(STUDY_UNIT_ITEM_TYPE)))
+                .thenReturn(new ColecticaResponse(List.of(), 0, 0, null, null, null));
         when(colecticaClient.query(List.of(GROUP_ITEM_TYPE)))
                 .thenReturn(new ColecticaResponse(
                         List.of(labelItem(GROUP_ITEM_TYPE, agency, "g1", "Groupe BPE")), 1, 1, null, null, null));
-        when(colecticaClient.getDescriptions(anyList())).thenReturn(null);
         when(colecticaClient.findRelatedItems(
                         RelationshipDirection.BY_SUBJECT,
                         new ItemReference(agency, "g1"),
+                        1,
                         List.of(STUDY_UNIT_ITEM_TYPE)))
                 .thenReturn(List.of(
                         versionedLabelItem(STUDY_UNIT_ITEM_TYPE, agency, "su-1", "Recensement 2024", 1),
                         versionedLabelItem(STUDY_UNIT_ITEM_TYPE, agency, "su-1", "Recensement 2024 (v2)", 2)));
         when(colecticaClient.findRelatedDescriptions(
-                        RelationshipDirection.BY_SUBJECT, new ItemReference(agency, "su-1"), List.of(piType)))
+                        RelationshipDirection.BY_SUBJECT, new ItemReference(agency, "su-1"), 2, List.of(piType)))
                 .thenReturn(List.of(new ItemReference(agency, "pi-1")));
 
         List<PhysicalInstanceSearchRow> rows = ddiRepository.getPhysicalInstanceSearchRows();
@@ -4339,7 +4345,7 @@ class DDIRepositoryImplTest {
         // Une seule descente par StudyUnit, pas une par version.
         verify(colecticaClient, times(1))
                 .findRelatedDescriptions(
-                        RelationshipDirection.BY_SUBJECT, new ItemReference(agency, "su-1"), List.of(piType));
+                        RelationshipDirection.BY_SUBJECT, new ItemReference(agency, "su-1"), 2, List.of(piType));
     }
 
     @Test
@@ -4359,23 +4365,123 @@ class DDIRepositoryImplTest {
                 Map.of(),
                 Map.of("isPublished", false));
         when(colecticaClient.queryAdvanced(anyList())).thenReturn(new ColecticaAdvancedResponse(List.of(pi), 1, null));
+        when(colecticaClient.query(List.of(STUDY_UNIT_ITEM_TYPE)))
+                .thenReturn(new ColecticaResponse(List.of(), 0, 0, null, null, null));
         when(colecticaClient.query(List.of(GROUP_ITEM_TYPE)))
                 .thenReturn(new ColecticaResponse(
                         List.of(labelItem(GROUP_ITEM_TYPE, agency, "g1", "Groupe BPE")), 1, 1, null, null, null));
-        when(colecticaClient.getDescriptions(anyList())).thenReturn(null);
         when(colecticaClient.findRelatedItems(
                         RelationshipDirection.BY_SUBJECT,
                         new ItemReference(agency, "g1"),
+                        1,
                         List.of(STUDY_UNIT_ITEM_TYPE)))
                 .thenReturn(List.of(labelItem(STUDY_UNIT_ITEM_TYPE, agency, "su-1", "Recensement 2024")));
         when(colecticaClient.findRelatedDescriptions(
-                        RelationshipDirection.BY_SUBJECT, new ItemReference(agency, "su-1"), List.of(piType)))
+                        RelationshipDirection.BY_SUBJECT, new ItemReference(agency, "su-1"), 1, List.of(piType)))
                 .thenReturn(List.of(new ItemReference(agency, "pi-1"), new ItemReference(agency, "pi-1")));
 
         List<PhysicalInstanceSearchRow> rows = ddiRepository.getPhysicalInstanceSearchRows();
 
         assertEquals(1, rows.size());
         assertEquals("pi-1", rows.get(0).id());
+    }
+
+    @Test
+    void getPhysicalInstanceSearchRows_ignoresAStudyUnitRemovedByTheLatestVersionOfItsGroup() {
+        // SU déplacée : g1 v1 la contenait, g1 v2 ne la contient plus, g2 v1 la contient.
+        String agency = "agency1";
+        String piType = "a51e85bb-6259-4488-8df2-f08cb43485f8";
+        when(instanceConfiguration.itemTypes()).thenReturn(Map.of("PhysicalInstance", piType));
+        ColecticaAdvancedItem pi = new ColecticaAdvancedItem(
+                agency,
+                "pi-1",
+                1,
+                piType,
+                false,
+                Map.of("label", List.of(new LocalizedText("Fichier détail", "fr-FR"))),
+                Map.of(),
+                Map.of("isPublished", false));
+        when(colecticaClient.queryAdvanced(anyList())).thenReturn(new ColecticaAdvancedResponse(List.of(pi), 1, null));
+        when(colecticaClient.query(List.of(STUDY_UNIT_ITEM_TYPE)))
+                .thenReturn(new ColecticaResponse(List.of(), 0, 0, null, null, null));
+        when(colecticaClient.query(List.of(GROUP_ITEM_TYPE)))
+                .thenReturn(new ColecticaResponse(
+                        List.of(
+                                versionedLabelItem(GROUP_ITEM_TYPE, agency, "g1", "Groupe d'origine", 1),
+                                versionedLabelItem(GROUP_ITEM_TYPE, agency, "g1", "Groupe d'origine", 2),
+                                versionedLabelItem(GROUP_ITEM_TYPE, agency, "g2", "Groupe de destination", 1)),
+                        3,
+                        3,
+                        null,
+                        null,
+                        null));
+        when(colecticaClient.findRelatedItems(
+                        RelationshipDirection.BY_SUBJECT,
+                        new ItemReference(agency, "g1"),
+                        2,
+                        List.of(STUDY_UNIT_ITEM_TYPE)))
+                .thenReturn(List.of());
+        when(colecticaClient.findRelatedItems(
+                        RelationshipDirection.BY_SUBJECT,
+                        new ItemReference(agency, "g2"),
+                        1,
+                        List.of(STUDY_UNIT_ITEM_TYPE)))
+                .thenReturn(List.of(labelItem(STUDY_UNIT_ITEM_TYPE, agency, "su-1", "Étude déplacée")));
+        when(colecticaClient.findRelatedDescriptions(
+                        RelationshipDirection.BY_SUBJECT, new ItemReference(agency, "su-1"), 1, List.of(piType)))
+                .thenReturn(List.of(new ItemReference(agency, "pi-1")));
+
+        List<PhysicalInstanceSearchRow> rows = ddiRepository.getPhysicalInstanceSearchRows();
+
+        assertEquals(1, rows.size());
+        assertEquals("pi-1", rows.get(0).id());
+        assertEquals("g2", rows.get(0).groupId());
+        assertEquals("su-1", rows.get(0).studyUnitId());
+    }
+
+    @Test
+    void getPhysicalInstanceSearchRows_descendsFromTheLatestVersionOfEachStudyUnit() {
+        // Le groupe référence la SU en v1, mais la SU en est à sa v3 : c'est la v3 qui fait foi.
+        String agency = "agency1";
+        String piType = "a51e85bb-6259-4488-8df2-f08cb43485f8";
+        when(instanceConfiguration.itemTypes()).thenReturn(Map.of("PhysicalInstance", piType));
+        ColecticaAdvancedItem pi = new ColecticaAdvancedItem(
+                agency,
+                "pi-1",
+                1,
+                piType,
+                false,
+                Map.of("label", List.of(new LocalizedText("Fichier détail", "fr-FR"))),
+                Map.of(),
+                Map.of("isPublished", false));
+        when(colecticaClient.queryAdvanced(anyList())).thenReturn(new ColecticaAdvancedResponse(List.of(pi), 1, null));
+        when(colecticaClient.query(List.of(GROUP_ITEM_TYPE)))
+                .thenReturn(new ColecticaResponse(
+                        List.of(labelItem(GROUP_ITEM_TYPE, agency, "g1", "Groupe BPE")), 1, 1, null, null, null));
+        when(colecticaClient.query(List.of(STUDY_UNIT_ITEM_TYPE)))
+                .thenReturn(new ColecticaResponse(
+                        List.of(versionedLabelItem(STUDY_UNIT_ITEM_TYPE, agency, "su-1", "Recensement (v3)", 3)),
+                        1,
+                        1,
+                        null,
+                        null,
+                        null));
+        when(colecticaClient.findRelatedItems(
+                        RelationshipDirection.BY_SUBJECT,
+                        new ItemReference(agency, "g1"),
+                        1,
+                        List.of(STUDY_UNIT_ITEM_TYPE)))
+                .thenReturn(List.of(versionedLabelItem(STUDY_UNIT_ITEM_TYPE, agency, "su-1", "Recensement (v1)", 1)));
+        when(colecticaClient.findRelatedDescriptions(
+                        RelationshipDirection.BY_SUBJECT, new ItemReference(agency, "su-1"), 3, List.of(piType)))
+                .thenReturn(List.of(new ItemReference(agency, "pi-1")));
+
+        List<PhysicalInstanceSearchRow> rows = ddiRepository.getPhysicalInstanceSearchRows();
+
+        assertEquals(1, rows.size());
+        assertEquals("su-1", rows.get(0).studyUnitId());
+        assertEquals("Recensement (v3)", rows.get(0).studyUnitLabel());
+        assertEquals("g1", rows.get(0).groupId());
     }
 
     @Test
@@ -4394,17 +4500,19 @@ class DDIRepositoryImplTest {
                 Map.of(),
                 Map.of("isPublished", false));
         when(colecticaClient.queryAdvanced(anyList())).thenReturn(new ColecticaAdvancedResponse(List.of(pi), 1, null));
+        when(colecticaClient.query(List.of(STUDY_UNIT_ITEM_TYPE)))
+                .thenReturn(new ColecticaResponse(List.of(), 0, 0, null, null, null));
         when(colecticaClient.query(List.of(GROUP_ITEM_TYPE)))
                 .thenReturn(new ColecticaResponse(
                         List.of(labelItem(GROUP_ITEM_TYPE, agency, "g1", "Groupe BPE")), 1, 1, null, null, null));
-        when(colecticaClient.getDescriptions(anyList())).thenReturn(null);
         when(colecticaClient.findRelatedItems(
                         RelationshipDirection.BY_SUBJECT,
                         new ItemReference(agency, "g1"),
+                        1,
                         List.of(STUDY_UNIT_ITEM_TYPE)))
                 .thenReturn(List.of(labelItem(STUDY_UNIT_ITEM_TYPE, agency, "su-1", "Recensement 2024")));
         when(colecticaClient.findRelatedDescriptions(
-                        RelationshipDirection.BY_SUBJECT, new ItemReference(agency, "su-1"), List.of(piType)))
+                        RelationshipDirection.BY_SUBJECT, new ItemReference(agency, "su-1"), 1, List.of(piType)))
                 .thenReturn(List.of(new ItemReference(agency, "pi-1"), new ItemReference(agency, "pi-deprecated")));
 
         List<PhysicalInstanceSearchRow> rows = ddiRepository.getPhysicalInstanceSearchRows();

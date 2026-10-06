@@ -115,12 +115,10 @@ class ColecticaCatalogRepository {
     List<PartialGroup> getGroups() {
         logger.info("Getting groups from Colectica API via HTTP");
 
-        ColecticaResponse response = colecticaClient.query(List.of(GROUP_UUID));
-        if (response == null || response.results() == null || response.results().isEmpty()) {
+        List<ColecticaItem> groups = latestItemsOfType(GROUP_UUID);
+        if (groups.isEmpty()) {
             return List.of();
         }
-
-        List<ColecticaItem> groups = ColecticaItems.latestVersions(response.results());
         Map<String, List<String>> seriesIrisByGroupId = seriesIrisByGroupId(groups);
 
         return groups.stream()
@@ -131,6 +129,15 @@ class ColecticaCatalogRepository {
                         item.agencyId(),
                         seriesIrisByGroupId.getOrDefault(item.identifier(), List.of())))
                 .toList();
+    }
+
+    /** La dernière version de chaque item du type donné ({@code _query}, dépréciés exclus). */
+    private List<ColecticaItem> latestItemsOfType(String itemType) {
+        ColecticaResponse response = colecticaClient.query(List.of(itemType));
+        if (response == null || response.results() == null) {
+            return List.of();
+        }
+        return ColecticaItems.latestVersions(response.results());
     }
 
     private Map<String, List<String>> seriesIrisByGroupId(List<ColecticaItem> groups) {
@@ -187,6 +194,12 @@ class ColecticaCatalogRepository {
      * par StudyUnit ramène les références de ses PhysicalInstances. Les libellés et la
      * {@code versionDate} des PI proviennent de la requête avancée globale (un seul appel), qui sert
      * aussi à inclure les PI orphelines (rattachées à aucune StudyUnit) avec des parents {@code null}.
+     * <p>
+     * Chaque descente lit les relations de la <em>dernière</em> version du groupe puis de la
+     * StudyUnit : sans version, Colectica renvoie les relations de toutes les versions, et une
+     * StudyUnit retirée d'un groupe par une nouvelle version y resterait rattachée. La dernière
+     * version d'une StudyUnit vient d'un {@code _query} global, car le groupe peut en référencer une
+     * plus ancienne ; à défaut (StudyUnit dépréciée), on garde la version renvoyée par la relation.
      */
     List<PhysicalInstanceSearchRow> getPhysicalInstanceSearchRows() {
         logger.info(
@@ -201,16 +214,26 @@ class ColecticaCatalogRepository {
         List<PhysicalInstanceSearchRow> rows = new ArrayList<>();
         Set<String> attachedKeys = new HashSet<>();
 
-        for (PartialGroup group : getGroups()) {
-            List<ColecticaItem> studyUnits = ColecticaItems.latestVersions(colecticaClient.findRelatedItems(
+        Map<String, ColecticaItem> latestStudyUnitByKey = new HashMap<>();
+        for (ColecticaItem studyUnit : latestItemsOfType(STUDY_UNIT_UUID)) {
+            latestStudyUnitByKey.put(ColecticaItems.key(studyUnit.agencyId(), studyUnit.identifier()), studyUnit);
+        }
+
+        for (ColecticaItem group : latestItemsOfType(GROUP_UUID)) {
+            String groupLabel = labels.of(group);
+            List<ColecticaItem> referencedStudyUnits = ColecticaItems.latestVersions(colecticaClient.findRelatedItems(
                     RelationshipDirection.BY_SUBJECT,
-                    new ItemReference(group.agency(), group.id()),
+                    ColecticaItems.itemRef(group),
+                    group.version(),
                     List.of(STUDY_UNIT_UUID)));
-            for (ColecticaItem studyUnit : studyUnits) {
+            for (ColecticaItem referenced : referencedStudyUnits) {
+                ColecticaItem studyUnit = latestStudyUnitByKey.getOrDefault(
+                        ColecticaItems.key(referenced.agencyId(), referenced.identifier()), referenced);
                 String studyUnitLabel = labels.of(studyUnit);
                 List<ItemReference> piRefs = ColecticaItems.distinctReferences(colecticaClient.findRelatedDescriptions(
                         RelationshipDirection.BY_SUBJECT,
                         ColecticaItems.itemRef(studyUnit),
+                        studyUnit.version(),
                         List.of(physicalInstanceType)));
                 for (ItemReference piRef : piRefs) {
                     String piKey = ColecticaItems.key(piRef.agencyId(), piRef.identifier());
@@ -228,9 +251,9 @@ class ColecticaCatalogRepository {
                             studyUnit.agencyId(),
                             studyUnit.identifier(),
                             studyUnitLabel,
-                            group.agency(),
-                            group.id(),
-                            group.label()));
+                            group.agencyId(),
+                            group.identifier(),
+                            groupLabel));
                 }
             }
         }

@@ -423,6 +423,8 @@ class ColecticaClientTest {
                 .andExpect(header("Authorization", "Bearer " + TOKEN))
                 .andExpect(jsonPath("$.itemTypes[0]").value(LOGICAL_PRODUCT_TYPE))
                 .andExpect(jsonPath("$.targetItem.identifier").value("su-1"))
+                .andExpect(jsonPath("$.targetItem.version").doesNotExist())
+                .andExpect(jsonPath("$.useDistinctTargetItem").doesNotExist())
                 .andRespond(withSuccess(
                         "[{\"AgencyId\":\"fr.insee\",\"Identifier\":\"lp-1\"}]", MediaType.APPLICATION_JSON));
 
@@ -431,6 +433,47 @@ class ColecticaClientTest {
 
         f.server.verify();
         assertThat(result).containsExactly(new ItemReference("fr.insee", "lp-1"));
+    }
+
+    @Test
+    void findRelatedDescriptions_restrictsTheQueryToTheGivenVersionOfTheTarget() {
+        Fixture f = newFixture();
+        f.server
+                .expect(requestTo(BASE_API_URL + "_query/relationship/bysubject/descriptions"))
+                .andExpect(jsonPath("$.targetItem.identifier").value("su-1"))
+                .andExpect(jsonPath("$.targetItem.version").value(3))
+                .andExpect(jsonPath("$.useDistinctTargetItem").value(true))
+                .andRespond(withSuccess(
+                        "[{\"AgencyId\":\"fr.insee\",\"Identifier\":\"pi-1\"}]", MediaType.APPLICATION_JSON));
+
+        List<ItemReference> result = f.client.findRelatedDescriptions(
+                RelationshipDirection.BY_SUBJECT,
+                new ItemReference("fr.insee", "su-1"),
+                3,
+                List.of(LOGICAL_PRODUCT_TYPE));
+
+        f.server.verify();
+        assertThat(result).containsExactly(new ItemReference("fr.insee", "pi-1"));
+    }
+
+    @Test
+    void findRelatedItems_restrictsTheQueryToTheGivenVersionOfTheTarget() {
+        Fixture f = newFixture();
+        f.server
+                .expect(requestTo(BASE_API_URL + "_query/relationship/bysubject/descriptions"))
+                .andExpect(jsonPath("$.targetItem.identifier").value("g-1"))
+                .andExpect(jsonPath("$.targetItem.version").value(2))
+                .andExpect(jsonPath("$.useDistinctTargetItem").value(true))
+                .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON));
+
+        List<ColecticaItem> result = f.client.findRelatedItems(
+                RelationshipDirection.BY_SUBJECT,
+                new ItemReference("fr.insee", "g-1"),
+                2,
+                List.of(LOGICAL_PRODUCT_TYPE));
+
+        f.server.verify();
+        assertThat(result).isEmpty();
     }
 
     @Test

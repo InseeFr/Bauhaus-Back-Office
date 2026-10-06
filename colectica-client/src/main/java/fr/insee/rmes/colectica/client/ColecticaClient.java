@@ -283,22 +283,26 @@ public class ColecticaClient {
      * <p>The response carries only item references (agency + identifier), not their content — this is
      * the lightweight alternative to fetching a whole {@code set/} and downloading every item.
      *
+     * <p>The relationships of <em>every</em> version of {@code target} are returned: an item removed
+     * by a later version still comes back. Use {@link #findRelatedDescriptions(RelationshipDirection,
+     * ItemReference, int, List)} to read a single version.
+     *
      * @return the matching item references, never {@code null} (empty when none)
      */
     public List<ItemReference> findRelatedDescriptions(
             RelationshipDirection direction, ItemReference target, List<String> itemTypes) {
-        String url = baseApiUrl + "_query/relationship/" + direction.urlSegment() + "/descriptions";
-        RelationshipQuery query = new RelationshipQuery(
-                itemTypes, new RelationshipQuery.TargetItem(target.agencyId(), target.identifier()));
-        ItemReference[] response = withAuth(token -> restClient
-                .post()
-                .uri(url)
-                .contentType(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token)
-                .body(query)
-                .retrieve()
-                .body(ItemReference[].class));
-        return nonNullEntries(response);
+        return relationshipDescriptions(
+                direction, RelationshipQuery.allVersions(itemTypes, target), ItemReference[].class);
+    }
+
+    /**
+     * Same as {@link #findRelatedDescriptions(RelationshipDirection, ItemReference, List)}, restricted
+     * to the relationships of {@code version} of {@code target}.
+     */
+    public List<ItemReference> findRelatedDescriptions(
+            RelationshipDirection direction, ItemReference target, int version, List<String> itemTypes) {
+        return relationshipDescriptions(
+                direction, RelationshipQuery.ofVersion(itemTypes, target, version), ItemReference[].class);
     }
 
     /**
@@ -310,17 +314,31 @@ public class ColecticaClient {
      */
     public List<ColecticaItem> findRelatedItems(
             RelationshipDirection direction, ItemReference target, List<String> itemTypes) {
+        return relationshipDescriptions(
+                direction, RelationshipQuery.allVersions(itemTypes, target), ColecticaItem[].class);
+    }
+
+    /**
+     * Same as {@link #findRelatedItems(RelationshipDirection, ItemReference, List)}, restricted to the
+     * relationships of {@code version} of {@code target}.
+     */
+    public List<ColecticaItem> findRelatedItems(
+            RelationshipDirection direction, ItemReference target, int version, List<String> itemTypes) {
+        return relationshipDescriptions(
+                direction, RelationshipQuery.ofVersion(itemTypes, target, version), ColecticaItem[].class);
+    }
+
+    private <T> List<T> relationshipDescriptions(
+            RelationshipDirection direction, RelationshipQuery query, Class<T[]> responseType) {
         String url = baseApiUrl + "_query/relationship/" + direction.urlSegment() + "/descriptions";
-        RelationshipQuery query = new RelationshipQuery(
-                itemTypes, new RelationshipQuery.TargetItem(target.agencyId(), target.identifier()));
-        ColecticaItem[] response = withAuth(token -> restClient
+        T[] response = withAuth(token -> restClient
                 .post()
                 .uri(url)
                 .contentType(MediaType.APPLICATION_JSON)
                 .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token)
                 .body(query)
                 .retrieve()
-                .body(ColecticaItem[].class));
+                .body(responseType));
         return nonNullEntries(response);
     }
 
