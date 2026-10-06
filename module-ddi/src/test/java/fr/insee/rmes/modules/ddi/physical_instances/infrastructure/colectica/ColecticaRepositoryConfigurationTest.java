@@ -30,7 +30,7 @@ class ColecticaRepositoryConfigurationTest {
             null);
 
     @Test
-    void primaryDDIRepository_usesThePhysicalInstanceSearchRowsCacheRegion() {
+    void primaryDDIRepository_usesTheSearchRowsAndMutualizedCodeListContentsCacheRegions() {
         ConcurrentMapCacheManager cacheManager = new ConcurrentMapCacheManager();
 
         DDIRepository repository = new ColecticaRepositoryConfiguration()
@@ -43,6 +43,9 @@ class ColecticaRepositoryConfigurationTest {
                         cacheManager);
 
         assertThat(repository).isInstanceOf(DDIRepositoryImpl.class);
-        assertThat(cacheManager.getCacheNames()).containsExactly(ColecticaCacheNames.PHYSICAL_INSTANCE_SEARCH_ROWS);
+        assertThat(cacheManager.getCacheNames())
+                .containsExactlyInAnyOrder(
+                        ColecticaCacheNames.PHYSICAL_INSTANCE_SEARCH_ROWS,
+                        ColecticaCacheNames.MUTUALIZED_CODE_LIST_CONTENTS);
     }
 }

@@ -42,6 +42,7 @@ class ColecticaClientTest {
     private static final String TOKEN = "test-token-123";
     private static final String LOGICAL_PRODUCT_TYPE = "965c8d28-7d48-4950-bea7-04b27e52bb9b";
     private static final String PHYSICAL_INSTANCE_TYPE = "a51e85bb-6259-4488-8df2-f08cb43485f8";
+    private static final String CATEGORY_TYPE = "7e47c269-bcab-40f7-a778-af7bbc4e3d00";
 
     private record Fixture(ColecticaClient client, MockRestServiceServer server) {}
 
@@ -54,6 +55,34 @@ class ColecticaClientTest {
         RestClient.Builder builder = RestClient.builder();
         MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();
         return new Fixture(new ColecticaClient(builder.build(), BASE_API_URL, BASE_SERVER_URL, credentials), server);
+    }
+
+    @Test
+    void queryInSet_restrictsTheSearchToTheSetOfTheGivenRootItem() {
+        Fixture f = newFixture();
+        f.server
+                .expect(requestTo(BASE_API_URL + "_query"))
+                .andExpect(method(HttpMethod.POST))
+                .andExpect(header("Authorization", "Bearer " + TOKEN))
+                .andExpect(jsonPath("$.itemTypes[0]").value(CATEGORY_TYPE))
+                .andExpect(jsonPath("$.searchLatestVersion").value(true))
+                .andExpect(jsonPath("$.searchSets[0].agencyId").value("fr.insee"))
+                .andExpect(jsonPath("$.searchSets[0].identifier").value("cl-1"))
+                .andExpect(jsonPath("$.searchSets[0].version").value(3))
+                .andExpect(jsonPath("$.maxResults").value(ColecticaClient.MAX_QUERY_RESULTS))
+                .andRespond(withSuccess(
+                        "{\"Results\":[{\"Identifier\":\"cat-1\",\"AgencyId\":\"fr.insee\",\"Version\":1,"
+                                + "\"Label\":{\"fr-FR\":\"Agriculture\"}}],\"TotalResults\":1,\"ReturnedResults\":1}",
+                        MediaType.APPLICATION_JSON));
+
+        ColecticaResponse response =
+                f.client.queryInSet(List.of(CATEGORY_TYPE), new ColecticaSetItem("cl-1", 3, "fr.insee"));
+
+        f.server.verify();
+        assertThat(response.results()).singleElement().satisfies(item -> {
+            assertThat(item.identifier()).isEqualTo("cat-1");
+            assertThat(item.label()).containsEntry("fr-FR", "Agriculture");
+        });
     }
 
     @Test

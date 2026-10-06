@@ -24,4 +24,11 @@ public final class ColecticaCacheNames {
      * Invalidé à chaque écriture de PhysicalInstance.
      */
     public static final String PHYSICAL_INSTANCE_SEARCH_ROWS = "physicalInstanceSearchRows";
+
+    /**
+     * Contenu (codes + catégories) des listes de codes mutualisées, clé {@code agence/id/version} :
+     * une nouvelle version change la clé, l'entrée n'a donc pas à être invalidée. Une liste de 45 000
+     * codes coûte ~30 s à relire dans Colectica.
+     */
+    public static final String MUTUALIZED_CODE_LIST_CONTENTS = "mutualizedCodeListContents";
 }

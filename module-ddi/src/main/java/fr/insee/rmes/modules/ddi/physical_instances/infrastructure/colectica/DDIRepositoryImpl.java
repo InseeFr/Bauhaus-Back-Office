@@ -78,6 +78,7 @@ public class DDIRepositoryImpl implements DDIRepository {
     private final ColecticaItemCreator itemCreator;
     private final ColecticaItemByIdReader itemByIdReader;
     private final PhysicalInstanceSearchRowsCache searchRowsCache;
+    private final Cache mutualizedCodeListContents;
 
     public DDIRepositoryImpl(
             ColecticaConfiguration.ColecticaInstanceConfiguration instanceConfiguration,
@@ -86,7 +87,8 @@ public class DDIRepositoryImpl implements DDIRepository {
             ColecticaConfiguration colecticaConfiguration,
             ColecticaClient colecticaClient,
             MutualizedCodeListRefsStrategy mutualizedCodeListRefsProvider,
-            Cache physicalInstanceSearchRowsCache) {
+            Cache physicalInstanceSearchRowsCache,
+            Cache mutualizedCodeListContentsCache) {
         String defaultLang = colecticaConfiguration.langs().getFirst();
         ColecticaLabels labels = new ColecticaLabels(defaultLang);
         ColecticaSetReader setReader = new ColecticaSetReader(instanceConfiguration, colecticaClient);
@@ -95,6 +97,7 @@ public class DDIRepositoryImpl implements DDIRepository {
         this.catalog =
                 new ColecticaCatalogRepository(instanceConfiguration, colecticaClient, labels, ddi3ToDdi4Converter);
         this.searchRowsCache = new PhysicalInstanceSearchRowsCache(physicalInstanceSearchRowsCache, defaultLang);
+        this.mutualizedCodeListContents = mutualizedCodeListContentsCache;
         this.physicalInstanceReader = new ColecticaPhysicalInstanceReader(
                 instanceConfiguration, ddi3ToDdi4Converter, setReader, colecticaClient);
         this.groupReader = new ColecticaGroupSetReader(colecticaClient, defaultLang);
@@ -309,9 +312,24 @@ public class DDIRepositoryImpl implements DDIRepository {
 
     // --- Listes de codes et navigation ------------------------------------------------------------
 
+    /**
+     * Contenu d'une liste de codes. L'endpoint est générique : le front y lit aussi les listes de
+     * groupe, éditables, qui gardent la lecture complète ({@link ColecticaCodeListRepository#getCodeList}),
+     * sans cache. Seules les listes mutualisées (lecture seule) passent par la lecture allégée, mise en
+     * cache par {@code agence/id/version} : seul le numéro de la dernière version est demandé à
+     * Colectica ({@code _getLatestVersionNumbers}, quasi gratuit) ; une nouvelle version change la clé.
+     */
     @Override
     public Ddi4Response getMutualizedCodesList(String agencyId, String id) {
-        return codeLists.getCodeList(agencyId, id, null);
+        if (!codeLists.isMutualized(agencyId, id)) {
+            return codeLists.getCodeList(agencyId, id, null);
+        }
+        Integer version = codeLists.latestVersion(agencyId, id);
+        if (version == null) {
+            return null;
+        }
+        return mutualizedCodeListContents.get(
+                agencyId + "/" + id + "/" + version, () -> codeLists.getMutualizedCodeList(agencyId, id, version));
     }
 
     @Override

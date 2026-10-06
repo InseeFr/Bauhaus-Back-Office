@@ -77,6 +77,30 @@ public class ColecticaClient {
                 .body(ColecticaResponse.class));
     }
 
+    /** Plafond de résultats demandé à {@code _query} quand toute une population est attendue. */
+    public static final int MAX_QUERY_RESULTS = 1_000_000;
+
+    /**
+     * Searches, via {@code POST _query} (latest version), the items of the given types belonging to the
+     * set rooted at {@code setRoot}. Envelopes only — labels, names, versions — without the items' XML:
+     * far lighter than {@code set/} followed by {@code item/_getList} on a large set.
+     */
+    public ColecticaResponse queryInSet(List<String> itemTypes, ColecticaSetItem setRoot) {
+        QueryRequest request = new QueryRequest(
+                itemTypes,
+                true,
+                List.of(new QueryRequest.SearchSet(setRoot.agencyId(), setRoot.identifier(), setRoot.version())),
+                MAX_QUERY_RESULTS);
+        return withAuth(token -> restClient
+                .post()
+                .uri(baseApiUrl + "_query")
+                .contentType(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token)
+                .body(request)
+                .retrieve()
+                .body(ColecticaResponse.class));
+    }
+
     /**
      * Searches items by type via {@code POST _query/advanced} (latest version), asking Colectica to
      * include all per-item properties. Unlike {@link #query(List)}, the response carries the rich

@@ -65,6 +65,8 @@ class DDIRepositoryImplTest {
     private DDIRepositoryImpl ddiRepository;
 
     private final Cache searchRowsCache = new ConcurrentMapCache(ColecticaCacheNames.PHYSICAL_INSTANCE_SEARCH_ROWS);
+    private final Cache mutualizedCodeListContents =
+            new ConcurrentMapCache(ColecticaCacheNames.MUTUALIZED_CODE_LIST_CONTENTS);
 
     @BeforeEach
     void setUp() {
@@ -82,7 +84,8 @@ class DDIRepositoryImplTest {
                 colecticaConfiguration,
                 colecticaClient,
                 refsProvider,
-                searchRowsCache);
+                searchRowsCache,
+                mutualizedCodeListContents);
     }
 
     @Test
@@ -1557,93 +1560,190 @@ class DDIRepositoryImplTest {
         assertEquals(sharedClId, result.get(0).id());
     }
 
+    // --- getMutualizedCodesList : lecture allégée (sans set/ ni item/_getList) + cache par version ---
+
+    private static final String MUTUALIZED_AGENCY = "fr.insee";
+    private static final String MUTUALIZED_CODE_LIST_ID = "fc65a527-a04b-4505-85de-0a181e54dbad";
+
+    /** Le package mutualisé configuré contient exactement les listes {@code codeListIds}. */
+    private void stubMutualizedPackageContaining(String... codeListIds) {
+        when(colecticaConfiguration.mutualizedCodesPackage())
+                .thenReturn(new ColecticaConfiguration.PackageRef(MUTUALIZED_AGENCY, "pkg-1", 1));
+        stubChildren(
+                MUTUALIZED_AGENCY, "pkg-1", CODE_LIST_SCHEME_TYPE, new ItemReference(MUTUALIZED_AGENCY, "scheme-1"));
+        stubChildren(
+                MUTUALIZED_AGENCY, "scheme-1", CODE_LIST_GROUP_TYPE, new ItemReference(MUTUALIZED_AGENCY, "group-1"));
+        stubChildren(
+                MUTUALIZED_AGENCY,
+                "group-1",
+                CODE_LIST_TYPE,
+                Arrays.stream(codeListIds)
+                        .map(codeListId -> new ItemReference(MUTUALIZED_AGENCY, codeListId))
+                        .toArray(ItemReference[]::new));
+    }
+
+    /** Stubs Colectica d'une liste mutualisée en version {@code version}, de catégorie « Agriculture ». */
+    private void stubMutualizedCodeList(int version) {
+        Map<String, String> itemTypes = standardItemTypes();
+        when(instanceConfiguration.itemTypes()).thenReturn(itemTypes);
+        when(colecticaClient.getItem(MUTUALIZED_AGENCY, MUTUALIZED_CODE_LIST_ID, String.valueOf(version)))
+                .thenReturn(new ColecticaItemResponse(
+                        itemTypes.get("CodeList"),
+                        MUTUALIZED_AGENCY,
+                        version,
+                        MUTUALIZED_CODE_LIST_ID,
+                        "<Fragment xmlns=\"ddi:instance:3_3\"><CodeList/></Fragment>",
+                        null,
+                        null,
+                        false,
+                        false,
+                        false,
+                        null));
+        lenient()
+                .when(ddi3ToDdi4Converter.convertDdi3ToDdi4(any(Ddi3Response.class), eq("ddi:4.0")))
+                .thenReturn(new Ddi4Response(
+                        "ddi:4.0",
+                        null,
+                        null,
+                        null,
+                        null,
+                        List.of(new Ddi4CodeList(
+                                Ddi4CodeList.TYPE,
+                                CogsDate.ofDateTime("2024-10-31T10:43:38"),
+                                "urn:ddi:fr.insee:" + MUTUALIZED_CODE_LIST_ID + ":" + version,
+                                MUTUALIZED_AGENCY,
+                                MUTUALIZED_CODE_LIST_ID,
+                                String.valueOf(version),
+                                LangStrings.of("fr-FR", "NAF rév. 2"),
+                                null,
+                                List.of())),
+                        null,
+                        null));
+        when(colecticaClient.queryInSet(
+                        List.of(itemTypes.get("Category")),
+                        new ColecticaSetItem(MUTUALIZED_CODE_LIST_ID, version, MUTUALIZED_AGENCY)))
+                .thenReturn(new ColecticaResponse(
+                        List.of(aColecticaItem("Category", "cat-1")
+                                .agency(MUTUALIZED_AGENCY)
+                                .version(2)
+                                .label("Agriculture")
+                                .build()),
+                        1,
+                        1,
+                        null,
+                        null,
+                        null));
+    }
+
+    private void stubLatestVersions(Integer... versions) {
+        stubMutualizedPackageContaining(MUTUALIZED_CODE_LIST_ID);
+        var stub = when(colecticaClient.getLatestVersionNumbers(
+                List.of(new ItemReference(MUTUALIZED_AGENCY, MUTUALIZED_CODE_LIST_ID))));
+        for (Integer version : versions) {
+            stub = stub.thenReturn(List.of(new ColecticaSetItem(MUTUALIZED_CODE_LIST_ID, version, MUTUALIZED_AGENCY)));
+        }
+    }
+
     @Test
-    void shouldGetMutualizedCodesListWithCodesAndCategories() {
-        // Given
-        String agencyId = "fr.insee";
-        String codeListId = "fc65a527-a04b-4505-85de-0a181e54dbad";
-        String categoryId = "cat-1";
-        int version = 1;
+    void mutualizedCodeList_readsTheListItemAndTheCategoryLabelsWithoutDownloadingTheWholeSet() {
+        // set/ + item/_getList rapatriaient le XML des 45 000 catégories (65 Mo, ~100 s) pour n'en lire
+        // que le libellé : la liste seule et les enveloppes des catégories du set suffisent.
+        stubLatestVersions(3);
+        stubMutualizedCodeList(3);
 
+        Ddi4Response result = ddiRepository.getMutualizedCodesList(MUTUALIZED_AGENCY, MUTUALIZED_CODE_LIST_ID);
+
+        assertEquals(
+                List.of(Reference.of(MUTUALIZED_AGENCY, MUTUALIZED_CODE_LIST_ID, "3", "CodeList")),
+                result.topLevelReference());
+        assertEquals(MUTUALIZED_CODE_LIST_ID, result.codeList().getFirst().id());
+        assertEquals(
+                List.of(new Ddi4Category(
+                        Ddi4Category.TYPE,
+                        null,
+                        "urn:ddi:fr.insee:cat-1:2",
+                        MUTUALIZED_AGENCY,
+                        "cat-1",
+                        "2",
+                        LangStrings.of("fr-FR", "Agriculture"))),
+                result.category());
+        verify(colecticaClient, never()).getSet(anyString(), anyString(), any());
+        verify(colecticaClient, never()).getDescriptions(anyList());
+    }
+
+    @Test
+    void mutualizedCodeList_isNullWhenColecticaDoesNotKnowIt() {
         when(instanceConfiguration.itemTypes()).thenReturn(standardItemTypes());
-        ColecticaSetItem[] setItems = {
-            new ColecticaSetItem(codeListId, version, agencyId), new ColecticaSetItem(categoryId, version, agencyId)
-        };
-        when(colecticaClient.getSet(anyString(), anyString(), any())).thenReturn(setItems);
+        stubMutualizedPackageContaining(MUTUALIZED_CODE_LIST_ID);
+        when(colecticaClient.getLatestVersionNumbers(
+                        List.of(new ItemReference(MUTUALIZED_AGENCY, MUTUALIZED_CODE_LIST_ID))))
+                .thenReturn(List.of());
 
-        ColecticaItemResponse[] itemResponses = {
+        assertNull(ddiRepository.getMutualizedCodesList(MUTUALIZED_AGENCY, MUTUALIZED_CODE_LIST_ID));
+        verify(colecticaClient, never()).getItem(anyString(), anyString(), any());
+    }
+
+    @Test
+    void mutualizedCodeList_sameVersionIsServedFromCache() {
+        stubLatestVersions(3, 3);
+        stubMutualizedCodeList(3);
+
+        Ddi4Response first = ddiRepository.getMutualizedCodesList(MUTUALIZED_AGENCY, MUTUALIZED_CODE_LIST_ID);
+        Ddi4Response second = ddiRepository.getMutualizedCodesList(MUTUALIZED_AGENCY, MUTUALIZED_CODE_LIST_ID);
+
+        assertSame(first, second);
+        verify(colecticaClient, times(1)).getItem(anyString(), anyString(), any());
+        verify(colecticaClient, times(1)).queryInSet(anyList(), any());
+    }
+
+    @Test
+    void mutualizedCodeList_newVersionIsReadAgain() {
+        stubLatestVersions(3, 4);
+        stubMutualizedCodeList(3);
+        stubMutualizedCodeList(4);
+
+        ddiRepository.getMutualizedCodesList(MUTUALIZED_AGENCY, MUTUALIZED_CODE_LIST_ID);
+        Ddi4Response afterNewVersion = ddiRepository.getMutualizedCodesList(MUTUALIZED_AGENCY, MUTUALIZED_CODE_LIST_ID);
+
+        assertEquals(
+                List.of(Reference.of(MUTUALIZED_AGENCY, MUTUALIZED_CODE_LIST_ID, "4", "CodeList")),
+                afterNewVersion.topLevelReference());
+        verify(colecticaClient).getItem(MUTUALIZED_AGENCY, MUTUALIZED_CODE_LIST_ID, "4");
+    }
+
+    @Test
+    void nonMutualizedCodeList_keepsTheFullSetPipelineAndIsNeverCached() {
+        // L'endpoint est générique : le front y lit aussi les listes de groupe, éditables. Pour elles,
+        // ni catégories reconstruites depuis l'enveloppe (renvoyées telles quelles à l'écriture, elles
+        // effaceraient le reste de leur XML), ni cache (une réécriture à version égale serait masquée).
+        when(instanceConfiguration.itemTypes()).thenReturn(standardItemTypes());
+        stubMutualizedPackageContaining("another-mutualized-list");
+        String groupListId = "group-list-1";
+        when(colecticaClient.getSet(MUTUALIZED_AGENCY, groupListId, null))
+                .thenReturn(new ColecticaSetItem[] {new ColecticaSetItem(groupListId, 1, MUTUALIZED_AGENCY)});
+        when(colecticaClient.getDescriptions(anyList())).thenReturn(new ColecticaItemResponse[] {
             new ColecticaItemResponse(
-                    "8b108ef8-b642-4484-9c49-f88e4bf7cf1d", // CodeList type
-                    agencyId,
-                    version,
-                    codeListId,
+                    CODE_LIST_TYPE,
+                    MUTUALIZED_AGENCY,
+                    1,
+                    groupListId,
                     "<Fragment xmlns=\"ddi:instance:3_3\"><CodeList/></Fragment>",
                     null,
                     null,
                     false,
                     false,
                     false,
-                    null),
-            new ColecticaItemResponse(
-                    "fa1d4dca-f6dc-4d80-8b94-de1063a64d6d", // Category type
-                    agencyId,
-                    version,
-                    categoryId,
-                    "<Fragment xmlns=\"ddi:instance:3_3\"><Category/></Fragment>",
-                    null,
-                    null,
-                    false,
-                    false,
-                    false,
                     null)
-        };
-        when(colecticaClient.getDescriptions(anyList())).thenReturn(itemResponses);
-
-        Ddi4CodeList mockCodeList = new Ddi4CodeList(
-                Ddi4CodeList.TYPE,
-                CogsDate.ofDateTime("2024-10-31T10:43:38"),
-                "urn:ddi:fr.insee:" + codeListId + ":1",
-                agencyId,
-                codeListId,
-                "1",
-                LangStrings.of("fr-FR", "NAF rév. 2"),
-                null,
-                List.of());
-        Ddi4Category mockCategory = new Ddi4Category(
-                Ddi4Category.TYPE,
-                CogsDate.ofDateTime("2024-10-31T10:43:38"),
-                "urn:ddi:fr.insee:" + categoryId + ":1",
-                agencyId,
-                categoryId,
-                "1",
-                LangStrings.of("fr-FR", "Agriculture"));
-        Ddi4Response mockDdi4Response = new Ddi4Response(
-                "ddi:4.0",
-                List.of(Reference.of(agencyId, codeListId, "1", "CodeList")),
-                List.of(),
-                List.of(),
-                List.of(),
-                List.of(mockCodeList),
-                List.of(mockCategory),
-                null);
+        });
         when(ddi3ToDdi4Converter.convertDdi3ToDdi4(any(Ddi3Response.class), eq("ddi:4.0")))
-                .thenReturn(mockDdi4Response);
+                .thenReturn(new Ddi4Response("ddi:4.0", null, null, null, null, null, null, null));
 
-        // When
-        Ddi4Response result = ddiRepository.getMutualizedCodesList(agencyId, codeListId);
+        ddiRepository.getMutualizedCodesList(MUTUALIZED_AGENCY, groupListId);
+        ddiRepository.getMutualizedCodesList(MUTUALIZED_AGENCY, groupListId);
 
-        // Then
-        assertNotNull(result);
-        assertNotNull(result.codeList());
-        assertEquals(1, result.codeList().size());
-        assertEquals(codeListId, result.codeList().get(0).id());
-        assertNotNull(result.category());
-        assertEquals(1, result.category().size());
-        assertEquals(categoryId, result.category().get(0).id());
-
-        verify(colecticaClient).getSet(eq(agencyId), eq(codeListId), any());
-        verify(colecticaClient).getDescriptions(anyList());
-        verify(ddi3ToDdi4Converter).convertDdi3ToDdi4(any(Ddi3Response.class), eq("ddi:4.0"));
+        verify(colecticaClient, times(2)).getSet(MUTUALIZED_AGENCY, groupListId, null);
+        verify(colecticaClient, never()).queryInSet(anyList(), any());
+        verify(colecticaClient, never()).getLatestVersionNumbers(anyList());
     }
 
     @Test
