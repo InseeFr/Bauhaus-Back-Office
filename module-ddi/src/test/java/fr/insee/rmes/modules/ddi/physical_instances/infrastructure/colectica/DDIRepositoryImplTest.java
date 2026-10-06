@@ -15,6 +15,8 @@ import fr.insee.rmes.colectica.client.ColecticaClient;
 import fr.insee.rmes.colectica.client.ItemReference;
 import fr.insee.rmes.colectica.client.RelationshipDirection;
 import fr.insee.rmes.colectica.client.dto.*;
+import fr.insee.rmes.colectica.client.dto.ColecticaAdvancedItem;
+import fr.insee.rmes.colectica.client.dto.ColecticaAdvancedResponse;
 import fr.insee.rmes.colectica.client.dto.ColecticaTypedSetItem;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.MissingSchemeException;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.StudyUnitNotFoundException;
@@ -1385,9 +1387,10 @@ class DDIRepositoryImplTest {
     }
 
     @Test
-    void mutualizedCodeList_versionDateComesFromItemXmlNotQueryEnvelope() {
-        // Le versionDate du _query n'est pas fiable (Colectica renvoie 0001-01-01) : on le lit
-        // depuis l'attribut versionDate du XML de l'item, récupéré via un item/_getList.
+    void mutualizedCodeList_versionDateComesFromAdvancedQueryWithoutDownloadingTheItemXml() {
+        // Le versionDate du _query n'est pas fiable (Colectica renvoie 0001-01-01). Le lire dans le XML
+        // de l'item obligeait à télécharger toute la liste (15 Mo, ~11 s pour 45 000 codes) : on le
+        // prend dans DateProperties.versionDate de _query/advanced, un seul appel pour toutes les listes.
         String agencyId = "fr.insee";
         String packageId = "pkg-1";
         String schemeId = "scheme-1";
@@ -1406,14 +1409,8 @@ class DDIRepositoryImplTest {
         when(colecticaClient.query(List.of(CODE_LIST_TYPE)))
                 .thenReturn(new ColecticaResponse(
                         List.of(codeListItem(clId, "Ma code list", "0001-01-01T00:00:00")), 1, 1, null, null, null));
-
-        // The item XML carries the real versionDate attribute.
-        String xml = "<Fragment xmlns:r=\"ddi:reusable:3_3\" xmlns=\"ddi:instance:3_3\">"
-                + "<CodeList xmlns=\"ddi:logicalproduct:3_3\" versionDate=\"2026-06-29T14:26:32.961778\">"
-                + "<r:URN>urn:ddi:fr.insee:cl-1:1</r:URN></CodeList></Fragment>";
-        when(colecticaClient.getDescriptions(anyList())).thenReturn(new ColecticaItemResponse[] {
-            new ColecticaItemResponse(CODE_LIST_TYPE, agencyId, 1, clId, xml, null, null, false, false, false, "DDI")
-        });
+        when(colecticaClient.queryAdvanced(List.of(CODE_LIST_TYPE)))
+                .thenReturn(advancedCodeListVersionDate(agencyId, clId, CODE_LIST_TYPE, "2026-06-29T14:26:32.961778"));
 
         List<PartialCodesList> result = ddiRepository.getMutualizedCodesLists();
 
@@ -1422,6 +1419,7 @@ class DDIRepositoryImplTest {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
         assertEquals("2026-06-29 14:26:32", sdf.format(result.get(0).versionDate()));
+        verify(colecticaClient, never()).getDescriptions(anyList());
     }
 
     @Test
@@ -3488,9 +3486,9 @@ class DDIRepositoryImplTest {
     }
 
     @Test
-    void getCodeListsByCodeListScheme_versionDateComesFromItemXml() {
-        // Comme pour les mutualisées : le versionDate fiable est lu depuis le XML de l'item
-        // (item/_getList), pas depuis l'enveloppe _query.
+    void getCodeListsByCodeListScheme_versionDateComesFromAdvancedQuery() {
+        // Comme pour les mutualisées : le versionDate fiable vient de DateProperties.versionDate de
+        // _query/advanced, pas de l'enveloppe _query ni du XML de l'item (trop lourd à télécharger).
         String agencyId = "fr.insee";
         String codeListSchemeId = "cls-1";
         String codeListType = "8b108ef8-b642-4484-9c49-f88e4bf7cf1d";
@@ -3510,13 +3508,9 @@ class DDIRepositoryImplTest {
         when(colecticaClient.query(anyList()))
                 .thenReturn(new ColecticaResponse(List.of(codeList1), 1, 1, null, null, null));
 
-        String xml = "<Fragment xmlns:r=\"ddi:reusable:3_3\" xmlns=\"ddi:instance:3_3\">"
-                + "<CodeList xmlns=\"ddi:logicalproduct:3_3\" versionDate=\"2026-06-29T14:26:32.961778\">"
-                + "<r:URN>urn:ddi:fr.insee:code-list-1:1</r:URN></CodeList></Fragment>";
-        when(colecticaClient.getDescriptions(anyList())).thenReturn(new ColecticaItemResponse[] {
-            new ColecticaItemResponse(
-                    codeListType, agencyId, 1, "code-list-1", xml, null, null, false, false, false, "DDI")
-        });
+        when(colecticaClient.queryAdvanced(List.of(codeListType)))
+                .thenReturn(advancedCodeListVersionDate(
+                        agencyId, "code-list-1", codeListType, "2026-06-29T14:26:32.961778"));
 
         List<PartialCodesList> result = ddiRepository.getCodeListsByCodeListScheme(agencyId, codeListSchemeId);
 
@@ -3544,6 +3538,23 @@ class DDIRepositoryImplTest {
 
         assertNotNull(result);
         assertTrue(result.isEmpty());
+    }
+
+    /** Réponse {@code _query/advanced} portant le {@code versionDate} indexé d'une seule CodeList. */
+    private static ColecticaAdvancedResponse advancedCodeListVersionDate(
+            String agencyId, String codeListId, String codeListType, String versionDate) {
+        return new ColecticaAdvancedResponse(
+                List.of(new ColecticaAdvancedItem(
+                        agencyId,
+                        codeListId,
+                        1,
+                        codeListType,
+                        false,
+                        null,
+                        Map.of("versionDate", List.of(versionDate)),
+                        null)),
+                1,
+                null);
     }
 
     // --- getMissingCodesListsByGroup (valeurs sentinelles, cf. #1566) ---
@@ -3613,14 +3624,10 @@ class DDIRepositoryImplTest {
         when(colecticaClient.query(List.of(CODE_LIST_ITEM_TYPE)))
                 .thenReturn(new ColecticaResponse(List.of(codeList1, codeList2, unrelated), 3, 3, null, null, null));
 
-        // versionDate fiable lu depuis le XML de l'item (comme les autres listings de CodeLists).
-        String xml = "<Fragment xmlns:r=\"ddi:reusable:3_3\" xmlns=\"ddi:instance:3_3\">"
-                + "<CodeList xmlns=\"ddi:logicalproduct:3_3\" versionDate=\"2026-06-29T14:26:32.961778\">"
-                + "<r:URN>urn:ddi:fr.insee:code-list-1:1</r:URN></CodeList></Fragment>";
-        when(colecticaClient.getDescriptions(anyList())).thenReturn(new ColecticaItemResponse[] {
-            new ColecticaItemResponse(
-                    CODE_LIST_ITEM_TYPE, agencyId, 1, "code-list-1", xml, null, null, false, false, false, "DDI")
-        });
+        // versionDate fiable lu dans _query/advanced (comme les autres listings de CodeLists).
+        when(colecticaClient.queryAdvanced(List.of(CODE_LIST_ITEM_TYPE)))
+                .thenReturn(advancedCodeListVersionDate(
+                        agencyId, "code-list-1", CODE_LIST_ITEM_TYPE, "2026-06-29T14:26:32.961778"));
 
         List<PartialCodesList> result = ddiRepository.getMissingCodesListsByGroup(agencyId, groupId);
 

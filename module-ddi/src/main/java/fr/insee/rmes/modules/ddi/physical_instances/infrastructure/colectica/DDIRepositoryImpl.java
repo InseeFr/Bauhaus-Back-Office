@@ -90,7 +90,7 @@ public class DDIRepositoryImpl implements DDIRepository {
         String defaultLang = colecticaConfiguration.langs().getFirst();
         ColecticaLabels labels = new ColecticaLabels(defaultLang);
         ColecticaSetReader setReader = new ColecticaSetReader(instanceConfiguration, colecticaClient);
-        ColecticaVersionDates versionDates = new ColecticaVersionDates(colecticaClient);
+        ColecticaVersionDates versionDates = new ColecticaVersionDates(colecticaClient, instanceConfiguration);
 
         this.catalog =
                 new ColecticaCatalogRepository(instanceConfiguration, colecticaClient, labels, ddi3ToDdi4Converter);

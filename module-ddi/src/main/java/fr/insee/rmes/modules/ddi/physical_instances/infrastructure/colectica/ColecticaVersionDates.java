@@ -2,60 +2,73 @@ package fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica;
 
 import fr.insee.rmes.colectica.client.ColecticaClient;
 import fr.insee.rmes.colectica.client.ItemReference;
+import fr.insee.rmes.colectica.client.dto.ColecticaAdvancedItem;
+import fr.insee.rmes.colectica.client.dto.ColecticaAdvancedResponse;
 import fr.insee.rmes.colectica.client.dto.ColecticaItem;
-import fr.insee.rmes.colectica.client.dto.ColecticaItemResponse;
-import fr.insee.rmes.colectica.client.dto.GetDescriptionsRequest;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
- * Résolution des {@code versionDate} depuis le XML des items : le {@code versionDate} de l'enveloppe
- * {@code _query} n'est pas fiable (Colectica renvoie {@code 0001-01-01}), il faut lire l'attribut
- * porté par le fragment lui-même.
+ * Résolution des {@code versionDate} des listes de codes : le {@code versionDate} de l'enveloppe
+ * {@code _query} n'est pas fiable (Colectica renvoie {@code 0001-01-01}). On lit
+ * {@code DateProperties.versionDate} de {@code _query/advanced}, que Colectica indexe : un seul appel
+ * pour toutes les listes, sans télécharger leur XML — qui pèse 15 Mo (~11 s) pour 45 000 codes.
  */
 class ColecticaVersionDates {
 
-    private final ColecticaClient colecticaClient;
+    private static final String CODE_LIST = "CodeList";
 
-    ColecticaVersionDates(ColecticaClient colecticaClient) {
+    private final ColecticaClient colecticaClient;
+    private final ColecticaConfiguration.ColecticaInstanceConfiguration instanceConfiguration;
+
+    ColecticaVersionDates(
+            ColecticaClient colecticaClient,
+            ColecticaConfiguration.ColecticaInstanceConfiguration instanceConfiguration) {
         this.colecticaClient = colecticaClient;
+        this.instanceConfiguration = instanceConfiguration;
     }
 
     /**
-     * Récupère en un seul {@code item/_getList} le XML des références données et associe chaque
-     * {@code agence/identifiant} au {@code versionDate} lu dans son XML. Les références absentes de
-     * {@code itemsByKey} sont ignorées. Map vide quand il n'y a rien à récupérer ou que l'appel ne
-     * ramène rien ; une référence dont le XML n'a pas de {@code versionDate} exploitable est associée
-     * à {@code null}.
+     * Associe chaque {@code agence/identifiant} des références données (et présentes dans
+     * {@code itemsByKey}) au {@code versionDate} indexé par Colectica pour sa dernière version. Map
+     * vide quand il n'y a rien à résoudre ; une liste sans date indexée (dépréciée, par exemple :
+     * {@code _query/advanced} les exclut) est absente de la map.
      */
     Map<String, Date> byKey(List<ItemReference> refs, Map<String, ColecticaItem> itemsByKey) {
-        List<GetDescriptionsRequest.IdentifierRef> identifiers = refs.stream()
-                .map(ref -> itemsByKey.get(ref.agencyId() + "/" + ref.identifier()))
-                .filter(Objects::nonNull)
-                .map(item ->
-                        new GetDescriptionsRequest.IdentifierRef(item.agencyId(), item.identifier(), item.version()))
-                .distinct()
-                .toList();
-        if (identifiers.isEmpty()) {
+        Set<String> wantedKeys = refs.stream()
+                .map(ref -> ref.agencyId() + "/" + ref.identifier())
+                .filter(itemsByKey::containsKey)
+                .collect(Collectors.toSet());
+        if (wantedKeys.isEmpty()) {
             return Map.of();
         }
 
-        ColecticaItemResponse[] responses = colecticaClient.getDescriptions(identifiers);
-        if (responses == null) {
+        ColecticaAdvancedResponse response = colecticaClient.queryAdvanced(
+                List.of(instanceConfiguration.itemTypes().get(CODE_LIST)));
+        if (response == null || response.results() == null) {
             return Map.of();
         }
 
         Map<String, Date> versionDateByKey = new HashMap<>();
-        for (ColecticaItemResponse response : responses) {
-            if (response == null) {
-                continue;
+        for (ColecticaAdvancedItem item : ColecticaItems.latestAdvancedVersions(response.results())) {
+            String key = item.agencyId() + "/" + item.identifier();
+            Date versionDate = versionDate(item);
+            if (wantedKeys.contains(key) && versionDate != null) {
+                versionDateByKey.put(key, versionDate);
             }
-            versionDateByKey.put(
-                    response.agencyId() + "/" + response.identifier(), ColecticaXml.versionDate(response.item()));
         }
         return versionDateByKey;
+    }
+
+    private static Date versionDate(ColecticaAdvancedItem item) {
+        if (item.dateProperties() == null) {
+            return null;
+        }
+        List<String> versionDates = item.dateProperties().get("versionDate");
+        return versionDates == null || versionDates.isEmpty() ? null : ColecticaDates.parse(versionDates.getFirst());
     }
 }
