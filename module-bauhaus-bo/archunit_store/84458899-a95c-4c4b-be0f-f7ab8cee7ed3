@@ -23,5 +23,3 @@ fr.insee.rmes.modules.geographies.webservice.GeographyResources.createGeography(
 fr.insee.rmes.modules.geographies.webservice.GeographyResources.updateGeography(java.lang.String, java.lang.String) takes a @RequestBody that is not annotated with @Valid
 fr.insee.rmes.modules.operations.msd.webservice.MetadataReportResources.setMetadataReport(java.lang.String) takes a @RequestBody that is not annotated with @Valid
 fr.insee.rmes.modules.operations.msd.webservice.MetadataReportResources.setMetadataReportById(java.lang.String, java.lang.String) takes a @RequestBody that is not annotated with @Valid
-fr.insee.rmes.modules.structures.structures.webservice.StructureResources.setStructure(java.lang.String) takes a @RequestBody that is not annotated with @Valid
-fr.insee.rmes.modules.structures.structures.webservice.StructureResources.setStructure(java.lang.String, java.lang.String) takes a @RequestBody that is not annotated with @Valid
