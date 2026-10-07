@@ -195,6 +195,11 @@ public class DDIRepositoryImpl implements DDIRepository {
     }
 
     @Override
+    public Optional<String> getStudyUnitOperationIri(String agencyId, String studyUnitId) {
+        return itemByIdReader.studyUnitOperationIri(agencyId, studyUnitId);
+    }
+
+    @Override
     public Optional<String> findStudyUnitXmlByOperationIri(String operationIri) {
         return catalog.findStudyUnitXmlByOperationIri(operationIri);
     }

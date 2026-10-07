@@ -535,11 +535,16 @@ public class DDIServiceImpl implements DDIService {
     @Override
     public PhysicalInstanceParents getPhysicalInstanceParents(String agencyId, String id) {
         logger.info("Getting parents for physical instance {}/{}", forLog(agencyId), forLog(id));
-        // Les libellés (groupe, étude) arrivent avec la remontée des relations ; seuls les stamps
-        // créateurs demandent de lire le groupe, et encore : ses seules IRIs de séries.
+        // Les libellés (groupe, étude) arrivent avec la remontée des relations ; les stamps
+        // créateurs et la série reflétée demandent de lire le groupe, et encore : ses seules IRIs
+        // de séries. L'opération reflétée se lit de même sur la seule étude.
         PhysicalInstanceParents parents = ddiRepository.getPhysicalInstanceParents(agencyId, id);
         List<String> seriesIris = ddiRepository.getGroupSeriesIris(parents.groupAgency(), parents.groupId());
-        return parents.withStamps(creatorStampsOfSeries(seriesIris));
+        String operationIri = ddiRepository
+                .getStudyUnitOperationIri(parents.studyUnitAgency(), parents.studyUnitId())
+                .orElse(null);
+        return parents.resolved(
+                creatorStampsOfSeries(seriesIris), seriesIris.isEmpty() ? null : seriesIris.getFirst(), operationIri);
     }
 
     private List<String> resolveGroupCreatorStamps(String groupAgency, String groupId) {

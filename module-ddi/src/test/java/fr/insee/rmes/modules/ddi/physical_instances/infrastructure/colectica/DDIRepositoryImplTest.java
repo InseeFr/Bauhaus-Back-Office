@@ -2366,6 +2366,50 @@ class DDIRepositoryImplTest {
         verify(colecticaClient, never()).getDdiSet(anyString(), anyString());
     }
 
+    @Test
+    void getStudyUnitOperationIri_readsTheUserIdOfTheStudyUnitItemAlone() {
+        when(colecticaClient.getItem("fr.insee", "su-444", null))
+                .thenReturn(
+                        studyUnitItem(
+                                "su-444",
+                                "<r:UserID typeOfUserID=\"StatisticalOperation\">http://id.insee.fr/operations/operation/s2001</r:UserID>"));
+
+        Optional<String> operationIri = ddiRepository.getStudyUnitOperationIri("fr.insee", "su-444");
+
+        assertThat(operationIri).contains("http://id.insee.fr/operations/operation/s2001");
+        verify(colecticaClient, never()).getDdiSet(anyString(), anyString());
+    }
+
+    @Test
+    void getStudyUnitOperationIri_isEmptyForAStudyUnitMirroringNoOperation() {
+        when(colecticaClient.getItem("fr.insee", "su-444", null)).thenReturn(studyUnitItem("su-444", ""));
+
+        assertThat(ddiRepository.getStudyUnitOperationIri("fr.insee", "su-444")).isEmpty();
+    }
+
+    private static ColecticaItemResponse studyUnitItem(String id, String userIds) {
+        String studyUnitXml = """
+                <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3" xmlns:s="ddi:studyunit:3_3">
+                  <s:StudyUnit>
+                    <r:Agency>fr.insee</r:Agency>
+                    <r:ID>%s</r:ID>
+                    %s
+                  </s:StudyUnit>
+                </Fragment>""".formatted(id, userIds);
+        return new ColecticaItemResponse(
+                STUDY_UNIT_ITEM_TYPE,
+                "fr.insee",
+                1,
+                id,
+                studyUnitXml,
+                "2025-01-01T00:00:00",
+                null,
+                false,
+                false,
+                false,
+                null);
+    }
+
     // ---- #485 : getCodeList / getCodeListXml (CodeList + Categories, versioned) ----
 
     @Test

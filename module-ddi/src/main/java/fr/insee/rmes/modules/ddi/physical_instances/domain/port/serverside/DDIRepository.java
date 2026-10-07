@@ -190,6 +190,12 @@ public interface DDIRepository {
      * Group — sans télécharger le ddiset de toute sa descendance.
      */
     List<String> getGroupSeriesIris(String agencyId, String groupId);
+
+    /**
+     * L'IRI de l'opération dont une StudyUnit est le miroir (son {@code r:UserID}), lue sur le seul
+     * item de la StudyUnit ; vide si elle n'en reflète aucune.
+     */
+    Optional<String> getStudyUnitOperationIri(String agencyId, String studyUnitId);
     /**
      * Le DDI 3.3 de la StudyUnit d'une opération, dans une {@code <FragmentInstance>} qui porte aussi
      * les fragments des PhysicalInstances qu'elle référence (#1145).

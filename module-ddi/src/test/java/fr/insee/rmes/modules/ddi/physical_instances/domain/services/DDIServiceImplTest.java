@@ -1107,6 +1107,35 @@ class DDIServiceImplTest {
     }
 
     @Test
+    void shouldGetPhysicalInstanceParents_exposesTheSeriesAndOperationMirroredByTheParents() {
+        String seriesIri = "http://id.insee.fr/operations/serie/s1001";
+        String operationIri = "http://id.insee.fr/operations/operation/s2001";
+
+        when(ddiRepository.getPhysicalInstanceParents("fr.insee", "pi-123"))
+                .thenReturn(new PhysicalInstanceParents("fr.insee", "su-456", "fr.insee", "grp-789"));
+        when(ddiRepository.getGroupSeriesIris("fr.insee", "grp-789")).thenReturn(List.of(seriesIri));
+        when(ddiRepository.getStudyUnitOperationIri("fr.insee", "su-456")).thenReturn(Optional.of(operationIri));
+
+        PhysicalInstanceParents result = ddiService.getPhysicalInstanceParents("fr.insee", "pi-123");
+
+        assertEquals(seriesIri, result.seriesIri());
+        assertEquals(operationIri, result.operationIri());
+    }
+
+    @Test
+    void shouldGetPhysicalInstanceParents_leavesTheMirroredIrisEmptyForParentsOutsideTheOperationsModule() {
+        when(ddiRepository.getPhysicalInstanceParents("fr.insee", "pi-123"))
+                .thenReturn(new PhysicalInstanceParents("fr.insee", "su-456", "fr.insee", "grp-789"));
+        when(ddiRepository.getGroupSeriesIris("fr.insee", "grp-789")).thenReturn(List.of());
+        when(ddiRepository.getStudyUnitOperationIri("fr.insee", "su-456")).thenReturn(Optional.empty());
+
+        PhysicalInstanceParents result = ddiService.getPhysicalInstanceParents("fr.insee", "pi-123");
+
+        assertNull(result.seriesIri());
+        assertNull(result.operationIri());
+    }
+
+    @Test
     void shouldGetPhysicalInstancesFilteredByStamp_keepsOnlyInstancesOfUserGroups() {
         PartialPhysicalInstance pi1 = new PartialPhysicalInstance("pi-1", "PI 1", new Date(), "fr.insee");
         PartialPhysicalInstance pi2 = new PartialPhysicalInstance("pi-2", "PI 2", new Date(), "fr.insee");
