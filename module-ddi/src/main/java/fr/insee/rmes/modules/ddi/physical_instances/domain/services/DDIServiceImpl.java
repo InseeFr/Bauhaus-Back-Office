@@ -38,6 +38,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UpdatePhysicalInstanceRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.DDIRepository;
+import fr.insee.rmes.modules.operation.operations.domain.port.serverside.OperationIrisPort;
 import fr.insee.rmes.modules.operation.series.domain.port.serverside.SeriesCreatorsPort;
 import java.time.Clock;
 import java.time.ZonedDateTime;
@@ -58,11 +59,17 @@ public class DDIServiceImpl implements DDIService {
 
     private final DDIRepository ddiRepository;
     private final SeriesCreatorsPort seriesCreatorsPort;
+    private final OperationIrisPort operationIrisPort;
     private final Clock clock;
 
-    public DDIServiceImpl(DDIRepository ddiRepository, SeriesCreatorsPort seriesCreatorsPort, Clock clock) {
+    public DDIServiceImpl(
+            DDIRepository ddiRepository,
+            SeriesCreatorsPort seriesCreatorsPort,
+            OperationIrisPort operationIrisPort,
+            Clock clock) {
         this.ddiRepository = ddiRepository;
         this.seriesCreatorsPort = seriesCreatorsPort;
+        this.operationIrisPort = operationIrisPort;
         this.clock = clock;
     }
 
@@ -588,5 +595,11 @@ public class DDIServiceImpl implements DDIService {
     public Optional<Ddi4StudyUnitResponse> getStudyUnitByOperationIri(String operationIri) {
         logger.info("Getting StudyUnit DDI4 by operationIri: {}", forLog(operationIri));
         return ddiRepository.findStudyUnitByOperationIri(operationIri);
+    }
+
+    @Override
+    public List<PartialPhysicalInstance> getPhysicalInstancesByOperation(String operationId) {
+        logger.info("Getting physical instances by operation: {}", forLog(operationId));
+        return ddiRepository.findPhysicalInstancesByOperationIris(operationIrisPort.irisOf(operationId));
     }
 }

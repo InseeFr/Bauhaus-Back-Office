@@ -29,6 +29,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanc
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceSearchRow;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UpdatePhysicalInstanceRequest;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -204,4 +205,10 @@ public interface DDIRepository {
 
     /** Les mêmes objets — StudyUnit et PhysicalInstances déréférencées — en DDI 4 (#1145). */
     Optional<Ddi4StudyUnitResponse> findStudyUnitByOperationIri(String operationIri);
+
+    /**
+     * Les PhysicalInstances de toutes les StudyUnits dont un {@code r:UserID} vaut l'une des
+     * {@code operationIris} (une opération peut en avoir plusieurs) ; vide si aucune ne la reflète.
+     */
+    List<PartialPhysicalInstance> findPhysicalInstancesByOperationIris(Collection<String> operationIris);
 }

@@ -32,6 +32,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3toDDI4ConverterService;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -41,6 +42,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -293,6 +295,24 @@ class ColecticaCatalogRepository {
                 .map(fragments -> ColecticaXml.assembleFragmentInstance(fragments.fragmentXmls()));
     }
 
+    /**
+     * Les PhysicalInstances de toutes les StudyUnits miroirs de l'opération, libellées comme dans le
+     * listing ({@link #getPhysicalInstances()}). Une référence que ce listing ignore est écartée.
+     */
+    List<PartialPhysicalInstance> findPhysicalInstancesByOperationIris(Collection<String> operationIris) {
+        Set<String> referencedKeys = studyUnitsMirroring(operationIris).stream()
+                .flatMap(studyUnit ->
+                        ColecticaXml.referencedIdentifiers(studyUnit.item(), "PhysicalInstanceReference").stream())
+                .map(reference -> ColecticaItems.key(reference.agencyId(), reference.identifier()))
+                .collect(Collectors.toSet());
+        if (referencedKeys.isEmpty()) {
+            return List.of();
+        }
+        return getPhysicalInstances().stream()
+                .filter(pi -> referencedKeys.contains(ColecticaItems.key(pi.agency(), pi.id())))
+                .toList();
+    }
+
     /** Les mêmes fragments, projetés en DDI 4 pour la négociation JSON (#1145). */
     Optional<Ddi4StudyUnitResponse> findStudyUnitByOperationIri(String operationIri) {
         return findStudyUnitFragmentsByOperationIri(operationIri).map(this::toDdi4);
@@ -321,32 +341,42 @@ class ColecticaCatalogRepository {
     }
 
     private Optional<StudyUnitFragments> findStudyUnitFragmentsByOperationIri(String operationIri) {
-        logger.info("Searching StudyUnit by operationIri: {}", operationIri);
+        return studyUnitsMirroring(List.of(operationIri)).stream()
+                .findFirst()
+                .map(item -> new StudyUnitFragments(item, dereferencePhysicalInstances(item.item())));
+    }
+
+    /** Les StudyUnits dont un {@code r:UserID} vaut l'une des {@code operationIris}, dans l'ordre de Colectica. */
+    private List<ColecticaItemResponse> studyUnitsMirroring(Collection<String> operationIris) {
+        logger.info("Searching StudyUnits by operationIris: {}", operationIris);
         ColecticaResponse studyUnits = colecticaClient.query(List.of(STUDY_UNIT_UUID));
         List<GetDescriptionsRequest.IdentifierRef> identifiers = ColecticaItems.identifiersOf(studyUnits.results());
         if (identifiers.isEmpty()) {
-            return Optional.empty();
+            return List.of();
         }
         // Un seul item/_getList pour tous les XML de StudyUnit, au lieu d'un appel HTTP par
         // StudyUnit — c'était la principale source de latence ici.
         ColecticaItemResponse[] items = colecticaClient.getDescriptions(identifiers);
         List<String> candidateUserIds = new ArrayList<>();
+        List<ColecticaItemResponse> mirroring = new ArrayList<>();
         for (ColecticaItemResponse item : items) {
             if (item == null) {
                 continue;
             }
             List<String> userIds = ColecticaXml.userIds(item.item());
             candidateUserIds.addAll(userIds);
-            if (userIds.contains(operationIri)) {
-                return Optional.of(new StudyUnitFragments(item, dereferencePhysicalInstances(item.item())));
+            if (userIds.stream().anyMatch(operationIris::contains)) {
+                mirroring.add(item);
             }
         }
-        logger.warn(
-                "No StudyUnit matched operationIri '{}' among {} study unit(s). Candidate UserIDs found: {}",
-                operationIri,
-                identifiers.size(),
-                candidateUserIds);
-        return Optional.empty();
+        if (mirroring.isEmpty()) {
+            logger.warn(
+                    "No StudyUnit matched operationIris {} among {} study unit(s). Candidate UserIDs found: {}",
+                    operationIris,
+                    identifiers.size(),
+                    candidateUserIds);
+        }
+        return mirroring;
     }
 
     /**

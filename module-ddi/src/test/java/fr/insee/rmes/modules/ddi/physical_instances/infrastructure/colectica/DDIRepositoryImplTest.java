@@ -3,6 +3,7 @@ package fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica;
 import static fr.insee.rmes.colectica.client.dto.ColecticaItemBuilder.aColecticaItem;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.tuple;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
@@ -2186,6 +2187,96 @@ class DDIRepositoryImplTest {
         });
 
         assertFalse(ddiRepository.findStudyUnitByOperationIri(operationIri).isPresent());
+    }
+
+    /**
+     * Fiche d'une opération : plusieurs StudyUnits peuvent refléter la même opération (une par
+     * vague, par exemple) ; les PhysicalInstances de chacune ressortent, celles des autres non.
+     */
+    @Test
+    void shouldFindPhysicalInstancesByOperationIri_collectsThoseOfEveryMirroringStudyUnit() {
+        String operationIri = "http://bauhaus/operations/operation/s1268";
+        String piType = "a51e85bb-6259-4488-8df2-f08cb43485f8";
+        when(instanceConfiguration.itemTypes()).thenReturn(Map.of("PhysicalInstance", piType));
+
+        when(colecticaClient.query(List.of("30ea0200-7121-4f01-8d21-a931a182b86d")))
+                .thenReturn(new ColecticaResponse(
+                        List.of(
+                                aColecticaItem("30ea0200-7121-4f01-8d21-a931a182b86d", "su-alpha")
+                                        .agency("fr.insee")
+                                        .build(),
+                                aColecticaItem("30ea0200-7121-4f01-8d21-a931a182b86d", "su-bravo")
+                                        .agency("fr.insee")
+                                        .build(),
+                                aColecticaItem("30ea0200-7121-4f01-8d21-a931a182b86d", "su-other")
+                                        .agency("fr.insee")
+                                        .build()),
+                        3,
+                        3,
+                        null,
+                        null,
+                        null));
+        when(colecticaClient.getDescriptions(anyList())).thenReturn(new ColecticaItemResponse[] {
+            studyUnitItemResponse(
+                    "fr.insee",
+                    "su-alpha",
+                    studyUnitFragment(operationIri, physicalInstanceReference("fr.insee", "pi-1", "1"))),
+            studyUnitItemResponse(
+                    "fr.insee",
+                    "su-bravo",
+                    studyUnitFragment(operationIri, physicalInstanceReference("fr.insee", "pi-2", "4"))),
+            studyUnitItemResponse(
+                    "fr.insee",
+                    "su-other",
+                    studyUnitFragment(
+                            "http://bauhaus/operations/operation/s9999",
+                            physicalInstanceReference("fr.insee", "pi-3", "1")))
+        });
+        when(colecticaClient.query(List.of(piType)))
+                .thenReturn(new ColecticaResponse(
+                        List.of(
+                                aColecticaItem("PhysicalInstance", "pi-1")
+                                        .itemName(Map.of("fr-FR", "Individus"))
+                                        .agency("fr.insee")
+                                        .build(),
+                                aColecticaItem("PhysicalInstance", "pi-2")
+                                        .itemName(Map.of("fr-FR", "Ménages"))
+                                        .agency("fr.insee")
+                                        .build(),
+                                aColecticaItem("PhysicalInstance", "pi-3")
+                                        .itemName(Map.of("fr-FR", "Autre"))
+                                        .agency("fr.insee")
+                                        .build()),
+                        3,
+                        3,
+                        null,
+                        null,
+                        null));
+
+        List<PartialPhysicalInstance> result =
+                ddiRepository.findPhysicalInstancesByOperationIris(List.of(operationIri));
+
+        assertThat(result)
+                .extracting(PartialPhysicalInstance::id, PartialPhysicalInstance::label)
+                .containsExactly(tuple("pi-1", "Individus"), tuple("pi-2", "Ménages"));
+    }
+
+    @Test
+    void shouldFindPhysicalInstancesByOperationIri_returnsEmptyWhenNoStudyUnitMirrorsTheOperation() {
+        when(colecticaClient.query(List.of("30ea0200-7121-4f01-8d21-a931a182b86d")))
+                .thenReturn(studyUnitQueryResponse("fr.insee", "su-other"));
+        when(colecticaClient.getDescriptions(anyList())).thenReturn(new ColecticaItemResponse[] {
+            studyUnitItemResponse(
+                    "fr.insee",
+                    "su-other",
+                    studyUnitFragment(
+                            "http://bauhaus/operations/operation/s9999",
+                            physicalInstanceReference("fr.insee", "pi-3", "1")))
+        });
+
+        assertThat(ddiRepository.findPhysicalInstancesByOperationIris(
+                        List.of("http://bauhaus/operations/operation/s1268")))
+                .isEmpty();
     }
 
     private static ColecticaResponse studyUnitQueryResponse(String agency, String id) {

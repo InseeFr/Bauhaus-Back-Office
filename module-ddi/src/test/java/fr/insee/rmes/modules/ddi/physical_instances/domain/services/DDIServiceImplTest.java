@@ -51,6 +51,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UpdatePhysicalI
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UsageItem;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.VariableRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.DDIRepository;
+import fr.insee.rmes.modules.operation.operations.domain.port.serverside.OperationIrisPort;
 import fr.insee.rmes.modules.operation.series.domain.port.serverside.SeriesCreatorsPort;
 import java.time.Clock;
 import java.time.Instant;
@@ -79,11 +80,14 @@ class DDIServiceImplTest {
     @Mock
     private SeriesCreatorsPort seriesCreatorsPort;
 
+    @Mock
+    private OperationIrisPort operationIrisPort;
+
     private DDIServiceImpl ddiService;
 
     @BeforeEach
     void setUp() {
-        ddiService = new DDIServiceImpl(ddiRepository, seriesCreatorsPort, FIXED_CLOCK);
+        ddiService = new DDIServiceImpl(ddiRepository, seriesCreatorsPort, operationIrisPort, FIXED_CLOCK);
     }
 
     @Test
@@ -1271,6 +1275,19 @@ class DDIServiceImplTest {
 
         assertFalse(ddiService.getStudyUnitByOperationIri(operationIri).isPresent());
         verify(ddiRepository).findStudyUnitByOperationIri(operationIri);
+    }
+
+    /** Une StudyUnit peut désigner son opération par l'une ou l'autre de ses IRI. */
+    @Test
+    void shouldGetPhysicalInstancesByOperation_looksUpEveryIriOfTheOperation() {
+        List<String> iris =
+                List.of("http://id.insee.fr/operations/operation/s1268", "http://bauhaus/operations/operation/s1268");
+        when(operationIrisPort.irisOf("s1268")).thenReturn(iris);
+        List<PartialPhysicalInstance> expected =
+                List.of(new PartialPhysicalInstance("pi-1", "Individus", null, "fr.insee"));
+        when(ddiRepository.findPhysicalInstancesByOperationIris(iris)).thenReturn(expected);
+
+        assertEquals(expected, ddiService.getPhysicalInstancesByOperation("s1268"));
     }
 
     @Test

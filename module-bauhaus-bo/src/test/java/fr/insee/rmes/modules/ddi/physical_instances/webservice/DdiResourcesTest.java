@@ -823,6 +823,21 @@ class DdiResourcesTest {
         verify(ddiService).getCodeList(CL_AGENCY, CL_ID, CL_VERSION);
     }
 
+    // --- GET /ddi/operation/{id}/physical-instances ---
+
+    @Test
+    void getOperationPhysicalInstances_listsThePhysicalInstancesOfTheOperation() {
+        when(ddiService.getPhysicalInstancesByOperation("s1268"))
+                .thenReturn(List.of(new PartialPhysicalInstance("pi-1", "Individus", null, "fr.insee")));
+
+        ResponseEntity<List<PartialPhysicalInstanceResponse>> response =
+                ddiResources.getOperationPhysicalInstances("s1268");
+
+        List<PartialPhysicalInstanceResponse> result = assertOkListOfSize(response, 1);
+        assertEquals("pi-1", result.getFirst().getId());
+        assertEquals("Individus", result.getFirst().getLabel());
+    }
+
     // --- GET /ddi/operation/{id}/fichiers (JSON, public) ---
 
     @Test

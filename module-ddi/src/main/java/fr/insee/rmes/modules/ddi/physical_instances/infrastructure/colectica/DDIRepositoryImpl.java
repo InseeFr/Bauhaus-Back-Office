@@ -34,6 +34,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UpdatePhysicalI
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3toDDI4ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI4toDDI3ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.DDIRepository;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
@@ -207,6 +208,11 @@ public class DDIRepositoryImpl implements DDIRepository {
     @Override
     public Optional<Ddi4StudyUnitResponse> findStudyUnitByOperationIri(String operationIri) {
         return catalog.findStudyUnitByOperationIri(operationIri);
+    }
+
+    @Override
+    public List<PartialPhysicalInstance> findPhysicalInstancesByOperationIris(Collection<String> operationIris) {
+        return catalog.findPhysicalInstancesByOperationIris(operationIris);
     }
 
     @Override

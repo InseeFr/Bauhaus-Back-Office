@@ -156,4 +156,10 @@ public interface DDIService {
      * pendant JSON de {@link #getStudyUnitXmlByOperationIri(String)}.
      */
     Optional<Ddi4StudyUnitResponse> getStudyUnitByOperationIri(String operationIri);
+
+    /**
+     * Les PhysicalInstances de toutes les StudyUnits miroirs de l'opération d'identifiant
+     * {@code operationId}, quelle que soit l'IRI sous laquelle elles la désignent ; vide sans miroir.
+     */
+    List<PartialPhysicalInstance> getPhysicalInstancesByOperation(String operationId);
 }

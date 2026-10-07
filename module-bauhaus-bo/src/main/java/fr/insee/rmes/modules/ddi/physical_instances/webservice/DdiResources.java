@@ -109,6 +109,20 @@ public class DdiResources {
                 .body(responses);
     }
 
+    /**
+     * Fichiers de données d'une opération, pour sa fiche dans le module opérations : les
+     * PhysicalInstances de toutes les StudyUnits qui la reflètent, qu'elles la désignent par son IRI
+     * de publication ou de gestion.
+     */
+    @GetMapping("/operation/{id}/physical-instances")
+    @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.READ)
+    public ResponseEntity<List<PartialPhysicalInstanceResponse>> getOperationPhysicalInstances(
+            @PathVariable(Constants.ID) String id) {
+        return ResponseEntity.ok(ddiService.getPhysicalInstancesByOperation(id).stream()
+                .map(PartialPhysicalInstanceResponse::fromDomain)
+                .toList());
+    }
+
     @GetMapping("/physical-instance/search")
     @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.READ)
     public ResponseEntity<List<PhysicalInstanceSearchResponse>> searchPhysicalInstances(
