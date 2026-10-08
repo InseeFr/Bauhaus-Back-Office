@@ -39,6 +39,15 @@ class RmesExceptionStatusTest extends AbstractCodesListsResourcesWebMvcTest {
 
     private static final String MESSAGE = "The code list is not valid";
 
+    /** Un corps qui passe la validation, pour que l'erreur vienne bien du service. */
+    private static final String VALID_PARTIAL_BODY = """
+            {"id": "CL_TEST",
+             "labelLg1": "Liste partielle",
+             "labelLg2": "Partial list",
+             "creator": "DG75-L201",
+             "disseminationStatus": "http://id.insee.fr/codes/base/statutDiffusion/PublicGenerique",
+             "iriParent": "http://bauhaus/codes/liste"}""";
+
     @Test
     void a_rmes_exception_keeps_its_bad_request_status_and_message() throws Exception {
         when(codeListService.getDetailedPartialCodesList("CL_TEST"))
@@ -114,7 +123,7 @@ class RmesExceptionStatusTest extends AbstractCodesListsResourcesWebMvcTest {
 
         mockMvc.perform(post("/codeList/partial")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{}"))
+                        .content(VALID_PARTIAL_BODY))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value(MESSAGE));
     }
@@ -126,7 +135,7 @@ class RmesExceptionStatusTest extends AbstractCodesListsResourcesWebMvcTest {
 
         mockMvc.perform(put("/codeList/partial/{id}", "CL_TEST")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{}"))
+                        .content(VALID_PARTIAL_BODY))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value(MESSAGE));
     }
@@ -150,7 +159,7 @@ class RmesExceptionStatusTest extends AbstractCodesListsResourcesWebMvcTest {
 
         mockMvc.perform(post("/codeList/partial")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{}"))
+                        .content(VALID_PARTIAL_BODY))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").isNotEmpty())
                 .andExpect(content().string(not(containsString("java."))))

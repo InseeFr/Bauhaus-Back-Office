@@ -9,6 +9,7 @@ import fr.insee.rmes.modules.codeslists.partialcodeslists.model.PartialCodesList
 import fr.insee.rmes.modules.commons.webservice.GenericResources;
 import fr.insee.rmes.modules.users.domain.model.RBAC;
 import fr.insee.rmes.modules.users.webservice.HasAccess;
+import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -63,16 +64,18 @@ public class PartialCodeListsResources extends GenericResources {
 
     @HasAccess(module = RBAC.Module.CODESLIST_PARTIALCODESLIST, privilege = RBAC.Privilege.CREATE)
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> createPartialCodeList(@RequestBody String body) throws RmesException {
-        String id = codeListService.setCodesList(body, CodeListKind.PARTIAL);
+    public ResponseEntity<Object> createPartialCodeList(@Valid @RequestBody PartialCodesListRequest codesList)
+            throws RmesException {
+        String id = codeListService.setCodesList(codesList.toLegacyJson(), CodeListKind.PARTIAL);
         return ResponseEntity.status(HttpStatus.OK).body(id);
     }
 
     @HasAccess(module = RBAC.Module.CODESLIST_PARTIALCODESLIST, privilege = RBAC.Privilege.UPDATE)
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> updatePartialCodeList(
-            @PathVariable(Constants.ID) String componentId, @RequestBody String body) throws RmesException {
-        String id = codeListService.setCodesList(componentId, body, CodeListKind.PARTIAL);
+            @PathVariable(Constants.ID) String componentId, @Valid @RequestBody PartialCodesListRequest codesList)
+            throws RmesException {
+        String id = codeListService.setCodesList(componentId, codesList.toLegacyJson(), CodeListKind.PARTIAL);
         return ResponseEntity.status(HttpStatus.OK).body(id);
     }
 
