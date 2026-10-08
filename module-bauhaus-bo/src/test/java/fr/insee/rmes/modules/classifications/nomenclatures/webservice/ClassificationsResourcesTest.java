@@ -19,6 +19,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import tools.jackson.databind.json.JsonMapper;
 
 @ExtendWith(MockitoExtension.class)
 @AppSpringBootTest
@@ -29,6 +30,10 @@ class ClassificationsResourcesTest {
 
     @MockitoBean
     ClassificationItemService classificationItemService;
+
+    private static final JsonMapper MAPPER = JsonMapper.builder().build();
+
+    private static final String LABELS_BODY = "{\"prefLabelLg1\": \"Libellé\", \"prefLabelLg2\": \"Label\"}";
 
     final Id id = new Id("mocked Id");
 
@@ -122,10 +127,11 @@ class ClassificationsResourcesTest {
 
     @Test
     void shouldReturnResponseWhenUpdateClassification() throws RmesException {
-        doNothing().when(classificationsService).updateClassification(id.identifier(), " mocked body");
+        ClassificationRequest classification = MAPPER.readValue(LABELS_BODY, ClassificationRequest.class);
+        doNothing().when(classificationsService).updateClassification(id.identifier(), classification.toLegacyJson());
         ClassificationsResources classificationsResources = resources();
         String actual = classificationsResources
-                .updateClassification(id, " mocked body")
+                .updateClassification(id, classification)
                 .toString();
         Assertions.assertEquals("<200 OK OK,Id[identifier=mocked Id],[]>", actual);
     }
@@ -192,10 +198,13 @@ class ClassificationsResourcesTest {
 
     @Test
     void shouldReturnResponseWhenUpdateClassificationItem() throws RmesException {
-        doNothing().when(classificationItemService).updateClassificationItem(id.identifier(), "mocked item", "body");
+        ClassificationItemRequest item = MAPPER.readValue(LABELS_BODY, ClassificationItemRequest.class);
+        doNothing()
+                .when(classificationItemService)
+                .updateClassificationItem(id.identifier(), "mocked item", item.toLegacyJson());
         ClassificationsResources classificationsResources = resources();
         String actual = classificationsResources
-                .updateClassificationItem(id.identifier(), "mocked item", "body")
+                .updateClassificationItem(id.identifier(), "mocked item", item)
                 .toString();
         Assertions.assertEquals("<200 OK OK,mocked item,[]>", actual);
     }

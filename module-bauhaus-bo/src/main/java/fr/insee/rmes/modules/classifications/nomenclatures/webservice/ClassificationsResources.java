@@ -16,6 +16,7 @@ import fr.insee.rmes.modules.commons.configuration.ConditionalOnModule;
 import fr.insee.rmes.modules.commons.configuration.swagger.model.Id;
 import fr.insee.rmes.modules.users.domain.model.RBAC;
 import fr.insee.rmes.modules.users.webservice.HasAccess;
+import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -143,9 +144,10 @@ public class ClassificationsResources {
 
     @HasAccess(module = RBAC.Module.CLASSIFICATION_CLASSIFICATION, privilege = RBAC.Privilege.UPDATE)
     @PutMapping(value = "/classification/{id}")
-    public ResponseEntity<Id> updateClassification(@PathVariable(Constants.ID) Id id, @RequestBody String body)
+    public ResponseEntity<Id> updateClassification(
+            @PathVariable(Constants.ID) Id id, @Valid @RequestBody ClassificationRequest classification)
             throws RmesException {
-        classificationsService.updateClassification(id.identifier(), body);
+        classificationsService.updateClassification(id.identifier(), classification.toLegacyJson());
         return ResponseEntity.status(HttpStatus.OK).body(id);
     }
 
@@ -203,9 +205,9 @@ public class ClassificationsResources {
     public ResponseEntity<Object> updateClassificationItem(
             @PathVariable("classificationId") String classificationId,
             @PathVariable("itemId") String itemId,
-            @RequestBody String body)
+            @Valid @RequestBody ClassificationItemRequest item)
             throws RmesException {
-        classificationItemService.updateClassificationItem(classificationId, itemId, body);
+        classificationItemService.updateClassificationItem(classificationId, itemId, item.toLegacyJson());
         return ResponseEntity.status(HttpStatus.OK).body(itemId);
     }
 

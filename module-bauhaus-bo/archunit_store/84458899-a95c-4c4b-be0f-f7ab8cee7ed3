@@ -1,5 +1,3 @@
-fr.insee.rmes.modules.classifications.nomenclatures.webservice.ClassificationsResources.updateClassification(fr.insee.rmes.modules.commons.configuration.swagger.model.Id, java.lang.String) takes a @RequestBody that is not annotated with @Valid
-fr.insee.rmes.modules.classifications.nomenclatures.webservice.ClassificationsResources.updateClassificationItem(java.lang.String, java.lang.String, java.lang.String) takes a @RequestBody that is not annotated with @Valid
 fr.insee.rmes.modules.concepts.collections.webservice.CollectionsResources.create(fr.insee.rmes.modules.concepts.collections.webservice.CreateCollectionRequest, jakarta.servlet.http.HttpServletResponse) takes a @RequestBody that is not annotated with @Valid
 fr.insee.rmes.modules.concepts.collections.webservice.CollectionsResources.publish(java.lang.String, java.util.List) takes a @RequestBody that is not annotated with @Valid
 fr.insee.rmes.modules.concepts.collections.webservice.CollectionsResources.update(java.lang.String, fr.insee.rmes.modules.concepts.collections.webservice.UpdateCollectionRequest) takes a @RequestBody that is not annotated with @Valid

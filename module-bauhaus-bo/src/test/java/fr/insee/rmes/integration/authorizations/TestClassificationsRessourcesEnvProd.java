@@ -198,7 +198,7 @@ class TestClassificationsRessourcesEnvProd extends AbstractResourcesEnvProd {
         var request = put("/classifications/classification/" + familyId + "/item/" + itemId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content("{\"id\": \"1\"}");
+                .content("{\"prefLabelLg1\": \"Libellé\", \"prefLabelLg2\": \"Label\"}");
         request.header("Authorization", "Bearer toto");
 
         mvc.perform(request).andExpect(status().is(code));

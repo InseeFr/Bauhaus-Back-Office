@@ -8,5 +8,7 @@ public final class ValidationMessages {
 
     public static final String REQUIRED = "Ce champ est obligatoire.";
 
+    public static final String INVALID_URL = "Cette adresse n'est pas une URL valide.";
+
     private ValidationMessages() {}
 }
