@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.function.Consumer;
 import org.eclipse.rdf4j.common.exception.RDF4JException;
 import org.eclipse.rdf4j.model.*;
-import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;
@@ -433,23 +432,6 @@ public class RepositoryGestion {
         }
     }
 
-    public void bulkOverrideTriplets(List<SubjectModelGraph> updates) throws RmesException {
-        Model combinedModel = new LinkedHashModel();
-        try (RepositoryConnection connection = gestionConnection()) {
-            connection.begin();
-            for (SubjectModelGraph update : updates) {
-                update.model()
-                        .predicates()
-                        .forEach(predicate -> connection.remove(update.subject(), predicate, null, update.graph()));
-                combinedModel.addAll(update.model());
-            }
-            connection.add(combinedModel);
-            connection.commit();
-        } catch (RepositoryException e) {
-            throw new RmesException("Failure bulk override triplets", e);
-        }
-    }
-
     public RepositoryResult<Statement> getCompleteGraph(RepositoryConnection con, Resource graphIri)
             throws RmesException {
         return repositoryUtils.getCompleteGraph(con, graphIri);
@@ -461,5 +443,25 @@ public class RepositoryGestion {
         List<String> results = new ArrayList<>();
         array.iterator().forEachRemaining(r -> results.add(((JSONObject) r).getString(queryKey)));
         object.put(objectKey, results);
+    }
+
+    /**
+     * Triplets du sujet dans le graphe donné. À préférer à {@link #getStatements(RepositoryConnection,
+     * Resource)} : sans graphe nommé, la lecture ne rend rien sur un triplestore dont le graphe par
+     * défaut n'est pas l'union des graphes nommés, et les triplets lus n'y portent pas leur graphe.
+     */
+    public RepositoryResult<Statement> getStatements(RepositoryConnection con, Resource subject, Resource graph)
+            throws RmesException {
+        RepositoryResult<Statement> statements = null;
+        if (con == null) {
+            con = gestionConnection();
+        }
+
+        try {
+            statements = con.getStatements(subject, null, null, false, graph);
+        } catch (RepositoryException e) {
+            throwsRmesException(e, "Failure get statements : " + subject + " in " + graph);
+        }
+        return statements;
     }
 }

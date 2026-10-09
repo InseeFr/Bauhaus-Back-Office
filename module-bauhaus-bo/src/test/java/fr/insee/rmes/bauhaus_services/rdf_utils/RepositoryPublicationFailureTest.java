@@ -12,7 +12,6 @@ import static org.mockito.Mockito.when;
 
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.RepositoryUtils;
-import fr.insee.rmes.rdf_utils.SubjectModelGraph;
 import java.util.List;
 import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 import org.eclipse.rdf4j.model.IRI;
@@ -92,14 +91,6 @@ class RepositoryPublicationFailureTest {
         doThrow(new RepositoryException(RDF4J_MESSAGE)).when(connection).add(any(Model.class));
 
         assertUnavailableRepository(() -> repositoryPublication.overrideTriplets(subject, model, subject));
-    }
-
-    @Test
-    void shouldReportAnUnavailableRepositoryWhenOverridingTripletsInBulk() {
-        doThrow(new RepositoryException(RDF4J_MESSAGE)).when(connection).begin();
-
-        assertUnavailableRepository(() ->
-                repositoryPublication.bulkOverrideTriplets(List.of(new SubjectModelGraph(subject, model, subject))));
     }
 
     private void assertUnavailableRepository(ThrowingCallable publication) {

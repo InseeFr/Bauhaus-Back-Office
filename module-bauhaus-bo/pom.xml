@@ -40,6 +40,12 @@
     </dependency>
     <dependency>
       <groupId>fr.insee.rmes</groupId>
+      <artifactId>module-testcontainer-fuseki</artifactId>
+      <version>1.0.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>fr.insee.rmes</groupId>
       <artifactId>module-operation</artifactId>
       <version>1.0.0</version>
     </dependency>

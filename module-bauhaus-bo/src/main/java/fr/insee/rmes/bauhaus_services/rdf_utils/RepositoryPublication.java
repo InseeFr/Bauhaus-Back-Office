@@ -4,14 +4,12 @@ import fr.insee.rmes.domain.exceptions.CodedRmesException;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.RepositoryUtils;
 import fr.insee.rmes.graphdb.exceptions.GraphDbUnauthorizedException;
-import fr.insee.rmes.rdf_utils.SubjectModelGraph;
 import java.util.Arrays;
 import java.util.List;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
-import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;
 import org.eclipse.rdf4j.repository.Repository;
@@ -175,6 +173,29 @@ public class RepositoryPublication {
         }
     }
 
+    /**
+     * Remplace les triplets de la ressource dans le graphe donné. À préférer à {@link
+     * #publishResource(Resource, Model, String)}, dont la suppression sans graphe nommé ne retire rien
+     * sur un triplestore dont le graphe par défaut n'est pas l'union des graphes nommés.
+     */
+    public void publishResource(Resource resource, Model model, String type, Resource graph) throws RmesException {
+        Repository repo = repositoryUtils.initRepository(rdfServerPublicationExt, idRepositoryPublicationExt);
+        if (repo == null) {
+            return;
+        }
+
+        try (RepositoryConnection conn = repo.getConnection()) {
+            conn.remove(resource, null, null, graph);
+            conn.add(model);
+            logger.info("Publication of Resource {} : {} in {}", type, resource, graph);
+        } catch (RepositoryException e) {
+            throwIfUnauthorized(e, "Publication of Resource " + type + " : " + resource);
+            logger.error("Publication of Resource {} : {} {}", type, resource, FAILED);
+            logger.error(THREE_PARAMS_LOG, CONNECTION_TO, repo, FAILED);
+            throw unavailableRepository(e);
+        }
+    }
+
     public void publishContext(Resource graph, Model model, String type) throws RmesException {
         logger.debug(
                 "publishContext - type={}, graph={}, {} triples, publication server={}, repository={}",
@@ -227,25 +248,6 @@ public class RepositoryPublication {
             conn.add(model);
         } catch (RepositoryException e) {
             throwIfUnauthorized(e, "Override of triplets : " + subject);
-            throw unavailableRepository(e);
-        }
-    }
-
-    public void bulkOverrideTriplets(List<SubjectModelGraph> updates) throws RmesException {
-        Model combinedModel = new LinkedHashModel();
-        Repository repo = repositoryUtils.initRepository(rdfServerPublicationExt, idRepositoryPublicationExt);
-        try (RepositoryConnection conn = repo.getConnection()) {
-            conn.begin();
-            for (SubjectModelGraph update : updates) {
-                update.model()
-                        .predicates()
-                        .forEach(predicate -> conn.remove(update.subject(), predicate, null, update.graph()));
-                combinedModel.addAll(update.model());
-            }
-            conn.add(combinedModel);
-            conn.commit();
-        } catch (RepositoryException e) {
-            throwIfUnauthorized(e, "Bulk override of triplets");
             throw unavailableRepository(e);
         }
     }

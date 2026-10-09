@@ -454,7 +454,10 @@ class StructureComponentRepositoryTest {
 
         assertThat(id).isEqualTo("a1000");
         verify(componentPublication)
-                .publishComponent(VF.createIRI("http://bauhaus/composants/attribut/a1000"), QB.ATTRIBUTE_PROPERTY);
+                .publishComponent(
+                        VF.createIRI("http://bauhaus/composants/attribut/a1000"),
+                        QB.ATTRIBUTE_PROPERTY,
+                        VF.createIRI("http://rdf.insee.fr/graphes/composants"));
         assertThat(validationState()).isEqualTo(ValidationStatus.VALIDATED.getValue());
     }
 
@@ -463,7 +466,10 @@ class StructureComponentRepositoryTest {
         structureComponentRepository.publishComponent(publishableComponent("m1000", QB.MEASURE_PROPERTY.stringValue()));
 
         verify(componentPublication)
-                .publishComponent(VF.createIRI("http://bauhaus/composants/mesure/m1000"), QB.MEASURE_PROPERTY);
+                .publishComponent(
+                        VF.createIRI("http://bauhaus/composants/mesure/m1000"),
+                        QB.MEASURE_PROPERTY,
+                        VF.createIRI("http://rdf.insee.fr/graphes/composants"));
     }
 
     @Test
@@ -472,7 +478,10 @@ class StructureComponentRepositoryTest {
                 publishableComponent("d1000", QB.DIMENSION_PROPERTY.stringValue()));
 
         verify(componentPublication)
-                .publishComponent(VF.createIRI("http://bauhaus/composants/dimension/d1000"), QB.DIMENSION_PROPERTY);
+                .publishComponent(
+                        VF.createIRI("http://bauhaus/composants/dimension/d1000"),
+                        QB.DIMENSION_PROPERTY,
+                        VF.createIRI("http://rdf.insee.fr/graphes/composants"));
     }
 
     private static String dimensionBody() {
