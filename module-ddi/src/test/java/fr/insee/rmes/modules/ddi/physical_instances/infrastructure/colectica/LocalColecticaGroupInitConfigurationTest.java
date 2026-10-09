@@ -1151,7 +1151,7 @@ class LocalColecticaGroupInitConfigurationTest {
     private static MutualizedCodesProperties configuredMutualizedGroup() {
         return new MutualizedCodesProperties(
                 MutualizedCodesProperties.Strategy.CONFIGURED_GROUPS,
-                List.of(new MutualizedCodesProperties.GroupRef("fr.insee", MUTUALIZED_GROUP_ID, 1)));
+                List.of(new MutualizedCodesProperties.GroupRef("fr.insee", MUTUALIZED_GROUP_ID)));
     }
 
     private static Ddi3Response.Ddi3Item ddi3Item(String identifier) {
