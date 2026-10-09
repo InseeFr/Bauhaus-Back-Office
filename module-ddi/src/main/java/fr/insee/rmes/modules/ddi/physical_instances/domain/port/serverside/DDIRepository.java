@@ -121,6 +121,9 @@ public interface DDIRepository {
 
     void evictPhysicalInstanceSearchRowsCache();
 
+    /** Vide toutes les régions de cache Colectica (action d'administration). */
+    void evictAllCaches();
+
     Ddi4Response getMutualizedCodesList(String agencyId, String id);
 
     /** Valeur et libellé de chaque code d'une liste mutualisée ; {@code null} si elle ne l'est pas. */

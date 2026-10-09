@@ -389,6 +389,19 @@ public class DDIRepositoryImpl implements DDIRepository {
     }
 
     @Override
+    @CacheEvict(
+            cacheNames = {
+                ColecticaCacheNames.MUTUALIZED_CODES_LISTS,
+                ColecticaCacheNames.MUTUALIZED_PACKAGE_CODE_LIST_REFS,
+                ColecticaCacheNames.PHYSICAL_INSTANCE_SEARCH_ROWS,
+                ColecticaCacheNames.MUTUALIZED_CODE_LIST_CONTENTS
+            },
+            allEntries = true)
+    public void evictAllCaches() {
+        logger.info("All Colectica caches evicted");
+    }
+
+    @Override
     public List<PartialLogicalProduct> getLogicalProductsByGroup(String agencyId, String groupId) {
         return hierarchy.getLogicalProductsByGroup(agencyId, groupId);
     }

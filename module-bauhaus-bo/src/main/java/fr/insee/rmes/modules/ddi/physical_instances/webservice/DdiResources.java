@@ -40,6 +40,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -143,6 +144,17 @@ public class DdiResources {
                 .toList();
 
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(responses);
+    }
+
+    /**
+     * Vide toutes les régions de cache Colectica, pour prendre en compte des modifications faites hors
+     * de Bauhaus sans attendre l'expiration. Réservé aux administrateurs.
+     */
+    @DeleteMapping("/cache")
+    @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.ADMINISTRATION)
+    public ResponseEntity<Void> evictCaches() {
+        ddiService.evictAllCaches();
+        return ResponseEntity.noContent().build();
     }
 
     /**

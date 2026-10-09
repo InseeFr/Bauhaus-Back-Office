@@ -476,6 +476,12 @@ public class DDIServiceImpl implements DDIService {
     }
 
     @Override
+    public void evictAllCaches() {
+        logger.info("Evicting all Colectica caches");
+        ddiRepository.evictAllCaches();
+    }
+
+    @Override
     public MutualizedCodeListCodes getMutualizedCodeListCodes(String agencyId, String id) {
         logger.info("Getting codes of mutualized codes list {}/{}", forLog(agencyId), forLog(id));
         return ddiRepository.getMutualizedCodeListCodes(agencyId, id);

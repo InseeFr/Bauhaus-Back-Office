@@ -331,6 +331,14 @@ class DdiResourcesTest {
     }
 
     @Test
+    void evictCaches_evictsEveryColecticaCacheAndAnswersNoContent() {
+        ResponseEntity<Void> response = ddiResources.evictCaches();
+
+        assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
+        verify(ddiService).evictAllCaches();
+    }
+
+    @Test
     void shouldUpdatePhysicalInstance() {
         // Given
         String agencyId = "fr.insee";
