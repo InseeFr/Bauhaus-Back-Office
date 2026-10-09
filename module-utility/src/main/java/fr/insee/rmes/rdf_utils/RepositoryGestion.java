@@ -10,11 +10,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
+import org.eclipse.rdf4j.common.exception.RDF4JException;
 import org.eclipse.rdf4j.model.*;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;
+import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.RepositoryResult;
@@ -248,6 +250,31 @@ public class RepositoryGestion {
                 },
                 conn,
                 FAILURE_LOAD_OBJECT + object);
+    }
+
+    /**
+     * Exécute les mises à jour SPARQL puis remplace les triplets de chaque objet dans son graphe, en
+     * une seule transaction : si une étape échoue, la base reste dans son état d'avant l'appel.
+     */
+    public void replaceObjects(List<String> updates, List<SubjectModelGraph> objects) throws RmesException {
+        try (RepositoryConnection connection = gestionConnection()) {
+            connection.begin();
+            try {
+                for (String update : updates) {
+                    connection.prepareUpdate(QueryLanguage.SPARQL, update).execute();
+                }
+                for (SubjectModelGraph object : objects) {
+                    connection.remove(object.subject(), null, null, object.graph());
+                    connection.add(object.model());
+                }
+                connection.commit();
+            } catch (RDF4JException e) {
+                connection.rollback();
+                throw e;
+            }
+        } catch (RDF4JException e) {
+            throw new RmesException("Failure while replacing objects", e);
+        }
     }
 
     public void deleteObject(IRI object, RepositoryConnection conn) throws RmesException {

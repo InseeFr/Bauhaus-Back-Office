@@ -25,6 +25,7 @@ import fr.insee.rmes.modules.shared_kernel.infrastructure.publication.ObjectPubl
 import fr.insee.rmes.persistance.sparql_queries.datasets.DatasetDistributionQueries;
 import fr.insee.rmes.persistance.sparql_queries.datasets.DatasetQueries;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.rdf_utils.SubjectModelGraph;
 import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.IdGenerator;
 import java.time.Instant;
@@ -73,6 +74,8 @@ class DatasetServiceImplTest {
         // null. Le défaut du mock (null) mentirait sur ce contrat et masquerait les NPE réels.
         when(repositoryGestion.getResponseAsArray(any())).thenReturn(new JSONArray());
         datasetQueries = mock(DatasetQueries.class);
+        when(datasetQueries.deleteDatasetQualifiedDerivationWhiteNode(any(), any()))
+                .thenReturn("purge-derivation");
         datasetDistributionQueries = mock(DatasetDistributionQueries.class);
         organizationsService = mock(OrganizationsService.class);
         events = mock(ApplicationEventPublisher.class);
@@ -580,9 +583,6 @@ class DatasetServiceImplTest {
         when(datasetQueries.getDerivedDataset(any(), any())).thenReturn("query4 ");
         when(repositoryGestion.getResponseAsObject("query4 ")).thenReturn(quasi_empty_object);
 
-        when(datasetQueries.getDatasetDerivedFrom(any(), any())).thenReturn("query5 ");
-        when(repositoryGestion.getResponseAsObject("query5 ")).thenReturn(quasi_empty_object);
-
         when(datasetDistributionQueries.getDatasetDistributions(any(), any())).thenReturn("query3 ");
         when(repositoryGestion.getResponseAsArray("query3 ")).thenReturn(empty_array);
 
@@ -729,11 +729,16 @@ class DatasetServiceImplTest {
         return modelLoadedFor(SimpleValueFactory.getInstance().createIRI("http://datasetIRI/jd1001"));
     }
 
-    /** Le modèle chargé par l'unique appel à {@code loadSimpleObject} sur {@code iri}. */
+    /** Le modèle de {@code iri} dans l'unique transaction d'enregistrement du jeu de données. */
+    @SuppressWarnings("unchecked")
     private Model modelLoadedFor(IRI iri) throws RmesException {
-        ArgumentCaptor<Model> model = ArgumentCaptor.forClass(Model.class);
-        verify(repositoryGestion, times(1)).loadSimpleObject(eq(iri), model.capture(), any());
-        return model.getValue();
+        ArgumentCaptor<List<SubjectModelGraph>> objects = ArgumentCaptor.forClass(List.class);
+        verify(repositoryGestion, times(1)).replaceObjects(eq(List.of("purge-derivation")), objects.capture());
+        return objects.getValue().stream()
+                .filter(object -> object.subject().equals(iri))
+                .map(SubjectModelGraph::model)
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("Aucun modèle enregistré pour " + iri));
     }
 
     private void givenPartialDatasets() throws RmesException {

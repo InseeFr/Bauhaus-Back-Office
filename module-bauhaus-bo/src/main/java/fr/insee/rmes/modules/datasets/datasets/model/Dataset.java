@@ -283,6 +283,7 @@ public class Dataset {
     private String cautionLg2;
     private String disseminationStatus;
     private List<String> wasGeneratedIRIs;
+    private WasDerivedFrom wasDerivedFrom;
     private List<String> themes;
     private String validationState;
 
@@ -358,6 +359,14 @@ public class Dataset {
 
     public void setWasGeneratedIRIs(List<String> wasGeneratedIds) {
         this.wasGeneratedIRIs = wasGeneratedIds;
+    }
+
+    public WasDerivedFrom getWasDerivedFrom() {
+        return wasDerivedFrom;
+    }
+
+    public void setWasDerivedFrom(WasDerivedFrom wasDerivedFrom) {
+        this.wasDerivedFrom = wasDerivedFrom;
     }
 
     public List<String> getThemes() {

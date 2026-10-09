@@ -97,6 +97,8 @@ public class ErrorCodes {
     public static final int DATASET_DELETE_ONLY_UNPUBLISHED = 1203;
     public static final int DATASET_DELETE_ONLY_WITHOUT_DISTRIBUTION = 1204;
     public static final int DATASET_DELETE_ONLY_WITHOUT_DERIVED_DATASET = 1205;
+    public static final int DATASET_DERIVED_FROM_ITSELF = 1206;
+    public static final int DATASET_DERIVED_FROM_UNKNOWN_DATASET = 1207;
 
     /*
      *  Refus de saisie (400). Les codes chaînes gardent leur préfixe historique « 406_ » : ce sont
