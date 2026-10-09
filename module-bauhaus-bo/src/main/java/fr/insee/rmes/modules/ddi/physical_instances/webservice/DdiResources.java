@@ -11,6 +11,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CreatePhysicalI
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi3Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnitResponse;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.MutualizedCodeListCodes;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodesList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialPhysicalInstance;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UpdatePhysicalInstanceRequest;
@@ -39,6 +40,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -145,6 +147,17 @@ public class DdiResources {
     }
 
     /**
+     * Vide toutes les régions de cache Colectica, pour prendre en compte des modifications faites hors
+     * de Bauhaus sans attendre l'expiration. Réservé aux administrateurs.
+     */
+    @DeleteMapping("/cache")
+    @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.ADMINISTRATION)
+    public ResponseEntity<Void> evictCaches() {
+        ddiService.evictAllCaches();
+        return ResponseEntity.noContent().build();
+    }
+
+    /**
      * Le client peut forcer un rafraîchissement en envoyant l'en-tête HTTP standard
      * {@code Cache-Control: no-cache} (ou {@code no-store}) sur le GET : la région concernée est
      * alors vidée avant que la réponse ne soit recalculée depuis Colectica.
@@ -163,6 +176,19 @@ public class DdiResources {
             @PathVariable String agencyId, @PathVariable(Constants.ID) String id) {
         Ddi4Response response = ddiService.getMutualizedCodesList(agencyId, id);
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(response);
+    }
+
+    /**
+     * Vue allégée d'une liste de codes mutualisée (valeur + libellé par code), pour l'affichage en
+     * lecture seule : ~15 fois plus légère que le DDI4 complet de {@code /mutualized-codes-list/{agencyId}/{id}}.
+     * 404 pour une liste non mutualisée, qui garde l'endpoint complet.
+     */
+    @GetMapping("/mutualized-codes-list/{agencyId}/{id}/codes")
+    @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.READ)
+    public ResponseEntity<MutualizedCodeListCodes> getMutualizedCodeListCodes(
+            @PathVariable String agencyId, @PathVariable(Constants.ID) String id) {
+        MutualizedCodeListCodes codes = ddiService.getMutualizedCodeListCodes(agencyId, id);
+        return codes == null ? ResponseEntity.notFound().build() : ResponseEntity.ok(codes);
     }
 
     private List<PartialPhysicalInstance> resolvePhysicalInstances() {
