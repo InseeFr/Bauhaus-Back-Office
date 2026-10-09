@@ -1,0 +1,34 @@
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix insee: <http://rdf.insee.fr/def/base#> .
+
+<http://rdf.insee.fr/graphes/operations> {
+    <http://bauhaus/operations/serie/s9001>
+            a insee:StatisticalOperationSeries ;
+            skos:prefLabel "Série cible"@fr , "Target series"@en .
+
+    <http://bauhaus/operations/serie/s9002>
+            a insee:StatisticalOperationSeries ;
+            skos:prefLabel "Série qui pointe"@fr , "Pointing series"@en ;
+            rdfs:seeAlso <http://bauhaus/operations/serie/s9001> , <http://bauhaus/produits/indicateur/p9002> .
+
+    <http://bauhaus/operations/serie/s9003>
+            a insee:StatisticalOperationSeries ;
+            skos:prefLabel "Série réenregistrée"@fr , "Saved again series"@en .
+
+    <http://bauhaus/operations/serie/s9004>
+            a insee:StatisticalOperationSeries ;
+            skos:prefLabel "Série dont le lien est retiré"@fr , "Unlinked series"@en ;
+            rdfs:seeAlso <http://bauhaus/operations/serie/s9003> .
+}
+
+<http://rdf.insee.fr/graphes/produits> {
+    <http://bauhaus/produits/indicateur/p9001>
+            a insee:StatisticalIndicator ;
+            skos:prefLabel "Indicateur qui pointe"@fr , "Pointing indicator"@en ;
+            rdfs:seeAlso <http://bauhaus/operations/serie/s9001> .
+
+    <http://bauhaus/produits/indicateur/p9002>
+            a insee:StatisticalIndicator ;
+            skos:prefLabel "Indicateur cible"@fr , "Target indicator"@en .
+}

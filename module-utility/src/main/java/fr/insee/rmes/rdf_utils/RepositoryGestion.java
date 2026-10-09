@@ -13,6 +13,7 @@ import java.util.function.Consumer;
 import org.eclipse.rdf4j.model.*;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
+import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
@@ -320,8 +321,12 @@ public class RepositoryGestion {
         getStatementsAndRemove(concept, typeOfLink);
     }
 
+    /**
+     * Retire les liens symétriques qui pointent vers l'objet : son modèle les réécrit tous, dans les
+     * deux sens, et ceux qu'il ne porte plus doivent disparaître aussi de l'autre extrémité.
+     */
     private void clearReplaceLinks(Resource object) throws RmesException {
-        List<IRI> typeOfLink = Arrays.asList(DCTERMS.REPLACES, DCTERMS.IS_REPLACED_BY);
+        List<IRI> typeOfLink = Arrays.asList(DCTERMS.REPLACES, DCTERMS.IS_REPLACED_BY, RDFS.SEEALSO);
         getStatementsAndRemove(object, typeOfLink);
     }
 

@@ -41,6 +41,7 @@ import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.DC;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
+import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
@@ -95,6 +96,31 @@ class SeriesRepositoryTest {
                         .filter(seriesURI, ADMS.HAS_IDENTIFIER, null)
                         .objects())
                 .containsExactly(SimpleValueFactory.getInstance().createLiteral("s2000"));
+    }
+
+    @Test
+    void createRdfSeries_writesTheSeeAlsoLinkBackFromEachLinkedObjectInItsOwnGraph() throws RmesException {
+        BauhausUriBuilder bauhausUriBuilder = new BauhausUriBuilder(
+                "http://bauhaus/publication/", "http://bauhaus/gestion/", p -> Optional.of("operations"));
+        SeriesRepository seriesRepository = seriesRepository(mock(SeriesValidator.class), null, bauhausUriBuilder);
+        Series series = new Series();
+        series.setId("s2000");
+        series.setPrefLabelLg1("Série de test");
+        series.setSeeAlso(List.of(
+                OperationsLink.of("p1", "indicator", null, null), OperationsLink.of("s3", "series", null, null)));
+
+        seriesRepository.createRdfSeries(series, null, ValidationStatus.UNPUBLISHED);
+
+        ArgumentCaptor<Model> captor = ArgumentCaptor.forClass(Model.class);
+        verify(repositoryGestion).loadObjectWithReplaceLinks(any(), captor.capture());
+        IRI seriesURI = RdfUtils.objectIRI(ObjectType.SERIES, "s2000");
+        IRI linkedIndicator = RdfUtils.toURI(bauhausUriBuilder.getCompleteUriGestion("indicator", "p1"));
+        IRI linkedSeries = RdfUtils.toURI(bauhausUriBuilder.getCompleteUriGestion("series", "s3"));
+        Model model = captor.getValue();
+        assertThat(model.contains(linkedIndicator, RDFS.SEEALSO, seriesURI, RdfUtils.productsGraph()))
+                .isTrue();
+        assertThat(model.contains(linkedSeries, RDFS.SEEALSO, seriesURI, RdfUtils.operationsGraph()))
+                .isTrue();
     }
 
     @Test
@@ -340,6 +366,11 @@ class SeriesRepositoryTest {
     }
 
     private SeriesRepository seriesRepository(SeriesValidator validator, OrganisationLookup organisationLookup) {
+        return seriesRepository(validator, organisationLookup, null);
+    }
+
+    private SeriesRepository seriesRepository(
+            SeriesValidator validator, OrganisationLookup organisationLookup, BauhausUriBuilder bauhausUriBuilder) {
         return new SeriesRepository(
                 new BauhausLanguagesProperties("fr", "en"),
                 repositoryGestion,
@@ -349,7 +380,7 @@ class SeriesRepositoryTest {
                 null,
                 null,
                 null,
-                null,
+                bauhausUriBuilder,
                 validator,
                 operationSeriesQueries,
                 organisationLookup,

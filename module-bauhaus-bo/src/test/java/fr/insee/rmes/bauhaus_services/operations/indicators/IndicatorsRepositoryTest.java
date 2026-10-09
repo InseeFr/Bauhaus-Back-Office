@@ -41,6 +41,7 @@ import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.DC;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
+import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
@@ -260,6 +261,31 @@ class IndicatorsRepositoryTest {
         IRI indicURI = RdfUtils.objectIRI(ObjectType.INDICATOR, "p2000");
         assertThat(captor.getValue().filter(indicURI, ADMS.HAS_IDENTIFIER, null).objects())
                 .containsExactly(SimpleValueFactory.getInstance().createLiteral("p2000"));
+    }
+
+    @Test
+    void createRdfIndicator_writesTheSeeAlsoLinkBackFromTheLinkedSeries() throws RmesException {
+        CodeListService codeListService = mock(CodeListService.class);
+        when(codeListService.getCodeUri(any(), any())).thenReturn("http://bauhaus/codes/freq/A");
+        when(repositoryGestion.getResponseAsBoolean(any())).thenReturn(false);
+        BauhausUriBuilder bauhausUriBuilder = new BauhausUriBuilder(
+                "http://bauhaus/publication/", "http://bauhaus/gestion/", p -> Optional.of("operations"));
+        IndicatorsRepository indicatorsRepository =
+                indicatorsRepository(codeListService, bauhausUriBuilder, operationIndicatorsQueries, null);
+
+        Indicator indicator = Indicator.of("p2000");
+        indicator.setPrefLabelLg1("Indicateur de test");
+        indicator.setWasGeneratedBy(List.of(OperationsLink.of("s1", "series", "Série", "Series")));
+        indicator.setSeeAlso(List.of(OperationsLink.of("s3", "series", null, null)));
+
+        indicatorsRepository.createRdfIndicator(indicator, ValidationStatus.UNPUBLISHED);
+
+        ArgumentCaptor<Model> captor = ArgumentCaptor.forClass(Model.class);
+        verify(repositoryGestion).loadObjectWithReplaceLinks(any(), captor.capture());
+        IRI linkedSeries = RdfUtils.toURI(bauhausUriBuilder.getCompleteUriGestion("series", "s3"));
+        IRI indicURI = RdfUtils.objectIRI(ObjectType.INDICATOR, "p2000");
+        assertThat(captor.getValue().contains(linkedSeries, RDFS.SEEALSO, indicURI, RdfUtils.operationsGraph()))
+                .isTrue();
     }
 
     @Test

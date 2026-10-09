@@ -400,7 +400,7 @@ public class IndicatorsRepository {
         RdfUtils.addTripleUri(
                 indicURI, DCTERMS.ACCRUAL_PERIODICITY, accPeriodicityUri, model, RdfUtils.productsGraph());
 
-        addOneWayLink(model, indicURI, indicator.getSeeAlso(), RDFS.SEEALSO);
+        addSeeAlsoLinks(model, indicURI, indicator.getSeeAlso());
         addOneWayLink(model, indicURI, indicator.getWasGeneratedBy(), PROV.WAS_GENERATED_BY);
 
         List<OperationsLink> replaces = indicator.getReplaces();
@@ -460,6 +460,29 @@ public class IndicatorsRepository {
                 RdfUtils.addTripleUri(indicURI, linkPredicate, linkedObjectUri, model, RdfUtils.productsGraph());
             }
         }
+    }
+
+    /**
+     * Le lien « voir aussi » est symétrique : il est aussi écrit depuis l'objet lié, dans le graphe de
+     * celui-ci, pour que la fiche de l'un affiche l'autre (Bauhaus#1657).
+     */
+    private void addSeeAlsoLinks(Model model, IRI indicURI, List<OperationsLink> links) {
+        if (links != null) {
+            for (OperationsLink oneLink : links) {
+                IRI linkedObjectUri = RdfUtils.toURI(
+                        this.bauhausUriBuilder.getCompleteUriGestion(oneLink.getType(), oneLink.getId()));
+                RdfUtils.addTripleUri(indicURI, RDFS.SEEALSO, linkedObjectUri, model, RdfUtils.productsGraph());
+                RdfUtils.addTripleUri(linkedObjectUri, RDFS.SEEALSO, indicURI, model, graphOf(oneLink));
+            }
+        }
+    }
+
+    private static Resource graphOf(OperationsLink link) {
+        return ObjectType.getEnumByLabel(link.getType())
+                        .filter(ObjectType.INDICATOR::equals)
+                        .isPresent()
+                ? RdfUtils.productsGraph()
+                : RdfUtils.operationsGraph();
     }
 
     private void addReplacesAndReplacedBy(Model model, IRI previous, IRI next) {

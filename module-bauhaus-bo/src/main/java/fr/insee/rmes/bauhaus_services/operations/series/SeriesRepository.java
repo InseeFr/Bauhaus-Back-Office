@@ -387,7 +387,7 @@ public class SeriesRepository {
                 model,
                 seriesURI);
 
-        addOperationLinks(series.getSeeAlso(), RDFS.SEEALSO, model, seriesURI);
+        addSeeAlsoLinks(series.getSeeAlso(), model, seriesURI);
 
         List<OperationsLink> replaces = series.getReplaces();
         Optional.ofNullable(replaces).orElseGet(Collections::emptyList).stream()
@@ -434,15 +434,29 @@ public class SeriesRepository {
         RdfUtils.addTripleUri(next, DCTERMS.REPLACES, previous, model, RdfUtils.operationsGraph());
     }
 
-    private void addOperationLinks(List<OperationsLink> links, IRI predicate, Model model, IRI seriesURI) {
+    /**
+     * Le lien « voir aussi » est symétrique : il est aussi écrit depuis l'objet lié, dans le graphe de
+     * celui-ci, pour que la fiche de l'un affiche l'autre (Bauhaus#1657).
+     */
+    private void addSeeAlsoLinks(List<OperationsLink> links, Model model, IRI seriesURI) {
         if (links != null) {
             for (OperationsLink link : links) {
                 if (!link.isEmpty()) {
-                    String linkUri = this.bauhausUriBuilder.getCompleteUriGestion(link.getType(), link.getId());
-                    RdfUtils.addTripleUri(seriesURI, predicate, linkUri, model, RdfUtils.operationsGraph());
+                    IRI linkUri =
+                            RdfUtils.toURI(this.bauhausUriBuilder.getCompleteUriGestion(link.getType(), link.getId()));
+                    RdfUtils.addTripleUri(seriesURI, RDFS.SEEALSO, linkUri, model, RdfUtils.operationsGraph());
+                    RdfUtils.addTripleUri(linkUri, RDFS.SEEALSO, seriesURI, model, graphOf(link));
                 }
             }
         }
+    }
+
+    private static Resource graphOf(OperationsLink link) {
+        return ObjectType.getEnumByLabel(link.getType())
+                        .filter(ObjectType.INDICATOR::equals)
+                        .isPresent()
+                ? RdfUtils.productsGraph()
+                : RdfUtils.operationsGraph();
     }
 
     private void addCodeList(String list, String code, IRI predicate, Model model, IRI seriesURI) throws RmesException {
