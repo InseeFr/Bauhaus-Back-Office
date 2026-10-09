@@ -10,5 +10,8 @@ public final class ValidationMessages {
 
     public static final String INVALID_URL = "Cette adresse n'est pas une URL valide.";
 
+    public static final String INVALID_IDENTIFIER =
+            "L'identifiant ne respecte pas les caractères autorisés : a-z, A-Z, 0-9, - et _";
+
     private ValidationMessages() {}
 }

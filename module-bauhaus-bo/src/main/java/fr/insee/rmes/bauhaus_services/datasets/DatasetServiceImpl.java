@@ -305,7 +305,8 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
                 .findFirst();
     }
 
-    private String update(String datasetId, Dataset dataset) throws RmesException {
+    @Override
+    public String update(String datasetId, Dataset dataset) throws RmesException {
         dataset.setId(datasetId);
 
         if (ValidationStatus.VALIDATED.toString().equalsIgnoreCase(dataset.getValidationState())) {
@@ -331,7 +332,11 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
 
     @Override
     public String create(String body) throws RmesException {
-        Dataset dataset = Deserializer.deserializeJsonString(body, Dataset.class);
+        return this.create(Deserializer.deserializeJsonString(body, Dataset.class));
+    }
+
+    @Override
+    public String create(Dataset dataset) throws RmesException {
         dataset.setId(idGenerator.generateNextId());
         dataset.setValidationState(ValidationStatus.UNPUBLISHED.toString());
 
