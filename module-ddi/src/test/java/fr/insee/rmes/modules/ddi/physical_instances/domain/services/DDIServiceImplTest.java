@@ -38,6 +38,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Variable;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.DuplicatePhysicalInstanceRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LangString;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LangStrings;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.MutualizedCodeListCodes;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodesList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialGroup;
@@ -1011,6 +1012,14 @@ class DDIServiceImplTest {
         // Then
         assertSame(expectedResponse, result);
         verify(ddiRepository).getMutualizedCodesList(agencyId, id);
+    }
+
+    @Test
+    void getMutualizedCodeListCodes_delegatesToTheRepository() {
+        MutualizedCodeListCodes codes = new MutualizedCodeListCodes("fr.insee", "cl-1", "3", "Activités", List.of());
+        when(ddiRepository.getMutualizedCodeListCodes("fr.insee", "cl-1")).thenReturn(codes);
+
+        assertSame(codes, ddiService.getMutualizedCodeListCodes("fr.insee", "cl-1"));
     }
 
     @Test

@@ -3,6 +3,7 @@ package fr.insee.rmes.modules.codeslists.codeslists.webservice;
 import static fr.insee.rmes.modules.commons.webservice.ApiErrorContract.apiError;
 import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -10,6 +11,7 @@ import fr.insee.rmes.bauhaus_services.code_list.CodeListKind;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.MediaType;
 
 /**
  * Contrat HTTP des publications de listes de codes : republier une liste déjà publiée doit donner
@@ -40,6 +42,16 @@ class CodesListsResourcesPublishTest extends AbstractCodesListsResourcesWebMvcTe
                 .andExpect(status().isBadRequest())
                 .andExpect(apiError())
                 .andExpect(jsonPath("$.code").value(String.valueOf(ErrorCodes.ALREADY_PUBLISHED)));
+    }
+
+    @Test
+    void publishPartialCodeList_shouldEchoTheIdAsJsonRatherThanRawText() throws Exception {
+        String scriptId = "<img src=x onerror=alert(1)>";
+
+        mockMvc.perform(put("/codeList/partial/{id}/validate", scriptId))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.identifier").value(scriptId));
     }
 
     private static RmesBadRequestException alreadyPublished(String id) {

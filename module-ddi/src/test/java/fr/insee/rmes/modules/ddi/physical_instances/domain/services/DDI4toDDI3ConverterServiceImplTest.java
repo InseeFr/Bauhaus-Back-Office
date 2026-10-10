@@ -3,6 +3,7 @@ package fr.insee.rmes.modules.ddi.physical_instances.domain.services;
 import static fr.insee.rmes.modules.ddi.physical_instances.domain.services.Lifecycle33TestFixtures.sentinelValuesMmvr;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Citation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Code;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeRepresentation;
@@ -28,6 +29,9 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.ValueType;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.VariableRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.VariablesInRecord;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
@@ -525,5 +529,44 @@ class DDI4toDDI3ConverterServiceImplTest {
 
         assertThat(result.items()).hasSize(1);
         return result.items().get(0);
+    }
+
+    /**
+     * Caractérisation : le document produit pour une PI, ses variables et une liste de codes avec
+     * ses catégories. Même contenu, élément par élément, que l'ancien assemblage qui re-parsait
+     * chaque fragment ; seuls les préfixes et la place des déclarations d'espaces de noms ont changé.
+     */
+    @Test
+    void shouldBuildTheExpectedFragmentInstanceDocumentForAPhysicalInstanceWithACodeList() throws IOException {
+        Ddi4Response ddi4 =
+                new ObjectMapper().readValue(fixture("physical-instance-with-code-list.json"), Ddi4Response.class);
+
+        String result = converter.convertDdi4ToDdi3Xml(ddi4);
+
+        assertThat(result)
+                .isEqualTo(new String(
+                        fixture("physical-instance-with-code-list.ddi3.xml").readAllBytes(), StandardCharsets.UTF_8));
+    }
+
+    /**
+     * Déclarer les espaces de noms sur chaque élément pesait près d'un tiers du document : 540 000
+     * {@code xmlns:r} pour une liste de 45 000 codes.
+     */
+    @Test
+    void shouldDeclareEachNamespaceOnceOnTheFragmentInstance() throws IOException {
+        Ddi4Response ddi4 =
+                new ObjectMapper().readValue(fixture("physical-instance-with-code-list.json"), Ddi4Response.class);
+
+        String result = converter.convertDdi4ToDdi3Xml(ddi4);
+
+        assertThat(result)
+                .containsOnlyOnce("xmlns:r=\"ddi:reusable:3_3\"")
+                .containsOnlyOnce("xmlns:l=\"ddi:logicalproduct:3_3\"")
+                .containsOnlyOnce("xmlns:pi=\"ddi:physicalinstance:3_3\"")
+                .contains("<ddi:FragmentInstance xmlns:ddi=\"ddi:instance:3_3\" xmlns:r=\"ddi:reusable:3_3\"");
+    }
+
+    private static InputStream fixture(String name) {
+        return DDI4toDDI3ConverterServiceImplTest.class.getResourceAsStream("/ddi4-to-ddi3/" + name);
     }
 }

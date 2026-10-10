@@ -375,6 +375,32 @@ class Lifecycle33ToDdi4Test {
         assertThat(cl.code().get(0).value().stringValue()).isEqualTo("01");
     }
 
+    /**
+     * L'URN est facultative en DDI 3.3 quand agence/id/version sont présents : l'init des listes
+     * volumineuses l'omet sur les codes pour rester sous la limite de taille de Colectica.
+     */
+    @Test
+    void shouldDeriveCodeUrnFromIdentityWhenAbsent() throws XmlException {
+        FragmentDocument doc = FragmentDocument.Factory.parse("""
+            <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
+                <CodeList xmlns="ddi:logicalproduct:3_3" isUniversallyUnique="true" versionDate="2025-12-23T09:52:06.355Z">
+                    <r:URN>urn:ddi:fr.insee:cl-id:1</r:URN>
+                    <r:Agency>fr.insee</r:Agency><r:ID>cl-id</r:ID><r:Version>1</r:Version>
+                    <Code>
+                        <r:Agency>fr.insee</r:Agency><r:ID>code-id</r:ID><r:Version>1</r:Version>
+                        <r:Value>01</r:Value>
+                    </Code>
+                </CodeList>
+            </Fragment>
+            """);
+
+        Ddi4CodeList cl = converter.toCodeList(doc);
+
+        assertThat(cl.code())
+                .extracting(Code::urn, Code::id)
+                .containsExactly(tuple("urn:ddi:fr.insee:code-id:1", "code-id"));
+    }
+
     @Test
     void shouldParseCategoryBasedOnObject() throws XmlException {
         FragmentDocument doc = logicalProductItem("Category", "variant-cat", """

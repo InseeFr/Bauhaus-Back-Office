@@ -131,6 +131,7 @@ rbac:
         update: ALL
         delete: ALL
         publish: ALL
+        administration: ALL
     # Structures, composants et listes de codes forment le module Administration :
     # seul Administrateur_RMESGNCS peut les modifier.
     Gestionnaire_structures_RMESGNCS:

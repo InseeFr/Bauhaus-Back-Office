@@ -2,7 +2,13 @@ package fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica;
 
 import static fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.AbstractColecticaItemRepository.generateDeterministicUuid;
 
+import fr.insee.ddi.lifecycle33.instance.FragmentDocument;
+import fr.insee.ddi.lifecycle33.logicalproduct.CodeListGroupType;
+import fr.insee.ddi.lifecycle33.reusable.ReferenceType;
+import fr.insee.ddi.lifecycle33.reusable.TypeOfObjectType;
 import fr.insee.rmes.colectica.client.ColecticaClient;
+import fr.insee.rmes.colectica.client.dto.ColecticaCreateItemRequest;
+import fr.insee.rmes.colectica.client.dto.ColecticaItemResponse;
 import fr.insee.rmes.colectica.client.dto.ColecticaResponse;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.freemarker.FreeMarkerUtils;
@@ -13,6 +19,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Code;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CogsDate;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CreatePhysicalInstanceRequest;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi3Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Category;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CategoryScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeList;
@@ -34,17 +41,21 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.ValueType;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.VariableRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.VariablesInRecord;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI4toDDI3ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.GroupService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.StudyUnitService;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.apache.xmlbeans.XmlException;
+import org.apache.xmlbeans.XmlOptions;
 import org.json.JSONArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -578,6 +589,136 @@ public class LocalColecticaGroupInitConfiguration {
         };
     }
 
+    /**
+     * Graines des ids déterministes de l'exemple « StudyUnit déplacée d'un groupe à un autre » : la
+     * StudyUnit et sa PhysicalInstance, le groupe d'origine et le groupe de destination.
+     */
+    static final String MOVED_EXAMPLE_STUDY_UNIT_SEED = "example:studyunit:moved-between-groups";
+
+    static final String MOVED_EXAMPLE_GROUP_1_SEED = "example:group:moved-study-unit-source";
+
+    static final String MOVED_EXAMPLE_GROUP_2_SEED = "example:group:moved-study-unit-target";
+
+    /**
+     * Exemple d'une StudyUnit déplacée d'un groupe à un autre : un Group 1 (v1) → une StudyUnit →
+     * une PhysicalInstance, puis un Group 2 (v1) qui reçoit la StudyUnit, et enfin le Group 1
+     * enregistré en version 2 <em>sans</em> StudyUnit.
+     * <p>
+     * La version 1 du Group 1 référence toujours la StudyUnit : ce jeu de données reproduit ce que
+     * l'on observe quand un rattachement a été retiré par une nouvelle version, et non effacé.
+     * <p>
+     * Volontairement indépendant de {@link #initColecticaGroups} : ses ids sont déterministes, donc
+     * l'init reste rejouable.
+     */
+    @Bean
+    @Order(Ordered.LOWEST_PRECEDENCE)
+    CommandLineRunner initColecticaMovedStudyUnitExample(
+            GroupService groupService,
+            StudyUnitService studyUnitService,
+            DDIService ddiService,
+            ColecticaConfiguration colecticaConfiguration) {
+        return args -> {
+            logger.info("=== Creating the example study unit moved from a first group to a second group ===");
+
+            String defaultAgencyId = colecticaConfiguration.server().defaultAgencyId();
+            String defaultLang = colecticaConfiguration.langs().getFirst();
+            String versionResponsibility = colecticaConfiguration.server().versionResponsibility();
+            String versionDate = ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+
+            try {
+                String physicalInstanceLabel = "EXEMPLE - PI d'une study unit déplacée de groupe";
+                Ddi4Response piResponse = ddiService.createPhysicalInstance(
+                        new CreatePhysicalInstanceRequest(
+                                physicalInstanceLabel, physicalInstanceLabel, null, null, null, null, null),
+                        physicalInstanceIds(MOVED_EXAMPLE_STUDY_UNIT_SEED));
+                Ddi4PhysicalInstance physicalInstance =
+                        piResponse.physicalInstance().getFirst();
+                Reference physicalInstanceReference = Reference.of(
+                        physicalInstance.agency(),
+                        physicalInstance.id(),
+                        physicalInstance.version(),
+                        "PhysicalInstance");
+
+                String studyUnitId = generateDeterministicUuid(MOVED_EXAMPLE_STUDY_UNIT_SEED);
+                studyUnitService.createOrUpdate(new Ddi4StudyUnit(
+                        Ddi4StudyUnit.TYPE,
+                        CogsDate.ofDateTime(versionDate),
+                        "urn:ddi:%s:%s:1".formatted(defaultAgencyId, studyUnitId),
+                        defaultAgencyId,
+                        studyUnitId,
+                        "1",
+                        new Citation(LangStrings.of(defaultLang, "EXEMPLE - study unit déplacée de groupe")),
+                        null,
+                        List.of(physicalInstanceReference),
+                        null));
+                List<Reference> studyUnitRefs = List.of(Reference.of(defaultAgencyId, studyUnitId, "1", "StudyUnit"));
+
+                String group1Id = generateDeterministicUuid(MOVED_EXAMPLE_GROUP_1_SEED);
+                String group1Label = "EXEMPLE - groupe d'origine de la study unit déplacée";
+                String group2Id = generateDeterministicUuid(MOVED_EXAMPLE_GROUP_2_SEED);
+                String group2Label = "EXEMPLE - groupe de destination de la study unit déplacée";
+
+                logger.info("Creating the example source group: id={}, studyUnit={}", group1Id, studyUnitId);
+                groupService.createOrUpdate(movedExampleGroup(
+                        defaultAgencyId,
+                        group1Id,
+                        "1",
+                        versionDate,
+                        versionResponsibility,
+                        defaultLang,
+                        group1Label,
+                        studyUnitRefs));
+                logger.info("Creating the example target group: id={}, studyUnit={}", group2Id, studyUnitId);
+                groupService.createOrUpdate(movedExampleGroup(
+                        defaultAgencyId,
+                        group2Id,
+                        "1",
+                        versionDate,
+                        versionResponsibility,
+                        defaultLang,
+                        group2Label,
+                        studyUnitRefs));
+                // La StudyUnit quitte le groupe d'origine par une nouvelle version : la v1 la garde.
+                logger.info("Removing the study unit from the example source group: id={}, version=2", group1Id);
+                groupService.createOrUpdate(movedExampleGroup(
+                        defaultAgencyId,
+                        group1Id,
+                        "2",
+                        versionDate,
+                        versionResponsibility,
+                        defaultLang,
+                        group1Label,
+                        List.of()));
+            } catch (Exception e) {
+                logger.error("Failed to create the example study unit moved between groups", e);
+            }
+        };
+    }
+
+    private static Ddi4Group movedExampleGroup(
+            String agencyId,
+            String groupId,
+            String version,
+            String versionDate,
+            String versionResponsibility,
+            String lang,
+            String label,
+            List<Reference> studyUnitRefs) {
+        return new Ddi4Group(
+                Ddi4Group.TYPE,
+                CogsDate.ofDateTime(versionDate),
+                "urn:ddi:%s:%s:%s".formatted(agencyId, groupId, version),
+                agencyId,
+                groupId,
+                version,
+                versionResponsibility,
+                new Citation(LangStrings.of(lang, label)),
+                studyUnitRefs,
+                List.of(),
+                "insee:StatisticalOperationSeries",
+                null);
+    }
+
     /** Graines des ids déterministes de l'exemple « StudyUnit en 6 versions ». */
     static final String SIX_VERSIONS_EXAMPLE_STUDY_UNIT_SEED = "example:studyunit:six-versions";
 
@@ -1021,6 +1162,251 @@ public class LocalColecticaGroupInitConfiguration {
         } catch (Exception e) {
             logger.error("Failed to create the example group '{}'", groupLabel, e);
         }
+    }
+
+    /** Graine des ids déterministes de la liste de codes mutualisée volumineuse (et de ses catégories). */
+    static final String LARGE_MUTUALIZED_CODE_LIST_SEED = "example:codelist:mutualized-45000-codes";
+
+    private static final int LARGE_MUTUALIZED_CODE_LIST_SIZE = 45_000;
+
+    /** Nombre maximal d'items par appel {@code POST item} : 45 000 catégories d'un coup seraient refusées. */
+    private static final int ITEM_BATCH_SIZE = 1_000;
+
+    private static final String LARGE_CODE_LIST_CATEGORY_SEED_SUFFIX = "#category-";
+
+    /**
+     * Exemple de liste de codes mutualisée volumineuse — 45 000 codes, chacun avec sa catégorie —
+     * pour reproduire les problèmes de performance du front (listing, ouverture, sélection).
+     * <p>
+     * La liste est rendue mutualisée en la référençant depuis le premier CodeListGroup de
+     * {@code mutualized-codes-groups} : c'est lui que la stratégie {@code configured-groups} interroge.
+     * S'il existe déjà, son contenu est conservé et la référence lui est ajoutée ; sinon il est créé.
+     * Sans groupe configuré (stratégie {@code package-walk}), l'exemple n'est pas créé.
+     * <p>
+     * Ids déterministes : l'init reste rejouable. Comme l'envoi des 45 000 catégories est long, il est
+     * sauté si la liste de codes existe déjà dans Colectica (elle est écrite en dernier).
+     */
+    @Bean
+    @Order(Ordered.LOWEST_PRECEDENCE)
+    CommandLineRunner initColecticaLargeMutualizedCodeListExample(
+            ColecticaClient colecticaClient,
+            DDI4toDDI3ConverterService ddi4ToDdi3Converter,
+            ColecticaConfiguration colecticaConfiguration,
+            MutualizedCodesProperties mutualizedCodesProperties) {
+        return args -> {
+            if (mutualizedCodesProperties.mutualizedCodesStrategy()
+                            != MutualizedCodesProperties.Strategy.CONFIGURED_GROUPS
+                    || mutualizedCodesProperties.mutualizedCodesGroups().isEmpty()) {
+                logger.warn(
+                        "No configured mutualized CodeListGroup: the large mutualized code list example is skipped");
+                return;
+            }
+            logger.info(
+                    "=== Creating the example mutualized code list with {} codes ===", LARGE_MUTUALIZED_CODE_LIST_SIZE);
+
+            var server = colecticaConfiguration.server();
+            String defaultAgencyId = server.defaultAgencyId();
+            String defaultLang = colecticaConfiguration.langs().getFirst();
+            MutualizedCodesProperties.GroupRef groupRef =
+                    mutualizedCodesProperties.mutualizedCodesGroups().getFirst();
+            String groupAgencyId =
+                    groupRef.agencyId() == null || groupRef.agencyId().isBlank()
+                            ? defaultAgencyId
+                            : groupRef.agencyId();
+            String codeListId = generateDeterministicUuid(LARGE_MUTUALIZED_CODE_LIST_SEED);
+
+            try {
+                if (findItem(colecticaClient, defaultAgencyId, codeListId) == null) {
+                    createLargeCodeList(colecticaClient, ddi4ToDdi3Converter, codeListId, defaultAgencyId, defaultLang);
+                } else {
+                    logger.info("Example mutualized code list {}/{} already exists", defaultAgencyId, codeListId);
+                }
+
+                ColecticaItemResponse existingGroup = findItem(colecticaClient, groupAgencyId, groupRef.identifier());
+                Reference codeListReference = Reference.of(defaultAgencyId, codeListId, "1", Ddi4CodeList.TYPE);
+                String versionDate = ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+                String groupXml = existingGroup == null
+                        ? newCodeListGroupFragment(
+                                groupAgencyId, groupRef.identifier(), defaultLang, versionDate, codeListReference)
+                        : withCodeListReference(existingGroup.item(), codeListReference);
+                logger.info(
+                        "Filing the example code list in the mutualized CodeListGroup {}/{} ({})",
+                        groupAgencyId,
+                        groupRef.identifier(),
+                        existingGroup == null ? "created" : "updated");
+                colecticaClient.createOrUpdateItems(new ColecticaCreateItemRequest(List.of(new ColecticaItemResponse(
+                        server.itemTypes().get("CodeListGroup"),
+                        groupAgencyId,
+                        existingGroup == null ? 1 : existingGroup.version(),
+                        groupRef.identifier(),
+                        groupXml,
+                        versionDate,
+                        server.versionResponsibility(),
+                        false,
+                        false,
+                        false,
+                        server.itemFormat()))));
+            } catch (Exception e) {
+                logger.error("Failed to create the example mutualized code list", e);
+            }
+        };
+    }
+
+    private void createLargeCodeList(
+            ColecticaClient colecticaClient,
+            DDI4toDDI3ConverterService ddi4ToDdi3Converter,
+            String codeListId,
+            String defaultAgencyId,
+            String defaultLang) {
+        String versionDate = ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+        List<Ddi3Response.Ddi3Item> categoryItems = new ArrayList<>();
+        List<Code> codes = new ArrayList<>();
+        for (int index = 1; index <= LARGE_MUTUALIZED_CODE_LIST_SIZE; index++) {
+            String value = "%05d".formatted(index);
+            String categoryId = generateDeterministicUuid(
+                    LARGE_MUTUALIZED_CODE_LIST_SEED + LARGE_CODE_LIST_CATEGORY_SEED_SUFFIX + value);
+            categoryItems.add(ddi4ToDdi3Converter.toCategoryItem(new Ddi4Category(
+                    Ddi4Category.TYPE,
+                    CogsDate.ofDateTime(versionDate),
+                    "urn:ddi:%s:%s:1".formatted(defaultAgencyId, categoryId),
+                    defaultAgencyId,
+                    categoryId,
+                    "1",
+                    LangStrings.of(defaultLang, "Modalité " + value))));
+            String codeId = generateDeterministicUuid(LARGE_MUTUALIZED_CODE_LIST_SEED + "#code-" + value);
+            codes.add(new Code(
+                    Code.TYPE,
+                    "urn:ddi:%s:%s:1".formatted(defaultAgencyId, codeId),
+                    defaultAgencyId,
+                    codeId,
+                    "1",
+                    Reference.of(defaultAgencyId, categoryId, "1", "Category"),
+                    ValueType.of(value),
+                    null));
+        }
+
+        // Les catégories avant la liste qui les référence, pour que Colectica n'en fabrique pas de stubs.
+        for (int start = 0; start < categoryItems.size(); start += ITEM_BATCH_SIZE) {
+            List<Ddi3Response.Ddi3Item> batch =
+                    categoryItems.subList(start, Math.min(start + ITEM_BATCH_SIZE, categoryItems.size()));
+            colecticaClient.createOrUpdateItems(new ColecticaCreateItemRequest(
+                    batch.stream().map(ColecticaItems::toColecticaItem).toList()));
+            logger.info("Example mutualized code list: {} categories registered", start + batch.size());
+        }
+
+        Ddi4CodeList codeList = new Ddi4CodeList(
+                Ddi4CodeList.TYPE,
+                CogsDate.ofDateTime(versionDate),
+                "urn:ddi:%s:%s:1".formatted(defaultAgencyId, codeListId),
+                defaultAgencyId,
+                codeListId,
+                "1",
+                LangStrings.of(defaultLang, "EXEMPLE - liste mutualisée de 45 000 codes"),
+                null,
+                codes);
+        Ddi3Response.Ddi3Item codeListItem = ddi4ToDdi3Converter.toCodeListItem(codeList);
+        // Le convertisseur redéclare xmlns:r sur chaque élément : ~27 Mo pour 45 000 codes, que Colectica
+        // refuse (400 « The input was not valid » au-delà de ~18 Mo). Namespace déclaré une seule fois et
+        // codes sans URN : ~15 Mo, accepté.
+        Ddi3Response.Ddi3Item compactCodeListItem = new Ddi3Response.Ddi3Item(
+                codeListItem.itemType(),
+                codeListItem.agencyId(),
+                codeListItem.version(),
+                codeListItem.identifier(),
+                withoutCodeUrns(withReusableNamespaceDeclaredOnce(codeListItem.item())),
+                codeListItem.versionDate(),
+                codeListItem.versionResponsibility(),
+                codeListItem.isPublished(),
+                codeListItem.isDeprecated(),
+                codeListItem.isProvisional(),
+                codeListItem.itemFormat());
+        colecticaClient.createOrUpdateItems(
+                new ColecticaCreateItemRequest(List.of(ColecticaItems.toColecticaItem(compactCodeListItem))));
+        logger.info(
+                "Example mutualized code list {}/{} registered ({} characters)",
+                defaultAgencyId,
+                codeListId,
+                compactCodeListItem.item().length());
+    }
+
+    /**
+     * Le même fragment, le namespace {@code r} n'y étant déclaré qu'une fois, sur la racine
+     * {@code <Fragment>}. xmlbeans ne sait pas l'y remonter seul (la racine n'utilise pas le préfixe).
+     */
+    static String withReusableNamespaceDeclaredOnce(String fragmentXml) {
+        String declaration = "xmlns:r=\"ddi:reusable:3_3\"";
+        return fragmentXml.replace(" " + declaration, "").replaceFirst("<Fragment ", "<Fragment " + declaration + " ");
+    }
+
+    /**
+     * Le même fragment, sans {@code r:URN} ni {@code isUniversallyUnique} sur les codes : facultatifs
+     * en DDI 3.3 (Agency/ID/Version identifient le code), ils pèsent ~80 octets par code. Avec eux,
+     * 45 000 codes font ~19 Mo, que Colectica refuse (400 au-delà de ~18 Mo, mesuré sur la démo).
+     */
+    static String withoutCodeUrns(String fragmentXml) {
+        return fragmentXml.replaceAll("<ddi:Code isUniversallyUnique=\"true\"><r:URN>[^<]*</r:URN>", "<ddi:Code>");
+    }
+
+    /** L'item, ou {@code null} s'il n'existe pas (Colectica répond 404, que le client lève en exception). */
+    private static ColecticaItemResponse findItem(ColecticaClient colecticaClient, String agency, String id) {
+        try {
+            return colecticaClient.getItem(agency, id, null);
+        } catch (RuntimeException e) {
+            return null;
+        }
+    }
+
+    /** Un CodeListGroup (fragment DDI 3.3) qui ne contient que {@code codeListReference}. */
+    static String newCodeListGroupFragment(
+            String agency, String id, String lang, String versionDate, Reference codeListReference) {
+        FragmentDocument doc = FragmentDocument.Factory.newInstance();
+        CodeListGroupType group = doc.addNewFragment().addNewCodeListGroup();
+        group.setIsUniversallyUnique(true);
+        group.setVersionDate(versionDate);
+        group.addNewURN().setStringValue("urn:ddi:%s:%s:1".formatted(agency, id));
+        group.addAgency(agency);
+        group.addNewID().setStringValue(id);
+        group.addVersion("1");
+        var name = group.addNewCodeListGroupName().addNewString();
+        name.setStringValue("Listes de codes mutualisées");
+        name.setLang(lang);
+        addCodeListReference(group, codeListReference);
+        return doc.xmlText(codeListGroupXmlOptions());
+    }
+
+    /**
+     * Le fragment CodeListGroup {@code groupXml} complété d'une référence vers
+     * {@code codeListReference}, s'il ne la porte pas déjà. Le reste du fragment est repris tel quel :
+     * le réenregistrer à l'identique ne doit rien effacer du groupe existant.
+     */
+    static String withCodeListReference(String groupXml, Reference codeListReference) throws XmlException {
+        FragmentDocument doc = FragmentDocument.Factory.parse(groupXml);
+        CodeListGroupType group = doc.getFragment().getCodeListGroup();
+        boolean alreadyReferenced = Arrays.stream(group.getCodeListReferenceArray())
+                .anyMatch(ref -> ref.getIDArray().length > 0
+                        && codeListReference.id().equals(ref.getIDArray(0).getStringValue()));
+        if (!alreadyReferenced) {
+            addCodeListReference(group, codeListReference);
+        }
+        return doc.xmlText(codeListGroupXmlOptions());
+    }
+
+    private static void addCodeListReference(CodeListGroupType group, Reference codeListReference) {
+        ReferenceType ref = group.addNewCodeListReference();
+        ref.addAgency(codeListReference.agency());
+        ref.addNewID().setStringValue(codeListReference.id());
+        ref.addVersion(codeListReference.version());
+        ref.setTypeOfObject(TypeOfObjectType.Enum.forString(Ddi4CodeList.TYPE));
+    }
+
+    private static XmlOptions codeListGroupXmlOptions() {
+        Map<String, String> prefixes = new HashMap<>();
+        prefixes.put("ddi:instance:3_3", "");
+        prefixes.put("ddi:logicalproduct:3_3", "");
+        prefixes.put("ddi:reusable:3_3", "r");
+        XmlOptions options = new XmlOptions();
+        options.setSaveSuggestedPrefixes(prefixes);
+        return options;
     }
 
     private void verifyItemsInColectica(ColecticaClient colecticaClient) {

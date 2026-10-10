@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.apache.xmlbeans.XmlException;
 import org.apache.xmlbeans.XmlOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,81 +76,105 @@ public class DDI4toDDI3ConverterServiceImpl implements DDI4toDDI3ConverterServic
         return versionDate != null ? versionDate.dateTime() : null;
     }
 
+    /**
+     * Un item converti, gardé sous sa forme XmlBeans : la sérialisation en texte n'est faite que
+     * pour l'écriture Colectica. Le document FragmentInstance les assemble tels quels — les
+     * re-parser depuis leur texte coûtait un parseur SAX par item (19 s pour 45 000 catégories).
+     */
+    private record ConvertedFragment(
+            String itemType,
+            String agency,
+            String version,
+            String id,
+            String versionDate,
+            FragmentDocument document,
+            String contentNamespace) {}
+
+    private List<ConvertedFragment> convertFragments(Ddi4Response ddi4) {
+        List<ConvertedFragment> fragments = new ArrayList<>();
+
+        if (ddi4.physicalInstance() != null) {
+            ddi4.physicalInstance()
+                    .forEach(pi -> fragments.add(new ConvertedFragment(
+                            itemTypes.get("PhysicalInstance"),
+                            pi.agency(),
+                            pi.version(),
+                            pi.id(),
+                            dateTimeOf(pi.versionDate()),
+                            ddi4ToLifecycle33.toPhysicalInstance(pi),
+                            DDI_PHYSICAL_INSTANCE_NS)));
+        }
+        if (ddi4.dataRelationship() != null) {
+            ddi4.dataRelationship()
+                    .forEach(dr -> fragments.add(new ConvertedFragment(
+                            itemTypes.get("DataRelationship"),
+                            dr.agency(),
+                            dr.version(),
+                            dr.id(),
+                            dateTimeOf(dr.versionDate()),
+                            ddi4ToLifecycle33.toDataRelationship(dr),
+                            DDI_LOGICAL_PRODUCT_NS)));
+        }
+        if (ddi4.variable() != null) {
+            ddi4.variable()
+                    .forEach(var -> fragments.add(new ConvertedFragment(
+                            itemTypes.get("Variable"),
+                            var.agency(),
+                            var.version(),
+                            var.id(),
+                            dateTimeOf(var.versionDate()),
+                            ddi4ToLifecycle33.toVariable(var),
+                            DDI_LOGICAL_PRODUCT_NS)));
+        }
+        if (ddi4.codeList() != null) {
+            ddi4.codeList()
+                    .forEach(cl -> fragments.add(new ConvertedFragment(
+                            itemTypes.get("CodeList"),
+                            cl.agency(),
+                            cl.version(),
+                            cl.id(),
+                            dateTimeOf(cl.versionDate()),
+                            ddi4ToLifecycle33.toCodeList(cl),
+                            DDI_LOGICAL_PRODUCT_NS)));
+        }
+        if (ddi4.category() != null) {
+            ddi4.category()
+                    .forEach(cat -> fragments.add(new ConvertedFragment(
+                            itemTypes.get("Category"),
+                            cat.agency(),
+                            cat.version(),
+                            cat.id(),
+                            dateTimeOf(cat.versionDate()),
+                            ddi4ToLifecycle33.toCategory(cat),
+                            DDI_LOGICAL_PRODUCT_NS)));
+        }
+        if (ddi4.managedMissingValuesRepresentation() != null) {
+            ddi4.managedMissingValuesRepresentation()
+                    .forEach(mmvr -> fragments.add(new ConvertedFragment(
+                            itemTypes.get("ManagedMissingValuesRepresentation"),
+                            mmvr.agency(),
+                            mmvr.version(),
+                            mmvr.id(),
+                            dateTimeOf(mmvr.versionDate()),
+                            ddi4ToLifecycle33.toManagedMissingValuesRepresentation(mmvr),
+                            DDI_LOGICAL_PRODUCT_NS)));
+        }
+        return fragments;
+    }
+
     @Override
     public Ddi3Response convertDdi4ToDdi3(Ddi4Response ddi4) {
         logger.info("Converting DDI4 to DDI3");
 
-        List<Ddi3Response.Ddi3Item> items = new ArrayList<>();
-
-        if (ddi4.physicalInstance() != null) {
-            ddi4.physicalInstance().forEach(pi -> {
-                String xmlFragment =
-                        ddi4ToLifecycle33.toPhysicalInstance(pi).xmlText(fragmentXmlOptions(DDI_PHYSICAL_INSTANCE_NS));
-                items.add(createDdi3Item(
-                        itemTypes.get("PhysicalInstance"),
-                        pi.agency(),
-                        pi.version(),
-                        pi.id(),
-                        xmlFragment,
-                        dateTimeOf(pi.versionDate())));
-            });
-        }
-        if (ddi4.dataRelationship() != null) {
-            ddi4.dataRelationship().forEach(dr -> {
-                String xmlFragment =
-                        ddi4ToLifecycle33.toDataRelationship(dr).xmlText(fragmentXmlOptions(DDI_LOGICAL_PRODUCT_NS));
-                items.add(createDdi3Item(
-                        itemTypes.get("DataRelationship"),
-                        dr.agency(),
-                        dr.version(),
-                        dr.id(),
-                        xmlFragment,
-                        dateTimeOf(dr.versionDate())));
-            });
-        }
-        if (ddi4.variable() != null) {
-            ddi4.variable().forEach(var -> {
-                String xmlFragment =
-                        ddi4ToLifecycle33.toVariable(var).xmlText(fragmentXmlOptions(DDI_LOGICAL_PRODUCT_NS));
-                items.add(createDdi3Item(
-                        itemTypes.get("Variable"),
-                        var.agency(),
-                        var.version(),
-                        var.id(),
-                        xmlFragment,
-                        dateTimeOf(var.versionDate())));
-            });
-        }
-        if (ddi4.codeList() != null) {
-            ddi4.codeList().forEach(cl -> {
-                String xmlFragment =
-                        ddi4ToLifecycle33.toCodeList(cl).xmlText(fragmentXmlOptions(DDI_LOGICAL_PRODUCT_NS));
-                items.add(createDdi3Item(
-                        itemTypes.get("CodeList"),
-                        cl.agency(),
-                        cl.version(),
-                        cl.id(),
-                        xmlFragment,
-                        dateTimeOf(cl.versionDate())));
-            });
-        }
-        if (ddi4.category() != null) {
-            ddi4.category().forEach(cat -> {
-                String xmlFragment =
-                        ddi4ToLifecycle33.toCategory(cat).xmlText(fragmentXmlOptions(DDI_LOGICAL_PRODUCT_NS));
-                items.add(createDdi3Item(
-                        itemTypes.get("Category"),
-                        cat.agency(),
-                        cat.version(),
-                        cat.id(),
-                        xmlFragment,
-                        dateTimeOf(cat.versionDate())));
-            });
-        }
-        if (ddi4.managedMissingValuesRepresentation() != null) {
-            ddi4.managedMissingValuesRepresentation()
-                    .forEach(mmvr -> items.add(toManagedMissingValuesRepresentationItem(mmvr)));
-        }
+        List<Ddi3Response.Ddi3Item> items = convertFragments(ddi4).stream()
+                .map(fragment -> createDdi3Item(
+                        fragment.itemType(),
+                        fragment.agency(),
+                        fragment.version(),
+                        fragment.id(),
+                        fragment.document().xmlText(fragmentXmlOptions(fragment.contentNamespace())),
+                        fragment.versionDate()))
+                .toList();
 
         Ddi3Response.Ddi3Options options = new Ddi3Response.Ddi3Options(List.of("RegisterOrReplace"));
         return new Ddi3Response(options, items);
@@ -289,65 +312,59 @@ public class DDI4toDDI3ConverterServiceImpl implements DDI4toDDI3ConverterServic
     @Override
     public String convertDdi4ToDdi3Xml(Ddi4Response ddi4) {
         logger.info("Converting DDI4 to DDI3 XML");
-        Ddi3Response ddi3Response = convertDdi4ToDdi3(ddi4);
         Reference topLevelReference =
                 (ddi4.topLevelReference() != null && !ddi4.topLevelReference().isEmpty())
                         ? ddi4.topLevelReference().get(0)
                         : null;
-        return buildFragmentInstanceDocument(ddi3Response, topLevelReference);
+        return buildFragmentInstanceDocument(convertFragments(ddi4), topLevelReference);
     }
 
-    private String buildFragmentInstanceDocument(Ddi3Response ddi3Response, Reference topLevelReference) {
-        if (ddi3Response == null
-                || ddi3Response.items() == null
-                || ddi3Response.items().isEmpty()) {
+    private String buildFragmentInstanceDocument(List<ConvertedFragment> fragments, Reference topLevelReference) {
+        if (fragments.isEmpty()) {
             throw new IllegalArgumentException("Ddi3Response must contain at least one item");
         }
 
         FragmentInstanceDocument doc = FragmentInstanceDocument.Factory.newInstance();
         var fiType = doc.addNewFragmentInstance();
 
-        Ddi3Response.Ddi3Item topLevelItem;
+        ConvertedFragment topLevelItem;
         String typeOfObject;
         if (topLevelReference != null) {
             final String tlrId = topLevelReference.id();
             final String tlrAgency = topLevelReference.agency();
-            topLevelItem = ddi3Response.items().stream()
-                    .filter(item -> tlrId.equals(item.identifier()) && tlrAgency.equals(item.agencyId()))
+            topLevelItem = fragments.stream()
+                    .filter(item -> tlrId.equals(item.id()) && tlrAgency.equals(item.agency()))
                     .findFirst()
-                    .orElse(ddi3Response.items().getFirst());
+                    .orElse(fragments.getFirst());
             typeOfObject = topLevelReference.type();
         } else {
-            topLevelItem = ddi3Response.items().stream()
+            topLevelItem = fragments.stream()
                     .filter(item -> itemTypes.get("PhysicalInstance").equals(item.itemType()))
                     .findFirst()
-                    .orElse(ddi3Response.items().getFirst());
+                    .orElse(fragments.getFirst());
             typeOfObject = getTypeOfObjectFromItemType(topLevelItem.itemType());
         }
 
         ReferenceType tlRef = fiType.addNewTopLevelReference();
-        tlRef.addAgency(topLevelItem.agencyId());
-        tlRef.addNewID().setStringValue(topLevelItem.identifier());
+        tlRef.addAgency(topLevelItem.agency());
+        tlRef.addNewID().setStringValue(topLevelItem.id());
         tlRef.addVersion(topLevelItem.version());
         tlRef.setTypeOfObject(TypeOfObjectType.Enum.forString(typeOfObject));
 
-        for (Ddi3Response.Ddi3Item item : ddi3Response.items()) {
-            if (item.item() != null && !item.item().isEmpty()) {
-                try {
-                    fiType.addNewFragment()
-                            .set(FragmentDocument.Factory.parse(Ddi32Compatibility.asDdi33(item.item()))
-                                    .getFragment());
-                } catch (XmlException e) {
-                    throw new IllegalArgumentException("Failed to parse fragment XML for item " + item.identifier(), e);
-                }
-            }
+        for (ConvertedFragment fragment : fragments) {
+            fiType.addNewFragment().set(fragment.document().getFragment());
         }
 
         XmlOptions options = new XmlOptions();
         HashMap<String, String> prefixes = new HashMap<>();
         prefixes.put(DDI_INSTANCE_NS, "ddi");
         prefixes.put(DDI_REUSABLE_NS, "r");
+        prefixes.put(DDI_LOGICAL_PRODUCT_NS, "l");
+        prefixes.put(DDI_PHYSICAL_INSTANCE_NS, "pi");
+        prefixes.put(DDI_GROUP_NS, "g");
+        prefixes.put(DDI_STUDY_UNIT_NS, "s");
         options.setSaveSuggestedPrefixes(prefixes);
+        options.setSaveAggressiveNamespaces();
         options.setSavePrettyPrint();
         options.setSavePrettyPrintIndent(2);
 

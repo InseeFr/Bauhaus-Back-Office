@@ -6,6 +6,7 @@ import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.bauhaus_services.code_list.CodeListKind;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.codeslists.partialcodeslists.model.PartialCodesList;
+import fr.insee.rmes.modules.commons.configuration.swagger.model.Id;
 import fr.insee.rmes.modules.commons.webservice.GenericResources;
 import fr.insee.rmes.modules.users.domain.model.RBAC;
 import fr.insee.rmes.modules.users.webservice.HasAccess;
@@ -50,8 +51,8 @@ public class PartialCodeListsResources extends GenericResources {
 
     @HasAccess(module = RBAC.Module.CODESLIST_PARTIALCODESLIST, privilege = RBAC.Privilege.PUBLISH)
     @PutMapping("/{id}/validate")
-    public ResponseEntity<Object> publishPartialCodeList(@PathVariable(Constants.ID) String id) throws RmesException {
-        codeListService.publishCodeList(id, CodeListKind.PARTIAL);
+    public ResponseEntity<Id> publishPartialCodeList(@PathVariable(Constants.ID) Id id) throws RmesException {
+        codeListService.publishCodeList(id.identifier(), CodeListKind.PARTIAL);
         return ResponseEntity.status(HttpStatus.OK).body(id);
     }
 

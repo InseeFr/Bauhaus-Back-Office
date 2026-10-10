@@ -53,7 +53,8 @@ class MutualizedCacheEvictionIntegrationTest {
                     config,
                     mock(ColecticaClient.class),
                     provider,
-                    cacheManager.getCache(ColecticaCacheNames.PHYSICAL_INSTANCE_SEARCH_ROWS));
+                    cacheManager.getCache(ColecticaCacheNames.PHYSICAL_INSTANCE_SEARCH_ROWS),
+                    cacheManager.getCache(ColecticaCacheNames.MUTUALIZED_CODE_LIST_CONTENTS));
         }
     }
 
@@ -91,5 +92,24 @@ class MutualizedCacheEvictionIntegrationTest {
 
         assertThat(searchRows.get("k")).isNull();
         assertThat(codesLists.get("k")).isNotNull();
+    }
+
+    @Test
+    void evictAllCaches_clearsEveryColecticaRegion() {
+        List<Cache> regions = cacheManager.getCacheNames().stream()
+                .map(cacheManager::getCache)
+                .toList();
+        assertThat(regions)
+                .extracting(Cache::getName)
+                .containsExactlyInAnyOrder(
+                        ColecticaCacheNames.MUTUALIZED_CODES_LISTS,
+                        ColecticaCacheNames.MUTUALIZED_PACKAGE_CODE_LIST_REFS,
+                        ColecticaCacheNames.PHYSICAL_INSTANCE_SEARCH_ROWS,
+                        ColecticaCacheNames.MUTUALIZED_CODE_LIST_CONTENTS);
+        regions.forEach(region -> region.put("k", List.of()));
+
+        ddiRepository.evictAllCaches();
+
+        assertThat(regions).allSatisfy(region -> assertThat(region.get("k")).isNull());
     }
 }
