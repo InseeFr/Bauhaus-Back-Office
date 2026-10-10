@@ -28,6 +28,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.services.converters.S
 import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.ColecticaConfiguration;
 import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.schema.ClasspathDdi4SchemaRepository;
 import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.schema.NetworkntDdi4SchemaValidator;
+import fr.insee.rmes.modules.operation.operations.domain.port.serverside.OperationIrisPort;
 import fr.insee.rmes.modules.operation.series.domain.port.serverside.SeriesCreatorsPort;
 import java.time.Clock;
 import java.util.List;
@@ -38,8 +39,9 @@ import org.springframework.context.annotation.Configuration;
 public class PhysicalInstanceConfiguration {
 
     @Bean
-    DDIService ddiService(DDIRepository repository, SeriesCreatorsPort seriesCreatorsPort) {
-        return new DDIServiceImpl(repository, seriesCreatorsPort, Clock.systemDefaultZone());
+    DDIService ddiService(
+            DDIRepository repository, SeriesCreatorsPort seriesCreatorsPort, OperationIrisPort operationIrisPort) {
+        return new DDIServiceImpl(repository, seriesCreatorsPort, operationIrisPort, Clock.systemDefaultZone());
     }
 
     @Bean

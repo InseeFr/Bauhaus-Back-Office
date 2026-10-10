@@ -52,6 +52,9 @@ class TestStructuresResourcesEnvProd extends AbstractResourcesEnvProd {
     @MockitoBean
     protected OperationsDocumentationsService documentationsService;
 
+    private static final String STRUCTURE_BODY = """
+            {"identifiant": "NOTATION", "labelLg1": "Structure", "labelLg2": "Structure EN"}""";
+
     int structureId = 10;
     int componentId = 12;
 
@@ -68,7 +71,7 @@ class TestStructuresResourcesEnvProd extends AbstractResourcesEnvProd {
         var request = put("/structures/structure/1")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content("{\"id\": \"1\"}");
+                .content(STRUCTURE_BODY);
         request.header("Authorization", "Bearer toto");
 
         mvc.perform(request).andExpect(status().is(code));
@@ -83,7 +86,7 @@ class TestStructuresResourcesEnvProd extends AbstractResourcesEnvProd {
         var request = post("/structures/structure")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content("{\"id\": \"1\"}");
+                .content(STRUCTURE_BODY);
         request.header("Authorization", "Bearer toto");
 
         mvc.perform(request).andExpect(status().is(code));

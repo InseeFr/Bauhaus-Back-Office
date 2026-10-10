@@ -41,4 +41,26 @@ class PhysicalInstanceParentsResponseTest {
         assertEquals("su-1", response.studyUnit().id());
         assertEquals("Enquête emploi", response.studyUnit().label());
     }
+
+    @Test
+    void fromDomain_exposesTheSeriesAndOperationMirroredByTheParents() {
+        PhysicalInstanceParents parents = new PhysicalInstanceParents(
+                "fr.insee",
+                "su-1",
+                "Enquête emploi",
+                "fr.insee",
+                "grp-1",
+                "Base permanente des équipements",
+                List.of(),
+                "http://id.insee.fr/operations/serie/s1001",
+                "http://id.insee.fr/operations/operation/s2001");
+
+        PhysicalInstanceParentsResponse response = PhysicalInstanceParentsResponse.fromDomain(parents);
+
+        assertEquals(
+                "http://id.insee.fr/operations/serie/s1001", response.group().operationsIri());
+        assertEquals(
+                "http://id.insee.fr/operations/operation/s2001",
+                response.studyUnit().operationsIri());
+    }
 }

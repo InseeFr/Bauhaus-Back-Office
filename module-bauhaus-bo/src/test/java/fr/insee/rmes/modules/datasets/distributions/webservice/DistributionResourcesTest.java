@@ -1,5 +1,6 @@
 package fr.insee.rmes.modules.datasets.distributions.webservice;
 
+import static fr.insee.rmes.modules.HalJsonListAssertions.assertHalJsonListOfSize;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.*;
@@ -169,11 +170,7 @@ class DistributionResourcesTest {
         var result = distributionResources.getDistributions();
 
         // Then
-        Assertions.assertNotNull(result);
-        Assertions.assertEquals(200, result.getStatusCode().value());
-        Assertions.assertEquals(MediaTypes.HAL_JSON, result.getHeaders().getContentType());
-        Assertions.assertNotNull(result.getBody());
-        Assertions.assertEquals(2, result.getBody().size());
+        assertHalJsonListOfSize(result, 2);
     }
 
     @Test
@@ -185,11 +182,7 @@ class DistributionResourcesTest {
         var result = distributionResources.getDistributions();
 
         // Then
-        Assertions.assertNotNull(result);
-        Assertions.assertEquals(200, result.getStatusCode().value());
-        Assertions.assertEquals(MediaTypes.HAL_JSON, result.getHeaders().getContentType());
-        Assertions.assertNotNull(result.getBody());
-        Assertions.assertEquals(0, result.getBody().size());
+        assertHalJsonListOfSize(result, 0);
     }
 }
 

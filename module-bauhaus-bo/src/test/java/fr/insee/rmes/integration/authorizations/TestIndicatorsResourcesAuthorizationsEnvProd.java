@@ -6,7 +6,6 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import fr.insee.rmes.bauhaus_services.OperationsDocumentationsService;
 import fr.insee.rmes.bauhaus_services.OperationsService;
 import fr.insee.rmes.config.auth.UserAuthTestConfiguration;
 import fr.insee.rmes.integration.AbstractResourcesEnvProd;
@@ -46,9 +45,6 @@ class TestIndicatorsResourcesAuthorizationsEnvProd extends AbstractResourcesEnvP
     @MockitoBean
     private OperationsService operationsService;
 
-    @MockitoBean
-    private OperationsDocumentationsService operationsDocumentationsService;
-
     private static Stream<Arguments> provideIndicatorDataGet() {
         return Stream.of(
                 Arguments.of("/operations/indicators", 200, true),
@@ -72,6 +68,14 @@ class TestIndicatorsResourcesAuthorizationsEnvProd extends AbstractResourcesEnvP
         mvc.perform(request).andExpect(status().is(code));
     }
 
+    /**
+     * Corps valide : la validation du @RequestBody passe avant le contrôle RBAC, un corps sans
+     * prefLabelLg1 répondrait 400 sans jamais atteindre le HasAccess testé ici — y compris dans le
+     * cas 403.
+     */
+    private static final String INDICATOR_BODY = """
+            {"prefLabelLg1": "Indicateur"}""";
+
     private static Stream<Arguments> provideIndicatorData() {
         return Stream.of(Arguments.of(200, true), Arguments.of(403, false));
     }
@@ -85,7 +89,7 @@ class TestIndicatorsResourcesAuthorizationsEnvProd extends AbstractResourcesEnvP
         var request = post("/operations/indicator")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content("{\"id\": \"1\"} ");
+                .content(INDICATOR_BODY);
         request.header("Authorization", "Bearer toto");
 
         mvc.perform(request).andExpect(status().is(code));
@@ -100,7 +104,7 @@ class TestIndicatorsResourcesAuthorizationsEnvProd extends AbstractResourcesEnvP
         var request = put("/operations/indicator/1")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content("{\"id\": \"1\"} ");
+                .content(INDICATOR_BODY);
         request.header("Authorization", "Bearer toto");
 
         mvc.perform(request).andExpect(status().is(code));

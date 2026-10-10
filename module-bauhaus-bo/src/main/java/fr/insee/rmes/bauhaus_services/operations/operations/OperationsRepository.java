@@ -19,6 +19,7 @@ import fr.insee.rmes.model.operations.Operation;
 import fr.insee.rmes.modules.commons.configuration.swagger.model.IdLabelTwoLangs;
 import fr.insee.rmes.modules.operation.domain.event.BilingualLabel;
 import fr.insee.rmes.modules.operation.domain.event.OperationSaved;
+import fr.insee.rmes.modules.operations.operations.domain.model.commands.OperationCommand;
 import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationSeriesQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationsOperationQueries;
@@ -91,13 +92,13 @@ public class OperationsRepository extends RdfService {
     private void validate(Operation operation) throws RmesException {
         if (repoGestion.getResponseAsBoolean(operationsOperationQueries.checkPrefLabelUnicity(
                 operation.getId(), operation.getPrefLabelLg1(), languages.lg1()))) {
-            throw new RmesBadRequestException(
+            throw RmesBadRequestException.coded(
                     ErrorCodes.OPERATION_OPERATION_EXISTING_PREF_LABEL_LG1,
                     "This prefLabelLg1 is already used by another operation.");
         }
         if (repoGestion.getResponseAsBoolean(operationsOperationQueries.checkPrefLabelUnicity(
                 operation.getId(), operation.getPrefLabelLg2(), languages.lg2()))) {
-            throw new RmesBadRequestException(
+            throw RmesBadRequestException.coded(
                     ErrorCodes.OPERATION_OPERATION_EXISTING_PREF_LABEL_LG2,
                     "This prefLabelLg2 is already used by another operation.");
         }
@@ -129,18 +130,11 @@ public class OperationsRepository extends RdfService {
         return operation;
     }
 
-    /**
-     * CREATE
-     * @param body
-     * @return
-     * @throws RmesException
-     */
-    public String setOperation(String body) throws RmesException {
-        String id = operationsObjectMapper.createId();
-        Operation operation = Deserializer.deserializeJsonString(body, Operation.class);
-        operation.setId(id);
+    /** Création : l'identifiant est généré, le reste vient de la commande. */
+    public String createOperation(OperationCommand command) throws RmesException {
+        Operation operation = toOperation(operationsObjectMapper.createId(), command);
         // Tester l'existence de la série
-        String idSeries = operation.getSeries().getId();
+        String idSeries = command.seriesId();
         if (!operationsObjectMapper.checkIfObjectExists(ObjectType.SERIES, idSeries)) {
             throw new RmesNotFoundException(ErrorCodes.OPERATION_UNKNOWN_SERIES, "Unknown series: ", idSeries);
         }
@@ -156,14 +150,9 @@ public class OperationsRepository extends RdfService {
         return operation.getId();
     }
 
-    public void setOperation(String id, String body) throws RmesException {
-        Operation operation = Operation.of(id);
-        try {
-            operation = Deserializer.deserializeJsonString(body, Operation.class);
-        } catch (RmesException e) {
-            logger.error(e.getMessage());
-        }
-
+    /** Mise à jour : l'identifiant vient de l'appelant, la commande réécrit l'opération entière. */
+    public void setOperation(String id, OperationCommand command) throws RmesException {
+        Operation operation = toOperation(id, command);
         operation.setModified(DateUtils.getCurrentDate());
 
         String status = operationsParentRepository.getValidationStatus(id);
@@ -175,8 +164,24 @@ public class OperationsRepository extends RdfService {
             createRdfOperation(operation, null, ValidationStatus.MODIFIED);
         }
         logger.info("Update operation : {} - {}", operation.getId(), operation.getPrefLabelLg1());
-        publishOperationSaved(
-                operation, operation.getSeries() != null ? operation.getSeries().getId() : null);
+        publishOperationSaved(operation, command.seriesId());
+    }
+
+    /**
+     * Projette la commande sur le modèle du dépôt. {@code created} (en création) et
+     * {@code modified} sont posés par les appelants ci-dessus ; la série n'est liée qu'à la
+     * création, par {@code createRdfOperation}.
+     */
+    private static Operation toOperation(String id, OperationCommand command) {
+        Operation operation = Operation.of(id);
+        operation.setPrefLabelLg1(command.prefLabelLg1());
+        operation.setPrefLabelLg2(command.prefLabelLg2());
+        operation.setAltLabelLg1(command.altLabelLg1());
+        operation.setAltLabelLg2(command.altLabelLg2());
+        operation.setYear(command.year());
+        operation.setIdSims(command.idSims());
+        operation.setCreated(command.created());
+        return operation;
     }
 
     /**

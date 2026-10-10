@@ -2,6 +2,8 @@ package fr.insee.rmes.modules.checks.webservice;
 
 import fr.insee.rmes.modules.checks.domain.model.CheckResult;
 import fr.insee.rmes.modules.checks.domain.port.clientside.CheckerService;
+import fr.insee.rmes.modules.users.domain.model.RBAC;
+import fr.insee.rmes.modules.users.webservice.HasAccess;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,20 +28,12 @@ public class ChecksResources {
     }
 
     @GetMapping()
+    @HasAccess(module = RBAC.Module.CONCEPT_CONCEPT, privilege = RBAC.Privilege.ADMINISTRATION)
     public ResponseEntity<List<CheckResult>> runAllChecks() {
-        try {
-            logger.info("Starting all data checks");
-            List<CheckResult> results = checkerService.checks();
-            logger.info("Completed {} checks", results.size());
+        logger.info("Starting all data checks");
+        List<CheckResult> results = checkerService.checks();
+        logger.info("Completed {} checks", results.size());
 
-            return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(results);
-        } catch (Exception e) {
-            logger.error("Error during checks execution", e);
-            // Return a CheckResult with error information instead of empty response
-            CheckResult errorResult = new CheckResult("system_error", "Failed to execute checks: " + e.getMessage());
-            return ResponseEntity.status(500)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(List.of(errorResult));
-        }
+        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(results);
     }
 }

@@ -12,7 +12,6 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
-import fr.insee.rmes.exceptions.RmesNotAcceptableException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.graphdb.ontologies.ADMS;
@@ -175,7 +174,7 @@ public class DocumentationsUtils {
             sims = mapper.readValue(body, Documentation.class);
         } catch (IOException e) {
             logger.error(e.getMessage());
-            throw new RmesNotAcceptableException(
+            throw new RmesBadRequestException(
                     ErrorCodes.SIMS_INCORRECT, e.getMessage(), "IOException: cannot parse input");
         }
 
@@ -256,7 +255,7 @@ public class DocumentationsUtils {
             throw new RmesBadRequestException(
                     ErrorCodes.OPERATION_VALIDATION_UNPUBLISHED_PARENT,
                     "This metadataReport cannot be published before its target is published. ",
-                    "MetadataReport: " + id + " ; Indicator/Series/Operation: " + targetId);
+                    new JSONObject().put("id", targetId));
         }
 
         documentationPublication.publishSims(id);
@@ -455,16 +454,12 @@ public class DocumentationsUtils {
         return buildMSDFromJson(repoGestion.getResponseAsArray(documentationQueries.msdQuery()));
     }
 
-    public HttpStatus deleteMetadataReport(String id) throws RmesException {
+    public void deleteMetadataReport(String id) throws RmesException {
         getExistingDocumentationTitle(id);
         Resource graph = RdfUtils.simsGraph(id);
 
-        HttpStatus result = repoGestion.executeUpdate(documentationQueries.deleteGraph(graph));
-        if (result.equals(HttpStatus.OK)) {
-            result = repositoryPublication.executeUpdate(documentationQueries.deleteGraph(graph));
-        }
-
-        return result;
+        repoGestion.executeUpdate(documentationQueries.deleteGraph(graph));
+        repositoryPublication.executeUpdate(documentationQueries.deleteGraph(graph));
     }
 
     public void updateDocumentationTitle(String idSims, String prefLabeLg1, String prefLabelLg2) throws RmesException {

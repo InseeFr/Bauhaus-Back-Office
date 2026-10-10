@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -115,6 +116,13 @@ public class OperationSeriesQueries {
         return buildSeriesRequest("getSeriesCreatorsByUriQuery.ftlh", params);
     }
 
+    /** Thèmes de la série, portés par {@code dcterms:subject} comme pour les familles. */
+    public String getThemesBySeriesIri(String seriesIri) throws RmesException {
+        Map<String, Object> params = initParams();
+        params.put("SERIES_IRI", SparqlLiterals.iri(seriesIri));
+        return buildSeriesRequest("getSeriesThemesQuery.ftlh", params);
+    }
+
     /**
      * @param idSeries
      * @return String
@@ -157,6 +165,8 @@ public class OperationSeriesQueries {
         Map<String, Object> params = initParams();
         putSeriesUriSuffix(params, idSeries);
         params.put(LINK_PREDICATE, SparqlLiterals.iri(linkPredicate.stringValue()));
+        // Un lien « voir aussi » se lit depuis ses deux extrémités.
+        params.put("SYMMETRIC", RDFS.SEEALSO.equals(linkPredicate));
         if (Constants.ORGANIZATIONS.equals(resultType)) {
             return buildSeriesRequest("getSeriesOrganizationsLinksQuery.ftlh", params);
         }

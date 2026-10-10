@@ -9,7 +9,10 @@ import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.QueryUtils;
 import fr.insee.rmes.json.JSONUtils;
 import fr.insee.rmes.model.operations.*;
+import fr.insee.rmes.modules.operations.indicators.domain.model.commands.IndicatorCommand;
+import fr.insee.rmes.modules.operations.operations.domain.model.commands.OperationCommand;
 import fr.insee.rmes.modules.operations.series.domain.model.Series;
+import fr.insee.rmes.modules.operations.series.domain.model.commands.SeriesCommand;
 import fr.insee.rmes.modules.shared_kernel.domain.model.Roles;
 import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
 import fr.insee.rmes.modules.users.domain.model.Stamp;
@@ -100,12 +103,14 @@ public class OperationsImpl implements OperationsService {
     public String getSeriesWithStamp() throws RmesException {
         logger.info("Starting to get series list with sims based on a stamp");
 
-        // TODO a revoir ceci
         var principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         var isAdmin = false;
         Set<Stamp> stamps = Collections.emptySet();
         try {
-            var user = userDecoder.fromPrincipal(principal).get();
+            var user = userDecoder
+                    .fromPrincipal(principal)
+                    .orElseThrow(
+                            () -> new MissingUserInformationException("No user can be decoded from the principal"));
             isAdmin = user.hasRole(Roles.ADMIN);
             stamps = user.stamps();
         } catch (MissingUserInformationException e) {
@@ -139,8 +144,8 @@ public class OperationsImpl implements OperationsService {
     }
 
     @Override
-    public void setSeries(String id, String body) throws RmesException {
-        seriesRepository.setSeries(id, body);
+    public void setSeries(String id, SeriesCommand command) throws RmesException {
+        seriesRepository.setSeries(id, command);
     }
 
     @Override
@@ -164,8 +169,8 @@ public class OperationsImpl implements OperationsService {
     }
 
     @Override
-    public String createSeries(String body) throws RmesException {
-        return seriesRepository.createSeries(body);
+    public String createSeries(SeriesCommand command) throws RmesException {
+        return seriesRepository.createSeries(command);
     }
 
     @Override
@@ -195,16 +200,16 @@ public class OperationsImpl implements OperationsService {
      * UPDATE
      */
     @Override
-    public void setOperation(String id, String body) throws RmesException {
-        operationsRepository.setOperation(id, body);
+    public void setOperation(String id, OperationCommand command) throws RmesException {
+        operationsRepository.setOperation(id, command);
     }
 
     /**
      * CREATE
      */
     @Override
-    public String createOperation(String body) throws RmesException {
-        return operationsRepository.setOperation(body);
+    public String createOperation(OperationCommand command) throws RmesException {
+        return operationsRepository.createOperation(command);
     }
 
     @Override
@@ -246,8 +251,8 @@ public class OperationsImpl implements OperationsService {
     }
 
     @Override
-    public void setIndicator(String id, String body) throws RmesException {
-        indicatorsRepository.setIndicator(id, body);
+    public void setIndicator(String id, IndicatorCommand command) throws RmesException {
+        indicatorsRepository.setIndicator(id, command);
     }
 
     /**
@@ -264,7 +269,7 @@ public class OperationsImpl implements OperationsService {
      * @throws RmesException
      */
     @Override
-    public String setIndicator(String body) throws RmesException {
-        return indicatorsRepository.setIndicator(body);
+    public String setIndicator(IndicatorCommand command) throws RmesException {
+        return indicatorsRepository.setIndicator(command);
     }
 }

@@ -1,5 +1,12 @@
 package fr.insee.rmes.modules.ddi.physical_instances.domain.services;
 
+import static fr.insee.rmes.modules.ddi.physical_instances.domain.services.Lifecycle33TestFixtures.GROUP_NS;
+import static fr.insee.rmes.modules.ddi.physical_instances.domain.services.Lifecycle33TestFixtures.LOGICAL_PRODUCT_NS;
+import static fr.insee.rmes.modules.ddi.physical_instances.domain.services.Lifecycle33TestFixtures.PHYSICAL_INSTANCE_NS;
+import static fr.insee.rmes.modules.ddi.physical_instances.domain.services.Lifecycle33TestFixtures.STUDY_UNIT_NS;
+import static fr.insee.rmes.modules.ddi.physical_instances.domain.services.Lifecycle33TestFixtures.fragmentOptions;
+import static fr.insee.rmes.modules.ddi.physical_instances.domain.services.Lifecycle33TestFixtures.logicalProduct;
+import static fr.insee.rmes.modules.ddi.physical_instances.domain.services.Lifecycle33TestFixtures.logicalProductReferencingEverySchemeKind;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.BasedOnObject;
@@ -33,7 +40,6 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.TextRepresentat
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.ValueType;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.VariableRepresentation;
 import java.math.BigInteger;
-import java.util.HashMap;
 import java.util.List;
 import org.apache.xmlbeans.XmlOptions;
 import org.assertj.core.api.Assertions;
@@ -42,10 +48,6 @@ import org.junit.jupiter.api.Test;
 class Ddi4ToLifecycle33Test {
 
     private static final String VERSION_RESPONSIBILITY = "abcde";
-
-    private static final String DDI_INSTANCE_NS = "ddi:instance:3_3";
-    private static final String DDI_REUSABLE_NS = "ddi:reusable:3_3";
-    private static final String DDI_PHYSICAL_INSTANCE_NS = "ddi:physicalinstance:3_3";
 
     private final Ddi4ToLifecycle33 converter = new Ddi4ToLifecycle33(VERSION_RESPONSIBILITY);
 
@@ -346,15 +348,7 @@ class Ddi4ToLifecycle33Test {
                 "1",
                 LangStrings.of("fr-FR", "CodeList Label"),
                 null,
-                List.of(new Code(
-                        Code.TYPE,
-                        "urn:ddi:fr.insee:code-id:1",
-                        "fr.insee",
-                        "code-id",
-                        "1",
-                        Reference.of("fr.insee", "cat-id", "1", "Category"),
-                        ValueType.of("01"),
-                        null)));
+                List.of(codeId01("urn:ddi:fr.insee:code-id:1")));
 
         String xml = converter.toCodeList(cl).xmlText(logicalProductXmlOptions());
 
@@ -431,15 +425,7 @@ class Ddi4ToLifecycle33Test {
                 "1",
                 LangStrings.of("fr-FR", "Variante"),
                 null,
-                List.of(new Code(
-                        Code.TYPE,
-                        null,
-                        "fr.insee",
-                        "code-id",
-                        "1",
-                        Reference.of("fr.insee", "cat-id", "1", "Category"),
-                        ValueType.of("01"),
-                        null)));
+                List.of(codeId01(null)));
 
         String xml = converter.toCodeList(cl).xmlText(logicalProductXmlOptions());
 
@@ -563,15 +549,12 @@ class Ddi4ToLifecycle33Test {
 
     @Test
     void shouldBuildLogicalProductWithCodeListSchemeReferences() {
-        Ddi4LogicalProduct logicalProduct = new Ddi4LogicalProduct(
-                Ddi4LogicalProduct.TYPE,
-                CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
-                "urn:ddi:fr.insee:lp-id:1",
-                "fr.insee",
-                "lp-id",
-                "1",
-                LangStrings.of("fr-FR", "LogicalProduct Label"),
-                List.of(Reference.of("fr.insee", "cls-1", "1", "CodeListScheme")));
+        Ddi4LogicalProduct logicalProduct = logicalProduct(
+                "LogicalProduct Label",
+                List.of(Reference.of("fr.insee", "cls-1", "1", "CodeListScheme")),
+                null,
+                null,
+                null);
 
         String xml = converter.toLogicalProduct(logicalProduct).xmlText(logicalProductXmlOptions());
 
@@ -792,18 +775,7 @@ class Ddi4ToLifecycle33Test {
 
     @Test
     void shouldBuildLogicalProductWithCategoryVariableAndManagedRepresentationSchemeReferences() {
-        Ddi4LogicalProduct logicalProduct = new Ddi4LogicalProduct(
-                Ddi4LogicalProduct.TYPE,
-                CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
-                "urn:ddi:fr.insee:lp-id:1",
-                "fr.insee",
-                "lp-id",
-                "1",
-                LangStrings.of("fr-FR", "LogicalProduct Label"),
-                List.of(Reference.of("fr.insee", "cls-1", "1", "CodeListScheme")),
-                List.of(Reference.of("fr.insee", "cats-1", "1", "CategoryScheme")),
-                List.of(Reference.of("fr.insee", "vars-1", "1", "VariableScheme")),
-                List.of(Reference.of("fr.insee", "mrs-1", "1", "ManagedRepresentationScheme")));
+        Ddi4LogicalProduct logicalProduct = logicalProductReferencingEverySchemeKind("LogicalProduct Label");
 
         String xml = converter.toLogicalProduct(logicalProduct).xmlText(logicalProductXmlOptions());
 
@@ -820,14 +792,7 @@ class Ddi4ToLifecycle33Test {
 
     @Test
     void shouldBuildGroupWithLogicalProductReference() {
-        Ddi4Group group = new Ddi4Group(
-                Ddi4Group.TYPE,
-                CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
-                "urn:ddi:fr.insee:group-id:1",
-                "fr.insee",
-                "group-id",
-                "1",
-                "bauhaus",
+        Ddi4Group group = group(
                 new Citation(LangStrings.of("fr-FR", "Test Group")),
                 List.of(Reference.of("fr.insee", "su-id-1", "1", "StudyUnit")),
                 List.of("http://id.insee.fr/operations/serie/s1001"),
@@ -841,20 +806,14 @@ class Ddi4ToLifecycle33Test {
 
     @Test
     void shouldBuildGroupWithTitlesInBothLanguagesAndAlternateTitles() {
-        Ddi4Group group = new Ddi4Group(
-                Ddi4Group.TYPE,
-                CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
-                "urn:ddi:fr.insee:group-id:1",
-                "fr.insee",
-                "group-id",
-                "1",
-                "bauhaus",
+        Ddi4Group group = group(
                 new Citation(
                         List.of(new LangString("fr-FR", "Recensement"), new LangString("en-GB", "Census")),
                         List.of(new LangString("fr-FR", "RP"), new LangString("en-GB", "CENS"))),
                 List.of(),
                 List.of("http://id.insee.fr/operations/serie/s1001"),
-                "insee:StatisticalOperationSeries");
+                "insee:StatisticalOperationSeries",
+                null);
 
         String xml = converter.toGroup(group).xmlText(groupXmlOptions());
 
@@ -888,18 +847,12 @@ class Ddi4ToLifecycle33Test {
 
     @Test
     void shouldBuildGroupWithAllFields() {
-        Ddi4Group group = new Ddi4Group(
-                Ddi4Group.TYPE,
-                CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
-                "urn:ddi:fr.insee:group-id:1",
-                "fr.insee",
-                "group-id",
-                "1",
-                "bauhaus",
+        Ddi4Group group = group(
                 new Citation(LangStrings.of("fr-FR", "Test Group")),
                 List.of(Reference.of("fr.insee", "su-id-1", "1", "StudyUnit")),
                 List.of("http://id.insee.fr/operations/serie/s1001"),
-                "insee:StatisticalOperationSeries");
+                "insee:StatisticalOperationSeries",
+                null);
 
         String xml = converter.toGroup(group).xmlText(groupXmlOptions());
 
@@ -914,18 +867,7 @@ class Ddi4ToLifecycle33Test {
 
     @Test
     void shouldBuildGroupWithoutOptionalFields() {
-        Ddi4Group group = new Ddi4Group(
-                Ddi4Group.TYPE,
-                CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
-                "urn:ddi:fr.insee:group-id:1",
-                "fr.insee",
-                "group-id",
-                "1",
-                "bauhaus",
-                new Citation(LangStrings.of("fr-FR", "Test")),
-                List.of(),
-                null,
-                null);
+        Ddi4Group group = group(new Citation(LangStrings.of("fr-FR", "Test")), List.of(), null, null, null);
 
         String xml = converter.toGroup(group).xmlText(groupXmlOptions());
 
@@ -937,16 +879,11 @@ class Ddi4ToLifecycle33Test {
 
     @Test
     void shouldBuildStudyUnitWithTitlesInBothLanguages() {
-        Ddi4StudyUnit su = new Ddi4StudyUnit(
-                Ddi4StudyUnit.TYPE,
-                CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
-                "urn:ddi:fr.insee:su-id:1",
-                "fr.insee",
-                "su-id",
-                "1",
+        Ddi4StudyUnit su = studyUnit(
                 new Citation(List.of(
                         new LangString("fr-FR", "Enqu\u00eate emploi"), new LangString("en-GB", "Labour survey"))),
                 "http://id.insee.fr/operations/operation/s1001",
+                null,
                 null);
 
         String xml = converter.toStudyUnit(su).xmlText(studyUnitXmlOptions());
@@ -958,16 +895,11 @@ class Ddi4ToLifecycle33Test {
 
     @Test
     void shouldBuildStudyUnitWithOperationIri() {
-        Ddi4StudyUnit su = new Ddi4StudyUnit(
-                Ddi4StudyUnit.TYPE,
-                CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
-                "urn:ddi:fr.insee:su-id:1",
-                "fr.insee",
-                "su-id",
-                "1",
+        Ddi4StudyUnit su = studyUnit(
                 new Citation(LangStrings.of("fr-FR", "Test SU")),
                 "http://id.insee.fr/operations/operation/op1",
-                List.of(Reference.of("fr.insee", "pi-id", "1", "PhysicalInstance")));
+                List.of(Reference.of("fr.insee", "pi-id", "1", "PhysicalInstance")),
+                null);
 
         String xml = converter.toStudyUnit(su).xmlText(studyUnitXmlOptions());
 
@@ -982,13 +914,7 @@ class Ddi4ToLifecycle33Test {
 
     @Test
     void shouldBuildStudyUnitWithLogicalProductReference() {
-        Ddi4StudyUnit su = new Ddi4StudyUnit(
-                Ddi4StudyUnit.TYPE,
-                CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
-                "urn:ddi:fr.insee:su-id:1",
-                "fr.insee",
-                "su-id",
-                "1",
+        Ddi4StudyUnit su = studyUnit(
                 new Citation(LangStrings.of("fr-FR", "Test SU")),
                 "http://id.insee.fr/operations/operation/op1",
                 List.of(Reference.of("fr.insee", "pi-id", "1", "PhysicalInstance")),
@@ -1001,16 +927,7 @@ class Ddi4ToLifecycle33Test {
 
     @Test
     void shouldBuildStudyUnitWithoutOperationIri() {
-        Ddi4StudyUnit su = new Ddi4StudyUnit(
-                Ddi4StudyUnit.TYPE,
-                CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
-                "urn:ddi:fr.insee:su-id:1",
-                "fr.insee",
-                "su-id",
-                "1",
-                new Citation(LangStrings.of("fr-FR", "Test SU")),
-                null,
-                null);
+        Ddi4StudyUnit su = studyUnit(new Citation(LangStrings.of("fr-FR", "Test SU")), null, null, null);
 
         String xml = converter.toStudyUnit(su).xmlText(studyUnitXmlOptions());
 
@@ -1033,29 +950,73 @@ class Ddi4ToLifecycle33Test {
                 null);
     }
 
+    /** The code-id Code (value 01, category cat-id), with the given URN. */
+    private static Code codeId01(String urn) {
+        return new Code(
+                Code.TYPE,
+                urn,
+                "fr.insee",
+                "code-id",
+                "1",
+                Reference.of("fr.insee", "cat-id", "1", "Category"),
+                ValueType.of("01"),
+                null);
+    }
+
+    /** The group-id Group, version responsibility bauhaus. */
+    private static Ddi4Group group(
+            Citation citation,
+            List<Reference> studyUnitReference,
+            List<String> seriesIris,
+            String typeOfGroup,
+            List<Reference> logicalProductReference) {
+        return new Ddi4Group(
+                Ddi4Group.TYPE,
+                CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
+                "urn:ddi:fr.insee:group-id:1",
+                "fr.insee",
+                "group-id",
+                "1",
+                "bauhaus",
+                citation,
+                studyUnitReference,
+                seriesIris,
+                typeOfGroup,
+                logicalProductReference);
+    }
+
+    /** The su-id StudyUnit. */
+    private static Ddi4StudyUnit studyUnit(
+            Citation citation,
+            String operationIri,
+            List<Reference> physicalInstanceReferences,
+            List<Reference> logicalProductReferences) {
+        return new Ddi4StudyUnit(
+                Ddi4StudyUnit.TYPE,
+                CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
+                "urn:ddi:fr.insee:su-id:1",
+                "fr.insee",
+                "su-id",
+                "1",
+                citation,
+                operationIri,
+                physicalInstanceReferences,
+                logicalProductReferences);
+    }
+
     private static XmlOptions physicalInstanceXmlOptions() {
-        return options(DDI_PHYSICAL_INSTANCE_NS);
+        return fragmentOptions(PHYSICAL_INSTANCE_NS);
     }
 
     private static XmlOptions logicalProductXmlOptions() {
-        return options("ddi:logicalproduct:3_3");
+        return fragmentOptions(LOGICAL_PRODUCT_NS);
     }
 
     private static XmlOptions groupXmlOptions() {
-        return options("ddi:group:3_3");
+        return fragmentOptions(GROUP_NS);
     }
 
     private static XmlOptions studyUnitXmlOptions() {
-        return options("ddi:studyunit:3_3");
-    }
-
-    private static XmlOptions options(String contentNs) {
-        HashMap<String, String> prefixes = new HashMap<>();
-        prefixes.put(DDI_INSTANCE_NS, "");
-        prefixes.put(contentNs, "");
-        prefixes.put(DDI_REUSABLE_NS, "r");
-        XmlOptions options = new XmlOptions();
-        options.setSaveSuggestedPrefixes(prefixes);
-        return options;
+        return fragmentOptions(STUDY_UNIT_NS);
     }
 }

@@ -60,16 +60,6 @@ class CodesListResourcesTest {
         verify(ddiService).getVariablesUsingCodeList("fr.insee", "cl-1");
     }
 
-    @Test
-    void getCodeListUsers_shouldReturn500OnError() {
-        when(ddiService.getVariablesUsingCodeList("fr.insee", "cl-1"))
-                .thenThrow(new RuntimeException("Colectica error"));
-
-        ResponseEntity<List<CodeListVariableUsage>> response = codesListResources.getCodeListUsers("fr.insee", "cl-1");
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-
     // --- /ddi/category/{agencyId}/{id}/users (catégorie partagée) ---
 
     @Test
@@ -100,16 +90,6 @@ class CodesListResourcesTest {
         verify(ddiService).getCodeListsUsingCategory("fr.insee", "cat-1");
     }
 
-    @Test
-    void getCategoryUsers_shouldReturn500OnError() {
-        when(ddiService.getCodeListsUsingCategory("fr.insee", "cat-1"))
-                .thenThrow(new RuntimeException("Colectica error"));
-
-        ResponseEntity<List<CategoryCodeListUsage>> response = codesListResources.getCategoryUsers("fr.insee", "cat-1");
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-
     // --- /ddi/missing-values-representations/{agencyId}/{id}/users (valeurs sentinelles, #1566) ---
 
     @Test
@@ -134,16 +114,5 @@ class CodesListResourcesTest {
         assertThat(response.getBody()).hasSize(1);
         assertThat(response.getBody().get(0).variableId()).isEqualTo("var-1");
         verify(ddiService).getVariablesUsingMissingValuesRepresentation("fr.insee", "mmvr-1");
-    }
-
-    @Test
-    void getMissingValuesRepresentationUsers_shouldReturn500OnError() {
-        when(ddiService.getVariablesUsingMissingValuesRepresentation("fr.insee", "mmvr-1"))
-                .thenThrow(new RuntimeException("Colectica error"));
-
-        ResponseEntity<List<CodeListVariableUsage>> response =
-                codesListResources.getMissingValuesRepresentationUsers("fr.insee", "mmvr-1");
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

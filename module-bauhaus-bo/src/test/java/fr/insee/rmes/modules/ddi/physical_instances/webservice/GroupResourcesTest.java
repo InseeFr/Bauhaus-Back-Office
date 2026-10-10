@@ -1,11 +1,12 @@
 package fr.insee.rmes.modules.ddi.physical_instances.webservice;
 
+import static fr.insee.rmes.modules.ddi.physical_instances.webservice.DdiResourcesTestSupport.assertOkListOfSize;
+import static fr.insee.rmes.modules.ddi.physical_instances.webservice.DdiResourcesTestSupport.givenStampUserReadingPhysicalInstances;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -15,7 +16,6 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.Group
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PartialGroupResponse;
 import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
 import fr.insee.rmes.modules.users.domain.model.RBAC;
-import fr.insee.rmes.modules.users.domain.model.User;
 import fr.insee.rmes.modules.users.domain.port.serverside.RbacFetcher;
 import fr.insee.rmes.modules.users.infrastructure.UserProvider;
 import java.util.ArrayList;
@@ -23,8 +23,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -33,11 +31,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
-@ExtendWith(MockitoExtension.class)
+@ExtendWith({MockitoExtension.class, LocalhostRequestContextExtension.class})
 class GroupResourcesTest {
 
     @Mock
@@ -55,22 +50,6 @@ class GroupResourcesTest {
     @InjectMocks
     private GroupResources groupResources;
 
-    @BeforeEach
-    void setUp() {
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        request.setScheme("http");
-        request.setServerName("localhost");
-        request.setServerPort(8080);
-        request.setContextPath("");
-        ServletRequestAttributes attrs = new ServletRequestAttributes(request);
-        RequestContextHolder.setRequestAttributes(attrs);
-    }
-
-    @AfterEach
-    void tearDown() {
-        RequestContextHolder.resetRequestAttributes();
-    }
-
     // --- plain /ddi/groups list + create ---
 
     @Test
@@ -86,15 +65,6 @@ class GroupResourcesTest {
         assertThat(response.getBody()).hasSize(2);
         assertThat(response.getBody().get(0).id()).isEqualTo("group-1");
         verify(groupService).getAll();
-    }
-
-    @Test
-    void getGroups_shouldReturn500OnError() {
-        when(groupService.getAll()).thenThrow(new RuntimeException("Colectica error"));
-
-        ResponseEntity<List<PartialGroup>> response = groupResources.getGroups();
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @Test
@@ -118,28 +88,6 @@ class GroupResourcesTest {
         verify(groupService).createOrUpdate(group);
     }
 
-    @Test
-    void createOrUpdateGroup_shouldReturn500OnError() {
-        Ddi4Group group = new Ddi4Group(
-                Ddi4Group.TYPE,
-                CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
-                "urn:ddi:fr.insee:group-id:1",
-                "fr.insee",
-                "group-id",
-                "1",
-                "bauhaus-test",
-                new Citation(LangStrings.of("fr-FR", "Test Group")),
-                List.of(),
-                List.of("http://id.insee.fr/operations/serie/s1001"),
-                "insee:StatisticalOperationSeries");
-
-        doThrow(new RuntimeException("Colectica error")).when(groupService).createOrUpdate(group);
-
-        ResponseEntity<Void> response = groupResources.createOrUpdateGroup(group);
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-
     // --- HATEOAS /ddi/group browse (stamp-aware) + /ddi/group/{agencyId}/{id} detail ---
 
     @Test
@@ -157,11 +105,7 @@ class GroupResourcesTest {
 
         ResponseEntity<List<PartialGroupResponse>> response = groupResources.getGroupResponses();
 
-        assertNotNull(response);
-        assertEquals(200, response.getStatusCode().value());
-        List<PartialGroupResponse> result = response.getBody();
-        assertNotNull(result);
-        assertEquals(2, result.size());
+        List<PartialGroupResponse> result = assertOkListOfSize(response, 2);
 
         assertEquals("group-1", result.getFirst().getId());
         assertEquals("Base permanente des équipements", result.getFirst().getLabel());
@@ -183,20 +127,12 @@ class GroupResourcesTest {
         String iri = "http://id.insee.fr/operations/serie/s1001";
         List<PartialGroup> filteredGroups = List.of(
                 new PartialGroup("group-1", "Base permanente des équipements", new Date(), "fr.insee", List.of(iri)));
-        User stampUser = new User("user-1", List.of("role-stamp"), Set.of("stamp-A"));
-        when(userProvider.findUser()).thenReturn(Optional.of(stampUser));
-        when(rbacFetcher.getApplicationActionStrategyByRole(
-                        any(), eq(RBAC.Module.DDI_PHYSICALINSTANCE), eq(RBAC.Privilege.READ)))
-                .thenReturn(RBAC.Strategy.STAMP);
+        givenStampUserReadingPhysicalInstances(userProvider, rbacFetcher);
         when(ddiService.getGroupsFilteredByStamp(Set.of("stamp-A"))).thenReturn(filteredGroups);
 
         ResponseEntity<List<PartialGroupResponse>> response = groupResources.getGroupResponses();
 
-        assertNotNull(response);
-        assertEquals(200, response.getStatusCode().value());
-        List<PartialGroupResponse> result = response.getBody();
-        assertNotNull(result);
-        assertEquals(1, result.size());
+        List<PartialGroupResponse> result = assertOkListOfSize(response, 1);
         assertEquals("group-1", result.getFirst().getId());
 
         verify(ddiService).getGroupsFilteredByStamp(Set.of("stamp-A"));
@@ -247,17 +183,6 @@ class GroupResourcesTest {
     }
 
     @Test
-    void getGroupLogicalProducts_shouldReturn500OnError() {
-        when(ddiService.getLogicalProductsByGroup("fr.insee", "group-1"))
-                .thenThrow(new RuntimeException("Colectica error"));
-
-        ResponseEntity<List<PartialLogicalProduct>> response =
-                groupResources.getGroupLogicalProducts("fr.insee", "group-1");
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-
-    @Test
     void getLogicalProductCodeListSchemes_shouldReturn200WithList() {
         List<PartialCodeListScheme> schemes = List.of(
                 new PartialCodeListScheme("cls-1", "Schéma 1", new Date(), "fr.insee"),
@@ -275,17 +200,6 @@ class GroupResourcesTest {
     }
 
     @Test
-    void getLogicalProductCodeListSchemes_shouldReturn500OnError() {
-        when(ddiService.getCodeListSchemesByLogicalProduct("fr.insee", "lp-1"))
-                .thenThrow(new RuntimeException("Colectica error"));
-
-        ResponseEntity<List<PartialCodeListScheme>> response =
-                groupResources.getLogicalProductCodeListSchemes("fr.insee", "group-1", "fr.insee", "lp-1");
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-
-    @Test
     void getCodeListSchemeCodesLists_shouldReturn200WithList() {
         List<PartialCodesList> codeLists = List.of(
                 new PartialCodesList("code-list-1", "Liste 1", new Date(), "fr.insee"),
@@ -300,17 +214,6 @@ class GroupResourcesTest {
         assertThat(response.getBody().get(0).id()).isEqualTo("code-list-1");
         assertThat(response.getBody().get(1).id()).isEqualTo("code-list-2");
         verify(ddiService).getCodeListsByCodeListScheme("fr.insee", "cls-1");
-    }
-
-    @Test
-    void getCodeListSchemeCodesLists_shouldReturn500OnError() {
-        when(ddiService.getCodeListsByCodeListScheme("fr.insee", "cls-1"))
-                .thenThrow(new RuntimeException("Colectica error"));
-
-        ResponseEntity<List<PartialCodesList>> response = groupResources.getCodeListSchemeCodesLists(
-                "fr.insee", "group-1", "fr.insee", "lp-1", "fr.insee", "cls-1");
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     // --- /ddi/groups/{agencyId}/{id}/codes-list (agrégation tous LP/CLS du group) ---
@@ -331,15 +234,6 @@ class GroupResourcesTest {
         verify(ddiService).getCodeListsByGroup("fr.insee", "group-1");
     }
 
-    @Test
-    void getGroupCodesLists_shouldReturn500OnError() {
-        when(ddiService.getCodeListsByGroup("fr.insee", "group-1")).thenThrow(new RuntimeException("Colectica error"));
-
-        ResponseEntity<List<PartialCodesList>> response = groupResources.getGroupCodesLists("fr.insee", "group-1");
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-
     // --- /ddi/groups/{agencyId}/{id}/missing-codes-list (valeurs sentinelles, cf. #1566) ---
 
     @Test
@@ -355,17 +249,6 @@ class GroupResourcesTest {
         assertThat(response.getBody()).hasSize(1);
         assertThat(response.getBody().get(0).id()).isEqualTo("cl-1");
         verify(ddiService).getMissingCodesListsByGroup("fr.insee", "group-1");
-    }
-
-    @Test
-    void getGroupMissingCodesLists_shouldReturn500OnError() {
-        when(ddiService.getMissingCodesListsByGroup("fr.insee", "group-1"))
-                .thenThrow(new RuntimeException("Colectica error"));
-
-        ResponseEntity<List<PartialCodesList>> response =
-                groupResources.getGroupMissingCodesLists("fr.insee", "group-1");
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     // --- /ddi/groups/{agencyId}/{id}/missing-values-representations (valeurs sentinelles, cf. #1566) ---
@@ -385,17 +268,6 @@ class GroupResourcesTest {
         assertThat(response.getBody().get(0).id()).isEqualTo("mmvr-1");
         assertThat(response.getBody().get(0).codeValues()).containsExactly("NSP", "REF");
         verify(ddiService).getMissingValuesRepresentationsByGroup("fr.insee", "group-1");
-    }
-
-    @Test
-    void getGroupMissingValuesRepresentations_shouldReturn500OnError() {
-        when(ddiService.getMissingValuesRepresentationsByGroup("fr.insee", "group-1"))
-                .thenThrow(new RuntimeException("Colectica error"));
-
-        ResponseEntity<List<PartialMissingValuesRepresentation>> response =
-                groupResources.getGroupMissingValuesRepresentations("fr.insee", "group-1");
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     private Ddi4GroupResponse createMockDdi4GroupResponse() {

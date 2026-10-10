@@ -14,6 +14,21 @@ import org.springframework.security.access.prepost.PreAuthorize;
 
 class HasAccessTest {
 
+    private static Method[] nonSyntheticMethodsOf(Class<?> type) {
+        Method[] methods = type.getDeclaredMethods();
+
+        // Filter out Jacoco synthetic methods
+        return Arrays.stream(methods)
+                .filter(m -> !m.isSynthetic() && !m.getName().startsWith("$"))
+                .toArray(Method[]::new);
+    }
+
+    private static HasAccess requiredHasAccessOf(Method method) {
+        HasAccess annotation = method.getAnnotation(HasAccess.class);
+        assertThat(annotation).isNotNull();
+        return annotation;
+    }
+
     @Test
     void should_have_correct_retention_policy() {
         Retention retention = HasAccess.class.getAnnotation(Retention.class);
@@ -67,17 +82,9 @@ class HasAccessTest {
             public void testMethod() {}
         }
 
-        Method[] methods = TestController.class.getDeclaredMethods();
+        Method method = nonSyntheticMethodsOf(TestController.class)[0];
+        HasAccess annotation = requiredHasAccessOf(method);
 
-        // Filter out Jacoco synthetic methods
-        Method[] nonSyntheticMethods = Arrays.stream(methods)
-                .filter(m -> !m.isSynthetic() && !m.getName().startsWith("$"))
-                .toArray(Method[]::new);
-
-        Method method = nonSyntheticMethods[0];
-        HasAccess annotation = method.getAnnotation(HasAccess.class);
-
-        assertThat(annotation).isNotNull();
         assertThat(annotation.module()).isEqualTo(RBAC.Module.CONCEPT_CONCEPT);
         assertThat(annotation.privilege()).isEqualTo(RBAC.Privilege.READ);
     }
@@ -107,17 +114,11 @@ class HasAccessTest {
             public void classificationMethod() {}
         }
 
-        Method[] methods = TestController.class.getDeclaredMethods();
-
-        // Filter out Jacoco synthetic methods
-        Method[] nonSyntheticMethods = Arrays.stream(methods)
-                .filter(m -> !m.isSynthetic() && !m.getName().startsWith("$"))
-                .toArray(Method[]::new);
+        Method[] nonSyntheticMethods = nonSyntheticMethodsOf(TestController.class);
 
         assertThat(nonSyntheticMethods).hasSize(3);
         for (Method method : nonSyntheticMethods) {
-            HasAccess annotation = method.getAnnotation(HasAccess.class);
-            assertThat(annotation).isNotNull();
+            HasAccess annotation = requiredHasAccessOf(method);
             assertThat(annotation.module()).isNotNull();
             assertThat(annotation.privilege()).isNotNull();
         }
@@ -145,17 +146,11 @@ class HasAccessTest {
             public void adminMethod() {}
         }
 
-        Method[] methods = TestController.class.getDeclaredMethods();
-
-        // Filter out Jacoco synthetic methods
-        Method[] nonSyntheticMethods = Arrays.stream(methods)
-                .filter(m -> !m.isSynthetic() && !m.getName().startsWith("$"))
-                .toArray(Method[]::new);
+        Method[] nonSyntheticMethods = nonSyntheticMethodsOf(TestController.class);
 
         assertThat(nonSyntheticMethods).hasSize(6);
         for (Method method : nonSyntheticMethods) {
-            HasAccess annotation = method.getAnnotation(HasAccess.class);
-            assertThat(annotation).isNotNull();
+            HasAccess annotation = requiredHasAccessOf(method);
             assertThat(annotation.privilege())
                     .isIn(
                             RBAC.Privilege.CREATE,
@@ -184,16 +179,8 @@ class HasAccessTest {
             public void method4() {}
         }
 
-        Method[] methods = TestController.class.getDeclaredMethods();
-
-        // Filter out Jacoco synthetic methods
-        Method[] nonSyntheticMethods = Arrays.stream(methods)
-                .filter(m -> !m.isSynthetic() && !m.getName().startsWith("$"))
-                .toArray(Method[]::new);
-
-        for (Method method : nonSyntheticMethods) {
-            HasAccess annotation = method.getAnnotation(HasAccess.class);
-            assertThat(annotation).isNotNull();
+        for (Method method : nonSyntheticMethodsOf(TestController.class)) {
+            HasAccess annotation = requiredHasAccessOf(method);
             assertThat(annotation.module()).isInstanceOf(RBAC.Module.class);
             assertThat(annotation.privilege()).isInstanceOf(RBAC.Privilege.class);
         }

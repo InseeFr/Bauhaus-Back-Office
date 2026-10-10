@@ -1,6 +1,7 @@
 package fr.insee.rmes.bauhaus_services.structures.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
@@ -85,12 +86,17 @@ class StructureImplTest {
         assertThat(structureService.getStructuresForSearch()).contains("dsd1001");
     }
 
-    @Test
-    void shouldReadTheStructureWithItsContributors() throws RmesException {
+    /** La structure dsd1001 est lue par son identifiant puis mise en forme par le dépôt. */
+    private void givenStructureReadById() throws RmesException {
         JSONObject structure = new JSONObject().put(Constants.ID, "dsd1001");
         when(structureQueries.getStructureById("dsd1001")).thenReturn("by-id-query");
         when(repoGestion.getResponseAsObject("by-id-query")).thenReturn(structure);
         when(structureRepository.formatStructure(structure, "dsd1001")).thenReturn(structure);
+    }
+
+    @Test
+    void shouldReadTheStructureWithItsContributors() throws RmesException {
+        givenStructureReadById();
 
         assertThat(structureService.getStructureById("dsd1001")).contains("dsd1001");
 
@@ -137,6 +143,29 @@ class StructureImplTest {
                 .isEqualTo("c1000");
     }
 
+    /** Une réponse sans les codes passerait pour une liste vide auprès du consommateur. */
+    @Test
+    void shouldFailWhenTheCodeListOfAComponentCannotBeRead() throws RmesException {
+        givenDetailedStructure(componentDefinitionWith(Constants.CODELIST, "http://bauhaus/codes/cl1000"));
+        RmesException repositoryFailure = new RmesException(500, "repository unavailable", "");
+        when(codeListService.getCodesListByIRI("http://bauhaus/codes/cl1000")).thenThrow(repositoryFailure);
+
+        assertThatThrownBy(() -> structureService.getStructureByIdWithDetails("dsd1001"))
+                .isSameAs(repositoryFailure);
+    }
+
+    @Test
+    void shouldFailWhenTheConceptOfAComponentCannotBeRead() throws RmesException {
+        givenDetailedStructure(componentDefinitionWith(Constants.CONCEPT, "http://bauhaus/concepts/c1000"));
+        RmesException repositoryFailure = new RmesException(500, "repository unavailable", "");
+        when(conceptConceptsQueries.conceptQueryForDetailStructure("http://bauhaus/concepts/c1000"))
+                .thenReturn("concept-query");
+        when(repoGestion.getResponseAsObject("concept-query")).thenThrow(repositoryFailure);
+
+        assertThatThrownBy(() -> structureService.getStructureByIdWithDetails("dsd1001"))
+                .isSameAs(repositoryFailure);
+    }
+
     @Test
     void shouldRenameTheTypeOfAMeasureComponent() throws RmesException {
         givenDetailedStructure(componentDefinitionOfType(QB.MEASURE_PROPERTY.stringValue()));
@@ -157,10 +186,7 @@ class StructureImplTest {
 
     @Test
     void shouldPublishTheStructureItJustRead() throws RmesException {
-        JSONObject structure = new JSONObject().put(Constants.ID, "dsd1001");
-        when(structureQueries.getStructureById("dsd1001")).thenReturn("by-id-query");
-        when(repoGestion.getResponseAsObject("by-id-query")).thenReturn(structure);
-        when(structureRepository.formatStructure(structure, "dsd1001")).thenReturn(structure);
+        givenStructureReadById();
         when(structureRepository.publishStructure(any(JSONObject.class))).thenReturn("published");
 
         assertThat(structureService.publishStructureById("dsd1001")).isEqualTo("published");
@@ -192,6 +218,16 @@ class StructureImplTest {
         return new JSONObject()
                 .put("attachment", new JSONArray().put("http://attachment"))
                 .put("component", new JSONObject().put("type", type));
+    }
+
+    private static JSONObject componentDefinitionWith(String reference, String iri) {
+        return new JSONObject()
+                .put("attachment", new JSONArray())
+                .put(
+                        "component",
+                        new JSONObject()
+                                .put("type", QB.ATTRIBUTE_PROPERTY.stringValue())
+                                .put(reference, iri));
     }
 
     private static String typeOfFirstComponent(JSONObject detailedStructure) {

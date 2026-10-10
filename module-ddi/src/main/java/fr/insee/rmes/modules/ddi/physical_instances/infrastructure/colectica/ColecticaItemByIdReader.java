@@ -59,4 +59,15 @@ class ColecticaItemByIdReader {
         }
         return ColecticaXml.userIds(ColecticaXml.stripLeadingGarbage(item.item()));
     }
+
+    /** L'IRI de l'opération d'une StudyUnit (son {@code r:UserID}), lue sur le seul item de la StudyUnit. */
+    Optional<String> studyUnitOperationIri(String agencyId, String studyUnitId) {
+        ColecticaItemResponse item = colecticaClient.getItem(agencyId, studyUnitId, null);
+        if (item == null) {
+            return Optional.empty();
+        }
+        return ColecticaXml.userIds(ColecticaXml.stripLeadingGarbage(item.item())).stream()
+                .filter(userId -> !userId.isBlank())
+                .findFirst();
+    }
 }

@@ -41,14 +41,8 @@ public class CodesListResources {
             @PathVariable String agencyId, @PathVariable String id) {
         logger.info(
                 "GET /ddi/codes-list/{}/{}/users - Getting variables using code list", forLog(agencyId), forLog(id));
-        try {
-            List<CodeListVariableUsage> usages = ddiService.getVariablesUsingCodeList(agencyId, id);
-            return ResponseEntity.ok(usages);
-        } catch (Exception e) {
-            logger.error(
-                    "Failed to get variables using code list: agencyId={}, id={}", forLog(agencyId), forLog(id), e);
-            return ResponseEntity.internalServerError().build();
-        }
+        List<CodeListVariableUsage> usages = ddiService.getVariablesUsingCodeList(agencyId, id);
+        return ResponseEntity.ok(usages);
     }
 
     /**
@@ -60,14 +54,8 @@ public class CodesListResources {
     public ResponseEntity<List<CategoryCodeListUsage>> getCategoryUsers(
             @PathVariable String agencyId, @PathVariable String id) {
         logger.info("GET /ddi/category/{}/{}/users - Getting code lists using category", forLog(agencyId), forLog(id));
-        try {
-            List<CategoryCodeListUsage> usages = ddiService.getCodeListsUsingCategory(agencyId, id);
-            return ResponseEntity.ok(usages);
-        } catch (Exception e) {
-            logger.error(
-                    "Failed to get code lists using category: agencyId={}, id={}", forLog(agencyId), forLog(id), e);
-            return ResponseEntity.internalServerError().build();
-        }
+        List<CategoryCodeListUsage> usages = ddiService.getCodeListsUsingCategory(agencyId, id);
+        return ResponseEntity.ok(usages);
     }
 
     /**
@@ -83,16 +71,7 @@ public class CodesListResources {
                 "GET /ddi/missing-values-representations/{}/{}/users - Getting variables using MMVR",
                 forLog(agencyId),
                 forLog(id));
-        try {
-            List<CodeListVariableUsage> usages = ddiService.getVariablesUsingMissingValuesRepresentation(agencyId, id);
-            return ResponseEntity.ok(usages);
-        } catch (Exception e) {
-            logger.error(
-                    "Failed to get variables using missing values representation: agencyId={}, id={}",
-                    forLog(agencyId),
-                    forLog(id),
-                    e);
-            return ResponseEntity.internalServerError().build();
-        }
+        List<CodeListVariableUsage> usages = ddiService.getVariablesUsingMissingValuesRepresentation(agencyId, id);
+        return ResponseEntity.ok(usages);
     }
 }

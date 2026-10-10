@@ -17,6 +17,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnitResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4VariableScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.DuplicatePhysicalInstanceRequest;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.MutualizedCodeListCodes;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodesList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialGroup;
@@ -29,6 +30,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanc
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceSearchRow;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UpdatePhysicalInstanceRequest;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -54,10 +56,12 @@ public interface DDIRepository {
 
     List<PartialStudyUnit> getStudyUnits();
 
+    /** L'instance physique, ou {@code null} si Colectica ne la connaît pas. */
     Ddi4Response getPhysicalInstance(String agencyId, String id);
 
     List<Ddi4CodeList> getPhysicalInstanceCodeLists(String agencyId, String id);
 
+    /** Le groupe et ses études, ou {@code null} si Colectica ne connaît pas le groupe. */
     Ddi4GroupResponse getGroup(String agencyId, String id);
 
     /** Le Group d'identifiant {@code id}, ou {@link Optional#empty()} s'il n'existe pas encore. */
@@ -120,7 +124,13 @@ public interface DDIRepository {
 
     void evictPhysicalInstanceSearchRowsCache();
 
+    /** Vide toutes les régions de cache Colectica (action d'administration). */
+    void evictAllCaches();
+
     Ddi4Response getMutualizedCodesList(String agencyId, String id);
+
+    /** Valeur et libellé de chaque code d'une liste mutualisée ; {@code null} si elle ne l'est pas. */
+    MutualizedCodeListCodes getMutualizedCodeListCodes(String agencyId, String id);
 
     Ddi4Response getCodeList(String agencyId, String id, String version);
 
@@ -164,6 +174,19 @@ public interface DDIRepository {
      */
     List<CodeListVariableUsage> getVariablesUsingMissingValuesRepresentation(String agencyId, String mmvrId);
 
+    /**
+     * Les variables du VariableScheme de la StudyUnit (StudyUnit → LogicalProduct → VariableScheme),
+     * chacune dans sa dernière version : le vivier dans lequel une PhysicalInstance de l'étude peut
+     * réutiliser une variable (#1387).
+     */
+    Ddi4Response getStudyUnitVariables(String agencyId, String studyUnitId);
+
+    /**
+     * Pour chaque PhysicalInstance de la StudyUnit, une ligne par variable qu'elle utilise : permet de
+     * signaler qu'une variable réutilisée est partagée avec d'autres fichiers (#1387).
+     */
+    List<CodeListVariableUsage> getStudyUnitVariableUsages(String agencyId, String studyUnitId);
+
     String getItemXml(String agency, String id, String version);
 
     String getItemXml(String agency, String id);
@@ -175,6 +198,12 @@ public interface DDIRepository {
      * Group — sans télécharger le ddiset de toute sa descendance.
      */
     List<String> getGroupSeriesIris(String agencyId, String groupId);
+
+    /**
+     * L'IRI de l'opération dont une StudyUnit est le miroir (son {@code r:UserID}), lue sur le seul
+     * item de la StudyUnit ; vide si elle n'en reflète aucune.
+     */
+    Optional<String> getStudyUnitOperationIri(String agencyId, String studyUnitId);
     /**
      * Le DDI 3.3 de la StudyUnit d'une opération, dans une {@code <FragmentInstance>} qui porte aussi
      * les fragments des PhysicalInstances qu'elle référence (#1145).
@@ -183,4 +212,10 @@ public interface DDIRepository {
 
     /** Les mêmes objets — StudyUnit et PhysicalInstances déréférencées — en DDI 4 (#1145). */
     Optional<Ddi4StudyUnitResponse> findStudyUnitByOperationIri(String operationIri);
+
+    /**
+     * Les PhysicalInstances de toutes les StudyUnits dont un {@code r:UserID} vaut l'une des
+     * {@code operationIris} (une opération peut en avoir plusieurs) ; vide si aucune ne la reflète.
+     */
+    List<PartialPhysicalInstance> findPhysicalInstancesByOperationIris(Collection<String> operationIris);
 }

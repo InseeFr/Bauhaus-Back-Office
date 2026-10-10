@@ -34,6 +34,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class GraphDBCollectionRepositoryTest {
 
+    private static final ValueFactory VF = SimpleValueFactory.getInstance();
+    private static final IRI GRAPH = VF.createIRI("http://example.com/graph/concepts");
+    private static final Literal LIT = VF.createLiteral("dummy");
+
     @Mock
     RepositoryGestion repositoryGestion;
 
@@ -68,33 +72,14 @@ class GraphDBCollectionRepositoryTest {
         when(col.getModified()).thenReturn(null); // pas de modified
         when(col.getMembers()).thenReturn(List.of("m1", "m2"));
 
-        ValueFactory vf = SimpleValueFactory.getInstance();
-        IRI subj = vf.createIRI("http://example.com/collection/c1");
-        IRI graph = vf.createIRI("http://example.com/graph/concepts");
-        IRI m1 = vf.createIRI("http://example.com/concept/m1");
-        IRI m2 = vf.createIRI("http://example.com/concept/m2");
-        Literal lit = vf.createLiteral("dummy");
+        IRI subj = VF.createIRI("http://example.com/collection/c1");
+        IRI m1 = VF.createIRI("http://example.com/concept/m1");
+        IRI m2 = VF.createIRI("http://example.com/concept/m2");
 
         try (MockedStatic<RdfUtils> utils = mockStatic(RdfUtils.class)) {
-            utils.when(() -> RdfUtils.collectionIRI("c1")).thenReturn(subj);
-            utils.when(RdfUtils::conceptGraph).thenReturn(graph);
+            stubRdfUtils(utils, "c1", subj);
             utils.when(() -> RdfUtils.conceptIRI("m1")).thenReturn(m1);
             utils.when(() -> RdfUtils.conceptIRI("m2")).thenReturn(m2);
-
-            utils.when(() -> RdfUtils.setLiteralBoolean(any())).thenReturn(lit);
-            utils.when(() -> RdfUtils.setLiteralDateTime(nullable(String.class)))
-                    .thenReturn(lit);
-            utils.when(() -> RdfUtils.setLiteralString(nullable(String.class)))
-                    .thenReturn(lit); // (String) accepte null
-            utils.when(() -> RdfUtils.setLiteralString(any(ValidationStatus.class)))
-                    .thenReturn(lit); // (ValidationStatus)
-            utils.when(() -> RdfUtils.setLiteralString(any(), any())).thenReturn(lit); // (String, lang)
-
-            utils.when(() -> RdfUtils.addTripleDateTime(any(), any(), any(), any(LinkedHashModel.class), any()))
-                    .thenAnswer(inv -> null);
-            utils.when(() -> RdfUtils.addTripleString(
-                            any(), any(), any(), anyString(), any(LinkedHashModel.class), any()))
-                    .thenAnswer(inv -> null);
 
             String returnedId = repo.save(col);
 
@@ -104,24 +89,24 @@ class GraphDBCollectionRepositoryTest {
 
             Model model = modelCaptor.getValue();
 
-            assertThat(model.contains(subj, RDF.TYPE, SKOS.COLLECTION, graph)).isTrue();
-            assertThat(model.contains(subj, INSEE.VALIDATION_STATE, lit, graph)).isTrue();
-            assertThat(model.contains(subj, DCTERMS.TITLE, lit, graph)).isTrue(); // lg1
-            assertThat(model.contains(subj, DCTERMS.CREATED, lit, graph)).isTrue();
-            assertThat(model.contains(subj, DC.CONTRIBUTOR, lit, graph)).isTrue();
-            assertThat(model.contains(subj, DC.CREATOR, lit, graph)).isTrue();
+            assertThat(model.contains(subj, RDF.TYPE, SKOS.COLLECTION, GRAPH)).isTrue();
+            assertThat(model.contains(subj, INSEE.VALIDATION_STATE, LIT, GRAPH)).isTrue();
+            assertThat(model.contains(subj, DCTERMS.TITLE, LIT, GRAPH)).isTrue(); // lg1
+            assertThat(model.contains(subj, DCTERMS.CREATED, LIT, GRAPH)).isTrue();
+            assertThat(model.contains(subj, DC.CONTRIBUTOR, LIT, GRAPH)).isTrue();
+            assertThat(model.contains(subj, DC.CREATOR, LIT, GRAPH)).isTrue();
 
-            assertThat(model.contains(subj, SKOS.MEMBER, m1, graph)).isTrue();
-            assertThat(model.contains(subj, SKOS.MEMBER, m2, graph)).isTrue();
+            assertThat(model.contains(subj, SKOS.MEMBER, m1, GRAPH)).isTrue();
+            assertThat(model.contains(subj, SKOS.MEMBER, m2, GRAPH)).isTrue();
 
             utils.verify(() -> RdfUtils.addTripleDateTime(
-                    eq(subj), eq(DCTERMS.MODIFIED), isNull(), any(LinkedHashModel.class), eq(graph)));
+                    eq(subj), eq(DCTERMS.MODIFIED), isNull(), any(LinkedHashModel.class), eq(GRAPH)));
             utils.verify(() -> RdfUtils.addTripleString(
-                    eq(subj), eq(DCTERMS.TITLE), eq("Title EN"), eq(LG2), any(LinkedHashModel.class), eq(graph)));
+                    eq(subj), eq(DCTERMS.TITLE), eq("Title EN"), eq(LG2), any(LinkedHashModel.class), eq(GRAPH)));
             utils.verify(() -> RdfUtils.addTripleString(
-                    eq(subj), eq(DCTERMS.DESCRIPTION), eq("Desc FR"), eq(LG1), any(LinkedHashModel.class), eq(graph)));
+                    eq(subj), eq(DCTERMS.DESCRIPTION), eq("Desc FR"), eq(LG1), any(LinkedHashModel.class), eq(GRAPH)));
             utils.verify(() -> RdfUtils.addTripleString(
-                    eq(subj), eq(DCTERMS.DESCRIPTION), eq("Desc EN"), eq(LG2), any(LinkedHashModel.class), eq(graph)));
+                    eq(subj), eq(DCTERMS.DESCRIPTION), eq("Desc EN"), eq(LG2), any(LinkedHashModel.class), eq(GRAPH)));
         }
     }
 
@@ -135,34 +120,16 @@ class GraphDBCollectionRepositoryTest {
         when(col.getModified()).thenReturn("2025-09-02T11:00:00");
         when(col.getMembers()).thenReturn(List.of());
 
-        ValueFactory vf = SimpleValueFactory.getInstance();
-        IRI subj = vf.createIRI("http://example.com/collection/c2");
-        IRI graph = vf.createIRI("http://example.com/graph/concepts");
-        Literal lit = vf.createLiteral("dummy");
+        IRI subj = VF.createIRI("http://example.com/collection/c2");
 
         try (MockedStatic<RdfUtils> utils = mockStatic(RdfUtils.class)) {
-            utils.when(() -> RdfUtils.collectionIRI("c2")).thenReturn(subj);
-            utils.when(RdfUtils::conceptGraph).thenReturn(graph);
-
-            utils.when(() -> RdfUtils.setLiteralBoolean(any())).thenReturn(lit);
-            utils.when(() -> RdfUtils.setLiteralDateTime(nullable(String.class)))
-                    .thenReturn(lit);
-            utils.when(() -> RdfUtils.setLiteralString(nullable(String.class))).thenReturn(lit);
-            utils.when(() -> RdfUtils.setLiteralString(any(ValidationStatus.class)))
-                    .thenReturn(lit);
-            utils.when(() -> RdfUtils.setLiteralString(any(), any())).thenReturn(lit);
-
-            utils.when(() -> RdfUtils.addTripleDateTime(any(), any(), any(), any(LinkedHashModel.class), any()))
-                    .thenAnswer(inv -> null);
-            utils.when(() -> RdfUtils.addTripleString(
-                            any(), any(), any(), anyString(), any(LinkedHashModel.class), any()))
-                    .thenAnswer(inv -> null);
+            stubRdfUtils(utils, "c2", subj);
 
             repo.save(col);
 
             verify(repositoryGestion).loadSimpleObject(any(IRI.class), any(Model.class));
             utils.verify(() -> RdfUtils.addTripleDateTime(
-                    eq(subj), eq(DCTERMS.MODIFIED), eq("2025-09-02T11:00:00"), any(LinkedHashModel.class), eq(graph)));
+                    eq(subj), eq(DCTERMS.MODIFIED), eq("2025-09-02T11:00:00"), any(LinkedHashModel.class), eq(GRAPH)));
         }
     }
 
@@ -175,27 +142,10 @@ class GraphDBCollectionRepositoryTest {
         when(col.getCreated()).thenReturn("2025-09-01T10:00:00");
         when(col.getMembers()).thenReturn(List.of());
 
-        ValueFactory vf = SimpleValueFactory.getInstance();
-        IRI subj = vf.createIRI("http://example.com/collection/c3");
-        IRI graph = vf.createIRI("http://example.com/graph/concepts");
-        Literal lit = vf.createLiteral("dummy");
+        IRI subj = VF.createIRI("http://example.com/collection/c3");
 
         try (MockedStatic<RdfUtils> utils = mockStatic(RdfUtils.class)) {
-            utils.when(() -> RdfUtils.collectionIRI("c3")).thenReturn(subj);
-            utils.when(RdfUtils::conceptGraph).thenReturn(graph);
-
-            utils.when(() -> RdfUtils.setLiteralBoolean(any())).thenReturn(lit);
-            utils.when(() -> RdfUtils.setLiteralString(any(), any())).thenReturn(lit);
-            utils.when(() -> RdfUtils.setLiteralString(nullable(String.class))).thenReturn(lit);
-            utils.when(() -> RdfUtils.setLiteralString(any(ValidationStatus.class)))
-                    .thenReturn(lit);
-            utils.when(() -> RdfUtils.setLiteralDateTime(any())).thenReturn(lit);
-
-            utils.when(() -> RdfUtils.addTripleDateTime(any(), any(), any(), any(LinkedHashModel.class), any()))
-                    .thenAnswer(inv -> null);
-            utils.when(() -> RdfUtils.addTripleString(
-                            any(), any(), any(), anyString(), any(LinkedHashModel.class), any()))
-                    .thenAnswer(inv -> null);
+            stubRdfUtils(utils, "c3", subj);
 
             GraphDBCollectionRepository repo =
                     new GraphDBCollectionRepository(repositoryGestion, new BauhausLanguagesProperties("fr", "en"));
@@ -206,5 +156,25 @@ class GraphDBCollectionRepositoryTest {
             verify(repositoryGestion, times(1)).loadSimpleObject(any(IRI.class), any(Model.class));
             utils.verify(() -> RdfUtils.collectionIRI("c3"), times(1));
         }
+    }
+
+    /**
+     * La collection {@code id} a pour IRI {@code subj} dans {@link #GRAPH} ; toutes les fabriques de
+     * littéraux renvoient {@link #LIT} et les ajouts de triplets facultatifs ne font rien.
+     */
+    private static void stubRdfUtils(MockedStatic<RdfUtils> utils, String id, IRI subj) {
+        utils.when(() -> RdfUtils.collectionIRI(id)).thenReturn(subj);
+        utils.when(RdfUtils::conceptGraph).thenReturn(GRAPH);
+
+        utils.when(() -> RdfUtils.setLiteralBoolean(any())).thenReturn(LIT);
+        utils.when(() -> RdfUtils.setLiteralDateTime(nullable(String.class))).thenReturn(LIT);
+        utils.when(() -> RdfUtils.setLiteralString(nullable(String.class))).thenReturn(LIT); // (String) accepte null
+        utils.when(() -> RdfUtils.setLiteralString(any(ValidationStatus.class))).thenReturn(LIT); // (ValidationStatus)
+        utils.when(() -> RdfUtils.setLiteralString(any(), any())).thenReturn(LIT); // (String, lang)
+
+        utils.when(() -> RdfUtils.addTripleDateTime(any(), any(), any(), any(LinkedHashModel.class), any()))
+                .thenAnswer(inv -> null);
+        utils.when(() -> RdfUtils.addTripleString(any(), any(), any(), anyString(), any(LinkedHashModel.class), any()))
+                .thenAnswer(inv -> null);
     }
 }

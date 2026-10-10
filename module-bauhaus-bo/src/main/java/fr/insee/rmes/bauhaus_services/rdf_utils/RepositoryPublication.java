@@ -1,17 +1,15 @@
 package fr.insee.rmes.bauhaus_services.rdf_utils;
 
-import fr.insee.rmes.Constants;
+import fr.insee.rmes.domain.exceptions.CodedRmesException;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.RepositoryUtils;
 import fr.insee.rmes.graphdb.exceptions.GraphDbUnauthorizedException;
-import fr.insee.rmes.rdf_utils.SubjectModelGraph;
 import java.util.Arrays;
 import java.util.List;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
-import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;
 import org.eclipse.rdf4j.repository.Repository;
@@ -35,6 +33,8 @@ public class RepositoryPublication {
     private final String rdfServerPublicationExt;
     private final String idRepositoryPublicationExt;
     private final RepositoryUtils repositoryUtils;
+
+    public static final String PUBLICATION_REPOSITORY_UNAVAILABLE = "PUBLICATION_REPOSITORY_UNAVAILABLE";
 
     private static final String THREE_PARAMS_LOG = "{} {} {}";
 
@@ -144,7 +144,7 @@ public class RepositoryPublication {
             throwIfUnauthorized(e, "Publication of concept : " + concept);
             logger.error("Publication of concept : {} {} {}", concept, FAILED, e.getMessage());
             logger.error(THREE_PARAMS_LOG, CONNECTION_TO, repo, FAILED);
-            throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), CONNECTION_TO + repo + FAILED);
+            throw unavailableRepository(e);
         }
     }
 
@@ -169,7 +169,30 @@ public class RepositoryPublication {
             throwIfUnauthorized(e, "Publication of Resource " + type + " : " + resource);
             logger.error("Publication of Resource {} : {} {}", type, resource, FAILED);
             logger.error(THREE_PARAMS_LOG, CONNECTION_TO, repo, FAILED);
-            throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), CONNECTION_TO + repo + FAILED);
+            throw unavailableRepository(e);
+        }
+    }
+
+    /**
+     * Remplace les triplets de la ressource dans le graphe donné. À préférer à {@link
+     * #publishResource(Resource, Model, String)}, dont la suppression sans graphe nommé ne retire rien
+     * sur un triplestore dont le graphe par défaut n'est pas l'union des graphes nommés.
+     */
+    public void publishResource(Resource resource, Model model, String type, Resource graph) throws RmesException {
+        Repository repo = repositoryUtils.initRepository(rdfServerPublicationExt, idRepositoryPublicationExt);
+        if (repo == null) {
+            return;
+        }
+
+        try (RepositoryConnection conn = repo.getConnection()) {
+            conn.remove(resource, null, null, graph);
+            conn.add(model);
+            logger.info("Publication of Resource {} : {} in {}", type, resource, graph);
+        } catch (RepositoryException e) {
+            throwIfUnauthorized(e, "Publication of Resource " + type + " : " + resource);
+            logger.error("Publication of Resource {} : {} {}", type, resource, FAILED);
+            logger.error(THREE_PARAMS_LOG, CONNECTION_TO, repo, FAILED);
+            throw unavailableRepository(e);
         }
     }
 
@@ -209,7 +232,7 @@ public class RepositoryPublication {
             throwIfUnauthorized(e, "Publication of Graph " + type + " : " + context);
             logger.error("Publication of Graph {} : {} {}", type, context, FAILED);
             logger.error(THREE_PARAMS_LOG, CONNECTION_TO, repo, FAILED);
-            throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), CONNECTION_TO + repo + FAILED);
+            throw unavailableRepository(e);
         }
     }
 
@@ -225,26 +248,7 @@ public class RepositoryPublication {
             conn.add(model);
         } catch (RepositoryException e) {
             throwIfUnauthorized(e, "Override of triplets : " + subject);
-            throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), CONNECTION_TO + repo + FAILED);
-        }
-    }
-
-    public void bulkOverrideTriplets(List<SubjectModelGraph> updates) throws RmesException {
-        Model combinedModel = new LinkedHashModel();
-        Repository repo = repositoryUtils.initRepository(rdfServerPublicationExt, idRepositoryPublicationExt);
-        try (RepositoryConnection conn = repo.getConnection()) {
-            conn.begin();
-            for (SubjectModelGraph update : updates) {
-                update.model()
-                        .predicates()
-                        .forEach(predicate -> conn.remove(update.subject(), predicate, null, update.graph()));
-                combinedModel.addAll(update.model());
-            }
-            conn.add(combinedModel);
-            conn.commit();
-        } catch (RepositoryException e) {
-            throwIfUnauthorized(e, "Bulk override of triplets");
-            throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), CONNECTION_TO + repo + FAILED);
+            throw unavailableRepository(e);
         }
     }
 
@@ -263,10 +267,22 @@ public class RepositoryPublication {
                 conn.remove(statements);
             } catch (RepositoryException e) {
                 throwIfUnauthorized(e, "Clear of concept links : " + concept);
-                throw new RmesException(
-                        HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), Constants.REPOSITORY_EXCEPTION);
+                throw unavailableRepository(e);
             }
         }
+    }
+
+    /**
+     * Échec technique d'une écriture dans la base de diffusion : l'utilisateur reçoit un code que le
+     * front traduit, sans le message RDF4J ni le nom du dépôt, qui restent dans la cause (ticket 14
+     * de l'audit #1264).
+     */
+    private static CodedRmesException unavailableRepository(RepositoryException e) {
+        return new CodedRmesException(
+                HttpStatus.SERVICE_UNAVAILABLE.value(),
+                PUBLICATION_REPOSITORY_UNAVAILABLE,
+                "Publication failed: the dissemination repository is unavailable. Please try again later.",
+                e);
     }
 
     /**

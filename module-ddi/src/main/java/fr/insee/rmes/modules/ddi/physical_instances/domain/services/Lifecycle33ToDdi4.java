@@ -180,12 +180,17 @@ public class Lifecycle33ToDdi4 {
         for (CodeType child : c.getCodeArray()) {
             children.add(toCode(child));
         }
+        String agency = c.getAgencyArray(0);
+        String id = c.getIDArray(0).getStringValue();
+        String version = c.getVersionArray(0);
         return new Code(
                 Code.TYPE,
-                c.getURNArray(0).getStringValue(),
-                c.getAgencyArray(0),
-                c.getIDArray(0).getStringValue(),
-                c.getVersionArray(0),
+                c.sizeOfURNArray() > 0
+                        ? c.getURNArray(0).getStringValue()
+                        : Reference.synthesizeUrn(agency, id, version),
+                agency,
+                id,
+                version,
                 readReference(c.getCategoryReference()),
                 c.getValue() != null ? ValueType.of(c.getValue().getStringValue()) : null,
                 children.isEmpty() ? null : children);

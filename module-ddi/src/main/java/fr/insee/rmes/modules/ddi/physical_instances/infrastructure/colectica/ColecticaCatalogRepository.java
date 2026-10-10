@@ -32,6 +32,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3toDDI4ConverterService;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -41,6 +42,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -115,12 +117,10 @@ class ColecticaCatalogRepository {
     List<PartialGroup> getGroups() {
         logger.info("Getting groups from Colectica API via HTTP");
 
-        ColecticaResponse response = colecticaClient.query(List.of(GROUP_UUID));
-        if (response == null || response.results() == null || response.results().isEmpty()) {
+        List<ColecticaItem> groups = latestItemsOfType(GROUP_UUID);
+        if (groups.isEmpty()) {
             return List.of();
         }
-
-        List<ColecticaItem> groups = ColecticaItems.latestVersions(response.results());
         Map<String, List<String>> seriesIrisByGroupId = seriesIrisByGroupId(groups);
 
         return groups.stream()
@@ -131,6 +131,15 @@ class ColecticaCatalogRepository {
                         item.agencyId(),
                         seriesIrisByGroupId.getOrDefault(item.identifier(), List.of())))
                 .toList();
+    }
+
+    /** La dernière version de chaque item du type donné ({@code _query}, dépréciés exclus). */
+    private List<ColecticaItem> latestItemsOfType(String itemType) {
+        ColecticaResponse response = colecticaClient.query(List.of(itemType));
+        if (response == null || response.results() == null) {
+            return List.of();
+        }
+        return ColecticaItems.latestVersions(response.results());
     }
 
     private Map<String, List<String>> seriesIrisByGroupId(List<ColecticaItem> groups) {
@@ -187,6 +196,12 @@ class ColecticaCatalogRepository {
      * par StudyUnit ramène les références de ses PhysicalInstances. Les libellés et la
      * {@code versionDate} des PI proviennent de la requête avancée globale (un seul appel), qui sert
      * aussi à inclure les PI orphelines (rattachées à aucune StudyUnit) avec des parents {@code null}.
+     * <p>
+     * Chaque descente lit les relations de la <em>dernière</em> version du groupe puis de la
+     * StudyUnit : sans version, Colectica renvoie les relations de toutes les versions, et une
+     * StudyUnit retirée d'un groupe par une nouvelle version y resterait rattachée. La dernière
+     * version d'une StudyUnit vient d'un {@code _query} global, car le groupe peut en référencer une
+     * plus ancienne ; à défaut (StudyUnit dépréciée), on garde la version renvoyée par la relation.
      */
     List<PhysicalInstanceSearchRow> getPhysicalInstanceSearchRows() {
         logger.info(
@@ -201,16 +216,26 @@ class ColecticaCatalogRepository {
         List<PhysicalInstanceSearchRow> rows = new ArrayList<>();
         Set<String> attachedKeys = new HashSet<>();
 
-        for (PartialGroup group : getGroups()) {
-            List<ColecticaItem> studyUnits = ColecticaItems.latestVersions(colecticaClient.findRelatedItems(
+        Map<String, ColecticaItem> latestStudyUnitByKey = new HashMap<>();
+        for (ColecticaItem studyUnit : latestItemsOfType(STUDY_UNIT_UUID)) {
+            latestStudyUnitByKey.put(ColecticaItems.key(studyUnit.agencyId(), studyUnit.identifier()), studyUnit);
+        }
+
+        for (ColecticaItem group : latestItemsOfType(GROUP_UUID)) {
+            String groupLabel = labels.of(group);
+            List<ColecticaItem> referencedStudyUnits = ColecticaItems.latestVersions(colecticaClient.findRelatedItems(
                     RelationshipDirection.BY_SUBJECT,
-                    new ItemReference(group.agency(), group.id()),
+                    ColecticaItems.itemRef(group),
+                    group.version(),
                     List.of(STUDY_UNIT_UUID)));
-            for (ColecticaItem studyUnit : studyUnits) {
+            for (ColecticaItem referenced : referencedStudyUnits) {
+                ColecticaItem studyUnit = latestStudyUnitByKey.getOrDefault(
+                        ColecticaItems.key(referenced.agencyId(), referenced.identifier()), referenced);
                 String studyUnitLabel = labels.of(studyUnit);
                 List<ItemReference> piRefs = ColecticaItems.distinctReferences(colecticaClient.findRelatedDescriptions(
                         RelationshipDirection.BY_SUBJECT,
                         ColecticaItems.itemRef(studyUnit),
+                        studyUnit.version(),
                         List.of(physicalInstanceType)));
                 for (ItemReference piRef : piRefs) {
                     String piKey = ColecticaItems.key(piRef.agencyId(), piRef.identifier());
@@ -228,9 +253,9 @@ class ColecticaCatalogRepository {
                             studyUnit.agencyId(),
                             studyUnit.identifier(),
                             studyUnitLabel,
-                            group.agency(),
-                            group.id(),
-                            group.label()));
+                            group.agencyId(),
+                            group.identifier(),
+                            groupLabel));
                 }
             }
         }
@@ -293,6 +318,24 @@ class ColecticaCatalogRepository {
                 .map(fragments -> ColecticaXml.assembleFragmentInstance(fragments.fragmentXmls()));
     }
 
+    /**
+     * Les PhysicalInstances de toutes les StudyUnits miroirs de l'opération, libellées comme dans le
+     * listing ({@link #getPhysicalInstances()}). Une référence que ce listing ignore est écartée.
+     */
+    List<PartialPhysicalInstance> findPhysicalInstancesByOperationIris(Collection<String> operationIris) {
+        Set<String> referencedKeys = studyUnitsMirroring(operationIris).stream()
+                .flatMap(studyUnit ->
+                        ColecticaXml.referencedIdentifiers(studyUnit.item(), "PhysicalInstanceReference").stream())
+                .map(reference -> ColecticaItems.key(reference.agencyId(), reference.identifier()))
+                .collect(Collectors.toSet());
+        if (referencedKeys.isEmpty()) {
+            return List.of();
+        }
+        return getPhysicalInstances().stream()
+                .filter(pi -> referencedKeys.contains(ColecticaItems.key(pi.agency(), pi.id())))
+                .toList();
+    }
+
     /** Les mêmes fragments, projetés en DDI 4 pour la négociation JSON (#1145). */
     Optional<Ddi4StudyUnitResponse> findStudyUnitByOperationIri(String operationIri) {
         return findStudyUnitFragmentsByOperationIri(operationIri).map(this::toDdi4);
@@ -321,32 +364,42 @@ class ColecticaCatalogRepository {
     }
 
     private Optional<StudyUnitFragments> findStudyUnitFragmentsByOperationIri(String operationIri) {
-        logger.info("Searching StudyUnit by operationIri: {}", operationIri);
+        return studyUnitsMirroring(List.of(operationIri)).stream()
+                .findFirst()
+                .map(item -> new StudyUnitFragments(item, dereferencePhysicalInstances(item.item())));
+    }
+
+    /** Les StudyUnits dont un {@code r:UserID} vaut l'une des {@code operationIris}, dans l'ordre de Colectica. */
+    private List<ColecticaItemResponse> studyUnitsMirroring(Collection<String> operationIris) {
+        logger.info("Searching StudyUnits by operationIris: {}", operationIris);
         ColecticaResponse studyUnits = colecticaClient.query(List.of(STUDY_UNIT_UUID));
         List<GetDescriptionsRequest.IdentifierRef> identifiers = ColecticaItems.identifiersOf(studyUnits.results());
         if (identifiers.isEmpty()) {
-            return Optional.empty();
+            return List.of();
         }
         // Un seul item/_getList pour tous les XML de StudyUnit, au lieu d'un appel HTTP par
         // StudyUnit — c'était la principale source de latence ici.
         ColecticaItemResponse[] items = colecticaClient.getDescriptions(identifiers);
         List<String> candidateUserIds = new ArrayList<>();
+        List<ColecticaItemResponse> mirroring = new ArrayList<>();
         for (ColecticaItemResponse item : items) {
             if (item == null) {
                 continue;
             }
             List<String> userIds = ColecticaXml.userIds(item.item());
             candidateUserIds.addAll(userIds);
-            if (userIds.contains(operationIri)) {
-                return Optional.of(new StudyUnitFragments(item, dereferencePhysicalInstances(item.item())));
+            if (userIds.stream().anyMatch(operationIris::contains)) {
+                mirroring.add(item);
             }
         }
-        logger.warn(
-                "No StudyUnit matched operationIri '{}' among {} study unit(s). Candidate UserIDs found: {}",
-                operationIri,
-                identifiers.size(),
-                candidateUserIds);
-        return Optional.empty();
+        if (mirroring.isEmpty()) {
+            logger.warn(
+                    "No StudyUnit matched operationIris {} among {} study unit(s). Candidate UserIDs found: {}",
+                    operationIris,
+                    identifiers.size(),
+                    candidateUserIds);
+        }
+        return mirroring;
     }
 
     /**

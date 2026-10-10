@@ -1,4 +1,4 @@
-SELECT distinct ?id ?uri ?url ?labelLg1 ?labelLg2 ?descriptionLg1 ?descriptionLg2 ?updatedDate ?lang ?listCell ?listNext
+SELECT distinct ?id ?uri ?url ?labelLg1 ?labelLg2 ?descriptionLg1 ?descriptionLg2 ?updatedDate ?lang ?size ?listCell ?listNext
 	FROM ${DOCUMENTS_GRAPH}
 
 <#if idSims??>
@@ -37,6 +37,7 @@ WHERE {
 	 
 	 OPTIONAL{ ?uri pav:lastRefreshedOn ?updatedDate .  }
 	 OPTIONAL{ ?uri dc:language ?lang .  }
+	 OPTIONAL{ ?uri dcterms:extent ?size .  }
 	 
 	 
 <#if id??>

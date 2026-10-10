@@ -42,6 +42,13 @@ class DeserializerJacksonTest {
         }
     }
 
+    private static void assertHasDefaultValues(TestObject result) {
+        assertNotNull(result);
+        assertNull(result.getName());
+        assertEquals(0, result.getAge());
+        assertFalse(result.isActive());
+    }
+
     @Test
     void shouldDeserializeJsonString() throws RmesException {
         String json = "{\"name\":\"John\",\"age\":30,\"active\":true}";
@@ -90,12 +97,7 @@ class DeserializerJacksonTest {
     void shouldDeserializeEmptyJsonObject() throws RmesException {
         String json = "{}";
 
-        TestObject result = Deserializer.deserializeJsonString(json, TestObject.class);
-
-        assertNotNull(result);
-        assertNull(result.getName());
-        assertEquals(0, result.getAge());
-        assertFalse(result.isActive());
+        assertHasDefaultValues(Deserializer.deserializeJsonString(json, TestObject.class));
     }
 
     @Test
@@ -159,12 +161,7 @@ class DeserializerJacksonTest {
     void shouldHandleNullValues() throws RmesException {
         String json = "{\"name\":null,\"age\":0,\"active\":false}";
 
-        TestObject result = Deserializer.deserializeJsonString(json, TestObject.class);
-
-        assertNotNull(result);
-        assertNull(result.getName());
-        assertEquals(0, result.getAge());
-        assertFalse(result.isActive());
+        assertHasDefaultValues(Deserializer.deserializeJsonString(json, TestObject.class));
     }
 
     @Test

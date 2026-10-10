@@ -1,15 +1,24 @@
 package fr.insee.rmes.graphdb;
 
+import static fr.insee.rmes.graphdb.exceptions.DatabaseQueryException.GENERIC_MESSAGE;
+import static fr.insee.rmes.graphdb.exceptions.DatabaseQueryException.RDF_QUERY_FAILED;
+
+import fr.insee.rmes.domain.exceptions.CodedRmesException;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.exceptions.DatabaseQueryException;
 import fr.insee.rmes.graphdb.exceptions.GraphDbUnauthorizedException;
 import fr.insee.rmes.graphdb.ontologies.QB;
 import fr.insee.rmes.keycloak.TokenService;
+import jakarta.annotation.PreDestroy;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import org.eclipse.rdf4j.common.exception.RDF4JException;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
@@ -27,12 +36,20 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 @Service
 public class RepositoryUtils {
+
+    public static final String SOCKET_TIMEOUT_PROPERTY = "fr.insee.rmes.rdf.socket-timeout";
+
+    /** Silence maximal du triplestore entre deux paquets d'une réponse, au-delà duquel la requête échoue. */
+    static final Duration DEFAULT_SOCKET_TIMEOUT = Duration.ofMinutes(5);
+
+    public static final String RDF_REPOSITORY_UNAVAILABLE = "RDF_REPOSITORY_UNAVAILABLE";
 
     private static final String BINDINGS = "bindings";
     private static final String RESULTS = "results";
@@ -42,10 +59,54 @@ public class RepositoryUtils {
     private final RepositoryInitiator repositoryInitiator;
     private final RepositoryInitiator.Type authType;
 
+    /** Un dépôt par base, créé à la première requête et partagé ensuite. */
+    private final Map<RepositoryKey, Repository> repositories = new ConcurrentHashMap<>();
+
+    /** Client HTTP commun aux dépôts, fermé après eux. */
+    private final RdfHttpClientSessionManager httpClientSessionManager;
+
+    private record RepositoryKey(String rdfServer, String repositoryID) {}
+
+    @Autowired
     public RepositoryUtils(
-            TokenService tokenService, @Value("${fr.insee.rmes.bauhaus.rdf.auth}") RepositoryInitiator.Type type) {
+            TokenService tokenService,
+            @Value("${fr.insee.rmes.bauhaus.rdf.auth}") RepositoryInitiator.Type type,
+            @Value("${" + RdfBackend.PROPERTY + ":}") String backend,
+            @Value("${" + SOCKET_TIMEOUT_PROPERTY + ":#{null}}") Duration socketTimeout,
+            @Value("${" + RdfBasicCredentials.USERNAME_PROPERTY + ":}") String username,
+            @Value("${" + RdfBasicCredentials.PASSWORD_PROPERTY + ":}") String password) {
+        this(tokenService, type, backend, socketTimeout, RdfBasicCredentials.fromProperties(username, password));
+    }
+
+    public RepositoryUtils(
+            TokenService tokenService, RepositoryInitiator.Type type, String backend, RdfBasicCredentials credentials) {
+        this(tokenService, type, backend, null, Optional.of(credentials));
+    }
+
+    public RepositoryUtils(
+            TokenService tokenService, RepositoryInitiator.Type type, String backend, Duration socketTimeout) {
+        this(tokenService, type, backend, socketTimeout, Optional.empty());
+    }
+
+    public RepositoryUtils(TokenService tokenService, RepositoryInitiator.Type type, String backend) {
+        this(tokenService, type, backend, (Duration) null);
+    }
+
+    private RepositoryUtils(
+            TokenService tokenService,
+            RepositoryInitiator.Type type,
+            String backend,
+            Duration socketTimeout,
+            Optional<RdfBasicCredentials> credentials) {
         this.authType = type;
-        repositoryInitiator = RepositoryInitiator.newInstance(type, tokenService);
+        repositoryInitiator =
+                RepositoryInitiator.newInstance(RdfBackend.fromProperty(backend), type, tokenService, credentials);
+        httpClientSessionManager =
+                new RdfHttpClientSessionManager(socketTimeout == null ? DEFAULT_SOCKET_TIMEOUT : socketTimeout);
+    }
+
+    public RepositoryUtils(TokenService tokenService, RepositoryInitiator.Type type) {
+        this(tokenService, type, null);
     }
 
     /**
@@ -63,13 +124,31 @@ public class RepositoryUtils {
                     repositoryID);
             return null;
         }
-        Repository repository = null;
         try {
-            repository = this.repositoryInitiator.initRepository(rdfServer, repositoryID);
-        } catch (Exception e) {
+            Repository repository = repositories.computeIfAbsent(
+                    new RepositoryKey(rdfServer, repositoryID),
+                    key -> repositoryInitiator.initRepository(
+                            key.rdfServer(), key.repositoryID(), httpClientSessionManager));
+            repositoryInitiator.beforeLending(repository);
+            return repository;
+        } catch (RuntimeException e) {
             logger.error("Initialisation de la connection à la base RDF {} impossible", rdfServer, e);
+            return null;
         }
-        return repository;
+    }
+
+    /** Ferme les dépôts, puis le client HTTP qu'ils partagent, à l'arrêt de l'application. */
+    @PreDestroy
+    public void shutDownRepositories() {
+        repositories.values().forEach(repository -> {
+            try {
+                repository.shutDown();
+            } catch (RepositoryException e) {
+                logger.warn("Fermeture du dépôt RDF {} impossible", repository, e);
+            }
+        });
+        repositories.clear();
+        httpClientSessionManager.shutDown();
     }
 
     public RepositoryConnection getConnection(Repository repository) throws RmesException {
@@ -85,12 +164,9 @@ public class RepositoryUtils {
         try {
             con = repository.getConnection();
         } catch (RepositoryException e) {
-            logger.error("Connection au repository impossible : {}", repository.getDataDir());
-            logger.error(e.getMessage());
-            throw new RmesException(
-                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                    e.getMessage(),
-                    "Connection au repository impossible : " + repository.getDataDir());
+            logger.error("Connection au repository impossible : {}", repository.getDataDir(), e);
+            throw new CodedRmesException(
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(), RDF_QUERY_FAILED, GENERIC_MESSAGE, e);
         }
         return con;
     }
@@ -104,7 +180,11 @@ public class RepositoryUtils {
      */
     public HttpStatus executeUpdate(String updateQuery, Repository repository) throws RmesException {
         if (repository == null) {
-            return HttpStatus.EXPECTATION_FAILED;
+            throw new CodedRmesException(
+                    HttpStatus.SERVICE_UNAVAILABLE.value(),
+                    RDF_REPOSITORY_UNAVAILABLE,
+                    "The RDF repository is unavailable. Please try again later.",
+                    null);
         }
         try (RepositoryConnection conn = repository.getConnection()) {
             Update update = conn.prepareUpdate(QueryLanguage.SPARQL, updateQuery);
@@ -114,10 +194,9 @@ public class RepositoryUtils {
             if (GraphDbUnauthorizedException.isUnauthorized(e)) {
                 throw new GraphDbUnauthorizedException(e, updateQuery, authType);
             }
-            logger.error("{} {} {}", EXECUTE_QUERY_FAILED, updateQuery, repository);
-            logger.error(e.getMessage());
-            throw new RmesException(
-                    HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), EXECUTE_QUERY_FAILED + updateQuery);
+            logger.error("{} {} {}", EXECUTE_QUERY_FAILED, updateQuery, repository, e);
+            throw new CodedRmesException(
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(), RDF_QUERY_FAILED, GENERIC_MESSAGE, e);
         }
         return (HttpStatus.OK);
     }
@@ -137,10 +216,9 @@ public class RepositoryUtils {
         try {
             statements = con.getStatements(null, null, null, context); // get the complete Graph
         } catch (RepositoryException e) {
-            throw new RmesException(
-                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                    e.getMessage(),
-                    "Failure get following graph : " + context);
+            logger.error("Failure get following graph : {}", context, e);
+            throw new CodedRmesException(
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(), RDF_QUERY_FAILED, GENERIC_MESSAGE, e);
         }
         return statements;
     }
@@ -354,8 +432,9 @@ public class RepositoryUtils {
                 }
             });
         } catch (RepositoryException e) {
-            throw new RmesException(
-                    HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), "Failure deletion : " + structure);
+            logger.error("Failure deletion : {}", structure, e);
+            throw new CodedRmesException(
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(), RDF_QUERY_FAILED, GENERIC_MESSAGE, e);
         }
     }
 }

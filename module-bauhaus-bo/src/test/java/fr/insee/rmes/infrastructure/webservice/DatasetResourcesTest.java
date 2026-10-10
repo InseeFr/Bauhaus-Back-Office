@@ -1,6 +1,7 @@
 package fr.insee.rmes.infrastructure.webservice;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
@@ -87,10 +88,11 @@ class DatasetResourcesTest {
 
         DatasetResources myDatasetResources = new DatasetResources(datasetService);
         String expectedId = "mocked-result";
-        when(datasetService.create("mocked body")).thenReturn(expectedId);
+        Dataset dataset = new Dataset();
+        when(datasetService.create(dataset)).thenReturn(expectedId);
 
         // When
-        ResponseEntity<String> response = myDatasetResources.setDataset("mocked body");
+        ResponseEntity<String> response = myDatasetResources.setDataset(dataset);
 
         // Then
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
@@ -102,9 +104,9 @@ class DatasetResourcesTest {
 
     @Test
     void shouldReturn200IfRmesExceptionWhenUpdatingADataset() throws RmesException {
-        when(datasetService.update(anyString(), anyString())).thenReturn("result");
+        when(datasetService.update(anyString(), any(Dataset.class))).thenReturn("result");
 
-        Assertions.assertDoesNotThrow(() -> datasetResources.setDataset("", ""));
+        Assertions.assertDoesNotThrow(() -> datasetResources.setDataset("", new Dataset()));
     }
 
     @Test

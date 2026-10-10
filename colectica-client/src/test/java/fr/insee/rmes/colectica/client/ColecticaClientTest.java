@@ -42,6 +42,7 @@ class ColecticaClientTest {
     private static final String TOKEN = "test-token-123";
     private static final String LOGICAL_PRODUCT_TYPE = "965c8d28-7d48-4950-bea7-04b27e52bb9b";
     private static final String PHYSICAL_INSTANCE_TYPE = "a51e85bb-6259-4488-8df2-f08cb43485f8";
+    private static final String CATEGORY_TYPE = "7e47c269-bcab-40f7-a778-af7bbc4e3d00";
 
     private record Fixture(ColecticaClient client, MockRestServiceServer server) {}
 
@@ -54,6 +55,72 @@ class ColecticaClientTest {
         RestClient.Builder builder = RestClient.builder();
         MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();
         return new Fixture(new ColecticaClient(builder.build(), BASE_API_URL, BASE_SERVER_URL, credentials), server);
+    }
+
+    private static final String EMPTY_QUERY_RESPONSE = "{\"TotalResults\":0,\"ReturnedResults\":0,\"Results\":[]}";
+
+    /** Expects a /token/createtoken call and issues {@code accessToken}. */
+    private static void expectTokenIssued(MockRestServiceServer server, String accessToken) {
+        server.expect(requestTo(BASE_SERVER_URL + "/token/createtoken"))
+                .andRespond(withSuccess("{\"access_token\":\"" + accessToken + "\"}", MediaType.APPLICATION_JSON));
+    }
+
+    /** Expects a _query call carrying {@code token} and answers with no result. */
+    private static void expectEmptyQuery(MockRestServiceServer server, String token) {
+        server.expect(requestTo(BASE_API_URL + "_query"))
+                .andExpect(header("Authorization", "Bearer " + token))
+                .andRespond(withSuccess(EMPTY_QUERY_RESPONSE, MediaType.APPLICATION_JSON));
+    }
+
+    /** Expects a _query call carrying {@code token} and rejects it as unauthorized. */
+    private static void expectUnauthorizedQuery(MockRestServiceServer server, String token) {
+        server.expect(requestTo(BASE_API_URL + "_query"))
+                .andExpect(header("Authorization", "Bearer " + token))
+                .andRespond(withStatus(HttpStatus.UNAUTHORIZED));
+    }
+
+    /** Le healthcheck sonde Colectica par la recherche la moins coûteuse : un seul résultat, tous types confondus. */
+    @Test
+    void ping_postsAnAuthenticatedQueryLimitedToOneResult() {
+        Fixture f = newFixture();
+        f.server
+                .expect(requestTo(BASE_API_URL + "_query"))
+                .andExpect(method(HttpMethod.POST))
+                .andExpect(header("Authorization", "Bearer " + TOKEN))
+                .andExpect(jsonPath("$.maxResults").value(1))
+                .andRespond(withSuccess(EMPTY_QUERY_RESPONSE, MediaType.APPLICATION_JSON));
+
+        f.client.ping();
+
+        f.server.verify();
+    }
+
+    @Test
+    void queryInSet_restrictsTheSearchToTheSetOfTheGivenRootItem() {
+        Fixture f = newFixture();
+        f.server
+                .expect(requestTo(BASE_API_URL + "_query"))
+                .andExpect(method(HttpMethod.POST))
+                .andExpect(header("Authorization", "Bearer " + TOKEN))
+                .andExpect(jsonPath("$.itemTypes[0]").value(CATEGORY_TYPE))
+                .andExpect(jsonPath("$.searchLatestVersion").value(true))
+                .andExpect(jsonPath("$.searchSets[0].agencyId").value("fr.insee"))
+                .andExpect(jsonPath("$.searchSets[0].identifier").value("cl-1"))
+                .andExpect(jsonPath("$.searchSets[0].version").value(3))
+                .andExpect(jsonPath("$.maxResults").value(ColecticaClient.MAX_QUERY_RESULTS))
+                .andRespond(withSuccess(
+                        "{\"Results\":[{\"Identifier\":\"cat-1\",\"AgencyId\":\"fr.insee\",\"Version\":1,"
+                                + "\"Label\":{\"fr-FR\":\"Agriculture\"}}],\"TotalResults\":1,\"ReturnedResults\":1}",
+                        MediaType.APPLICATION_JSON));
+
+        ColecticaResponse response =
+                f.client.queryInSet(List.of(CATEGORY_TYPE), new ColecticaSetItem("cl-1", 3, "fr.insee"));
+
+        f.server.verify();
+        assertThat(response.results()).singleElement().satisfies(item -> {
+            assertThat(item.identifier()).isEqualTo("cat-1");
+            assertThat(item.label()).containsEntry("fr-FR", "Agriculture");
+        });
     }
 
     @Test
@@ -394,6 +461,8 @@ class ColecticaClientTest {
                 .andExpect(header("Authorization", "Bearer " + TOKEN))
                 .andExpect(jsonPath("$.itemTypes[0]").value(LOGICAL_PRODUCT_TYPE))
                 .andExpect(jsonPath("$.targetItem.identifier").value("su-1"))
+                .andExpect(jsonPath("$.targetItem.version").doesNotExist())
+                .andExpect(jsonPath("$.useDistinctTargetItem").doesNotExist())
                 .andRespond(withSuccess(
                         "[{\"AgencyId\":\"fr.insee\",\"Identifier\":\"lp-1\"}]", MediaType.APPLICATION_JSON));
 
@@ -402,6 +471,47 @@ class ColecticaClientTest {
 
         f.server.verify();
         assertThat(result).containsExactly(new ItemReference("fr.insee", "lp-1"));
+    }
+
+    @Test
+    void findRelatedDescriptions_restrictsTheQueryToTheGivenVersionOfTheTarget() {
+        Fixture f = newFixture();
+        f.server
+                .expect(requestTo(BASE_API_URL + "_query/relationship/bysubject/descriptions"))
+                .andExpect(jsonPath("$.targetItem.identifier").value("su-1"))
+                .andExpect(jsonPath("$.targetItem.version").value(3))
+                .andExpect(jsonPath("$.useDistinctTargetItem").value(true))
+                .andRespond(withSuccess(
+                        "[{\"AgencyId\":\"fr.insee\",\"Identifier\":\"pi-1\"}]", MediaType.APPLICATION_JSON));
+
+        List<ItemReference> result = f.client.findRelatedDescriptions(
+                RelationshipDirection.BY_SUBJECT,
+                new ItemReference("fr.insee", "su-1"),
+                3,
+                List.of(LOGICAL_PRODUCT_TYPE));
+
+        f.server.verify();
+        assertThat(result).containsExactly(new ItemReference("fr.insee", "pi-1"));
+    }
+
+    @Test
+    void findRelatedItems_restrictsTheQueryToTheGivenVersionOfTheTarget() {
+        Fixture f = newFixture();
+        f.server
+                .expect(requestTo(BASE_API_URL + "_query/relationship/bysubject/descriptions"))
+                .andExpect(jsonPath("$.targetItem.identifier").value("g-1"))
+                .andExpect(jsonPath("$.targetItem.version").value(2))
+                .andExpect(jsonPath("$.useDistinctTargetItem").value(true))
+                .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON));
+
+        List<ColecticaItem> result = f.client.findRelatedItems(
+                RelationshipDirection.BY_SUBJECT,
+                new ItemReference("fr.insee", "g-1"),
+                2,
+                List.of(LOGICAL_PRODUCT_TYPE));
+
+        f.server.verify();
+        assertThat(result).isEmpty();
     }
 
     @Test
@@ -501,11 +611,7 @@ class ColecticaClientTest {
                 .andExpect(jsonPath("$.username").value("user"))
                 .andExpect(jsonPath("$.password").value("secret"))
                 .andRespond(withSuccess("{\"access_token\":\"jwt-abc\"}", MediaType.APPLICATION_JSON));
-        f.server
-                .expect(requestTo(BASE_API_URL + "_query"))
-                .andExpect(header("Authorization", "Bearer jwt-abc"))
-                .andRespond(withSuccess(
-                        "{\"TotalResults\":0,\"ReturnedResults\":0,\"Results\":[]}", MediaType.APPLICATION_JSON));
+        expectEmptyQuery(f.server, "jwt-abc");
 
         f.client.query(List.of(LOGICAL_PRODUCT_TYPE));
 
@@ -536,24 +642,13 @@ class ColecticaClientTest {
         Fixture f = newFixture(new ColecticaCredentials.UserPassword("user", "secret"));
 
         // 1) initial token
-        f.server
-                .expect(requestTo(BASE_SERVER_URL + "/token/createtoken"))
-                .andRespond(withSuccess("{\"access_token\":\"expired\"}", MediaType.APPLICATION_JSON));
+        expectTokenIssued(f.server, "expired");
         // 2) API call rejected with the expired token
-        f.server
-                .expect(requestTo(BASE_API_URL + "_query"))
-                .andExpect(header("Authorization", "Bearer expired"))
-                .andRespond(withStatus(HttpStatus.UNAUTHORIZED));
+        expectUnauthorizedQuery(f.server, "expired");
         // 3) re-authentication
-        f.server
-                .expect(requestTo(BASE_SERVER_URL + "/token/createtoken"))
-                .andRespond(withSuccess("{\"access_token\":\"fresh\"}", MediaType.APPLICATION_JSON));
+        expectTokenIssued(f.server, "fresh");
         // 4) retry succeeds with the fresh token
-        f.server
-                .expect(requestTo(BASE_API_URL + "_query"))
-                .andExpect(header("Authorization", "Bearer fresh"))
-                .andRespond(withSuccess(
-                        "{\"TotalResults\":0,\"ReturnedResults\":0,\"Results\":[]}", MediaType.APPLICATION_JSON));
+        expectEmptyQuery(f.server, "fresh");
 
         ColecticaResponse response = f.client.query(List.of(LOGICAL_PRODUCT_TYPE));
 
@@ -565,19 +660,9 @@ class ColecticaClientTest {
     void userPassword_cachesTokenAcrossCalls() {
         Fixture f = newFixture(new ColecticaCredentials.UserPassword("user", "secret"));
 
-        f.server
-                .expect(requestTo(BASE_SERVER_URL + "/token/createtoken"))
-                .andRespond(withSuccess("{\"access_token\":\"jwt-abc\"}", MediaType.APPLICATION_JSON));
-        f.server
-                .expect(requestTo(BASE_API_URL + "_query"))
-                .andExpect(header("Authorization", "Bearer jwt-abc"))
-                .andRespond(withSuccess(
-                        "{\"TotalResults\":0,\"ReturnedResults\":0,\"Results\":[]}", MediaType.APPLICATION_JSON));
-        f.server
-                .expect(requestTo(BASE_API_URL + "_query"))
-                .andExpect(header("Authorization", "Bearer jwt-abc"))
-                .andRespond(withSuccess(
-                        "{\"TotalResults\":0,\"ReturnedResults\":0,\"Results\":[]}", MediaType.APPLICATION_JSON));
+        expectTokenIssued(f.server, "jwt-abc");
+        expectEmptyQuery(f.server, "jwt-abc");
+        expectEmptyQuery(f.server, "jwt-abc");
 
         f.client.query(List.of(LOGICAL_PRODUCT_TYPE));
         f.client.query(List.of(LOGICAL_PRODUCT_TYPE));
@@ -592,15 +677,8 @@ class ColecticaClientTest {
         Supplier<String> supplier = () -> "tok-" + calls.incrementAndGet();
         Fixture f = newFixture(new ColecticaCredentials.BearerToken(supplier));
 
-        f.server
-                .expect(requestTo(BASE_API_URL + "_query"))
-                .andExpect(header("Authorization", "Bearer tok-1"))
-                .andRespond(withStatus(HttpStatus.UNAUTHORIZED));
-        f.server
-                .expect(requestTo(BASE_API_URL + "_query"))
-                .andExpect(header("Authorization", "Bearer tok-2"))
-                .andRespond(withSuccess(
-                        "{\"TotalResults\":0,\"ReturnedResults\":0,\"Results\":[]}", MediaType.APPLICATION_JSON));
+        expectUnauthorizedQuery(f.server, "tok-1");
+        expectEmptyQuery(f.server, "tok-2");
 
         f.client.query(List.of(LOGICAL_PRODUCT_TYPE));
 
@@ -620,15 +698,8 @@ class ColecticaClientTest {
         };
         Fixture f = newFixture(new ColecticaCredentials.BearerToken(supplier, onInvalidate));
 
-        f.server
-                .expect(requestTo(BASE_API_URL + "_query"))
-                .andExpect(header("Authorization", "Bearer tok-1"))
-                .andRespond(withStatus(HttpStatus.UNAUTHORIZED));
-        f.server
-                .expect(requestTo(BASE_API_URL + "_query"))
-                .andExpect(header("Authorization", "Bearer tok-2"))
-                .andRespond(withSuccess(
-                        "{\"TotalResults\":0,\"ReturnedResults\":0,\"Results\":[]}", MediaType.APPLICATION_JSON));
+        expectUnauthorizedQuery(f.server, "tok-1");
+        expectEmptyQuery(f.server, "tok-2");
 
         f.client.query(List.of(LOGICAL_PRODUCT_TYPE));
 

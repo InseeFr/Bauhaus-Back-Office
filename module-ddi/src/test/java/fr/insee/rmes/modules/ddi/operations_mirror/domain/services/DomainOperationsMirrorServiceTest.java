@@ -43,10 +43,7 @@ class DomainOperationsMirrorServiceTest {
 
     @Test
     void mirrorSeries_createsAGroupIdentifiedByTheSeriesIri() {
-        when(groupService.find(AGENCY, expectedGroupId())).thenReturn(Optional.empty());
-
-        service.mirror(new SeriesSaved(
-                SERIES_IRI, "s1001", new BilingualLabel("Recensement", "Census"), new BilingualLabel("RP", "CENS")));
+        mirrorCensusSeriesWithoutExistingGroup();
 
         Ddi4Group group = capturedGroup();
         assertThat(group.id()).isEqualTo(expectedGroupId());
@@ -58,16 +55,20 @@ class DomainOperationsMirrorServiceTest {
 
     @Test
     void mirrorSeries_writesThePrefLabelAsTitleAndTheAltLabelAsAlternateTitle() {
-        when(groupService.find(AGENCY, expectedGroupId())).thenReturn(Optional.empty());
-
-        service.mirror(new SeriesSaved(
-                SERIES_IRI, "s1001", new BilingualLabel("Recensement", "Census"), new BilingualLabel("RP", "CENS")));
+        mirrorCensusSeriesWithoutExistingGroup();
 
         Citation citation = capturedGroup().citation();
         assertThat(citation.title())
                 .containsExactly(new LangString("fr-FR", "Recensement"), new LangString("en-GB", "Census"));
         assertThat(citation.alternateTitle())
                 .containsExactly(new LangString("fr-FR", "RP"), new LangString("en-GB", "CENS"));
+    }
+
+    private void mirrorCensusSeriesWithoutExistingGroup() {
+        when(groupService.find(AGENCY, expectedGroupId())).thenReturn(Optional.empty());
+
+        service.mirror(new SeriesSaved(
+                SERIES_IRI, "s1001", new BilingualLabel("Recensement", "Census"), new BilingualLabel("RP", "CENS")));
     }
 
     @Test
@@ -87,19 +88,8 @@ class DomainOperationsMirrorServiceTest {
         Reference studyUnit = Reference.of(AGENCY, "su-1", "1", "StudyUnit");
         Reference logicalProduct = Reference.of(AGENCY, "lp-1", "1", "LogicalProduct");
         when(groupService.find(AGENCY, expectedGroupId()))
-                .thenReturn(Optional.of(new Ddi4Group(
-                        Ddi4Group.TYPE,
-                        null,
-                        null,
-                        AGENCY,
-                        expectedGroupId(),
-                        "1",
-                        null,
-                        new Citation(List.of(new LangString("fr-FR", "Ancien libellé"))),
-                        List.of(studyUnit),
-                        List.of(SERIES_IRI),
-                        "insee:StatisticalOperationSeries",
-                        List.of(logicalProduct))));
+                .thenReturn(Optional.of(existingGroup(
+                        "1", "Ancien libellé", List.of(studyUnit), List.of(SERIES_IRI), List.of(logicalProduct))));
 
         service.mirror(new SeriesSaved(
                 SERIES_IRI, "s1001", new BilingualLabel("Nouveau libellé", null), new BilingualLabel(null, null)));
@@ -114,18 +104,8 @@ class DomainOperationsMirrorServiceTest {
     void mirrorSeries_keepsTheOtherSeriesIrisAlreadyCarriedByTheGroup() {
         String otherSeriesIri = "http://id.insee.fr/operations/serie/s2002";
         when(groupService.find(AGENCY, expectedGroupId()))
-                .thenReturn(Optional.of(new Ddi4Group(
-                        Ddi4Group.TYPE,
-                        null,
-                        null,
-                        AGENCY,
-                        expectedGroupId(),
-                        "1",
-                        null,
-                        new Citation(List.of(new LangString("fr-FR", "Ancien libellé"))),
-                        null,
-                        List.of(otherSeriesIri, SERIES_IRI),
-                        "insee:StatisticalOperationSeries")));
+                .thenReturn(Optional.of(
+                        existingGroup("1", "Ancien libellé", null, List.of(otherSeriesIri, SERIES_IRI), null)));
 
         service.mirror(new SeriesSaved(
                 SERIES_IRI, "s1001", new BilingualLabel("Nouveau libellé", null), new BilingualLabel(null, null)));
@@ -138,18 +118,7 @@ class DomainOperationsMirrorServiceTest {
     @Test
     void mirrorSeries_reusesTheVersionOfTheExistingGroupSoThatColecticaDoesNotBumpIt() {
         when(groupService.find(AGENCY, expectedGroupId()))
-                .thenReturn(Optional.of(new Ddi4Group(
-                        Ddi4Group.TYPE,
-                        null,
-                        null,
-                        AGENCY,
-                        expectedGroupId(),
-                        "3",
-                        null,
-                        new Citation(List.of(new LangString("fr-FR", "Ancien libellé"))),
-                        null,
-                        List.of(SERIES_IRI),
-                        "insee:StatisticalOperationSeries")));
+                .thenReturn(Optional.of(existingGroup("3", "Ancien libellé", null, List.of(SERIES_IRI), null)));
 
         service.mirror(new SeriesSaved(
                 SERIES_IRI, "s1001", new BilingualLabel("Nouveau libellé", null), new BilingualLabel(null, null)));
@@ -270,18 +239,28 @@ class DomainOperationsMirrorServiceTest {
     }
 
     private Ddi4Group existingGroup(List<Reference> studyUnitReferences) {
+        return existingGroup("1", "Recensement", studyUnitReferences, List.of(SERIES_IRI), null);
+    }
+
+    private static Ddi4Group existingGroup(
+            String version,
+            String frenchTitle,
+            List<Reference> studyUnitReferences,
+            List<String> seriesIris,
+            List<Reference> logicalProductReferences) {
         return new Ddi4Group(
                 Ddi4Group.TYPE,
                 null,
                 null,
                 AGENCY,
                 expectedGroupId(),
-                "1",
+                version,
                 null,
-                new Citation(List.of(new LangString("fr-FR", "Recensement"))),
+                new Citation(List.of(new LangString("fr-FR", frenchTitle))),
                 studyUnitReferences,
-                List.of(SERIES_IRI),
-                "insee:StatisticalOperationSeries");
+                seriesIris,
+                "insee:StatisticalOperationSeries",
+                logicalProductReferences);
     }
 
     private static String expectedStudyUnitId() {

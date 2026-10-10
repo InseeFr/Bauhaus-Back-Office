@@ -2,6 +2,7 @@ package fr.insee.rmes.modules.ddi.physical_instances.domain.services;
 
 import static fr.insee.rmes.domain.logging.LogSanitizer.forLog;
 
+import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.DdiItemNotFoundException;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.InvalidSentinelValuesException;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CategoryCodeListUsage;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Citation;
@@ -24,6 +25,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Variable;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4VariableScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.DuplicatePhysicalInstanceRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LangString;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.MutualizedCodeListCodes;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodesList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialGroup;
@@ -37,6 +39,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UpdatePhysicalInstanceRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.DDIRepository;
+import fr.insee.rmes.modules.operation.operations.domain.port.serverside.OperationIrisPort;
 import fr.insee.rmes.modules.operation.series.domain.port.serverside.SeriesCreatorsPort;
 import java.time.Clock;
 import java.time.ZonedDateTime;
@@ -57,11 +60,17 @@ public class DDIServiceImpl implements DDIService {
 
     private final DDIRepository ddiRepository;
     private final SeriesCreatorsPort seriesCreatorsPort;
+    private final OperationIrisPort operationIrisPort;
     private final Clock clock;
 
-    public DDIServiceImpl(DDIRepository ddiRepository, SeriesCreatorsPort seriesCreatorsPort, Clock clock) {
+    public DDIServiceImpl(
+            DDIRepository ddiRepository,
+            SeriesCreatorsPort seriesCreatorsPort,
+            OperationIrisPort operationIrisPort,
+            Clock clock) {
         this.ddiRepository = ddiRepository;
         this.seriesCreatorsPort = seriesCreatorsPort;
+        this.operationIrisPort = operationIrisPort;
         this.clock = clock;
     }
 
@@ -224,6 +233,18 @@ public class DDIServiceImpl implements DDIService {
     }
 
     @Override
+    public Ddi4Response getStudyUnitVariables(String agencyId, String studyUnitId) {
+        logger.info("Starting to get variables of study unit {}/{}", forLog(agencyId), forLog(studyUnitId));
+        return ddiRepository.getStudyUnitVariables(agencyId, studyUnitId);
+    }
+
+    @Override
+    public List<CodeListVariableUsage> getStudyUnitVariableUsages(String agencyId, String studyUnitId) {
+        logger.info("Starting to get variable usages of study unit {}/{}", forLog(agencyId), forLog(studyUnitId));
+        return ddiRepository.getStudyUnitVariableUsages(agencyId, studyUnitId);
+    }
+
+    @Override
     public List<PartialGroup> getGroups() {
         logger.info("Starting to get groups list");
         return ddiRepository.getGroups().stream()
@@ -253,7 +274,10 @@ public class DDIServiceImpl implements DDIService {
     @Override
     public Ddi4GroupResponse getDdi4Group(String agencyId, String id) {
         Ddi4GroupResponse response = ddiRepository.getGroup(agencyId, id);
-        if (response == null || response.studyUnit() == null) {
+        if (response == null) {
+            throw DdiItemNotFoundException.group(agencyId, id);
+        }
+        if (response.studyUnit() == null) {
             return response;
         }
         List<Ddi4StudyUnit> sortedStudyUnits = response.studyUnit().stream()
@@ -274,7 +298,10 @@ public class DDIServiceImpl implements DDIService {
     @Override
     public Ddi4Response getDdi4PhysicalInstance(String agencyId, String id) {
         Ddi4Response response = this.ddiRepository.getPhysicalInstance(agencyId, id);
-        if (response == null || response.variable() == null) {
+        if (response == null) {
+            throw DdiItemNotFoundException.physicalInstance(agencyId, id);
+        }
+        if (response.variable() == null) {
             return response;
         }
         // Tri par défaut des variables sur le nom (VariableName), ascendant.
@@ -358,9 +385,7 @@ public class DDIServiceImpl implements DDIService {
         }
         for (Ddi4ManagedMissingValuesRepresentation mmvr : mmvrs) {
             if (hasNoLabel(mmvr.label())) {
-                throw new InvalidSentinelValuesException(
-                        "Le label de la liste de valeurs sentinelles %s/%s est obligatoire"
-                                .formatted(mmvr.agency(), mmvr.id()));
+                throw InvalidSentinelValuesException.missingRepresentationLabel(mmvr.agency(), mmvr.id());
             }
             for (CodeRepresentation rep : mmvr.missingCodeRepresentation() != null
                     ? mmvr.missingCodeRepresentation()
@@ -371,9 +396,8 @@ public class DDIServiceImpl implements DDIService {
                 }
                 Ddi4CodeList sentinelCodeList = codeListsByKey.get(codeListRef.agency() + "/" + codeListRef.id());
                 if (sentinelCodeList != null && hasNoLabel(sentinelCodeList.label())) {
-                    throw new InvalidSentinelValuesException(
-                            "Le label de la liste de codes de valeurs sentinelles %s/%s est obligatoire"
-                                    .formatted(sentinelCodeList.agency(), sentinelCodeList.id()));
+                    throw InvalidSentinelValuesException.missingCodeListLabel(
+                            sentinelCodeList.agency(), sentinelCodeList.id());
                 }
             }
         }
@@ -475,6 +499,18 @@ public class DDIServiceImpl implements DDIService {
     }
 
     @Override
+    public void evictAllCaches() {
+        logger.info("Evicting all Colectica caches");
+        ddiRepository.evictAllCaches();
+    }
+
+    @Override
+    public MutualizedCodeListCodes getMutualizedCodeListCodes(String agencyId, String id) {
+        logger.info("Getting codes of mutualized codes list {}/{}", forLog(agencyId), forLog(id));
+        return ddiRepository.getMutualizedCodeListCodes(agencyId, id);
+    }
+
+    @Override
     public Ddi4Response getMutualizedCodesList(String agencyId, String id) {
         logger.info("Getting mutualized codes list {}/{}", forLog(agencyId), forLog(id));
         return ddiRepository.getMutualizedCodesList(agencyId, id);
@@ -519,11 +555,16 @@ public class DDIServiceImpl implements DDIService {
     @Override
     public PhysicalInstanceParents getPhysicalInstanceParents(String agencyId, String id) {
         logger.info("Getting parents for physical instance {}/{}", forLog(agencyId), forLog(id));
-        // Les libellés (groupe, étude) arrivent avec la remontée des relations ; seuls les stamps
-        // créateurs demandent de lire le groupe, et encore : ses seules IRIs de séries.
+        // Les libellés (groupe, étude) arrivent avec la remontée des relations ; les stamps
+        // créateurs et la série reflétée demandent de lire le groupe, et encore : ses seules IRIs
+        // de séries. L'opération reflétée se lit de même sur la seule étude.
         PhysicalInstanceParents parents = ddiRepository.getPhysicalInstanceParents(agencyId, id);
         List<String> seriesIris = ddiRepository.getGroupSeriesIris(parents.groupAgency(), parents.groupId());
-        return parents.withStamps(creatorStampsOfSeries(seriesIris));
+        String operationIri = ddiRepository
+                .getStudyUnitOperationIri(parents.studyUnitAgency(), parents.studyUnitId())
+                .orElse(null);
+        return parents.resolved(
+                creatorStampsOfSeries(seriesIris), seriesIris.isEmpty() ? null : seriesIris.getFirst(), operationIri);
     }
 
     private List<String> resolveGroupCreatorStamps(String groupAgency, String groupId) {
@@ -567,5 +608,11 @@ public class DDIServiceImpl implements DDIService {
     public Optional<Ddi4StudyUnitResponse> getStudyUnitByOperationIri(String operationIri) {
         logger.info("Getting StudyUnit DDI4 by operationIri: {}", forLog(operationIri));
         return ddiRepository.findStudyUnitByOperationIri(operationIri);
+    }
+
+    @Override
+    public List<PartialPhysicalInstance> getPhysicalInstancesByOperation(String operationId) {
+        logger.info("Getting physical instances by operation: {}", forLog(operationId));
+        return ddiRepository.findPhysicalInstancesByOperationIris(operationIrisPort.irisOf(operationId));
     }
 }

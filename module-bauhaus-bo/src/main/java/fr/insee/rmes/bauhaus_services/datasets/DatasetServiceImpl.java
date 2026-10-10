@@ -7,6 +7,7 @@ import fr.insee.rmes.bauhaus_services.OrganizationsService;
 import fr.insee.rmes.bauhaus_services.operations.series.SeriesRepository;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfTriples;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.domain.exceptions.RmesException;
@@ -18,9 +19,11 @@ import fr.insee.rmes.graphdb.ontologies.INSEE;
 import fr.insee.rmes.json.JSONUtils;
 import fr.insee.rmes.modules.datasets.datasets.model.*;
 import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
+import fr.insee.rmes.modules.shared_kernel.infrastructure.publication.ObjectPublished;
 import fr.insee.rmes.persistance.sparql_queries.datasets.DatasetDistributionQueries;
 import fr.insee.rmes.persistance.sparql_queries.datasets.DatasetQueries;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.rdf_utils.SubjectModelGraph;
 import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.Deserializer;
 import fr.insee.rmes.utils.DiacriticSorter;
@@ -29,14 +32,17 @@ import java.util.*;
 import java.util.regex.Pattern;
 import org.eclipse.rdf4j.model.BNode;
 import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
+import org.eclipse.rdf4j.model.util.Values;
 import org.eclipse.rdf4j.model.vocabulary.*;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -78,6 +84,8 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
 
     private final String identifiantsAlternatifsBaseUri;
 
+    private final ApplicationEventPublisher events;
+
     public DatasetServiceImpl(
             RepositoryGestion repoGestion,
             IdGenerator idGenerator,
@@ -96,7 +104,8 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
             @Value("${fr.insee.rmes.bauhaus.distribution.baseURI}") String distributionsBaseUriSuffix,
             @Value("${fr.insee.rmes.bauhaus.adms.graph}") String admsGraphSuffix,
             @Value("${fr.insee.rmes.bauhaus.adms.identifiantsAlternatifs.baseURI}")
-                    String identifiantsAlternatifsBaseUri) {
+                    String identifiantsAlternatifsBaseUri,
+            ApplicationEventPublisher events) {
         super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
         this.languages = languages;
         this.seriesRepository = seriesRepository;
@@ -111,6 +120,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         this.distributionsBaseUriSuffix = distributionsBaseUriSuffix;
         this.admsGraphSuffix = admsGraphSuffix;
         this.identifiantsAlternatifsBaseUri = identifiantsAlternatifsBaseUri;
+        this.events = events;
     }
 
     private String getDatasetsGraph() {
@@ -156,29 +166,12 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         PublicationUtils.rejectIfAlreadyPublished(
                 "Dataset", id, getDatasetByID(id).getValidationState());
 
-        Model model = new LinkedHashModel();
         IRI iri = RdfUtils.createIRI(getDatasetsBaseUri() + "/" + id);
         IRI catalogRecordIri = RdfUtils.createIRI(getCatalogRecordBaseUri() + "/" + id);
 
         publicationUtils.publishResource(iri, Set.of("processStep", "archiveUnit", "validationState"));
         publicationUtils.publishResource(catalogRecordIri, Set.of(CREATOR, CONTRIBUTOR));
-        model.add(
-                iri,
-                INSEE.VALIDATION_STATE,
-                RdfUtils.setLiteralString(ValidationStatus.VALIDATED),
-                RdfUtils.createIRI(getDatasetsGraph()));
-        model.remove(
-                iri,
-                INSEE.VALIDATION_STATE,
-                RdfUtils.setLiteralString(ValidationStatus.UNPUBLISHED),
-                RdfUtils.createIRI(getDatasetsGraph()));
-        model.remove(
-                iri,
-                INSEE.VALIDATION_STATE,
-                RdfUtils.setLiteralString(ValidationStatus.MODIFIED),
-                RdfUtils.createIRI(getDatasetsGraph()));
-
-        repoGestion.objectValidation(iri, model);
+        events.publishEvent(new ObjectPublished(iri, RdfUtils.createIRI(getDatasetsGraph())));
 
         return id;
     }
@@ -235,6 +228,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
                 datasetQueries.getLinkedDocuments(id, getDatasetsGraph()),
                 "linkedDocument");
         addKeywordsToDataset(id, dataset);
+        addWasDerivedFromToDataset(id, dataset);
 
         JSONObject catalogRecord = new JSONObject();
         this.repoGestion.getMultipleTripletsForObject(
@@ -283,7 +277,36 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         dataset.put("keywords", formattedKeywords);
     }
 
-    private String update(String datasetId, Dataset dataset) throws RmesException {
+    private void addWasDerivedFromToDataset(String id, JSONObject dataset) throws RmesException {
+        JSONArray rows = this.repoGestion.getResponseAsArray(datasetQueries.getDatasetLineage(id, getDatasetsGraph()));
+        if (rows.isEmpty()) {
+            return;
+        }
+        JSONObject wasDerivedFrom = new JSONObject();
+        wasDerivedFrom.put(
+                "datasets",
+                JSONUtils.stream(rows)
+                        .map(row -> row.getString("id"))
+                        .distinct()
+                        .toList());
+        // une description sans langue, écrite hors de Bauhaus, est rendue dans la première langue
+        firstValue(rows, "descriptionLg1")
+                .or(() -> firstValue(rows, "descriptionWithoutLanguage"))
+                .ifPresent(value -> wasDerivedFrom.put("descriptionLg1", value));
+        firstValue(rows, "descriptionLg2").ifPresent(value -> wasDerivedFrom.put("descriptionLg2", value));
+
+        dataset.put("wasDerivedFrom", wasDerivedFrom);
+    }
+
+    private static Optional<String> firstValue(JSONArray rows, String key) {
+        return JSONUtils.stream(rows)
+                .filter(row -> row.has(key))
+                .map(row -> row.getString(key))
+                .findFirst();
+    }
+
+    @Override
+    public String update(String datasetId, Dataset dataset) throws RmesException {
         dataset.setId(datasetId);
 
         if (ValidationStatus.VALIDATED.toString().equalsIgnoreCase(dataset.getValidationState())) {
@@ -309,7 +332,11 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
 
     @Override
     public String create(String body) throws RmesException {
-        Dataset dataset = Deserializer.deserializeJsonString(body, Dataset.class);
+        return this.create(Deserializer.deserializeJsonString(body, Dataset.class));
+    }
+
+    @Override
+    public String create(Dataset dataset) throws RmesException {
         dataset.setId(idGenerator.generateNextId());
         dataset.setValidationState(ValidationStatus.UNPUBLISHED.toString());
 
@@ -408,9 +435,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
             deleteTemporalWhiteNode(datasetId);
         }
 
-        if (isDerivedFromADataset(dataset)) {
-            deleteQualifiedDerivationWhiteNode(datasetId);
-        }
+        deleteQualifiedDerivationWhiteNode(datasetId);
         repoGestion.deleteObject(RdfUtils.toURI(datasetURI));
         repoGestion.deleteObject(catalogRecordIRI);
         repoGestion.deleteObject(datasetAdmsIri);
@@ -441,18 +466,11 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         repoGestion.executeUpdate(datasetQueries.deleteTempWhiteNode(id, getDatasetsGraph()));
     }
 
-    private boolean isDerivedFromADataset(Dataset dataset) throws RmesException {
-        String datasetId = dataset.getId();
-        JSONObject datasetDerivedFrom = this.repoGestion.getResponseAsObject(
-                datasetQueries.getDatasetDerivedFrom(datasetId, getDatasetsGraph()));
-        return (!datasetDerivedFrom.optString("wasDerivedFromS").isEmpty());
-    }
-
     private void deleteQualifiedDerivationWhiteNode(String id) throws RmesException {
         repoGestion.executeUpdate(datasetQueries.deleteDatasetQualifiedDerivationWhiteNode(id, getDatasetsGraph()));
     }
 
-    private void persistCatalogRecord(Dataset dataset) throws RmesException {
+    private SubjectModelGraph catalogRecordObject(Dataset dataset) {
         Resource graph = RdfUtils.createIRI(getDatasetsGraph());
         IRI catalogRecordIRI = RdfUtils.createIRI(getCatalogRecordBaseUri() + "/" + dataset.getId());
         IRI datasetIri = RdfUtils.createIRI(getDatasetsBaseUri() + "/" + dataset.getId());
@@ -474,7 +492,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         RdfUtils.addTripleDateTime(catalogRecordIRI, DCTERMS.CREATED, catalogRecord.getCreated(), model, graph);
         RdfUtils.addTripleDateTime(catalogRecordIRI, DCTERMS.MODIFIED, catalogRecord.getUpdated(), model, graph);
 
-        repoGestion.loadSimpleObject(catalogRecordIRI, model, null);
+        return new SubjectModelGraph(catalogRecordIRI, model, graph);
     }
 
     private void persistGeneralInformations(IRI datasetIri, Dataset dataset, Model model, Resource graph) {
@@ -504,24 +522,29 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         RdfUtils.addTripleDateTime(datasetIri, DCTERMS.ISSUED, dataset.getIssued(), model, graph);
     }
 
-    private void persistInternalManagment(IRI datasetIri, Dataset dataset, Model model, Resource graph)
-            throws RmesException {
+    private void persistInternalManagment(IRI datasetIri, Dataset dataset, Model model, Resource graph) {
         RdfUtils.addTripleUri(datasetIri, INSEE.DISSEMINATIONSTATUS, dataset.getDisseminationStatus(), model, graph);
         RdfUtils.addTripleUri(datasetIri, INSEE.PROCESS_STEP, dataset.getProcessStep(), model, graph);
         RdfUtils.addTripleUri(datasetIri, INSEE.ARCHIVE_UNIT, dataset.getArchiveUnit(), model, graph);
 
         if (dataset.getAltIdentifier() != null) {
-            Resource admsGraph = RdfUtils.createIRI(getAdmsGraph());
             IRI datasetAdmsIri = RdfUtils.createIRI(getDatasetsAdmsBaseUri() + "/" + dataset.getId());
-
             RdfUtils.addTripleUri(datasetIri, ADMS.HAS_IDENTIFIER, datasetAdmsIri, model, graph);
-
-            Model datasetAdmsModel = new LinkedHashModel();
-            RdfUtils.addTripleUri(datasetAdmsIri, RDF.TYPE, ADMS.IDENTIFIER, datasetAdmsModel, admsGraph);
-            RdfUtils.addTripleString(
-                    datasetAdmsIri, SKOS.NOTATION, dataset.getAltIdentifier(), datasetAdmsModel, admsGraph);
-            repoGestion.loadSimpleObject(datasetAdmsIri, datasetAdmsModel, null);
         }
+    }
+
+    private Optional<SubjectModelGraph> admsObject(Dataset dataset) {
+        if (dataset.getAltIdentifier() == null) {
+            return Optional.empty();
+        }
+        Resource admsGraph = RdfUtils.createIRI(getAdmsGraph());
+        IRI datasetAdmsIri = RdfUtils.createIRI(getDatasetsAdmsBaseUri() + "/" + dataset.getId());
+
+        Model datasetAdmsModel = new LinkedHashModel();
+        RdfUtils.addTripleUri(datasetAdmsIri, RDF.TYPE, ADMS.IDENTIFIER, datasetAdmsModel, admsGraph);
+        RdfUtils.addTripleString(
+                datasetAdmsIri, SKOS.NOTATION, dataset.getAltIdentifier(), datasetAdmsModel, admsGraph);
+        return Optional.of(new SubjectModelGraph(datasetAdmsIri, datasetAdmsModel, admsGraph));
     }
 
     private void persistNotes(IRI datasetIri, Dataset dataset, Model model, Resource graph) {
@@ -599,13 +622,37 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         }
     }
 
+    private void persistWasDerivedFrom(IRI datasetIri, StoredLineage lineage, Model model, Resource graph) {
+        if (lineage.sources().isEmpty()) {
+            return;
+        }
+        lineage.sources().forEach(source -> model.add(datasetIri, PROV.WAS_DERIVED_FROM, source, graph));
+
+        String descriptionLg1 = lineage.descriptionLg1();
+        String descriptionLg2 = lineage.descriptionLg2();
+        if (!StringUtils.hasText(descriptionLg1) && !StringUtils.hasText(descriptionLg2)) {
+            return;
+        }
+        BNode node = Values.bnode();
+        model.add(datasetIri, PROV.QUALIFIED_DERIVATION, node, graph);
+        model.add(node, RDF.TYPE, PROV.DERIVATION, graph);
+        lineage.sources().forEach(source -> model.add(node, PROV.ENTITY_PROP, source, graph));
+        if (StringUtils.hasText(descriptionLg1)) {
+            model.add(node, DCTERMS.DESCRIPTION, RdfTriples.string(descriptionLg1, languages.lg1()), graph);
+        }
+        if (StringUtils.hasText(descriptionLg2)) {
+            model.add(node, DCTERMS.DESCRIPTION, RdfTriples.string(descriptionLg2, languages.lg2()), graph);
+        }
+        lineage.otherDescriptions().forEach(description -> model.add(node, DCTERMS.DESCRIPTION, description, graph));
+    }
+
     private void addKeywords(
             IRI datasetIri, Optional<List<String>> keywords, String language, Model model, Resource graph) {
         keywords.ifPresent(list -> list.forEach(
                 keyword -> RdfUtils.addTripleString(datasetIri, DCAT.KEYWORD, keyword, language, model, graph)));
     }
 
-    private void persistDataset(Dataset dataset) throws RmesException {
+    private SubjectModelGraph datasetObject(Dataset dataset, StoredLineage lineage) throws RmesException {
         Resource graph = RdfUtils.createIRI(getDatasetsGraph());
 
         IRI datasetIri = RdfUtils.createIRI(getDatasetsBaseUri() + "/" + dataset.getId());
@@ -625,6 +672,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         Optional.ofNullable(dataset.getWasGeneratedIRIs())
                 .ifPresent(list -> list.forEach(
                         iri -> RdfUtils.addTripleUri(datasetIri, PROV.WAS_GENERATED_BY, iri, model, graph)));
+        persistWasDerivedFrom(datasetIri, lineage, model, graph);
         Optional.ofNullable(dataset.getThemes())
                 .ifPresent(list ->
                         list.forEach(theme -> RdfUtils.addTripleUri(datasetIri, DCAT.THEME, theme, model, graph)));
@@ -654,14 +702,75 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
                 .forEach(distributionIRI ->
                         RdfUtils.addTripleUri(datasetIri, DCAT.HAS_DISTRIBUTION, distributionIRI, model, graph));
 
-        repoGestion.loadSimpleObject(datasetIri, model, null);
+        return new SubjectModelGraph(datasetIri, model, graph);
     }
 
     private String persist(Dataset dataset) throws RmesException {
-        this.persistCatalogRecord(dataset);
-        this.persistDataset(dataset);
+        StoredLineage lineage = resolveLineage(dataset);
+
+        List<SubjectModelGraph> objects = new ArrayList<>();
+        objects.add(catalogRecordObject(dataset));
+        objects.add(datasetObject(dataset, lineage));
+        admsObject(dataset).ifPresent(objects::add);
+
+        // le remplacement d'un objet ne retire que ses propres triplets : le nœud de dérivation est purgé à part
+        repoGestion.replaceObjects(
+                List.of(datasetQueries.deleteDatasetQualifiedDerivationWhiteNode(dataset.getId(), getDatasetsGraph())),
+                objects);
         return dataset.getId();
     }
+
+    /**
+     * Le lignage à écrire : les sources demandées, résolues vers leur IRI stockée, plus ce que l'API
+     * n'expose pas et qu'un enregistrement ne doit pas effacer (liens vers des ressources hors du
+     * catalogue, descriptions dans une autre langue).
+     */
+    private StoredLineage resolveLineage(Dataset dataset) throws RmesException {
+        WasDerivedFrom wasDerivedFrom =
+                Optional.ofNullable(dataset.getWasDerivedFrom()).orElse(new WasDerivedFrom(List.of(), null, null));
+        List<IRI> sources = new ArrayList<>(
+                resolveDatasetIris(Optional.ofNullable(wasDerivedFrom.datasets()).orElse(List.of()).stream()
+                        .distinct()
+                        .toList()));
+        List<Literal> otherDescriptions = new ArrayList<>();
+
+        JSONArray unmanaged = repoGestion.getResponseAsArray(
+                datasetQueries.getDatasetUnmanagedLineage(dataset.getId(), getDatasetsGraph()));
+        JSONUtils.stream(unmanaged).forEach(row -> {
+            if (row.has("externalSource")) {
+                sources.add(RdfTriples.iri(row.getString("externalSource")));
+            }
+            if (row.has("otherDescription")) {
+                otherDescriptions.add(
+                        RdfTriples.string(row.getString("otherDescription"), row.getString("otherDescription_lg")));
+            }
+        });
+        return new StoredLineage(
+                sources, wasDerivedFrom.descriptionLg1(), wasDerivedFrom.descriptionLg2(), otherDescriptions);
+    }
+
+    private List<IRI> resolveDatasetIris(List<String> ids) throws RmesException {
+        if (ids.isEmpty()) {
+            return List.of();
+        }
+        Map<String, IRI> iris = new HashMap<>();
+        JSONUtils.stream(repoGestion.getResponseAsArray(
+                        datasetQueries.getDatasetsByIdentifiers(ids, getDatasetsGraph())))
+                .forEach(row -> iris.putIfAbsent(row.getString("id"), RdfTriples.iri(row.getString("iri"))));
+
+        List<String> unknownIds =
+                ids.stream().filter(id -> !iris.containsKey(id)).toList();
+        if (!unknownIds.isEmpty()) {
+            throw new RmesBadRequestException(
+                    ErrorCodes.DATASET_DERIVED_FROM_UNKNOWN_DATASET,
+                    "Some source datasets do not exist",
+                    new JSONArray(unknownIds));
+        }
+        return ids.stream().map(iris::get).toList();
+    }
+
+    private record StoredLineage(
+            List<IRI> sources, String descriptionLg1, String descriptionLg2, List<Literal> otherDescriptions) {}
 
     private void validate(Dataset dataset) throws RmesException {
         if (dataset.getLabelLg1() == null) {
@@ -683,6 +792,13 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         if (dataset.getAltIdentifier() != null
                 && !ALT_IDENTIFIER_PATTERN.matcher(dataset.getAltIdentifier()).matches()) {
             throw new RmesBadRequestException("The property altIdentifier contains forbidden characters");
+        }
+
+        if (dataset.getWasDerivedFrom() != null
+                && dataset.getWasDerivedFrom().datasets() != null
+                && dataset.getWasDerivedFrom().datasets().contains(dataset.getId())) {
+            throw new RmesBadRequestException(
+                    ErrorCodes.DATASET_DERIVED_FROM_ITSELF, "A dataset cannot be derived from itself");
         }
 
         if (!this.seriesRepository.isSeriesAndOperationsExist(dataset.getWasGeneratedIRIs())) {

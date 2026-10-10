@@ -7,6 +7,9 @@ import fr.insee.rmes.modules.clientconfig.domain.model.ModuleSettings;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.springframework.context.annotation.Configuration;
 
 class BauhausConfigurationTest {
 
@@ -36,7 +39,35 @@ class BauhausConfigurationTest {
         assertThat(configurationWith(null).enabledModules()).isEmpty();
     }
 
-    private static BauhausConfiguration configurationWith(Map<String, ModuleSettings> modules) {
-        return new BauhausConfiguration("dev", false, "http://localhost", modules, "1.0.0", "graph");
+    @Test
+    void the_application_refuses_to_start_with_an_unknown_env() {
+        new ApplicationContextRunner()
+                .withUserConfiguration(TestConfig.class)
+                .withPropertyValues("fr.insee.rmes.bauhaus.env=recette")
+                .run(context -> assertThat(context)
+                        .hasFailed()
+                        .getFailure()
+                        .rootCause()
+                        .hasMessageContaining("fr.insee.rmes.bauhaus.env has an unknown value 'recette'"));
     }
+
+    @Test
+    void the_application_refuses_to_start_without_env() {
+        new ApplicationContextRunner()
+                .withUserConfiguration(TestConfig.class)
+                .withPropertyValues("fr.insee.rmes.bauhaus.app-host=http://localhost")
+                .run(context -> assertThat(context)
+                        .hasFailed()
+                        .getFailure()
+                        .rootCause()
+                        .hasMessageContaining("fr.insee.rmes.bauhaus.env has an unknown value 'null'"));
+    }
+
+    private static BauhausConfiguration configurationWith(Map<String, ModuleSettings> modules) {
+        return new BauhausConfiguration("NoAuth", false, "http://localhost", modules, "1.0.0", "graph");
+    }
+
+    @Configuration
+    @EnableConfigurationProperties(BauhausConfiguration.class)
+    static class TestConfig {}
 }

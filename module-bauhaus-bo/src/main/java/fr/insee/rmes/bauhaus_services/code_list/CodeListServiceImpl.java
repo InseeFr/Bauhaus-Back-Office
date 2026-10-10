@@ -27,6 +27,7 @@ import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.Deserializer;
 import fr.insee.rmes.utils.DiacriticSorter;
 import fr.insee.rmes.utils.IdGenerator;
+import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.rdf4j.model.IRI;
@@ -576,6 +577,9 @@ public class CodeListServiceImpl extends RdfService implements CodeListService {
                     "Code already exists in this code list",
                     code.code());
         }
+        validateLinks(code);
+        List<IRI> broaderIris = linkedCodeIris(notation, code.broader());
+        List<IRI> narrowerIris = linkedCodeIris(notation, code.narrower());
         JSONObject codesList = this.getDetailedCodesListJson(notation);
 
         IRI owlClassUri = RdfUtils.codeListIRI(CONCEPT + codesList.getString(LAST_CLASS_URI_SEGMENT));
@@ -584,7 +588,17 @@ public class CodeListServiceImpl extends RdfService implements CodeListService {
         IRI codeListIri = this.generateIri(codesList, CodeListKind.FULL);
 
         Model codeModel = new LinkedHashModel();
-        createMainCodeTriplet(RdfUtils.codesListGraph(), codeListIri, code, codeModel, codeIri, owlClassUri);
+        Resource graph = RdfUtils.codesListGraph();
+        createMainCodeTriplet(graph, codeListIri, code, codeModel, codeIri, owlClassUri);
+        // Chaque lien est posé dans les deux sens : le parent porte aussi le skos:narrower.
+        broaderIris.forEach(parent -> {
+            codeModel.add(codeIri, SKOS.BROADER, parent, graph);
+            codeModel.add(parent, SKOS.NARROWER, codeIri, graph);
+        });
+        narrowerIris.forEach(child -> {
+            codeModel.add(codeIri, SKOS.NARROWER, child, graph);
+            codeModel.add(child, SKOS.BROADER, codeIri, graph);
+        });
 
         repoGestion.loadSimpleObject(codeIri, codeModel, null);
 
@@ -603,6 +617,45 @@ public class CodeListServiceImpl extends RdfService implements CodeListService {
         String lastCodeUriSegment = codesList.getString(LAST_CODE_URI_SEGMENT);
         IRI codeIri = RdfUtils.codeListIRI(lastCodeUriSegment + "/" + code);
         repoGestion.deleteObject(codeIri, null);
+        // Les liens inverses sont portés par les parents et enfants : sans cette purge, ils pointeraient
+        // encore vers le code supprimé, ou vers un lien que la mise à jour vient de retirer.
+        repoGestion.deleteTripletByPredicateAndValue(null, SKOS.BROADER, RdfUtils.codesListGraph(), null, codeIri);
+        repoGestion.deleteTripletByPredicateAndValue(null, SKOS.NARROWER, RdfUtils.codesListGraph(), null, codeIri);
         return null;
+    }
+
+    private static void validateLinks(CodeRequest code) throws RmesBadRequestException {
+        if (code.broader().contains(code.code()) || code.narrower().contains(code.code())) {
+            throw new RmesBadRequestException(
+                    CodesListErrorCodes.CODE_LIST_CODE_LINKED_TO_ITSELF,
+                    "A code cannot be linked to itself",
+                    code.code());
+        }
+        List<String> parentsAndChildren =
+                code.broader().stream().filter(code.narrower()::contains).toList();
+        if (!parentsAndChildren.isEmpty()) {
+            throw new RmesBadRequestException(
+                    CodesListErrorCodes.CODE_LIST_CODE_BOTH_PARENT_AND_CHILD,
+                    "A code cannot be both parent and child of the same code",
+                    String.join(",", parentsAndChildren));
+        }
+    }
+
+    /** Les IRI des codes liés, lues en base : un code absent de la liste est refusé. */
+    private List<IRI> linkedCodeIris(String notation, List<String> linkedCodes) throws RmesException {
+        List<IRI> iris = new ArrayList<>();
+        for (String linkedCode : linkedCodes) {
+            String uri = repoGestion
+                    .getResponseAsObject(codeListsQueries.getCodeUriByNotation(notation, linkedCode))
+                    .optString(Constants.URI);
+            if (uri.isEmpty()) {
+                throw new RmesBadRequestException(
+                        CodesListErrorCodes.CODE_LIST_UNKNOWN_LINKED_CODE,
+                        "Linked code not found in this code list",
+                        linkedCode);
+            }
+            iris.add(RdfUtils.createIRI(uri));
+        }
+        return iris;
     }
 }

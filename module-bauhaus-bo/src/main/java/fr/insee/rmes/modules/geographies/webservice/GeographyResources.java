@@ -76,37 +76,27 @@ public class GeographyResources {
 
     @HasAccess(module = RBAC.Module.GEOGRAPHY, privilege = RBAC.Privilege.CREATE)
     @PostMapping(value = "/territory", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> createGeography(@RequestBody String body) {
-        try {
-            String iri = geoService.createFeature(body);
-
-            // Handle null IRI response
-            if (iri == null || iri.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.SC_INTERNAL_SERVER_ERROR)
-                        .body("Failed to create geography: no IRI returned");
-            }
-
-            // Extract ID from IRI (IRI format: http://.../{id})
-            String id = iri.substring(iri.lastIndexOf('/') + 1);
-
-            URI location = ServletUriComponentsBuilder.fromCurrentRequest()
-                    .path("/{id}")
-                    .buildAndExpand(id)
-                    .toUri();
-            return ResponseEntity.created(location).body(id);
-        } catch (RmesException e) {
-            return ResponseEntity.status(e.getStatus()).body(e.getDetails());
+    public ResponseEntity<String> createGeography(@RequestBody String body) throws RmesException {
+        String iri = geoService.createFeature(body);
+        if (iri == null || iri.isEmpty()) {
+            throw new IllegalStateException("Failed to create geography: no IRI returned");
         }
+
+        // Extract ID from IRI (IRI format: http://.../{id})
+        String id = iri.substring(iri.lastIndexOf('/') + 1);
+
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(id)
+                .toUri();
+        return ResponseEntity.created(location).body(id);
     }
 
     @HasAccess(module = RBAC.Module.GEOGRAPHY, privilege = RBAC.Privilege.UPDATE)
     @PutMapping(value = "/territory/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> updateGeography(@PathVariable(Constants.ID) String id, @RequestBody String body) {
-        try {
-            geoService.updateFeature(id, body);
-            return ResponseEntity.ok(HttpStatus.SC_OK);
-        } catch (RmesException e) {
-            return ResponseEntity.status(e.getStatus()).body(e.getDetails());
-        }
+    public ResponseEntity<Object> updateGeography(@PathVariable(Constants.ID) String id, @RequestBody String body)
+            throws RmesException {
+        geoService.updateFeature(id, body);
+        return ResponseEntity.ok(HttpStatus.SC_OK);
     }
 }

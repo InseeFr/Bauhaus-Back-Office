@@ -13,6 +13,7 @@ import fr.insee.rmes.modules.organisations.domain.port.serverside.OrganisationsR
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import org.json.JSONArray;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -116,12 +117,12 @@ class OrganisationLookupTest {
         OrganisationLookup lookup =
                 new OrganisationLookup(organizationsService, organisationsRepository, organisationService);
 
-        org.json.JSONArray rows = new org.json.JSONArray();
+        JSONArray rows = new JSONArray();
         rows.put("http://bauhaus/organisations/DG75-B002");
         rows.put("DG75-A001");
         rows.put("UNKNOWN");
 
-        org.json.JSONArray result = lookup.canonicalize(rows);
+        JSONArray result = lookup.canonicalize(rows);
 
         assertThat(result.length()).isEqualTo(2);
         assertThat(result.getString(0)).isEqualTo("DG75-B002");
@@ -133,26 +134,14 @@ class OrganisationLookupTest {
         OrganisationLookup lookup =
                 new OrganisationLookup(organizationsService, organisationsRepository, organisationService);
 
-        org.json.JSONArray result = lookup.canonicalize(null);
+        JSONArray result = lookup.canonicalize(null);
 
         assertThat(result.length()).isZero();
     }
 
     @Test
     void canonicalize_returns_short_form_for_organisation_iri() throws RmesException {
-        String iri = "http://bauhaus/organisations/insee/HIE2000069";
-        when(organisationService.getOrganisationsMap(anyList()))
-                .thenReturn(Map.of(iri, new OrganisationOption("HIE2000069", "label")));
-        OrganisationLookup lookup =
-                new OrganisationLookup(organizationsService, organisationsRepository, organisationService);
-
-        org.json.JSONArray rows = new org.json.JSONArray();
-        rows.put(iri);
-
-        org.json.JSONArray result = lookup.canonicalize(rows);
-
-        assertThat(result.length()).isEqualTo(1);
-        assertThat(result.getString(0)).isEqualTo("HIE2000069");
+        assertCanonicalizedTo("http://bauhaus/organisations/insee/HIE2000069", "HIE2000069");
     }
 
     @Test
@@ -161,18 +150,22 @@ class OrganisationLookupTest {
         // The canonical stamp comes from adms:identifier in the RDF graph, not from text-extraction
         // of the IRI's last segment. This test pins that contract by using an IRI whose segment
         // ("internal-id-42") differs from the real stamp ("PUBLIC-STAMP").
-        String iri = "http://example.org/organisations/internal-id-42";
+        assertCanonicalizedTo("http://example.org/organisations/internal-id-42", "PUBLIC-STAMP");
+    }
+
+    /** L'organisation d'IRI {@code iri} porte l'identifiant {@code stamp} : c'est lui qui ressort. */
+    private void assertCanonicalizedTo(String iri, String stamp) throws RmesException {
         when(organisationService.getOrganisationsMap(anyList()))
-                .thenReturn(Map.of(iri, new OrganisationOption("PUBLIC-STAMP", "label")));
+                .thenReturn(Map.of(iri, new OrganisationOption(stamp, "label")));
         OrganisationLookup lookup =
                 new OrganisationLookup(organizationsService, organisationsRepository, organisationService);
 
-        org.json.JSONArray rows = new org.json.JSONArray();
+        JSONArray rows = new JSONArray();
         rows.put(iri);
 
-        org.json.JSONArray result = lookup.canonicalize(rows);
+        JSONArray result = lookup.canonicalize(rows);
 
         assertThat(result.length()).isEqualTo(1);
-        assertThat(result.getString(0)).isEqualTo("PUBLIC-STAMP");
+        assertThat(result.getString(0)).isEqualTo(stamp);
     }
 }

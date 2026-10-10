@@ -8,7 +8,7 @@
   </parent>
 
   <artifactId>module-bauhaus-bo</artifactId>
-  <version>4.21.6</version>
+  <version>4.22.0-rc0</version>
   <name>module-bauhaus-bo</name>
 
   <dependencies>
@@ -35,6 +35,12 @@
     <dependency>
       <groupId>fr.insee.rmes</groupId>
       <artifactId>module-testcontainer-graphdb</artifactId>
+      <version>1.0.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>fr.insee.rmes</groupId>
+      <artifactId>module-testcontainer-fuseki</artifactId>
       <version>1.0.0</version>
       <scope>test</scope>
     </dependency>

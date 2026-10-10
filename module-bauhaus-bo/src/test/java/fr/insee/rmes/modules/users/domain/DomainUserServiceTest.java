@@ -27,6 +27,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class DomainUserServiceTest {
 
+    private static final Object PRINCIPAL = "somePrincipal";
+    private static final User ADMIN_USER = new User("user123", List.of("ADMIN"), Set.of("STAMP-01"), "insee");
+
     @Mock
     private UserDecoder userDecoder;
 
@@ -40,80 +43,75 @@ class DomainUserServiceTest {
         userService = new DomainUserService(userDecoder, rbacFetcher);
     }
 
+    private void givenDecodedUser(User user) throws MissingUserInformationException {
+        when(userDecoder.fromPrincipal(PRINCIPAL)).thenReturn(Optional.of(user));
+    }
+
+    private void givenNoDecodedUser() throws MissingUserInformationException {
+        when(userDecoder.fromPrincipal(PRINCIPAL)).thenReturn(Optional.empty());
+    }
+
     @Test
     void should_find_stamps_from_principal() throws MissingUserInformationException {
-        var user = new User("user123", List.of("ADMIN"), Set.of("STAMP-01"), "insee");
-        Object principal = "somePrincipal";
+        givenDecodedUser(ADMIN_USER);
 
-        when(userDecoder.fromPrincipal(principal)).thenReturn(Optional.of(user));
-
-        Set<Stamp> result = userService.findStampsFrom(principal);
+        Set<Stamp> result = userService.findStampsFrom(PRINCIPAL);
 
         assertThat(result).isNotNull();
         assertThat(result).extracting(Stamp::stamp).containsExactly("STAMP-01");
-        verify(userDecoder).fromPrincipal(principal);
+        verify(userDecoder).fromPrincipal(PRINCIPAL);
     }
 
     @Test
     void should_return_empty_stamps_when_user_not_found() throws MissingUserInformationException {
-        Object principal = "somePrincipal";
+        givenNoDecodedUser();
 
-        when(userDecoder.fromPrincipal(principal)).thenReturn(Optional.empty());
-
-        Set<Stamp> result = userService.findStampsFrom(principal);
+        Set<Stamp> result = userService.findStampsFrom(PRINCIPAL);
 
         assertThat(result).isEmpty();
-        verify(userDecoder).fromPrincipal(principal);
+        verify(userDecoder).fromPrincipal(PRINCIPAL);
     }
 
     @Test
     void should_get_user() throws MissingUserInformationException {
-        var user = new User("user123", List.of("ADMIN"), Set.of("STAMP-01"), "insee");
-        Object principal = "somePrincipal";
+        givenDecodedUser(ADMIN_USER);
 
-        when(userDecoder.fromPrincipal(principal)).thenReturn(Optional.of(user));
+        User result = userService.getUser(PRINCIPAL);
 
-        User result = userService.getUser(principal);
-
-        assertThat(result).isEqualTo(user);
+        assertThat(result).isEqualTo(ADMIN_USER);
         assertThat(result.id()).isEqualTo("user123");
         assertThat(result.roles()).containsExactly("ADMIN");
-        verify(userDecoder).fromPrincipal(principal);
+        verify(userDecoder).fromPrincipal(PRINCIPAL);
     }
 
     @Test
     void should_throw_exception_when_get_user_fails() throws MissingUserInformationException {
-        Object principal = "somePrincipal";
+        givenNoDecodedUser();
 
-        when(userDecoder.fromPrincipal(principal)).thenReturn(Optional.empty());
-
-        assertThatThrownBy(() -> userService.getUser(principal)).isInstanceOf(Exception.class);
+        assertThatThrownBy(() -> userService.getUser(PRINCIPAL)).isInstanceOf(Exception.class);
     }
 
     @Test
     void should_compute_privileges() throws MissingUserInformationException {
-        var user = new User("user123", List.of("ADMIN", "USER"), Set.of("STAMP-01"), "insee");
-        Object principal = "somePrincipal";
+        givenDecodedUser(new User("user123", List.of("ADMIN", "USER"), Set.of("STAMP-01"), "insee"));
 
         var privilege1 = new ModuleAccessPrivileges.Privilege(RBAC.Privilege.CREATE, RBAC.Strategy.ALL);
         var privilege2 = new ModuleAccessPrivileges.Privilege(RBAC.Privilege.READ, RBAC.Strategy.STAMP);
         var modulePrivileges = new ModuleAccessPrivileges(RBAC.Module.CONCEPT_CONCEPT, Set.of(privilege1, privilege2));
 
-        when(userDecoder.fromPrincipal(principal)).thenReturn(Optional.of(user));
         when(rbacFetcher.computePrivileges(anyList(), any())).thenReturn(Set.of(modulePrivileges));
 
-        Set<ModuleAccessPrivileges> result = userService.computePrivileges(principal);
+        Set<ModuleAccessPrivileges> result = userService.computePrivileges(PRINCIPAL);
 
         assertThat(result).hasSize(1);
         assertThat(result).contains(modulePrivileges);
-        verify(userDecoder).fromPrincipal(principal);
+        verify(userDecoder).fromPrincipal(PRINCIPAL);
         verify(rbacFetcher).computePrivileges(List.of("ADMIN", "USER"), Source.INSEE);
     }
 
     @Test
     void should_compute_privileges_with_multiple_modules() throws MissingUserInformationException {
-        var user = new User("user123", List.of("ADMIN"), Set.of("STAMP-01"), "insee");
-        Object principal = "somePrincipal";
+        givenDecodedUser(ADMIN_USER);
 
         var conceptPrivileges = new ModuleAccessPrivileges(
                 RBAC.Module.CONCEPT_CONCEPT,
@@ -122,11 +120,10 @@ class DomainUserServiceTest {
                 RBAC.Module.OPERATION_SERIES,
                 Set.of(new ModuleAccessPrivileges.Privilege(RBAC.Privilege.READ, RBAC.Strategy.STAMP)));
 
-        when(userDecoder.fromPrincipal(principal)).thenReturn(Optional.of(user));
         when(rbacFetcher.computePrivileges(anyList(), any()))
                 .thenReturn(Set.of(conceptPrivileges, operationPrivileges));
 
-        Set<ModuleAccessPrivileges> result = userService.computePrivileges(principal);
+        Set<ModuleAccessPrivileges> result = userService.computePrivileges(PRINCIPAL);
 
         assertThat(result).hasSize(2);
         assertThat(result).contains(conceptPrivileges, operationPrivileges);
@@ -134,13 +131,11 @@ class DomainUserServiceTest {
 
     @Test
     void should_handle_empty_roles() throws MissingUserInformationException {
-        var user = new User("user123", List.of(), Set.of("STAMP-01"), "insee");
-        Object principal = "somePrincipal";
+        givenDecodedUser(new User("user123", List.of(), Set.of("STAMP-01"), "insee"));
 
-        when(userDecoder.fromPrincipal(principal)).thenReturn(Optional.of(user));
         when(rbacFetcher.computePrivileges(anyList(), any())).thenReturn(Set.of());
 
-        Set<ModuleAccessPrivileges> result = userService.computePrivileges(principal);
+        Set<ModuleAccessPrivileges> result = userService.computePrivileges(PRINCIPAL);
 
         assertThat(result).isEmpty();
         verify(rbacFetcher).computePrivileges(List.of(), Source.INSEE);
@@ -148,12 +143,9 @@ class DomainUserServiceTest {
 
     @Test
     void should_find_multiple_stamps_from_principal() throws MissingUserInformationException {
-        var user = new User("user123", List.of("ADMIN"), Set.of("STAMP-01", "STAMP-02", "STAMP-03"), "insee");
-        Object principal = "somePrincipal";
+        givenDecodedUser(new User("user123", List.of("ADMIN"), Set.of("STAMP-01", "STAMP-02", "STAMP-03"), "insee"));
 
-        when(userDecoder.fromPrincipal(principal)).thenReturn(Optional.of(user));
-
-        Set<Stamp> result = userService.findStampsFrom(principal);
+        Set<Stamp> result = userService.findStampsFrom(PRINCIPAL);
 
         assertThat(result).hasSize(3);
         assertThat(result).extracting(Stamp::stamp).containsExactlyInAnyOrder("STAMP-01", "STAMP-02", "STAMP-03");
