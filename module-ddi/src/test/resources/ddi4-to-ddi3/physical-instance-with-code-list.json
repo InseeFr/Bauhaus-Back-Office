@@ -1,0 +1,308 @@
+{
+  "topLevelReferences": [
+    {
+      "$type": "PhysicalInstance",
+      "URN": "urn:ddi:fr.insee:c220992b-e94c-4ba6-9e7b-971c6c822d6c:1",
+      "Agency": "fr.insee",
+      "ID": "c220992b-e94c-4ba6-9e7b-971c6c822d6c",
+      "Version": "1"
+    }
+  ],
+  "items": [
+    {
+      "$type": "PhysicalInstance",
+      "VersionDate": {
+        "DateTime": "2026-10-08T08:18:42.672686776Z"
+      },
+      "URN": "urn:ddi:fr.insee:c220992b-e94c-4ba6-9e7b-971c6c822d6c:1",
+      "Agency": "fr.insee",
+      "ID": "c220992b-e94c-4ba6-9e7b-971c6c822d6c",
+      "Version": "1",
+      "Citation": {
+        "Title": [
+          {
+            "@language": "fr-FR",
+            "@value": "Test Manu Perf"
+          }
+        ]
+      },
+      "DataRelationshipReference": [
+        {
+          "$type": "DataRelationship",
+          "URN": "urn:ddi:fr.insee:84c8e585-6263-4e3d-b41f-3ab5f10d5bdc:1",
+          "Agency": "fr.insee",
+          "ID": "84c8e585-6263-4e3d-b41f-3ab5f10d5bdc",
+          "Version": "1"
+        }
+      ],
+      "VersionResponsibility": "BAUHAUS-DEMO/VARIABLES"
+    },
+    {
+      "$type": "DataRelationship",
+      "VersionDate": {
+        "DateTime": "2026-10-08T08:18:42.672686776Z"
+      },
+      "URN": "urn:ddi:fr.insee:84c8e585-6263-4e3d-b41f-3ab5f10d5bdc:1",
+      "Agency": "fr.insee",
+      "ID": "84c8e585-6263-4e3d-b41f-3ab5f10d5bdc",
+      "Version": "1",
+      "Label": [
+        {
+          "@language": "fr-FR",
+          "@value": "Structure : Test Manu Perf"
+        }
+      ],
+      "LogicalRecord": [
+        {
+          "$type": "LogicalRecordType",
+          "URN": "urn:ddi:fr.insee:d153c521-8c26-4425-9be9-d92fcbe73e7d:1",
+          "Agency": "fr.insee",
+          "ID": "d153c521-8c26-4425-9be9-d92fcbe73e7d",
+          "Version": "1",
+          "Label": [
+            {
+              "@language": "fr-FR",
+              "@value": "Enregistrement logique : Test Manu Perf"
+            }
+          ],
+          "VariablesInRecord": {
+            "VariableUsedReference": [
+              {
+                "$type": "Variable",
+                "URN": "urn:ddi:fr.insee:50cdcbed-1707-401d-958c-179cd0d5a5f1:1",
+                "Agency": "fr.insee",
+                "ID": "50cdcbed-1707-401d-958c-179cd0d5a5f1",
+                "Version": "1"
+              },
+              {
+                "$type": "Variable",
+                "URN": "urn:ddi:fr.insee:52c5afc1-ba8e-45ce-976f-eaf1e83f14bf:1",
+                "Agency": "fr.insee",
+                "ID": "52c5afc1-ba8e-45ce-976f-eaf1e83f14bf",
+                "Version": "1"
+              },
+              {
+                "$type": "Variable",
+                "URN": "urn:ddi:fr.insee:39222086-1257-40aa-a194-a0582eb20482:1",
+                "Agency": "fr.insee",
+                "ID": "39222086-1257-40aa-a194-a0582eb20482",
+                "Version": "1"
+              }
+            ]
+          }
+        }
+      ],
+      "VersionResponsibility": "BAUHAUS-DEMO/VARIABLES"
+    },
+    {
+      "$type": "Variable",
+      "VersionDate": {
+        "DateTime": "2026-10-08T08:18:42.672686776Z"
+      },
+      "URN": "urn:ddi:fr.insee:39222086-1257-40aa-a194-a0582eb20482:1",
+      "Agency": "fr.insee",
+      "ID": "39222086-1257-40aa-a194-a0582eb20482",
+      "Version": "1",
+      "VariableName": [
+        {
+          "@language": "fr-FR",
+          "@value": "sd"
+        }
+      ],
+      "Label": [
+        {
+          "@language": "fr-FR",
+          "@value": "df"
+        }
+      ],
+      "VariableRepresentation": {
+        "CodeRepresentation": {
+          "$type": "CodeRepresentationBaseType",
+          "BlankIsMissingValue": false,
+          "CodeListReference": {
+            "$type": "CodeList",
+            "URN": "urn:ddi:fr.insee:dec898d6-da86-3f54-9c4f-8465216f2ca8:1",
+            "Agency": "fr.insee",
+            "ID": "dec898d6-da86-3f54-9c4f-8465216f2ca8",
+            "Version": "1"
+          }
+        }
+      },
+      "VersionResponsibility": "BAUHAUS-DEMO/VARIABLES"
+    },
+    {
+      "$type": "Variable",
+      "VersionDate": {
+        "DateTime": "2026-09-28T20:42:53.327051049+01:00"
+      },
+      "URN": "urn:ddi:fr.insee:50cdcbed-1707-401d-958c-179cd0d5a5f1:1",
+      "Agency": "fr.insee",
+      "ID": "50cdcbed-1707-401d-958c-179cd0d5a5f1",
+      "Version": "1",
+      "VariableName": [
+        {
+          "@language": "fr-FR",
+          "@value": "variable1"
+        }
+      ],
+      "Label": [
+        {
+          "@language": "fr-FR",
+          "@value": "Variable2"
+        }
+      ],
+      "VariableRepresentation": {
+        "TextRepresentation": {
+          "$type": "TextRepresentationBaseType",
+          "BlankIsMissingValue": false
+        }
+      },
+      "VersionResponsibility": "BAUHAUS-DEMO/VARIABLES"
+    },
+    {
+      "$type": "Variable",
+      "VersionDate": {
+        "DateTime": "2026-09-28T20:42:53.327051049+01:00"
+      },
+      "URN": "urn:ddi:fr.insee:52c5afc1-ba8e-45ce-976f-eaf1e83f14bf:1",
+      "Agency": "fr.insee",
+      "ID": "52c5afc1-ba8e-45ce-976f-eaf1e83f14bf",
+      "Version": "1",
+      "VariableName": [
+        {
+          "@language": "fr-FR",
+          "@value": "Variable2"
+        }
+      ],
+      "Label": [
+        {
+          "@language": "fr-FR",
+          "@value": "Variable2"
+        }
+      ],
+      "VariableRepresentation": {
+        "CodeRepresentation": {
+          "$type": "CodeRepresentationBaseType",
+          "BlankIsMissingValue": false,
+          "CodeListReference": {
+            "$type": "CodeList",
+            "URN": "urn:ddi:fr.insee:db46b215-6676-4fb4-b446-f567817c5146:1",
+            "Agency": "fr.insee",
+            "ID": "db46b215-6676-4fb4-b446-f567817c5146",
+            "Version": "1"
+          }
+        }
+      },
+      "VersionResponsibility": "BAUHAUS-DEMO/VARIABLES"
+    },
+    {
+      "$type": "CodeList",
+      "VersionDate": {
+        "DateTime": "2026-10-06T09:49:24.737447+01:00"
+      },
+      "URN": "urn:ddi:fr.insee:dec898d6-da86-3f54-9c4f-8465216f2ca8:1",
+      "Agency": "fr.insee",
+      "ID": "dec898d6-da86-3f54-9c4f-8465216f2ca8",
+      "Version": "1",
+      "Label": [
+        {
+          "@language": "fr-FR",
+          "@value": "EXEMPLE - liste mutualisée de 45 000 codes"
+        }
+      ],
+      "Code": [
+        {
+          "$type": "CodeType",
+          "URN": "urn:ddi:fr.insee:24d68426-d1fe-3ec4-ae52-16189a38d14b:1",
+          "Agency": "fr.insee",
+          "ID": "24d68426-d1fe-3ec4-ae52-16189a38d14b",
+          "Version": "1",
+          "CategoryReference": {
+            "$type": "Category",
+            "URN": "urn:ddi:fr.insee:1ab9fc6c-eccc-3d91-9f6d-94f4d0bb19d8:1",
+            "Agency": "fr.insee",
+            "ID": "1ab9fc6c-eccc-3d91-9f6d-94f4d0bb19d8",
+            "Version": "1"
+          },
+          "Value": {
+            "StringValue": "00001"
+          }
+        },
+        {
+          "$type": "CodeType",
+          "URN": "urn:ddi:fr.insee:21ace00e-b920-3c6d-a8be-7e71a257920b:1",
+          "Agency": "fr.insee",
+          "ID": "21ace00e-b920-3c6d-a8be-7e71a257920b",
+          "Version": "1",
+          "CategoryReference": {
+            "$type": "Category",
+            "URN": "urn:ddi:fr.insee:9c30d4dc-291e-36d0-8656-22c19e3d731d:1",
+            "Agency": "fr.insee",
+            "ID": "9c30d4dc-291e-36d0-8656-22c19e3d731d",
+            "Version": "1"
+          },
+          "Value": {
+            "StringValue": "00002"
+          }
+        },
+        {
+          "$type": "CodeType",
+          "URN": "urn:ddi:fr.insee:96904d6b-eb88-38d0-8642-6885a274c57d:1",
+          "Agency": "fr.insee",
+          "ID": "96904d6b-eb88-38d0-8642-6885a274c57d",
+          "Version": "1",
+          "CategoryReference": {
+            "$type": "Category",
+            "URN": "urn:ddi:fr.insee:aff76fec-cce5-3e8f-b2f7-fa57d70e4617:1",
+            "Agency": "fr.insee",
+            "ID": "aff76fec-cce5-3e8f-b2f7-fa57d70e4617",
+            "Version": "1"
+          },
+          "Value": {
+            "StringValue": "00003"
+          }
+        }
+      ],
+      "VersionResponsibility": "abcde"
+    },
+    {
+      "$type": "Category",
+      "URN": "urn:ddi:fr.insee:aff76fec-cce5-3e8f-b2f7-fa57d70e4617:1",
+      "Agency": "fr.insee",
+      "ID": "aff76fec-cce5-3e8f-b2f7-fa57d70e4617",
+      "Version": "1",
+      "Label": [
+        {
+          "@language": "fr-FR",
+          "@value": "Modalité 00003"
+        }
+      ]
+    },
+    {
+      "$type": "Category",
+      "URN": "urn:ddi:fr.insee:9c30d4dc-291e-36d0-8656-22c19e3d731d:1",
+      "Agency": "fr.insee",
+      "ID": "9c30d4dc-291e-36d0-8656-22c19e3d731d",
+      "Version": "1",
+      "Label": [
+        {
+          "@language": "fr-FR",
+          "@value": "Modalité 00002"
+        }
+      ]
+    },
+    {
+      "$type": "Category",
+      "URN": "urn:ddi:fr.insee:1ab9fc6c-eccc-3d91-9f6d-94f4d0bb19d8:1",
+      "Agency": "fr.insee",
+      "ID": "1ab9fc6c-eccc-3d91-9f6d-94f4d0bb19d8",
+      "Version": "1",
+      "Label": [
+        {
+          "@language": "fr-FR",
+          "@value": "Modalité 00001"
+        }
+      ]
+    }
+  ]
+}

@@ -9,6 +9,7 @@ import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.commons.configuration.ConditionalOnModule;
 import fr.insee.rmes.modules.users.domain.model.RBAC;
 import fr.insee.rmes.modules.users.webservice.HasAccess;
+import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
 import org.apache.http.HttpStatus;
@@ -85,15 +86,17 @@ public class ComponentResources {
 
     @HasAccess(module = RBAC.Module.STRUCTURE_COMPONENT, privilege = RBAC.Privilege.UPDATE)
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> updateComponentById(@PathVariable(Constants.ID) String id, @RequestBody String body)
+    public ResponseEntity<Object> updateComponentById(
+            @PathVariable(Constants.ID) String id, @Valid @RequestBody ComponentRequest component)
             throws RmesException {
-        return ResponseEntity.status(HttpStatus.SC_OK).body(structureComponentService.updateComponent(id, body));
+        return ResponseEntity.status(HttpStatus.SC_OK)
+                .body(structureComponentService.updateComponent(id, component.toLegacyJson()));
     }
 
     @HasAccess(module = RBAC.Module.STRUCTURE_COMPONENT, privilege = RBAC.Privilege.CREATE)
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> createComponent(@RequestBody String body) throws RmesException {
-        String id = structureComponentService.createComponent(body);
+    public ResponseEntity<Object> createComponent(@Valid @RequestBody ComponentRequest component) throws RmesException {
+        String id = structureComponentService.createComponent(component.toLegacyJson());
 
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}")

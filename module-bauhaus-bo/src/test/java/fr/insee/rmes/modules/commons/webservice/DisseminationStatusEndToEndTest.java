@@ -1,5 +1,6 @@
 package fr.insee.rmes.modules.commons.webservice;
 
+import static fr.insee.rmes.testcontainers.GraphDbTestProperties.registerGestion;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import fr.insee.rmes.testcontainers.WithGraphDBContainer;
@@ -38,9 +39,7 @@ class DisseminationStatusEndToEndTest extends WithGraphDBContainer {
 
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
-        String sesameServer = "http://" + container.getHost() + ":" + container.getMappedPort(7200);
-        registry.add("fr.insee.rmes.bauhaus.sesame.gestion.sesameServer", () -> sesameServer);
-        registry.add("fr.insee.rmes.bauhaus.sesame.gestion.repository", () -> BAUHAUS_TEST_REPOSITORY);
+        registerGestion(registry);
     }
 
     @Test

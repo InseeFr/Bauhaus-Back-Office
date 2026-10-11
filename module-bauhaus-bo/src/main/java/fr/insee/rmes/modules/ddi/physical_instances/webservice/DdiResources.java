@@ -6,11 +6,13 @@ import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.commons.security.PublicEndpoint;
+import fr.insee.rmes.modules.commons.webservice.ApiError;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.InvalidDdi4JsonException;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CreatePhysicalInstanceRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi3Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnitResponse;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.MutualizedCodeListCodes;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodesList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialPhysicalInstance;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UpdatePhysicalInstanceRequest;
@@ -39,6 +41,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -55,6 +58,8 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
         value = "/ddi",
         produces = {"application/hal+json", MediaType.APPLICATION_JSON_VALUE})
 public class DdiResources {
+
+    static final String DDI4_INVALID = "DDI4_INVALID";
 
     private final DDIService ddiService;
     private final DDI4toDDI3ConverterService ddi4toDdi3ConverterService;
@@ -106,6 +111,20 @@ public class DdiResources {
                 .body(responses);
     }
 
+    /**
+     * Fichiers de données d'une opération, pour sa fiche dans le module opérations : les
+     * PhysicalInstances de toutes les StudyUnits qui la reflètent, qu'elles la désignent par son IRI
+     * de publication ou de gestion.
+     */
+    @GetMapping("/operation/{id}/physical-instances")
+    @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.READ)
+    public ResponseEntity<List<PartialPhysicalInstanceResponse>> getOperationPhysicalInstances(
+            @PathVariable(Constants.ID) String id) {
+        return ResponseEntity.ok(ddiService.getPhysicalInstancesByOperation(id).stream()
+                .map(PartialPhysicalInstanceResponse::fromDomain)
+                .toList());
+    }
+
     @GetMapping("/physical-instance/search")
     @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.READ)
     public ResponseEntity<List<PhysicalInstanceSearchResponse>> searchPhysicalInstances(
@@ -145,6 +164,17 @@ public class DdiResources {
     }
 
     /**
+     * Vide toutes les régions de cache Colectica, pour prendre en compte des modifications faites hors
+     * de Bauhaus sans attendre l'expiration. Réservé aux administrateurs.
+     */
+    @DeleteMapping("/cache")
+    @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.ADMINISTRATION)
+    public ResponseEntity<Void> evictCaches() {
+        ddiService.evictAllCaches();
+        return ResponseEntity.noContent().build();
+    }
+
+    /**
      * Le client peut forcer un rafraîchissement en envoyant l'en-tête HTTP standard
      * {@code Cache-Control: no-cache} (ou {@code no-store}) sur le GET : la région concernée est
      * alors vidée avant que la réponse ne soit recalculée depuis Colectica.
@@ -163,6 +193,19 @@ public class DdiResources {
             @PathVariable String agencyId, @PathVariable(Constants.ID) String id) {
         Ddi4Response response = ddiService.getMutualizedCodesList(agencyId, id);
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(response);
+    }
+
+    /**
+     * Vue allégée d'une liste de codes mutualisée (valeur + libellé par code), pour l'affichage en
+     * lecture seule : ~15 fois plus légère que le DDI4 complet de {@code /mutualized-codes-list/{agencyId}/{id}}.
+     * 404 pour une liste non mutualisée, qui garde l'endpoint complet.
+     */
+    @GetMapping("/mutualized-codes-list/{agencyId}/{id}/codes")
+    @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.READ)
+    public ResponseEntity<MutualizedCodeListCodes> getMutualizedCodeListCodes(
+            @PathVariable String agencyId, @PathVariable(Constants.ID) String id) {
+        MutualizedCodeListCodes codes = ddiService.getMutualizedCodeListCodes(agencyId, id);
+        return codes == null ? ResponseEntity.notFound().build() : ResponseEntity.ok(codes);
     }
 
     private List<PartialPhysicalInstance> resolvePhysicalInstances() {
@@ -282,10 +325,7 @@ public class DdiResources {
     @PublicEndpoint
     public ResponseEntity<String> getItemXmlByVersion(
             @PathVariable String agency, @PathVariable String id, @PathVariable String version) {
-        String xml = ddiService.getItemXml(agency, id, version);
-        if (xml == null) {
-            return ResponseEntity.notFound().build();
-        }
+        String xml = DdiResponses.found(ddiService.getItemXml(agency, id, version));
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML).body(xml);
     }
 
@@ -293,10 +333,7 @@ public class DdiResources {
     @PublicEndpoint
     public ResponseEntity<String> getItemJsonByVersion(
             @PathVariable String agency, @PathVariable String id, @PathVariable String version) {
-        String xml = ddiService.getItemXml(agency, id, version);
-        if (xml == null) {
-            return ResponseEntity.notFound().build();
-        }
+        String xml = DdiResponses.found(ddiService.getItemXml(agency, id, version));
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(ddiItemConvertService.convert(xml).toString());
@@ -305,20 +342,14 @@ public class DdiResources {
     @GetMapping(value = "/public/item/{agency}/{id}", produces = MediaType.APPLICATION_XML_VALUE)
     @PublicEndpoint
     public ResponseEntity<String> getItemXml(@PathVariable String agency, @PathVariable String id) {
-        String xml = ddiService.getItemXml(agency, id);
-        if (xml == null) {
-            return ResponseEntity.notFound().build();
-        }
+        String xml = DdiResponses.found(ddiService.getItemXml(agency, id));
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML).body(xml);
     }
 
     @GetMapping(value = "/public/item/{agency}/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @PublicEndpoint
     public ResponseEntity<String> getItemJson(@PathVariable String agency, @PathVariable String id) {
-        String xml = ddiService.getItemXml(agency, id);
-        if (xml == null) {
-            return ResponseEntity.notFound().build();
-        }
+        String xml = DdiResponses.found(ddiService.getItemXml(agency, id));
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(ddiItemConvertService.convert(xml).toString());
@@ -384,7 +415,7 @@ public class DdiResources {
 
     @PostMapping("/validate")
     @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.PUBLISH)
-    public ResponseEntity<ValidationResponse> validateDdi4(@RequestBody String jsonData) {
+    public ResponseEntity<Object> validateDdi4(@RequestBody String jsonData) {
         try {
             // Le DDI 4 circule déjà sous l'enveloppe du schéma ({topLevelReferences, items}) :
             // rien à traduire ici. Le schéma est compilé une fois pour toutes par le validateur.
@@ -395,16 +426,24 @@ public class DdiResources {
                         .contentType(MediaType.APPLICATION_JSON)
                         .body(ValidationResponse.success());
             } else {
-                return ResponseEntity.badRequest()
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .body(ValidationResponse.failure(errors));
+                return invalidDdi4(errors);
             }
         } catch (InvalidDdi4JsonException e) {
             // Seul un document mal formé vaut un 400 : une panne de chargement du schéma doit
             // remonter en 500 plutôt que de se déguiser en erreur de saisie.
-            return ResponseEntity.badRequest()
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(ValidationResponse.failure(List.of("Invalid JSON: " + e.getMessage())));
+            return invalidDdi4(List.of("Invalid JSON: " + e.getMessage()));
         }
+    }
+
+    /**
+     * Document hors schéma : 400 {@link ApiError}, une erreur par écart. Les écarts portent leur
+     * propre chemin JSON dans leur texte : ils sont rattachés au corps entier.
+     */
+    private static ResponseEntity<Object> invalidDdi4(List<String> violations) {
+        List<ApiError.FieldError> errors =
+                violations.stream().map(ApiError.FieldError::onWholeBody).toList();
+        return ResponseEntity.badRequest()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(ApiError.invalid(DDI4_INVALID, errors));
     }
 }

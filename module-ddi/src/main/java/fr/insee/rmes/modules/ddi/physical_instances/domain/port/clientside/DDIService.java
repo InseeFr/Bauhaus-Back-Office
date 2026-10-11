@@ -15,6 +15,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnitResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4VariableScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.DuplicatePhysicalInstanceRequest;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.MutualizedCodeListCodes;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodesList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialGroup;
@@ -89,7 +90,13 @@ public interface DDIService {
 
     void evictPhysicalInstanceSearchRowsCache();
 
+    /** Vide toutes les régions de cache Colectica (action d'administration). */
+    void evictAllCaches();
+
     Ddi4Response getMutualizedCodesList(String agencyId, String id);
+
+    /** Valeur et libellé de chaque code d'une liste mutualisée ; {@code null} si elle ne l'est pas. */
+    MutualizedCodeListCodes getMutualizedCodeListCodes(String agencyId, String id);
 
     Ddi4Response getCodeList(String agencyId, String id, String version);
 
@@ -131,6 +138,18 @@ public interface DDIService {
      */
     List<CodeListVariableUsage> getVariablesUsingMissingValuesRepresentation(String agencyId, String mmvrId);
 
+    /**
+     * Les variables du VariableScheme de la StudyUnit, réutilisables par ses PhysicalInstances
+     * (#1387).
+     */
+    Ddi4Response getStudyUnitVariables(String agencyId, String studyUnitId);
+
+    /**
+     * Les variables utilisées par chaque PhysicalInstance de la StudyUnit : une variable présente
+     * dans plusieurs fichiers est partagée (#1387).
+     */
+    List<CodeListVariableUsage> getStudyUnitVariableUsages(String agencyId, String studyUnitId);
+
     String getItemXml(String agency, String id, String version);
 
     String getItemXml(String agency, String id);
@@ -144,4 +163,10 @@ public interface DDIService {
      * pendant JSON de {@link #getStudyUnitXmlByOperationIri(String)}.
      */
     Optional<Ddi4StudyUnitResponse> getStudyUnitByOperationIri(String operationIri);
+
+    /**
+     * Les PhysicalInstances de toutes les StudyUnits miroirs de l'opération d'identifiant
+     * {@code operationId}, quelle que soit l'IRI sous laquelle elles la désignent ; vide sans miroir.
+     */
+    List<PartialPhysicalInstance> getPhysicalInstancesByOperation(String operationId);
 }

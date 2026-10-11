@@ -1,8 +1,12 @@
 package fr.insee.rmes.modules.ddi.physical_instances.webservice;
 
+import static fr.insee.rmes.modules.ddi.physical_instances.webservice.DdiResourcesTestSupport.assertBodyOfSize;
+import static fr.insee.rmes.modules.ddi.physical_instances.webservice.DdiResourcesTestSupport.assertOkListOfSize;
+import static fr.insee.rmes.modules.ddi.physical_instances.webservice.DdiResourcesTestSupport.givenStampUserReadingPhysicalInstances;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -32,8 +36,6 @@ import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PartialP
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PhysicalInstanceParentsResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PhysicalInstanceSearchResponse;
 import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
-import fr.insee.rmes.modules.users.domain.model.RBAC;
-import fr.insee.rmes.modules.users.domain.model.User;
 import fr.insee.rmes.modules.users.domain.port.serverside.RbacFetcher;
 import fr.insee.rmes.modules.users.infrastructure.UserProvider;
 import java.util.ArrayList;
@@ -41,23 +43,25 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import org.junit.jupiter.api.AfterEach;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Named;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.function.Executable;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
+import org.springframework.web.server.ResponseStatusException;
 
-@ExtendWith(MockitoExtension.class)
+@ExtendWith({MockitoExtension.class, LocalhostRequestContextExtension.class})
 class DdiResourcesTest {
 
     @Mock
@@ -94,21 +98,6 @@ class DdiResourcesTest {
                 rbacFetcher,
                 bauhausUriBuilder,
                 mock(Ddi4SchemaService.class));
-
-        // Setup mock request context for ServletUriComponentsBuilder
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        request.setScheme("http");
-        request.setServerName("localhost");
-        request.setServerPort(8080);
-        request.setContextPath("");
-        ServletRequestAttributes attrs = new ServletRequestAttributes(request);
-        RequestContextHolder.setRequestAttributes(attrs);
-    }
-
-    @AfterEach
-    void tearDown() {
-        // Clean up request context
-        RequestContextHolder.resetRequestAttributes();
     }
 
     @Test
@@ -120,11 +109,7 @@ class DdiResourcesTest {
 
         ResponseEntity<List<PartialPhysicalInstanceResponse>> response = ddiResources.getPhysicalInstances();
 
-        assertNotNull(response);
-        assertEquals(200, response.getStatusCode().value());
-        List<PartialPhysicalInstanceResponse> result = response.getBody();
-        assertNotNull(result);
-        assertEquals(2, result.size());
+        List<PartialPhysicalInstanceResponse> result = assertOkListOfSize(response, 2);
 
         // Verify first instance data and links
         assertEquals("pi-1", result.getFirst().getId());
@@ -159,13 +144,7 @@ class DdiResourcesTest {
         ResponseEntity<Ddi4Response> result = ddiResources.getDdi4PhysicalInstance(agencyId, id);
 
         // Then
-        assertNotNull(result);
-        assertEquals(HttpStatus.OK, result.getStatusCode());
-        assertEquals(MediaType.APPLICATION_JSON, result.getHeaders().getContentType());
-
-        Ddi4Response responseBody = result.getBody();
-        assertNotNull(responseBody);
-        assertEquals("test-schema", responseBody.schema());
+        Ddi4Response responseBody = assertOkDdi4Json(result);
         assertEquals(1, responseBody.physicalInstance().size());
         assertEquals(1, responseBody.dataRelationship().size());
         assertEquals(
@@ -230,6 +209,32 @@ class DdiResourcesTest {
     }
 
     @Test
+    void getMutualizedCodeListCodes_returnsTheLightViewOfAMutualizedList() {
+        MutualizedCodeListCodes codes = new MutualizedCodeListCodes(
+                "fr.insee",
+                "cl-1",
+                "3",
+                "Activités",
+                List.of(new MutualizedCodeListCodes.Entry("c-1", "01", "Agriculture")));
+        when(ddiService.getMutualizedCodeListCodes("fr.insee", "cl-1")).thenReturn(codes);
+
+        ResponseEntity<MutualizedCodeListCodes> result = ddiResources.getMutualizedCodeListCodes("fr.insee", "cl-1");
+
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertEquals(codes, result.getBody());
+    }
+
+    @Test
+    void getMutualizedCodeListCodes_isNotFoundForAListThatIsNotMutualized() {
+        when(ddiService.getMutualizedCodeListCodes("fr.insee", "group-list")).thenReturn(null);
+
+        ResponseEntity<MutualizedCodeListCodes> result =
+                ddiResources.getMutualizedCodeListCodes("fr.insee", "group-list");
+
+        assertEquals(HttpStatus.NOT_FOUND, result.getStatusCode());
+    }
+
+    @Test
     void getMutualizedCodesLists_withoutCacheControl_doesNotEvictCache() {
         when(ddiService.getMutualizedCodesLists())
                 .thenReturn(List.of(new PartialCodesList("cl-1", "ma cl", new Date(), "fr.insee")));
@@ -238,9 +243,7 @@ class DdiResourcesTest {
 
         assertNotNull(response);
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        List<CodeListSummaryResponse> body = response.getBody();
-        assertNotNull(body);
-        assertEquals(1, body.size());
+        List<CodeListSummaryResponse> body = assertBodyOfSize(response, 1);
         assertEquals("cl-1", body.get(0).id());
 
         verify(ddiService, never()).evictMutualizedCodesListsCache();
@@ -255,9 +258,7 @@ class DdiResourcesTest {
 
         ResponseEntity<List<CodeListSummaryResponse>> response = ddiResources.getMutualizedCodesLists(null);
 
-        List<CodeListSummaryResponse> body = response.getBody();
-        assertNotNull(body);
-        assertEquals(1, body.size());
+        List<CodeListSummaryResponse> body = assertBodyOfSize(response, 1);
         assertEquals("Libellé lisible", body.get(0).label());
         assertEquals("CL_NOM_TECHNIQUE", body.get(0).name());
     }
@@ -270,9 +271,7 @@ class DdiResourcesTest {
 
         ResponseEntity<List<CodeListSummaryResponse>> response = ddiResources.getMutualizedCodesLists(null);
 
-        List<CodeListSummaryResponse> body = response.getBody();
-        assertNotNull(body);
-        assertEquals(1, body.size());
+        List<CodeListSummaryResponse> body = assertBodyOfSize(response, 1);
         assertEquals(versionDate, body.get(0).versionDate());
     }
 
@@ -285,9 +284,7 @@ class DdiResourcesTest {
 
         assertNotNull(response);
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        List<CodeListSummaryResponse> body = response.getBody();
-        assertNotNull(body);
-        assertEquals(1, body.size());
+        assertBodyOfSize(response, 1);
 
         // The cache must be cleared *before* the list is (re)computed, otherwise the stale entry is served.
         InOrder inOrder = inOrder(ddiService);
@@ -305,36 +302,30 @@ class DdiResourcesTest {
     }
 
     @Test
-    void shouldUpdatePhysicalInstance() {
-        // Given
-        String agencyId = "fr.insee";
-        String instanceId = "test-id";
-        UpdatePhysicalInstanceRequest request = new UpdatePhysicalInstanceRequest(
-                "Updated Physical Instance Label", "Updated DataRelationship Label", "Updated LogicalRecord Label");
-        Ddi4Response expectedResponse = createMockDdi4Response();
-        when(ddiService.updatePhysicalInstance(agencyId, instanceId, request)).thenReturn(expectedResponse);
+    void evictCaches_evictsEveryColecticaCacheAndAnswersNoContent() {
+        ResponseEntity<Void> response = ddiResources.evictCaches();
 
-        // When
-        ResponseEntity<Ddi4Response> result = ddiResources.updatePhysicalInstance(agencyId, instanceId, request);
-
-        // Then
-        assertNotNull(result);
-        assertEquals(HttpStatus.OK, result.getStatusCode());
-        assertEquals(MediaType.APPLICATION_JSON, result.getHeaders().getContentType());
-
-        Ddi4Response responseBody = result.getBody();
-        assertNotNull(responseBody);
-        assertEquals("test-schema", responseBody.schema());
-
-        verify(ddiService).updatePhysicalInstance(agencyId, instanceId, request);
+        assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
+        verify(ddiService).evictAllCaches();
     }
 
-    @Test
-    void shouldUpdatePhysicalInstanceWithPartialData() {
+    static Stream<Named<UpdatePhysicalInstanceRequest>> updatePhysicalInstanceRequests() {
+        return Stream.of(
+                Named.of(
+                        "all labels",
+                        new UpdatePhysicalInstanceRequest(
+                                "Updated Physical Instance Label",
+                                "Updated DataRelationship Label",
+                                "Updated LogicalRecord Label")),
+                Named.of("partial data", new UpdatePhysicalInstanceRequest("Updated Label Only", null, null)));
+    }
+
+    @ParameterizedTest
+    @MethodSource("updatePhysicalInstanceRequests")
+    void shouldUpdatePhysicalInstance(UpdatePhysicalInstanceRequest request) {
         // Given
         String agencyId = "fr.insee";
         String instanceId = "test-id";
-        UpdatePhysicalInstanceRequest request = new UpdatePhysicalInstanceRequest("Updated Label Only", null, null);
         Ddi4Response expectedResponse = createMockDdi4Response();
         when(ddiService.updatePhysicalInstance(agencyId, instanceId, request)).thenReturn(expectedResponse);
 
@@ -342,13 +333,7 @@ class DdiResourcesTest {
         ResponseEntity<Ddi4Response> result = ddiResources.updatePhysicalInstance(agencyId, instanceId, request);
 
         // Then
-        assertNotNull(result);
-        assertEquals(HttpStatus.OK, result.getStatusCode());
-        assertEquals(MediaType.APPLICATION_JSON, result.getHeaders().getContentType());
-
-        Ddi4Response responseBody = result.getBody();
-        assertNotNull(responseBody);
-        assertEquals("test-schema", responseBody.schema());
+        assertOkDdi4Json(result);
 
         verify(ddiService).updatePhysicalInstance(agencyId, instanceId, request);
     }
@@ -407,13 +392,7 @@ class DdiResourcesTest {
         ResponseEntity<Ddi4Response> result = ddiResources.createPhysicalInstance(request);
 
         // Then
-        assertNotNull(result);
-        assertEquals(HttpStatus.OK, result.getStatusCode());
-        assertEquals(MediaType.APPLICATION_JSON, result.getHeaders().getContentType());
-
-        Ddi4Response responseBody = result.getBody();
-        assertNotNull(responseBody);
-        assertEquals("test-schema", responseBody.schema());
+        Ddi4Response responseBody = assertOkDdi4Json(result);
         assertNotNull(responseBody.physicalInstance());
         assertEquals(1, responseBody.physicalInstance().size());
 
@@ -449,12 +428,7 @@ class DdiResourcesTest {
         ResponseEntity<String> result = ddiResources.convertDdi4ToDdi3(ddi4Request);
 
         // Then
-        assertNotNull(result);
-        assertEquals(HttpStatus.OK, result.getStatusCode());
-        assertEquals(MediaType.APPLICATION_XML, result.getHeaders().getContentType());
-
-        String responseBody = result.getBody();
-        assertNotNull(responseBody);
+        String responseBody = assertOkXmlBody(result);
 
         // Verify XML structure
         assertTrue(responseBody.contains("<?xml version=\"1.0\" encoding=\"utf-8\"?>"));
@@ -481,13 +455,7 @@ class DdiResourcesTest {
         ResponseEntity<Ddi4Response> result = ddiResources.convertDdi3ToDdi4(ddi3Request);
 
         // Then
-        assertNotNull(result);
-        assertEquals(HttpStatus.OK, result.getStatusCode());
-        assertEquals(MediaType.APPLICATION_JSON, result.getHeaders().getContentType());
-
-        Ddi4Response responseBody = result.getBody();
-        assertNotNull(responseBody);
-        assertEquals("test-schema", responseBody.schema());
+        Ddi4Response responseBody = assertOkDdi4Json(result);
         assertNotNull(responseBody.physicalInstance());
         assertEquals(1, responseBody.physicalInstance().size());
 
@@ -510,12 +478,7 @@ class DdiResourcesTest {
         ResponseEntity<String> result = ddiResources.convertDdi4ToDdi3(emptyDdi4);
 
         // Then
-        assertNotNull(result);
-        assertEquals(HttpStatus.OK, result.getStatusCode());
-        assertEquals(MediaType.APPLICATION_XML, result.getHeaders().getContentType());
-
-        String responseBody = result.getBody();
-        assertNotNull(responseBody);
+        String responseBody = assertOkXmlBody(result);
         assertTrue(responseBody.contains("<ddi:FragmentInstance"));
 
         verify(ddi4toDdi3ConverterService).convertDdi4ToDdi3Xml(emptyDdi4);
@@ -554,9 +517,7 @@ class DdiResourcesTest {
 
         ResponseEntity<String> response = ddiResources.getItemXmlByVersion(agency, id, version);
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(MediaType.APPLICATION_XML, response.getHeaders().getContentType());
-        assertEquals(xml, response.getBody());
+        assertOkWith(response, MediaType.APPLICATION_XML, xml);
         verify(ddiService).getItemXml(agency, id, version);
     }
 
@@ -564,10 +525,7 @@ class DdiResourcesTest {
     void getItemXmlByVersion_shouldReturn404_whenItemNotFound() {
         when(ddiService.getItemXml("fr.insee", "unknown-id", "1")).thenReturn(null);
 
-        ResponseEntity<String> response = ddiResources.getItemXmlByVersion("fr.insee", "unknown-id", "1");
-
-        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-        assertNull(response.getBody());
+        assertNotFound(() -> ddiResources.getItemXmlByVersion("fr.insee", "unknown-id", "1"));
     }
 
     @Test
@@ -582,9 +540,7 @@ class DdiResourcesTest {
 
         ResponseEntity<String> response = ddiResources.getItemJsonByVersion(agency, id, version);
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(MediaType.APPLICATION_JSON, response.getHeaders().getContentType());
-        assertEquals(expectedJson.toString(), response.getBody());
+        assertOkWith(response, MediaType.APPLICATION_JSON, expectedJson.toString());
         verify(ddiItemConvertService).convert(xml);
     }
 
@@ -592,10 +548,7 @@ class DdiResourcesTest {
     void getItemJsonByVersion_shouldReturn404_whenItemNotFound() {
         when(ddiService.getItemXml("fr.insee", "unknown-id", "1")).thenReturn(null);
 
-        ResponseEntity<String> response = ddiResources.getItemJsonByVersion("fr.insee", "unknown-id", "1");
-
-        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-        assertNull(response.getBody());
+        assertNotFound(() -> ddiResources.getItemJsonByVersion("fr.insee", "unknown-id", "1"));
     }
 
     @Test
@@ -607,9 +560,7 @@ class DdiResourcesTest {
 
         ResponseEntity<String> response = ddiResources.getItemXml(agency, id);
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(MediaType.APPLICATION_XML, response.getHeaders().getContentType());
-        assertEquals(xml, response.getBody());
+        assertOkWith(response, MediaType.APPLICATION_XML, xml);
         verify(ddiService).getItemXml(agency, id);
     }
 
@@ -617,10 +568,7 @@ class DdiResourcesTest {
     void getItemXml_shouldReturn404_whenItemNotFound() {
         when(ddiService.getItemXml("fr.insee", "unknown-id")).thenReturn(null);
 
-        ResponseEntity<String> response = ddiResources.getItemXml("fr.insee", "unknown-id");
-
-        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-        assertNull(response.getBody());
+        assertNotFound(() -> ddiResources.getItemXml("fr.insee", "unknown-id"));
     }
 
     @Test
@@ -634,9 +582,7 @@ class DdiResourcesTest {
 
         ResponseEntity<String> response = ddiResources.getItemJson(agency, id);
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(MediaType.APPLICATION_JSON, response.getHeaders().getContentType());
-        assertEquals(expectedJson.toString(), response.getBody());
+        assertOkWith(response, MediaType.APPLICATION_JSON, expectedJson.toString());
         verify(ddiItemConvertService).convert(xml);
     }
 
@@ -644,30 +590,19 @@ class DdiResourcesTest {
     void getItemJson_shouldReturn404_whenItemNotFound() {
         when(ddiService.getItemXml("fr.insee", "unknown-id")).thenReturn(null);
 
-        ResponseEntity<String> response = ddiResources.getItemJson("fr.insee", "unknown-id");
-
-        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-        assertNull(response.getBody());
+        assertNotFound(() -> ddiResources.getItemJson("fr.insee", "unknown-id"));
     }
 
     @Test
     void shouldGetPhysicalInstancesFilteredByStamp() throws Exception, MissingUserInformationException {
         List<PartialPhysicalInstance> filteredInstances =
                 List.of(new PartialPhysicalInstance("pi-1", "Physical Instance 1", new Date(), "fr.insee"));
-        User stampUser = new User("user-1", List.of("role-stamp"), Set.of("stamp-A"));
-        when(userProvider.findUser()).thenReturn(Optional.of(stampUser));
-        when(rbacFetcher.getApplicationActionStrategyByRole(
-                        any(), eq(RBAC.Module.DDI_PHYSICALINSTANCE), eq(RBAC.Privilege.READ)))
-                .thenReturn(RBAC.Strategy.STAMP);
+        givenStampUserReadingPhysicalInstances(userProvider, rbacFetcher);
         when(ddiService.getPhysicalInstancesFilteredByStamp(Set.of("stamp-A"))).thenReturn(filteredInstances);
 
         ResponseEntity<List<PartialPhysicalInstanceResponse>> response = ddiResources.getPhysicalInstances();
 
-        assertNotNull(response);
-        assertEquals(200, response.getStatusCode().value());
-        List<PartialPhysicalInstanceResponse> result = response.getBody();
-        assertNotNull(result);
-        assertEquals(1, result.size());
+        List<PartialPhysicalInstanceResponse> result = assertOkListOfSize(response, 1);
         assertEquals("pi-1", result.getFirst().getId());
 
         verify(ddiService).getPhysicalInstancesFilteredByStamp(Set.of("stamp-A"));
@@ -676,17 +611,7 @@ class DdiResourcesTest {
 
     @Test
     void searchPhysicalInstances_mapsRowsWithResolvedParentLabels() {
-        PhysicalInstanceSearchRow row = new PhysicalInstanceSearchRow(
-                "fr.insee",
-                "pi-1",
-                "Instance A",
-                new Date(),
-                "fr.insee",
-                "su-1",
-                "Study One",
-                "fr.insee",
-                "g1",
-                "Group One");
+        PhysicalInstanceSearchRow row = searchRow();
         when(ddiService.searchPhysicalInstances()).thenReturn(List.of(row));
 
         ResponseEntity<List<PhysicalInstanceSearchResponse>> response = ddiResources.searchPhysicalInstances(null);
@@ -694,9 +619,7 @@ class DdiResourcesTest {
         assertNotNull(response);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(MediaType.APPLICATION_JSON, response.getHeaders().getContentType());
-        List<PhysicalInstanceSearchResponse> body = response.getBody();
-        assertNotNull(body);
-        assertEquals(1, body.size());
+        List<PhysicalInstanceSearchResponse> body = assertBodyOfSize(response, 1);
         assertEquals("pi-1", body.getFirst().id());
         assertEquals("Instance A", body.getFirst().label());
         assertEquals("Study One", body.getFirst().studyUnitLabel());
@@ -706,17 +629,7 @@ class DdiResourcesTest {
 
     @Test
     void searchPhysicalInstances_withCacheControlNoCache_evictsCacheThenServesFreshRows() {
-        PhysicalInstanceSearchRow row = new PhysicalInstanceSearchRow(
-                "fr.insee",
-                "pi-1",
-                "Instance A",
-                new Date(),
-                "fr.insee",
-                "su-1",
-                "Study One",
-                "fr.insee",
-                "g1",
-                "Group One");
+        PhysicalInstanceSearchRow row = searchRow();
         when(ddiService.searchPhysicalInstances()).thenReturn(List.of(row));
 
         ResponseEntity<List<PhysicalInstanceSearchResponse>> response =
@@ -752,22 +665,8 @@ class DdiResourcesTest {
 
     @Test
     void searchPhysicalInstances_appliesStampStrategy() throws MissingUserInformationException, RmesException {
-        PhysicalInstanceSearchRow row = new PhysicalInstanceSearchRow(
-                "fr.insee",
-                "pi-1",
-                "Instance A",
-                new Date(),
-                "fr.insee",
-                "su-1",
-                "Study One",
-                "fr.insee",
-                "g1",
-                "Group One");
-        User stampUser = new User("user-1", List.of("role-stamp"), Set.of("stamp-A"));
-        when(userProvider.findUser()).thenReturn(Optional.of(stampUser));
-        when(rbacFetcher.getApplicationActionStrategyByRole(
-                        any(), eq(RBAC.Module.DDI_PHYSICALINSTANCE), eq(RBAC.Privilege.READ)))
-                .thenReturn(RBAC.Strategy.STAMP);
+        PhysicalInstanceSearchRow row = searchRow();
+        givenStampUserReadingPhysicalInstances(userProvider, rbacFetcher);
         when(ddiService.searchPhysicalInstancesFilteredByStamp(Set.of("stamp-A")))
                 .thenReturn(List.of(row));
 
@@ -906,9 +805,7 @@ class DdiResourcesTest {
 
         ResponseEntity<String> response = ddiResources.getCodeListXml(CL_AGENCY, CL_ID);
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(MediaType.APPLICATION_XML, response.getHeaders().getContentType());
-        assertEquals(xml, response.getBody());
+        assertOkWith(response, MediaType.APPLICATION_XML, xml);
         verify(ddiService).getCodeListXml(CL_AGENCY, CL_ID, null);
     }
 
@@ -916,10 +813,7 @@ class DdiResourcesTest {
     void getCodeListXml_returns404WhenNull() {
         when(ddiService.getCodeListXml(CL_AGENCY, "unknown", null)).thenReturn(null);
 
-        ResponseEntity<String> response = ddiResources.getCodeListXml(CL_AGENCY, "unknown");
-
-        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-        assertNull(response.getBody());
+        assertNotFound(() -> ddiResources.getCodeListXml(CL_AGENCY, "unknown"));
     }
 
     @Test
@@ -929,9 +823,7 @@ class DdiResourcesTest {
 
         ResponseEntity<Ddi4Response> response = ddiResources.getCodeListJson(CL_AGENCY, CL_ID);
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(MediaType.APPLICATION_JSON, response.getHeaders().getContentType());
-        assertEquals(ddi4, response.getBody());
+        assertOkWith(response, MediaType.APPLICATION_JSON, ddi4);
         verify(ddiService).getCodeList(CL_AGENCY, CL_ID, null);
     }
 
@@ -939,10 +831,7 @@ class DdiResourcesTest {
     void getCodeListJson_returns404WhenNull() {
         when(ddiService.getCodeList(CL_AGENCY, "unknown", null)).thenReturn(null);
 
-        ResponseEntity<Ddi4Response> response = ddiResources.getCodeListJson(CL_AGENCY, "unknown");
-
-        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-        assertNull(response.getBody());
+        assertNotFound(() -> ddiResources.getCodeListJson(CL_AGENCY, "unknown"));
     }
 
     @Test
@@ -952,9 +841,7 @@ class DdiResourcesTest {
 
         ResponseEntity<String> response = ddiResources.getCodeListXmlByVersion(CL_AGENCY, CL_ID, CL_VERSION);
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(MediaType.APPLICATION_XML, response.getHeaders().getContentType());
-        assertEquals(xml, response.getBody());
+        assertOkWith(response, MediaType.APPLICATION_XML, xml);
         verify(ddiService).getCodeListXml(CL_AGENCY, CL_ID, CL_VERSION);
     }
 
@@ -970,43 +857,50 @@ class DdiResourcesTest {
         verify(ddiService).getCodeList(CL_AGENCY, CL_ID, CL_VERSION);
     }
 
+    // --- GET /ddi/operation/{id}/physical-instances ---
+
+    @Test
+    void getOperationPhysicalInstances_listsThePhysicalInstancesOfTheOperation() {
+        when(ddiService.getPhysicalInstancesByOperation("s1268"))
+                .thenReturn(List.of(new PartialPhysicalInstance("pi-1", "Individus", null, "fr.insee")));
+
+        ResponseEntity<List<PartialPhysicalInstanceResponse>> response =
+                ddiResources.getOperationPhysicalInstances("s1268");
+
+        List<PartialPhysicalInstanceResponse> result = assertOkListOfSize(response, 1);
+        assertEquals("pi-1", result.getFirst().getId());
+        assertEquals("Individus", result.getFirst().getLabel());
+    }
+
     // --- GET /ddi/operation/{id}/fichiers (JSON, public) ---
 
     @Test
     void getOperationStudyUnitJson_returns200WithDdi4_whenStudyUnitExists() throws RmesException {
         String id = "op1";
-        String operationIri = "http://id.insee.fr/operations/operation/op1";
+        String operationIri = givenOperationIri(id);
         Ddi4StudyUnitResponse expected = aStudyUnitResponse(operationIri);
-        when(bauhausUriBuilder.getCompleteUriPublication("operation", id)).thenReturn(operationIri);
         when(ddiService.getStudyUnitByOperationIri(operationIri)).thenReturn(Optional.of(expected));
 
         ResponseEntity<Ddi4StudyUnitResponse> response = ddiResources.getOperationStudyUnitJson(id);
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(MediaType.APPLICATION_JSON, response.getHeaders().getContentType());
-        assertEquals(expected, response.getBody());
+        assertOkWith(response, MediaType.APPLICATION_JSON, expected);
         verify(ddiItemConvertService, never()).convert(any());
     }
 
     @Test
     void getOperationStudyUnitJson_returns404_whenStudyUnitNotFound() throws RmesException {
         String id = "unknown";
-        String operationIri = "http://id.insee.fr/operations/operation/unknown";
-        when(bauhausUriBuilder.getCompleteUriPublication("operation", id)).thenReturn(operationIri);
+        String operationIri = givenOperationIri(id);
         when(ddiService.getStudyUnitByOperationIri(operationIri)).thenReturn(Optional.empty());
 
-        ResponseEntity<Ddi4StudyUnitResponse> response = ddiResources.getOperationStudyUnitJson(id);
-
-        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-        assertNull(response.getBody());
+        assertNotFound(() -> ddiResources.getOperationStudyUnitJson(id));
     }
 
     /** #1145 : la sortie JSON porte la StudyUnit et les PhysicalInstances qu'elle référence. */
     @Test
     void getOperationStudyUnitJson_carriesTheStudyUnitAndItsPhysicalInstances() throws Exception {
         String id = "op1";
-        String operationIri = "http://id.insee.fr/operations/operation/op1";
-        when(bauhausUriBuilder.getCompleteUriPublication("operation", id)).thenReturn(operationIri);
+        String operationIri = givenOperationIri(id);
         when(ddiService.getStudyUnitByOperationIri(operationIri))
                 .thenReturn(Optional.of(aStudyUnitResponse(operationIri)));
 
@@ -1047,30 +941,23 @@ class DdiResourcesTest {
     @Test
     void getOperationStudyUnitXml_returns200WithXml_whenStudyUnitExists() throws RmesException {
         String id = "op1";
-        String operationIri = "http://id.insee.fr/operations/operation/op1";
+        String operationIri = givenOperationIri(id);
         String xml = "<Fragment><StudyUnit/></Fragment>";
-        when(bauhausUriBuilder.getCompleteUriPublication("operation", id)).thenReturn(operationIri);
         when(ddiService.getStudyUnitXmlByOperationIri(operationIri)).thenReturn(Optional.of(xml));
 
         ResponseEntity<String> response = ddiResources.getOperationStudyUnitXml(id);
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(MediaType.APPLICATION_XML, response.getHeaders().getContentType());
-        assertEquals(xml, response.getBody());
+        assertOkWith(response, MediaType.APPLICATION_XML, xml);
         verify(ddiItemConvertService, never()).convert(any());
     }
 
     @Test
     void getOperationStudyUnitXml_returns404_whenStudyUnitNotFound() throws RmesException {
         String id = "unknown";
-        String operationIri = "http://id.insee.fr/operations/operation/unknown";
-        when(bauhausUriBuilder.getCompleteUriPublication("operation", id)).thenReturn(operationIri);
+        String operationIri = givenOperationIri(id);
         when(ddiService.getStudyUnitXmlByOperationIri(operationIri)).thenReturn(Optional.empty());
 
-        ResponseEntity<String> response = ddiResources.getOperationStudyUnitXml(id);
-
-        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-        assertNull(response.getBody());
+        assertNotFound(() -> ddiResources.getOperationStudyUnitXml(id));
     }
 
     // #1143 : le endpoint est exposé sous /ddi/public/operation/{id}/fichiers (et plus sous /studyUnit).
@@ -1079,8 +966,7 @@ class DdiResourcesTest {
     void operationStudyUnitEndpointMappedUnderFichiers_json() throws Exception {
         MockMvc mockMvc = MockMvcBuilders.standaloneSetup(ddiResources).build();
         String id = "op1";
-        String operationIri = "http://id.insee.fr/operations/operation/op1";
-        when(bauhausUriBuilder.getCompleteUriPublication("operation", id)).thenReturn(operationIri);
+        String operationIri = givenOperationIri(id);
         when(ddiService.getStudyUnitByOperationIri(operationIri))
                 .thenReturn(Optional.of(aStudyUnitResponse(operationIri)));
 
@@ -1092,9 +978,8 @@ class DdiResourcesTest {
     void operationStudyUnitEndpointMappedUnderFichiers_xml() throws Exception {
         MockMvc mockMvc = MockMvcBuilders.standaloneSetup(ddiResources).build();
         String id = "op1";
-        String operationIri = "http://id.insee.fr/operations/operation/op1";
+        String operationIri = givenOperationIri(id);
         String xml = "<Fragment><StudyUnit/></Fragment>";
-        when(bauhausUriBuilder.getCompleteUriPublication("operation", id)).thenReturn(operationIri);
         when(ddiService.getStudyUnitXmlByOperationIri(operationIri)).thenReturn(Optional.of(xml));
 
         mockMvc.perform(get("/ddi/public/operation/{id}/fichiers", id).accept(MediaType.APPLICATION_XML))
@@ -1116,5 +1001,60 @@ class DdiResourcesTest {
 
         mockMvc.perform(get("/ddi/public/operation/{id}/studyUnit", id).accept(MediaType.APPLICATION_XML))
                 .andExpect(status().isNotFound());
+    }
+
+    private String givenOperationIri(String id) {
+        String operationIri = "http://id.insee.fr/operations/operation/" + id;
+        when(bauhausUriBuilder.getCompleteUriPublication("operation", id)).thenReturn(operationIri);
+        return operationIri;
+    }
+
+    private static PhysicalInstanceSearchRow searchRow() {
+        return new PhysicalInstanceSearchRow(
+                "fr.insee",
+                "pi-1",
+                "Instance A",
+                new Date(),
+                "fr.insee",
+                "su-1",
+                "Study One",
+                "fr.insee",
+                "g1",
+                "Group One");
+    }
+
+    /** 200 JSON dont le corps est la réponse DDI 4 de schéma {@code test-schema}, rendue pour la suite. */
+    private static Ddi4Response assertOkDdi4Json(ResponseEntity<Ddi4Response> result) {
+        assertNotNull(result);
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertEquals(MediaType.APPLICATION_JSON, result.getHeaders().getContentType());
+
+        Ddi4Response responseBody = result.getBody();
+        assertNotNull(responseBody);
+        assertEquals("test-schema", responseBody.schema());
+        return responseBody;
+    }
+
+    /** 200 XML dont le corps est non nul, rendu pour la suite. */
+    private static String assertOkXmlBody(ResponseEntity<String> result) {
+        assertNotNull(result);
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertEquals(MediaType.APPLICATION_XML, result.getHeaders().getContentType());
+
+        String responseBody = result.getBody();
+        assertNotNull(responseBody);
+        return responseBody;
+    }
+
+    private static void assertOkWith(ResponseEntity<?> response, MediaType contentType, Object expectedBody) {
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(contentType, response.getHeaders().getContentType());
+        assertEquals(expectedBody, response.getBody());
+    }
+
+    /** Un item introuvable lève un 404, que le filet des erreurs sert au format {@code ApiError}. */
+    private static void assertNotFound(Executable call) {
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, call);
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
     }
 }

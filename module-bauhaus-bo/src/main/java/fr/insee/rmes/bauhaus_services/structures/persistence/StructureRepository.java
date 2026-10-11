@@ -14,7 +14,6 @@ import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
-import fr.insee.rmes.exceptions.errors.CodesListErrorCodes;
 import fr.insee.rmes.graphdb.ontologies.INSEE;
 import fr.insee.rmes.graphdb.ontologies.QB;
 import fr.insee.rmes.json.JSONUtils;
@@ -457,7 +456,7 @@ public class StructureRepository extends RdfService {
                 .orElseThrow(() -> new RmesNotFoundException("Structure not found", structureId));
         if (!structureState.equalsIgnoreCase("Unpublished")) {
             throw new RmesBadRequestException(
-                    CodesListErrorCodes.STRUCTURE_DELETE_ONLY_UNPUBLISHED, "Only unpublished codelist can be deleted");
+                    ErrorCodes.STRUCTURE_DELETE_ONLY_UNPUBLISHED, "Only unpublished structures can be deleted");
         } else {
             IRI structureIri = RdfUtils.structureIRI(structureId);
             repoGestion.clearStructureNodeAndComponents(structureIri);

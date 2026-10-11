@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 @ServerSideAdaptor
 @Service
 public class PropertiesRbacFetcher implements RbacFetcher {
+
     private static final Logger logger = LoggerFactory.getLogger(PropertiesRbacFetcher.class);
 
     private final Set<AllModuleAccessPrivileges> allModulesAccessPrivileges;
@@ -94,7 +95,7 @@ public class PropertiesRbacFetcher implements RbacFetcher {
                     }
                 }
             } catch (UnknownRoleException _) {
-                logger.debug("Role {} is not declared in the RBAC configuration, ignored", role);
+                logger.warn("Role {} is not declared in the RBAC configuration, it is ignored", role);
             }
         }
         return result;

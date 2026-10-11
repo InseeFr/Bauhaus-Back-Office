@@ -1,19 +1,16 @@
 package fr.insee.rmes.modules.codeslists.codeslists.webservice;
 
-import static fr.insee.rmes.integration.authorizations.TokenForTestsConfiguration.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.config.auth.UserAuthTestConfiguration;
-import fr.insee.rmes.integration.AbstractResourcesEnvProd;
+import fr.insee.rmes.modules.AbstractHasAccessResourcesTest;
 import fr.insee.rmes.modules.codeslists.codeslists.domain.model.CodesListId;
 import fr.insee.rmes.modules.codeslists.codeslists.domain.port.clientside.CodesListsService;
 import fr.insee.rmes.modules.commons.configuration.LogRequestFilter;
 import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
-import java.util.Collections;
 import java.util.stream.Stream;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -33,7 +30,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
         properties = {"fr.insee.rmes.bauhaus.modules.codelists.enabled=true", "fr.insee.rmes.bauhaus.extensions=pdf,odt"
         })
 @Import({CodesListsResources.class, UserAuthTestConfiguration.class})
-class CodesListResourcesHasAccessIntegrationTest extends AbstractResourcesEnvProd {
+class CodesListResourcesHasAccessIntegrationTest extends AbstractHasAccessResourcesTest {
 
     @Configuration
     @EnableMethodSecurity(securedEnabled = true)
@@ -69,33 +66,26 @@ class CodesListResourcesHasAccessIntegrationTest extends AbstractResourcesEnvPro
     @MethodSource("provideCodeListData")
     @ParameterizedTest
     void updateCodeList(Integer code, boolean hasAccessReturn) throws MissingUserInformationException, Exception {
-        when(checker.hasAccess(any(), any(), any(), any())).thenReturn(hasAccessReturn);
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
 
         var request = put("/codeList/" + codesListId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
                 .content(VALID_CODES_LIST_BODY.formatted(codesListId));
-        request.header("Authorization", "Bearer toto");
 
-        mvc.perform(request).andExpect(status().is(code));
+        assertStatusWithAccess(request, code, hasAccessReturn);
     }
 
     @MethodSource("providePostCodeListData")
     @ParameterizedTest
     void postCodeList(Integer code, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
-        when(checker.hasAccess(any(), any(), any(), any())).thenReturn(hasAccessReturn);
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
-
         when(codesListsService.create(any())).thenReturn(new CodesListId("1"));
 
         var request = post("/codeList")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
                 .content(VALID_CODES_LIST_BODY.formatted("1"));
-        request.header("Authorization", "Bearer toto");
 
-        mvc.perform(request).andExpect(status().is(code));
+        assertStatusWithAccess(request, code, hasAccessReturn);
     }
 
     private static Stream<Arguments> providePostCodeListData() {
@@ -109,15 +99,12 @@ class CodesListResourcesHasAccessIntegrationTest extends AbstractResourcesEnvPro
     @MethodSource("provideCodeListData")
     @ParameterizedTest
     void deleteCodeList(Integer code, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
-        when(checker.hasAccess(any(), any(), any(), any())).thenReturn(hasAccessReturn);
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
 
         var request = delete("/codeList/" + codesListId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON);
-        request.header("Authorization", "Bearer toto");
 
-        mvc.perform(request).andExpect(status().is(code));
+        assertStatusWithAccess(request, code, hasAccessReturn);
     }
 
     private static final String VALID_CODE_BODY = """
@@ -130,8 +117,6 @@ class CodesListResourcesHasAccessIntegrationTest extends AbstractResourcesEnvPro
     @MethodSource("provideCodeData")
     @ParameterizedTest
     void postCode(Integer code, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
-        when(checker.hasAccess(any(), any(), any(), any())).thenReturn(hasAccessReturn);
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
 
         var request = post("/codeList/detailed/1/codes")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -139,16 +124,13 @@ class CodesListResourcesHasAccessIntegrationTest extends AbstractResourcesEnvPro
                 // Corps complet : la validation du @RequestBody passe avant le contrôle RBAC,
                 // un corps incomplet répondrait 400 sans jamais atteindre le HasAccess testé ici.
                 .content(VALID_CODE_BODY);
-        request.header("Authorization", "Bearer toto");
 
-        mvc.perform(request).andExpect(status().is(code));
+        assertStatusWithAccess(request, code, hasAccessReturn);
     }
 
     @MethodSource("provideCodeListData")
     @ParameterizedTest
     void putCode(Integer code, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
-        when(checker.hasAccess(any(), any(), any(), any())).thenReturn(hasAccessReturn);
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
 
         var request = put("/codeList/detailed/1/codes/2")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -156,23 +138,19 @@ class CodesListResourcesHasAccessIntegrationTest extends AbstractResourcesEnvPro
                 // Corps complet : la validation du @RequestBody passe avant le contrôle RBAC,
                 // un corps incomplet répondrait 400 sans jamais atteindre le HasAccess testé ici.
                 .content(VALID_CODE_BODY);
-        request.header("Authorization", "Bearer toto");
 
-        mvc.perform(request).andExpect(status().is(code));
+        assertStatusWithAccess(request, code, hasAccessReturn);
     }
 
     @MethodSource("provideCodeListData")
     @ParameterizedTest
     void putCodesList(Integer code, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
-        when(checker.hasAccess(any(), any(), any(), any())).thenReturn(hasAccessReturn);
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
 
         var request = put("/codeList/1/validate")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
                 .content("{\"id\": \"1\"}");
-        request.header("Authorization", "Bearer toto");
 
-        mvc.perform(request).andExpect(status().is(code));
+        assertStatusWithAccess(request, code, hasAccessReturn);
     }
 }

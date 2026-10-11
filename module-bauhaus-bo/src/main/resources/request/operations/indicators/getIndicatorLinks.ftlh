@@ -1,8 +1,8 @@
-SELECT ?id ?typeOfObject ?labelLg1 ?labelLg2
+SELECT DISTINCT ?id ?typeOfObject ?labelLg1 ?labelLg2
 FROM ${OPERATIONS_GRAPH}
 FROM ${PRODUCTS_GRAPH}
 WHERE {
-?indic ${LINKPREDICATE} ?uriLinked .
+?indic ${LINKPREDICATE}<#if SYMMETRIC>|^${LINKPREDICATE}</#if> ?uriLinked .
 ?uriLinked skos:prefLabel ?labelLg1 .
 FILTER (lang(?labelLg1) = ${LG1}) .
 OPTIONAL {?uriLinked skos:prefLabel ?labelLg2 .

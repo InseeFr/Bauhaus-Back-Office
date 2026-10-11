@@ -1,5 +1,6 @@
 package fr.insee.rmes.modules.concepts.concept;
 
+import static fr.insee.rmes.testcontainers.GraphDbTestProperties.registerGestionAndDedicatedPublication;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import fr.insee.rmes.json.JSONUtils;
@@ -49,17 +50,9 @@ class ConceptConceptCollectionIntegrationTest extends WithGraphDBContainer {
     @LocalServerPort
     int serverPort;
 
-    private static final String BAUHAUS_TEST_PUBLICATION_REPOSITORY = "bauhaus-test-pub";
-
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
-        String sesameServer = "http://" + container.getHost() + ":" + container.getMappedPort(7200);
-        registry.add("fr.insee.rmes.bauhaus.sesame.gestion.sesameServer", () -> sesameServer);
-        registry.add("fr.insee.rmes.bauhaus.sesame.gestion.repository", () -> BAUHAUS_TEST_REPOSITORY);
-        container.withInitFolder("/testcontainers").withRepository("config-pub.ttl");
-        registry.add("fr.insee.rmes.bauhaus.sesame.publication.sesameServer", () -> sesameServer);
-        registry.add("fr.insee.rmes.bauhaus.sesame.publication.repository", () -> BAUHAUS_TEST_PUBLICATION_REPOSITORY);
-        registry.add("fr.insee.rmes.bauhaus.sesame.publication.baseURI", () -> "http://id.insee.fr/");
+        registerGestionAndDedicatedPublication(registry);
         container
                 .withInitFolder("fr/insee/rmes/modules/concepts/concept")
                 .withTrigFiles("concept-concept-collection-integration-test.trig");

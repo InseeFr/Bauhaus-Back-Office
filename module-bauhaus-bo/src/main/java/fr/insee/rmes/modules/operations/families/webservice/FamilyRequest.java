@@ -1,5 +1,7 @@
 package fr.insee.rmes.modules.operations.families.webservice;
 
+import static fr.insee.rmes.modules.commons.webservice.ValidationMessages.REQUIRED;
+
 import fr.insee.rmes.modules.operations.families.domain.model.commands.CreateFamilyCommand;
 import fr.insee.rmes.modules.operations.families.domain.model.commands.UpdateFamilyCommand;
 import jakarta.validation.constraints.NotBlank;
@@ -15,8 +17,8 @@ import jakarta.validation.constraints.NotBlank;
  * L'identifiant d'une mise à jour vient du chemin, jamais du corps.
  */
 public record FamilyRequest(
-        @NotBlank(message = "prefLabelLg1 is required") String prefLabelLg1,
-        @NotBlank(message = "prefLabelLg2 is required") String prefLabelLg2,
+        @NotBlank(message = REQUIRED) String prefLabelLg1,
+        @NotBlank(message = REQUIRED) String prefLabelLg2,
         String abstractLg1,
         String abstractLg2,
         String created) {

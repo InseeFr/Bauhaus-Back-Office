@@ -8,6 +8,7 @@ import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.modules.datasets.distributions.model.Distribution;
 import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
+import fr.insee.rmes.testcontainers.GraphDbTestProperties;
 import fr.insee.rmes.testcontainers.WithGraphDBContainer;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -23,9 +24,7 @@ class DistributionServiceImplTest extends WithGraphDBContainer {
 
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
-        String sesameServer = "http://" + container.getHost() + ":" + container.getMappedPort(7200);
-        registry.add("fr.insee.rmes.bauhaus.sesame.gestion.sesameServer", () -> sesameServer);
-        registry.add("fr.insee.rmes.bauhaus.sesame.gestion.repository", () -> "bauhaus-test");
+        GraphDbTestProperties.registerGestion(registry);
     }
 
     private void assertDistribution(Distribution distribution) {
@@ -36,8 +35,7 @@ class DistributionServiceImplTest extends WithGraphDBContainer {
         assertNotNull(distribution.getUpdated());
     }
 
-    @Test
-    void should_create_get_update_distribution() throws Exception {
+    private String createAndAssertDistribution() throws Exception {
         String id = distributionService.create("""
                 {
                     "labelLg1": "label lg1",
@@ -49,6 +47,12 @@ class DistributionServiceImplTest extends WithGraphDBContainer {
 
         Distribution distribution = distributionService.getDistributionByID(id);
         assertDistribution(distribution);
+        return id;
+    }
+
+    @Test
+    void should_create_get_update_distribution() throws Exception {
+        String id = createAndAssertDistribution();
 
         distributionService.update(id, """
                 {
@@ -68,18 +72,7 @@ class DistributionServiceImplTest extends WithGraphDBContainer {
 
     @Test
     void should_create_get_delete_distribution() throws Exception {
-        String id = distributionService.create("""
-                {
-                    "labelLg1": "label lg1",
-                    "labelLg2": "label lg2",
-                    "idDataset": "1"
-                }
-                """);
-        assertNotNull(id);
-
-        Distribution distribution = distributionService.getDistributionByID(id);
-
-        assertDistribution(distribution);
+        String id = createAndAssertDistribution();
 
         distributionService.deleteDistributionId(id);
         assertThrows(RmesNotFoundException.class, () -> distributionService.getDistributionByID(id));

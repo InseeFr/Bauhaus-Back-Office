@@ -32,45 +32,31 @@ public class OrganisationsResources {
             value = "/organization/{identifier}",
             produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
     public ResponseEntity<Object> getOrganizationByIdentifier(
-            @PathVariable("identifier") String identifier, @RequestHeader(required = false) String accept) {
+            @PathVariable("identifier") String identifier, @RequestHeader(required = false) String accept)
+            throws RmesException {
         String resultat;
         if (accept != null && accept.equals(MediaType.APPLICATION_XML_VALUE)) {
-            try {
-                resultat = XMLUtils.produceXMLResponse(organizationsService.getOrganization(identifier));
-            } catch (RmesException e) {
-                return ResponseEntity.status(e.getStatus()).body(e.getDetails());
-            }
-        } else
-            try {
-                resultat = organizationsService.getOrganizationJsonString(identifier);
-            } catch (RmesException e) {
-                return ResponseEntity.status(e.getStatus()).body(e.getDetails());
-            }
+            resultat = XMLUtils.produceXMLResponse(organizationsService.getOrganization(identifier));
+        } else {
+            resultat = organizationsService.getOrganizationJsonString(identifier);
+        }
         return ResponseEntity.status(HttpStatus.SC_OK).body(resultat);
     }
 
     @GetMapping(
             value = "",
             produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-    public ResponseEntity<Object> getOrganizations(@RequestHeader(required = false) String accept) {
+    public ResponseEntity<Object> getOrganizations(@RequestHeader(required = false) String accept)
+            throws RmesException, OrganisationFetchException {
         if (accept != null && accept.equals(MediaType.APPLICATION_XML_VALUE)) {
-            try {
-                return ResponseEntity.status(HttpStatus.SC_OK)
-                        .body(XMLUtils.produceXMLResponse(organizationsService.getOrganizations()));
-            } catch (RmesException e) {
-                return ResponseEntity.status(e.getStatus()).body(e.getDetails());
-            }
+            return ResponseEntity.status(HttpStatus.SC_OK)
+                    .body(XMLUtils.produceXMLResponse(organizationsService.getOrganizations()));
         }
-        try {
-            logger.info("[OrganizationsResources] Starting fetching organizations");
-            List<OrganisationResponse> resultat = organisationsService.getOrganisations().stream()
-                    .map(OrganisationResponse::fromDomain)
-                    .toList();
-            logger.info("[OrganizationsResources] fetching organizations is now done");
-            return ResponseEntity.status(HttpStatus.SC_OK).body(resultat);
-        } catch (OrganisationFetchException e) {
-            logger.error("[OrganizationsResources] failed to fetch organizations", e);
-            return ResponseEntity.status(HttpStatus.SC_INTERNAL_SERVER_ERROR).body("Failed to fetch organizations");
-        }
+        logger.info("[OrganizationsResources] Starting fetching organizations");
+        List<OrganisationResponse> resultat = organisationsService.getOrganisations().stream()
+                .map(OrganisationResponse::fromDomain)
+                .toList();
+        logger.info("[OrganizationsResources] fetching organizations is now done");
+        return ResponseEntity.status(HttpStatus.SC_OK).body(resultat);
     }
 }

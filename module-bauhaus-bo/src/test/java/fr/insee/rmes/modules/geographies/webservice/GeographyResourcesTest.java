@@ -1,12 +1,15 @@
 package fr.insee.rmes.modules.geographies.webservice;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.bauhaus_services.GeographyService;
 import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.exceptions.RmesBadRequestException;
 import java.util.List;
 import java.util.Objects;
 import org.junit.jupiter.api.Assertions;
@@ -32,6 +35,30 @@ class GeographyResourcesTest {
 
     @InjectMocks
     GeographyResources geographyResources;
+
+    /** Un refus du service remonte aux gestionnaires d'erreur au lieu d'un corps texte (ADR-1264). */
+    @Test
+    void shouldLetARefusedCreationReachTheErrorHandlers() throws RmesException {
+        when(geoService.createFeature("body")).thenThrow(new RmesBadRequestException(847, "Name already used"));
+
+        assertThrows(RmesBadRequestException.class, () -> geographyResources.createGeography("body"));
+    }
+
+    @Test
+    void shouldLetARefusedUpdateReachTheErrorHandlers() throws RmesException {
+        doThrow(new RmesBadRequestException(847, "Name already used"))
+                .when(geoService)
+                .updateFeature("t1", "body");
+
+        assertThrows(RmesBadRequestException.class, () -> geographyResources.updateGeography("t1", "body"));
+    }
+
+    @Test
+    void shouldFailWhenTheCreationReturnsNoIri() throws RmesException {
+        when(geoService.createFeature("body")).thenReturn(null);
+
+        assertThrows(IllegalStateException.class, () -> geographyResources.createGeography("body"));
+    }
 
     @Test
     void shouldReturnLocationHeaderWhenCreateGeography() throws RmesException {

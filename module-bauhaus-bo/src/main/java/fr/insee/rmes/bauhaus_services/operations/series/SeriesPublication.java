@@ -27,6 +27,9 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class SeriesPublication {
 
+    /** dcterms:subject : les thèmes pointent, comme dcat:theme des jeux de données, vers le concept publié. */
+    private static final String THEME = "subject";
+
     private static final Set<String> URI_PREDICATES_TO_TRANSFORM = Set.of(
             Constants.ISPARTOF,
             Constants.SEEALSO,
@@ -36,7 +39,8 @@ public class SeriesPublication {
             Constants.CONTRIBUTOR,
             Constants.PUBLISHER,
             Constants.ACCRUAL_PERIODICITY,
-            Constants.TYPE);
+            Constants.TYPE,
+            THEME);
 
     private static final Set<String> PREDICATES_TO_IGNORE =
             Set.of(Constants.ISVALIDATED, Constants.VALIDATION_STATE, Constants.HAS_PART);

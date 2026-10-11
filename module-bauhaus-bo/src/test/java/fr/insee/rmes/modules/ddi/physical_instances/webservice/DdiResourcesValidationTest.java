@@ -6,6 +6,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
+import fr.insee.rmes.modules.commons.webservice.ApiError;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3toDDI4ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI4toDDI3ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIItemConvertService;
@@ -17,7 +18,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.schema.Networ
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.ValidationResponse;
 import fr.insee.rmes.modules.users.domain.port.serverside.RbacFetcher;
 import fr.insee.rmes.modules.users.infrastructure.UserProvider;
-import org.junit.jupiter.api.AfterEach;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,14 +26,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
 /**
  * Unit tests for DDI validation endpoint using a simple mock schema
  */
-@ExtendWith(MockitoExtension.class)
+@ExtendWith({MockitoExtension.class, LocalhostRequestContextExtension.class})
 class DdiResourcesValidationTest {
 
     @Mock
@@ -97,20 +95,6 @@ class DdiResourcesValidationTest {
                 rbacFetcher,
                 bauhausUriBuilder,
                 new DomainDdi4SchemaService(schemaRepository, new NetworkntDdi4SchemaValidator(schemaRepository)));
-
-        // Setup mock request context
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        request.setScheme("http");
-        request.setServerName("localhost");
-        request.setServerPort(8080);
-        request.setContextPath("");
-        ServletRequestAttributes attrs = new ServletRequestAttributes(request);
-        RequestContextHolder.setRequestAttributes(attrs);
-    }
-
-    @AfterEach
-    void tearDown() {
-        RequestContextHolder.resetRequestAttributes();
     }
 
     @Test
@@ -123,14 +107,10 @@ class DdiResourcesValidationTest {
                 """;
 
         // When
-        ResponseEntity<ValidationResponse> result = ddiResources.validateDdi4(validJson);
+        ResponseEntity<Object> result = ddiResources.validateDdi4(validJson);
 
         // Then
-        assertNotNull(result);
-        assertEquals(HttpStatus.OK, result.getStatusCode());
-        assertNotNull(result.getBody());
-        assertTrue(result.getBody().valid());
-        assertEquals(0, result.getBody().errors().size());
+        assertAccepted(result);
     }
 
     @Test
@@ -151,14 +131,10 @@ class DdiResourcesValidationTest {
                 """;
 
         // When
-        ResponseEntity<ValidationResponse> result = ddiResources.validateDdi4(validJson);
+        ResponseEntity<Object> result = ddiResources.validateDdi4(validJson);
 
         // Then
-        assertNotNull(result);
-        assertEquals(HttpStatus.OK, result.getStatusCode());
-        assertNotNull(result.getBody());
-        assertTrue(result.getBody().valid());
-        assertEquals(0, result.getBody().errors().size());
+        assertAccepted(result);
     }
 
     @Test
@@ -172,14 +148,10 @@ class DdiResourcesValidationTest {
                 """;
 
         // When
-        ResponseEntity<ValidationResponse> result = ddiResources.validateDdi4(invalidJson);
+        ResponseEntity<Object> result = ddiResources.validateDdi4(invalidJson);
 
         // Then
-        assertNotNull(result);
-        assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
-        assertNotNull(result.getBody());
-        assertFalse(result.getBody().valid());
-        assertFalse(result.getBody().errors().isEmpty());
+        assertRejected(result);
     }
 
     @Test
@@ -193,14 +165,10 @@ class DdiResourcesValidationTest {
                 """;
 
         // When
-        ResponseEntity<ValidationResponse> result = ddiResources.validateDdi4(invalidJson);
+        ResponseEntity<Object> result = ddiResources.validateDdi4(invalidJson);
 
         // Then
-        assertNotNull(result);
-        assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
-        assertNotNull(result.getBody());
-        assertFalse(result.getBody().valid());
-        assertFalse(result.getBody().errors().isEmpty());
+        assertRejected(result);
     }
 
     @Test
@@ -220,16 +188,12 @@ class DdiResourcesValidationTest {
                 """;
 
         // When
-        ResponseEntity<ValidationResponse> result = ddiResources.validateDdi4(invalidJson);
+        ResponseEntity<Object> result = ddiResources.validateDdi4(invalidJson);
 
         // Then
-        assertNotNull(result);
-        assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
-        assertNotNull(result.getBody());
-        assertFalse(result.getBody().valid());
-        assertFalse(result.getBody().errors().isEmpty());
+        assertRejected(result);
         // The error message should mention the missing field (version)
-        String errorMessage = result.getBody().errors().get(0);
+        String errorMessage = violations(result).get(0);
         assertTrue(
                 errorMessage.contains("required") || errorMessage.contains("version"),
                 "Error message should mention 'required' or 'version', but was: " + errorMessage);
@@ -241,15 +205,15 @@ class DdiResourcesValidationTest {
         String malformedJson = "{ invalid json }";
 
         // When
-        ResponseEntity<ValidationResponse> result = ddiResources.validateDdi4(malformedJson);
+        ResponseEntity<Object> result = ddiResources.validateDdi4(malformedJson);
 
         // Then
         assertNotNull(result);
         assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
         assertNotNull(result.getBody());
-        assertFalse(result.getBody().valid());
-        assertEquals(1, result.getBody().errors().size());
-        assertTrue(result.getBody().errors().get(0).startsWith("Invalid JSON:"));
+        assertFalse(isValid(result));
+        assertEquals(1, violations(result).size());
+        assertTrue(violations(result).get(0).startsWith("Invalid JSON:"));
     }
 
     @Test
@@ -279,5 +243,32 @@ class DdiResourcesValidationTest {
                 failing);
 
         assertThrows(IllegalStateException.class, () -> resources.validateDdi4("{}"));
+    }
+
+    private static void assertAccepted(ResponseEntity<Object> result) {
+        assertNotNull(result);
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertNotNull(result.getBody());
+        assertTrue(isValid(result));
+        assertEquals(0, violations(result).size());
+    }
+
+    private static void assertRejected(ResponseEntity<Object> result) {
+        assertNotNull(result);
+        assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
+        assertNotNull(result.getBody());
+        assertFalse(isValid(result));
+        assertFalse(violations(result).isEmpty());
+    }
+
+    private static boolean isValid(ResponseEntity<Object> result) {
+        return result.getBody() instanceof ValidationResponse response && response.valid();
+    }
+
+    /** Écarts au schéma, portés par {@code errors} du 400 {@link ApiError}. */
+    private static List<String> violations(ResponseEntity<Object> result) {
+        return result.getBody() instanceof ApiError error && error.errors() != null
+                ? error.errors().stream().map(ApiError.FieldError::message).toList()
+                : List.of();
     }
 }

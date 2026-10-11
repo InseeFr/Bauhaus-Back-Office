@@ -19,6 +19,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnitResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4VariableScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.DuplicatePhysicalInstanceRequest;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.MutualizedCodeListCodes;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodesList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialGroup;
@@ -34,6 +35,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UpdatePhysicalI
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3toDDI4ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI4toDDI3ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.DDIRepository;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
@@ -41,6 +43,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.cache.Cache;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.web.client.HttpClientErrorException;
 
 /**
  * Adaptateur Colectica du port {@link DDIRepository}.
@@ -59,6 +62,7 @@ import org.springframework.cache.annotation.Cacheable;
  *   <li>{@link ColecticaCodeListRepository} / {@link ColecticaHierarchyBrowser} — listes de codes et
  *       navigation descendante</li>
  *   <li>{@link ColecticaUsageRepository} — « qui utilise cet objet ? »</li>
+ *   <li>{@link ColecticaStudyUnitVariablesReader} — variables réutilisables d'une StudyUnit</li>
  *   <li>{@link ColecticaMissingValuesRepository} — valeurs sentinelles</li>
  *   <li>{@link ColecticaItemCreator} — enregistrements unitaires</li>
  * </ul>
@@ -74,10 +78,13 @@ public class DDIRepositoryImpl implements DDIRepository {
     private final ColecticaCodeListRepository codeLists;
     private final ColecticaHierarchyBrowser hierarchy;
     private final ColecticaUsageRepository usages;
+    private final ColecticaStudyUnitVariablesReader studyUnitVariables;
     private final ColecticaMissingValuesRepository missingValues;
     private final ColecticaItemCreator itemCreator;
     private final ColecticaItemByIdReader itemByIdReader;
     private final PhysicalInstanceSearchRowsCache searchRowsCache;
+    private final Cache mutualizedCodeListContents;
+    private final String defaultLang;
 
     public DDIRepositoryImpl(
             ColecticaConfiguration.ColecticaInstanceConfiguration instanceConfiguration,
@@ -86,15 +93,18 @@ public class DDIRepositoryImpl implements DDIRepository {
             ColecticaConfiguration colecticaConfiguration,
             ColecticaClient colecticaClient,
             MutualizedCodeListRefsStrategy mutualizedCodeListRefsProvider,
-            Cache physicalInstanceSearchRowsCache) {
+            Cache physicalInstanceSearchRowsCache,
+            Cache mutualizedCodeListContentsCache) {
         String defaultLang = colecticaConfiguration.langs().getFirst();
+        this.defaultLang = defaultLang;
         ColecticaLabels labels = new ColecticaLabels(defaultLang);
         ColecticaSetReader setReader = new ColecticaSetReader(instanceConfiguration, colecticaClient);
-        ColecticaVersionDates versionDates = new ColecticaVersionDates(colecticaClient);
+        ColecticaVersionDates versionDates = new ColecticaVersionDates(colecticaClient, instanceConfiguration);
 
         this.catalog =
                 new ColecticaCatalogRepository(instanceConfiguration, colecticaClient, labels, ddi3ToDdi4Converter);
         this.searchRowsCache = new PhysicalInstanceSearchRowsCache(physicalInstanceSearchRowsCache, defaultLang);
+        this.mutualizedCodeListContents = mutualizedCodeListContentsCache;
         this.physicalInstanceReader = new ColecticaPhysicalInstanceReader(
                 instanceConfiguration, ddi3ToDdi4Converter, setReader, colecticaClient);
         this.groupReader = new ColecticaGroupSetReader(colecticaClient, defaultLang);
@@ -109,6 +119,8 @@ public class DDIRepositoryImpl implements DDIRepository {
                 mutualizedCodeListRefsProvider);
         this.hierarchy = new ColecticaHierarchyBrowser(instanceConfiguration, colecticaClient, catalog, codeLists);
         this.usages = new ColecticaUsageRepository(instanceConfiguration, colecticaClient, labels);
+        this.studyUnitVariables = new ColecticaStudyUnitVariablesReader(
+                instanceConfiguration, colecticaClient, ddi3ToDdi4Converter, labels);
         this.missingValues = new ColecticaMissingValuesRepository(colecticaClient, ddi3ToDdi4Converter, hierarchy);
         ColecticaSchemeFiler schemeFiler = new ColecticaSchemeFiler(
                 instanceConfiguration,
@@ -190,6 +202,11 @@ public class DDIRepositoryImpl implements DDIRepository {
     }
 
     @Override
+    public Optional<String> getStudyUnitOperationIri(String agencyId, String studyUnitId) {
+        return itemByIdReader.studyUnitOperationIri(agencyId, studyUnitId);
+    }
+
+    @Override
     public Optional<String> findStudyUnitXmlByOperationIri(String operationIri) {
         return catalog.findStudyUnitXmlByOperationIri(operationIri);
     }
@@ -197,6 +214,11 @@ public class DDIRepositoryImpl implements DDIRepository {
     @Override
     public Optional<Ddi4StudyUnitResponse> findStudyUnitByOperationIri(String operationIri) {
         return catalog.findStudyUnitByOperationIri(operationIri);
+    }
+
+    @Override
+    public List<PartialPhysicalInstance> findPhysicalInstancesByOperationIris(Collection<String> operationIris) {
+        return catalog.findPhysicalInstancesByOperationIris(operationIris);
     }
 
     @Override
@@ -213,6 +235,9 @@ public class DDIRepositoryImpl implements DDIRepository {
 
     @Override
     public Ddi4Response getPhysicalInstance(String agencyId, String id) {
+        if (!ColecticaIdentifiers.isIdentifier(id)) {
+            return null;
+        }
         return physicalInstanceReader.getPhysicalInstance(agencyId, id);
     }
 
@@ -294,7 +319,14 @@ public class DDIRepositoryImpl implements DDIRepository {
 
     @Override
     public Ddi4GroupResponse getGroup(String agencyId, String id) {
-        return groupReader.getGroup(agencyId, id);
+        if (!ColecticaIdentifiers.isIdentifier(id)) {
+            return null;
+        }
+        try {
+            return groupReader.getGroup(agencyId, id);
+        } catch (HttpClientErrorException.NotFound _) {
+            return null;
+        }
     }
 
     @Override
@@ -309,9 +341,38 @@ public class DDIRepositoryImpl implements DDIRepository {
 
     // --- Listes de codes et navigation ------------------------------------------------------------
 
+    /**
+     * Contenu d'une liste de codes. L'endpoint est générique : le front y lit aussi les listes de
+     * groupe, éditables, qui gardent la lecture complète ({@link ColecticaCodeListRepository#getCodeList}),
+     * sans cache. Seules les listes mutualisées (lecture seule) passent par la lecture allégée, mise en
+     * cache par {@code agence/id/version} : seul le numéro de la dernière version est demandé à
+     * Colectica ({@code _getLatestVersionNumbers}, quasi gratuit) ; une nouvelle version change la clé.
+     */
     @Override
     public Ddi4Response getMutualizedCodesList(String agencyId, String id) {
-        return codeLists.getCodeList(agencyId, id, null);
+        if (!codeLists.isMutualized(agencyId, id)) {
+            return codeLists.getCodeList(agencyId, id, null);
+        }
+        Integer version = codeLists.latestVersion(agencyId, id);
+        if (version == null) {
+            return null;
+        }
+        return mutualizedCodeListContents.get(
+                agencyId + "/" + id + "/" + version, () -> codeLists.getMutualizedCodeList(agencyId, id, version));
+    }
+
+    /**
+     * Vue allégée (valeur + libellé par code) d'une liste mutualisée, projetée depuis le même contenu
+     * en cache que {@link #getMutualizedCodesList} ; {@code null} pour une liste non mutualisée ou
+     * inconnue.
+     */
+    @Override
+    public MutualizedCodeListCodes getMutualizedCodeListCodes(String agencyId, String id) {
+        if (!codeLists.isMutualized(agencyId, id)) {
+            return null;
+        }
+        Ddi4Response content = getMutualizedCodesList(agencyId, id);
+        return content == null ? null : MutualizedCodeListCodes.from(content, defaultLang);
     }
 
     @Override
@@ -354,6 +415,19 @@ public class DDIRepositoryImpl implements DDIRepository {
     }
 
     @Override
+    @CacheEvict(
+            cacheNames = {
+                ColecticaCacheNames.MUTUALIZED_CODES_LISTS,
+                ColecticaCacheNames.MUTUALIZED_PACKAGE_CODE_LIST_REFS,
+                ColecticaCacheNames.PHYSICAL_INSTANCE_SEARCH_ROWS,
+                ColecticaCacheNames.MUTUALIZED_CODE_LIST_CONTENTS
+            },
+            allEntries = true)
+    public void evictAllCaches() {
+        logger.info("All Colectica caches evicted");
+    }
+
+    @Override
     public List<PartialLogicalProduct> getLogicalProductsByGroup(String agencyId, String groupId) {
         return hierarchy.getLogicalProductsByGroup(agencyId, groupId);
     }
@@ -388,6 +462,18 @@ public class DDIRepositoryImpl implements DDIRepository {
     @Override
     public List<CodeListVariableUsage> getVariablesUsingMissingValuesRepresentation(String agencyId, String mmvrId) {
         return usages.getVariablesUsingMissingValuesRepresentation(agencyId, mmvrId);
+    }
+
+    // --- Réutilisation de variables ----------------------------------------------------------------
+
+    @Override
+    public Ddi4Response getStudyUnitVariables(String agencyId, String studyUnitId) {
+        return studyUnitVariables.getStudyUnitVariables(agencyId, studyUnitId);
+    }
+
+    @Override
+    public List<CodeListVariableUsage> getStudyUnitVariableUsages(String agencyId, String studyUnitId) {
+        return studyUnitVariables.getStudyUnitVariableUsages(agencyId, studyUnitId);
     }
 
     @Override

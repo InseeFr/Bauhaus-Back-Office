@@ -36,6 +36,7 @@ class OperationSeriesQueriesTest extends WithGraphDBContainer {
         container.withTrigFiles("all-operations-and-indicators.trig");
         container.withTrigFiles("sims-all.trig");
         container.withTrigFiles("a6-appariement-variables-it.trig");
+        container.withTrigFiles("series-themes-it.trig");
     }
 
     @Test
@@ -112,6 +113,15 @@ class OperationSeriesQueriesTest extends WithGraphDBContainer {
                 operationSeriesQueries.getCreatorsBySeriesUri("http://bauhaus/operations/serie/s1236"));
         assertEquals("stamp", creators.getJSONObject(0).getString("creators"));
         assertEquals(1, creators.length());
+    }
+
+    @Test
+    void should_return_only_the_themes_of_the_requested_series() throws RmesException {
+        JSONArray themes = repositoryGestion.getResponseAsJSONList(
+                operationSeriesQueries.getThemesBySeriesIri("http://bauhaus/operations/serie/sTh1"));
+
+        assertThat(JSONUtils.jsonArrayToList(themes))
+                .isEqualTo(List.of("http://bauhaus/concepts/themes/th1", "http://bauhaus/concepts/themes/th2"));
     }
 
     @Test

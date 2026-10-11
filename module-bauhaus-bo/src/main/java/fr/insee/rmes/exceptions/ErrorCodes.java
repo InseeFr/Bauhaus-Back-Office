@@ -39,6 +39,7 @@ public class ErrorCodes {
     public static final int COMPONENT_PUBLICATION_VALIDATED_CONCEPT = 1006;
     public static final int COMPONENT_PUBLICATION_VALIDATED_CODESLIST = 1007;
     public static final int STRUCTURE_PUBLICATION_VALIDATED_COMPONENT = 1008;
+    public static final int STRUCTURE_DELETE_ONLY_UNPUBLISHED = 1009;
 
     /*
      *  400 BADREQUESTEXCEPTIONS
@@ -96,9 +97,12 @@ public class ErrorCodes {
     public static final int DATASET_DELETE_ONLY_UNPUBLISHED = 1203;
     public static final int DATASET_DELETE_ONLY_WITHOUT_DISTRIBUTION = 1204;
     public static final int DATASET_DELETE_ONLY_WITHOUT_DERIVED_DATASET = 1205;
+    public static final int DATASET_DERIVED_FROM_ITSELF = 1206;
+    public static final int DATASET_DERIVED_FROM_UNKNOWN_DATASET = 1207;
 
     /*
-     *  406 NOTACCEPTABLEEXCEPTIONS
+     *  Refus de saisie (400). Les codes chaînes gardent leur préfixe historique « 406_ » : ce sont
+     *  des clés de traduction du front, pas un statut HTTP.
      */
 
     // FAMILY

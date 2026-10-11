@@ -53,14 +53,14 @@ public class IndicatorPublication implements ObjectPublication<Indicator> {
                 operationsParentRepository.getIndicatorsValidationStatus(indicator.getId()));
 
         if (indicator.isWasGeneratedByEmpty()) {
-            throw new RmesBadRequestException(
+            throw RmesBadRequestException.coded(
                     IndicatorErrorCode.EMPTY_WAS_GENERATED_BY, "An indicator should be linked to a series.");
         }
 
         for (OperationsLink link : indicator.wasGeneratedBy) {
             var status = operationsParentRepository.getValidationStatus(link.getId());
             if (!status.equalsIgnoreCase(ValidationStatus.VALIDATED.toString())) {
-                throw new RmesBadRequestException(
+                throw RmesBadRequestException.coded(
                         IndicatorErrorCode.VALIDATION_UNVALIDATED_SERIES,
                         "An indicator can be published if and only if all parent series have been published.");
             }

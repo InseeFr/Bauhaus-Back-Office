@@ -2,6 +2,7 @@ package fr.insee.rmes.modules.ddi.physical_instances.domain.services;
 
 import static fr.insee.rmes.domain.logging.LogSanitizer.forLog;
 
+import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.DdiItemNotFoundException;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.InvalidSentinelValuesException;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CategoryCodeListUsage;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Citation;
@@ -24,6 +25,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Variable;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4VariableScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.DuplicatePhysicalInstanceRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LangString;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.MutualizedCodeListCodes;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodesList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialGroup;
@@ -37,6 +39,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UpdatePhysicalInstanceRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.DDIRepository;
+import fr.insee.rmes.modules.operation.operations.domain.port.serverside.OperationIrisPort;
 import fr.insee.rmes.modules.operation.series.domain.port.serverside.SeriesCreatorsPort;
 import java.time.Clock;
 import java.time.ZonedDateTime;
@@ -57,11 +60,17 @@ public class DDIServiceImpl implements DDIService {
 
     private final DDIRepository ddiRepository;
     private final SeriesCreatorsPort seriesCreatorsPort;
+    private final OperationIrisPort operationIrisPort;
     private final Clock clock;
 
-    public DDIServiceImpl(DDIRepository ddiRepository, SeriesCreatorsPort seriesCreatorsPort, Clock clock) {
+    public DDIServiceImpl(
+            DDIRepository ddiRepository,
+            SeriesCreatorsPort seriesCreatorsPort,
+            OperationIrisPort operationIrisPort,
+            Clock clock) {
         this.ddiRepository = ddiRepository;
         this.seriesCreatorsPort = seriesCreatorsPort;
+        this.operationIrisPort = operationIrisPort;
         this.clock = clock;
     }
 
@@ -134,7 +143,9 @@ public class DDIServiceImpl implements DDIService {
 
     @Override
     public List<PartialLogicalProduct> getLogicalProductsByGroup(String agencyId, String groupId) {
-        logger.info("Starting to get logical products for group {}/{}", forLog(agencyId), forLog(groupId));
+        if (logger.isInfoEnabled()) {
+            logger.info("Starting to get logical products for group {}/{}", forLog(agencyId), forLog(groupId));
+        }
         return ddiRepository.getLogicalProductsByGroup(agencyId, groupId);
     }
 
@@ -146,26 +157,34 @@ public class DDIServiceImpl implements DDIService {
 
     @Override
     public List<PartialCodeListScheme> getCodeListSchemesByLogicalProduct(String agencyId, String logicalProductId) {
-        logger.info(
-                "Starting to get code list schemes for logical product {}/{}",
-                forLog(agencyId),
-                forLog(logicalProductId));
+        if (logger.isInfoEnabled()) {
+            logger.info(
+                    "Starting to get code list schemes for logical product {}/{}",
+                    forLog(agencyId),
+                    forLog(logicalProductId));
+        }
         return ddiRepository.getCodeListSchemesByLogicalProduct(agencyId, logicalProductId);
     }
 
     @Override
     public List<PartialCodesList> getCodeListsByCodeListScheme(String agencyId, String codeListSchemeId) {
-        logger.info(
-                "Starting to get code lists for code list scheme {}/{}", forLog(agencyId), forLog(codeListSchemeId));
+        if (logger.isInfoEnabled()) {
+            logger.info(
+                    "Starting to get code lists for code list scheme {}/{}",
+                    forLog(agencyId),
+                    forLog(codeListSchemeId));
+        }
         return ddiRepository.getCodeListsByCodeListScheme(agencyId, codeListSchemeId);
     }
 
     @Override
     public List<PartialCodesList> getCodeListsByGroup(String agencyId, String groupId) {
-        logger.info(
-                "Starting to get all code lists for group {}/{} (all logical products / code list schemes)",
-                forLog(agencyId),
-                forLog(groupId));
+        if (logger.isInfoEnabled()) {
+            logger.info(
+                    "Starting to get all code lists for group {}/{} (all logical products / code list schemes)",
+                    forLog(agencyId),
+                    forLog(groupId));
+        }
 
         // Group -> LogicalProduct -> CodeListScheme -> CodeList, agrégé et dédupliqué par agency/id.
         Map<String, PartialCodesList> codeListsByKey = new LinkedHashMap<>();
@@ -188,39 +207,68 @@ public class DDIServiceImpl implements DDIService {
 
     @Override
     public List<PartialCodesList> getMissingCodesListsByGroup(String agencyId, String groupId) {
-        logger.info("Starting to get missing (sentinel) code lists for group {}/{}", forLog(agencyId), forLog(groupId));
+        if (logger.isInfoEnabled()) {
+            logger.info(
+                    "Starting to get missing (sentinel) code lists for group {}/{}", forLog(agencyId), forLog(groupId));
+        }
         return ddiRepository.getMissingCodesListsByGroup(agencyId, groupId);
     }
 
     @Override
     public List<PartialMissingValuesRepresentation> getMissingValuesRepresentationsByGroup(
             String agencyId, String groupId) {
-        logger.info(
-                "Starting to get reusable missing values representations for group {}/{}",
-                forLog(agencyId),
-                forLog(groupId));
+        if (logger.isInfoEnabled()) {
+            logger.info(
+                    "Starting to get reusable missing values representations for group {}/{}",
+                    forLog(agencyId),
+                    forLog(groupId));
+        }
         return ddiRepository.getMissingValuesRepresentationsByGroup(agencyId, groupId);
     }
 
     @Override
     public List<CodeListVariableUsage> getVariablesUsingCodeList(String codeListAgencyId, String codeListId) {
-        logger.info("Starting to get variables using code list {}/{}", forLog(codeListAgencyId), forLog(codeListId));
+        if (logger.isInfoEnabled()) {
+            logger.info(
+                    "Starting to get variables using code list {}/{}", forLog(codeListAgencyId), forLog(codeListId));
+        }
         return ddiRepository.getVariablesUsingCodeList(codeListAgencyId, codeListId);
     }
 
     @Override
     public List<CategoryCodeListUsage> getCodeListsUsingCategory(String categoryAgencyId, String categoryId) {
-        logger.info("Starting to get code lists using category {}/{}", forLog(categoryAgencyId), forLog(categoryId));
+        if (logger.isInfoEnabled()) {
+            logger.info(
+                    "Starting to get code lists using category {}/{}", forLog(categoryAgencyId), forLog(categoryId));
+        }
         return ddiRepository.getCodeListsUsingCategory(categoryAgencyId, categoryId);
     }
 
     @Override
     public List<CodeListVariableUsage> getVariablesUsingMissingValuesRepresentation(String agencyId, String mmvrId) {
-        logger.info(
-                "Starting to get variables using missing values representation {}/{}",
-                forLog(agencyId),
-                forLog(mmvrId));
+        if (logger.isInfoEnabled()) {
+            logger.info(
+                    "Starting to get variables using missing values representation {}/{}",
+                    forLog(agencyId),
+                    forLog(mmvrId));
+        }
         return ddiRepository.getVariablesUsingMissingValuesRepresentation(agencyId, mmvrId);
+    }
+
+    @Override
+    public Ddi4Response getStudyUnitVariables(String agencyId, String studyUnitId) {
+        if (logger.isInfoEnabled()) {
+            logger.info("Starting to get variables of study unit {}/{}", forLog(agencyId), forLog(studyUnitId));
+        }
+        return ddiRepository.getStudyUnitVariables(agencyId, studyUnitId);
+    }
+
+    @Override
+    public List<CodeListVariableUsage> getStudyUnitVariableUsages(String agencyId, String studyUnitId) {
+        if (logger.isInfoEnabled()) {
+            logger.info("Starting to get variable usages of study unit {}/{}", forLog(agencyId), forLog(studyUnitId));
+        }
+        return ddiRepository.getStudyUnitVariableUsages(agencyId, studyUnitId);
     }
 
     @Override
@@ -253,7 +301,10 @@ public class DDIServiceImpl implements DDIService {
     @Override
     public Ddi4GroupResponse getDdi4Group(String agencyId, String id) {
         Ddi4GroupResponse response = ddiRepository.getGroup(agencyId, id);
-        if (response == null || response.studyUnit() == null) {
+        if (response == null) {
+            throw DdiItemNotFoundException.group(agencyId, id);
+        }
+        if (response.studyUnit() == null) {
             return response;
         }
         List<Ddi4StudyUnit> sortedStudyUnits = response.studyUnit().stream()
@@ -274,7 +325,10 @@ public class DDIServiceImpl implements DDIService {
     @Override
     public Ddi4Response getDdi4PhysicalInstance(String agencyId, String id) {
         Ddi4Response response = this.ddiRepository.getPhysicalInstance(agencyId, id);
-        if (response == null || response.variable() == null) {
+        if (response == null) {
+            throw DdiItemNotFoundException.physicalInstance(agencyId, id);
+        }
+        if (response.variable() == null) {
             return response;
         }
         // Tri par défaut des variables sur le nom (VariableName), ascendant.
@@ -314,11 +368,13 @@ public class DDIServiceImpl implements DDIService {
     @Override
     public Ddi4Response duplicatePhysicalInstance(
             String agencyId, String id, DuplicatePhysicalInstanceRequest request) {
-        logger.info(
-                "Duplicating physical instance {}/{} with label: {}",
-                forLog(agencyId),
-                forLog(id),
-                forLog(request.physicalInstanceLabel()));
+        if (logger.isInfoEnabled()) {
+            logger.info(
+                    "Duplicating physical instance {}/{} with label: {}",
+                    forLog(agencyId),
+                    forLog(id),
+                    forLog(request.physicalInstanceLabel()));
+        }
         Reference copy = ddiRepository.duplicatePhysicalInstance(agencyId, id, request);
         return ddiRepository.getPhysicalInstance(copy.agency(), copy.id());
     }
@@ -358,9 +414,7 @@ public class DDIServiceImpl implements DDIService {
         }
         for (Ddi4ManagedMissingValuesRepresentation mmvr : mmvrs) {
             if (hasNoLabel(mmvr.label())) {
-                throw new InvalidSentinelValuesException(
-                        "Le label de la liste de valeurs sentinelles %s/%s est obligatoire"
-                                .formatted(mmvr.agency(), mmvr.id()));
+                throw InvalidSentinelValuesException.missingRepresentationLabel(mmvr.agency(), mmvr.id());
             }
             for (CodeRepresentation rep : mmvr.missingCodeRepresentation() != null
                     ? mmvr.missingCodeRepresentation()
@@ -371,9 +425,8 @@ public class DDIServiceImpl implements DDIService {
                 }
                 Ddi4CodeList sentinelCodeList = codeListsByKey.get(codeListRef.agency() + "/" + codeListRef.id());
                 if (sentinelCodeList != null && hasNoLabel(sentinelCodeList.label())) {
-                    throw new InvalidSentinelValuesException(
-                            "Le label de la liste de codes de valeurs sentinelles %s/%s est obligatoire"
-                                    .formatted(sentinelCodeList.agency(), sentinelCodeList.id()));
+                    throw InvalidSentinelValuesException.missingCodeListLabel(
+                            sentinelCodeList.agency(), sentinelCodeList.id());
                 }
             }
         }
@@ -388,71 +441,95 @@ public class DDIServiceImpl implements DDIService {
 
     @Override
     public Ddi4Response createPhysicalInstance(CreatePhysicalInstanceRequest request) {
-        logger.info("Creating new physical instance with label: {}", forLog(request.physicalInstanceLabel()));
+        if (logger.isInfoEnabled()) {
+            logger.info("Creating new physical instance with label: {}", forLog(request.physicalInstanceLabel()));
+        }
         return ddiRepository.createPhysicalInstance(request);
     }
 
     @Override
     public Ddi4Response createPhysicalInstance(CreatePhysicalInstanceRequest request, PhysicalInstanceIds ids) {
-        logger.info(
-                "Creating new physical instance with label: {} and imposed id: {}",
-                forLog(request.physicalInstanceLabel()),
-                forLog(ids.physicalInstance()));
+        if (logger.isInfoEnabled()) {
+            logger.info(
+                    "Creating new physical instance with label: {} and imposed id: {}",
+                    forLog(request.physicalInstanceLabel()),
+                    forLog(ids.physicalInstance()));
+        }
         return ddiRepository.createPhysicalInstance(request, ids);
     }
 
     @Override
     public void createLogicalProduct(Ddi4LogicalProduct logicalProduct) {
-        logger.info("Creating logical product: {}/{}", forLog(logicalProduct.agency()), forLog(logicalProduct.id()));
+        if (logger.isInfoEnabled()) {
+            logger.info(
+                    "Creating logical product: {}/{}", forLog(logicalProduct.agency()), forLog(logicalProduct.id()));
+        }
         ddiRepository.createLogicalProduct(logicalProduct);
     }
 
     @Override
     public void createCodeListScheme(Ddi4CodeListScheme codeListScheme) {
-        logger.info("Creating code list scheme: {}/{}", forLog(codeListScheme.agency()), forLog(codeListScheme.id()));
+        if (logger.isInfoEnabled()) {
+            logger.info(
+                    "Creating code list scheme: {}/{}", forLog(codeListScheme.agency()), forLog(codeListScheme.id()));
+        }
         ddiRepository.createCodeListScheme(codeListScheme);
     }
 
     @Override
     public void createCategoryScheme(Ddi4CategoryScheme categoryScheme) {
-        logger.info("Creating category scheme: {}/{}", forLog(categoryScheme.agency()), forLog(categoryScheme.id()));
+        if (logger.isInfoEnabled()) {
+            logger.info(
+                    "Creating category scheme: {}/{}", forLog(categoryScheme.agency()), forLog(categoryScheme.id()));
+        }
         ddiRepository.createCategoryScheme(categoryScheme);
     }
 
     @Override
     public void createVariableScheme(Ddi4VariableScheme variableScheme) {
-        logger.info("Creating variable scheme: {}/{}", forLog(variableScheme.agency()), forLog(variableScheme.id()));
+        if (logger.isInfoEnabled()) {
+            logger.info(
+                    "Creating variable scheme: {}/{}", forLog(variableScheme.agency()), forLog(variableScheme.id()));
+        }
         ddiRepository.createVariableScheme(variableScheme);
     }
 
     @Override
     public void createManagedRepresentationScheme(Ddi4ManagedRepresentationScheme managedRepresentationScheme) {
-        logger.info(
-                "Creating managed representation scheme: {}/{}",
-                forLog(managedRepresentationScheme.agency()),
-                forLog(managedRepresentationScheme.id()));
+        if (logger.isInfoEnabled()) {
+            logger.info(
+                    "Creating managed representation scheme: {}/{}",
+                    forLog(managedRepresentationScheme.agency()),
+                    forLog(managedRepresentationScheme.id()));
+        }
         ddiRepository.createManagedRepresentationScheme(managedRepresentationScheme);
     }
 
     @Override
     public void createManagedMissingValuesRepresentation(
             Ddi4ManagedMissingValuesRepresentation managedMissingValuesRepresentation) {
-        logger.info(
-                "Creating managed missing values representation: {}/{}",
-                forLog(managedMissingValuesRepresentation.agency()),
-                forLog(managedMissingValuesRepresentation.id()));
+        if (logger.isInfoEnabled()) {
+            logger.info(
+                    "Creating managed missing values representation: {}/{}",
+                    forLog(managedMissingValuesRepresentation.agency()),
+                    forLog(managedMissingValuesRepresentation.id()));
+        }
         ddiRepository.createManagedMissingValuesRepresentation(managedMissingValuesRepresentation);
     }
 
     @Override
     public void createCodeList(Ddi4CodeList codeList) {
-        logger.info("Creating code list: {}/{}", forLog(codeList.agency()), forLog(codeList.id()));
+        if (logger.isInfoEnabled()) {
+            logger.info("Creating code list: {}/{}", forLog(codeList.agency()), forLog(codeList.id()));
+        }
         ddiRepository.createCodeList(codeList);
     }
 
     @Override
     public void createCategory(Ddi4Category category) {
-        logger.info("Creating category: {}/{}", forLog(category.agency()), forLog(category.id()));
+        if (logger.isInfoEnabled()) {
+            logger.info("Creating category: {}/{}", forLog(category.agency()), forLog(category.id()));
+        }
         ddiRepository.createCategory(category);
     }
 
@@ -475,55 +552,91 @@ public class DDIServiceImpl implements DDIService {
     }
 
     @Override
+    public void evictAllCaches() {
+        logger.info("Evicting all Colectica caches");
+        ddiRepository.evictAllCaches();
+    }
+
+    @Override
+    public MutualizedCodeListCodes getMutualizedCodeListCodes(String agencyId, String id) {
+        if (logger.isInfoEnabled()) {
+            logger.info("Getting codes of mutualized codes list {}/{}", forLog(agencyId), forLog(id));
+        }
+        return ddiRepository.getMutualizedCodeListCodes(agencyId, id);
+    }
+
+    @Override
     public Ddi4Response getMutualizedCodesList(String agencyId, String id) {
-        logger.info("Getting mutualized codes list {}/{}", forLog(agencyId), forLog(id));
+        if (logger.isInfoEnabled()) {
+            logger.info("Getting mutualized codes list {}/{}", forLog(agencyId), forLog(id));
+        }
         return ddiRepository.getMutualizedCodesList(agencyId, id);
     }
 
     @Override
     public Ddi4Response getCodeList(String agencyId, String id, String version) {
-        logger.info("Getting code list {}/{}/{}", forLog(agencyId), forLog(id), forLog(version));
+        if (logger.isInfoEnabled()) {
+            logger.info("Getting code list {}/{}/{}", forLog(agencyId), forLog(id), forLog(version));
+        }
         return ddiRepository.getCodeList(agencyId, id, version);
     }
 
     @Override
     public String getCodeListXml(String agencyId, String id, String version) {
-        logger.info("Getting code list DDI 3.3 XML {}/{}/{}", forLog(agencyId), forLog(id), forLog(version));
+        if (logger.isInfoEnabled()) {
+            logger.info("Getting code list DDI 3.3 XML {}/{}/{}", forLog(agencyId), forLog(id), forLog(version));
+        }
         return ddiRepository.getCodeListXml(agencyId, id, version);
     }
 
     @Override
     public Ddi4Response getDataRelationships(String agencyId, String id, String version) {
-        logger.info("Getting data relationships {}/{}/{}", forLog(agencyId), forLog(id), forLog(version));
+        if (logger.isInfoEnabled()) {
+            logger.info("Getting data relationships {}/{}/{}", forLog(agencyId), forLog(id), forLog(version));
+        }
         return ddiRepository.getDataRelationships(agencyId, id, version);
     }
 
     @Override
     public String getDataRelationshipsXml(String agencyId, String id, String version) {
-        logger.info("Getting data relationships DDI 3.3 XML {}/{}/{}", forLog(agencyId), forLog(id), forLog(version));
+        if (logger.isInfoEnabled()) {
+            logger.info(
+                    "Getting data relationships DDI 3.3 XML {}/{}/{}", forLog(agencyId), forLog(id), forLog(version));
+        }
         return ddiRepository.getDataRelationshipsXml(agencyId, id, version);
     }
 
     @Override
     public String getItemXml(String agency, String id, String version) {
-        logger.info("Getting DDI 3.3 XML for {}/{}/{}", forLog(agency), forLog(id), forLog(version));
+        if (logger.isInfoEnabled()) {
+            logger.info("Getting DDI 3.3 XML for {}/{}/{}", forLog(agency), forLog(id), forLog(version));
+        }
         return ddiRepository.getItemXml(agency, id, version);
     }
 
     @Override
     public String getItemXml(String agency, String id) {
-        logger.info("Getting DDI 3.3 XML (latest version) for {}/{}", forLog(agency), forLog(id));
+        if (logger.isInfoEnabled()) {
+            logger.info("Getting DDI 3.3 XML (latest version) for {}/{}", forLog(agency), forLog(id));
+        }
         return ddiRepository.getItemXml(agency, id);
     }
 
     @Override
     public PhysicalInstanceParents getPhysicalInstanceParents(String agencyId, String id) {
-        logger.info("Getting parents for physical instance {}/{}", forLog(agencyId), forLog(id));
-        // Les libellés (groupe, étude) arrivent avec la remontée des relations ; seuls les stamps
-        // créateurs demandent de lire le groupe, et encore : ses seules IRIs de séries.
+        if (logger.isInfoEnabled()) {
+            logger.info("Getting parents for physical instance {}/{}", forLog(agencyId), forLog(id));
+        }
+        // Les libellés (groupe, étude) arrivent avec la remontée des relations ; les stamps
+        // créateurs et la série reflétée demandent de lire le groupe, et encore : ses seules IRIs
+        // de séries. L'opération reflétée se lit de même sur la seule étude.
         PhysicalInstanceParents parents = ddiRepository.getPhysicalInstanceParents(agencyId, id);
         List<String> seriesIris = ddiRepository.getGroupSeriesIris(parents.groupAgency(), parents.groupId());
-        return parents.withStamps(creatorStampsOfSeries(seriesIris));
+        String operationIri = ddiRepository
+                .getStudyUnitOperationIri(parents.studyUnitAgency(), parents.studyUnitId())
+                .orElse(null);
+        return parents.resolved(
+                creatorStampsOfSeries(seriesIris), seriesIris.isEmpty() ? null : seriesIris.getFirst(), operationIri);
     }
 
     private List<String> resolveGroupCreatorStamps(String groupAgency, String groupId) {
@@ -559,13 +672,25 @@ public class DDIServiceImpl implements DDIService {
 
     @Override
     public Optional<String> getStudyUnitXmlByOperationIri(String operationIri) {
-        logger.info("Getting StudyUnit XML by operationIri: {}", forLog(operationIri));
+        if (logger.isInfoEnabled()) {
+            logger.info("Getting StudyUnit XML by operationIri: {}", forLog(operationIri));
+        }
         return ddiRepository.findStudyUnitXmlByOperationIri(operationIri);
     }
 
     @Override
     public Optional<Ddi4StudyUnitResponse> getStudyUnitByOperationIri(String operationIri) {
-        logger.info("Getting StudyUnit DDI4 by operationIri: {}", forLog(operationIri));
+        if (logger.isInfoEnabled()) {
+            logger.info("Getting StudyUnit DDI4 by operationIri: {}", forLog(operationIri));
+        }
         return ddiRepository.findStudyUnitByOperationIri(operationIri);
+    }
+
+    @Override
+    public List<PartialPhysicalInstance> getPhysicalInstancesByOperation(String operationId) {
+        if (logger.isInfoEnabled()) {
+            logger.info("Getting physical instances by operation: {}", forLog(operationId));
+        }
+        return ddiRepository.findPhysicalInstancesByOperationIris(operationIrisPort.irisOf(operationId));
     }
 }

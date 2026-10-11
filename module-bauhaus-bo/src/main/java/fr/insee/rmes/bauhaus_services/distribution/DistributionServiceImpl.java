@@ -17,6 +17,7 @@ import fr.insee.rmes.modules.datasets.distributions.model.DistributionsForSearch
 import fr.insee.rmes.modules.datasets.distributions.model.PartialDistribution;
 import fr.insee.rmes.modules.datasets.distributions.model.PatchDistribution;
 import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
+import fr.insee.rmes.modules.shared_kernel.infrastructure.publication.ObjectPublished;
 import fr.insee.rmes.persistance.sparql_queries.datasets.DatasetDistributionQueries;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.utils.DateUtils;
@@ -34,6 +35,7 @@ import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -54,6 +56,8 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
 
     private final DatasetDistributionQueries datasetDistributionQueries;
 
+    private final ApplicationEventPublisher events;
+
     public DistributionServiceImpl(
             RepositoryGestion repoGestion,
             IdGenerator idGenerator,
@@ -66,7 +70,8 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
             @Value("${fr.insee.rmes.bauhaus.sesame.gestion.baseURI}") String baseUriGestion,
             @Value("${fr.insee.rmes.bauhaus.distribution.baseURI}") String distributionsBaseUriSuffix,
             @Value("${fr.insee.rmes.bauhaus.adms.graph}") String admsGraphSuffix,
-            DatasetDistributionQueries datasetDistributionQueries) {
+            DatasetDistributionQueries datasetDistributionQueries,
+            ApplicationEventPublisher events) {
         super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
         this.languages = languages;
         this.datasetsGraphSuffix = datasetsGraphSuffix;
@@ -76,6 +81,7 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
         this.distributionsBaseUriSuffix = distributionsBaseUriSuffix;
         this.admsGraphSuffix = admsGraphSuffix;
         this.datasetDistributionQueries = datasetDistributionQueries;
+        this.events = events;
     }
 
     private String getAdmsGraph() {
@@ -165,27 +171,10 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
         PublicationUtils.rejectIfAlreadyPublished(
                 "Distribution", id, getDistributionByID(id).getValidationState());
 
-        Model model = new LinkedHashModel();
         IRI iri = getDistributionIri(id);
 
         publicationUtils.publishResource(iri, Set.of());
-        model.add(
-                iri,
-                INSEE.VALIDATION_STATE,
-                RdfUtils.setLiteralString(ValidationStatus.VALIDATED),
-                RdfUtils.createIRI(getDistributionGraph()));
-        model.remove(
-                iri,
-                INSEE.VALIDATION_STATE,
-                RdfUtils.setLiteralString(ValidationStatus.UNPUBLISHED),
-                RdfUtils.createIRI(getDistributionGraph()));
-        model.remove(
-                iri,
-                INSEE.VALIDATION_STATE,
-                RdfUtils.setLiteralString(ValidationStatus.MODIFIED),
-                RdfUtils.createIRI(getDistributionGraph()));
-
-        repoGestion.objectValidation(iri, model);
+        events.publishEvent(new ObjectPublished(iri, RdfUtils.createIRI(getDistributionGraph())));
 
         return id;
     }

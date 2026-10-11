@@ -24,26 +24,35 @@ class StampResourcesTest {
     @InjectMocks
     private StampResources stampResources;
 
-    @Test
-    void shouldReturnStampsWhenGetStamps() throws RmesException {
-        List<String> expectedStamps = List.of("DG75-A001", "DG75-B001", "DG75-C001");
-        when(organisationService.getStamps()).thenReturn(expectedStamps);
+    private List<String> okBodyOfGetStamps(List<String> stamps) throws RmesException {
+        when(organisationService.getStamps()).thenReturn(stamps);
 
         ResponseEntity<List<String>> response = stampResources.getStamps();
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isEqualTo(expectedStamps);
+        return response.getBody();
+    }
+
+    private List<OrganisationOption> okBodyOfGetOrganisationOptions(List<OrganisationOption> options)
+            throws RmesException {
+        when(organisationService.getOrganisations()).thenReturn(options);
+
+        ResponseEntity<List<OrganisationOption>> response = stampResources.getOrganisationOptions();
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        return response.getBody();
+    }
+
+    @Test
+    void shouldReturnStampsWhenGetStamps() throws RmesException {
+        List<String> expectedStamps = List.of("DG75-A001", "DG75-B001", "DG75-C001");
+
+        assertThat(okBodyOfGetStamps(expectedStamps)).isEqualTo(expectedStamps);
     }
 
     @Test
     void shouldReturnEmptyListWhenNoStamps() throws RmesException {
-        List<String> expectedStamps = List.of();
-        when(organisationService.getStamps()).thenReturn(expectedStamps);
-
-        ResponseEntity<List<String>> response = stampResources.getStamps();
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isEmpty();
+        assertThat(okBodyOfGetStamps(List.of())).isEmpty();
     }
 
     @Test
@@ -51,26 +60,18 @@ class StampResourcesTest {
         List<OrganisationOption> expectedOptions = List.of(
                 new OrganisationOption("DG75-A001", "Direction Générale 75 - Service A001"),
                 new OrganisationOption("DR13-DIR", "Direction Régionale 13 - Direction"));
-        when(organisationService.getOrganisations()).thenReturn(expectedOptions);
 
-        ResponseEntity<List<OrganisationOption>> response = stampResources.getOrganisationOptions();
+        List<OrganisationOption> body = okBodyOfGetOrganisationOptions(expectedOptions);
 
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).hasSize(2);
-        assertThat(response.getBody().get(0).stamp()).isEqualTo("DG75-A001");
-        assertThat(response.getBody().get(0).label()).isEqualTo("Direction Générale 75 - Service A001");
-        assertThat(response.getBody().get(1).stamp()).isEqualTo("DR13-DIR");
-        assertThat(response.getBody().get(1).label()).isEqualTo("Direction Régionale 13 - Direction");
+        assertThat(body).hasSize(2);
+        assertThat(body.get(0).stamp()).isEqualTo("DG75-A001");
+        assertThat(body.get(0).label()).isEqualTo("Direction Générale 75 - Service A001");
+        assertThat(body.get(1).stamp()).isEqualTo("DR13-DIR");
+        assertThat(body.get(1).label()).isEqualTo("Direction Régionale 13 - Direction");
     }
 
     @Test
     void shouldReturnEmptyListWhenNoOrganisations() throws RmesException {
-        List<OrganisationOption> expectedOptions = List.of();
-        when(organisationService.getOrganisations()).thenReturn(expectedOptions);
-
-        ResponseEntity<List<OrganisationOption>> response = stampResources.getOrganisationOptions();
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isEmpty();
+        assertThat(okBodyOfGetOrganisationOptions(List.of())).isEmpty();
     }
 }

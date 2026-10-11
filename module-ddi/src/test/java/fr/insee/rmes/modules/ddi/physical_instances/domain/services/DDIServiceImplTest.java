@@ -17,6 +17,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.DdiItemNotFoundException;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.InvalidSentinelValuesException;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CategoryCodeListUsage;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Citation;
@@ -37,6 +38,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Variable;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.DuplicatePhysicalInstanceRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LangString;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LangStrings;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.MutualizedCodeListCodes;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodesList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialGroup;
@@ -50,6 +52,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UpdatePhysicalI
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UsageItem;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.VariableRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.DDIRepository;
+import fr.insee.rmes.modules.operation.operations.domain.port.serverside.OperationIrisPort;
 import fr.insee.rmes.modules.operation.series.domain.port.serverside.SeriesCreatorsPort;
 import java.time.Clock;
 import java.time.Instant;
@@ -78,11 +81,14 @@ class DDIServiceImplTest {
     @Mock
     private SeriesCreatorsPort seriesCreatorsPort;
 
+    @Mock
+    private OperationIrisPort operationIrisPort;
+
     private DDIServiceImpl ddiService;
 
     @BeforeEach
     void setUp() {
-        ddiService = new DDIServiceImpl(ddiRepository, seriesCreatorsPort, FIXED_CLOCK);
+        ddiService = new DDIServiceImpl(ddiRepository, seriesCreatorsPort, operationIrisPort, FIXED_CLOCK);
     }
 
     @Test
@@ -664,6 +670,8 @@ class DDIServiceImplTest {
                 () -> ddiService.updateFullPhysicalInstance("fr.insee", "pi-1", incoming));
 
         assertTrue(exception.getMessage().contains("mmvr-1"));
+        assertEquals(InvalidSentinelValuesException.Code.DDI_SENTINEL_REPRESENTATION_LABEL_REQUIRED, exception.code());
+        assertEquals("mmvr-1", exception.params().get("id"));
         verify(ddiRepository, never()).updateFullPhysicalInstance(anyString(), anyString(), any());
     }
 
@@ -698,6 +706,8 @@ class DDIServiceImplTest {
                 () -> ddiService.updateFullPhysicalInstance("fr.insee", "pi-1", incoming));
 
         assertTrue(exception.getMessage().contains("cl-sent"));
+        assertEquals(InvalidSentinelValuesException.Code.DDI_SENTINEL_CODE_LIST_LABEL_REQUIRED, exception.code());
+        assertEquals("cl-sent", exception.params().get("id"));
         verify(ddiRepository, never()).updateFullPhysicalInstance(anyString(), anyString(), any());
     }
 
@@ -919,6 +929,27 @@ class DDIServiceImplTest {
                         .toList());
     }
 
+    @Test
+    void getDdi4Group_shouldThrowGroupNotFoundWhenColecticaDoesNotKnowTheGroup() {
+        when(ddiRepository.getGroup("fr.insee", "unknown")).thenReturn(null);
+
+        DdiItemNotFoundException exception =
+                assertThrows(DdiItemNotFoundException.class, () -> ddiService.getDdi4Group("fr.insee", "unknown"));
+
+        assertEquals(DdiItemNotFoundException.Code.DDI_GROUP_NOT_FOUND, exception.code());
+        assertEquals(Map.of("agencyId", "fr.insee", "id", "unknown"), exception.params());
+    }
+
+    @Test
+    void getDdi4PhysicalInstance_shouldThrowPhysicalInstanceNotFoundWhenColecticaDoesNotKnowIt() {
+        when(ddiRepository.getPhysicalInstance("fr.insee", "unknown")).thenReturn(null);
+
+        DdiItemNotFoundException exception = assertThrows(
+                DdiItemNotFoundException.class, () -> ddiService.getDdi4PhysicalInstance("fr.insee", "unknown"));
+
+        assertEquals(DdiItemNotFoundException.Code.DDI_PHYSICAL_INSTANCE_NOT_FOUND, exception.code());
+    }
+
     private Ddi4StudyUnit studyUnitWithTitle(String id, String title) {
         return new Ddi4StudyUnit(
                 Ddi4StudyUnit.TYPE,
@@ -981,6 +1012,14 @@ class DDIServiceImplTest {
         // Then
         assertSame(expectedResponse, result);
         verify(ddiRepository).getMutualizedCodesList(agencyId, id);
+    }
+
+    @Test
+    void getMutualizedCodeListCodes_delegatesToTheRepository() {
+        MutualizedCodeListCodes codes = new MutualizedCodeListCodes("fr.insee", "cl-1", "3", "Activités", List.of());
+        when(ddiRepository.getMutualizedCodeListCodes("fr.insee", "cl-1")).thenReturn(codes);
+
+        assertSame(codes, ddiService.getMutualizedCodeListCodes("fr.insee", "cl-1"));
     }
 
     @Test
@@ -1078,6 +1117,35 @@ class DDIServiceImplTest {
         ddiService.getPhysicalInstanceParents(agencyId, id);
 
         verify(ddiRepository, never()).getGroup(anyString(), anyString());
+    }
+
+    @Test
+    void shouldGetPhysicalInstanceParents_exposesTheSeriesAndOperationMirroredByTheParents() {
+        String seriesIri = "http://id.insee.fr/operations/serie/s1001";
+        String operationIri = "http://id.insee.fr/operations/operation/s2001";
+
+        when(ddiRepository.getPhysicalInstanceParents("fr.insee", "pi-123"))
+                .thenReturn(new PhysicalInstanceParents("fr.insee", "su-456", "fr.insee", "grp-789"));
+        when(ddiRepository.getGroupSeriesIris("fr.insee", "grp-789")).thenReturn(List.of(seriesIri));
+        when(ddiRepository.getStudyUnitOperationIri("fr.insee", "su-456")).thenReturn(Optional.of(operationIri));
+
+        PhysicalInstanceParents result = ddiService.getPhysicalInstanceParents("fr.insee", "pi-123");
+
+        assertEquals(seriesIri, result.seriesIri());
+        assertEquals(operationIri, result.operationIri());
+    }
+
+    @Test
+    void shouldGetPhysicalInstanceParents_leavesTheMirroredIrisEmptyForParentsOutsideTheOperationsModule() {
+        when(ddiRepository.getPhysicalInstanceParents("fr.insee", "pi-123"))
+                .thenReturn(new PhysicalInstanceParents("fr.insee", "su-456", "fr.insee", "grp-789"));
+        when(ddiRepository.getGroupSeriesIris("fr.insee", "grp-789")).thenReturn(List.of());
+        when(ddiRepository.getStudyUnitOperationIri("fr.insee", "su-456")).thenReturn(Optional.empty());
+
+        PhysicalInstanceParents result = ddiService.getPhysicalInstanceParents("fr.insee", "pi-123");
+
+        assertNull(result.seriesIri());
+        assertNull(result.operationIri());
     }
 
     @Test
@@ -1216,6 +1284,19 @@ class DDIServiceImplTest {
 
         assertFalse(ddiService.getStudyUnitByOperationIri(operationIri).isPresent());
         verify(ddiRepository).findStudyUnitByOperationIri(operationIri);
+    }
+
+    /** Une StudyUnit peut désigner son opération par l'une ou l'autre de ses IRI. */
+    @Test
+    void shouldGetPhysicalInstancesByOperation_looksUpEveryIriOfTheOperation() {
+        List<String> iris =
+                List.of("http://id.insee.fr/operations/operation/s1268", "http://bauhaus/operations/operation/s1268");
+        when(operationIrisPort.irisOf("s1268")).thenReturn(iris);
+        List<PartialPhysicalInstance> expected =
+                List.of(new PartialPhysicalInstance("pi-1", "Individus", null, "fr.insee"));
+        when(ddiRepository.findPhysicalInstancesByOperationIris(iris)).thenReturn(expected);
+
+        assertEquals(expected, ddiService.getPhysicalInstancesByOperation("s1268"));
     }
 
     @Test

@@ -1,5 +1,6 @@
 package fr.insee.rmes.modules.structures.components;
 
+import static fr.insee.rmes.testcontainers.GraphDbTestProperties.registerGestion;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import fr.insee.rmes.domain.exceptions.RmesException;
@@ -50,10 +51,7 @@ class StructureComponentsEndToEndTest extends WithGraphDBContainer {
 
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
-        registry.add(
-                "fr.insee.rmes.bauhaus.sesame.gestion.sesameServer",
-                () -> "http://" + container.getHost() + ":" + container.getMappedPort(7200));
-        registry.add("fr.insee.rmes.bauhaus.sesame.gestion.repository", () -> BAUHAUS_TEST_REPOSITORY);
+        registerGestion(registry);
     }
 
     @Test

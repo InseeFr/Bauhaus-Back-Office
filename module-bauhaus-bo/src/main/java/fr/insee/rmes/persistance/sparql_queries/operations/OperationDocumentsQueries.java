@@ -10,7 +10,6 @@ import fr.insee.rmes.graphdb.SparqlLiterals;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
-import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Resource;
 import org.springframework.stereotype.Component;
 
@@ -26,21 +25,6 @@ public class OperationDocumentsQueries {
         this.uris = uris;
         this.languages = languages;
         this.graphs = graphs;
-    }
-
-    public String checkLabelUnicity(String id, String label, String lang) throws RmesException {
-        HashMap<String, Object> params = new HashMap<>();
-        params.put("OPERATIONS_GRAPH", SparqlLiterals.iri(graphs.documentsGraph()));
-        params.put("LABEL", SparqlLiterals.literal(label, lang));
-        params.put("URI_SUFFIX", SparqlLiterals.literal(id));
-        params.put("TYPE", "foaf:Document");
-        return FreeMarkerUtils.buildRequest("operations/", "checkFamilyPrefLabelUnicity.ftlh", params);
-    }
-
-    public String deleteDocumentQuery(IRI uri) throws RmesException {
-        Map<String, Object> params = initParams();
-        params.put(Constants.URI, SparqlLiterals.iri(uri.stringValue()));
-        return buildRequest("deleteDocumentQuery.ftlh", params);
     }
 
     public String getDocumentUriQuery(String url) throws RmesException {
@@ -59,20 +43,6 @@ public class OperationDocumentsQueries {
 
     public String getLinksForSimsQuery(String idSims) throws RmesException {
         return getDocuments("", idSims, "", true, "");
-    }
-
-    public String getDocumentQuery(String id, boolean isLink) throws RmesException {
-        return getDocuments(id, "", "", isLink, "");
-    }
-
-    public String getSimsByDocument(String id, boolean isLink) throws RmesException {
-        Map<String, Object> params = initParams();
-        params.put("DOCUMENT_URI_PATTERN", SparqlLiterals.literal(getDocType(isLink) + "/" + id + "$"));
-        return buildRequest("getSimsByDocument.ftlh", params);
-    }
-
-    public String getAllDocumentsQuery() throws RmesException {
-        return getDocuments("", "", "", null, "");
     }
 
     private String getDocuments(String id, String idSims, String idRubric, Boolean isLink, String uriLang)
@@ -103,20 +73,6 @@ public class OperationDocumentsQueries {
             return "";
         }
         return (Boolean.TRUE.equals(isLink) ? uris.linksBaseUri() : uris.documentsBaseUri());
-    }
-
-    public String getLinksToDocumentQuery(String id) throws RmesException {
-        Map<String, Object> params = initParams();
-        params.put(Constants.ID, SparqlLiterals.literal(id));
-        return buildRequest("getLinksToDocumentQuery.ftlh", params);
-    }
-
-    public String changeDocumentUrlQuery(String iri, String oldUrl, String newUrl) throws RmesException {
-        Map<String, Object> params = initParams();
-        params.put("iri", SparqlLiterals.literal(iri));
-        params.put("oldUrl", SparqlLiterals.iri(oldUrl));
-        params.put("newUrl", SparqlLiterals.iri(newUrl));
-        return buildRequest("changeDocumentUrlQuery.ftlh", params);
     }
 
     public String lastDocumentID() throws RmesException {

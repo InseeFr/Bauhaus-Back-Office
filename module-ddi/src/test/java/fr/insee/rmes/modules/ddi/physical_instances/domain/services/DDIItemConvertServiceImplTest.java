@@ -16,9 +16,11 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3t
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIItemConverter;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.services.converters.GroupDDIItemConverter;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.services.converters.StudyUnitDDIItemConverter;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.ArgumentCaptor;
 
 class DDIItemConvertServiceImplTest {
@@ -171,6 +173,30 @@ class DDIItemConvertServiceImplTest {
         assertEquals(1, codeLists.size());
         assertEquals("CodeList", codeLists.get(0).get("$type").asText());
         assertEquals("CL_AGEMEN8", codeLists.get(0).get("ID").asText());
+    }
+
+    @Test
+    void convert_doesNotDereferenceExternalEntities(@TempDir Path tempDir) {
+        // XXE : le fragment vient de Colectica et n'est pas de confiance. L'entité externe pointe
+        // ici vers un fichier absent — un parseur non durci tenterait la lecture et lèverait une
+        // FileNotFoundException. Résoudre le type sans broncher prouve qu'on n'y a pas touché.
+        String xxeFragment = """
+                <?xml version="1.0"?>
+                <!DOCTYPE Fragment [ <!ENTITY xxe SYSTEM "%s"> ]>
+                <Fragment xmlns="ddi:instance:3_3">
+                    <CodeList xmlns="ddi:logicalproduct:3_3">&xxe;</CodeList>
+                </Fragment>
+                """.formatted(tempDir.resolve("absent.txt").toUri());
+
+        DDIItemConverter codeListConverter = mock(DDIItemConverter.class);
+        when(codeListConverter.supports("CodeList")).thenReturn(true);
+        JsonNode expected = mock(JsonNode.class);
+        when(codeListConverter.convert(xxeFragment)).thenReturn(expected);
+
+        var service = new DDIItemConvertServiceImpl(
+                List.of(codeListConverter), mock(DDI3toDDI4ConverterService.class), ITEM_TYPES, OBJECT_MAPPER);
+
+        assertSame(expected, service.convert(xxeFragment));
     }
 
     @Test

@@ -20,6 +20,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 import org.springframework.http.HttpHeaders;
@@ -64,6 +65,21 @@ public class ColecticaClient {
     // --- public API (no token parameter: auth is handled internally) ---
 
     /**
+     * Checks that Colectica answers an authenticated request, via the cheapest search: {@code POST _query}
+     * capped to one result. Throws on any authentication or transport failure.
+     */
+    public void ping() {
+        withAuth(token -> restClient
+                .post()
+                .uri(baseApiUrl + "_query")
+                .contentType(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token)
+                .body(Map.of("itemTypes", List.of(), "maxResults", 1, "searchLatestVersion", true))
+                .retrieve()
+                .toBodilessEntity());
+    }
+
+    /**
      * Searches items by type via {@code POST _query} (latest version).
      */
     public ColecticaResponse query(List<String> itemTypes) {
@@ -73,6 +89,30 @@ public class ColecticaClient {
                 .contentType(MediaType.APPLICATION_JSON)
                 .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token)
                 .body(new QueryRequest(itemTypes))
+                .retrieve()
+                .body(ColecticaResponse.class));
+    }
+
+    /** Plafond de résultats demandé à {@code _query} quand toute une population est attendue. */
+    public static final int MAX_QUERY_RESULTS = 1_000_000;
+
+    /**
+     * Searches, via {@code POST _query} (latest version), the items of the given types belonging to the
+     * set rooted at {@code setRoot}. Envelopes only — labels, names, versions — without the items' XML:
+     * far lighter than {@code set/} followed by {@code item/_getList} on a large set.
+     */
+    public ColecticaResponse queryInSet(List<String> itemTypes, ColecticaSetItem setRoot) {
+        QueryRequest request = new QueryRequest(
+                itemTypes,
+                true,
+                List.of(new QueryRequest.SearchSet(setRoot.agencyId(), setRoot.identifier(), setRoot.version())),
+                MAX_QUERY_RESULTS);
+        return withAuth(token -> restClient
+                .post()
+                .uri(baseApiUrl + "_query")
+                .contentType(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token)
+                .body(request)
                 .retrieve()
                 .body(ColecticaResponse.class));
     }
@@ -259,22 +299,26 @@ public class ColecticaClient {
      * <p>The response carries only item references (agency + identifier), not their content — this is
      * the lightweight alternative to fetching a whole {@code set/} and downloading every item.
      *
+     * <p>The relationships of <em>every</em> version of {@code target} are returned: an item removed
+     * by a later version still comes back. Use {@link #findRelatedDescriptions(RelationshipDirection,
+     * ItemReference, int, List)} to read a single version.
+     *
      * @return the matching item references, never {@code null} (empty when none)
      */
     public List<ItemReference> findRelatedDescriptions(
             RelationshipDirection direction, ItemReference target, List<String> itemTypes) {
-        String url = baseApiUrl + "_query/relationship/" + direction.urlSegment() + "/descriptions";
-        RelationshipQuery query = new RelationshipQuery(
-                itemTypes, new RelationshipQuery.TargetItem(target.agencyId(), target.identifier()));
-        ItemReference[] response = withAuth(token -> restClient
-                .post()
-                .uri(url)
-                .contentType(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token)
-                .body(query)
-                .retrieve()
-                .body(ItemReference[].class));
-        return nonNullEntries(response);
+        return relationshipDescriptions(
+                direction, RelationshipQuery.allVersions(itemTypes, target), ItemReference[].class);
+    }
+
+    /**
+     * Same as {@link #findRelatedDescriptions(RelationshipDirection, ItemReference, List)}, restricted
+     * to the relationships of {@code version} of {@code target}.
+     */
+    public List<ItemReference> findRelatedDescriptions(
+            RelationshipDirection direction, ItemReference target, int version, List<String> itemTypes) {
+        return relationshipDescriptions(
+                direction, RelationshipQuery.ofVersion(itemTypes, target, version), ItemReference[].class);
     }
 
     /**
@@ -286,17 +330,31 @@ public class ColecticaClient {
      */
     public List<ColecticaItem> findRelatedItems(
             RelationshipDirection direction, ItemReference target, List<String> itemTypes) {
+        return relationshipDescriptions(
+                direction, RelationshipQuery.allVersions(itemTypes, target), ColecticaItem[].class);
+    }
+
+    /**
+     * Same as {@link #findRelatedItems(RelationshipDirection, ItemReference, List)}, restricted to the
+     * relationships of {@code version} of {@code target}.
+     */
+    public List<ColecticaItem> findRelatedItems(
+            RelationshipDirection direction, ItemReference target, int version, List<String> itemTypes) {
+        return relationshipDescriptions(
+                direction, RelationshipQuery.ofVersion(itemTypes, target, version), ColecticaItem[].class);
+    }
+
+    private <T> List<T> relationshipDescriptions(
+            RelationshipDirection direction, RelationshipQuery query, Class<T[]> responseType) {
         String url = baseApiUrl + "_query/relationship/" + direction.urlSegment() + "/descriptions";
-        RelationshipQuery query = new RelationshipQuery(
-                itemTypes, new RelationshipQuery.TargetItem(target.agencyId(), target.identifier()));
-        ColecticaItem[] response = withAuth(token -> restClient
+        T[] response = withAuth(token -> restClient
                 .post()
                 .uri(url)
                 .contentType(MediaType.APPLICATION_JSON)
                 .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token)
                 .body(query)
                 .retrieve()
-                .body(ColecticaItem[].class));
+                .body(responseType));
         return nonNullEntries(response);
     }
 

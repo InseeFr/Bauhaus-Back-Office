@@ -10,11 +10,10 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * <pre>
  * # package-walk (défaut) ou configured-groups
  * fr.insee.rmes.bauhaus.colectica.mutualized-codes-strategy = configured-groups
- * # utilisé seulement par configured-groups : un objet par CodeListGroup (même forme que
- * # mutualized-codes-package : agency-id / identifier / version)
+ * # utilisé seulement par configured-groups : un objet par CodeListGroup (agency-id / identifier),
+ * # toujours lu dans sa dernière version
  * fr.insee.rmes.bauhaus.colectica.mutualized-codes-groups[0].agency-id = fr.insee
  * fr.insee.rmes.bauhaus.colectica.mutualized-codes-groups[0].identifier = 6b4fb2f8-901a-4b57-95a2-8517e761c241
- * fr.insee.rmes.bauhaus.colectica.mutualized-codes-groups[0].version = 1
  * </pre>
  *
  * @param mutualizedCodesStrategy stratégie active ; {@link Strategy#PACKAGE_WALK} par défaut.
@@ -38,13 +37,12 @@ public record MutualizedCodesProperties(Strategy mutualizedCodesStrategy, List<G
     }
 
     /**
-     * Référence à un CodeListGroup mutualisé, de même forme que {@code mutualized-codes-package}.
+     * Référence à un CodeListGroup mutualisé. Pas de version : c'est toujours la dernière version du
+     * groupe qui est lue.
      *
      * @param agencyId agency du groupe ; {@code null}/vide → on retombe sur le {@code defaultAgencyId}
      *                 de l'instance Colectica.
      * @param identifier identifiant du CodeListGroup.
-     * @param version version (présente pour homogénéité avec le package ; non utilisée par la requête
-     *                relationship, qui n'est pas versionnée).
      */
-    public record GroupRef(String agencyId, String identifier, int version) {}
+    public record GroupRef(String agencyId, String identifier) {}
 }
