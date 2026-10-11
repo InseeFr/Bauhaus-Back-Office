@@ -1,5 +1,7 @@
 package fr.insee.rmes.bauhaus_services.operations.series;
 
+import static fr.insee.rmes.domain.logging.LogSanitizer.forLog;
+
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.BauhausLanguagesProperties;
@@ -501,7 +503,7 @@ public class SeriesRepository {
         series.setUpdated(DateUtils.getCurrentDate());
 
         createRdfSeries(series, familyURI, ValidationStatus.UNPUBLISHED);
-        logger.info("Create series : {} - {}", series.getId(), series.getPrefLabelLg1());
+        logger.info("Create series : {} - {}", forLog(series.getId()), forLog(series.getPrefLabelLg1()));
         publishSeriesSaved(series);
 
         return series.getId();
@@ -520,7 +522,7 @@ public class SeriesRepository {
         } else {
             createRdfSeries(series, null, ValidationStatus.MODIFIED);
         }
-        logger.info("Update series : {} - {}", series.getId(), series.getPrefLabelLg1());
+        logger.info("Update series : {} - {}", forLog(series.getId()), forLog(series.getPrefLabelLg1()));
         publishSeriesSaved(series);
     }
 

@@ -1,5 +1,7 @@
 package fr.insee.rmes.bauhaus_services.operations.operations;
 
+import static fr.insee.rmes.domain.logging.LogSanitizer.forLog;
+
 import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.operations.OperationsParentRepository;
@@ -144,7 +146,7 @@ public class OperationsRepository extends RdfService {
         operation.setModified(DateUtils.getCurrentDate());
 
         createRdfOperation(operation, seriesURI, ValidationStatus.UNPUBLISHED);
-        logger.info("Create operation : {} - {}", operation.getId(), operation.getPrefLabelLg1());
+        logger.info("Create operation : {} - {}", forLog(operation.getId()), forLog(operation.getPrefLabelLg1()));
         publishOperationSaved(operation, idSeries);
 
         return operation.getId();
@@ -163,7 +165,7 @@ public class OperationsRepository extends RdfService {
         } else {
             createRdfOperation(operation, null, ValidationStatus.MODIFIED);
         }
-        logger.info("Update operation : {} - {}", operation.getId(), operation.getPrefLabelLg1());
+        logger.info("Update operation : {} - {}", forLog(operation.getId()), forLog(operation.getPrefLabelLg1()));
         publishOperationSaved(operation, command.seriesId());
     }
 
