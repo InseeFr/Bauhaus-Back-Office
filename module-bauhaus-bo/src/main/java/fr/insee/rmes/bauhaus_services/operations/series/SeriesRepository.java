@@ -503,7 +503,9 @@ public class SeriesRepository {
         series.setUpdated(DateUtils.getCurrentDate());
 
         createRdfSeries(series, familyURI, ValidationStatus.UNPUBLISHED);
-        logger.info("Create series : {} - {}", forLog(series.getId()), forLog(series.getPrefLabelLg1()));
+        if (logger.isInfoEnabled()) {
+            logger.info("Create series : {} - {}", forLog(series.getId()), forLog(series.getPrefLabelLg1()));
+        }
         publishSeriesSaved(series);
 
         return series.getId();
@@ -522,7 +524,9 @@ public class SeriesRepository {
         } else {
             createRdfSeries(series, null, ValidationStatus.MODIFIED);
         }
-        logger.info("Update series : {} - {}", forLog(series.getId()), forLog(series.getPrefLabelLg1()));
+        if (logger.isInfoEnabled()) {
+            logger.info("Update series : {} - {}", forLog(series.getId()), forLog(series.getPrefLabelLg1()));
+        }
         publishSeriesSaved(series);
     }
 

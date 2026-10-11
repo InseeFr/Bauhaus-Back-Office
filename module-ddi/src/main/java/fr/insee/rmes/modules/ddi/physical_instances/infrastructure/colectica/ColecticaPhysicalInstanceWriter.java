@@ -383,10 +383,12 @@ class ColecticaPhysicalInstanceWriter {
             Ddi4Response ddi4Response,
             List<ColecticaItemResponse> additionalItems,
             PhysicalInstanceParents knownParents) {
-        logger.info(
-                "Updating full physical instance {}/{} with all DDI objects in Colectica",
-                forLog(agencyId),
-                forLog(id));
+        if (logger.isInfoEnabled()) {
+            logger.info(
+                    "Updating full physical instance {}/{} with all DDI objects in Colectica",
+                    forLog(agencyId),
+                    forLog(id));
+        }
 
         List<ColecticaItemResponse> colecticaItems = toColecticaItems(ddi4Response);
 
@@ -401,10 +403,12 @@ class ColecticaPhysicalInstanceWriter {
         logger.info("Sending full update request to Colectica with {} items", colecticaItems.size());
         colecticaClient.createOrUpdateItems(new ColecticaCreateItemRequest(colecticaItems));
 
-        logger.info(
-                "Successfully updated full physical instance with id: {} ({} items saved)",
-                forLog(id),
-                colecticaItems.size());
+        if (logger.isInfoEnabled()) {
+            logger.info(
+                    "Successfully updated full physical instance with id: {} ({} items saved)",
+                    forLog(id),
+                    colecticaItems.size());
+        }
     }
 
     private List<ColecticaItemResponse> toColecticaItems(Ddi4Response ddi4Response) {

@@ -64,7 +64,10 @@ public class StudyUnitResources {
     @GetMapping("/{agencyId}/{id}/variables")
     @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.READ)
     public ResponseEntity<Ddi4Response> getStudyUnitVariables(@PathVariable String agencyId, @PathVariable String id) {
-        logger.info("GET /ddi/study-units/{}/{}/variables - Getting reusable variables", forLog(agencyId), forLog(id));
+        if (logger.isInfoEnabled()) {
+            logger.info(
+                    "GET /ddi/study-units/{}/{}/variables - Getting reusable variables", forLog(agencyId), forLog(id));
+        }
         return ResponseEntity.ok(ddiService.getStudyUnitVariables(agencyId, id));
     }
 
@@ -76,8 +79,12 @@ public class StudyUnitResources {
     @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.READ)
     public ResponseEntity<List<CodeListVariableUsage>> getStudyUnitVariableUsages(
             @PathVariable String agencyId, @PathVariable String id) {
-        logger.info(
-                "GET /ddi/study-units/{}/{}/variable-usages - Getting variable usages", forLog(agencyId), forLog(id));
+        if (logger.isInfoEnabled()) {
+            logger.info(
+                    "GET /ddi/study-units/{}/{}/variable-usages - Getting variable usages",
+                    forLog(agencyId),
+                    forLog(id));
+        }
         return ResponseEntity.ok(ddiService.getStudyUnitVariableUsages(agencyId, id));
     }
 }

@@ -74,7 +74,9 @@ public class GroupResources {
     @PostMapping(value = "/groups", consumes = MediaType.APPLICATION_JSON_VALUE)
     @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.CREATE)
     public ResponseEntity<Void> createOrUpdateGroup(@RequestBody Ddi4Group group) {
-        logger.info("POST /ddi/groups - Creating/updating group: id={}", forLog(group.id()));
+        if (logger.isInfoEnabled()) {
+            logger.info("POST /ddi/groups - Creating/updating group: id={}", forLog(group.id()));
+        }
         groupService.createOrUpdate(group);
         return ResponseEntity.status(201).build();
     }
@@ -111,10 +113,12 @@ public class GroupResources {
     @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.READ)
     public ResponseEntity<List<PartialLogicalProduct>> getGroupLogicalProducts(
             @PathVariable String agencyId, @PathVariable String id) {
-        logger.info(
-                "GET /ddi/groups/{}/{}/logical-products - Getting logical products of group",
-                forLog(agencyId),
-                forLog(id));
+        if (logger.isInfoEnabled()) {
+            logger.info(
+                    "GET /ddi/groups/{}/{}/logical-products - Getting logical products of group",
+                    forLog(agencyId),
+                    forLog(id));
+        }
         List<PartialLogicalProduct> logicalProducts = ddiService.getLogicalProductsByGroup(agencyId, id);
         return ResponseEntity.ok(logicalProducts);
     }
@@ -127,12 +131,14 @@ public class GroupResources {
             @PathVariable String groupId,
             @PathVariable String logicalProductAgencyId,
             @PathVariable String logicalProductId) {
-        logger.info(
-                "GET /ddi/groups/{}/{}/logical-products/{}/{}/code-list-scheme - Getting code list schemes of logical product",
-                forLog(groupAgencyId),
-                forLog(groupId),
-                forLog(logicalProductAgencyId),
-                forLog(logicalProductId));
+        if (logger.isInfoEnabled()) {
+            logger.info(
+                    "GET /ddi/groups/{}/{}/logical-products/{}/{}/code-list-scheme - Getting code list schemes of logical product",
+                    forLog(groupAgencyId),
+                    forLog(groupId),
+                    forLog(logicalProductAgencyId),
+                    forLog(logicalProductId));
+        }
         List<PartialCodeListScheme> codeListSchemes =
                 ddiService.getCodeListSchemesByLogicalProduct(logicalProductAgencyId, logicalProductId);
         return ResponseEntity.ok(codeListSchemes);
@@ -148,14 +154,16 @@ public class GroupResources {
             @PathVariable String logicalProductId,
             @PathVariable String codeListSchemeAgencyId,
             @PathVariable String codeListSchemeId) {
-        logger.info(
-                "GET /ddi/groups/{}/{}/logical-products/{}/{}/code-list-scheme/{}/{}/codes-list - Getting code lists of code list scheme",
-                forLog(groupAgencyId),
-                forLog(groupId),
-                forLog(logicalProductAgencyId),
-                forLog(logicalProductId),
-                forLog(codeListSchemeAgencyId),
-                forLog(codeListSchemeId));
+        if (logger.isInfoEnabled()) {
+            logger.info(
+                    "GET /ddi/groups/{}/{}/logical-products/{}/{}/code-list-scheme/{}/{}/codes-list - Getting code lists of code list scheme",
+                    forLog(groupAgencyId),
+                    forLog(groupId),
+                    forLog(logicalProductAgencyId),
+                    forLog(logicalProductId),
+                    forLog(codeListSchemeAgencyId),
+                    forLog(codeListSchemeId));
+        }
         List<PartialCodesList> codeLists =
                 ddiService.getCodeListsByCodeListScheme(codeListSchemeAgencyId, codeListSchemeId);
         return ResponseEntity.ok(codeLists);
@@ -165,10 +173,12 @@ public class GroupResources {
     @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.READ)
     public ResponseEntity<List<PartialCodesList>> getGroupCodesLists(
             @PathVariable String agencyId, @PathVariable(Constants.ID) String id) {
-        logger.info(
-                "GET /ddi/groups/{}/{}/codes-list - Getting all code lists of group (all logical products / code list schemes)",
-                forLog(agencyId),
-                forLog(id));
+        if (logger.isInfoEnabled()) {
+            logger.info(
+                    "GET /ddi/groups/{}/{}/codes-list - Getting all code lists of group (all logical products / code list schemes)",
+                    forLog(agencyId),
+                    forLog(id));
+        }
         List<PartialCodesList> codeLists = ddiService.getCodeListsByGroup(agencyId, id);
         return ResponseEntity.ok(codeLists);
     }
@@ -182,10 +192,12 @@ public class GroupResources {
     @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.READ)
     public ResponseEntity<List<PartialCodesList>> getGroupMissingCodesLists(
             @PathVariable String agencyId, @PathVariable(Constants.ID) String id) {
-        logger.info(
-                "GET /ddi/groups/{}/{}/missing-codes-list - Getting sentinel-value code lists of group",
-                forLog(agencyId),
-                forLog(id));
+        if (logger.isInfoEnabled()) {
+            logger.info(
+                    "GET /ddi/groups/{}/{}/missing-codes-list - Getting sentinel-value code lists of group",
+                    forLog(agencyId),
+                    forLog(id));
+        }
         List<PartialCodesList> codeLists = ddiService.getMissingCodesListsByGroup(agencyId, id);
         return ResponseEntity.ok(codeLists);
     }
@@ -199,10 +211,12 @@ public class GroupResources {
     @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.READ)
     public ResponseEntity<List<PartialMissingValuesRepresentation>> getGroupMissingValuesRepresentations(
             @PathVariable String agencyId, @PathVariable(Constants.ID) String id) {
-        logger.info(
-                "GET /ddi/groups/{}/{}/missing-values-representations - Getting reusable missing values representations of group",
-                forLog(agencyId),
-                forLog(id));
+        if (logger.isInfoEnabled()) {
+            logger.info(
+                    "GET /ddi/groups/{}/{}/missing-values-representations - Getting reusable missing values representations of group",
+                    forLog(agencyId),
+                    forLog(id));
+        }
         List<PartialMissingValuesRepresentation> representations =
                 ddiService.getMissingValuesRepresentationsByGroup(agencyId, id);
         return ResponseEntity.ok(representations);

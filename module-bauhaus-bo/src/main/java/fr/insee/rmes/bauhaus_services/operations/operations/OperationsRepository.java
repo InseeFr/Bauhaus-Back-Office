@@ -146,7 +146,9 @@ public class OperationsRepository extends RdfService {
         operation.setModified(DateUtils.getCurrentDate());
 
         createRdfOperation(operation, seriesURI, ValidationStatus.UNPUBLISHED);
-        logger.info("Create operation : {} - {}", forLog(operation.getId()), forLog(operation.getPrefLabelLg1()));
+        if (logger.isInfoEnabled()) {
+            logger.info("Create operation : {} - {}", forLog(operation.getId()), forLog(operation.getPrefLabelLg1()));
+        }
         publishOperationSaved(operation, idSeries);
 
         return operation.getId();
@@ -165,7 +167,9 @@ public class OperationsRepository extends RdfService {
         } else {
             createRdfOperation(operation, null, ValidationStatus.MODIFIED);
         }
-        logger.info("Update operation : {} - {}", forLog(operation.getId()), forLog(operation.getPrefLabelLg1()));
+        if (logger.isInfoEnabled()) {
+            logger.info("Update operation : {} - {}", forLog(operation.getId()), forLog(operation.getPrefLabelLg1()));
+        }
         publishOperationSaved(operation, command.seriesId());
     }
 

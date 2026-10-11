@@ -39,8 +39,12 @@ public class CodesListResources {
     @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.READ)
     public ResponseEntity<List<CodeListVariableUsage>> getCodeListUsers(
             @PathVariable String agencyId, @PathVariable String id) {
-        logger.info(
-                "GET /ddi/codes-list/{}/{}/users - Getting variables using code list", forLog(agencyId), forLog(id));
+        if (logger.isInfoEnabled()) {
+            logger.info(
+                    "GET /ddi/codes-list/{}/{}/users - Getting variables using code list",
+                    forLog(agencyId),
+                    forLog(id));
+        }
         List<CodeListVariableUsage> usages = ddiService.getVariablesUsingCodeList(agencyId, id);
         return ResponseEntity.ok(usages);
     }
@@ -53,7 +57,10 @@ public class CodesListResources {
     @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.READ)
     public ResponseEntity<List<CategoryCodeListUsage>> getCategoryUsers(
             @PathVariable String agencyId, @PathVariable String id) {
-        logger.info("GET /ddi/category/{}/{}/users - Getting code lists using category", forLog(agencyId), forLog(id));
+        if (logger.isInfoEnabled()) {
+            logger.info(
+                    "GET /ddi/category/{}/{}/users - Getting code lists using category", forLog(agencyId), forLog(id));
+        }
         List<CategoryCodeListUsage> usages = ddiService.getCodeListsUsingCategory(agencyId, id);
         return ResponseEntity.ok(usages);
     }
@@ -67,10 +74,12 @@ public class CodesListResources {
     @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.READ)
     public ResponseEntity<List<CodeListVariableUsage>> getMissingValuesRepresentationUsers(
             @PathVariable String agencyId, @PathVariable String id) {
-        logger.info(
-                "GET /ddi/missing-values-representations/{}/{}/users - Getting variables using MMVR",
-                forLog(agencyId),
-                forLog(id));
+        if (logger.isInfoEnabled()) {
+            logger.info(
+                    "GET /ddi/missing-values-representations/{}/{}/users - Getting variables using MMVR",
+                    forLog(agencyId),
+                    forLog(id));
+        }
         List<CodeListVariableUsage> usages = ddiService.getVariablesUsingMissingValuesRepresentation(agencyId, id);
         return ResponseEntity.ok(usages);
     }

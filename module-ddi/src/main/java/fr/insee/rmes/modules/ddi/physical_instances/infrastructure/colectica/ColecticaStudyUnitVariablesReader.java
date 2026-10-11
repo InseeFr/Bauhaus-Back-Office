@@ -53,8 +53,12 @@ class ColecticaStudyUnitVariablesReader {
     }
 
     Ddi4Response getStudyUnitVariables(String agencyId, String studyUnitId) {
-        logger.info(
-                "Fetching variables of the variable scheme of study unit {}/{}", forLog(agencyId), forLog(studyUnitId));
+        if (logger.isInfoEnabled()) {
+            logger.info(
+                    "Fetching variables of the variable scheme of study unit {}/{}",
+                    forLog(agencyId),
+                    forLog(studyUnitId));
+        }
         List<ItemReference> variableSchemes = ColecticaRelationships.descend(
                 colecticaClient,
                 new ItemReference(agencyId, studyUnitId),
@@ -77,10 +81,12 @@ class ColecticaStudyUnitVariablesReader {
     }
 
     List<CodeListVariableUsage> getStudyUnitVariableUsages(String agencyId, String studyUnitId) {
-        logger.info(
-                "Fetching variable usages of the physical instances of study unit {}/{}",
-                forLog(agencyId),
-                forLog(studyUnitId));
+        if (logger.isInfoEnabled()) {
+            logger.info(
+                    "Fetching variable usages of the physical instances of study unit {}/{}",
+                    forLog(agencyId),
+                    forLog(studyUnitId));
+        }
         List<CodeListVariableUsage> usages = new ArrayList<>();
         List<ColecticaItem> physicalInstances =
                 ColecticaItems.latestVersions(children(new ItemReference(agencyId, studyUnitId), PHYSICAL_INSTANCE));

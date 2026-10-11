@@ -372,7 +372,9 @@ class ColecticaCatalogRepository {
 
     /** Les StudyUnits dont un {@code r:UserID} vaut l'une des {@code operationIris}, dans l'ordre de Colectica. */
     private List<ColecticaItemResponse> studyUnitsMirroring(Collection<String> operationIris) {
-        logger.info("Searching StudyUnits by operationIris: {}", forLog(String.valueOf(operationIris)));
+        if (logger.isInfoEnabled()) {
+            logger.info("Searching StudyUnits by operationIris: {}", forLog(String.valueOf(operationIris)));
+        }
         ColecticaResponse studyUnits = colecticaClient.query(List.of(STUDY_UNIT_UUID));
         List<GetDescriptionsRequest.IdentifierRef> identifiers = ColecticaItems.identifiersOf(studyUnits.results());
         if (identifiers.isEmpty()) {
@@ -393,7 +395,7 @@ class ColecticaCatalogRepository {
                 mirroring.add(item);
             }
         }
-        if (mirroring.isEmpty()) {
+        if (mirroring.isEmpty() && logger.isWarnEnabled()) {
             logger.warn(
                     "No StudyUnit matched operationIris {} among {} study unit(s). Candidate UserIDs found: {}",
                     forLog(String.valueOf(operationIris)),
