@@ -1,5 +1,6 @@
 package fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica;
 
+import static fr.insee.rmes.domain.logging.LogSanitizer.forLog;
 import static fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.ColecticaItemTypes.CODE_LIST_SCHEME;
 import static fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.ColecticaItemTypes.GROUP_UUID;
 import static fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.ColecticaItemTypes.LOGICAL_PRODUCT;
@@ -371,7 +372,7 @@ class ColecticaCatalogRepository {
 
     /** Les StudyUnits dont un {@code r:UserID} vaut l'une des {@code operationIris}, dans l'ordre de Colectica. */
     private List<ColecticaItemResponse> studyUnitsMirroring(Collection<String> operationIris) {
-        logger.info("Searching StudyUnits by operationIris: {}", operationIris);
+        logger.info("Searching StudyUnits by operationIris: {}", forLog(String.valueOf(operationIris)));
         ColecticaResponse studyUnits = colecticaClient.query(List.of(STUDY_UNIT_UUID));
         List<GetDescriptionsRequest.IdentifierRef> identifiers = ColecticaItems.identifiersOf(studyUnits.results());
         if (identifiers.isEmpty()) {
@@ -395,7 +396,7 @@ class ColecticaCatalogRepository {
         if (mirroring.isEmpty()) {
             logger.warn(
                     "No StudyUnit matched operationIris {} among {} study unit(s). Candidate UserIDs found: {}",
-                    operationIris,
+                    forLog(String.valueOf(operationIris)),
                     identifiers.size(),
                     candidateUserIds);
         }
