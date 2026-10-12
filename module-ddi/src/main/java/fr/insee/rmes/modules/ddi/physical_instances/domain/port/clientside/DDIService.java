@@ -15,6 +15,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnitResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4VariableScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.DuplicatePhysicalInstanceRequest;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.MutualizedCodeListCodes;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodesList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialGroup;
@@ -89,7 +90,13 @@ public interface DDIService {
 
     void evictPhysicalInstanceSearchRowsCache();
 
+    /** Vide toutes les régions de cache Colectica (action d'administration). */
+    void evictAllCaches();
+
     Ddi4Response getMutualizedCodesList(String agencyId, String id);
+
+    /** Valeur et libellé de chaque code d'une liste mutualisée ; {@code null} si elle ne l'est pas. */
+    MutualizedCodeListCodes getMutualizedCodeListCodes(String agencyId, String id);
 
     Ddi4Response getCodeList(String agencyId, String id, String version);
 

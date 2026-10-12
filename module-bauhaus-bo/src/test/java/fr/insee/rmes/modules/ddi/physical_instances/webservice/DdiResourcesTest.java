@@ -230,6 +230,32 @@ class DdiResourcesTest {
     }
 
     @Test
+    void getMutualizedCodeListCodes_returnsTheLightViewOfAMutualizedList() {
+        MutualizedCodeListCodes codes = new MutualizedCodeListCodes(
+                "fr.insee",
+                "cl-1",
+                "3",
+                "Activités",
+                List.of(new MutualizedCodeListCodes.Entry("c-1", "01", "Agriculture")));
+        when(ddiService.getMutualizedCodeListCodes("fr.insee", "cl-1")).thenReturn(codes);
+
+        ResponseEntity<MutualizedCodeListCodes> result = ddiResources.getMutualizedCodeListCodes("fr.insee", "cl-1");
+
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertEquals(codes, result.getBody());
+    }
+
+    @Test
+    void getMutualizedCodeListCodes_isNotFoundForAListThatIsNotMutualized() {
+        when(ddiService.getMutualizedCodeListCodes("fr.insee", "group-list")).thenReturn(null);
+
+        ResponseEntity<MutualizedCodeListCodes> result =
+                ddiResources.getMutualizedCodeListCodes("fr.insee", "group-list");
+
+        assertEquals(HttpStatus.NOT_FOUND, result.getStatusCode());
+    }
+
+    @Test
     void getMutualizedCodesLists_withoutCacheControl_doesNotEvictCache() {
         when(ddiService.getMutualizedCodesLists())
                 .thenReturn(List.of(new PartialCodesList("cl-1", "ma cl", new Date(), "fr.insee")));
@@ -302,6 +328,14 @@ class DdiResourcesTest {
         ddiResources.getMutualizedCodesLists("No-Cache, no-store");
 
         verify(ddiService).evictMutualizedCodesListsCache();
+    }
+
+    @Test
+    void evictCaches_evictsEveryColecticaCacheAndAnswersNoContent() {
+        ResponseEntity<Void> response = ddiResources.evictCaches();
+
+        assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
+        verify(ddiService).evictAllCaches();
     }
 
     @Test

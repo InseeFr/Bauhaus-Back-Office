@@ -2,6 +2,7 @@ package fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
@@ -12,7 +13,9 @@ import static org.mockito.Mockito.when;
 import fr.insee.rmes.colectica.client.ColecticaClient;
 import fr.insee.rmes.colectica.client.ItemReference;
 import fr.insee.rmes.colectica.client.RelationshipDirection;
+import fr.insee.rmes.colectica.client.dto.ColecticaSetItem;
 import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.ColecticaConfiguration.ColecticaInstanceConfiguration;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
@@ -48,19 +51,33 @@ class ConfiguredGroupsCodeListRefsProviderTest {
         return new ItemReference(DEFAULT_AGENCY, identifier);
     }
 
-    private void stubGroupChildren(String groupId, ItemReference... codeLists) {
+    private void stubLatestVersions(ColecticaSetItem... latest) {
+        when(colecticaClient.getLatestVersionNumbers(anyList())).thenReturn(List.of(latest));
+    }
+
+    private static ColecticaSetItem latest(String agencyId, String groupId, int version) {
+        return new ColecticaSetItem(groupId, version, agencyId);
+    }
+
+    private void stubGroupChildren(String agencyId, String groupId, int version, ItemReference... codeLists) {
         when(colecticaClient.findRelatedDescriptions(
                         RelationshipDirection.BY_SUBJECT,
-                        new ItemReference(DEFAULT_AGENCY, groupId),
+                        new ItemReference(agencyId, groupId),
+                        version,
                         List.of(CODE_LIST_TYPE)))
-                .thenReturn(List.of(codeLists));
+                .thenReturn(Arrays.asList(codeLists));
     }
 
     @Test
     void queriesCodeListChildrenOfEachConfiguredGroup_usingDefaultAgency_oneCallPerGroup() {
+        stubLatestVersions(latest(DEFAULT_AGENCY, "group-1", 1), latest(DEFAULT_AGENCY, "group-2", 1));
         stubGroupChildren(
-                "group-1", new ItemReference(DEFAULT_AGENCY, "cl-1"), new ItemReference(DEFAULT_AGENCY, "cl-2"));
-        stubGroupChildren("group-2", new ItemReference(DEFAULT_AGENCY, "cl-3"));
+                DEFAULT_AGENCY,
+                "group-1",
+                1,
+                new ItemReference(DEFAULT_AGENCY, "cl-1"),
+                new ItemReference(DEFAULT_AGENCY, "cl-2"));
+        stubGroupChildren(DEFAULT_AGENCY, "group-2", 1, new ItemReference(DEFAULT_AGENCY, "cl-3"));
 
         List<ItemReference> refs = provider(group("group-1"), group("group-2")).codeListRefs();
 
@@ -72,16 +89,21 @@ class ConfiguredGroupsCodeListRefsProviderTest {
 
         // Direct group → CodeList only: one bysubject call per configured group, no package/scheme walk.
         verify(colecticaClient, times(2))
-                .findRelatedDescriptions(eq(RelationshipDirection.BY_SUBJECT), any(), anyList());
+                .findRelatedDescriptions(eq(RelationshipDirection.BY_SUBJECT), any(), anyInt(), anyList());
         verify(colecticaClient, times(0))
-                .findRelatedDescriptions(eq(RelationshipDirection.BY_OBJECT), any(), anyList());
+                .findRelatedDescriptions(eq(RelationshipDirection.BY_OBJECT), any(), anyInt(), anyList());
     }
 
     @Test
     void deduplicatesCodeListRefsSharedAcrossGroups() {
-        stubGroupChildren("group-1", new ItemReference(DEFAULT_AGENCY, "cl-shared"));
+        stubLatestVersions(latest(DEFAULT_AGENCY, "group-1", 1), latest(DEFAULT_AGENCY, "group-2", 1));
+        stubGroupChildren(DEFAULT_AGENCY, "group-1", 1, new ItemReference(DEFAULT_AGENCY, "cl-shared"));
         stubGroupChildren(
-                "group-2", new ItemReference(DEFAULT_AGENCY, "cl-shared"), new ItemReference(DEFAULT_AGENCY, "cl-x"));
+                DEFAULT_AGENCY,
+                "group-2",
+                1,
+                new ItemReference(DEFAULT_AGENCY, "cl-shared"),
+                new ItemReference(DEFAULT_AGENCY, "cl-x"));
 
         List<ItemReference> refs = provider(group("group-1"), group("group-2")).codeListRefs();
 
@@ -95,15 +117,35 @@ class ConfiguredGroupsCodeListRefsProviderTest {
         String otherAgency = "fr.insee.other";
         var provider = new ConfiguredGroupsCodeListRefsProvider(
                 instanceConfiguration, List.of(new ItemReference(otherAgency, "group-1")), colecticaClient);
-        when(colecticaClient.findRelatedDescriptions(
-                        RelationshipDirection.BY_SUBJECT,
-                        new ItemReference(otherAgency, "group-1"),
-                        List.of(CODE_LIST_TYPE)))
-                .thenReturn(List.of(new ItemReference(otherAgency, "cl-1")));
+        stubLatestVersions(latest(otherAgency, "group-1", 1));
+        stubGroupChildren(otherAgency, "group-1", 1, new ItemReference(otherAgency, "cl-1"));
 
         List<ItemReference> refs = provider.codeListRefs();
 
         assertThat(refs).containsExactly(new ItemReference(otherAgency, "cl-1"));
+    }
+
+    @Test
+    void readsTheCodeListsOfTheLatestGroupVersionOnly() {
+        stubLatestVersions(latest(DEFAULT_AGENCY, "group-1", 3));
+        stubGroupChildren(DEFAULT_AGENCY, "group-1", 3, new ItemReference(DEFAULT_AGENCY, "cl-current"));
+
+        List<ItemReference> refs = provider(group("group-1")).codeListRefs();
+
+        assertThat(refs).containsExactly(new ItemReference(DEFAULT_AGENCY, "cl-current"));
+        verify(colecticaClient).getLatestVersionNumbers(List.of(group("group-1")));
+        verify(colecticaClient, times(0)).findRelatedDescriptions(any(), any(), anyList());
+    }
+
+    @Test
+    void skipsAGroupUnknownToColectica() {
+        stubLatestVersions(latest(DEFAULT_AGENCY, "group-2", 2));
+        stubGroupChildren(DEFAULT_AGENCY, "group-2", 2, new ItemReference(DEFAULT_AGENCY, "cl-2"));
+
+        List<ItemReference> refs =
+                provider(group("group-missing"), group("group-2")).codeListRefs();
+
+        assertThat(refs).containsExactly(new ItemReference(DEFAULT_AGENCY, "cl-2"));
     }
 
     @Test

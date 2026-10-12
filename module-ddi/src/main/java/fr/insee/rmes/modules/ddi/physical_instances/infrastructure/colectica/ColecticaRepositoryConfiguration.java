@@ -84,7 +84,8 @@ public class ColecticaRepositoryConfiguration {
                 colecticaConfiguration,
                 colecticaClient,
                 mutualizedCodeListRefsProvider,
-                cacheManager.getCache(ColecticaCacheNames.PHYSICAL_INSTANCE_SEARCH_ROWS));
+                cacheManager.getCache(ColecticaCacheNames.PHYSICAL_INSTANCE_SEARCH_ROWS),
+                cacheManager.getCache(ColecticaCacheNames.MUTUALIZED_CODE_LIST_CONTENTS));
     }
 
     @Bean

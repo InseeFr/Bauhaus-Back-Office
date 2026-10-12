@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -164,29 +163,6 @@ final class ColecticaXml {
         }
         String trimmed = text.trim();
         return trimmed.isEmpty() ? null : trimmed;
-    }
-
-    /**
-     * Lit l'attribut {@code versionDate} porté par le (premier) élément DDI du fragment d'un item.
-     * {@code null} quand le XML est vide, illisible ou sans cet attribut.
-     */
-    static Date versionDate(String xml) {
-        if (xml == null || xml.isBlank()) {
-            return null;
-        }
-        try {
-            NodeList elements = parse(xml).getElementsByTagName("*");
-            for (int i = 0; i < elements.getLength(); i++) {
-                String versionDate = ((Element) elements.item(i)).getAttribute("versionDate");
-                if (versionDate != null && !versionDate.isBlank()) {
-                    return ColecticaDates.parse(versionDate);
-                }
-            }
-            return null;
-        } catch (Exception e) {
-            logger.warn("Failed to parse versionDate from item XML", e);
-            return null;
-        }
     }
 
     static String escape(String text) {

@@ -1,5 +1,6 @@
 package fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica;
 
+import static fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.ColecticaItemTypes.CATEGORY;
 import static fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.ColecticaItemTypes.CODE_LIST;
 
 import fr.insee.rmes.colectica.client.ColecticaClient;
@@ -7,9 +8,13 @@ import fr.insee.rmes.colectica.client.ItemReference;
 import fr.insee.rmes.colectica.client.dto.ColecticaItem;
 import fr.insee.rmes.colectica.client.dto.ColecticaItemResponse;
 import fr.insee.rmes.colectica.client.dto.ColecticaResponse;
+import fr.insee.rmes.colectica.client.dto.ColecticaSetItem;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi3Response;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Category;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LangString;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodesList;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3toDDI4ConverterService;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -18,8 +23,13 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,6 +82,81 @@ class ColecticaCodeListRepository {
         } catch (Exception e) {
             throw new RuntimeException("Failed to fetch code list " + agencyId + "/" + id + "/" + version, e);
         }
+    }
+
+    /** Vrai quand la liste figure parmi les listes mutualisées (références mises en cache). */
+    boolean isMutualized(String agencyId, String id) {
+        return mutualizedCodeListRefsProvider.codeListRefs().contains(new ItemReference(agencyId, id));
+    }
+
+    /** Numéro de la dernière version de l'item, sans en lire le contenu ; {@code null} s'il est inconnu. */
+    Integer latestVersion(String agencyId, String id) {
+        List<ColecticaSetItem> latest =
+                colecticaClient.getLatestVersionNumbers(List.of(new ItemReference(agencyId, id)));
+        return latest.isEmpty() ? null : latest.getFirst().version();
+    }
+
+    /**
+     * Représentation DDI4 d'une liste de codes <em>mutualisée</em> en {@code version}, en deux appels
+     * parallèles : la liste seule ({@code GET item}) et les enveloppes des catégories de son set
+     * ({@code _query} restreint au set). Les catégories ne portent que ce que le front affiche
+     * (identité et libellé) : télécharger leur XML via {@code set/} + {@code _getList} coûtait 65 Mo
+     * et ~100 s pour 45 000 codes. Lecture seule : le chemin d'édition garde {@link #getCodeList}.
+     * {@code null} quand l'item n'est pas une CodeList.
+     */
+    Ddi4Response getMutualizedCodeList(String agencyId, String id, int version) {
+        Map<String, String> types = instanceConfiguration.itemTypes();
+        ColecticaSetItem setRoot = new ColecticaSetItem(id, version, agencyId);
+        try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
+            Future<ColecticaResponse> categories =
+                    executor.submit(() -> colecticaClient.queryInSet(List.of(types.get(CATEGORY)), setRoot));
+            ColecticaItemResponse codeList = colecticaClient.getItem(agencyId, id, String.valueOf(version));
+            if (codeList == null || !Objects.equals(codeList.itemType(), types.get(CODE_LIST))) {
+                categories.cancel(true);
+                return null;
+            }
+            Ddi4Response converted = ddi3ToDdi4Converter.convertDdi3ToDdi4(
+                    new Ddi3Response(null, List.of(ColecticaItems.toDdi3Item(codeList))), Ddi4Response.SCHEMA);
+            return new Ddi4Response(
+                    Ddi4Response.SCHEMA,
+                    List.of(Reference.of(agencyId, id, String.valueOf(version), CODE_LIST)),
+                    null,
+                    null,
+                    null,
+                    converted.codeList(),
+                    categoriesOf(categories.get()),
+                    null);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("Interrupted while fetching code list " + agencyId + "/" + id, e);
+        } catch (ExecutionException e) {
+            throw new IllegalStateException("Failed to fetch code list " + agencyId + "/" + id, e.getCause());
+        }
+    }
+
+    /** Catégories DDI4 construites depuis les enveloppes {@code _query} ; {@code null} si aucune. */
+    private static List<Ddi4Category> categoriesOf(ColecticaResponse response) {
+        if (response == null || response.results() == null) {
+            return null;
+        }
+        List<Ddi4Category> categories = ColecticaItems.latestVersions(response.results()).stream()
+                .map(item -> {
+                    String version = String.valueOf(item.version());
+                    return new Ddi4Category(
+                            Ddi4Category.TYPE,
+                            null,
+                            Reference.synthesizeUrn(item.agencyId(), item.identifier(), version),
+                            item.agencyId(),
+                            item.identifier(),
+                            version,
+                            item.label() == null
+                                    ? null
+                                    : item.label().entrySet().stream()
+                                            .map(label -> new LangString(label.getKey(), label.getValue()))
+                                            .toList());
+                })
+                .toList();
+        return categories.isEmpty() ? null : categories;
     }
 
     /**

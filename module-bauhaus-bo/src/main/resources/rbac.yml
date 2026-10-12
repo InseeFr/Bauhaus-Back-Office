@@ -131,6 +131,7 @@ rbac:
         update: ALL
         delete: ALL
         publish: ALL
+        administration: ALL
     Gestionnaire_structures_RMESGNCS:
       structure_structure:
         create: ALL

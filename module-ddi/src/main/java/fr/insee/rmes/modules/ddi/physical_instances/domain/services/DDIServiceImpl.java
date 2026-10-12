@@ -24,6 +24,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Variable;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4VariableScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.DuplicatePhysicalInstanceRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LangString;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.MutualizedCodeListCodes;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodesList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialGroup;
@@ -472,6 +473,18 @@ public class DDIServiceImpl implements DDIService {
     public void evictPhysicalInstanceSearchRowsCache() {
         logger.info("Evicting physical instance search rows cache");
         ddiRepository.evictPhysicalInstanceSearchRowsCache();
+    }
+
+    @Override
+    public void evictAllCaches() {
+        logger.info("Evicting all Colectica caches");
+        ddiRepository.evictAllCaches();
+    }
+
+    @Override
+    public MutualizedCodeListCodes getMutualizedCodeListCodes(String agencyId, String id) {
+        logger.info("Getting codes of mutualized codes list {}/{}", forLog(agencyId), forLog(id));
+        return ddiRepository.getMutualizedCodeListCodes(agencyId, id);
     }
 
     @Override

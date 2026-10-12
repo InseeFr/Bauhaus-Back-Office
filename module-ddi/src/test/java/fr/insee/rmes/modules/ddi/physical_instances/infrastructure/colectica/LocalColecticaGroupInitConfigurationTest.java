@@ -6,8 +6,11 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import fr.insee.rmes.colectica.client.ColecticaClient;
+import fr.insee.rmes.colectica.client.dto.ColecticaCreateItemRequest;
+import fr.insee.rmes.colectica.client.dto.ColecticaItemResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CogsDate;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CreatePhysicalInstanceRequest;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi3Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Category;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CategoryScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeList;
@@ -24,11 +27,13 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4VariableSch
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LogicalRecord;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceIds;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI4toDDI3ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.GroupService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.StudyUnitService;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -57,6 +62,9 @@ class LocalColecticaGroupInitConfigurationTest {
 
     @Mock
     private ColecticaClient colecticaClient;
+
+    @Mock
+    private DDI4toDDI3ConverterService ddi4ToDdi3Converter;
 
     private Ddi4Response piResponse(String agency, String id) {
         Ddi4PhysicalInstance pi = new Ddi4PhysicalInstance(
@@ -861,6 +869,50 @@ class LocalColecticaGroupInitConfigurationTest {
     }
 
     @Test
+    void movedStudyUnitExample_attachesTheStudyUnitToAFirstGroupThenMovesItToASecondGroup() throws Exception {
+        when(ddiService.createPhysicalInstance(any(), any())).thenReturn(piResponse("fr.insee", "pi-moved"));
+
+        LocalColecticaGroupInitConfiguration config = new LocalColecticaGroupInitConfiguration();
+        CommandLineRunner runner = config.initColecticaMovedStudyUnitExample(
+                groupService, studyUnitService, ddiService, createColecticaConfig());
+
+        runner.run();
+
+        // Ids déterministes : une relance réécrit cette PI au lieu d'en créer une nouvelle
+        ArgumentCaptor<PhysicalInstanceIds> idsCaptor = ArgumentCaptor.forClass(PhysicalInstanceIds.class);
+        verify(ddiService).createPhysicalInstance(any(), idsCaptor.capture());
+        assertThat(idsCaptor.getValue().physicalInstance())
+                .isEqualTo(generateDeterministicUuid(
+                        LocalColecticaGroupInitConfiguration.MOVED_EXAMPLE_STUDY_UNIT_SEED + "#physicalinstance"));
+
+        // Une seule StudyUnit, en version 1, qui porte la PI.
+        String expectedStudyUnitId =
+                generateDeterministicUuid(LocalColecticaGroupInitConfiguration.MOVED_EXAMPLE_STUDY_UNIT_SEED);
+        ArgumentCaptor<Ddi4StudyUnit> suCaptor = ArgumentCaptor.forClass(Ddi4StudyUnit.class);
+        verify(studyUnitService).createOrUpdate(suCaptor.capture());
+        assertThat(suCaptor.getValue().id()).isEqualTo(expectedStudyUnitId);
+        assertThat(suCaptor.getValue().version()).isEqualTo("1");
+        assertThat(suCaptor.getValue().physicalInstanceReferences())
+                .extracting(Reference::id)
+                .containsExactly("pi-moved");
+
+        // Groupe 1 v1 avec la SU, puis groupe 2 v1 avec la SU, puis groupe 1 v2 sans SU.
+        String group1Id = generateDeterministicUuid(LocalColecticaGroupInitConfiguration.MOVED_EXAMPLE_GROUP_1_SEED);
+        String group2Id = generateDeterministicUuid(LocalColecticaGroupInitConfiguration.MOVED_EXAMPLE_GROUP_2_SEED);
+        ArgumentCaptor<Ddi4Group> groupCaptor = ArgumentCaptor.forClass(Ddi4Group.class);
+        verify(groupService, times(3)).createOrUpdate(groupCaptor.capture());
+        List<Ddi4Group> groups = groupCaptor.getAllValues();
+        assertThat(groups).extracting(Ddi4Group::id).containsExactly(group1Id, group2Id, group1Id);
+        assertThat(groups).extracting(Ddi4Group::version).containsExactly("1", "1", "2");
+        assertThat(groups)
+                .allSatisfy(
+                        g -> assertThat(g.urn()).isEqualTo("urn:ddi:fr.insee:%s:%s".formatted(g.id(), g.version())));
+        assertThat(groups.get(0).studyUnitReference()).extracting(Reference::id).containsExactly(expectedStudyUnitId);
+        assertThat(groups.get(1).studyUnitReference()).extracting(Reference::id).containsExactly(expectedStudyUnitId);
+        assertThat(groups.get(2).studyUnitReference()).isEmpty();
+    }
+
+    @Test
     void sixVersionsStudyUnitExample_createsAStudyUnitInSixVersionsAllReferencingTheSameLogicalProduct()
             throws Exception {
         when(ddiService.createPhysicalInstance(any(), any())).thenReturn(piResponse("fr.insee", "pi-six-versions"));
@@ -1076,5 +1128,284 @@ class LocalColecticaGroupInitConfigurationTest {
                 .filter(lp -> lp.id().equals(logicalProductId))
                 .findFirst()
                 .orElseThrow();
+    }
+
+    private static final String CODE_LIST_GROUP_ITEM_TYPE = "394b9ff3-7248-4ede-b945-9bebdbf56bed";
+
+    private static final String MUTUALIZED_GROUP_ID = "6755ebd7-82a4-4e8d-9b49-ba39a9ab3281";
+
+    private ColecticaConfiguration colecticaConfigWithItemTypes() {
+        var instanceConfig = new ColecticaConfiguration.ColecticaInstanceConfiguration(
+                "http://localhost:8082",
+                "/api/v1/",
+                Map.of("CodeListGroup", CODE_LIST_GROUP_ITEM_TYPE),
+                "bauhaus",
+                "DC337820-AF3A-4C0B-82F9-CF02535CDE83",
+                "token",
+                null,
+                null,
+                "fr.insee");
+        return new ColecticaConfiguration(List.of("fr-FR"), instanceConfig, null, null);
+    }
+
+    private static MutualizedCodesProperties configuredMutualizedGroup() {
+        return new MutualizedCodesProperties(
+                MutualizedCodesProperties.Strategy.CONFIGURED_GROUPS,
+                List.of(new MutualizedCodesProperties.GroupRef("fr.insee", MUTUALIZED_GROUP_ID)));
+    }
+
+    private static Ddi3Response.Ddi3Item ddi3Item(String identifier) {
+        return new Ddi3Response.Ddi3Item(
+                "type", "fr.insee", "1", identifier, "<Fragment/>", null, "bauhaus", false, false, false, "format");
+    }
+
+    private static String largeCodeListId() {
+        return generateDeterministicUuid(LocalColecticaGroupInitConfiguration.LARGE_MUTUALIZED_CODE_LIST_SEED);
+    }
+
+    private void runLargeMutualizedCodeListExample() throws Exception {
+        new LocalColecticaGroupInitConfiguration()
+                .initColecticaLargeMutualizedCodeListExample(
+                        colecticaClient,
+                        ddi4ToDdi3Converter,
+                        colecticaConfigWithItemTypes(),
+                        configuredMutualizedGroup())
+                .run();
+    }
+
+    /** Les items enregistrés dans Colectica, tous lots confondus. */
+    private List<ColecticaItemResponse> registeredItems() {
+        ArgumentCaptor<ColecticaCreateItemRequest> captor = ArgumentCaptor.forClass(ColecticaCreateItemRequest.class);
+        verify(colecticaClient, atLeastOnce()).createOrUpdateItems(captor.capture());
+        return captor.getAllValues().stream()
+                .flatMap(request -> request.items().stream())
+                .toList();
+    }
+
+    private ColecticaItemResponse registeredCodeListGroup() {
+        return registeredItems().stream()
+                .filter(item -> CODE_LIST_GROUP_ITEM_TYPE.equals(item.itemType()))
+                .findFirst()
+                .orElseThrow();
+    }
+
+    @Test
+    void largeMutualizedCodeListExample_registersACodeListOf45000CodesEachWithItsCategory() throws Exception {
+        when(colecticaClient.getItem("fr.insee", largeCodeListId(), null)).thenThrow(new RuntimeException("404"));
+        when(colecticaClient.getItem("fr.insee", MUTUALIZED_GROUP_ID, null)).thenThrow(new RuntimeException("404"));
+        when(ddi4ToDdi3Converter.toCategoryItem(any())).thenReturn(ddi3Item("category"));
+        when(ddi4ToDdi3Converter.toCodeListItem(any())).thenReturn(ddi3Item(largeCodeListId()));
+
+        runLargeMutualizedCodeListExample();
+
+        ArgumentCaptor<Ddi4CodeList> codeListCaptor = ArgumentCaptor.forClass(Ddi4CodeList.class);
+        verify(ddi4ToDdi3Converter).toCodeListItem(codeListCaptor.capture());
+        Ddi4CodeList codeList = codeListCaptor.getValue();
+        assertThat(codeList.id()).isEqualTo(largeCodeListId());
+        assertThat(codeList.code()).hasSize(45_000);
+        assertThat(codeList.code())
+                .extracting(code -> code.categoryReference().id())
+                .doesNotHaveDuplicates();
+
+        ArgumentCaptor<Ddi4Category> categoryCaptor = ArgumentCaptor.forClass(Ddi4Category.class);
+        verify(ddi4ToDdi3Converter, times(45_000)).toCategoryItem(categoryCaptor.capture());
+        assertThat(categoryCaptor.getAllValues())
+                .extracting(Ddi4Category::id)
+                .containsExactlyElementsOf(codeList.code().stream()
+                        .map(code -> code.categoryReference().id())
+                        .toList());
+    }
+
+    @Test
+    void largeMutualizedCodeListExample_sendsTheCategoriesInBatchesOfAtMost1000Items() throws Exception {
+        when(colecticaClient.getItem("fr.insee", largeCodeListId(), null)).thenThrow(new RuntimeException("404"));
+        when(colecticaClient.getItem("fr.insee", MUTUALIZED_GROUP_ID, null)).thenThrow(new RuntimeException("404"));
+        when(ddi4ToDdi3Converter.toCategoryItem(any())).thenReturn(ddi3Item("category"));
+        when(ddi4ToDdi3Converter.toCodeListItem(any())).thenReturn(ddi3Item(largeCodeListId()));
+
+        runLargeMutualizedCodeListExample();
+
+        ArgumentCaptor<ColecticaCreateItemRequest> captor = ArgumentCaptor.forClass(ColecticaCreateItemRequest.class);
+        verify(colecticaClient, atLeast(45)).createOrUpdateItems(captor.capture());
+        assertThat(captor.getAllValues())
+                .allSatisfy(request -> assertThat(request.items()).hasSizeLessThanOrEqualTo(1_000));
+    }
+
+    @Test
+    void largeMutualizedCodeListExample_createsTheConfiguredMutualizedGroupReferencingTheCodeList() throws Exception {
+        when(colecticaClient.getItem("fr.insee", largeCodeListId(), null)).thenThrow(new RuntimeException("404"));
+        when(colecticaClient.getItem("fr.insee", MUTUALIZED_GROUP_ID, null)).thenThrow(new RuntimeException("404"));
+        when(ddi4ToDdi3Converter.toCategoryItem(any())).thenReturn(ddi3Item("category"));
+        when(ddi4ToDdi3Converter.toCodeListItem(any())).thenReturn(ddi3Item(largeCodeListId()));
+
+        runLargeMutualizedCodeListExample();
+
+        ColecticaItemResponse group = registeredCodeListGroup();
+        assertThat(group.agencyId()).isEqualTo("fr.insee");
+        assertThat(group.identifier()).isEqualTo(MUTUALIZED_GROUP_ID);
+        assertThat(group.version()).isEqualTo(1);
+        assertThat(group.item()).contains("CodeListGroup").contains(largeCodeListId());
+    }
+
+    @Test
+    void largeMutualizedCodeListExample_keepsTheContentOfAnExistingMutualizedGroup() throws Exception {
+        when(colecticaClient.getItem("fr.insee", largeCodeListId(), null)).thenThrow(new RuntimeException("404"));
+        String existingGroupXml = """
+                <Fragment xmlns:r="ddi:reusable:3_3" xmlns="ddi:instance:3_3">
+                  <CodeListGroup isUniversallyUnique="true" versionDate="2026-01-01T00:00:00Z" xmlns="ddi:logicalproduct:3_3">
+                    <r:URN>urn:ddi:fr.insee:%1$s:3</r:URN>
+                    <r:Agency>fr.insee</r:Agency>
+                    <r:ID>%1$s</r:ID>
+                    <r:Version>3</r:Version>
+                    <CodeListGroupName><r:String xml:lang="fr-FR">Listes de codes mutualisées</r:String></CodeListGroupName>
+                    <r:CodeListReference>
+                      <r:Agency>fr.insee</r:Agency>
+                      <r:ID>existing-code-list</r:ID>
+                      <r:Version>1</r:Version>
+                      <r:TypeOfObject>CodeList</r:TypeOfObject>
+                    </r:CodeListReference>
+                  </CodeListGroup>
+                </Fragment>""".formatted(MUTUALIZED_GROUP_ID);
+        when(colecticaClient.getItem("fr.insee", MUTUALIZED_GROUP_ID, null))
+                .thenReturn(new ColecticaItemResponse(
+                        CODE_LIST_GROUP_ITEM_TYPE,
+                        "fr.insee",
+                        3,
+                        MUTUALIZED_GROUP_ID,
+                        existingGroupXml,
+                        "2026-01-01T00:00:00Z",
+                        "bauhaus",
+                        false,
+                        false,
+                        false,
+                        "DC337820-AF3A-4C0B-82F9-CF02535CDE83"));
+        when(ddi4ToDdi3Converter.toCategoryItem(any())).thenReturn(ddi3Item("category"));
+        when(ddi4ToDdi3Converter.toCodeListItem(any())).thenReturn(ddi3Item(largeCodeListId()));
+
+        runLargeMutualizedCodeListExample();
+
+        ColecticaItemResponse group = registeredCodeListGroup();
+        assertThat(group.version()).isEqualTo(3);
+        assertThat(group.item())
+                .contains("Listes de codes mutualisées")
+                .contains("existing-code-list")
+                .contains(largeCodeListId());
+    }
+
+    @Test
+    void largeMutualizedCodeListExample_doesNotUploadTheCodeListAgainWhenItAlreadyExists() throws Exception {
+        when(colecticaClient.getItem("fr.insee", largeCodeListId(), null))
+                .thenReturn(new ColecticaItemResponse(
+                        "type",
+                        "fr.insee",
+                        1,
+                        largeCodeListId(),
+                        "<Fragment/>",
+                        null,
+                        null,
+                        false,
+                        false,
+                        false,
+                        null));
+        when(colecticaClient.getItem("fr.insee", MUTUALIZED_GROUP_ID, null)).thenThrow(new RuntimeException("404"));
+
+        runLargeMutualizedCodeListExample();
+
+        verify(ddi4ToDdi3Converter, never()).toCategoryItem(any());
+        verify(ddi4ToDdi3Converter, never()).toCodeListItem(any());
+        assertThat(registeredCodeListGroup().item()).contains(largeCodeListId());
+    }
+
+    @Test
+    void largeMutualizedCodeListExample_declaresTheReusableNamespaceOnceToKeepTheCodeListUnderColecticaSizeLimit()
+            throws Exception {
+        // Le convertisseur redéclare xmlns:r sur chaque élément : ~27 Mo pour 45 000 codes, refusés
+        // par Colectica (400 « The input was not valid »).
+        String verboseCodeList = """
+                <Fragment xmlns="ddi:instance:3_3"><ddi:CodeList isUniversallyUnique="true" xmlns:ddi="ddi:logicalproduct:3_3">\
+                <r:ID xmlns:r="ddi:reusable:3_3">%1$s</r:ID>\
+                <ddi:Code><r:ID xmlns:r="ddi:reusable:3_3">c1</r:ID><r:Value xmlns:r="ddi:reusable:3_3">00001</r:Value></ddi:Code>\
+                <ddi:Code><r:ID xmlns:r="ddi:reusable:3_3">c2</r:ID><r:Value xmlns:r="ddi:reusable:3_3">00002</r:Value></ddi:Code>\
+                </ddi:CodeList></Fragment>""".formatted(largeCodeListId());
+        when(colecticaClient.getItem("fr.insee", largeCodeListId(), null)).thenThrow(new RuntimeException("404"));
+        when(colecticaClient.getItem("fr.insee", MUTUALIZED_GROUP_ID, null)).thenThrow(new RuntimeException("404"));
+        when(ddi4ToDdi3Converter.toCategoryItem(any())).thenReturn(ddi3Item("category"));
+        when(ddi4ToDdi3Converter.toCodeListItem(any()))
+                .thenReturn(new Ddi3Response.Ddi3Item(
+                        "type",
+                        "fr.insee",
+                        "1",
+                        largeCodeListId(),
+                        verboseCodeList,
+                        null,
+                        "bauhaus",
+                        false,
+                        false,
+                        false,
+                        "format"));
+
+        runLargeMutualizedCodeListExample();
+
+        String registeredCodeList = registeredItems().stream()
+                .filter(item -> largeCodeListId().equals(item.identifier()))
+                .findFirst()
+                .orElseThrow()
+                .item();
+        assertThat(registeredCodeList.split("xmlns:r=", -1)).hasSize(2);
+        assertThat(registeredCodeList).contains("<r:Value>00001</r:Value>").contains("<r:Value>00002</r:Value>");
+    }
+
+    @Test
+    void largeMutualizedCodeListExample_dropsTheOptionalUrnOfEachCodeToStayUnderColecticaLimit() throws Exception {
+        // Même namespace déclaré une fois, 45 000 codes font encore ~19 Mo : Colectica refuse au-delà
+        // d'environ 18 Mo. Sans r:URN ni isUniversallyUnique (facultatifs) sur les codes : ~15 Mo.
+        String codeList = """
+                <Fragment xmlns="ddi:instance:3_3"><ddi:CodeList isUniversallyUnique="true" xmlns:ddi="ddi:logicalproduct:3_3">\
+                <r:URN xmlns:r="ddi:reusable:3_3">urn:ddi:fr.insee:%1$s:1</r:URN>\
+                <ddi:Code isUniversallyUnique="true"><r:URN xmlns:r="ddi:reusable:3_3">urn:ddi:fr.insee:c1:1</r:URN>\
+                <r:Agency xmlns:r="ddi:reusable:3_3">fr.insee</r:Agency><r:ID xmlns:r="ddi:reusable:3_3">c1</r:ID>\
+                <r:Version xmlns:r="ddi:reusable:3_3">1</r:Version><r:Value xmlns:r="ddi:reusable:3_3">00001</r:Value></ddi:Code>\
+                </ddi:CodeList></Fragment>""".formatted(largeCodeListId());
+        when(colecticaClient.getItem("fr.insee", largeCodeListId(), null)).thenThrow(new RuntimeException("404"));
+        when(colecticaClient.getItem("fr.insee", MUTUALIZED_GROUP_ID, null)).thenThrow(new RuntimeException("404"));
+        when(ddi4ToDdi3Converter.toCategoryItem(any())).thenReturn(ddi3Item("category"));
+        when(ddi4ToDdi3Converter.toCodeListItem(any()))
+                .thenReturn(new Ddi3Response.Ddi3Item(
+                        "type",
+                        "fr.insee",
+                        "1",
+                        largeCodeListId(),
+                        codeList,
+                        null,
+                        "bauhaus",
+                        false,
+                        false,
+                        false,
+                        "format"));
+
+        runLargeMutualizedCodeListExample();
+
+        String registeredCodeList = registeredItems().stream()
+                .filter(item -> largeCodeListId().equals(item.identifier()))
+                .findFirst()
+                .orElseThrow()
+                .item();
+        assertThat(registeredCodeList)
+                .contains("<r:URN>urn:ddi:fr.insee:%s:1</r:URN>".formatted(largeCodeListId()))
+                .doesNotContain("urn:ddi:fr.insee:c1:1")
+                .contains("<ddi:Code><r:Agency>fr.insee</r:Agency><r:ID>c1</r:ID>");
+    }
+
+    @Test
+    void largeMutualizedCodeListExample_doesNothingWithoutAConfiguredMutualizedGroup() throws Exception {
+        new LocalColecticaGroupInitConfiguration()
+                .initColecticaLargeMutualizedCodeListExample(
+                        colecticaClient,
+                        ddi4ToDdi3Converter,
+                        colecticaConfigWithItemTypes(),
+                        new MutualizedCodesProperties(MutualizedCodesProperties.Strategy.PACKAGE_WALK, List.of()))
+                .run();
+
+        verifyNoInteractions(colecticaClient, ddi4ToDdi3Converter);
     }
 }

@@ -3,6 +3,7 @@ package fr.insee.rmes.modules.codeslists.codeslists.webservice;
 import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import fr.insee.rmes.bauhaus_services.CodeListService;
@@ -19,6 +20,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -65,6 +67,16 @@ class CodesListsResourcesPublishTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(content()
                         .string(org.hamcrest.Matchers.containsString("\"code\":" + ErrorCodes.ALREADY_PUBLISHED)));
+    }
+
+    @Test
+    void publishPartialCodeList_shouldEchoTheIdAsJsonRatherThanRawText() throws Exception {
+        String scriptId = "<img src=x onerror=alert(1)>";
+
+        mockMvc.perform(put("/codeList/partial/{id}/validate", scriptId))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.identifier").value(scriptId));
     }
 
     private static RmesBadRequestException alreadyPublished(String id) {

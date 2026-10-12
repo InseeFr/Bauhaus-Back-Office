@@ -19,6 +19,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnitResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4VariableScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.DuplicatePhysicalInstanceRequest;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.MutualizedCodeListCodes;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodesList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialGroup;
@@ -78,6 +79,8 @@ public class DDIRepositoryImpl implements DDIRepository {
     private final ColecticaItemCreator itemCreator;
     private final ColecticaItemByIdReader itemByIdReader;
     private final PhysicalInstanceSearchRowsCache searchRowsCache;
+    private final Cache mutualizedCodeListContents;
+    private final String defaultLang;
 
     public DDIRepositoryImpl(
             ColecticaConfiguration.ColecticaInstanceConfiguration instanceConfiguration,
@@ -86,15 +89,18 @@ public class DDIRepositoryImpl implements DDIRepository {
             ColecticaConfiguration colecticaConfiguration,
             ColecticaClient colecticaClient,
             MutualizedCodeListRefsStrategy mutualizedCodeListRefsProvider,
-            Cache physicalInstanceSearchRowsCache) {
+            Cache physicalInstanceSearchRowsCache,
+            Cache mutualizedCodeListContentsCache) {
         String defaultLang = colecticaConfiguration.langs().getFirst();
+        this.defaultLang = defaultLang;
         ColecticaLabels labels = new ColecticaLabels(defaultLang);
         ColecticaSetReader setReader = new ColecticaSetReader(instanceConfiguration, colecticaClient);
-        ColecticaVersionDates versionDates = new ColecticaVersionDates(colecticaClient);
+        ColecticaVersionDates versionDates = new ColecticaVersionDates(colecticaClient, instanceConfiguration);
 
         this.catalog =
                 new ColecticaCatalogRepository(instanceConfiguration, colecticaClient, labels, ddi3ToDdi4Converter);
         this.searchRowsCache = new PhysicalInstanceSearchRowsCache(physicalInstanceSearchRowsCache, defaultLang);
+        this.mutualizedCodeListContents = mutualizedCodeListContentsCache;
         this.physicalInstanceReader = new ColecticaPhysicalInstanceReader(
                 instanceConfiguration, ddi3ToDdi4Converter, setReader, colecticaClient);
         this.groupReader = new ColecticaGroupSetReader(colecticaClient, defaultLang);
@@ -309,9 +315,38 @@ public class DDIRepositoryImpl implements DDIRepository {
 
     // --- Listes de codes et navigation ------------------------------------------------------------
 
+    /**
+     * Contenu d'une liste de codes. L'endpoint est générique : le front y lit aussi les listes de
+     * groupe, éditables, qui gardent la lecture complète ({@link ColecticaCodeListRepository#getCodeList}),
+     * sans cache. Seules les listes mutualisées (lecture seule) passent par la lecture allégée, mise en
+     * cache par {@code agence/id/version} : seul le numéro de la dernière version est demandé à
+     * Colectica ({@code _getLatestVersionNumbers}, quasi gratuit) ; une nouvelle version change la clé.
+     */
     @Override
     public Ddi4Response getMutualizedCodesList(String agencyId, String id) {
-        return codeLists.getCodeList(agencyId, id, null);
+        if (!codeLists.isMutualized(agencyId, id)) {
+            return codeLists.getCodeList(agencyId, id, null);
+        }
+        Integer version = codeLists.latestVersion(agencyId, id);
+        if (version == null) {
+            return null;
+        }
+        return mutualizedCodeListContents.get(
+                agencyId + "/" + id + "/" + version, () -> codeLists.getMutualizedCodeList(agencyId, id, version));
+    }
+
+    /**
+     * Vue allégée (valeur + libellé par code) d'une liste mutualisée, projetée depuis le même contenu
+     * en cache que {@link #getMutualizedCodesList} ; {@code null} pour une liste non mutualisée ou
+     * inconnue.
+     */
+    @Override
+    public MutualizedCodeListCodes getMutualizedCodeListCodes(String agencyId, String id) {
+        if (!codeLists.isMutualized(agencyId, id)) {
+            return null;
+        }
+        Ddi4Response content = getMutualizedCodesList(agencyId, id);
+        return content == null ? null : MutualizedCodeListCodes.from(content, defaultLang);
     }
 
     @Override
@@ -351,6 +386,19 @@ public class DDIRepositoryImpl implements DDIRepository {
             allEntries = true)
     public void evictMutualizedCodesListsCache() {
         logger.info("Mutualized codes lists caches evicted");
+    }
+
+    @Override
+    @CacheEvict(
+            cacheNames = {
+                ColecticaCacheNames.MUTUALIZED_CODES_LISTS,
+                ColecticaCacheNames.MUTUALIZED_PACKAGE_CODE_LIST_REFS,
+                ColecticaCacheNames.PHYSICAL_INSTANCE_SEARCH_ROWS,
+                ColecticaCacheNames.MUTUALIZED_CODE_LIST_CONTENTS
+            },
+            allEntries = true)
+    public void evictAllCaches() {
+        logger.info("All Colectica caches evicted");
     }
 
     @Override
