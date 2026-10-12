@@ -79,6 +79,10 @@
          À supprimer dès qu'une version de Spring Boot managera ces versions. -->
     <jackson-2-bom.version>2.22.3</jackson-2-bom.version>
     <jackson-bom.version>3.2.3</jackson-bom.version>
+        <!-- Surcharge Spring Framework managé par Spring Boot 4.1.0 pour corriger CVE-2026-47890
+         (spring-webmvc), corrigée en 7.0.9.
+         À supprimer dès qu'une version de Spring Boot managera >= 7.0.9. -->
+    <spring-framework.version>7.0.9</spring-framework.version>
     <!-- Docker API version forced for Testcontainers (workaround: it falls back to 1.32 which is rejected by Docker Engine 20.10+ that requires min API 1.40) -->
     <docker.api.version>1.41</docker.api.version>
     <!-- Voir la dépendance bcprov-jdk18on ci-dessous : surcharge de la version que minio ramène. -->
