@@ -1180,22 +1180,6 @@ class DDIServiceImplTest {
                 "fr.insee", piId, label, new Date(), "fr.insee", "su-" + piId, "Study", "fr.insee", groupId, "Group");
     }
 
-    private Ddi4GroupResponse groupResponseWithSeries(String groupId, String... seriesIris) {
-        Ddi4Group group = new Ddi4Group(
-                Ddi4Group.TYPE,
-                CogsDate.ofDateTime("2025-01-09T09:00:00Z"),
-                "urn:ddi:fr.insee:" + groupId + ":1",
-                "fr.insee",
-                groupId,
-                "1",
-                "bauhaus",
-                null,
-                List.of(),
-                List.of(seriesIris),
-                "insee:StatisticalOperationSeries");
-        return new Ddi4GroupResponse("ddi:4.0", List.of(), List.of(group), List.of());
-    }
-
     @Test
     void shouldReturnNullWhenItemXmlNotFound() {
         when(ddiRepository.getItemXml("fr.insee", "unknown-id", "1")).thenReturn(null);

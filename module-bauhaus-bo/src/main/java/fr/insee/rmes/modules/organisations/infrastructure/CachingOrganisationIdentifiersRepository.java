@@ -18,8 +18,12 @@ import java.util.Optional;
 public class CachingOrganisationIdentifiersRepository implements OrganisationsRepository {
 
     private final OrganisationsRepository delegate;
-    private final Cache<String, Optional<String>> admsByDcterms;
-    private final Cache<String, Optional<String>> dctermsByAdms;
+    /** Identifiant correspondant, ou {@link #NO_IDENTIFIER} quand le graphe n'en déclare aucun. */
+    private final Cache<String, String> admsByDcterms;
+
+    private final Cache<String, String> dctermsByAdms;
+
+    private static final String NO_IDENTIFIER = "";
 
     public CachingOrganisationIdentifiersRepository(OrganisationsRepository delegate, Duration ttl) {
         this.delegate = delegate;
@@ -49,23 +53,21 @@ public class CachingOrganisationIdentifiersRepository implements OrganisationsRe
 
     @Override
     public Optional<String> getDctermsIdentifier(String admsIdentifier) throws OrganisationFetchException {
-        Optional<String> cached = dctermsByAdms.getIfPresent(admsIdentifier);
-        if (cached != null) {
-            return cached;
+        String cached = dctermsByAdms.getIfPresent(admsIdentifier);
+        if (cached == null) {
+            cached = delegate.getDctermsIdentifier(admsIdentifier).orElse(NO_IDENTIFIER);
+            dctermsByAdms.put(admsIdentifier, cached);
         }
-        Optional<String> identifier = delegate.getDctermsIdentifier(admsIdentifier);
-        dctermsByAdms.put(admsIdentifier, identifier);
-        return identifier;
+        return Optional.of(cached).filter(identifier -> !identifier.equals(NO_IDENTIFIER));
     }
 
     @Override
     public Optional<String> getAdmsIdentifier(String dctermsIdentifier) throws OrganisationFetchException {
-        Optional<String> cached = admsByDcterms.getIfPresent(dctermsIdentifier);
-        if (cached != null) {
-            return cached;
+        String cached = admsByDcterms.getIfPresent(dctermsIdentifier);
+        if (cached == null) {
+            cached = delegate.getAdmsIdentifier(dctermsIdentifier).orElse(NO_IDENTIFIER);
+            admsByDcterms.put(dctermsIdentifier, cached);
         }
-        Optional<String> identifier = delegate.getAdmsIdentifier(dctermsIdentifier);
-        admsByDcterms.put(dctermsIdentifier, identifier);
-        return identifier;
+        return Optional.of(cached).filter(identifier -> !identifier.equals(NO_IDENTIFIER));
     }
 }
