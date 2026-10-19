@@ -1,0 +1,82 @@
+@prefix dc:      <http://purl.org/dc/elements/1.1/> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix adms:    <http://www.w3.org/ns/adms#> .
+@prefix org:     <http://www.w3.org/ns/org#> .
+@prefix insee:   <http://rdf.insee.fr/def/base#> .
+@prefix skos:    <http://www.w3.org/2004/02/skos/core#> .
+
+# Jeu de donnees local pour tester le filtrage STAMP des PhysicalInstances (base de PUBLICATION : seules les series et operations, lues par l init Colectica).
+# Equipe T001 = l'utilisateur de test ; equipe T002 = une autre equipe.
+# Chaque serie exerce un format de createur different (voir README.md).
+
+
+<http://rdf.insee.fr/graphes/operations> {
+
+    <http://id.insee.fr/operations/famille/s9990> a insee:StatisticalOperationFamily ;
+        skos:prefLabel "Famille STAMP test - sans createur"@fr , "STAMP test family - no creator"@en ;
+        insee:validationState "Validated" ;
+        dcterms:hasPart <http://id.insee.fr/operations/serie/s9991> ,
+                        <http://id.insee.fr/operations/serie/s9992> ,
+                        <http://id.insee.fr/operations/serie/s9993> .
+
+    <http://id.insee.fr/operations/famille/s9995> a insee:StatisticalOperationFamily ;
+        skos:prefLabel "Famille STAMP test - createur T001"@fr , "STAMP test family - T001 creator"@en ;
+        insee:validationState "Validated" ;
+        dc:creator <http://bauhaus/organisations/insee/HIE9990001> ;
+        dcterms:hasPart <http://id.insee.fr/operations/serie/s9994> .
+
+    # Createur stocke en IRI d'organisation (format courant).
+    <http://id.insee.fr/operations/serie/s9991> a insee:StatisticalOperationSeries ;
+        skos:prefLabel "STAMP test - createur IRI T001"@fr , "STAMP test - IRI creator T001"@en ;
+        insee:validationState "Validated" ;
+        adms:identifier "s9991" ;
+        dc:creator <http://bauhaus/organisations/insee/HIE9990001> ;
+        dcterms:isPartOf <http://id.insee.fr/operations/famille/s9990> ;
+        dcterms:hasPart <http://id.insee.fr/operations/operation/s9981> .
+
+    # Createur stocke en litteral (format historique).
+    <http://id.insee.fr/operations/serie/s9992> a insee:StatisticalOperationSeries ;
+        skos:prefLabel "STAMP test - createur litteral T001"@fr , "STAMP test - literal creator T001"@en ;
+        insee:validationState "Validated" ;
+        adms:identifier "s9992" ;
+        dc:creator "HIE9990001" ;
+        dcterms:isPartOf <http://id.insee.fr/operations/famille/s9990> ;
+        dcterms:hasPart <http://id.insee.fr/operations/operation/s9982> .
+
+    # Serie d'une autre equipe : doit rester invisible pour T001.
+    <http://id.insee.fr/operations/serie/s9993> a insee:StatisticalOperationSeries ;
+        skos:prefLabel "STAMP test - autre equipe T002"@fr , "STAMP test - other team T002"@en ;
+        insee:validationState "Validated" ;
+        adms:identifier "s9993" ;
+        dc:creator <http://bauhaus/organisations/insee/HIE9990002> ;
+        dcterms:isPartOf <http://id.insee.fr/operations/famille/s9990> ;
+        dcterms:hasPart <http://id.insee.fr/operations/operation/s9983> .
+
+    # Serie sans createur propre : seul le createur de sa famille (T001) s'applique.
+    <http://id.insee.fr/operations/serie/s9994> a insee:StatisticalOperationSeries ;
+        skos:prefLabel "STAMP test - createur de la famille T001"@fr , "STAMP test - family creator T001"@en ;
+        insee:validationState "Validated" ;
+        adms:identifier "s9994" ;
+        dcterms:isPartOf <http://id.insee.fr/operations/famille/s9995> ;
+        dcterms:hasPart <http://id.insee.fr/operations/operation/s9984> .
+
+    <http://id.insee.fr/operations/operation/s9981> a insee:StatisticalOperation ;
+        skos:prefLabel "STAMP test - operation IRI T001"@fr , "STAMP test - IRI T001 operation"@en ;
+        insee:validationState "Validated" ;
+        dcterms:isPartOf <http://id.insee.fr/operations/serie/s9991> .
+
+    <http://id.insee.fr/operations/operation/s9982> a insee:StatisticalOperation ;
+        skos:prefLabel "STAMP test - operation litteral T001"@fr , "STAMP test - literal T001 operation"@en ;
+        insee:validationState "Validated" ;
+        dcterms:isPartOf <http://id.insee.fr/operations/serie/s9992> .
+
+    <http://id.insee.fr/operations/operation/s9983> a insee:StatisticalOperation ;
+        skos:prefLabel "STAMP test - operation T002"@fr , "STAMP test - T002 operation"@en ;
+        insee:validationState "Validated" ;
+        dcterms:isPartOf <http://id.insee.fr/operations/serie/s9993> .
+
+    <http://id.insee.fr/operations/operation/s9984> a insee:StatisticalOperation ;
+        skos:prefLabel "STAMP test - operation famille T001"@fr , "STAMP test - family T001 operation"@en ;
+        insee:validationState "Validated" ;
+        dcterms:isPartOf <http://id.insee.fr/operations/serie/s9994> .
+}

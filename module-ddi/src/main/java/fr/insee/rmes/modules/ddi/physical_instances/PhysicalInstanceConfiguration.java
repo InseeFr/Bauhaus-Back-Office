@@ -25,12 +25,15 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.services.Lifecycle33T
 import fr.insee.rmes.modules.ddi.physical_instances.domain.services.StudyUnitServiceImpl;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.services.converters.GroupDDIItemConverter;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.services.converters.StudyUnitDDIItemConverter;
+import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.ColecticaCacheNames;
 import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.ColecticaConfiguration;
 import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.schema.ClasspathDdi4SchemaRepository;
 import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.schema.NetworkntDdi4SchemaValidator;
 import fr.insee.rmes.modules.operation.series.domain.port.serverside.SeriesCreatorsPort;
+import fr.insee.rmes.modules.operation.series.infrastructure.CachingSeriesCreatorsAdapter;
 import java.time.Clock;
 import java.util.List;
+import org.springframework.cache.CacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -38,8 +41,11 @@ import org.springframework.context.annotation.Configuration;
 public class PhysicalInstanceConfiguration {
 
     @Bean
-    DDIService ddiService(DDIRepository repository, SeriesCreatorsPort seriesCreatorsPort) {
-        return new DDIServiceImpl(repository, seriesCreatorsPort, Clock.systemDefaultZone());
+    DDIService ddiService(DDIRepository repository, SeriesCreatorsPort seriesCreatorsPort, CacheManager cacheManager) {
+        // Cache réservé aux listes : les contrôles d'écriture (GraphDbStampChecker) relisent GraphDB.
+        SeriesCreatorsPort cachedCreators = new CachingSeriesCreatorsAdapter(
+                seriesCreatorsPort, cacheManager.getCache(ColecticaCacheNames.SERIES_CREATORS));
+        return new DDIServiceImpl(repository, cachedCreators, Clock.systemDefaultZone());
     }
 
     @Bean

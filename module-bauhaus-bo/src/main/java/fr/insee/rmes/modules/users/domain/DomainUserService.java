@@ -2,6 +2,7 @@ package fr.insee.rmes.modules.users.domain;
 
 import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
 import fr.insee.rmes.modules.users.domain.model.ModuleAccessPrivileges;
+import fr.insee.rmes.modules.users.domain.model.RBAC;
 import fr.insee.rmes.modules.users.domain.model.Stamp;
 import fr.insee.rmes.modules.users.domain.model.User;
 import fr.insee.rmes.modules.users.domain.port.clientside.UserService;
@@ -32,5 +33,10 @@ public class DomainUserService implements UserService {
     public Set<ModuleAccessPrivileges> computePrivileges(Object principal) throws MissingUserInformationException {
         var user = this.getUser(principal);
         return rbacFetcher.computePrivileges(user.roles(), user.source());
+    }
+
+    @Override
+    public RBAC.Strategy computeStrategy(User user, RBAC.Module module, RBAC.Privilege privilege) {
+        return rbacFetcher.computeStrategy(user.roles(), user.source(), module, privilege);
     }
 }

@@ -36,6 +36,7 @@ class GraphDbSeriesCreatorsAdapterTest {
     @BeforeEach
     void setUp() {
         lenient().when(graphs.operationsGraph()).thenReturn("http://rdf.insee.fr/graphes/operations");
+        lenient().when(graphs.orgInseeGraph()).thenReturn("http://rdf.insee.fr/graphes/organisations/insee");
         PublicationToGestionIriRewriter rewriter =
                 new PublicationToGestionIriRewriter("http://id.insee.fr/", "http://bauhaus/");
         adapter = new GraphDbSeriesCreatorsAdapter(repositoryGestion, graphs, rewriter);

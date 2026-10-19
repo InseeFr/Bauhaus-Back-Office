@@ -40,6 +40,7 @@ import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -194,6 +195,16 @@ class PhysicalInstanceSearchRowsCacheIntegrationTest {
         verify(client, times(1))
                 .findRelatedItems(
                         eq(RelationshipDirection.BY_SUBJECT), eq(new ItemReference(AGENCY, "g1")), eq(1), anyList());
+    }
+
+    @Test
+    void evictPhysicalInstanceSearchRowsCache_alsoForgetsTheSeriesCreators() {
+        Cache seriesCreators = cacheManager.getCache(ColecticaCacheNames.SERIES_CREATORS);
+        seriesCreators.put("http://id.insee.fr/operations/serie/s1", List.of("HIE1"));
+
+        ddiRepository.evictPhysicalInstanceSearchRowsCache();
+
+        assertThat(seriesCreators.get("http://id.insee.fr/operations/serie/s1")).isNull();
     }
 
     private static ColecticaAdvancedResponse advancedResponse(String label) {
