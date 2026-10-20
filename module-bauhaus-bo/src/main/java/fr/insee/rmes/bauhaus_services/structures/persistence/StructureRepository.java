@@ -505,7 +505,7 @@ public class StructureRepository extends RdfService {
 
         IRI structureIri = RdfUtils.structureIRI(structureObject.getId());
 
-        this.structurePublication.publish(structureIri);
+        this.structurePublication.publish(structureIri, RdfUtils.structureGraph());
 
         structureObject.setUpdated(DateUtils.getCurrentDate());
         repoGestion.clearStructureNodeAndComponents(structureIri);

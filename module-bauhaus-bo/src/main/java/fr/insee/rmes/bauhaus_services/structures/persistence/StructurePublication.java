@@ -29,9 +29,10 @@ public class StructurePublication extends RdfService {
         super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
     }
 
-    private void copyTriplet(Resource structure, Model model, RepositoryConnection con, String[] denyList)
+    private void copyTriplet(
+            Resource structure, Model model, RepositoryConnection con, String[] denyList, Resource graph)
             throws RmesException {
-        try (RepositoryResult<Statement> statements = repoGestion.getStatements(con, structure)) {
+        try (RepositoryResult<Statement> statements = repoGestion.getStatements(con, structure, graph)) {
             while (statements.hasNext()) {
                 Statement st = statements.next();
                 String pred = RdfUtils.toString(st.getPredicate());
@@ -42,22 +43,26 @@ public class StructurePublication extends RdfService {
                             publicationUtils.tranformBaseURIToPublish(st.getSubject()),
                             st.getPredicate(),
                             publicationUtils.tranformBaseURIToPublish((Resource) st.getObject()),
-                            st.getContext());
+                            graph);
 
                     copyTriplet(
-                            (Resource) st.getObject(), model, con, new String[] {"identifier", "created", "modified"});
+                            (Resource) st.getObject(),
+                            model,
+                            con,
+                            new String[] {"identifier", "created", "modified"},
+                            graph);
                 } else if (pred.endsWith("attribute") || pred.endsWith("measure") || pred.endsWith("dimension")) {
                     model.add(
                             publicationUtils.tranformBaseURIToPublish(st.getSubject()),
                             st.getPredicate(),
                             publicationUtils.tranformBaseURIToPublish((Resource) st.getObject()),
-                            st.getContext());
+                            graph);
                 } else {
                     model.add(
                             publicationUtils.tranformBaseURIToPublish(st.getSubject()),
                             st.getPredicate(),
                             st.getObject(),
-                            st.getContext());
+                            graph);
                 }
             }
         } catch (RepositoryException e) {
@@ -66,16 +71,24 @@ public class StructurePublication extends RdfService {
         }
     }
 
-    public void publish(Resource structure) throws RmesException {
+    /**
+     * @param graph graphe des structures : celui où la structure et ses spécifications de composants
+     *     sont lues en gestion et écrites en publication
+     */
+    public void publish(Resource structure, Resource graph) throws RmesException {
 
         Model model = new LinkedHashModel();
         try (RepositoryConnection con = repoGestion.getConnection()) {
             this.copyTriplet(
-                    structure, model, con, new String[] {"validationState", Constants.CREATOR, Constants.CONTRIBUTOR});
+                    structure,
+                    model,
+                    con,
+                    new String[] {"validationState", Constants.CREATOR, Constants.CONTRIBUTOR},
+                    graph);
         }
         Resource structureToPublish = publicationUtils.tranformBaseURIToPublish(structure);
 
         repositoryPublication.clearStructureAndComponentForAllRepositories(structureToPublish);
-        repositoryPublication.publishResource(structureToPublish, model, "Structure");
+        repositoryPublication.publishResource(structureToPublish, model, "Structure", graph);
     }
 }
