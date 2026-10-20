@@ -136,7 +136,11 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
 
     @Override
     public String create(String body) throws RmesException {
-        Distribution distribution = Deserializer.deserializeJsonString(body, Distribution.class);
+        return this.create(Deserializer.deserializeJsonString(body, Distribution.class));
+    }
+
+    @Override
+    public String create(Distribution distribution) throws RmesException {
         distribution.setId(idGenerator.generateNextId());
         distribution.setValidationState(ValidationStatus.UNPUBLISHED.toString());
         this.validate(distribution);
@@ -149,7 +153,11 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
 
     @Override
     public String update(String id, String body) throws RmesException {
-        Distribution distribution = Deserializer.deserializeJsonString(body, Distribution.class);
+        return this.update(id, Deserializer.deserializeJsonString(body, Distribution.class));
+    }
+
+    @Override
+    public String update(String id, Distribution distribution) throws RmesException {
         distribution.setId(id);
         distribution.setValidationState(ValidationStatus.MODIFIED.toString());
 
@@ -160,7 +168,7 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
         return this.persist(distribution, false);
     }
 
-    private void update(String distributionId, Distribution distribution) throws RmesException {
+    private void savePatched(String distributionId, Distribution distribution) throws RmesException {
         distribution.setId(distributionId);
 
         this.persist(distribution, false);
@@ -288,6 +296,6 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
         if (patchDistribution.getUrl() != null) {
             distribution.setUrl(patchDistribution.getUrl());
         }
-        update(distributionId, distribution);
+        savePatched(distributionId, distribution);
     }
 }

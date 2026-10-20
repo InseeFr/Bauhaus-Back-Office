@@ -2,9 +2,7 @@ fr.insee.rmes.modules.concepts.collections.webservice.CollectionsResources.creat
 fr.insee.rmes.modules.concepts.collections.webservice.CollectionsResources.publish(java.lang.String, java.util.List) takes a @RequestBody that is not annotated with @Valid
 fr.insee.rmes.modules.concepts.collections.webservice.CollectionsResources.update(java.lang.String, fr.insee.rmes.modules.concepts.collections.webservice.UpdateCollectionRequest) takes a @RequestBody that is not annotated with @Valid
 fr.insee.rmes.modules.concepts.concept.webservice.ConceptsResources.setConceptsValidation(java.lang.String, java.util.List) takes a @RequestBody that is not annotated with @Valid
-fr.insee.rmes.modules.datasets.distributions.webservice.DistributionResources.createDistribution(java.lang.String) takes a @RequestBody that is not annotated with @Valid
 fr.insee.rmes.modules.datasets.distributions.webservice.DistributionResources.patchDistribution(java.lang.String, fr.insee.rmes.modules.datasets.distributions.model.PatchDistribution) takes a @RequestBody that is not annotated with @Valid
-fr.insee.rmes.modules.datasets.distributions.webservice.DistributionResources.updateDistribution(java.lang.String, java.lang.String) takes a @RequestBody that is not annotated with @Valid
 fr.insee.rmes.modules.ddi.physical_instances.webservice.DdiResources.convertDdi3ToDdi4(fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi3Response) takes a @RequestBody that is not annotated with @Valid
 fr.insee.rmes.modules.ddi.physical_instances.webservice.DdiResources.convertDdi4ToDdi3(fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response) takes a @RequestBody that is not annotated with @Valid
 fr.insee.rmes.modules.ddi.physical_instances.webservice.DdiResources.createPhysicalInstance(fr.insee.rmes.modules.ddi.physical_instances.domain.model.CreatePhysicalInstanceRequest) takes a @RequestBody that is not annotated with @Valid

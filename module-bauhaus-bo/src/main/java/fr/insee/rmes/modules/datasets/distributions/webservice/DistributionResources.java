@@ -17,6 +17,7 @@ import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationExcep
 import fr.insee.rmes.modules.users.domain.model.RBAC;
 import fr.insee.rmes.modules.users.domain.port.serverside.UserDecoder;
 import fr.insee.rmes.modules.users.webservice.HasAccess;
+import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.HttpStatus;
@@ -90,14 +91,15 @@ public class DistributionResources {
     @PostMapping(value = "", consumes = APPLICATION_JSON_VALUE)
     @HasAccess(module = RBAC.Module.DATASET_DISTRIBUTION, privilege = RBAC.Privilege.CREATE)
     @ResponseStatus(HttpStatus.CREATED)
-    public String createDistribution(@RequestBody String body) throws RmesException {
-        return this.distributionService.create(body);
+    public String createDistribution(@Valid @RequestBody Distribution distribution) throws RmesException {
+        return this.distributionService.create(distribution);
     }
 
     @PutMapping(value = "/{id}", consumes = APPLICATION_JSON_VALUE)
     @HasAccess(module = RBAC.Module.DATASET_DISTRIBUTION, privilege = RBAC.Privilege.UPDATE)
-    public String updateDistribution(@PathVariable("id") String id, @RequestBody String body) throws RmesException {
-        return this.distributionService.update(id, body);
+    public String updateDistribution(@PathVariable("id") String id, @Valid @RequestBody Distribution distribution)
+            throws RmesException {
+        return this.distributionService.update(id, distribution);
     }
 
     @DeleteMapping("/{id}")

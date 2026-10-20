@@ -119,14 +119,14 @@ class DistributionResourcesTest {
 
     @Test
     void shouldReturn201IfRmesExceptionWhenPostingADistribution() throws RmesException {
-        when(distributionService.create(anyString())).thenReturn("result");
-        Assertions.assertEquals("result", distributionResources.createDistribution(""));
+        when(distributionService.create(any(Distribution.class))).thenReturn("result");
+        Assertions.assertEquals("result", distributionResources.createDistribution(new Distribution()));
     }
 
     @Test
     void shouldReturn200IfRmesExceptionWhenUpdatingADistribution() throws RmesException {
-        when(distributionService.update(anyString(), anyString())).thenReturn("result");
-        Assertions.assertEquals("result", distributionResources.updateDistribution("", ""));
+        when(distributionService.update(anyString(), any(Distribution.class))).thenReturn("result");
+        Assertions.assertEquals("result", distributionResources.updateDistribution("", new Distribution()));
     }
 
     @Test
