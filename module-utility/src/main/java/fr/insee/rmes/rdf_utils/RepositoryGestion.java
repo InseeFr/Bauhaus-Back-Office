@@ -464,4 +464,24 @@ public class RepositoryGestion {
         }
         return statements;
     }
+
+    /**
+     * Triplets de prédicat et d'objet donnés dans le graphe donné. À préférer à {@link
+     * #getStatementsPredicateObject(RepositoryConnection, IRI, Resource)}, pour la même raison que
+     * {@link #getStatements(RepositoryConnection, Resource, Resource)}.
+     */
+    public RepositoryResult<Statement> getStatementsPredicateObject(
+            RepositoryConnection con, IRI predicate, Resource object, Resource graph) throws RmesException {
+        RepositoryResult<Statement> statements = null;
+        if (con == null) {
+            con = gestionConnection();
+        }
+
+        try {
+            statements = con.getStatements(null, predicate, object, false, graph);
+        } catch (RepositoryException e) {
+            throwsRmesException(e, "Failure get " + predicate + " statements : " + object + " in " + graph);
+        }
+        return statements;
+    }
 }

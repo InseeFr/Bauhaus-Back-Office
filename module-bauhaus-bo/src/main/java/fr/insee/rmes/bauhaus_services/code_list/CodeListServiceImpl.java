@@ -390,7 +390,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService {
         String iri = codesList.getString("iri");
         IRI codelist = RdfUtils.createIRI(iri);
 
-        codeListPublication.publishCodeListAndCodes(codelist);
+        codeListPublication.publishCodeListAndCodes(codelist, RdfUtils.codesListGraph());
 
         Model model = new LinkedHashModel();
         model.add(

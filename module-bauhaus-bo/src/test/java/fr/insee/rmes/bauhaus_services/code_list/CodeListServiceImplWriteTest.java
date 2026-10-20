@@ -307,7 +307,7 @@ class CodeListServiceImplWriteTest {
         codeListService.publishCodeList("id", CodeListKind.FULL);
 
         IRI codeListIri = RdfUtils.createIRI("http://bauhaus/codes/id");
-        verify(codeListPublication).publishCodeListAndCodes(codeListIri);
+        verify(codeListPublication).publishCodeListAndCodes(codeListIri, RdfUtils.codesListGraph());
         ArgumentCaptor<Model> modelCaptor = ArgumentCaptor.forClass(Model.class);
         verify(repoGestion).objectValidation(eq(codeListIri), modelCaptor.capture());
         assertThat(objectsOf(modelCaptor.getValue(), INSEE.VALIDATION_STATE))
