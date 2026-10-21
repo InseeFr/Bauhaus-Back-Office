@@ -12,6 +12,7 @@ import fr.insee.rmes.modules.geographies.model.GeoFeature;
 import fr.insee.rmes.modules.geographies.webservice.response.TerritoryResponse;
 import fr.insee.rmes.modules.users.domain.model.RBAC;
 import fr.insee.rmes.modules.users.webservice.HasAccess;
+import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
 import org.apache.http.HttpStatus;
@@ -76,8 +77,8 @@ public class GeographyResources {
 
     @HasAccess(module = RBAC.Module.GEOGRAPHY, privilege = RBAC.Privilege.CREATE)
     @PostMapping(value = "/territory", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> createGeography(@RequestBody String body) throws RmesException {
-        String iri = geoService.createFeature(body);
+    public ResponseEntity<String> createGeography(@Valid @RequestBody GeoFeature geoFeature) throws RmesException {
+        String iri = geoService.createFeature(geoFeature);
         if (iri == null || iri.isEmpty()) {
             throw new IllegalStateException("Failed to create geography: no IRI returned");
         }
@@ -94,9 +95,9 @@ public class GeographyResources {
 
     @HasAccess(module = RBAC.Module.GEOGRAPHY, privilege = RBAC.Privilege.UPDATE)
     @PutMapping(value = "/territory/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> updateGeography(@PathVariable(Constants.ID) String id, @RequestBody String body)
-            throws RmesException {
-        geoService.updateFeature(id, body);
+    public ResponseEntity<Object> updateGeography(
+            @PathVariable(Constants.ID) String id, @Valid @RequestBody GeoFeature geoFeature) throws RmesException {
+        geoService.updateFeature(id, geoFeature);
         return ResponseEntity.ok(HttpStatus.SC_OK);
     }
 }

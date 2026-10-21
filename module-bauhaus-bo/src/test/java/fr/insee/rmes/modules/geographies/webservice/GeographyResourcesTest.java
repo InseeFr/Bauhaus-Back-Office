@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.bauhaus_services.GeographyService;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
+import fr.insee.rmes.modules.geographies.model.GeoFeature;
 import java.util.List;
 import java.util.Objects;
 import org.junit.jupiter.api.Assertions;
@@ -36,28 +37,30 @@ class GeographyResourcesTest {
     @InjectMocks
     GeographyResources geographyResources;
 
+    private final GeoFeature body = new GeoFeature();
+
     /** Un refus du service remonte aux gestionnaires d'erreur au lieu d'un corps texte (ADR-1264). */
     @Test
     void shouldLetARefusedCreationReachTheErrorHandlers() throws RmesException {
-        when(geoService.createFeature("body")).thenThrow(new RmesBadRequestException(847, "Name already used"));
+        when(geoService.createFeature(body)).thenThrow(new RmesBadRequestException(847, "Name already used"));
 
-        assertThrows(RmesBadRequestException.class, () -> geographyResources.createGeography("body"));
+        assertThrows(RmesBadRequestException.class, () -> geographyResources.createGeography(body));
     }
 
     @Test
     void shouldLetARefusedUpdateReachTheErrorHandlers() throws RmesException {
         doThrow(new RmesBadRequestException(847, "Name already used"))
                 .when(geoService)
-                .updateFeature("t1", "body");
+                .updateFeature("t1", body);
 
-        assertThrows(RmesBadRequestException.class, () -> geographyResources.updateGeography("t1", "body"));
+        assertThrows(RmesBadRequestException.class, () -> geographyResources.updateGeography("t1", body));
     }
 
     @Test
     void shouldFailWhenTheCreationReturnsNoIri() throws RmesException {
-        when(geoService.createFeature("body")).thenReturn(null);
+        when(geoService.createFeature(body)).thenReturn(null);
 
-        assertThrows(IllegalStateException.class, () -> geographyResources.createGeography("body"));
+        assertThrows(IllegalStateException.class, () -> geographyResources.createGeography(body));
     }
 
     @Test
@@ -72,10 +75,10 @@ class GeographyResourcesTest {
         GeographyResources myGeographyResources = new GeographyResources(geoService, objectMapper);
         String expectedIri = "http://bauhaus/qualite/territoire/test-territory-123";
         String expectedId = "test-territory-123";
-        when(geoService.createFeature("mocked body")).thenReturn(expectedIri);
+        when(geoService.createFeature(body)).thenReturn(expectedIri);
 
         // When
-        ResponseEntity<String> response = myGeographyResources.createGeography("mocked body");
+        ResponseEntity<String> response = myGeographyResources.createGeography(body);
 
         // Then
         assertEquals(HttpStatus.CREATED, response.getStatusCode());

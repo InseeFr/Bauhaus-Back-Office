@@ -11,7 +11,5 @@ fr.insee.rmes.modules.ddi.physical_instances.webservice.DdiResources.updatePhysi
 fr.insee.rmes.modules.ddi.physical_instances.webservice.DdiResources.validateDdi4(java.lang.String) takes a @RequestBody that is not annotated with @Valid
 fr.insee.rmes.modules.ddi.physical_instances.webservice.GroupResources.createOrUpdateGroup(fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group) takes a @RequestBody that is not annotated with @Valid
 fr.insee.rmes.modules.ddi.physical_instances.webservice.StudyUnitResources.createOrUpdateStudyUnit(fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit) takes a @RequestBody that is not annotated with @Valid
-fr.insee.rmes.modules.geographies.webservice.GeographyResources.createGeography(java.lang.String) takes a @RequestBody that is not annotated with @Valid
-fr.insee.rmes.modules.geographies.webservice.GeographyResources.updateGeography(java.lang.String, java.lang.String) takes a @RequestBody that is not annotated with @Valid
 fr.insee.rmes.modules.operations.msd.webservice.MetadataReportResources.setMetadataReport(java.lang.String) takes a @RequestBody that is not annotated with @Valid
 fr.insee.rmes.modules.operations.msd.webservice.MetadataReportResources.setMetadataReportById(java.lang.String, java.lang.String) takes a @RequestBody that is not annotated with @Valid

@@ -81,7 +81,7 @@ class TestGeographyResourcesEnvProd extends AbstractResourcesEnvProd {
         var request = post("/geo/territory")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content("{\"id\": \"1\"}");
+                .content("{\"labelLg1\": \"Zone\", \"labelLg2\": \"Area\"}");
 
         request.header("Authorization", "Bearer toto");
 
@@ -100,7 +100,7 @@ class TestGeographyResourcesEnvProd extends AbstractResourcesEnvProd {
         var request = put("/geo/territory/1")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content("{\"id\": \"1\"}");
+                .content("{\"labelLg1\": \"Zone\", \"labelLg2\": \"Area\"}");
 
         request.header("Authorization", "Bearer toto");
         mvc.perform(request).andExpect(status().is(code));
