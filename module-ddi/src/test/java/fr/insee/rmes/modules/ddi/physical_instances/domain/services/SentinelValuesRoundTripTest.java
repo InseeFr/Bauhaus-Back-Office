@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import fr.insee.ddi.lifecycle33.instance.FragmentDocument;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeRepresentation;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeValue;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CogsDate;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.DateTimeRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedMissingValuesRepresentation;
@@ -59,7 +60,7 @@ class SentinelValuesRoundTripTest {
                 null,
                 new NumericRepresentation(
                         NumericRepresentation.TYPE,
-                        "Integer",
+                        CodeValue.numericType("Integer"),
                         new NumberRange(new RangeValue(false, 0.0), new RangeValue(true, 100.0))),
                 null,
                 null,
@@ -68,7 +69,7 @@ class SentinelValuesRoundTripTest {
         VariableRepresentation roundTripped = roundTrip(rep);
 
         assertThat(roundTripped.missingValuesReference()).isEqualTo(MMVR_REF);
-        assertThat(roundTripped.numericRepresentation().numericTypeCode()).isEqualTo("Integer");
+        assertThat(roundTripped.numericRepresentation().numericTypeCode()).isEqualTo(CodeValue.numericType("Integer"));
     }
 
     @Test
@@ -77,14 +78,14 @@ class SentinelValuesRoundTripTest {
                 null,
                 null,
                 null,
-                new DateTimeRepresentation(DateTimeRepresentation.TYPE, "Date", "yyyy-MM-dd"),
+                new DateTimeRepresentation(DateTimeRepresentation.TYPE, CodeValue.dateType("Date"), "yyyy-MM-dd"),
                 null,
                 MMVR_REF);
 
         VariableRepresentation roundTripped = roundTrip(rep);
 
         assertThat(roundTripped.missingValuesReference()).isEqualTo(MMVR_REF);
-        assertThat(roundTripped.dateTimeRepresentation().dateTypeCode()).isEqualTo("Date");
+        assertThat(roundTripped.dateTimeRepresentation().dateTypeCode()).isEqualTo(CodeValue.dateType("Date"));
     }
 
     @Test

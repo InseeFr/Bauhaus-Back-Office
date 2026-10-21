@@ -13,6 +13,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.BasedOnObject;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Citation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Code;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeRepresentation;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeValue;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CogsDate;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.DateTimeRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Category;
@@ -240,7 +241,7 @@ class Ddi4ToLifecycle33Test {
                 null,
                 new NumericRepresentation(
                         NumericRepresentation.TYPE,
-                        "Integer",
+                        CodeValue.numericType("Integer"),
                         new NumberRange(new RangeValue(false, 0.0), new RangeValue(true, 100.0))),
                 null,
                 null,
@@ -253,7 +254,8 @@ class Ddi4ToLifecycle33Test {
                 .contains("<r:NumberRange")
                 .contains("<r:Low isInclusive=\"false\">0</r:Low>")
                 .contains("<r:High isInclusive=\"true\">100</r:High>")
-                .contains("<r:NumericTypeCode>Integer</r:NumericTypeCode>");
+                .contains(
+                        "<r:NumericTypeCode controlledVocabularyID=\"http://rdf-vocabulary.ddialliance.org/cv/NumericType/1.1.0/\" controlledVocabularyVersionID=\"1.1.0\">Integer</r:NumericTypeCode>");
     }
 
     @Test
@@ -263,7 +265,7 @@ class Ddi4ToLifecycle33Test {
                 null,
                 new NumericRepresentation(
                         NumericRepresentation.TYPE,
-                        "Decimal",
+                        CodeValue.numericType("Decimal"),
                         new NumberRange(new RangeValue(true, 0.0001), new RangeValue(true, 12345678.5))),
                 null,
                 null,
@@ -282,7 +284,7 @@ class Ddi4ToLifecycle33Test {
                 null,
                 null,
                 null,
-                new DateTimeRepresentation(DateTimeRepresentation.TYPE, "Date", "yyyy-MM-dd"),
+                new DateTimeRepresentation(DateTimeRepresentation.TYPE, CodeValue.dateType("Date"), "yyyy-MM-dd"),
                 null,
                 null));
 
@@ -290,7 +292,8 @@ class Ddi4ToLifecycle33Test {
 
         Assertions.assertThat(xml)
                 .contains("<r:DateTimeRepresentation")
-                .contains("<r:DateTypeCode>Date</r:DateTypeCode>")
+                .contains(
+                        "<r:DateTypeCode controlledVocabularyID=\"http://rdf-vocabulary.ddialliance.org/cv/DateType/1.1.2/\" controlledVocabularyVersionID=\"1.1.2\">Date</r:DateTypeCode>")
                 .contains("<r:DateFieldFormat>yyyy-MM-dd</r:DateFieldFormat>");
     }
 

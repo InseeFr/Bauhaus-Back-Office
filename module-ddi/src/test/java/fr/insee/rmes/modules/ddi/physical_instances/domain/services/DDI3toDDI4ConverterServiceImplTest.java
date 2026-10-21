@@ -443,7 +443,7 @@ class DDI3toDDI4ConverterServiceImplTest {
         assertNotNull(variable.variableRepresentation().numericRepresentation());
 
         NumericRepresentation numRep = variable.variableRepresentation().numericRepresentation();
-        assertEquals("Integer", numRep.numericTypeCode());
+        assertEquals(CodeValue.numericType("Integer"), numRep.numericTypeCode());
         assertNotNull(numRep.numberRange());
         assertEquals(true, numRep.numberRange().low().isInclusive());
         assertEquals(0.0, numRep.numberRange().low().value());
@@ -676,7 +676,7 @@ class DDI3toDDI4ConverterServiceImplTest {
         assertNotNull(variable.variableRepresentation().dateTimeRepresentation());
 
         DateTimeRepresentation dateTimeRep = variable.variableRepresentation().dateTimeRepresentation();
-        assertEquals("Date", dateTimeRep.dateTypeCode());
+        assertEquals(CodeValue.dateType("Date"), dateTimeRep.dateTypeCode());
         assertEquals("YYYY-MM-DD", dateTimeRep.dateFieldFormat());
     }
 

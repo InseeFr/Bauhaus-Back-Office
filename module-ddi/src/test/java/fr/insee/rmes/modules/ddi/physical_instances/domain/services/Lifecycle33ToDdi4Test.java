@@ -16,6 +16,7 @@ import static org.assertj.core.api.Assertions.tuple;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.ddi.lifecycle33.instance.FragmentDocument;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Code;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeValue;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Category;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeListScheme;
@@ -261,7 +262,7 @@ class Lifecycle33ToDdi4Test {
         Ddi4Variable variable = converter.toVariable(doc);
 
         assertThat(variable.variableRepresentation().numericRepresentation().numericTypeCode())
-                .isEqualTo("Integer");
+                .isEqualTo(CodeValue.numericType("Integer"));
         assertThat(variable.variableRepresentation()
                         .numericRepresentation()
                         .numberRange()
@@ -328,7 +329,7 @@ class Lifecycle33ToDdi4Test {
         Ddi4Variable variable = converter.toVariable(doc);
 
         assertThat(variable.variableRepresentation().dateTimeRepresentation().dateTypeCode())
-                .isEqualTo("Date");
+                .isEqualTo(CodeValue.dateType("Date"));
         assertThat(variable.variableRepresentation().dateTimeRepresentation().dateFieldFormat())
                 .isEqualTo("yyyy-MM-dd");
     }
