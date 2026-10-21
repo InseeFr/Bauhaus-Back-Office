@@ -8,6 +8,7 @@ import fr.insee.rmes.modules.organisations.domain.exceptions.OrganisationFetchEx
 import fr.insee.rmes.modules.organisations.domain.port.clientside.OrganisationsService;
 import fr.insee.rmes.modules.users.domain.exceptions.EmptyUserInformationException;
 import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
+import fr.insee.rmes.modules.users.domain.model.Stamp;
 import fr.insee.rmes.modules.users.domain.model.User;
 import fr.insee.rmes.modules.users.domain.port.serverside.UserDecoder;
 import java.util.*;
@@ -44,7 +45,7 @@ public class OidcUserDecoder implements UserDecoder {
             }
             case User user -> {
                 logger.debug("Principal is already a user {} with stamps {}", user.id(), user.getStamps());
-                yield of(user);
+                yield of(withAlternateStamps(user));
             }
             case Jwt jwt -> {
                 var u = of(buildUserFromToken(jwt.getClaims()));
@@ -117,6 +118,20 @@ public class OidcUserDecoder implements UserDecoder {
                     logger.info(LOG_INFO_DEFAULT_STAMP, userId);
                     return Set.of();
                 });
+    }
+
+    /**
+     * Utilisateur posé tel quel (hors PROD, par le {@code DevAuthenticationFilter}) : chacun de ses
+     * timbres reçoit l'identifiant alternatif qu'aurait ajouté le décodage d'un jeton.
+     */
+    private User withAlternateStamps(User user) {
+        Set<Stamp> stamps = new HashSet<>();
+        for (String stamp : user.getStamps()) {
+            buildStampsWithAlternateIdentifier(stamp, this::fetchAdmsIdentifier).stream()
+                    .map(Stamp::new)
+                    .forEach(stamps::add);
+        }
+        return new User(user.id(), user.roles(), stamps, user.source());
     }
 
     private Set<String> buildStampsWithAlternateIdentifier(String primaryStamp, IdentifierFetcher fetcher) {

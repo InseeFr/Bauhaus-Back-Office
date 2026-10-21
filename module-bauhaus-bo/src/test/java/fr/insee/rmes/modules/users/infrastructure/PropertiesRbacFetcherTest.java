@@ -359,4 +359,43 @@ class PropertiesRbacFetcherTest {
 
         assertThat(result).noneMatch(mp -> mp.application().equals(RBAC.Module.UNKNOWN));
     }
+
+    private void givenRoleA(RBAC.Module module, RBAC.Privilege privilege, RBAC.Strategy strategy) {
+        when(rbacConfiguration.allModulesAccessPrivileges())
+                .thenReturn(Set.of(new AllModuleAccessPrivileges(
+                        new AllModuleAccessPrivileges.RoleName("ROLE_A"),
+                        Set.of(new ModuleAccessPrivileges(
+                                module, Set.of(new ModuleAccessPrivileges.Privilege(privilege, strategy)))))));
+        createRbacFetcher();
+    }
+
+    @Test
+    void should_compute_the_strategy_granted_by_the_roles() {
+        givenRoleA(RBAC.Module.DDI_PHYSICALINSTANCE, RBAC.Privilege.READ, RBAC.Strategy.STAMP);
+
+        RBAC.Strategy strategy = rbacFetcher.computeStrategy(
+                List.of("ROLE_A"), Source.SSM, RBAC.Module.DDI_PHYSICALINSTANCE, RBAC.Privilege.READ);
+
+        assertThat(strategy).isEqualTo(RBAC.Strategy.STAMP);
+    }
+
+    @Test
+    void should_compute_read_all_when_source_is_insee() {
+        givenRoleA(RBAC.Module.DDI_PHYSICALINSTANCE, RBAC.Privilege.READ, RBAC.Strategy.STAMP);
+
+        RBAC.Strategy strategy = rbacFetcher.computeStrategy(
+                List.of("ROLE_A"), Source.INSEE, RBAC.Module.DDI_PHYSICALINSTANCE, RBAC.Privilege.READ);
+
+        assertThat(strategy).isEqualTo(RBAC.Strategy.ALL);
+    }
+
+    @Test
+    void should_compute_none_when_no_role_grants_the_privilege() {
+        givenRoleA(RBAC.Module.DDI_PHYSICALINSTANCE, RBAC.Privilege.READ, RBAC.Strategy.ALL);
+
+        RBAC.Strategy strategy = rbacFetcher.computeStrategy(
+                List.of("ROLE_A"), Source.SSM, RBAC.Module.DDI_PHYSICALINSTANCE, RBAC.Privilege.CREATE);
+
+        assertThat(strategy).isEqualTo(RBAC.Strategy.NONE);
+    }
 }

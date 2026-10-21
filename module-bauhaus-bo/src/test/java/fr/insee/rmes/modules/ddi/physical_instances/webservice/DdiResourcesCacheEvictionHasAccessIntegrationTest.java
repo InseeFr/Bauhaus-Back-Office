@@ -19,6 +19,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIIt
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.Ddi4SchemaService;
 import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
+import fr.insee.rmes.modules.users.domain.port.clientside.UserService;
 import fr.insee.rmes.modules.users.domain.port.serverside.RbacFetcher;
 import fr.insee.rmes.modules.users.infrastructure.UserProvider;
 import java.util.Collections;
@@ -63,6 +64,9 @@ class DdiResourcesCacheEvictionHasAccessIntegrationTest extends AbstractResource
 
     @MockitoBean
     private RbacFetcher rbacFetcher;
+
+    @MockitoBean
+    private UserService userService;
 
     @MockitoBean
     private BauhausUriBuilder bauhausUriBuilder;

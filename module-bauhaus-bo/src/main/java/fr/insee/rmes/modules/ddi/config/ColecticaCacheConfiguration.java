@@ -28,6 +28,9 @@ import org.springframework.context.annotation.Configuration;
 @EnableCaching(proxyTargetClass = true)
 public class ColecticaCacheConfiguration {
 
+    /** Un créateur de série se modifie dans le module Opérations, sans éviction côté DDI. */
+    static final Duration SERIES_CREATORS_TTL = Duration.ofMinutes(5);
+
     @Bean
     public CacheManager colecticaCacheManager(ColecticaConfiguration colecticaConfiguration) {
         Duration ttl = Objects.requireNonNullElse(
@@ -38,6 +41,9 @@ public class ColecticaCacheConfiguration {
                 ColecticaCacheNames.PHYSICAL_INSTANCE_SEARCH_ROWS,
                 ColecticaCacheNames.MUTUALIZED_CODE_LIST_CONTENTS);
         cacheManager.setCaffeine(Caffeine.newBuilder().expireAfterWrite(ttl));
+        cacheManager.registerCustomCache(
+                ColecticaCacheNames.SERIES_CREATORS,
+                Caffeine.newBuilder().expireAfterWrite(SERIES_CREATORS_TTL).build());
         return cacheManager;
     }
 }

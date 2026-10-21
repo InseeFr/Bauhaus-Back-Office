@@ -89,11 +89,11 @@ class DDIServiceImplTest {
     @Test
     void shouldGetPhysicalInstances() {
         // Given
-        List<PartialPhysicalInstance> expectedInstances = List.of(
-                new PartialPhysicalInstance("pi-1", "Physical Instance 1", new Date(), "fr.insee"),
-                new PartialPhysicalInstance("pi-2", "Physical Instance 2", new Date(), "fr.insee"),
-                new PartialPhysicalInstance("pi-3", "Physical Instance 3", new Date(), "fr.insee"));
-        when(ddiRepository.getPhysicalInstancesViaAdvancedQuery()).thenReturn(expectedInstances);
+        when(ddiRepository.getPhysicalInstanceSearchRows())
+                .thenReturn(List.of(
+                        searchRow("pi-1", "Physical Instance 1", "g1"),
+                        searchRow("pi-2", "Physical Instance 2", "g1"),
+                        searchRow("pi-3", "Physical Instance 3", "g2")));
 
         // When
         List<PartialPhysicalInstance> result = ddiService.getPhysicalInstances();
@@ -108,16 +108,45 @@ class DDIServiceImplTest {
         assertEquals("pi-3", result.get(2).id());
         assertEquals("Physical Instance 3", result.get(2).label());
 
-        verify(ddiRepository).getPhysicalInstancesViaAdvancedQuery();
+        verify(ddiRepository).getPhysicalInstanceSearchRows();
+    }
+
+    @Test
+    void getPhysicalInstances_readsTheSameCachedRowsAsTheStampFilteredList() {
+        Date versionDate = new Date();
+        when(ddiRepository.getPhysicalInstanceSearchRows())
+                .thenReturn(List.of(
+                        new PhysicalInstanceSearchRow(
+                                "fr.insee",
+                                "pi-1",
+                                "Attachée",
+                                versionDate,
+                                "fr.insee",
+                                "su-1",
+                                "Study",
+                                "fr.insee",
+                                "g1",
+                                "Group"),
+                        new PhysicalInstanceSearchRow(
+                                "fr.insee", "pi-2", "Orpheline", versionDate, null, null, null, null, null, null)));
+
+        List<PartialPhysicalInstance> result = ddiService.getPhysicalInstances();
+
+        assertEquals(
+                List.of(
+                        new PartialPhysicalInstance("pi-1", "Attachée", versionDate, "fr.insee"),
+                        new PartialPhysicalInstance("pi-2", "Orpheline", versionDate, "fr.insee")),
+                result);
+        verify(ddiRepository, never()).getPhysicalInstancesViaAdvancedQuery();
     }
 
     @Test
     void getPhysicalInstances_shouldBeSortedByLabelAscending() {
-        when(ddiRepository.getPhysicalInstancesViaAdvancedQuery())
+        when(ddiRepository.getPhysicalInstanceSearchRows())
                 .thenReturn(List.of(
-                        new PartialPhysicalInstance("pi-c", "Charlie", new Date(), "fr.insee"),
-                        new PartialPhysicalInstance("pi-a", "alpha", new Date(), "fr.insee"),
-                        new PartialPhysicalInstance("pi-b", "Bravo", new Date(), "fr.insee")));
+                        searchRow("pi-c", "Charlie", "g1"),
+                        searchRow("pi-a", "alpha", "g1"),
+                        searchRow("pi-b", "Bravo", "g1")));
 
         List<PartialPhysicalInstance> result = ddiService.getPhysicalInstances();
 
@@ -128,16 +157,11 @@ class DDIServiceImplTest {
 
     @Test
     void getPhysicalInstancesFilteredByStamp_shouldBeSortedByLabelAscending() {
-        PartialPhysicalInstance piC = new PartialPhysicalInstance("pi-c", "Charlie", new Date(), "fr.insee");
-        PartialPhysicalInstance piA = new PartialPhysicalInstance("pi-a", "alpha", new Date(), "fr.insee");
-        when(ddiRepository.getPhysicalInstancesViaAdvancedQuery()).thenReturn(List.of(piC, piA));
-        when(ddiRepository.getPhysicalInstanceParents("fr.insee", "pi-c"))
-                .thenReturn(new PhysicalInstanceParents("fr.insee", "su", "fr.insee", "g1"));
-        when(ddiRepository.getPhysicalInstanceParents("fr.insee", "pi-a"))
-                .thenReturn(new PhysicalInstanceParents("fr.insee", "su", "fr.insee", "g1"));
         String iri = "http://id.insee.fr/operations/serie/s1";
-        when(ddiRepository.getGroup("fr.insee", "g1")).thenReturn(groupResponseWithSeries("g1", iri));
-        when(seriesCreatorsPort.getCreatorsForSeries(List.of(iri))).thenReturn(Map.of(iri, List.of("stamp-A")));
+        when(ddiRepository.getGroups()).thenReturn(List.of(groupWithSeries("g1", iri)));
+        when(seriesCreatorsPort.getCreatorsForSeries(Set.of(iri))).thenReturn(Map.of(iri, List.of("stamp-A")));
+        when(ddiRepository.getPhysicalInstanceSearchRows())
+                .thenReturn(List.of(searchRow("pi-c", "Charlie", "g1"), searchRow("pi-a", "alpha", "g1")));
 
         List<PartialPhysicalInstance> result = ddiService.getPhysicalInstancesFilteredByStamp(Set.of("stamp-A"));
 
@@ -183,20 +207,22 @@ class DDIServiceImplTest {
 
     @Test
     void searchPhysicalInstancesFilteredByStamp_keepsRowsWhoseGroupCreatorMatchesAndDropsOrphans() {
-        String iri = "http://id.insee.fr/operations/serie/s1";
-        PhysicalInstanceSearchRow kept = new PhysicalInstanceSearchRow(
-                "fr.insee", "pi-1", "Kept", new Date(), "fr.insee", "su-1", "Study One", "fr.insee", "g1", "Group One");
+        String iri1 = "http://id.insee.fr/operations/serie/s1";
+        String iri2 = "http://id.insee.fr/operations/serie/s2";
+        when(ddiRepository.getGroups()).thenReturn(List.of(groupWithSeries("g1", iri1), groupWithSeries("g2", iri2)));
+        when(seriesCreatorsPort.getCreatorsForSeries(Set.of(iri1, iri2)))
+                .thenReturn(Map.of(iri1, List.of("stamp-A"), iri2, List.of("stamp-B")));
         PhysicalInstanceSearchRow orphan = new PhysicalInstanceSearchRow(
                 "fr.insee", "pi-3", "Orphan", new Date(), null, null, null, null, null, null);
-        when(ddiRepository.getPhysicalInstanceSearchRows()).thenReturn(List.of(kept, orphan));
-        when(ddiRepository.getGroup("fr.insee", "g1")).thenReturn(groupResponseWithSeries("g1", iri));
-        when(seriesCreatorsPort.getCreatorsForSeries(List.of(iri))).thenReturn(Map.of(iri, List.of("stamp-A")));
+        when(ddiRepository.getPhysicalInstanceSearchRows())
+                .thenReturn(List.of(searchRow("pi-1", "Kept", "g1"), searchRow("pi-2", "Other team", "g2"), orphan));
 
         List<PhysicalInstanceSearchRow> rows = ddiService.searchPhysicalInstancesFilteredByStamp(Set.of("stamp-A"));
 
         assertEquals(
                 List.of("Kept"),
                 rows.stream().map(PhysicalInstanceSearchRow::label).toList());
+        verify(ddiRepository, never()).getGroup(anyString(), anyString());
     }
 
     @Test
@@ -1091,66 +1117,67 @@ class DDIServiceImplTest {
 
     @Test
     void shouldGetPhysicalInstancesFilteredByStamp_keepsOnlyInstancesOfUserGroups() {
-        PartialPhysicalInstance pi1 = new PartialPhysicalInstance("pi-1", "PI 1", new Date(), "fr.insee");
-        PartialPhysicalInstance pi2 = new PartialPhysicalInstance("pi-2", "PI 2", new Date(), "fr.insee");
-        when(ddiRepository.getPhysicalInstancesViaAdvancedQuery()).thenReturn(List.of(pi1, pi2));
-
-        when(ddiRepository.getPhysicalInstanceParents("fr.insee", "pi-1"))
-                .thenReturn(new PhysicalInstanceParents("fr.insee", "su-1", "fr.insee", "g1"));
-        when(ddiRepository.getPhysicalInstanceParents("fr.insee", "pi-2"))
-                .thenReturn(new PhysicalInstanceParents("fr.insee", "su-2", "fr.insee", "g2"));
-
         String iri1 = "http://id.insee.fr/operations/serie/s1";
         String iri2 = "http://id.insee.fr/operations/serie/s2";
-        when(ddiRepository.getGroup("fr.insee", "g1")).thenReturn(groupResponseWithSeries("g1", iri1));
-        when(ddiRepository.getGroup("fr.insee", "g2")).thenReturn(groupResponseWithSeries("g2", iri2));
-        when(seriesCreatorsPort.getCreatorsForSeries(List.of(iri1))).thenReturn(Map.of(iri1, List.of("stamp-A")));
-        when(seriesCreatorsPort.getCreatorsForSeries(List.of(iri2))).thenReturn(Map.of(iri2, List.of("stamp-B")));
+        when(ddiRepository.getGroups()).thenReturn(List.of(groupWithSeries("g1", iri1), groupWithSeries("g2", iri2)));
+        when(seriesCreatorsPort.getCreatorsForSeries(Set.of(iri1, iri2)))
+                .thenReturn(Map.of(iri1, List.of("stamp-A"), iri2, List.of("stamp-B")));
+        when(ddiRepository.getPhysicalInstanceSearchRows())
+                .thenReturn(List.of(searchRow("pi-1", "PI 1", "g1"), searchRow("pi-2", "PI 2", "g2")));
 
         List<PartialPhysicalInstance> result = ddiService.getPhysicalInstancesFilteredByStamp(Set.of("stamp-A"));
 
-        assertNotNull(result);
-        assertEquals(1, result.size());
-        assertEquals("pi-1", result.getFirst().id());
+        assertEquals(
+                List.of("pi-1"),
+                result.stream().map(PartialPhysicalInstance::id).toList());
+        assertEquals("fr.insee", result.getFirst().agency());
+        assertEquals("PI 1", result.getFirst().label());
     }
 
     @Test
-    void shouldGetPhysicalInstancesFilteredByStamp_resolvesGroupStampsOncePerGroup() {
-        PartialPhysicalInstance pi1 = new PartialPhysicalInstance("pi-1", "PI 1", new Date(), "fr.insee");
-        PartialPhysicalInstance pi2 = new PartialPhysicalInstance("pi-2", "PI 2", new Date(), "fr.insee");
-        when(ddiRepository.getPhysicalInstancesViaAdvancedQuery()).thenReturn(List.of(pi1, pi2));
-
-        // les deux PI partagent le même groupe parent g1
-        when(ddiRepository.getPhysicalInstanceParents("fr.insee", "pi-1"))
-                .thenReturn(new PhysicalInstanceParents("fr.insee", "su-1", "fr.insee", "g1"));
-        when(ddiRepository.getPhysicalInstanceParents("fr.insee", "pi-2"))
-                .thenReturn(new PhysicalInstanceParents("fr.insee", "su-2", "fr.insee", "g1"));
-
+    void shouldGetPhysicalInstancesFilteredByStamp_resolvesCreatorsInOneQueryWithoutReadingEachInstance() {
         String iri1 = "http://id.insee.fr/operations/serie/s1";
-        when(ddiRepository.getGroup("fr.insee", "g1")).thenReturn(groupResponseWithSeries("g1", iri1));
-        when(seriesCreatorsPort.getCreatorsForSeries(List.of(iri1))).thenReturn(Map.of(iri1, List.of("stamp-A")));
+        String iri2 = "http://id.insee.fr/operations/serie/s2";
+        when(ddiRepository.getGroups()).thenReturn(List.of(groupWithSeries("g1", iri1), groupWithSeries("g2", iri2)));
+        when(seriesCreatorsPort.getCreatorsForSeries(Set.of(iri1, iri2))).thenReturn(Map.of(iri1, List.of("stamp-A")));
+        when(ddiRepository.getPhysicalInstanceSearchRows())
+                .thenReturn(List.of(
+                        searchRow("pi-1", "PI 1", "g1"),
+                        searchRow("pi-2", "PI 2", "g1"),
+                        searchRow("pi-3", "PI 3", "g2")));
 
         List<PartialPhysicalInstance> result = ddiService.getPhysicalInstancesFilteredByStamp(Set.of("stamp-A"));
 
         assertEquals(2, result.size());
-        // les stamps du groupe partagé ne sont résolus qu'une seule fois
-        verify(ddiRepository, times(1)).getGroup("fr.insee", "g1");
+        verify(seriesCreatorsPort, times(1)).getCreatorsForSeries(any());
+        verify(ddiRepository, never()).getPhysicalInstanceParents(anyString(), anyString());
+        verify(ddiRepository, never()).getGroup(anyString(), anyString());
     }
 
-    private Ddi4GroupResponse groupResponseWithSeries(String groupId, String... seriesIris) {
-        Ddi4Group group = new Ddi4Group(
-                Ddi4Group.TYPE,
-                CogsDate.ofDateTime("2025-01-09T09:00:00Z"),
-                "urn:ddi:fr.insee:" + groupId + ":1",
-                "fr.insee",
-                groupId,
-                "1",
-                "bauhaus",
-                null,
-                List.of(),
-                List.of(seriesIris),
-                "insee:StatisticalOperationSeries");
-        return new Ddi4GroupResponse("ddi:4.0", List.of(), List.of(group), List.of());
+    @Test
+    void shouldGetPhysicalInstancesFilteredByStamp_skipsInstancesWithoutStudyUnit() {
+        String iri = "http://id.insee.fr/operations/serie/s1";
+        when(ddiRepository.getGroups()).thenReturn(List.of(groupWithSeries("g1", iri)));
+        when(seriesCreatorsPort.getCreatorsForSeries(Set.of(iri))).thenReturn(Map.of(iri, List.of("stamp-A")));
+        PhysicalInstanceSearchRow orphan = new PhysicalInstanceSearchRow(
+                "fr.insee", "pi-orphan", "Orphan", new Date(), null, null, null, null, null, null);
+        when(ddiRepository.getPhysicalInstanceSearchRows())
+                .thenReturn(List.of(searchRow("pi-1", "PI 1", "g1"), orphan));
+
+        List<PartialPhysicalInstance> result = ddiService.getPhysicalInstancesFilteredByStamp(Set.of("stamp-A"));
+
+        assertEquals(
+                List.of("pi-1"),
+                result.stream().map(PartialPhysicalInstance::id).toList());
+    }
+
+    private PartialGroup groupWithSeries(String groupId, String... seriesIris) {
+        return new PartialGroup(groupId, "Group " + groupId, null, "fr.insee", List.of(seriesIris));
+    }
+
+    private PhysicalInstanceSearchRow searchRow(String piId, String label, String groupId) {
+        return new PhysicalInstanceSearchRow(
+                "fr.insee", piId, label, new Date(), "fr.insee", "su-" + piId, "Study", "fr.insee", groupId, "Group");
     }
 
     @Test

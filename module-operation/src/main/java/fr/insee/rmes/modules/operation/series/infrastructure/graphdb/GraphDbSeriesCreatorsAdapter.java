@@ -49,6 +49,7 @@ public class GraphDbSeriesCreatorsAdapter implements SeriesCreatorsPort {
 
             Map<String, Object> params = new HashMap<>();
             params.put("OPERATIONS_GRAPH", SparqlLiterals.iri(graphs.operationsGraph()));
+            params.put("ORG_INSEE_GRAPH", SparqlLiterals.iri(graphs.orgInseeGraph()));
             params.put(
                     "SERIES_IRIS",
                     publicationByGestionIri.keySet().stream()

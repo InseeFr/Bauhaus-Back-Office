@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -16,7 +17,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PartialG
 import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
 import fr.insee.rmes.modules.users.domain.model.RBAC;
 import fr.insee.rmes.modules.users.domain.model.User;
-import fr.insee.rmes.modules.users.domain.port.serverside.RbacFetcher;
+import fr.insee.rmes.modules.users.domain.port.clientside.UserService;
 import fr.insee.rmes.modules.users.infrastructure.UserProvider;
 import java.util.ArrayList;
 import java.util.Date;
@@ -50,7 +51,7 @@ class GroupResourcesTest {
     private UserProvider userProvider;
 
     @Mock
-    private RbacFetcher rbacFetcher;
+    private UserService userService;
 
     @InjectMocks
     private GroupResources groupResources;
@@ -150,8 +151,7 @@ class GroupResourcesTest {
         expectedGroups.add(
                 new PartialGroup("group-2", "Recensement de la population", new Date(), "fr.insee", List.of()));
         when(userProvider.findUser()).thenReturn(Optional.empty());
-        when(rbacFetcher.getApplicationActionStrategyByRole(
-                        any(), eq(RBAC.Module.DDI_PHYSICALINSTANCE), eq(RBAC.Privilege.READ)))
+        when(userService.computeStrategy(any(), eq(RBAC.Module.DDI_PHYSICALINSTANCE), eq(RBAC.Privilege.READ)))
                 .thenReturn(RBAC.Strategy.ALL);
         when(ddiService.getGroups()).thenReturn(expectedGroups);
 
@@ -185,8 +185,7 @@ class GroupResourcesTest {
                 new PartialGroup("group-1", "Base permanente des équipements", new Date(), "fr.insee", List.of(iri)));
         User stampUser = new User("user-1", List.of("role-stamp"), Set.of("stamp-A"));
         when(userProvider.findUser()).thenReturn(Optional.of(stampUser));
-        when(rbacFetcher.getApplicationActionStrategyByRole(
-                        any(), eq(RBAC.Module.DDI_PHYSICALINSTANCE), eq(RBAC.Privilege.READ)))
+        when(userService.computeStrategy(any(), eq(RBAC.Module.DDI_PHYSICALINSTANCE), eq(RBAC.Privilege.READ)))
                 .thenReturn(RBAC.Strategy.STAMP);
         when(ddiService.getGroupsFilteredByStamp(Set.of("stamp-A"))).thenReturn(filteredGroups);
 
@@ -200,6 +199,46 @@ class GroupResourcesTest {
         assertEquals("group-1", result.getFirst().getId());
 
         verify(ddiService).getGroupsFilteredByStamp(Set.of("stamp-A"));
+    }
+
+    @Test
+    void getGroupResponses_returnsAllGroups_forAnInseeUserWhoseRoleIsStamp()
+            throws Exception, MissingUserInformationException {
+        User inseeManager = new User("user-1", List.of("Gestionnaire_variables_RMESGNCS"), Set.of("stamp-A"), "insee");
+        when(userProvider.findUser()).thenReturn(Optional.of(inseeManager));
+        when(userService.computeStrategy(inseeManager, RBAC.Module.DDI_PHYSICALINSTANCE, RBAC.Privilege.READ))
+                .thenReturn(RBAC.Strategy.ALL);
+        when(ddiService.getGroups())
+                .thenReturn(List.of(new PartialGroup("group-1", "Group 1", new Date(), "fr.insee", List.of())));
+
+        ResponseEntity<List<PartialGroupResponse>> response = groupResources.getGroupResponses();
+
+        assertThat(response.getBody()).hasSize(1);
+        verify(ddiService, never()).getGroupsFilteredByStamp(any());
+    }
+
+    @Test
+    void getGroupResponses_returnsEmptyList_whenReadStrategyIsNone() throws Exception, MissingUserInformationException {
+        User userWithoutDdiRole = new User("user-1", List.of("Utilisateur_RMESGNCS"), Set.of("stamp-A"));
+        when(userProvider.findUser()).thenReturn(Optional.of(userWithoutDdiRole));
+        when(userService.computeStrategy(any(), eq(RBAC.Module.DDI_PHYSICALINSTANCE), eq(RBAC.Privilege.READ)))
+                .thenReturn(RBAC.Strategy.NONE);
+
+        ResponseEntity<List<PartialGroupResponse>> response = groupResources.getGroupResponses();
+
+        assertThat(response.getBody()).isEmpty();
+        verify(ddiService, never()).getGroups();
+    }
+
+    @Test
+    void getGroupResponses_returnsEmptyList_whenUserCannotBeResolved()
+            throws Exception, MissingUserInformationException {
+        when(userProvider.findUser()).thenThrow(new MissingUserInformationException("no user"));
+
+        ResponseEntity<List<PartialGroupResponse>> response = groupResources.getGroupResponses();
+
+        assertThat(response.getBody()).isEmpty();
+        verify(ddiService, never()).getGroups();
     }
 
     @Test

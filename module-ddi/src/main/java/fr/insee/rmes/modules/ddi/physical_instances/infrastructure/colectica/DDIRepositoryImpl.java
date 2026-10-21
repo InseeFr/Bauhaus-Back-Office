@@ -157,10 +157,13 @@ public class DDIRepositoryImpl implements DDIRepository {
      * Vide la région {@link ColecticaCacheNames#PHYSICAL_INSTANCE_SEARCH_ROWS} pour que le prochain
      * {@link #getPhysicalInstanceSearchRows()} reparcoure Colectica. Les écritures de PhysicalInstance
      * l'évincent déjà ; ceci couvre les changements survenus hors de Bauhaus, qu'aucune écriture locale
-     * ne signale.
+     * ne signale. Les créateurs de séries ({@link ColecticaCacheNames#SERIES_CREATORS}) sont vidés en
+     * même temps.
      */
     @Override
-    @CacheEvict(cacheNames = ColecticaCacheNames.PHYSICAL_INSTANCE_SEARCH_ROWS, allEntries = true)
+    @CacheEvict(
+            cacheNames = {ColecticaCacheNames.PHYSICAL_INSTANCE_SEARCH_ROWS, ColecticaCacheNames.SERIES_CREATORS},
+            allEntries = true)
     public void evictPhysicalInstanceSearchRowsCache() {
         logger.info("Physical instance search rows cache evicted");
     }
@@ -394,7 +397,8 @@ public class DDIRepositoryImpl implements DDIRepository {
                 ColecticaCacheNames.MUTUALIZED_CODES_LISTS,
                 ColecticaCacheNames.MUTUALIZED_PACKAGE_CODE_LIST_REFS,
                 ColecticaCacheNames.PHYSICAL_INSTANCE_SEARCH_ROWS,
-                ColecticaCacheNames.MUTUALIZED_CODE_LIST_CONTENTS
+                ColecticaCacheNames.MUTUALIZED_CODE_LIST_CONTENTS,
+                ColecticaCacheNames.SERIES_CREATORS
             },
             allEntries = true)
     public void evictAllCaches() {

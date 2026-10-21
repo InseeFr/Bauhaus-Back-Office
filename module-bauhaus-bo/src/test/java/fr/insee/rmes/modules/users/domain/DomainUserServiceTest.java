@@ -158,4 +158,17 @@ class DomainUserServiceTest {
         assertThat(result).hasSize(3);
         assertThat(result).extracting(Stamp::stamp).containsExactlyInAnyOrder("STAMP-01", "STAMP-02", "STAMP-03");
     }
+
+    @Test
+    void should_compute_the_strategy_of_a_user_from_their_roles_and_source() {
+        var user = new User("user123", List.of("Gestionnaire_variables_RMESGNCS"), Set.of("STAMP-01"), "insee");
+        when(rbacFetcher.computeStrategy(
+                        user.roles(), Source.INSEE, RBAC.Module.DDI_PHYSICALINSTANCE, RBAC.Privilege.READ))
+                .thenReturn(RBAC.Strategy.ALL);
+
+        RBAC.Strategy strategy =
+                userService.computeStrategy(user, RBAC.Module.DDI_PHYSICALINSTANCE, RBAC.Privilege.READ);
+
+        assertThat(strategy).isEqualTo(RBAC.Strategy.ALL);
+    }
 }

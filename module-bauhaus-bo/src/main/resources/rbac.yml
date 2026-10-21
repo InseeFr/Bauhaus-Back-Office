@@ -297,6 +297,8 @@ rbac:
         read: ALL
       codeslist_partialcodeslist:
         read: ALL
+      ddi_physicalinstance:
+        read: ALL
     Gestionnaire_concept_RMESGNCS:
       concept_concept:
         create: ALL

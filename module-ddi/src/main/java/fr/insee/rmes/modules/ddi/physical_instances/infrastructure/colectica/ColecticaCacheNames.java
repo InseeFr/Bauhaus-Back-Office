@@ -31,4 +31,10 @@ public final class ColecticaCacheNames {
      * codes coûte ~30 s à relire dans Colectica.
      */
     public static final String MUTUALIZED_CODE_LIST_CONTENTS = "mutualizedCodeListContents";
+
+    /**
+     * Créateurs des séries rattachées aux groupes, lus par le filtrage STAMP des listes DDI. TTL court
+     * (un créateur se modifie dans le module Opérations) ; vidé avec {@link #PHYSICAL_INSTANCE_SEARCH_ROWS}.
+     */
+    public static final String SERIES_CREATORS = "seriesCreators";
 }
