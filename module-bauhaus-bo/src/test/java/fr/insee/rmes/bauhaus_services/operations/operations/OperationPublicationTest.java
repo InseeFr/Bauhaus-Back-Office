@@ -34,7 +34,7 @@ class OperationPublicationTest {
                 .thenReturn(ValidationStatus.VALIDATED.getValue());
 
         var exception = assertThrows(
-                RmesBadRequestException.class, () -> operationPublication.publishOperation("1", operation));
+                RmesBadRequestException.class, () -> operationPublication.publishOperation("1", operation, null));
         assertThat(exception.getDetails()).contains("\"code\":1301");
         assertThat(exception.getDetails()).contains("Operation: 1");
     }
@@ -60,6 +60,7 @@ class OperationPublicationTest {
         operation.put("series", series);
 
         when(operationsParentRepository.getValidationStatus("2")).thenReturn(ValidationStatus.UNPUBLISHED.toString());
-        return assertThrows(RmesBadRequestException.class, () -> operationPublication.publishOperation("1", operation));
+        return assertThrows(
+                RmesBadRequestException.class, () -> operationPublication.publishOperation("1", operation, null));
     }
 }

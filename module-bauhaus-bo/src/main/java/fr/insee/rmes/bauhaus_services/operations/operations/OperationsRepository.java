@@ -279,7 +279,7 @@ public class OperationsRepository extends RdfService {
 
         // PUBLISH
         JSONObject operationJson = getOperationJsonById(idOperation);
-        operationPublication.publishOperation(idOperation, operationJson);
+        operationPublication.publishOperation(idOperation, operationJson, RdfUtils.operationsGraph());
 
         // UPDATE GESTION TO MARK AS PUBLISHED
         IRI operationURI = RdfUtils.objectIRI(ObjectType.OPERATION, idOperation);
