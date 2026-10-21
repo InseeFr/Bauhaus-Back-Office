@@ -89,6 +89,7 @@ public class IndicatorPublication implements ObjectPublication<Indicator> {
                         || pred.endsWith(Constants.SEEALSO)
                         || pred.endsWith(Constants.REPLACES)
                         || pred.endsWith(Constants.ISREPLACEDBY)
+                        || pred.endsWith(Constants.CREATOR)
                         || pred.endsWith(Constants.CONTRIBUTOR)
                         || pred.endsWith(Constants.PUBLISHER)
                         || pred.endsWith("accrualPeriodicity")) {

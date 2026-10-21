@@ -17,13 +17,17 @@ import fr.insee.rmes.json.JSONUtils;
 import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationSeriesQueries;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
+import org.eclipse.rdf4j.common.iteration.CloseableIteratorIteration;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
+import org.eclipse.rdf4j.model.vocabulary.DC;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.json.JSONArray;
@@ -31,6 +35,7 @@ import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -237,6 +242,51 @@ class SeriesPublicationTest {
                         mockedRdfUtils.when(() -> RdfUtils.toString(any())).thenReturn("http://example.org/isPartOf"));
 
         verify(publicationUtils, times(1)).tranformBaseURIToPublish(any(Resource.class));
+    }
+
+    /**
+     * #1663 : le propriétaire (dc:creator) est stocké en gestion comme IRI d'organisation ; il doit
+     * être réécrit vers la base de publication, sinon une IRI http://bauhaus/… fuit en diffusion.
+     */
+    @Test
+    void publishSeries_shouldRewriteTheCreatorOrganisationToThePublicationBase() throws RmesException {
+        SimpleValueFactory vf = SimpleValueFactory.getInstance();
+        PublicationUtils realPublicationUtils =
+                new PublicationUtils("http://bauhaus/", "http://id.insee.fr/", null, null);
+        SeriesPublication publication = new SeriesPublication(
+                operationsParentRepository,
+                realPublicationUtils,
+                repoGestion,
+                repositoryPublication,
+                operationSeriesQueries);
+        IRI seriesIri = vf.createIRI("http://bauhaus/operations/serie/s1210");
+        Statement creator = vf.createStatement(
+                seriesIri, DC.CREATOR, vf.createIRI("http://bauhaus/organisations/insee/HIE2001113"));
+        givenValidatedFamily();
+
+        try (MockedStatic<RdfUtils> mockedRdfUtils = mockStatic(RdfUtils.class, CALLS_REAL_METHODS)) {
+            mockedRdfUtils.when(() -> RdfUtils.seriesIRI(SERIES_ID)).thenReturn(seriesIri);
+            mockedRdfUtils.when(RdfUtils::operationsGraph).thenReturn(seriesIri);
+            when(operationSeriesQueries.getPublishedOperationsForSeries(anyString()))
+                    .thenReturn("SELECT * WHERE { }");
+            when(repoGestion.getResponseAsArray(anyString())).thenReturn(new JSONArray());
+            when(repoGestion.getStatements(repositoryConnection, seriesIri))
+                    .thenReturn(new RepositoryResult<>(
+                            new CloseableIteratorIteration<>(List.of(creator).iterator())));
+            when(repoGestion.getHasPartStatements(repositoryConnection, seriesIri))
+                    .thenReturn(hasPartStatements);
+            when(repoGestion.getReplacesStatements(repositoryConnection, seriesIri))
+                    .thenReturn(replacesStatements);
+            when(repoGestion.getIsReplacedByStatements(repositoryConnection, seriesIri))
+                    .thenReturn(isReplacedByStatements);
+
+            publication.publishSeries(SERIES_ID, seriesJson);
+        }
+
+        ArgumentCaptor<Model> model = ArgumentCaptor.forClass(Model.class);
+        verify(repositoryPublication).publishResource(any(Resource.class), model.capture(), eq("serie"));
+        assertThat(model.getValue().filter(null, DC.CREATOR, null).objects())
+                .containsExactly(vf.createIRI("http://id.insee.fr/organisations/insee/HIE2001113"));
     }
 
     /**

@@ -36,6 +36,7 @@ public class SeriesPublication {
             Constants.REPLACES,
             Constants.ISREPLACEDBY,
             Constants.DATA_COLLECTOR,
+            Constants.CREATOR,
             Constants.CONTRIBUTOR,
             Constants.PUBLISHER,
             Constants.ACCRUAL_PERIODICITY,

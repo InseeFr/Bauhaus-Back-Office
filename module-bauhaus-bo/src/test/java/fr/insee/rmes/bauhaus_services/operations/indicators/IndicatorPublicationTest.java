@@ -27,6 +27,7 @@ import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
+import org.eclipse.rdf4j.model.vocabulary.DC;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;
 import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.junit.jupiter.api.BeforeEach;
@@ -162,6 +163,28 @@ class IndicatorPublicationTest {
                         VF.createIRI(PUBLICATION + "operations/serie/s1000")))
                 .isTrue();
         assertThat(model.contains(null, SKOS.PREF_LABEL, VF.createLiteral("label fr", "fr")))
+                .isTrue();
+    }
+
+    /**
+     * #1663 : le propriétaire (dc:creator) de l'indicateur est une IRI d'organisation de gestion ;
+     * il doit sortir sous la base de publication.
+     */
+    @Test
+    void publish_ShouldRewriteTheCreatorOrganisationToThePublicationBase() throws RmesException {
+        Resource indicatorIri = RdfUtils.objectIRI(ObjectType.INDICATOR, "123");
+        givenStatementsOfIndicator(VF.createStatement(
+                (org.eclipse.rdf4j.model.IRI) indicatorIri,
+                DC.CREATOR,
+                VF.createIRI(GESTION + "organisations/insee/HIE2003239")));
+
+        indicatorPublication.publish("123");
+
+        ArgumentCaptor<Model> modelCaptor = ArgumentCaptor.forClass(Model.class);
+        verify(repositoryPublication).publishResource(any(Resource.class), modelCaptor.capture(), eq("indicator"));
+        assertThat(modelCaptor
+                        .getValue()
+                        .contains(null, DC.CREATOR, VF.createIRI(PUBLICATION + "organisations/insee/HIE2003239")))
                 .isTrue();
     }
 
