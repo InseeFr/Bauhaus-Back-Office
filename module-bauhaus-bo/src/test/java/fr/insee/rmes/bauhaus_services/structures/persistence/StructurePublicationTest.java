@@ -88,7 +88,7 @@ class StructurePublicationTest {
         assertThat(model.contains(publishedSpecification, DCTERMS.IDENTIFIER, VF.createLiteral("cs1000")))
                 .as("l'identifiant d'une spécification reste en gestion")
                 .isFalse();
-        verify(repositoryPublication).clearStructureAndComponentForAllRepositories(publishedStructure);
+        verify(repositoryPublication).clearStructureAndComponentForAllRepositories(publishedStructure, GRAPH);
     }
 
     @Test

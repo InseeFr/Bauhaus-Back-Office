@@ -88,7 +88,7 @@ public class StructurePublication extends RdfService {
         }
         Resource structureToPublish = publicationUtils.tranformBaseURIToPublish(structure);
 
-        repositoryPublication.clearStructureAndComponentForAllRepositories(structureToPublish);
+        repositoryPublication.clearStructureAndComponentForAllRepositories(structureToPublish, graph);
         repositoryPublication.publishResource(structureToPublish, model, "Structure", graph);
     }
 }

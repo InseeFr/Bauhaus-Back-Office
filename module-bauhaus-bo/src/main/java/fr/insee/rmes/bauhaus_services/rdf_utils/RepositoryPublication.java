@@ -236,9 +236,9 @@ public class RepositoryPublication {
         }
     }
 
-    public void clearStructureAndComponentForAllRepositories(Resource structure) throws RmesException {
+    public void clearStructureAndComponentForAllRepositories(Resource structure, Resource graph) throws RmesException {
         repositoryUtils.clearStructureAndComponents(
-                structure, repositoryUtils.initRepository(rdfServerPublicationExt, idRepositoryPublicationExt));
+                structure, graph, repositoryUtils.initRepository(rdfServerPublicationExt, idRepositoryPublicationExt));
     }
 
     public void overrideTriplets(IRI subject, Model model, Resource graph) throws RmesException {
