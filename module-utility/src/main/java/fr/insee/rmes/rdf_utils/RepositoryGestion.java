@@ -341,9 +341,9 @@ public class RepositoryGestion {
         }
     }
 
-    public void clearStructureNodeAndComponents(Resource structure) throws RmesException {
+    public void clearStructureNodeAndComponents(Resource structure, Resource graph) throws RmesException {
         repositoryUtils.clearStructureAndComponents(
-                structure, repositoryUtils.initRepository(rdfGestion.getUrlServer(), rdfGestion.repositoryId()));
+                structure, graph, repositoryUtils.initRepository(rdfGestion.getUrlServer(), rdfGestion.repositoryId()));
     }
 
     public void keepHierarchicalOperationLinks(Resource object, Model model) throws RmesException {

@@ -13,8 +13,6 @@ import jakarta.annotation.PreDestroy;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -409,32 +407,21 @@ public class RepositoryUtils {
         return arrayRes;
     }
 
-    public void clearStructureAndComponents(Resource structure, Repository repository) throws RmesException {
-        List<Resource> toRemove = new ArrayList<>();
-        try (RepositoryConnection conn = repository.getConnection()) {
-            try (RepositoryResult<Statement> nodes = conn.getStatements(structure, QB.COMPONENT, null, false)) {
-                while (nodes.hasNext()) {
-                    Resource node = (Resource) nodes.next().getObject();
-                    toRemove.add(node);
-                    try (RepositoryResult<Statement> specifications =
-                            conn.getStatements(node, QB.COMPONENT, null, false)) {
-                        while (specifications.hasNext()) {
-                            toRemove.add((Resource) specifications.next().getObject());
-                        }
-                    }
-                }
-            }
-            toRemove.forEach(res -> {
-                try (RepositoryResult<Statement> statements = conn.getStatements(res, null, null, false)) {
-                    conn.remove(statements);
-                } catch (RepositoryException e) {
-                    logger.error("Repository {} Error {}", repository, e.getMessage());
-                }
-            });
-        } catch (RepositoryException e) {
-            logger.error("Failure deletion : {}", structure, e);
-            throw new CodedRmesException(
-                    HttpStatus.INTERNAL_SERVER_ERROR.value(), RDF_QUERY_FAILED, GENERIC_MESSAGE, e);
-        }
+    /**
+     * Retire du graphe donné les triplets sortants des nœuds que la structure relie par {@code
+     * qb:component}, et de ceux que ces nœuds relient à leur tour. Les triplets de la structure
+     * elle-même, et ceux des nœuds dans un autre graphe, restent en place.
+     */
+    public void clearStructureAndComponents(Resource structure, Resource graph, Repository repository)
+            throws RmesException {
+        executeUpdate(
+                """
+                DELETE { GRAPH %1$s { ?node ?p ?o } }
+                WHERE { GRAPH %1$s { %2$s %3$s/%3$s? ?node . ?node ?p ?o } }
+                """.formatted(
+                                SparqlLiterals.iri(graph.stringValue()),
+                                SparqlLiterals.iri(structure.stringValue()),
+                                SparqlLiterals.iri(QB.COMPONENT.stringValue())),
+                repository);
     }
 }

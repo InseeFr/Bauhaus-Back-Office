@@ -303,7 +303,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService {
                     CodesListErrorCodes.CODE_LIST_UNICITY, "The identifier, IRI and OWL class should be unique", "");
         }
 
-        repoGestion.clearStructureNodeAndComponents(codeListIri);
+        repoGestion.clearStructureNodeAndComponents(codeListIri, RdfUtils.codesListGraph());
         Model model = new LinkedHashModel();
         Resource graph = RdfUtils.codesListGraph();
         RdfUtils.addTripleDateTime(codeListIri, DCTERMS.CREATED, DateUtils.getCurrentDate(), model, graph);
@@ -332,7 +332,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService {
             throw new RmesNotFoundException(CodesListErrorCodes.CODE_LIST_UNKNOWN_ID, "CodeList not found", id);
         }
 
-        repoGestion.clearStructureNodeAndComponents(codeListIri);
+        repoGestion.clearStructureNodeAndComponents(codeListIri, RdfUtils.codesListGraph());
         Model model = new LinkedHashModel();
         Resource graph = RdfUtils.codesListGraph();
 
