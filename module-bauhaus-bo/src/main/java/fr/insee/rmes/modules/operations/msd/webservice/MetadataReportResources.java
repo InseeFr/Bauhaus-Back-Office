@@ -9,6 +9,7 @@ import fr.insee.rmes.domain.exceptions.CodedRmesException;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
+import fr.insee.rmes.model.operations.documentations.Documentation;
 import fr.insee.rmes.modules.commons.configuration.ConditionalOnModule;
 import fr.insee.rmes.modules.commons.configuration.swagger.model.Accept;
 import fr.insee.rmes.modules.commons.domain.GenericInternalServerException;
@@ -25,6 +26,7 @@ import fr.insee.rmes.modules.users.domain.model.RBAC;
 import fr.insee.rmes.modules.users.webservice.HasAccess;
 import fr.insee.rmes.utils.HttpUtils;
 import fr.insee.rmes.utils.XMLUtils;
+import jakarta.validation.Valid;
 import java.io.IOException;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -154,8 +156,8 @@ public class MetadataReportResources {
 
     @HasAccess(module = RBAC.Module.OPERATION_SIMS, privilege = RBAC.Privilege.CREATE)
     @PostMapping(value = "/metadataReport", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> setMetadataReport(@RequestBody String body) throws RmesException {
-        String id = documentationsService.createMetadataReport(body);
+    public ResponseEntity<Object> setMetadataReport(@Valid @RequestBody Documentation sims) throws RmesException {
+        String id = documentationsService.createMetadataReport(sims);
         if (id == null) {
             throw new CodedRmesException(
                     HttpStatus.INTERNAL_SERVER_ERROR.value(),
@@ -168,9 +170,9 @@ public class MetadataReportResources {
 
     @HasAccess(module = RBAC.Module.OPERATION_SIMS, privilege = RBAC.Privilege.UPDATE)
     @PutMapping(value = "/metadataReport/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> setMetadataReportById(@PathVariable(Constants.ID) String id, @RequestBody String body)
-            throws RmesException {
-        documentationsService.setMetadataReport(id, body);
+    public ResponseEntity<Object> setMetadataReportById(
+            @PathVariable(Constants.ID) String id, @Valid @RequestBody Documentation sims) throws RmesException {
+        documentationsService.setMetadataReport(id, sims);
         return ResponseEntity.noContent().build();
     }
 

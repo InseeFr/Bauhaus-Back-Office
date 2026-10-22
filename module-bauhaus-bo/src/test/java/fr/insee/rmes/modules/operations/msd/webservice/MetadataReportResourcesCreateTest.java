@@ -1,6 +1,6 @@
 package fr.insee.rmes.modules.operations.msd.webservice;
 
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -47,21 +47,23 @@ class MetadataReportResourcesCreateTest {
 
     @Test
     void createMetadataReport_shouldReturnTheNewId() throws Exception {
-        when(documentationsService.createMetadataReport(anyString())).thenReturn("1234");
+        when(documentationsService.createMetadataReport(any())).thenReturn("1234");
 
         mockMvc.perform(post("/operations/metadataReport")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{}"))
+                        .content("""
+                                {"labelLg1": "Rapport qualité", "rubrics": []}"""))
                 .andExpect(status().isOk());
     }
 
     @Test
     void createMetadataReport_whenNoIdIsReturned_shouldAnswer500WithMessageAndCode() throws Exception {
-        when(documentationsService.createMetadataReport(anyString())).thenReturn(null);
+        when(documentationsService.createMetadataReport(any())).thenReturn(null);
 
         mockMvc.perform(post("/operations/metadataReport")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{}"))
+                        .content("""
+                                {"labelLg1": "Rapport qualité", "rubrics": []}"""))
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.message").value("The report could not be created."))
                 .andExpect(jsonPath("$.code").value("SIMS_CREATION_FAILED"));

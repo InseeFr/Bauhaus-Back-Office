@@ -104,16 +104,16 @@ public class OperationsDocumentationsImpl extends RdfService implements Operatio
      * CREATE
      */
     @Override
-    public String createMetadataReport(String body) throws RmesException {
-        return documentationsUtils.setMetadataReport(null, body, true);
+    public String createMetadataReport(Documentation sims) throws RmesException {
+        return documentationsUtils.setMetadataReport(null, sims, true);
     }
 
     /**
      * UPDATE
      */
     @Override
-    public void setMetadataReport(String id, String body) throws RmesException {
-        documentationsUtils.setMetadataReport(id, body, false);
+    public void setMetadataReport(String id, Documentation sims) throws RmesException {
+        documentationsUtils.setMetadataReport(id, sims, false);
     }
 
     /**

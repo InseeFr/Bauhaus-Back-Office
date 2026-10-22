@@ -1,7 +1,5 @@
 package fr.insee.rmes.bauhaus_services.operations.documentations;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.DocumentationsProperties;
@@ -26,7 +24,6 @@ import fr.insee.rmes.modules.operations.msd.infrastructure.graphdb.Documentation
 import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.utils.DateUtils;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -161,23 +158,11 @@ public class DocumentationsUtils {
 
     /**
      * CREATE or UPDATE
-     * @param id, body
+     * @param id, sims
      * @return
      * @throws RmesException
      */
-    public String setMetadataReport(String id, String body, boolean create) throws RmesException {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        mapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
-        Documentation sims = new Documentation();
-        try {
-            sims = mapper.readValue(body, Documentation.class);
-        } catch (IOException e) {
-            logger.error(e.getMessage());
-            throw new RmesBadRequestException(
-                    ErrorCodes.SIMS_INCORRECT, e.getMessage(), "IOException: cannot parse input");
-        }
-
+    public String setMetadataReport(String id, Documentation sims, boolean create) throws RmesException {
         // Check idOperation/idSerie/IdIndicator and Init or check id sims
         String idTarget = sims.getIdTarget();
         if (create) {

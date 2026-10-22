@@ -226,7 +226,8 @@ class DocumentationsUtilsTest {
     void setMetadataReport_shouldNotRejectWith406_whenCreatingSimsOnSeriesWithOperations() throws RmesException {
         // Une série avec opérations doit pouvoir recevoir un SIMS (cf. ticket #1452).
         String idTarget = "s1234";
-        String body = "{\"idTarget\":\"" + idTarget + "\",\"idSeries\":\"" + idTarget + "\"}";
+        Documentation body = new Documentation();
+        body.setIdSeries(idTarget);
 
         lenient().when(documentationQueries.getSimsByTarget(idTarget)).thenReturn("q-sims");
         lenient().when(documentationQueries.lastID()).thenReturn("q-last");
@@ -242,16 +243,6 @@ class DocumentationsUtilsTest {
         } catch (Exception ignored) {
             // d'autres exceptions sont attendues car les mocks ne couvrent pas tout le flow
         }
-    }
-
-    @Test
-    void shouldThrowARmesBadRequestExceptionWhenSetMetadataReport() {
-        String id = "idExample";
-        String body = "bodyExample";
-        boolean create = false;
-        RmesBadRequestException exception = assertThrows(
-                RmesBadRequestException.class, () -> documentationsUtils.setMetadataReport(id, body, create));
-        assertTrue(exception.getDetails().contains("{\"code\":861,\"details\":\"IOException: cannot parse input\""));
     }
 
     @Test

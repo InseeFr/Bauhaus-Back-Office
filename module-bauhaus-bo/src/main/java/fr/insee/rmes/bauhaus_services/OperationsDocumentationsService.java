@@ -18,9 +18,9 @@ public interface OperationsDocumentationsService {
 
     String getFullSimsForJson(String id) throws RmesException;
 
-    String createMetadataReport(String body) throws RmesException;
+    String createMetadataReport(Documentation sims) throws RmesException;
 
-    void setMetadataReport(String id, String body) throws RmesException;
+    void setMetadataReport(String id, Documentation sims) throws RmesException;
 
     void publishMetadataReport(String id) throws RmesException;
 
