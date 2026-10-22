@@ -136,37 +136,6 @@ public class RepositoryGestion {
         return statements;
     }
 
-    public RepositoryResult<Statement> getHasPartStatements(RepositoryConnection con, Resource object)
-            throws RmesException {
-        return getStatementsPredicateObject(con, DCTERMS.HAS_PART, object);
-    }
-
-    public RepositoryResult<Statement> getReplacesStatements(RepositoryConnection con, Resource object)
-            throws RmesException {
-        return getStatementsPredicateObject(con, DCTERMS.REPLACES, object);
-    }
-
-    public RepositoryResult<Statement> getIsReplacedByStatements(RepositoryConnection con, Resource object)
-            throws RmesException {
-        return getStatementsPredicateObject(con, DCTERMS.IS_REPLACED_BY, object);
-    }
-
-    public RepositoryResult<Statement> getStatementsPredicateObject(
-            RepositoryConnection con, IRI predicate, Resource object) throws RmesException {
-
-        if (con == null) {
-            con = gestionConnection();
-        }
-
-        RepositoryResult<Statement> statements = null;
-        try {
-            statements = con.getStatements(null, predicate, object, false);
-        } catch (RepositoryException e) {
-            throwsRmesException(e, "Failure get " + predicate + " statements : " + object);
-        }
-        return statements;
-    }
-
     public void closeStatements(RepositoryResult<Statement> statements) throws RmesException {
         try {
             statements.close();
@@ -466,9 +435,8 @@ public class RepositoryGestion {
     }
 
     /**
-     * Triplets de prédicat et d'objet donnés dans le graphe donné. À préférer à {@link
-     * #getStatementsPredicateObject(RepositoryConnection, IRI, Resource)}, pour la même raison que
-     * {@link #getStatements(RepositoryConnection, Resource, Resource)}.
+     * Triplets de prédicat et d'objet donnés dans le graphe donné, pour la même raison que {@link
+     * #getStatements(RepositoryConnection, Resource, Resource)}.
      */
     public RepositoryResult<Statement> getStatementsPredicateObject(
             RepositoryConnection con, IRI predicate, Resource object, Resource graph) throws RmesException {

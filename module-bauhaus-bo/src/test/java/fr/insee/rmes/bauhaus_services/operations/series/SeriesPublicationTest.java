@@ -28,6 +28,7 @@ import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.DC;
+import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.json.JSONArray;
@@ -83,6 +84,8 @@ class SeriesPublicationTest {
     IRI iri;
 
     private static final String SERIES_ID = "series123";
+    private static final IRI GRAPH =
+            SimpleValueFactory.getInstance().createIRI("http://rdf.insee.fr/graphes/operations");
     private static final String FAMILY_ID = "family123";
 
     private SeriesPublication seriesPublication;
@@ -112,7 +115,7 @@ class SeriesPublicationTest {
                 .thenReturn(ValidationStatus.VALIDATED.getValue());
 
         RmesBadRequestException exception = assertThrows(
-                RmesBadRequestException.class, () -> seriesPublication.publishSeries(seriesId, seriesJson));
+                RmesBadRequestException.class, () -> seriesPublication.publishSeries(seriesId, seriesJson, GRAPH));
 
         assertThat(exception.getDetails()).contains("\"code\":1301");
         assertThat(exception.getDetails()).contains("Series: " + seriesId);
@@ -129,7 +132,7 @@ class SeriesPublicationTest {
                 .thenReturn(ValidationStatus.UNPUBLISHED.getValue());
 
         RmesBadRequestException exception = assertThrows(
-                RmesBadRequestException.class, () -> seriesPublication.publishSeries(seriesId, seriesJson));
+                RmesBadRequestException.class, () -> seriesPublication.publishSeries(seriesId, seriesJson, GRAPH));
 
         assertThat(exception.getDetails()).contains("cannot be published before its family is published");
     }
@@ -148,11 +151,12 @@ class SeriesPublicationTest {
 
             givenPublishableSeries(mockedPublicationUtils, mockedRdfUtils);
 
-            when(repoGestion.getStatements(repositoryConnection, resource)).thenReturn(statements);
+            when(repoGestion.getStatements(repositoryConnection, resource, GRAPH))
+                    .thenReturn(statements);
             when(statements.hasNext()).thenReturn(false); // This will trigger the checkIfSeriesExist exception
 
             RmesNotFoundException exception = assertThrows(
-                    RmesNotFoundException.class, () -> seriesPublication.publishSeries(SERIES_ID, seriesJson));
+                    RmesNotFoundException.class, () -> seriesPublication.publishSeries(SERIES_ID, seriesJson, GRAPH));
 
             assertThat(exception.getDetails()).contains(SERIES_ID);
         }
@@ -166,12 +170,11 @@ class SeriesPublicationTest {
         operations.put(operation);
 
         publishExistingSeries(operations, mockedRdfUtils -> {
-            mockedRdfUtils.when(RdfUtils::operationsGraph).thenReturn(resource);
             mockedRdfUtils.when(() -> RdfUtils.createIRI(anyString())).thenReturn(iri);
             mockedRdfUtils.when(() -> RdfUtils.toString(any())).thenReturn("http://example.org/predicate");
         });
 
-        verify(repositoryPublication).publishResource(eq(resource), any(Model.class), eq("serie"));
+        verify(repositoryPublication).publishResource(eq(resource), any(Model.class), eq("serie"), eq(GRAPH));
         verify(statements).close();
         verify(hasPartStatements).close();
         verify(replacesStatements).close();
@@ -187,7 +190,7 @@ class SeriesPublicationTest {
         when(hasPartStatements.next()).thenReturn(statement, statement);
         givenStatementLinkingResources();
 
-        seriesPublication.addStatementsToModel(model, hasPartStatements);
+        seriesPublication.addStatementsToModel(model, hasPartStatements, GRAPH);
 
         assertThat(model.size()).isEqualTo(1);
     }
@@ -198,7 +201,7 @@ class SeriesPublicationTest {
 
         givenStatementLinkingResources();
 
-        seriesPublication.transformSubjectAndObject(model, statement);
+        seriesPublication.transformSubjectAndObject(model, statement, GRAPH);
 
         verify(publicationUtils, times(2)).tranformBaseURIToPublish(resource);
         assertThat(model.size()).isEqualTo(1);
@@ -221,7 +224,7 @@ class SeriesPublicationTest {
         String seriesId = "series123";
         JSONObject emptySeries = new JSONObject();
 
-        assertThrows(Exception.class, () -> seriesPublication.publishSeries(seriesId, emptySeries));
+        assertThrows(Exception.class, () -> seriesPublication.publishSeries(seriesId, emptySeries, GRAPH));
     }
 
     @Test
@@ -266,25 +269,25 @@ class SeriesPublicationTest {
 
         try (MockedStatic<RdfUtils> mockedRdfUtils = mockStatic(RdfUtils.class, CALLS_REAL_METHODS)) {
             mockedRdfUtils.when(() -> RdfUtils.seriesIRI(SERIES_ID)).thenReturn(seriesIri);
-            mockedRdfUtils.when(RdfUtils::operationsGraph).thenReturn(seriesIri);
             when(operationSeriesQueries.getPublishedOperationsForSeries(anyString()))
                     .thenReturn("SELECT * WHERE { }");
             when(repoGestion.getResponseAsArray(anyString())).thenReturn(new JSONArray());
-            when(repoGestion.getStatements(repositoryConnection, seriesIri))
+            when(repoGestion.getStatements(repositoryConnection, seriesIri, GRAPH))
                     .thenReturn(new RepositoryResult<>(
                             new CloseableIteratorIteration<>(List.of(creator).iterator())));
-            when(repoGestion.getHasPartStatements(repositoryConnection, seriesIri))
+            when(repoGestion.getStatementsPredicateObject(repositoryConnection, DCTERMS.HAS_PART, seriesIri, GRAPH))
                     .thenReturn(hasPartStatements);
-            when(repoGestion.getReplacesStatements(repositoryConnection, seriesIri))
+            when(repoGestion.getStatementsPredicateObject(repositoryConnection, DCTERMS.REPLACES, seriesIri, GRAPH))
                     .thenReturn(replacesStatements);
-            when(repoGestion.getIsReplacedByStatements(repositoryConnection, seriesIri))
+            when(repoGestion.getStatementsPredicateObject(
+                            repositoryConnection, DCTERMS.IS_REPLACED_BY, seriesIri, GRAPH))
                     .thenReturn(isReplacedByStatements);
 
-            publication.publishSeries(SERIES_ID, seriesJson);
+            publication.publishSeries(SERIES_ID, seriesJson, GRAPH);
         }
 
         ArgumentCaptor<Model> model = ArgumentCaptor.forClass(Model.class);
-        verify(repositoryPublication).publishResource(any(Resource.class), model.capture(), eq("serie"));
+        verify(repositoryPublication).publishResource(any(Resource.class), model.capture(), eq("serie"), eq(GRAPH));
         assertThat(model.getValue().filter(null, DC.CREATOR, null).objects())
                 .containsExactly(vf.createIRI("http://id.insee.fr/organisations/insee/HIE2001113"));
     }
@@ -302,7 +305,7 @@ class SeriesPublicationTest {
                     .thenReturn(true);
 
             RmesBadRequestException exception = assertThrows(
-                    RmesBadRequestException.class, () -> seriesPublication.publishSeries(SERIES_ID, seriesJson));
+                    RmesBadRequestException.class, () -> seriesPublication.publishSeries(SERIES_ID, seriesJson, GRAPH));
 
             assertThat(exception.getDetails()).contains("Series: " + SERIES_ID + " ; Family: " + FAMILY_ID);
         }
@@ -324,7 +327,7 @@ class SeriesPublicationTest {
             rdfUtilsStubs.accept(mockedRdfUtils);
             givenStatementsOfAnExistingSeries(mockedJSONUtils, operations);
 
-            seriesPublication.publishSeries(SERIES_ID, seriesJson);
+            seriesPublication.publishSeries(SERIES_ID, seriesJson, GRAPH);
         }
     }
 
@@ -350,10 +353,12 @@ class SeriesPublicationTest {
 
         mockedJSONUtils.when(() -> JSONUtils.stream(any(JSONArray.class))).thenReturn(Stream.empty());
 
-        when(repoGestion.getStatements(repositoryConnection, resource)).thenReturn(statements);
-        when(repoGestion.getHasPartStatements(repositoryConnection, resource)).thenReturn(hasPartStatements);
-        when(repoGestion.getReplacesStatements(repositoryConnection, resource)).thenReturn(replacesStatements);
-        when(repoGestion.getIsReplacedByStatements(repositoryConnection, resource))
+        when(repoGestion.getStatements(repositoryConnection, resource, GRAPH)).thenReturn(statements);
+        when(repoGestion.getStatementsPredicateObject(repositoryConnection, DCTERMS.HAS_PART, resource, GRAPH))
+                .thenReturn(hasPartStatements);
+        when(repoGestion.getStatementsPredicateObject(repositoryConnection, DCTERMS.REPLACES, resource, GRAPH))
+                .thenReturn(replacesStatements);
+        when(repoGestion.getStatementsPredicateObject(repositoryConnection, DCTERMS.IS_REPLACED_BY, resource, GRAPH))
                 .thenReturn(isReplacedByStatements);
         when(repoGestion.getResponseAsArray(anyString())).thenReturn(operations);
 
@@ -366,7 +371,6 @@ class SeriesPublicationTest {
         when(statement.getSubject()).thenReturn(resource);
         when(statement.getPredicate()).thenReturn(iri);
         when(statement.getObject()).thenReturn(resource);
-        when(statement.getContext()).thenReturn(resource);
         when(publicationUtils.tranformBaseURIToPublish(any(Resource.class))).thenReturn(resource);
     }
 }

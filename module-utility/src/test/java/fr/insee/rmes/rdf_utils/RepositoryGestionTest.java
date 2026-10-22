@@ -35,6 +35,8 @@ import org.springframework.http.HttpStatus;
 @ExtendWith(MockitoExtension.class)
 class RepositoryGestionTest {
 
+    private static final IRI GRAPH = SimpleValueFactory.getInstance().createIRI("http://example.org/graph");
+
     @Mock
     private RdfConnectionDetails rdfConnectionDetails;
 
@@ -180,7 +182,9 @@ class RepositoryGestionTest {
         doReturn(null).when(repositoryUtils).initRepository(anyString(), anyString());
 
         assertThrows(RmesException.class, () -> repositoryGestion.getStatements(null, subject));
-        assertThrows(RmesException.class, () -> repositoryGestion.getHasPartStatements(null, object));
+        assertThrows(
+                RmesException.class,
+                () -> repositoryGestion.getStatementsPredicateObject(null, DCTERMS.HAS_PART, object, GRAPH));
     }
 
     @Test
@@ -194,40 +198,28 @@ class RepositoryGestionTest {
     }
 
     @Test
-    void shouldGetHasPartStatements() throws RmesException {
+    void shouldGetPredicateObjectStatementsInTheGivenGraph() throws RmesException {
         IRI object = valueFactory.createIRI("http://example.org/object");
 
-        when(connection.getStatements(null, DCTERMS.HAS_PART, object, false)).thenReturn(repositoryResult);
-
-        RepositoryResult<Statement> result = repositoryGestion.getHasPartStatements(connection, object);
-
-        assertEquals(repositoryResult, result);
-        verify(connection).getStatements(null, DCTERMS.HAS_PART, object, false);
-    }
-
-    @Test
-    void shouldGetReplacesStatements() throws RmesException {
-        IRI object = valueFactory.createIRI("http://example.org/object");
-
-        when(connection.getStatements(null, DCTERMS.REPLACES, object, false)).thenReturn(repositoryResult);
-
-        RepositoryResult<Statement> result = repositoryGestion.getReplacesStatements(connection, object);
-
-        assertEquals(repositoryResult, result);
-        verify(connection).getStatements(null, DCTERMS.REPLACES, object, false);
-    }
-
-    @Test
-    void shouldGetIsReplacedByStatements() throws RmesException {
-        IRI object = valueFactory.createIRI("http://example.org/object");
-
-        when(connection.getStatements(null, DCTERMS.IS_REPLACED_BY, object, false))
+        when(connection.getStatements(null, DCTERMS.HAS_PART, object, false, GRAPH))
                 .thenReturn(repositoryResult);
 
-        RepositoryResult<Statement> result = repositoryGestion.getIsReplacedByStatements(connection, object);
+        RepositoryResult<Statement> result =
+                repositoryGestion.getStatementsPredicateObject(connection, DCTERMS.HAS_PART, object, GRAPH);
 
         assertEquals(repositoryResult, result);
-        verify(connection).getStatements(null, DCTERMS.IS_REPLACED_BY, object, false);
+    }
+
+    @Test
+    void shouldThrowExceptionWhenGetPredicateObjectStatementsThrowsRepositoryException() {
+        IRI object = valueFactory.createIRI("http://example.org/object");
+
+        when(connection.getStatements(null, DCTERMS.REPLACES, object, false, GRAPH))
+                .thenThrow(new RepositoryException("Test exception"));
+
+        assertThrows(
+                RmesException.class,
+                () -> repositoryGestion.getStatementsPredicateObject(connection, DCTERMS.REPLACES, object, GRAPH));
     }
 
     @Test

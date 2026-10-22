@@ -590,7 +590,7 @@ public class SeriesRepository {
 
         Model model = new LinkedHashModel();
         JSONObject serieJson = getSeriesJsonById(id, EncodingType.XML);
-        seriesPublication.publishSeries(id, serieJson);
+        seriesPublication.publishSeries(id, serieJson, RdfUtils.operationsGraph());
 
         model.add(
                 seriesURI,
