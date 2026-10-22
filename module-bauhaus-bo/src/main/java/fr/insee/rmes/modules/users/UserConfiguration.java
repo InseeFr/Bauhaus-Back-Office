@@ -13,6 +13,7 @@ import fr.insee.rmes.modules.users.domain.port.serverside.RbacFetcher;
 import fr.insee.rmes.modules.users.domain.port.serverside.StampChecker;
 import fr.insee.rmes.modules.users.domain.port.serverside.UserDecoder;
 import fr.insee.rmes.modules.users.infrastructure.DevAuthenticationFilter;
+import fr.insee.rmes.modules.users.infrastructure.DevUserProperties;
 import fr.insee.rmes.modules.users.infrastructure.JwtProperties;
 import fr.insee.rmes.modules.users.infrastructure.LazyPublicEndpointsMatcher;
 import fr.insee.rmes.modules.users.infrastructure.OidcUserDecoder;
@@ -53,16 +54,19 @@ public class UserConfiguration {
     private final BauhausConfiguration bauhausConfiguration;
     private final JwtProperties jwtProperties;
     private final RoleClaimExtractor roleClaimExtractor;
+    private final ObjectProvider<DevUserProperties> devUserProperties;
 
     public UserConfiguration(
             @Value("${fr.insee.rmes.bauhaus.cors.allowedOrigin}") Optional<String> allowedOrigin,
             BauhausConfiguration bauhausConfiguration,
             JwtProperties jwtProperties,
-            RoleClaimExtractor roleClaimExtractor) {
+            RoleClaimExtractor roleClaimExtractor,
+            ObjectProvider<DevUserProperties> devUserProperties) {
         this.allowedOrigin = allowedOrigin;
         this.bauhausConfiguration = bauhausConfiguration;
         this.jwtProperties = jwtProperties;
         this.roleClaimExtractor = roleClaimExtractor;
+        this.devUserProperties = devUserProperties;
     }
 
     @Bean
@@ -100,7 +104,10 @@ public class UserConfiguration {
         if (isDev) {
             // Pas de resource server en DEV : son filtre passe après celui-ci et substituerait
             // au FAKE_USER le porteur de tout jeton reçu (ex. SSO silencieux sur une session prod).
-            http.addFilterBefore(new DevAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+            http.addFilterBefore(
+                    new DevAuthenticationFilter(
+                            DevAuthenticationFilter.fakeUserFrom(devUserProperties.getIfAvailable())),
+                    UsernamePasswordAuthenticationFilter.class);
         } else {
             http.oauth2ResourceServer(oauth2ResourceServer -> oauth2ResourceServer.jwt(withDefaults()));
         }

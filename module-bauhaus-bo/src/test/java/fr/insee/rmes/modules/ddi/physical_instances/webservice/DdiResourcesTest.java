@@ -36,7 +36,9 @@ import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PartialP
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PhysicalInstanceParentsResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PhysicalInstanceSearchResponse;
 import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
-import fr.insee.rmes.modules.users.domain.port.serverside.RbacFetcher;
+import fr.insee.rmes.modules.users.domain.model.RBAC;
+import fr.insee.rmes.modules.users.domain.model.User;
+import fr.insee.rmes.modules.users.domain.port.clientside.UserService;
 import fr.insee.rmes.modules.users.infrastructure.UserProvider;
 import java.util.ArrayList;
 import java.util.Date;
@@ -80,7 +82,7 @@ class DdiResourcesTest {
     private UserProvider userProvider;
 
     @Mock
-    private RbacFetcher rbacFetcher;
+    private UserService userService;
 
     @Mock
     private BauhausUriBuilder bauhausUriBuilder;
@@ -95,13 +97,19 @@ class DdiResourcesTest {
                 ddi3toDdi4ConverterService,
                 ddiItemConvertService,
                 userProvider,
-                rbacFetcher,
+                userService,
                 bauhausUriBuilder,
                 mock(Ddi4SchemaService.class));
     }
 
+    private void givenReadStrategy(RBAC.Strategy strategy) {
+        when(userService.computeStrategy(any(), eq(RBAC.Module.DDI_PHYSICALINSTANCE), eq(RBAC.Privilege.READ)))
+                .thenReturn(strategy);
+    }
+
     @Test
     void shouldGetPhysicalInstances() {
+        givenReadStrategy(RBAC.Strategy.ALL);
         List<PartialPhysicalInstance> expectedInstances = new ArrayList<>();
         expectedInstances.add(new PartialPhysicalInstance("pi-1", "Physical Instance 1", new Date(), "fr.insee"));
         expectedInstances.add(new PartialPhysicalInstance("pi-2", "Physical Instance 2", new Date(), "fr.insee"));
@@ -597,7 +605,7 @@ class DdiResourcesTest {
     void shouldGetPhysicalInstancesFilteredByStamp() throws Exception, MissingUserInformationException {
         List<PartialPhysicalInstance> filteredInstances =
                 List.of(new PartialPhysicalInstance("pi-1", "Physical Instance 1", new Date(), "fr.insee"));
-        givenStampUserReadingPhysicalInstances(userProvider, rbacFetcher);
+        givenStampUserReadingPhysicalInstances(userProvider, userService);
         when(ddiService.getPhysicalInstancesFilteredByStamp(Set.of("stamp-A"))).thenReturn(filteredInstances);
 
         ResponseEntity<List<PartialPhysicalInstanceResponse>> response = ddiResources.getPhysicalInstances();
@@ -610,8 +618,73 @@ class DdiResourcesTest {
     }
 
     @Test
+    void getPhysicalInstances_returnsFullList_forAnInseeUserWhoseRoleIsStamp()
+            throws Exception, MissingUserInformationException {
+        User inseeManager = new User("user-1", List.of("Gestionnaire_variables_RMESGNCS"), Set.of("stamp-A"), "insee");
+        when(userProvider.findUser()).thenReturn(Optional.of(inseeManager));
+        // La source de l'utilisateur est transmise : INSEE donne READ ALL (addInseeReadPrivileges).
+        when(userService.computeStrategy(inseeManager, RBAC.Module.DDI_PHYSICALINSTANCE, RBAC.Privilege.READ))
+                .thenReturn(RBAC.Strategy.ALL);
+        when(ddiService.getPhysicalInstances())
+                .thenReturn(List.of(new PartialPhysicalInstance("pi-1", "PI 1", new Date(), "fr.insee")));
+
+        ResponseEntity<List<PartialPhysicalInstanceResponse>> response = ddiResources.getPhysicalInstances();
+
+        assertEquals(1, response.getBody().size());
+        verify(ddiService, never()).getPhysicalInstancesFilteredByStamp(any());
+    }
+
+    @Test
+    void getPhysicalInstances_returnsEmptyList_whenReadStrategyIsNone()
+            throws Exception, MissingUserInformationException {
+        User userWithoutDdiRole = new User("user-1", List.of("Utilisateur_RMESGNCS"), Set.of("stamp-A"));
+        when(userProvider.findUser()).thenReturn(Optional.of(userWithoutDdiRole));
+        givenReadStrategy(RBAC.Strategy.NONE);
+
+        ResponseEntity<List<PartialPhysicalInstanceResponse>> response = ddiResources.getPhysicalInstances();
+
+        assertEquals(List.of(), response.getBody());
+        verify(ddiService, never()).getPhysicalInstances();
+    }
+
+    @Test
+    void getPhysicalInstances_returnsEmptyList_whenUserCannotBeResolved()
+            throws Exception, MissingUserInformationException {
+        when(userProvider.findUser()).thenThrow(new MissingUserInformationException("no user"));
+
+        ResponseEntity<List<PartialPhysicalInstanceResponse>> response = ddiResources.getPhysicalInstances();
+
+        assertEquals(List.of(), response.getBody());
+        verify(ddiService, never()).getPhysicalInstances();
+    }
+
+    @Test
+    void searchPhysicalInstances_returnsEmptyList_whenReadStrategyIsNone()
+            throws Exception, MissingUserInformationException {
+        User userWithoutDdiRole = new User("user-1", List.of("Utilisateur_RMESGNCS"), Set.of("stamp-A"));
+        when(userProvider.findUser()).thenReturn(Optional.of(userWithoutDdiRole));
+        givenReadStrategy(RBAC.Strategy.NONE);
+
+        ResponseEntity<List<PhysicalInstanceSearchResponse>> response = ddiResources.searchPhysicalInstances(null);
+
+        assertEquals(List.of(), response.getBody());
+        verify(ddiService, never()).searchPhysicalInstances();
+    }
+
+    @Test
     void searchPhysicalInstances_mapsRowsWithResolvedParentLabels() {
-        PhysicalInstanceSearchRow row = searchRow();
+        givenReadStrategy(RBAC.Strategy.ALL);
+        PhysicalInstanceSearchRow row = new PhysicalInstanceSearchRow(
+                "fr.insee",
+                "pi-1",
+                "Instance A",
+                new Date(),
+                "fr.insee",
+                "su-1",
+                "Study One",
+                "fr.insee",
+                "g1",
+                "Group One");
         when(ddiService.searchPhysicalInstances()).thenReturn(List.of(row));
 
         ResponseEntity<List<PhysicalInstanceSearchResponse>> response = ddiResources.searchPhysicalInstances(null);
@@ -629,7 +702,18 @@ class DdiResourcesTest {
 
     @Test
     void searchPhysicalInstances_withCacheControlNoCache_evictsCacheThenServesFreshRows() {
-        PhysicalInstanceSearchRow row = searchRow();
+        givenReadStrategy(RBAC.Strategy.ALL);
+        PhysicalInstanceSearchRow row = new PhysicalInstanceSearchRow(
+                "fr.insee",
+                "pi-1",
+                "Instance A",
+                new Date(),
+                "fr.insee",
+                "su-1",
+                "Study One",
+                "fr.insee",
+                "g1",
+                "Group One");
         when(ddiService.searchPhysicalInstances()).thenReturn(List.of(row));
 
         ResponseEntity<List<PhysicalInstanceSearchResponse>> response =
@@ -647,6 +731,7 @@ class DdiResourcesTest {
 
     @Test
     void searchPhysicalInstances_withCacheControlNoStoreIgnoringCase_evictsCache() {
+        givenReadStrategy(RBAC.Strategy.ALL);
         when(ddiService.searchPhysicalInstances()).thenReturn(List.of());
 
         ddiResources.searchPhysicalInstances("No-Store");
@@ -656,6 +741,7 @@ class DdiResourcesTest {
 
     @Test
     void searchPhysicalInstances_withoutCacheControl_keepsTheCache() {
+        givenReadStrategy(RBAC.Strategy.ALL);
         when(ddiService.searchPhysicalInstances()).thenReturn(List.of());
 
         ddiResources.searchPhysicalInstances(null);
@@ -666,7 +752,7 @@ class DdiResourcesTest {
     @Test
     void searchPhysicalInstances_appliesStampStrategy() throws MissingUserInformationException, RmesException {
         PhysicalInstanceSearchRow row = searchRow();
-        givenStampUserReadingPhysicalInstances(userProvider, rbacFetcher);
+        givenStampUserReadingPhysicalInstances(userProvider, userService);
         when(ddiService.searchPhysicalInstancesFilteredByStamp(Set.of("stamp-A")))
                 .thenReturn(List.of(row));
 

@@ -14,6 +14,7 @@ import fr.insee.rmes.modules.commons.configuration.LogRequestFilter;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.GroupService;
 import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
+import fr.insee.rmes.modules.users.domain.port.clientside.UserService;
 import fr.insee.rmes.modules.users.domain.port.serverside.RbacFetcher;
 import java.util.Collections;
 import java.util.List;
@@ -51,6 +52,9 @@ class GroupResourcesHasAccessIntegrationTest extends AbstractResourcesEnvProd {
 
     @MockitoBean
     private RbacFetcher rbacFetcher;
+
+    @MockitoBean
+    private UserService userService;
 
     private static Stream<Arguments> provideGetGroupsData() {
         return Stream.of(Arguments.of(200, true), Arguments.of(403, false));

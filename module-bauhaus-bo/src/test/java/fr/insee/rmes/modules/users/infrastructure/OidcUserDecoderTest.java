@@ -116,6 +116,21 @@ class OidcUserDecoderTest {
     }
 
     @Test
+    void should_add_adms_identifier_to_the_stamps_of_a_user_principal()
+            throws MissingUserInformationException, OrganisationFetchException {
+        // Hors PROD, le DevAuthenticationFilter pose directement un User : il doit recevoir le même
+        // identifiant alternatif qu'un utilisateur venu d'un jeton.
+        when(organisationsService.getAdmsIdentifier("DG75-T001")).thenReturn(Optional.of("HIE9990001"));
+        var user = new User("dev", List.of("Gestionnaire_variables_RMESGNCS"), Set.of("DG75-T001"), "ssm");
+
+        Optional<User> result = userDecoder.fromPrincipal(user);
+
+        assertThat(result).isPresent();
+        assertThat(result.get().getStamps()).containsExactlyInAnyOrder("DG75-T001", "HIE9990001");
+        assertThat(result.get().roles()).isEqualTo(user.roles());
+    }
+
+    @Test
     void should_return_empty_for_unknown_principal_type() throws MissingUserInformationException {
         Optional<User> result = userDecoder.fromPrincipal(new Object());
 

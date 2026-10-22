@@ -10,7 +10,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.DdiItemNot
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.GroupService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.StudyUnitService;
-import fr.insee.rmes.modules.users.domain.port.serverside.RbacFetcher;
+import fr.insee.rmes.modules.users.domain.port.clientside.UserService;
 import fr.insee.rmes.modules.users.infrastructure.UserProvider;
 import java.io.IOException;
 import org.junit.jupiter.api.BeforeEach;
@@ -44,14 +44,14 @@ class DdiErrorResponsesTest {
     private UserProvider userProvider;
 
     @Mock
-    private RbacFetcher rbacFetcher;
+    private UserService userService;
 
     private MockMvc mockMvc;
 
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.standaloneSetup(
-                        new GroupResources(groupService, ddiService, userProvider, rbacFetcher),
+                        new GroupResources(groupService, ddiService, userProvider, userService),
                         new StudyUnitResources(studyUnitService, ddiService),
                         new CodesListResources(ddiService))
                 .setControllerAdvice(new DdiExceptionHandler(), new UnexpectedErrorHandler())

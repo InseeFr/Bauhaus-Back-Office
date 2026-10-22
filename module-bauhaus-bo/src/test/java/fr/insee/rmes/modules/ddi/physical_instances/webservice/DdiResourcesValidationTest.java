@@ -16,7 +16,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.Ddi4S
 import fr.insee.rmes.modules.ddi.physical_instances.domain.services.DomainDdi4SchemaService;
 import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.schema.NetworkntDdi4SchemaValidator;
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.ValidationResponse;
-import fr.insee.rmes.modules.users.domain.port.serverside.RbacFetcher;
+import fr.insee.rmes.modules.users.domain.port.clientside.UserService;
 import fr.insee.rmes.modules.users.infrastructure.UserProvider;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -49,7 +49,7 @@ class DdiResourcesValidationTest {
     private UserProvider userProvider;
 
     @Mock
-    private RbacFetcher rbacFetcher;
+    private UserService userService;
 
     @Mock
     private BauhausUriBuilder bauhausUriBuilder;
@@ -92,7 +92,7 @@ class DdiResourcesValidationTest {
                 ddi3toDdi4ConverterService,
                 ddiItemConvertService,
                 userProvider,
-                rbacFetcher,
+                userService,
                 bauhausUriBuilder,
                 new DomainDdi4SchemaService(schemaRepository, new NetworkntDdi4SchemaValidator(schemaRepository)));
     }
@@ -238,7 +238,7 @@ class DdiResourcesValidationTest {
                 ddi3toDdi4ConverterService,
                 ddiItemConvertService,
                 userProvider,
-                rbacFetcher,
+                userService,
                 bauhausUriBuilder,
                 failing);
 

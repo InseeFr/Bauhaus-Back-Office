@@ -10,7 +10,7 @@ import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
 import fr.insee.rmes.modules.users.domain.model.RBAC;
 import fr.insee.rmes.modules.users.domain.model.User;
-import fr.insee.rmes.modules.users.domain.port.serverside.RbacFetcher;
+import fr.insee.rmes.modules.users.domain.port.clientside.UserService;
 import fr.insee.rmes.modules.users.infrastructure.UserProvider;
 import java.util.List;
 import java.util.Optional;
@@ -23,12 +23,11 @@ final class DdiResourcesTestSupport {
     private DdiResourcesTestSupport() {}
 
     /** L'utilisateur courant porte le timbre {@code stamp-A} et lit les instances physiques par timbre. */
-    static void givenStampUserReadingPhysicalInstances(UserProvider userProvider, RbacFetcher rbacFetcher)
+    static void givenStampUserReadingPhysicalInstances(UserProvider userProvider, UserService userService)
             throws MissingUserInformationException, RmesException {
         User stampUser = new User("user-1", List.of("role-stamp"), Set.of("stamp-A"));
         when(userProvider.findUser()).thenReturn(Optional.of(stampUser));
-        when(rbacFetcher.getApplicationActionStrategyByRole(
-                        any(), eq(RBAC.Module.DDI_PHYSICALINSTANCE), eq(RBAC.Privilege.READ)))
+        when(userService.computeStrategy(any(), eq(RBAC.Module.DDI_PHYSICALINSTANCE), eq(RBAC.Privilege.READ)))
                 .thenReturn(RBAC.Strategy.STAMP);
     }
 

@@ -72,11 +72,23 @@ public class PropertiesRbacFetcher implements RbacFetcher {
 
     @Override
     public Set<ModuleAccessPrivileges> computePrivileges(List<String> roles, Source source) {
+        return toModuleAccessPrivileges(strategiesByModule(roles, source));
+    }
+
+    @Override
+    public RBAC.Strategy computeStrategy(
+            List<String> roles, Source source, RBAC.Module module, RBAC.Privilege privilege) {
+        return strategiesByModule(roles, source)
+                .getOrDefault(module, Map.of())
+                .getOrDefault(privilege, RBAC.Strategy.NONE);
+    }
+
+    private Map<RBAC.Module, Map<RBAC.Privilege, RBAC.Strategy>> strategiesByModule(List<String> roles, Source source) {
         var result = computePrivilegesFromRoles(roles);
         if (Source.INSEE.equals(source)) {
             addInseeReadPrivileges(result);
         }
-        return toModuleAccessPrivileges(result);
+        return result;
     }
 
     private Map<RBAC.Module, Map<RBAC.Privilege, RBAC.Strategy>> computePrivilegesFromRoles(List<String> roles) {

@@ -29,7 +29,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.Validati
 import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
 import fr.insee.rmes.modules.users.domain.model.RBAC;
 import fr.insee.rmes.modules.users.domain.model.User;
-import fr.insee.rmes.modules.users.domain.port.serverside.RbacFetcher;
+import fr.insee.rmes.modules.users.domain.port.clientside.UserService;
 import fr.insee.rmes.modules.users.infrastructure.UserProvider;
 import fr.insee.rmes.modules.users.webservice.HasAccess;
 import jakarta.validation.Valid;
@@ -66,7 +66,7 @@ public class DdiResources {
     private final DDI3toDDI4ConverterService ddi3toDdi4ConverterService;
     private final DDIItemConvertService ddiItemConvertService;
     private final UserProvider userProvider;
-    private final RbacFetcher rbacFetcher;
+    private final UserService userService;
     private final BauhausUriBuilder bauhausUriBuilder;
     private final Ddi4SchemaService ddi4SchemaService;
 
@@ -76,7 +76,7 @@ public class DdiResources {
             DDI3toDDI4ConverterService ddi3toDdi4ConverterService,
             DDIItemConvertService ddiItemConvertService,
             UserProvider userProvider,
-            RbacFetcher rbacFetcher,
+            UserService userService,
             BauhausUriBuilder bauhausUriBuilder,
             Ddi4SchemaService ddi4SchemaService) {
         this.ddiService = ddiService;
@@ -84,7 +84,7 @@ public class DdiResources {
         this.ddi3toDdi4ConverterService = ddi3toDdi4ConverterService;
         this.ddiItemConvertService = ddiItemConvertService;
         this.userProvider = userProvider;
-        this.rbacFetcher = rbacFetcher;
+        this.userService = userService;
         this.bauhausUriBuilder = bauhausUriBuilder;
         this.ddi4SchemaService = ddi4SchemaService;
     }
@@ -214,23 +214,25 @@ public class DdiResources {
     }
 
     /**
-     * Applique la stratégie READ de DDI_PHYSICALINSTANCE : si elle vaut STAMP,
-     * renvoie la liste filtrée par les stamps de l'utilisateur courant ; sinon
-     * (ou en cas d'information utilisateur manquante) la liste complète.
+     * Applique la stratégie READ de DDI_PHYSICALINSTANCE : ALL renvoie la liste
+     * complète, STAMP la liste filtrée par les stamps de l'utilisateur courant,
+     * NONE une liste vide. La stratégie est celle de {@code computeStrategy}, comme pour
+     * {@code @HasAccess} : un agent de source INSEE lit tout. Faute d'utilisateur résolu, la liste est vide.
      */
     private <T> List<T> resolveByReadStampStrategy(
             Function<Set<String>, List<T>> filteredByStamp, Supplier<List<T>> unfiltered) {
         try {
             User user = userProvider.findUser().orElse(User.EMPTY_USER);
-            RBAC.Strategy strategy = rbacFetcher.getApplicationActionStrategyByRole(
-                    user.roles(), RBAC.Module.DDI_PHYSICALINSTANCE, RBAC.Privilege.READ);
-            if (strategy == RBAC.Strategy.STAMP) {
-                return filteredByStamp.apply(user.getStamps());
-            }
-        } catch (MissingUserInformationException | RmesException e) {
-            // fall through to unfiltered
+            RBAC.Strategy strategy =
+                    userService.computeStrategy(user, RBAC.Module.DDI_PHYSICALINSTANCE, RBAC.Privilege.READ);
+            return switch (strategy) {
+                case ALL -> unfiltered.get();
+                case STAMP -> filteredByStamp.apply(user.getStamps());
+                case NONE -> List.of();
+            };
+        } catch (MissingUserInformationException | RmesException _) {
+            return List.of();
         }
-        return unfiltered.get();
     }
 
     @PostMapping("/physical-instance")

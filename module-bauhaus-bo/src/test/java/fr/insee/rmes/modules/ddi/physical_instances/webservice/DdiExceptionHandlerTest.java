@@ -18,7 +18,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI4t
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIItemConvertService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.Ddi4SchemaService;
-import fr.insee.rmes.modules.users.domain.port.serverside.RbacFetcher;
+import fr.insee.rmes.modules.users.domain.port.clientside.UserService;
 import fr.insee.rmes.modules.users.infrastructure.UserProvider;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
@@ -49,7 +49,7 @@ class DdiExceptionHandlerTest {
     private UserProvider userProvider;
 
     @Mock
-    private RbacFetcher rbacFetcher;
+    private UserService userService;
 
     @Mock
     private BauhausUriBuilder bauhausUriBuilder;
@@ -64,7 +64,7 @@ class DdiExceptionHandlerTest {
                 ddi3toDdi4ConverterService,
                 ddiItemConvertService,
                 userProvider,
-                rbacFetcher,
+                userService,
                 bauhausUriBuilder,
                 mock(Ddi4SchemaService.class));
         mockMvc = MockMvcBuilders.standaloneSetup(ddiResources)

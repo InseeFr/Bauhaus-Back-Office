@@ -105,7 +105,8 @@ class MutualizedCacheEvictionIntegrationTest {
                         ColecticaCacheNames.MUTUALIZED_CODES_LISTS,
                         ColecticaCacheNames.MUTUALIZED_PACKAGE_CODE_LIST_REFS,
                         ColecticaCacheNames.PHYSICAL_INSTANCE_SEARCH_ROWS,
-                        ColecticaCacheNames.MUTUALIZED_CODE_LIST_CONTENTS);
+                        ColecticaCacheNames.MUTUALIZED_CODE_LIST_CONTENTS,
+                        ColecticaCacheNames.SERIES_CREATORS);
         regions.forEach(region -> region.put("k", List.of()));
 
         ddiRepository.evictAllCaches();

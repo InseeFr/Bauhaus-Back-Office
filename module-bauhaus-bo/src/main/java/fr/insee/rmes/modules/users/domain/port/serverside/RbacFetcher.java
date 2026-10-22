@@ -18,4 +18,10 @@ public interface RbacFetcher {
             List<String> roles, RBAC.Module application, RBAC.Privilege privilege);
 
     Set<ModuleAccessPrivileges> computePrivileges(List<String> roles, Source source);
+
+    /**
+     * Stratégie d'un privilège telle que la donne {@link #computePrivileges} (lecture {@code ALL}
+     * pour la source INSEE comprise), {@code NONE} si aucun rôle ne l'accorde.
+     */
+    RBAC.Strategy computeStrategy(List<String> roles, Source source, RBAC.Module module, RBAC.Privilege privilege);
 }

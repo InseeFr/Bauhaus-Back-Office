@@ -74,38 +74,25 @@ public class DDIServiceImpl implements DDIService {
         this.clock = clock;
     }
 
+    /**
+     * Mêmes lignes mémoïsées que {@link #getPhysicalInstancesFilteredByStamp} : les deux listes restent
+     * cohérentes après une écriture. Les PI orphelines (sans groupe) y figurent.
+     */
     @Override
     public List<PartialPhysicalInstance> getPhysicalInstances() {
         logger.info("Starting to get physical instances list");
-        return ddiRepository.getPhysicalInstancesViaAdvancedQuery().stream()
-                .sorted(LabelComparators.byLabelAscending(PartialPhysicalInstance::label))
-                .toList();
+        return toPartialPhysicalInstances(searchPhysicalInstances());
     }
 
     @Override
     public List<PartialPhysicalInstance> getPhysicalInstancesFilteredByStamp(Set<String> userStamps) {
         logger.info("Starting to get physical instances filtered by stamp");
-        List<PartialPhysicalInstance> allInstances = ddiRepository.getPhysicalInstancesViaAdvancedQuery();
+        return toPartialPhysicalInstances(searchPhysicalInstancesFilteredByStamp(userStamps));
+    }
 
-        // PI -> clé "agency|id" du groupe parent (résolution Colectica, par PI)
-        Map<PartialPhysicalInstance, String> groupKeyByInstance = new LinkedHashMap<>();
-        for (PartialPhysicalInstance instance : allInstances) {
-            PhysicalInstanceParents parents =
-                    ddiRepository.getPhysicalInstanceParents(instance.agency(), instance.id());
-            groupKeyByInstance.put(instance, parents.groupAgency() + "|" + parents.groupId());
-        }
-
-        // stamps créateurs résolus une seule fois par groupe distinct (et non par PI)
-        Map<String, List<String>> stampsByGroupKey = new HashMap<>();
-        for (String groupKey : Set.copyOf(groupKeyByInstance.values())) {
-            String[] parts = groupKey.split("\\|", 2);
-            stampsByGroupKey.put(groupKey, resolveGroupCreatorStamps(parts[0], parts[1]));
-        }
-
-        return allInstances.stream()
-                .filter(instance -> stampsByGroupKey.getOrDefault(groupKeyByInstance.get(instance), List.of()).stream()
-                        .anyMatch(userStamps::contains))
-                .sorted(LabelComparators.byLabelAscending(PartialPhysicalInstance::label))
+    private static List<PartialPhysicalInstance> toPartialPhysicalInstances(List<PhysicalInstanceSearchRow> rows) {
+        return rows.stream()
+                .map(row -> new PartialPhysicalInstance(row.id(), row.label(), row.versionDate(), row.agency()))
                 .toList();
     }
 
@@ -117,22 +104,26 @@ public class DDIServiceImpl implements DDIService {
                 .toList();
     }
 
+    /**
+     * Lignes de la recherche avancée (mémoïsées, voir {@code getPhysicalInstanceSearchRows}) dont le
+     * groupe parent est visible de l'utilisateur. Les groupes visibles sont calculés en une fois, comme
+     * {@link #getGroupsFilteredByStamp} : aucune lecture par PI ni par groupe. Les PI orphelines
+     * (sans groupe) sont écartées.
+     */
     @Override
     public List<PhysicalInstanceSearchRow> searchPhysicalInstancesFilteredByStamp(Set<String> userStamps) {
         logger.info("Starting advanced search of physical instances filtered by stamp");
-        // stamps créateurs résolus une seule fois par groupe distinct (et non par PI)
-        Map<String, List<String>> stampsByGroupKey = new HashMap<>();
+        Set<String> visibleGroupKeys = getGroupsFilteredByStamp(userStamps).stream()
+                .map(group -> groupKey(group.agency(), group.id()))
+                .collect(Collectors.toSet());
         return searchPhysicalInstances().stream()
-                .filter(row -> {
-                    if (row.groupId() == null) {
-                        return false;
-                    }
-                    String groupKey = row.groupAgency() + "|" + row.groupId();
-                    List<String> stamps = stampsByGroupKey.computeIfAbsent(
-                            groupKey, _ -> resolveGroupCreatorStamps(row.groupAgency(), row.groupId()));
-                    return stamps.stream().anyMatch(userStamps::contains);
-                })
+                .filter(row -> row.groupId() != null)
+                .filter(row -> visibleGroupKeys.contains(groupKey(row.groupAgency(), row.groupId())))
                 .toList();
+    }
+
+    private static String groupKey(String agency, String id) {
+        return agency + "|" + id;
     }
 
     @Override
@@ -637,25 +628,6 @@ public class DDIServiceImpl implements DDIService {
                 .orElse(null);
         return parents.resolved(
                 creatorStampsOfSeries(seriesIris), seriesIris.isEmpty() ? null : seriesIris.getFirst(), operationIri);
-    }
-
-    private List<String> resolveGroupCreatorStamps(String groupAgency, String groupId) {
-        return resolveGroupCreatorStamps(ddiRepository.getGroup(groupAgency, groupId));
-    }
-
-    /**
-     * Stamps STAMP d'une instance physique : créateurs des séries du groupe parent.
-     * Même résolution groupe → séries → créateurs que {@code getGroupsFilteredByStamp}
-     * et que {@code GraphDbStampChecker.getCreatorsStamps} pour DDI_PHYSICALINSTANCE.
-     */
-    private List<String> resolveGroupCreatorStamps(Ddi4GroupResponse groupResponse) {
-        List<String> seriesIris = groupResponse == null || groupResponse.group() == null
-                ? List.of()
-                : groupResponse.group().stream()
-                        .filter(g -> g.seriesIris() != null)
-                        .flatMap(g -> g.seriesIris().stream())
-                        .toList();
-        return creatorStampsOfSeries(seriesIris);
     }
 
     /** Stamps créateurs (distincts) des séries données, via GraphDB ; vide sans série. */

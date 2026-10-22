@@ -8,7 +8,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI4t
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIItemConvertService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.Ddi4SchemaService;
-import fr.insee.rmes.modules.users.domain.port.serverside.RbacFetcher;
+import fr.insee.rmes.modules.users.domain.port.clientside.UserService;
 import fr.insee.rmes.modules.users.infrastructure.UserProvider;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,7 +44,7 @@ class DdiResourcesEnabledIntegrationTest {
     private UserProvider userProvider;
 
     @MockitoBean
-    private RbacFetcher rbacFetcher;
+    private UserService userService;
 
     @MockitoBean
     private BauhausUriBuilder bauhausUriBuilder;
