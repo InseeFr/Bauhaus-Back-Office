@@ -163,4 +163,17 @@ class DistributionResourcesValidationTest {
         verify(distributionService).update(eq("d1001"), forwarded.capture());
         JSONAssert.assertEquals(COMPLETE_BODY, MAPPER.writeValueAsString(forwarded.getValue()), JSONCompareMode.STRICT);
     }
+
+    @Test
+    void putDistribution_shouldEchoTheIdAsJsonRatherThanRawText() throws Exception {
+        String scriptId = "<img src=x onerror=alert(1)>";
+        when(distributionService.update(eq(scriptId), any(Distribution.class))).thenReturn(scriptId);
+
+        mockMvc.perform(put("/distribution/{id}", scriptId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(REQUIRED_FIELDS_BODY))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.identifier").value(scriptId));
+    }
 }

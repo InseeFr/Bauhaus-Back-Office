@@ -12,6 +12,7 @@ import fr.insee.rmes.bauhaus_services.datasets.DatasetService;
 import fr.insee.rmes.bauhaus_services.distribution.DistributionService;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.commons.configuration.LogRequestFilter;
+import fr.insee.rmes.modules.commons.configuration.swagger.model.Id;
 import fr.insee.rmes.modules.datasets.datasets.model.PartialDataset;
 import fr.insee.rmes.modules.datasets.distributions.model.Distribution;
 import fr.insee.rmes.modules.datasets.distributions.model.DistributionsForSearch;
@@ -126,7 +127,7 @@ class DistributionResourcesTest {
     @Test
     void shouldReturn200IfRmesExceptionWhenUpdatingADistribution() throws RmesException {
         when(distributionService.update(anyString(), any(Distribution.class))).thenReturn("result");
-        Assertions.assertEquals("result", distributionResources.updateDistribution("", new Distribution()));
+        Assertions.assertEquals(new Id("result"), distributionResources.updateDistribution("", new Distribution()));
     }
 
     @Test

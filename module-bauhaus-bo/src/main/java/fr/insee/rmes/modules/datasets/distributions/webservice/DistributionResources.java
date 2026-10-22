@@ -8,6 +8,7 @@ import fr.insee.rmes.bauhaus_services.datasets.DatasetService;
 import fr.insee.rmes.bauhaus_services.distribution.DistributionService;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.commons.configuration.ConditionalOnModule;
+import fr.insee.rmes.modules.commons.configuration.swagger.model.Id;
 import fr.insee.rmes.modules.datasets.datasets.model.PartialDataset;
 import fr.insee.rmes.modules.datasets.distributions.model.Distribution;
 import fr.insee.rmes.modules.datasets.distributions.model.DistributionsForSearch;
@@ -97,9 +98,9 @@ public class DistributionResources {
 
     @PutMapping(value = "/{id}", consumes = APPLICATION_JSON_VALUE)
     @HasAccess(module = RBAC.Module.DATASET_DISTRIBUTION, privilege = RBAC.Privilege.UPDATE)
-    public String updateDistribution(@PathVariable("id") String id, @Valid @RequestBody Distribution distribution)
+    public Id updateDistribution(@PathVariable("id") String id, @Valid @RequestBody Distribution distribution)
             throws RmesException {
-        return this.distributionService.update(id, distribution);
+        return new Id(this.distributionService.update(id, distribution));
     }
 
     @DeleteMapping("/{id}")
