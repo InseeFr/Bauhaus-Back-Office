@@ -43,6 +43,12 @@ class OrganisationGraphDBRepositoryTest {
                 new BauhausLanguagesProperties(LANGUAGE, "en"));
     }
 
+    private String capturedQuery() throws RmesException {
+        ArgumentCaptor<String> queryCaptor = ArgumentCaptor.forClass(String.class);
+        verify(repositoryGestion).getResponseAsArray(queryCaptor.capture());
+        return queryCaptor.getValue();
+    }
+
     @Test
     void shouldReturnOrganisationsFromGraphDB() throws RmesException {
         // Given
@@ -87,17 +93,13 @@ class OrganisationGraphDBRepositoryTest {
     @Test
     void shouldBuildQueryWithCorrectParameters() throws RmesException {
         // Given
-        JSONArray mockResponse = new JSONArray();
-        when(repositoryGestion.getResponseAsArray(anyString())).thenReturn(mockResponse);
-
-        ArgumentCaptor<String> queryCaptor = ArgumentCaptor.forClass(String.class);
+        when(repositoryGestion.getResponseAsArray(anyString())).thenReturn(new JSONArray());
 
         // When
         repository.getOrganisations();
 
         // Then
-        verify(repositoryGestion).getResponseAsArray(queryCaptor.capture());
-        String query = queryCaptor.getValue();
+        String query = capturedQuery();
 
         assertThat(query)
                 .contains("http://rdf.insee.fr/graphes/organisations/insee")
@@ -195,17 +197,13 @@ class OrganisationGraphDBRepositoryTest {
     void shouldBuildQueryWithIdentifierParameter() throws RmesException {
         // Given
         String identifier = "DG75-A001";
-        JSONArray mockResponse = new JSONArray();
-        when(repositoryGestion.getResponseAsArray(anyString())).thenReturn(mockResponse);
-
-        ArgumentCaptor<String> queryCaptor = ArgumentCaptor.forClass(String.class);
+        when(repositoryGestion.getResponseAsArray(anyString())).thenReturn(new JSONArray());
 
         // When
         repository.getOrganisation(identifier);
 
         // Then
-        verify(repositoryGestion).getResponseAsArray(queryCaptor.capture());
-        String query = queryCaptor.getValue();
+        String query = capturedQuery();
 
         assertThat(query)
                 .contains("http://rdf.insee.fr/graphes/organisations/insee")

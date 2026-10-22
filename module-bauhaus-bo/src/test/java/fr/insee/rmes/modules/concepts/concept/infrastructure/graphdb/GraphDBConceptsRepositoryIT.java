@@ -1,5 +1,6 @@
 package fr.insee.rmes.modules.concepts.concept.infrastructure.graphdb;
 
+import static fr.insee.rmes.testcontainers.GraphDbTestProperties.registerGestion;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import fr.insee.rmes.modules.concepts.concept.domain.exceptions.ConceptsFetchException;
@@ -47,9 +48,7 @@ class GraphDBConceptsRepositoryIT extends WithGraphDBContainer {
 
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
-        String sesameServer = "http://" + container.getHost() + ":" + container.getMappedPort(7200);
-        registry.add("fr.insee.rmes.bauhaus.sesame.gestion.sesameServer", () -> sesameServer);
-        registry.add("fr.insee.rmes.bauhaus.sesame.gestion.repository", () -> BAUHAUS_TEST_REPOSITORY);
+        registerGestion(registry);
         container
                 .withInitFolder("fr/insee/rmes/modules/concepts/concept/infrastructure/graphdb")
                 .withTrigFiles("graphdb-concepts-repository-it.trig");

@@ -3,6 +3,7 @@ package fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica;
 import static fr.insee.rmes.colectica.client.dto.ColecticaItemBuilder.aColecticaItem;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.tuple;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
@@ -18,6 +19,7 @@ import fr.insee.rmes.colectica.client.dto.*;
 import fr.insee.rmes.colectica.client.dto.ColecticaAdvancedItem;
 import fr.insee.rmes.colectica.client.dto.ColecticaAdvancedResponse;
 import fr.insee.rmes.colectica.client.dto.ColecticaTypedSetItem;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.DdiItemNotFoundException;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.MissingSchemeException;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.StudyUnitNotFoundException;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.*;
@@ -43,6 +45,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.cache.Cache;
 import org.springframework.cache.concurrent.ConcurrentMapCache;
 import org.springframework.cache.interceptor.SimpleKey;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.client.HttpClientErrorException;
 
 @ExtendWith(MockitoExtension.class)
 class DDIRepositoryImplTest {
@@ -2309,6 +2313,96 @@ class DDIRepositoryImplTest {
         assertFalse(ddiRepository.findStudyUnitByOperationIri(operationIri).isPresent());
     }
 
+    /**
+     * Fiche d'une opération : plusieurs StudyUnits peuvent refléter la même opération (une par
+     * vague, par exemple) ; les PhysicalInstances de chacune ressortent, celles des autres non.
+     */
+    @Test
+    void shouldFindPhysicalInstancesByOperationIri_collectsThoseOfEveryMirroringStudyUnit() {
+        String operationIri = "http://bauhaus/operations/operation/s1268";
+        String piType = "a51e85bb-6259-4488-8df2-f08cb43485f8";
+        when(instanceConfiguration.itemTypes()).thenReturn(Map.of("PhysicalInstance", piType));
+
+        when(colecticaClient.query(List.of("30ea0200-7121-4f01-8d21-a931a182b86d")))
+                .thenReturn(new ColecticaResponse(
+                        List.of(
+                                aColecticaItem("30ea0200-7121-4f01-8d21-a931a182b86d", "su-alpha")
+                                        .agency("fr.insee")
+                                        .build(),
+                                aColecticaItem("30ea0200-7121-4f01-8d21-a931a182b86d", "su-bravo")
+                                        .agency("fr.insee")
+                                        .build(),
+                                aColecticaItem("30ea0200-7121-4f01-8d21-a931a182b86d", "su-other")
+                                        .agency("fr.insee")
+                                        .build()),
+                        3,
+                        3,
+                        null,
+                        null,
+                        null));
+        when(colecticaClient.getDescriptions(anyList())).thenReturn(new ColecticaItemResponse[] {
+            studyUnitItemResponse(
+                    "fr.insee",
+                    "su-alpha",
+                    studyUnitFragment(operationIri, physicalInstanceReference("fr.insee", "pi-1", "1"))),
+            studyUnitItemResponse(
+                    "fr.insee",
+                    "su-bravo",
+                    studyUnitFragment(operationIri, physicalInstanceReference("fr.insee", "pi-2", "4"))),
+            studyUnitItemResponse(
+                    "fr.insee",
+                    "su-other",
+                    studyUnitFragment(
+                            "http://bauhaus/operations/operation/s9999",
+                            physicalInstanceReference("fr.insee", "pi-3", "1")))
+        });
+        when(colecticaClient.query(List.of(piType)))
+                .thenReturn(new ColecticaResponse(
+                        List.of(
+                                aColecticaItem("PhysicalInstance", "pi-1")
+                                        .itemName(Map.of("fr-FR", "Individus"))
+                                        .agency("fr.insee")
+                                        .build(),
+                                aColecticaItem("PhysicalInstance", "pi-2")
+                                        .itemName(Map.of("fr-FR", "Ménages"))
+                                        .agency("fr.insee")
+                                        .build(),
+                                aColecticaItem("PhysicalInstance", "pi-3")
+                                        .itemName(Map.of("fr-FR", "Autre"))
+                                        .agency("fr.insee")
+                                        .build()),
+                        3,
+                        3,
+                        null,
+                        null,
+                        null));
+
+        List<PartialPhysicalInstance> result =
+                ddiRepository.findPhysicalInstancesByOperationIris(List.of(operationIri));
+
+        assertThat(result)
+                .extracting(PartialPhysicalInstance::id, PartialPhysicalInstance::label)
+                .containsExactly(tuple("pi-1", "Individus"), tuple("pi-2", "Ménages"));
+    }
+
+    @Test
+    void shouldFindPhysicalInstancesByOperationIri_returnsEmptyWhenNoStudyUnitMirrorsTheOperation() {
+        when(colecticaClient.query(List.of("30ea0200-7121-4f01-8d21-a931a182b86d")))
+                .thenReturn(studyUnitQueryResponse("fr.insee", "su-other"));
+        when(colecticaClient.getDescriptions(anyList())).thenReturn(new ColecticaItemResponse[] {
+            studyUnitItemResponse(
+                    "fr.insee",
+                    "su-other",
+                    studyUnitFragment(
+                            "http://bauhaus/operations/operation/s9999",
+                            physicalInstanceReference("fr.insee", "pi-3", "1")))
+        });
+
+        assertThat(ddiRepository.findPhysicalInstancesByOperationIris(
+                        List.of("http://bauhaus/operations/operation/s1268")))
+                .isEmpty();
+    }
+
     private static ColecticaResponse studyUnitQueryResponse(String agency, String id) {
         ColecticaItem suItem = aColecticaItem("30ea0200-7121-4f01-8d21-a931a182b86d", id)
                 .itemName("BPE 2021")
@@ -2485,6 +2579,50 @@ class DDIRepositoryImplTest {
 
         assertThat(seriesIris).containsExactly("http://id.insee.fr/operations/serie/s1001");
         verify(colecticaClient, never()).getDdiSet(anyString(), anyString());
+    }
+
+    @Test
+    void getStudyUnitOperationIri_readsTheUserIdOfTheStudyUnitItemAlone() {
+        when(colecticaClient.getItem("fr.insee", "su-444", null))
+                .thenReturn(
+                        studyUnitItem(
+                                "su-444",
+                                "<r:UserID typeOfUserID=\"StatisticalOperation\">http://id.insee.fr/operations/operation/s2001</r:UserID>"));
+
+        Optional<String> operationIri = ddiRepository.getStudyUnitOperationIri("fr.insee", "su-444");
+
+        assertThat(operationIri).contains("http://id.insee.fr/operations/operation/s2001");
+        verify(colecticaClient, never()).getDdiSet(anyString(), anyString());
+    }
+
+    @Test
+    void getStudyUnitOperationIri_isEmptyForAStudyUnitMirroringNoOperation() {
+        when(colecticaClient.getItem("fr.insee", "su-444", null)).thenReturn(studyUnitItem("su-444", ""));
+
+        assertThat(ddiRepository.getStudyUnitOperationIri("fr.insee", "su-444")).isEmpty();
+    }
+
+    private static ColecticaItemResponse studyUnitItem(String id, String userIds) {
+        String studyUnitXml = """
+                <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3" xmlns:s="ddi:studyunit:3_3">
+                  <s:StudyUnit>
+                    <r:Agency>fr.insee</r:Agency>
+                    <r:ID>%s</r:ID>
+                    %s
+                  </s:StudyUnit>
+                </Fragment>""".formatted(id, userIds);
+        return new ColecticaItemResponse(
+                STUDY_UNIT_ITEM_TYPE,
+                "fr.insee",
+                1,
+                id,
+                studyUnitXml,
+                "2025-01-01T00:00:00",
+                null,
+                false,
+                false,
+                false,
+                null);
     }
 
     // ---- #485 : getCodeList / getCodeListXml (CodeList + Categories, versioned) ----
@@ -5233,7 +5371,8 @@ class DDIRepositoryImplTest {
                                         false,
                                         false,
                                         "fmt"))));
-        when(colecticaClient.createOrUpdateItems(any())).thenReturn("{}");
+        // Lenient : un patch refusé (étude inconnue) n'atteint jamais la sauvegarde.
+        lenient().when(colecticaClient.createOrUpdateItems(any())).thenReturn("{}");
         return ddi4Captor;
     }
 
@@ -5794,5 +5933,192 @@ class DDIRepositoryImplTest {
                 .thenReturn(Arrays.stream(setItems)
                         .map(item -> new ColecticaTypedSetItem(item, null))
                         .toArray(ColecticaTypedSetItem[]::new));
+    }
+
+    @Test
+    void getGroup_returnsNullWhenColecticaDoesNotKnowTheGroup() {
+        when(colecticaClient.getDdiSet(anyString(), anyString()))
+                .thenThrow(HttpClientErrorException.create(HttpStatus.NOT_FOUND, "Not Found", null, null, null));
+
+        assertNull(ddiRepository.getGroup("fr.insee", "00000000-0000-0000-0000-000000000000"));
+    }
+
+    @Test
+    void getGroup_returnsNullWithoutCallingColecticaWhenTheIdIsNotAnIdentifier() {
+        // Colectica n'accepte que des UUID : son ddiset répond 500 à un autre identifiant.
+        assertNull(ddiRepository.getGroup("fr.insee", "nexistepas"));
+
+        verifyNoInteractions(colecticaClient);
+    }
+
+    @Test
+    void getPhysicalInstance_returnsNullWhenColecticaDoesNotKnowTheSet() {
+        when(colecticaClient.getItem(anyString(), anyString(), any()))
+                .thenThrow(HttpClientErrorException.create(HttpStatus.NOT_FOUND, "Not Found", null, null, null));
+
+        assertNull(ddiRepository.getPhysicalInstance("fr.insee", "00000000-0000-0000-0000-000000000000"));
+    }
+
+    @Test
+    void getPhysicalInstance_returnsNullWithoutCallingColecticaWhenTheIdIsNotAnIdentifier() {
+        // Colectica n'accepte que des UUID : il répond 400 à un autre identifiant.
+        assertNull(ddiRepository.getPhysicalInstance("fr.insee", "nexistepas"));
+
+        verifyNoInteractions(colecticaClient);
+    }
+
+    @Test
+    void getStudyUnitVariableUsages_returnsEachVariableOfEachPhysicalInstanceOfTheStudyUnit() {
+        String agencyId = "fr.insee";
+        when(instanceConfiguration.itemTypes()).thenReturn(studyUnitVariablesItemTypes());
+        // StudyUnit → PhysicalInstance → DataRelationship → Variable, en descente bysubject.
+        stubChildItems(
+                agencyId,
+                "su-1",
+                PHYSICAL_INSTANCE_TYPE,
+                labelItem(PHYSICAL_INSTANCE_TYPE, agencyId, "pi-1", "Fichier 2024"),
+                labelItem(PHYSICAL_INSTANCE_TYPE, agencyId, "pi-2", "Fichier 2025"));
+        stubChildren(agencyId, "pi-1", DATA_RELATIONSHIP_TYPE, new ItemReference(agencyId, "dr-1"));
+        stubChildren(agencyId, "pi-2", DATA_RELATIONSHIP_TYPE, new ItemReference(agencyId, "dr-2"));
+        stubChildItems(agencyId, "dr-1", VARIABLE_TYPE, labelItem(VARIABLE_TYPE, agencyId, "var-1", "Sexe"));
+        stubChildItems(
+                agencyId,
+                "dr-2",
+                VARIABLE_TYPE,
+                labelItem(VARIABLE_TYPE, agencyId, "var-1", "Sexe"),
+                labelItem(VARIABLE_TYPE, agencyId, "var-2", "Âge"));
+
+        List<CodeListVariableUsage> result = ddiRepository.getStudyUnitVariableUsages(agencyId, "su-1");
+
+        assertThat(result)
+                .containsExactlyInAnyOrder(
+                        new CodeListVariableUsage(
+                                agencyId, "su-1", null, agencyId, "pi-1", "Fichier 2024", agencyId, "var-1", "Sexe"),
+                        new CodeListVariableUsage(
+                                agencyId, "su-1", null, agencyId, "pi-2", "Fichier 2025", agencyId, "var-1", "Sexe"),
+                        new CodeListVariableUsage(
+                                agencyId, "su-1", null, agencyId, "pi-2", "Fichier 2025", agencyId, "var-2", "Âge"));
+    }
+
+    @Test
+    void getStudyUnitVariables_returnsNoVariableWhenTheStudyUnitHasNoVariableScheme() {
+        String agencyId = "fr.insee";
+        when(instanceConfiguration.itemTypes()).thenReturn(studyUnitVariablesItemTypes());
+        stubChildren(agencyId, "su-1", LOGICAL_PRODUCT_TYPE, new ItemReference(agencyId, "lp-1"));
+        stubChildren(agencyId, "lp-1", VARIABLE_SCHEME_TYPE);
+
+        Ddi4Response result = ddiRepository.getStudyUnitVariables(agencyId, "su-1");
+
+        assertThat(result.variable()).isEmpty();
+        verify(colecticaClient, never()).getDescriptions(anyList());
+        verifyNoInteractions(ddi3ToDdi4Converter);
+    }
+
+    @Test
+    void getStudyUnitVariables_returnsTheLatestVersionOfEachVariableOfTheStudyUnitVariableScheme() {
+        String agencyId = "fr.insee";
+        when(instanceConfiguration.itemTypes()).thenReturn(studyUnitVariablesItemTypes());
+        // StudyUnit → LogicalProduct → VariableScheme → Variable, en descente bysubject.
+        stubChildren(agencyId, "su-1", LOGICAL_PRODUCT_TYPE, new ItemReference(agencyId, "lp-1"));
+        stubChildren(agencyId, "lp-1", VARIABLE_SCHEME_TYPE, new ItemReference(agencyId, "vs-1"));
+        stubChildItems(
+                agencyId,
+                "vs-1",
+                VARIABLE_TYPE,
+                versionedLabelItem(VARIABLE_TYPE, agencyId, "var-1", "Sexe", 1),
+                versionedLabelItem(VARIABLE_TYPE, agencyId, "var-1", "Sexe", 2));
+        ColecticaItemResponse stored = description(VARIABLE_TYPE, agencyId, 2, "var-1", "<Fragment/>");
+        when(colecticaClient.getDescriptions(List.of(new GetDescriptionsRequest.IdentifierRef(agencyId, "var-1", 2))))
+                .thenReturn(new ColecticaItemResponse[] {stored});
+        Ddi4Variable sexe = variable(agencyId, "var-1", "2", "SEXE");
+        stubDdi3ToDdi4Conversion(new Ddi4Response("ddi:4.0", null, null, null, List.of(sexe), null, null, null));
+
+        Ddi4Response result = ddiRepository.getStudyUnitVariables(agencyId, "su-1");
+
+        assertThat(result.variable()).containsExactly(sexe);
+        ArgumentCaptor<Ddi3Response> converted = ArgumentCaptor.forClass(Ddi3Response.class);
+        verify(ddi3ToDdi4Converter).convertDdi3ToDdi4(converted.capture(), eq("ddi:4.0"));
+        assertThat(converted.getValue().items())
+                .extracting(Ddi3Response.Ddi3Item::identifier)
+                .containsExactly("var-1");
+    }
+
+    @Test
+    void updatePhysicalInstance_throwsPhysicalInstanceNotFoundWhenColecticaDoesNotKnowIt() {
+        when(colecticaClient.getItem(anyString(), anyString(), any()))
+                .thenThrow(HttpClientErrorException.create(HttpStatus.NOT_FOUND, "Not Found", null, null, null));
+        UpdatePhysicalInstanceRequest updateRequest = new UpdatePhysicalInstanceRequest("label", "dr", "lr");
+
+        DdiItemNotFoundException exception = assertThrows(
+                DdiItemNotFoundException.class,
+                () -> ddiRepository.updatePhysicalInstance("fr.insee", "unknown", updateRequest));
+
+        assertEquals(DdiItemNotFoundException.Code.DDI_PHYSICAL_INSTANCE_NOT_FOUND, exception.code());
+    }
+
+    @Test
+    void updatePhysicalInstance_throwsStudyUnitNotFoundWhenAttachingToAnUnknownStudyUnit() {
+        String agencyId = "fr.insee";
+        String instanceId = "pi-1";
+        stubPhysicalInstancePatch(agencyId, instanceId);
+        when(colecticaClient.getItem(agencyId, "su-unknown", null))
+                .thenThrow(HttpClientErrorException.create(HttpStatus.NOT_FOUND, "Not Found", null, null, null));
+        UpdatePhysicalInstanceRequest updateRequest =
+                new UpdatePhysicalInstanceRequest("label", "dr", "lr", "su-unknown", "fr.insee", "group-1", "fr.insee");
+
+        DdiItemNotFoundException exception = assertThrows(
+                DdiItemNotFoundException.class,
+                () -> ddiRepository.updatePhysicalInstance(agencyId, instanceId, updateRequest));
+
+        assertEquals(DdiItemNotFoundException.Code.DDI_STUDY_UNIT_NOT_FOUND, exception.code());
+        assertEquals(Map.of("agencyId", "fr.insee", "id", "su-unknown"), exception.params());
+    }
+
+    /** An item description as returned by item/_getList, without version date nor format. */
+    private static ColecticaItemResponse description(
+            String itemType, String agency, int version, String identifier, String xml) {
+        return new ColecticaItemResponse(
+                itemType, agency, version, identifier, xml, null, null, false, false, false, null);
+    }
+
+    private void stubDdi3ToDdi4Conversion(Ddi4Response response) {
+        when(ddi3ToDdi4Converter.convertDdi3ToDdi4(any(Ddi3Response.class), eq("ddi:4.0")))
+                .thenReturn(response);
+    }
+
+    // --- Réutilisation de variables (#1387) ---------------------------------------------------
+
+    private static final String VARIABLE_SCHEME_TYPE = "vs-type";
+
+    private static Map<String, String> studyUnitVariablesItemTypes() {
+        return Map.of(
+                "LogicalProduct", LOGICAL_PRODUCT_TYPE,
+                "VariableScheme", VARIABLE_SCHEME_TYPE,
+                "Variable", VARIABLE_TYPE,
+                "DataRelationship", DATA_RELATIONSHIP_TYPE,
+                "PhysicalInstance", PHYSICAL_INSTANCE_TYPE);
+    }
+
+    private static Ddi4Variable variable(String agencyId, String id, String version, String name) {
+        return new Ddi4Variable(
+                Ddi4Variable.TYPE,
+                null,
+                "urn:ddi:" + agencyId + ":" + id + ":" + version,
+                agencyId,
+                id,
+                version,
+                null,
+                LangStrings.of("fr-FR", name),
+                LangStrings.of("fr-FR", name),
+                null,
+                null,
+                null);
+    }
+
+    /** Items of the given type directly referenced by the subject, with their labels. */
+    private void stubChildItems(String agencyId, String subjectId, String itemType, ColecticaItem... items) {
+        when(colecticaClient.findRelatedItems(
+                        RelationshipDirection.BY_SUBJECT, new ItemReference(agencyId, subjectId), List.of(itemType)))
+                .thenReturn(List.of(items));
     }
 }

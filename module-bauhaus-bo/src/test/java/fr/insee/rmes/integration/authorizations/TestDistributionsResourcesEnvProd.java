@@ -35,6 +35,9 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 @Import({DistributionResources.class, UserAuthTestConfiguration.class})
 class TestDistributionsResourcesEnvProd extends AbstractResourcesEnvProd {
 
+    private static final String DISTRIBUTION_BODY = """
+            {"idDataset": "jd1001", "labelLg1": "Fichier détail", "labelLg2": "Detailed file"}""";
+
     @Configuration
     @EnableMethodSecurity(securedEnabled = true)
     static class TestSecurityConfiguration {
@@ -82,7 +85,7 @@ class TestDistributionsResourcesEnvProd extends AbstractResourcesEnvProd {
         var request = post("/distribution")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content("{\"id\": \"1\"}");
+                .content(DISTRIBUTION_BODY);
         request.header("Authorization", "Bearer toto");
 
         mvc.perform(request).andExpect(status().is(code));
@@ -101,7 +104,7 @@ class TestDistributionsResourcesEnvProd extends AbstractResourcesEnvProd {
         var request = put("/distribution/1")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content("{\"id\": \"1\"}");
+                .content(DISTRIBUTION_BODY);
 
         request.header("Authorization", "Bearer toto");
 

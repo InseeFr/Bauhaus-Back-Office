@@ -3,6 +3,7 @@ package fr.insee.rmes.modules.clientconfig.domain;
 import fr.insee.rmes.modules.clientconfig.domain.model.ClientConfigProperties;
 import fr.insee.rmes.modules.clientconfig.domain.model.ModuleConfig;
 import fr.insee.rmes.modules.clientconfig.domain.port.clientside.ClientConfigService;
+import fr.insee.rmes.modules.shared_kernel.domain.model.AuthenticationMode;
 import fr.insee.rmes.modules.shared_kernel.domain.model.ConfiguredLanguages;
 import java.util.List;
 
@@ -63,9 +64,9 @@ public class DomainClientConfigService implements ClientConfigService {
     }
 
     private String getAuthType(String env) {
-        if (env.equals("pre-prod") || env.equals("prod") || env.equals("PROD")) {
-            return "OpenIDConnectAuth";
-        }
-        return "NoAuthImpl";
+        return switch (AuthenticationMode.fromEnv(env)) {
+            case OIDC -> "OpenIDConnectAuth";
+            case DEV -> "NoAuthImpl";
+        };
     }
 }

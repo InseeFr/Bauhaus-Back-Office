@@ -2,19 +2,9 @@ package fr.insee.rmes.bauhaus_services.operations.documentations.documents;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import fr.insee.rmes.BauhausLanguagesProperties;
-import fr.insee.rmes.DocumentsStorageProperties;
-import fr.insee.rmes.bauhaus_services.operations.OperationsParentRepository;
-import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.ontologies.INSEE;
 import fr.insee.rmes.model.operations.documentations.Document;
-import fr.insee.rmes.modules.commons.configuration.StorageProperties;
-import fr.insee.rmes.modules.commons.domain.port.serverside.FilesOperations;
-import fr.insee.rmes.persistance.sparql_queries.operations.OperationDocumentsQueries;
-import fr.insee.rmes.rdf_utils.RepositoryGestion;
-import fr.insee.rmes.utils.IdGenerator;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -30,59 +20,20 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class DocumentsUtilsAddRubricTest {
+class DocumentsUtilsAddRubricTest extends AbstractDocumentsUtilsTest {
 
     private static final SimpleValueFactory FACTORY = SimpleValueFactory.getInstance();
 
-    @Mock
-    RepositoryGestion repoGestion;
-
-    @Mock
-    IdGenerator idGenerator;
-
-    @Mock
-    RepositoryPublication repositoryPublication;
-
-    @Mock
-    PublicationUtils publicationUtils;
-
-    @Mock
-    OperationsParentRepository operationsParentRepository;
-
-    @Mock
-    FilesOperations filesOperations;
-
-    @Mock
-    StorageProperties storageProperties;
-
-    @Mock
-    OperationDocumentsQueries operationDocumentsQueries;
-
-    @Mock
-    DocumentsStorageProperties documentsStorage;
-
-    private DocumentsUtils documentsUtils;
     private Model model;
     private Resource graph;
     private IRI textUri;
 
     @BeforeEach
     void setUp() {
-        documentsUtils = new DocumentsUtils(
-                repoGestion,
-                idGenerator,
-                repositoryPublication,
-                new BauhausLanguagesProperties("fr", "en"),
-                publicationUtils,
-                operationsParentRepository,
-                filesOperations,
-                storageProperties,
-                operationDocumentsQueries,
-                documentsStorage);
+        documentsUtils = newDocumentsUtils();
         model = new LinkedHashModel();
         graph = FACTORY.createIRI("http://rdf.insee.fr/graphes/qualite/rapport/9999");
         textUri = FACTORY.createIRI("http://bauhaus/qualite/attribut/9999/S.3.1/texte");

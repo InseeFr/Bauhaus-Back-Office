@@ -1,5 +1,6 @@
 package fr.insee.rmes.modules.operations.operations.webservice;
 
+import static fr.insee.rmes.modules.HalJsonListAssertions.assertHalJsonListOfSize;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
@@ -17,7 +18,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.ResponseEntity;
 
 @ExtendWith(MockitoExtension.class)
@@ -57,11 +57,7 @@ class OperationsResourcesTest {
         ResponseEntity<List<PartialOperationResponse>> result = operationsResources.getOperations();
 
         // Then
-        Assertions.assertNotNull(result);
-        assertEquals(200, result.getStatusCode().value());
-        assertEquals(MediaTypes.HAL_JSON, result.getHeaders().getContentType());
-        Assertions.assertNotNull(result.getBody());
-        assertEquals(2, result.getBody().size());
+        assertHalJsonListOfSize(result, 2);
         verify(operationsService, times(1)).getOperations();
     }
 
@@ -103,11 +99,7 @@ class OperationsResourcesTest {
         ResponseEntity<List<PartialOperationResponse>> result = operationsResources.getOperations();
 
         // Then
-        Assertions.assertNotNull(result);
-        assertEquals(200, result.getStatusCode().value());
-        assertEquals(MediaTypes.HAL_JSON, result.getHeaders().getContentType());
-        Assertions.assertNotNull(result.getBody());
-        assertEquals(0, result.getBody().size());
+        assertHalJsonListOfSize(result, 0);
         verify(operationsService, times(1)).getOperations();
     }
 }

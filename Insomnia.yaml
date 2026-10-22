@@ -545,47 +545,6 @@ collection:
             send: true
             store: true
           rebuildPath: true
-      - url: "{{ _.API_URL }}/concepts/collections/{{ _.COLLECTION_ID }}"
-        name: Delete collection
-        meta:
-          id: req_collections_delete_0000000000000000
-          created: 1765280500009
-          modified: 1765280500009
-          isPrivate: false
-          description: ""
-          sortKey: -1765280500009
-        method: DELETE
-        headers: []
-        settings:
-          renderRequestBody: true
-          encodeUrl: true
-          followRedirects: global
-          cookies:
-            send: true
-            store: true
-          rebuildPath: true
-      - url: "{{ _.API_URL }}/concepts/collections/search"
-        name: Search collections
-        meta:
-          id: req_collections_search_0000000000000000
-          created: 1765280500010
-          modified: 1765280500010
-          isPrivate: false
-          description: ""
-          sortKey: -1765280500010
-        method: GET
-        headers:
-          - name: Accept
-            value: application/json
-            disabled: false
-        settings:
-          renderRequestBody: true
-          encodeUrl: true
-          followRedirects: global
-          cookies:
-            send: true
-            store: true
-          rebuildPath: true
       - url: "{{ _.API_URL }}/concepts/collections/{{ _.COLLECTION_ID }}/export"
         name: Export collection
         meta:

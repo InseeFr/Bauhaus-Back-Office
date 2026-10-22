@@ -1,5 +1,6 @@
 package fr.insee.rmes.bauhaus_services.concepts.concepts;
 
+import static fr.insee.rmes.bauhaus_services.concepts.ValidationStateModels.validationStateOf;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.mock;
@@ -19,7 +20,6 @@ import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.graphdb.ObjectType;
-import fr.insee.rmes.graphdb.ontologies.INSEE;
 import fr.insee.rmes.model.concepts.ConceptForExport;
 import fr.insee.rmes.modules.concepts.collections.domain.port.clientside.CollectionsService;
 import fr.insee.rmes.modules.concepts.concept.domain.exceptions.ConceptsFetchException;
@@ -33,7 +33,6 @@ import java.util.Collections;
 import java.util.List;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
-import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryResult;
@@ -269,58 +268,58 @@ class LegacyConceptsRepositoryTest {
         legacyConceptsRepository.setConcept(body);
 
         // Then
-        ArgumentCaptor<Model> modelCaptor = ArgumentCaptor.forClass(Model.class);
-        verify(repoGestion).loadConcept(any(), modelCaptor.capture(), any());
-        assertEquals(ValidationStatus.UNPUBLISHED.getValue(), validationStateOf(modelCaptor.getValue()));
+        assertLoadedConceptValidationState(ValidationStatus.UNPUBLISHED);
     }
 
     @Test
     void shouldMarkConceptAsModifiedWhenUpdatingValidatedConcept() throws RmesException {
         // Given an existing concept currently Validated
         String id = "c1";
-        String body =
-                "{\"prefLabelLg1\":\"Updated Concept\",\"creator\":\"https://testCreator\",\"contributor\":\"https://testContributor\",\"disseminationStatus\":\"http://example.com/status\"}";
-        when(repoGestion.getResponseAsObject(conceptConceptsQueries.getConceptCreated(id)))
-                .thenReturn(new JSONObject());
-        when(repoGestion.getResponseAsObject(conceptConceptsQueries.getConceptValidationStatus(id)))
-                .thenReturn(new JSONObject().put("state", ValidationStatus.VALIDATED.getValue()));
+        String body = UPDATED_CONCEPT_BODY;
+        givenExistingConceptInState(id, ValidationStatus.VALIDATED);
 
         // When updating it
         legacyConceptsRepository.setConcept(id, body);
 
         // Then it transitions to Modified (provisoire déjà publiée)
-        ArgumentCaptor<Model> modelCaptor = ArgumentCaptor.forClass(Model.class);
-        verify(repoGestion).loadConcept(any(), modelCaptor.capture(), any());
-        assertEquals(ValidationStatus.MODIFIED.getValue(), validationStateOf(modelCaptor.getValue()));
+        assertLoadedConceptValidationState(ValidationStatus.MODIFIED);
     }
 
     @Test
     void shouldStayUnpublishedWhenUpdatingUnpublishedConcept() throws RmesException {
         // Given an existing concept currently Unpublished
         String id = "c1";
-        String body =
-                "{\"prefLabelLg1\":\"Updated Concept\",\"creator\":\"https://testCreator\",\"contributor\":\"https://testContributor\",\"disseminationStatus\":\"http://example.com/status\"}";
-        when(repoGestion.getResponseAsObject(conceptConceptsQueries.getConceptCreated(id)))
-                .thenReturn(new JSONObject());
-        when(repoGestion.getResponseAsObject(conceptConceptsQueries.getConceptValidationStatus(id)))
-                .thenReturn(new JSONObject().put("state", ValidationStatus.UNPUBLISHED.getValue()));
+        String body = UPDATED_CONCEPT_BODY;
+        givenExistingConceptInState(id, ValidationStatus.UNPUBLISHED);
 
         // When updating it
         legacyConceptsRepository.setConcept(id, body);
 
         // Then it stays Unpublished
-        ArgumentCaptor<Model> modelCaptor = ArgumentCaptor.forClass(Model.class);
-        verify(repoGestion).loadConcept(any(), modelCaptor.capture(), any());
-        assertEquals(ValidationStatus.UNPUBLISHED.getValue(), validationStateOf(modelCaptor.getValue()));
+        assertLoadedConceptValidationState(ValidationStatus.UNPUBLISHED);
     }
 
-    private static String validationStateOf(Model model) {
-        for (Statement st : model) {
-            if (st.getPredicate().equals(INSEE.VALIDATION_STATE)) {
-                return st.getObject().stringValue();
-            }
-        }
-        return null;
+    private static final String UPDATED_CONCEPT_BODY =
+            "{\"prefLabelLg1\":\"Updated Concept\",\"creator\":\"https://testCreator\",\"contributor\":\"https://testContributor\",\"disseminationStatus\":\"http://example.com/status\"}";
+
+    private void givenExistingConceptInState(String id, ValidationStatus state) throws RmesException {
+        when(repoGestion.getResponseAsObject(conceptConceptsQueries.getConceptCreated(id)))
+                .thenReturn(new JSONObject());
+        when(repoGestion.getResponseAsObject(conceptConceptsQueries.getConceptValidationStatus(id)))
+                .thenReturn(new JSONObject().put("state", state.getValue()));
+    }
+
+    private void givenStoredConcept(String id, JSONObject conceptJson) throws RmesException {
+        when(repoGestion.getResponseAsBoolean(conceptConceptsQueries.checkIfExists(id)))
+                .thenReturn(true);
+        when(repoGestion.getResponseAsObject(conceptConceptsQueries.conceptQuery(id)))
+                .thenReturn(conceptJson);
+    }
+
+    private void assertLoadedConceptValidationState(ValidationStatus expected) throws RmesException {
+        ArgumentCaptor<Model> modelCaptor = ArgumentCaptor.forClass(Model.class);
+        verify(repoGestion).loadConcept(any(), modelCaptor.capture(), any());
+        assertEquals(expected.getValue(), validationStateOf(modelCaptor.getValue()));
     }
 
     @Test
@@ -349,10 +348,7 @@ class LegacyConceptsRepositoryTest {
 
         JSONArray altLabelLg2 = new JSONArray().put(new JSONObject().put("altLabel", "Alt EN 1"));
 
-        when(repoGestion.getResponseAsBoolean(conceptConceptsQueries.checkIfExists(id)))
-                .thenReturn(true);
-        when(repoGestion.getResponseAsObject(conceptConceptsQueries.conceptQuery(id)))
-                .thenReturn(conceptJson);
+        givenStoredConcept(id, conceptJson);
         when(repoGestion.getResponseAsArray(anyString())).thenAnswer(invocation -> {
             String query = invocation.getArgument(0);
             if (query.contains("lg1")) {
@@ -380,10 +376,7 @@ class LegacyConceptsRepositoryTest {
 
         JSONArray emptyArray = new JSONArray();
 
-        when(repoGestion.getResponseAsBoolean(conceptConceptsQueries.checkIfExists(id)))
-                .thenReturn(true);
-        when(repoGestion.getResponseAsObject(conceptConceptsQueries.conceptQuery(id)))
-                .thenReturn(conceptJson);
+        givenStoredConcept(id, conceptJson);
         when(repoGestion.getResponseAsArray(anyString())).thenReturn(emptyArray);
         when(conceptsService.getCollectionIdsByConceptId(id)).thenReturn(Collections.emptyList());
 

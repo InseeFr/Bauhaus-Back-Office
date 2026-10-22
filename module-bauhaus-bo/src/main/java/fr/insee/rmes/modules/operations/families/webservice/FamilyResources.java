@@ -142,7 +142,7 @@ public class FamilyResources {
      * partie du contrat, il ne peut pas être remplacé par un texte libre.
      */
     private static RmesBadRequestException prefLabelAlreadyUsed(FamilyPrefLabelAlreadyUsedException exception) {
-        return new RmesBadRequestException(
+        return RmesBadRequestException.coded(
                 exception.language() == Language.lg1
                         ? ErrorCodes.OPERATION_FAMILY_EXISTING_PREF_LABEL_LG1
                         : ErrorCodes.OPERATION_FAMILY_EXISTING_PREF_LABEL_LG2,

@@ -21,6 +21,7 @@ import fr.insee.rmes.modules.shared_kernel.domain.model.Language;
 import fr.insee.rmes.modules.users.domain.model.RBAC;
 import fr.insee.rmes.modules.users.webservice.HasAccess;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
 import org.springframework.http.HttpStatus;
@@ -151,8 +152,8 @@ public class ConceptsResources {
 
     @HasAccess(module = RBAC.Module.CONCEPT_CONCEPT, privilege = RBAC.Privilege.CREATE)
     @PostMapping(value = "/concept", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> setConcept(@RequestBody String body) throws RmesException {
-        String id = legacyConceptsService.setConcept(body);
+    public ResponseEntity<Object> setConcept(@Valid @RequestBody ConceptRequest concept) throws RmesException {
+        String id = legacyConceptsService.setConcept(concept.toLegacyJson());
 
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}")
@@ -164,9 +165,9 @@ public class ConceptsResources {
 
     @HasAccess(module = RBAC.Module.CONCEPT_CONCEPT, privilege = RBAC.Privilege.UPDATE)
     @PutMapping(value = "/concept/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> setConcept(@PathVariable(Constants.ID) String id, @RequestBody String body)
-            throws RmesException {
-        legacyConceptsService.setConcept(id, body);
+    public ResponseEntity<Object> setConcept(
+            @PathVariable(Constants.ID) String id, @Valid @RequestBody ConceptRequest concept) throws RmesException {
+        legacyConceptsService.setConcept(id, concept.toLegacyJson());
         return ResponseEntity.noContent().build();
     }
 

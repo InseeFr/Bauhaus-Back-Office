@@ -17,6 +17,7 @@ import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
+import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.RepositoryResult;
@@ -40,7 +41,7 @@ public class OperationPublication extends RdfService {
 
     String[] ignoredAttrs = {"validationState", "hasPart", Constants.PUBLISHER, Constants.CONTRIBUTOR};
 
-    public void publishOperation(String operationId, JSONObject operationJson) throws RmesException {
+    public void publishOperation(String operationId, JSONObject operationJson, Resource graph) throws RmesException {
         PublicationUtils.rejectIfAlreadyPublished(
                 "Operation", operationId, operationsParentRepository.getFamOpSerValidationStatus(operationId));
 
@@ -50,7 +51,7 @@ public class OperationPublication extends RdfService {
 
         Resource operation = RdfUtils.operationIRI(operationId);
         try (RepositoryConnection con = repoGestion.getConnection();
-                RepositoryResult<Statement> statements = repoGestion.getStatements(con, operation)) {
+                RepositoryResult<Statement> statements = repoGestion.getStatements(con, operation, graph)) {
             if (!statements.hasNext()) {
                 throw new RmesNotFoundException(ErrorCodes.OPERATION_UNKNOWN_ID, "Operation not found", operationId);
             }
@@ -62,7 +63,7 @@ public class OperationPublication extends RdfService {
                             publicationUtils.tranformBaseURIToPublish(st.getSubject()),
                             st.getPredicate(),
                             publicationUtils.tranformBaseURIToPublish((Resource) st.getObject()),
-                            st.getContext());
+                            graph);
                 } else if (PublicationUtils.stringEndsWithItemFromList(
                         RdfUtils.toString(st.getPredicate()), ignoredAttrs)) {
                     // nothing, wouldn't copy this attr
@@ -73,16 +74,16 @@ public class OperationPublication extends RdfService {
                             publicationUtils.tranformBaseURIToPublish(st.getSubject()),
                             st.getPredicate(),
                             st.getObject(),
-                            st.getContext());
+                            graph);
                 }
-                addHasPartStatements(model, operation, con);
+                addHasPartStatements(model, operation, con, graph);
             }
         } catch (RepositoryException e) {
             throw new RmesException(
                     HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), Constants.REPOSITORY_EXCEPTION);
         }
         Resource operationToPublishRessource = publicationUtils.tranformBaseURIToPublish(operation);
-        repositoryPublication.publishResource(operationToPublishRessource, model, "operation");
+        repositoryPublication.publishResource(operationToPublishRessource, model, "operation", graph);
     }
 
     private void checkSeriesIsPublished(String operationId, JSONObject operationJson) throws RmesException {
@@ -97,15 +98,17 @@ public class OperationPublication extends RdfService {
         }
     }
 
-    private void addHasPartStatements(Model model, Resource operation, RepositoryConnection con) throws RmesException {
-        try (RepositoryResult<Statement> hasPartStatements = repoGestion.getHasPartStatements(con, operation)) {
+    private void addHasPartStatements(Model model, Resource operation, RepositoryConnection con, Resource graph)
+            throws RmesException {
+        try (RepositoryResult<Statement> hasPartStatements =
+                repoGestion.getStatementsPredicateObject(con, DCTERMS.HAS_PART, operation, graph)) {
             while (hasPartStatements.hasNext()) {
                 Statement hpst = hasPartStatements.next();
                 model.add(
                         publicationUtils.tranformBaseURIToPublish(hpst.getSubject()),
                         hpst.getPredicate(),
                         publicationUtils.tranformBaseURIToPublish((Resource) hpst.getObject()),
-                        hpst.getContext());
+                        graph);
             }
         }
     }

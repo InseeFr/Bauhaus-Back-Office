@@ -1,5 +1,6 @@
 package fr.insee.rmes.modules.datasets.distributions.webservice;
 
+import static fr.insee.rmes.modules.HalJsonListAssertions.assertHalJsonListOfSize;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.*;
@@ -11,6 +12,7 @@ import fr.insee.rmes.bauhaus_services.datasets.DatasetService;
 import fr.insee.rmes.bauhaus_services.distribution.DistributionService;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.commons.configuration.LogRequestFilter;
+import fr.insee.rmes.modules.commons.configuration.swagger.model.Id;
 import fr.insee.rmes.modules.datasets.datasets.model.PartialDataset;
 import fr.insee.rmes.modules.datasets.distributions.model.Distribution;
 import fr.insee.rmes.modules.datasets.distributions.model.DistributionsForSearch;
@@ -118,14 +120,14 @@ class DistributionResourcesTest {
 
     @Test
     void shouldReturn201IfRmesExceptionWhenPostingADistribution() throws RmesException {
-        when(distributionService.create(anyString())).thenReturn("result");
-        Assertions.assertEquals("result", distributionResources.createDistribution(""));
+        when(distributionService.create(any(Distribution.class))).thenReturn("result");
+        Assertions.assertEquals("result", distributionResources.createDistribution(new Distribution()));
     }
 
     @Test
     void shouldReturn200IfRmesExceptionWhenUpdatingADistribution() throws RmesException {
-        when(distributionService.update(anyString(), anyString())).thenReturn("result");
-        Assertions.assertEquals("result", distributionResources.updateDistribution("", ""));
+        when(distributionService.update(anyString(), any(Distribution.class))).thenReturn("result");
+        Assertions.assertEquals(new Id("result"), distributionResources.updateDistribution("", new Distribution()));
     }
 
     @Test
@@ -169,11 +171,7 @@ class DistributionResourcesTest {
         var result = distributionResources.getDistributions();
 
         // Then
-        Assertions.assertNotNull(result);
-        Assertions.assertEquals(200, result.getStatusCode().value());
-        Assertions.assertEquals(MediaTypes.HAL_JSON, result.getHeaders().getContentType());
-        Assertions.assertNotNull(result.getBody());
-        Assertions.assertEquals(2, result.getBody().size());
+        assertHalJsonListOfSize(result, 2);
     }
 
     @Test
@@ -185,11 +183,7 @@ class DistributionResourcesTest {
         var result = distributionResources.getDistributions();
 
         // Then
-        Assertions.assertNotNull(result);
-        Assertions.assertEquals(200, result.getStatusCode().value());
-        Assertions.assertEquals(MediaTypes.HAL_JSON, result.getHeaders().getContentType());
-        Assertions.assertNotNull(result.getBody());
-        Assertions.assertEquals(0, result.getBody().size());
+        assertHalJsonListOfSize(result, 0);
     }
 }
 

@@ -1,9 +1,11 @@
 package fr.insee.rmes.modules.ddi.physical_instances.domain.services;
 
+import static fr.insee.rmes.modules.ddi.physical_instances.domain.services.Lifecycle33TestFixtures.sentinelValuesMmvr;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import fr.insee.ddi.lifecycle33.instance.FragmentDocument;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeRepresentation;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeValue;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CogsDate;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.DateTimeRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedMissingValuesRepresentation;
@@ -15,7 +17,6 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.RangeValue;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.TextRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.VariableRepresentation;
-import java.util.List;
 import org.apache.xmlbeans.XmlException;
 import org.junit.jupiter.api.Test;
 
@@ -59,7 +60,7 @@ class SentinelValuesRoundTripTest {
                 null,
                 new NumericRepresentation(
                         NumericRepresentation.TYPE,
-                        "Integer",
+                        CodeValue.numericType("Integer"),
                         new NumberRange(new RangeValue(false, 0.0), new RangeValue(true, 100.0))),
                 null,
                 null,
@@ -68,7 +69,7 @@ class SentinelValuesRoundTripTest {
         VariableRepresentation roundTripped = roundTrip(rep);
 
         assertThat(roundTripped.missingValuesReference()).isEqualTo(MMVR_REF);
-        assertThat(roundTripped.numericRepresentation().numericTypeCode()).isEqualTo("Integer");
+        assertThat(roundTripped.numericRepresentation().numericTypeCode()).isEqualTo(CodeValue.numericType("Integer"));
     }
 
     @Test
@@ -77,14 +78,14 @@ class SentinelValuesRoundTripTest {
                 null,
                 null,
                 null,
-                new DateTimeRepresentation(DateTimeRepresentation.TYPE, "Date", "yyyy-MM-dd"),
+                new DateTimeRepresentation(DateTimeRepresentation.TYPE, CodeValue.dateType("Date"), "yyyy-MM-dd"),
                 null,
                 MMVR_REF);
 
         VariableRepresentation roundTripped = roundTrip(rep);
 
         assertThat(roundTripped.missingValuesReference()).isEqualTo(MMVR_REF);
-        assertThat(roundTripped.dateTimeRepresentation().dateTypeCode()).isEqualTo("Date");
+        assertThat(roundTripped.dateTimeRepresentation().dateTypeCode()).isEqualTo(CodeValue.dateType("Date"));
     }
 
     @Test
@@ -105,16 +106,7 @@ class SentinelValuesRoundTripTest {
 
     @Test
     void managedMissingValuesRepresentation_survivesRoundTrip() throws XmlException {
-        Ddi4ManagedMissingValuesRepresentation mmvr = new Ddi4ManagedMissingValuesRepresentation(
-                Ddi4ManagedMissingValuesRepresentation.TYPE,
-                CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
-                "urn:ddi:fr.insee:mmvr-1:1",
-                "fr.insee",
-                "mmvr-1",
-                "1",
-                LangStrings.of("fr-FR", "Valeurs sentinelles NSP/REF"),
-                List.of(new CodeRepresentation(
-                        CodeRepresentation.TYPE, false, Reference.of("fr.insee", "cl-sentinelles", "1", "CodeList"))));
+        Ddi4ManagedMissingValuesRepresentation mmvr = sentinelValuesMmvr(CogsDate.ofDateTime("2026-04-03T12:00:00Z"));
 
         String xml = writer.toManagedMissingValuesRepresentation(mmvr).xmlText();
         Ddi4ManagedMissingValuesRepresentation roundTripped =
@@ -130,16 +122,7 @@ class SentinelValuesRoundTripTest {
         // L'aperçu du front reconstruit une MMVR seulement réutilisée depuis la vue partielle du
         // groupe, qui ne porte pas la VersionDate : l'écriture doit l'accepter absente plutôt que
         // de forcer le front à en inventer une.
-        Ddi4ManagedMissingValuesRepresentation mmvr = new Ddi4ManagedMissingValuesRepresentation(
-                Ddi4ManagedMissingValuesRepresentation.TYPE,
-                null,
-                "urn:ddi:fr.insee:mmvr-1:1",
-                "fr.insee",
-                "mmvr-1",
-                "1",
-                LangStrings.of("fr-FR", "Valeurs sentinelles NSP/REF"),
-                List.of(new CodeRepresentation(
-                        CodeRepresentation.TYPE, false, Reference.of("fr.insee", "cl-sentinelles", "1", "CodeList"))));
+        Ddi4ManagedMissingValuesRepresentation mmvr = sentinelValuesMmvr(null);
 
         String xml = writer.toManagedMissingValuesRepresentation(mmvr).xmlText();
         Ddi4ManagedMissingValuesRepresentation roundTripped =

@@ -16,7 +16,6 @@ import fr.insee.rmes.graphdb.ontologies.IGEO;
 import fr.insee.rmes.modules.geographies.infrastructure.graphdb.GeographyQueries;
 import fr.insee.rmes.modules.geographies.model.GeoFeature;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
-import fr.insee.rmes.utils.Deserializer;
 import fr.insee.rmes.utils.IdGenerator;
 import java.util.UUID;
 import org.apache.commons.lang3.StringUtils;
@@ -118,12 +117,11 @@ public class GeographyServiceImpl extends RdfService implements GeographyService
     }
 
     @Override
-    public void updateFeature(String id, String body) throws RmesException {
+    public void updateFeature(String id, GeoFeature geoFeature) throws RmesException {
 
         // Est-ce il existe une geographie ayant l'id passé en paramètre
         // si c'est non => 404
 
-        GeoFeature geoFeature = Deserializer.deserializeJsonString(body, GeoFeature.class);
         geoFeature.setId(id);
 
         if (geoFeature.getCode() == null) {
@@ -133,9 +131,8 @@ public class GeographyServiceImpl extends RdfService implements GeographyService
     }
 
     @Override
-    public String createFeature(String body) throws RmesException {
+    public String createFeature(GeoFeature geoFeature) throws RmesException {
         UUID id = UUID.randomUUID();
-        GeoFeature geoFeature = Deserializer.deserializeJsonString(body, GeoFeature.class);
         geoFeature.setId(id.toString());
         if (geoFeature.getCode() == null) {
             geoFeature.setCode(id.toString());

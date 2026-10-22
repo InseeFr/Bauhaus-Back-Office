@@ -57,8 +57,8 @@ public class DatasetResources {
 
     @PostMapping(value = "", consumes = APPLICATION_JSON_VALUE)
     @HasAccess(module = RBAC.Module.DATASET_DATASET, privilege = RBAC.Privilege.CREATE)
-    public ResponseEntity<String> setDataset(@RequestBody String body) throws RmesException {
-        String id = this.datasetService.create(body);
+    public ResponseEntity<String> setDataset(@Valid @RequestBody Dataset dataset) throws RmesException {
+        String id = this.datasetService.create(dataset);
 
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}")
@@ -69,8 +69,8 @@ public class DatasetResources {
 
     @HasAccess(module = RBAC.Module.DATASET_DATASET, privilege = RBAC.Privilege.UPDATE)
     @PutMapping(value = "/{id}", consumes = APPLICATION_JSON_VALUE)
-    public void setDataset(@PathVariable("id") String id, @RequestBody String body) throws RmesException {
-        this.datasetService.update(id, body);
+    public void setDataset(@PathVariable("id") String id, @Valid @RequestBody Dataset dataset) throws RmesException {
+        this.datasetService.update(id, dataset);
     }
 
     @HasAccess(module = RBAC.Module.DATASET_DATASET, privilege = RBAC.Privilege.PUBLISH)

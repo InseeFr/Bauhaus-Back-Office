@@ -42,15 +42,7 @@ class OperationFamilyTest {
         OperationFamily family = OperationFamily.fromJson(json);
 
         assertEquals("fam002", family.id());
-        assertNull(family.prefLabelLg1());
-        assertNull(family.prefLabelLg2());
-        assertNull(family.abstractLg1());
-        assertNull(family.abstractLg2());
-        assertNull(family.validationState());
-        assertNull(family.created());
-        assertNull(family.modified());
-        assertTrue(family.series().isEmpty());
-        assertTrue(family.subjects().isEmpty());
+        assertOnlyTheIdCanBeSet(family);
     }
 
     @Test
@@ -60,30 +52,12 @@ class OperationFamilyTest {
         OperationFamily family = OperationFamily.fromJson(json);
 
         assertNull(family.id());
-        assertNull(family.prefLabelLg1());
-        assertNull(family.prefLabelLg2());
-        assertNull(family.abstractLg1());
-        assertNull(family.abstractLg2());
-        assertNull(family.validationState());
-        assertNull(family.created());
-        assertNull(family.modified());
-        assertTrue(family.series().isEmpty());
-        assertTrue(family.subjects().isEmpty());
+        assertOnlyTheIdCanBeSet(family);
     }
 
     @Test
     void with_series_replaces_series_list() {
-        OperationFamily original = new OperationFamily(
-                "fam001",
-                "Label1",
-                "Label2",
-                "Abstract1",
-                "Abstract2",
-                "DRAFT",
-                "2023-01-01",
-                "2023-06-01",
-                Collections.emptyList(),
-                Collections.emptyList());
+        OperationFamily original = family("fam001");
 
         List<OperationFamilySeries> newSeries = List.of(
                 new OperationFamilySeries("s1", "Series 1", "Série 1"),
@@ -105,17 +79,7 @@ class OperationFamilyTest {
 
     @Test
     void with_subject_replaces_subjects_list() {
-        OperationFamily original = new OperationFamily(
-                "fam001",
-                "Label1",
-                "Label2",
-                "Abstract1",
-                "Abstract2",
-                "DRAFT",
-                "2023-01-01",
-                "2023-06-01",
-                Collections.emptyList(),
-                Collections.emptyList());
+        OperationFamily original = family("fam001");
 
         List<OperationFamilySubject> newSubjects = List.of(
                 new OperationFamilySubject("sub1", "Subject 1", "Sujet 1"),
@@ -137,17 +101,7 @@ class OperationFamilyTest {
 
     @Test
     void with_series_maintains_immutability() {
-        OperationFamily original = new OperationFamily(
-                "fam001",
-                "Label1",
-                "Label2",
-                "Abstract1",
-                "Abstract2",
-                "DRAFT",
-                "2023-01-01",
-                "2023-06-01",
-                Collections.emptyList(),
-                Collections.emptyList());
+        OperationFamily original = family("fam001");
 
         List<OperationFamilySeries> newSeries = List.of(new OperationFamilySeries("s1", "Series 1", "Série 1"));
 
@@ -160,17 +114,7 @@ class OperationFamilyTest {
 
     @Test
     void with_subject_maintains_immutability() {
-        OperationFamily original = new OperationFamily(
-                "fam001",
-                "Label1",
-                "Label2",
-                "Abstract1",
-                "Abstract2",
-                "DRAFT",
-                "2023-01-01",
-                "2023-06-01",
-                Collections.emptyList(),
-                Collections.emptyList());
+        OperationFamily original = family("fam001");
 
         List<OperationFamilySubject> newSubjects = List.of(new OperationFamilySubject("sub1", "Subject 1", "Sujet 1"));
 
@@ -183,29 +127,9 @@ class OperationFamilyTest {
 
     @Test
     void record_equality() {
-        OperationFamily family1 = new OperationFamily(
-                "fam001",
-                "Label1",
-                "Label2",
-                "Abstract1",
-                "Abstract2",
-                "DRAFT",
-                "2023-01-01",
-                "2023-06-01",
-                Collections.emptyList(),
-                Collections.emptyList());
+        OperationFamily family1 = family("fam001");
 
-        OperationFamily family2 = new OperationFamily(
-                "fam001",
-                "Label1",
-                "Label2",
-                "Abstract1",
-                "Abstract2",
-                "DRAFT",
-                "2023-01-01",
-                "2023-06-01",
-                Collections.emptyList(),
-                Collections.emptyList());
+        OperationFamily family2 = family("fam001");
 
         assertEquals(family1, family2);
         assertEquals(family1.hashCode(), family2.hashCode());
@@ -213,46 +137,16 @@ class OperationFamilyTest {
 
     @Test
     void record_inequality() {
-        OperationFamily family1 = new OperationFamily(
-                "fam001",
-                "Label1",
-                "Label2",
-                "Abstract1",
-                "Abstract2",
-                "DRAFT",
-                "2023-01-01",
-                "2023-06-01",
-                Collections.emptyList(),
-                Collections.emptyList());
+        OperationFamily family1 = family("fam001");
 
-        OperationFamily family2 = new OperationFamily(
-                "fam002",
-                "Label1",
-                "Label2",
-                "Abstract1",
-                "Abstract2",
-                "DRAFT",
-                "2023-01-01",
-                "2023-06-01",
-                Collections.emptyList(),
-                Collections.emptyList());
+        OperationFamily family2 = family("fam002");
 
         assertNotEquals(family1, family2);
     }
 
     @Test
     void to_string_contains_all_fields() {
-        OperationFamily family = new OperationFamily(
-                "fam001",
-                "Label1",
-                "Label2",
-                "Abstract1",
-                "Abstract2",
-                "DRAFT",
-                "2023-01-01",
-                "2023-06-01",
-                Collections.emptyList(),
-                Collections.emptyList());
+        OperationFamily family = family("fam001");
 
         String toString = family.toString();
 
@@ -264,5 +158,32 @@ class OperationFamilyTest {
         assertTrue(toString.contains("DRAFT"));
         assertTrue(toString.contains("2023-01-01"));
         assertTrue(toString.contains("2023-06-01"));
+    }
+
+    private static OperationFamily family(String id) {
+        return new OperationFamily(
+                id,
+                "Label1",
+                "Label2",
+                "Abstract1",
+                "Abstract2",
+                "DRAFT",
+                "2023-01-01",
+                "2023-06-01",
+                Collections.emptyList(),
+                Collections.emptyList());
+    }
+
+    /** Hormis l'identifiant, aucun champ n'est renseigné et les listes sont vides. */
+    private static void assertOnlyTheIdCanBeSet(OperationFamily family) {
+        assertNull(family.prefLabelLg1());
+        assertNull(family.prefLabelLg2());
+        assertNull(family.abstractLg1());
+        assertNull(family.abstractLg2());
+        assertNull(family.validationState());
+        assertNull(family.created());
+        assertNull(family.modified());
+        assertTrue(family.series().isEmpty());
+        assertTrue(family.subjects().isEmpty());
     }
 }

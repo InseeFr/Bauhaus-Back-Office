@@ -20,7 +20,6 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
-import fr.insee.rmes.exceptions.RmesNotAcceptableException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.graphdb.ontologies.ADMS;
@@ -46,7 +45,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
 
 @ExtendWith(MockitoExtension.class)
 class DocumentationsUtilsTest {
@@ -130,12 +128,11 @@ class DocumentationsUtilsTest {
         when(repoGestion.getResponseAsObject("mock-title-query"))
                 .thenReturn(new JSONObject().put(Constants.LABEL_LG1, "Sims"));
         when(documentationQueries.deleteGraph(any(Resource.class))).thenReturn("delete-graph-query");
-        when(repoGestion.executeUpdate("delete-graph-query")).thenReturn(HttpStatus.OK);
-        when(repositoryPublication.executeUpdate("delete-graph-query")).thenReturn(HttpStatus.OK);
 
-        HttpStatus result = documentationsUtils.deleteMetadataReport(id);
+        documentationsUtils.deleteMetadataReport(id);
 
-        assertEquals(HttpStatus.OK, result);
+        verify(repoGestion).executeUpdate("delete-graph-query");
+        verify(repositoryPublication).executeUpdate("delete-graph-query");
     }
 
     @Test
@@ -159,6 +156,7 @@ class DocumentationsUtilsTest {
         assertTrue(exception
                 .getDetails()
                 .contains("This metadataReport cannot be published before its target is published. "));
+        assertEquals("seriesExample", new JSONObject(exception.getDetails()).getString("id"));
     }
 
     @Test
@@ -228,7 +226,8 @@ class DocumentationsUtilsTest {
     void setMetadataReport_shouldNotRejectWith406_whenCreatingSimsOnSeriesWithOperations() throws RmesException {
         // Une série avec opérations doit pouvoir recevoir un SIMS (cf. ticket #1452).
         String idTarget = "s1234";
-        String body = "{\"idTarget\":\"" + idTarget + "\",\"idSeries\":\"" + idTarget + "\"}";
+        Documentation body = new Documentation();
+        body.setIdSeries(idTarget);
 
         lenient().when(documentationQueries.getSimsByTarget(idTarget)).thenReturn("q-sims");
         lenient().when(documentationQueries.lastID()).thenReturn("q-last");
@@ -236,7 +235,7 @@ class DocumentationsUtilsTest {
 
         try {
             documentationsUtils.setMetadataReport(null, body, true);
-        } catch (RmesNotAcceptableException e) {
+        } catch (RmesBadRequestException e) {
             if (e.getDetails().contains("Cannot create Sims for a series which already has operations")) {
                 fail("La création d'un SIMS sur une série avec opérations ne devrait plus lever 406 : "
                         + e.getDetails());
@@ -244,16 +243,6 @@ class DocumentationsUtilsTest {
         } catch (Exception ignored) {
             // d'autres exceptions sont attendues car les mocks ne couvrent pas tout le flow
         }
-    }
-
-    @Test
-    void shouldThrowARmesNotAcceptableExceptionWhenSetMetadataReport() {
-        String id = "idExample";
-        String body = "bodyExample";
-        boolean create = false;
-        RmesNotAcceptableException exception = assertThrows(
-                RmesNotAcceptableException.class, () -> documentationsUtils.setMetadataReport(id, body, create));
-        assertTrue(exception.getDetails().contains("{\"code\":861,\"details\":\"IOException: cannot parse input\""));
     }
 
     @Test

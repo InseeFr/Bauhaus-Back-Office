@@ -1,5 +1,6 @@
 package fr.insee.rmes.modules.concepts.concept;
 
+import static fr.insee.rmes.testcontainers.GraphDbTestProperties.registerGestion;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import fr.insee.rmes.testcontainers.WithGraphDBContainer;
@@ -62,9 +63,7 @@ class ConceptCollectionEndToEndTest extends WithGraphDBContainer {
 
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
-        String sesameServer = "http://" + container.getHost() + ":" + container.getMappedPort(7200);
-        registry.add("fr.insee.rmes.bauhaus.sesame.gestion.sesameServer", () -> sesameServer);
-        registry.add("fr.insee.rmes.bauhaus.sesame.gestion.repository", () -> BAUHAUS_TEST_REPOSITORY);
+        registerGestion(registry);
         container
                 .withInitFolder("fr/insee/rmes/modules/concepts/concept")
                 .withTrigFiles("concept-collection-end-to-end-test.trig");

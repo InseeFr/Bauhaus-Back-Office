@@ -40,6 +40,7 @@ class StructurePublicationTest {
     private static final SimpleValueFactory VF = SimpleValueFactory.getInstance();
     private static final String GESTION = "http://gestion/";
     private static final String PUBLICATION = "http://publication/";
+    private static final IRI GRAPH = VF.createIRI("http://rdf.insee.fr/graphes/structures");
 
     @Mock
     RepositoryGestion repoGestion;
@@ -62,16 +63,16 @@ class StructurePublicationTest {
         IRI dimension = VF.createIRI(GESTION + "composants/dimension/d1000");
 
         when(repoGestion.getConnection()).thenReturn(null);
-        when(repoGestion.getStatements(any(), eq(structure)))
+        when(repoGestion.getStatements(any(), eq(structure), eq(GRAPH)))
                 .thenReturn(statements(
                         VF.createStatement(structure, SKOS.NOTATION, VF.createLiteral("dsd1000")),
                         VF.createStatement(structure, QB.COMPONENT, specification)));
-        when(repoGestion.getStatements(any(), eq(specification)))
+        when(repoGestion.getStatements(any(), eq(specification), eq(GRAPH)))
                 .thenReturn(statements(
                         VF.createStatement(specification, QB.DIMENSION, dimension),
                         VF.createStatement(specification, DCTERMS.IDENTIFIER, VF.createLiteral("cs1000"))));
 
-        structurePublication.publish(structure);
+        structurePublication.publish(structure, GRAPH);
 
         Model model = publishedModel();
         IRI publishedStructure = VF.createIRI(PUBLICATION + "structures/dsd1000");
@@ -83,6 +84,7 @@ class StructurePublicationTest {
         assertThat(model.contains(
                         publishedSpecification, QB.DIMENSION, VF.createIRI(PUBLICATION + "composants/dimension/d1000")))
                 .isTrue();
+        assertThat(model.contexts()).containsExactly(GRAPH);
         assertThat(model.contains(publishedSpecification, DCTERMS.IDENTIFIER, VF.createLiteral("cs1000")))
                 .as("l'identifiant d'une spécification reste en gestion")
                 .isFalse();
@@ -93,7 +95,7 @@ class StructurePublicationTest {
     void shouldNotPublishTheManagementOnlyAttributesOfTheStructure() throws RmesException {
         IRI structure = VF.createIRI(GESTION + "structures/dsd1000");
         when(repoGestion.getConnection()).thenReturn(null);
-        when(repoGestion.getStatements(any(), eq(structure)))
+        when(repoGestion.getStatements(any(), eq(structure), eq(GRAPH)))
                 .thenReturn(statements(
                         VF.createStatement(
                                 structure,
@@ -102,7 +104,7 @@ class StructurePublicationTest {
                         VF.createStatement(structure, DC.CREATOR, VF.createLiteral("DG75-F302")),
                         VF.createStatement(structure, DC.CONTRIBUTOR, VF.createLiteral("DG75-F302"))));
 
-        structurePublication.publish(structure);
+        structurePublication.publish(structure, GRAPH);
 
         assertThat(publishedModel()).isEmpty();
     }
@@ -114,7 +116,8 @@ class StructurePublicationTest {
 
     private Model publishedModel() throws RmesException {
         ArgumentCaptor<Model> modelCaptor = ArgumentCaptor.forClass(Model.class);
-        verify(repositoryPublication).publishResource(any(Resource.class), modelCaptor.capture(), eq("Structure"));
+        verify(repositoryPublication)
+                .publishResource(any(Resource.class), modelCaptor.capture(), eq("Structure"), eq(GRAPH));
         return modelCaptor.getValue();
     }
 }
