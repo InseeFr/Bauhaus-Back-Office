@@ -12,7 +12,9 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.exc.MismatchedInputException;
 import tools.jackson.databind.exc.ValueInstantiationException;
@@ -53,6 +55,26 @@ public class ValidationExceptionHandler {
     public ResponseEntity<ApiError> handleInvalidArgument(MethodArgumentNotValidException exception) {
         List<ApiError.FieldError> errors = exception.getBindingResult().getFieldErrors().stream()
                 .map(fieldError -> new ApiError.FieldError(fieldError.getField(), messageOf(fieldError)))
+                .toList();
+        return invalid(errors);
+    }
+
+    /**
+     * Contrainte posée sur le paramètre lui-même plutôt que sur un champ du DTO, comme
+     * {@code @NotEmpty List<String>} : l'erreur porte sur le corps entier, ou sur le paramètre
+     * nommé s'il ne s'agit pas du corps.
+     */
+    @ExceptionHandler(HandlerMethodValidationException.class)
+    public ResponseEntity<ApiError> handleInvalidParameter(HandlerMethodValidationException exception) {
+        List<ApiError.FieldError> errors = exception.getParameterValidationResults().stream()
+                .flatMap(result -> {
+                    String field = result.getMethodParameter().hasParameterAnnotation(RequestBody.class)
+                            ? ApiError.FieldError.WHOLE_BODY
+                            : result.getMethodParameter().getParameterName();
+                    return result.getResolvableErrors().stream()
+                            .map(error -> new ApiError.FieldError(
+                                    field, Objects.requireNonNullElse(error.getDefaultMessage(), INVALID_VALUE)));
+                })
                 .toList();
         return invalid(errors);
     }
