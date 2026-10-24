@@ -20,6 +20,7 @@ import fr.insee.rmes.colectica.client.dto.ColecticaAdvancedItem;
 import fr.insee.rmes.colectica.client.dto.ColecticaAdvancedResponse;
 import fr.insee.rmes.colectica.client.dto.ColecticaTypedSetItem;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.DdiItemNotFoundException;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.InvalidReuseVariablesException;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.MissingSchemeException;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.StudyUnitNotFoundException;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.*;
@@ -5622,6 +5623,201 @@ class DDIRepositoryImplTest {
         assertThat(reqCaptor.getValue().items())
                 .extracting(ColecticaItemResponse::identifier)
                 .contains("pi-copy", "VS_1", "su-1");
+    }
+
+    @Test
+    void reuseVariables_savesNewInstanceInTheSourceStudyUnitReferencingTheSelectedSourceVariables() {
+        // Option B (#1674) : PI, DataRelationship et LogicalRecord neufs, la PI pointant sur la source
+        // via BasedOnObject ; le LogicalRecord référence les variables choisies telles quelles (même
+        // agence, ID, version), sans les réécrire ni toucher au VariableScheme de l'étude.
+        String agencyId = "fr.insee";
+        stubReuseSource(agencyId);
+        ReuseVariablesRequest request =
+                new ReuseVariablesRequest("Nouveau fichier", null, null, "group-1", "fr.insee", List.of("VAR_2"));
+
+        ArgumentCaptor<Ddi4Response> ddi4Captor = ArgumentCaptor.forClass(Ddi4Response.class);
+        when(ddi4ToDdi3Converter.convertDdi4ToDdi3(ddi4Captor.capture()))
+                .thenReturn(new Ddi3Response(
+                        new Ddi3Response.Ddi3Options(List.of("RegisterOrReplace")),
+                        List.of(new Ddi3Response.Ddi3Item(
+                                "pi-type",
+                                agencyId,
+                                "1",
+                                "pi-new",
+                                "<pi/>",
+                                "2026-01-01T00:00:00",
+                                "resp",
+                                false,
+                                false,
+                                false,
+                                "fmt"))));
+        when(colecticaClient.createOrUpdateItems(any())).thenReturn("{}");
+
+        Reference created = ddiRepository.reuseVariables(agencyId, "pi-src", request);
+
+        assertThat(created.id()).isNotEqualTo("pi-src");
+        Ddi4Response saved = ddi4Captor.getValue();
+        Ddi4PhysicalInstance newPhysicalInstance = saved.physicalInstance().getFirst();
+        Ddi4DataRelationship newDataRelationship = saved.dataRelationship().getFirst();
+        LogicalRecord newLogicalRecord = newDataRelationship.logicalRecord().getFirst();
+
+        assertThat(newPhysicalInstance.id()).isEqualTo(created.id());
+        assertThat(newPhysicalInstance.version()).isEqualTo("1");
+        assertThat(newPhysicalInstance.citation().title()).containsExactly(new LangString("en-GB", "Nouveau fichier"));
+        assertThat(newPhysicalInstance.basedOnObject().basedOnReferences())
+                .containsExactly(Reference.of(agencyId, "pi-src", "3", "PhysicalInstance"));
+        assertThat(newDataRelationship.id()).isNotEqualTo("dr-src");
+        assertThat(newDataRelationship.label()).containsExactly(new LangString("en-GB", "Structure : Nouveau fichier"));
+        assertThat(newLogicalRecord.id()).isNotEqualTo("lr-src");
+        assertThat(newLogicalRecord.variablesInRecord().variableUsedReference())
+                .containsExactly(Reference.of(agencyId, "VAR_2", "4", "Variable"));
+        // Variables réutilisées, pas copiées : aucune n'est réenregistrée, le VariableScheme non plus.
+        assertThat(saved.variable()).isNull();
+
+        ArgumentCaptor<ColecticaCreateItemRequest> reqCaptor =
+                ArgumentCaptor.forClass(ColecticaCreateItemRequest.class);
+        verify(colecticaClient).createOrUpdateItems(reqCaptor.capture());
+        assertThat(reqCaptor.getValue().items())
+                .extracting(ColecticaItemResponse::identifier)
+                .containsExactlyInAnyOrder("pi-new", "su-1");
+        ColecticaItemResponse studyUnit = reqCaptor.getValue().items().stream()
+                .filter(item -> item.identifier().equals("su-1"))
+                .findFirst()
+                .orElseThrow();
+        assertThat(studyUnit.item()).contains("<r:ID>" + created.id() + "</r:ID>");
+    }
+
+    @Test
+    void reuseVariables_rejectsAGroupOtherThanTheSourceOne() {
+        // Le contrôle CREATE porte sur le groupe du corps : il doit être celui de la source, sans quoi
+        // un droit sur un autre groupe suffirait à créer un fichier dans l'étude de la source.
+        stubReuseSource("fr.insee");
+        ReuseVariablesRequest request =
+                new ReuseVariablesRequest("Nouveau fichier", null, null, "group-2", "fr.insee", List.of("VAR_1"));
+
+        assertThatThrownBy(() -> ddiRepository.reuseVariables("fr.insee", "pi-src", request))
+                .isInstanceOf(InvalidReuseVariablesException.class)
+                .satisfies(e -> assertThat(((InvalidReuseVariablesException) e).code())
+                        .isEqualTo(InvalidReuseVariablesException.Code.REUSE_VARIABLES_GROUP_MISMATCH));
+        verify(colecticaClient, never()).createOrUpdateItems(any());
+    }
+
+    @Test
+    void reuseVariables_rejectsAVariableTheSourceDoesNotUse() {
+        stubReuseSource("fr.insee");
+        ReuseVariablesRequest request = new ReuseVariablesRequest(
+                "Nouveau fichier", null, null, "group-1", "fr.insee", List.of("VAR_1", "VAR_UNKNOWN"));
+
+        assertThatThrownBy(() -> ddiRepository.reuseVariables("fr.insee", "pi-src", request))
+                .isInstanceOf(InvalidReuseVariablesException.class)
+                .satisfies(e -> {
+                    InvalidReuseVariablesException ex = (InvalidReuseVariablesException) e;
+                    assertThat(ex.code()).isEqualTo(InvalidReuseVariablesException.Code.REUSE_VARIABLES_NOT_IN_SOURCE);
+                    assertThat(ex.params()).isEqualTo(Map.of("variables", "VAR_UNKNOWN"));
+                });
+        verify(colecticaClient, never()).createOrUpdateItems(any());
+    }
+
+    /** Source de la réutilisation : pi-src (v3), rangée sous su-1 / group-1, avec VAR_1 (v1) et VAR_2 (v4). */
+    private void stubReuseSource(String agencyId) {
+        lenient().when(instanceConfiguration.itemTypes()).thenReturn(Map.of("StudyUnit", STUDY_UNIT_ITEM_TYPE));
+        lenient().when(instanceConfiguration.itemFormat()).thenReturn("fmt");
+        Ddi4PhysicalInstance sourcePhysicalInstance = new Ddi4PhysicalInstance(
+                Ddi4PhysicalInstance.TYPE,
+                CogsDate.ofDateTime("2026-01-01T00:00:00"),
+                "urn:ddi:fr.insee:pi-src:3",
+                agencyId,
+                "pi-src",
+                "3",
+                null,
+                new Citation(LangStrings.of("en-GB", "Source PI")),
+                List.of(Reference.of(agencyId, "dr-src", "1", "DataRelationship")));
+        Ddi4DataRelationship sourceDataRelationship = new Ddi4DataRelationship(
+                Ddi4DataRelationship.TYPE,
+                CogsDate.ofDateTime("2026-01-01T00:00:00"),
+                "urn:ddi:fr.insee:dr-src:1",
+                agencyId,
+                "dr-src",
+                "1",
+                null,
+                LangStrings.of("en-GB", "Source DR"),
+                List.of(new LogicalRecord(
+                        LogicalRecord.TYPE,
+                        "urn:ddi:fr.insee:lr-src:1",
+                        agencyId,
+                        "lr-src",
+                        "1",
+                        LangStrings.of("en-GB", "Source LR"),
+                        new VariablesInRecord(List.of(
+                                Reference.of(agencyId, "VAR_1", "1", "Variable"),
+                                Reference.of(agencyId, "VAR_2", "4", "Variable"))))));
+        Ddi4Response sourceInstance = new Ddi4Response(
+                "ddi:4.0",
+                List.of(Reference.of(agencyId, "pi-src", "3", "PhysicalInstance")),
+                List.of(sourcePhysicalInstance),
+                List.of(sourceDataRelationship),
+                List.of(sourceVariable(agencyId, "VAR_1", "1"), sourceVariable(agencyId, "VAR_2", "4")),
+                null,
+                null,
+                null);
+        stubPhysicalInstanceSet(new ColecticaSetItem[] {new ColecticaSetItem("pi-src", 3, agencyId)});
+        lenient().when(colecticaClient.getDescriptions(anyList())).thenReturn(new ColecticaItemResponse[] {
+            new ColecticaItemResponse(
+                    "a51e85bb-6259-4488-8df2-f08cb43485f8",
+                    agencyId,
+                    3,
+                    "pi-src",
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><PhysicalInstance/></Fragment>",
+                    null,
+                    null,
+                    false,
+                    false,
+                    false,
+                    null)
+        });
+        lenient()
+                .when(ddi3ToDdi4Converter.convertDdi3ToDdi4(any(Ddi3Response.class), eq("ddi:4.0")))
+                .thenReturn(sourceInstance);
+        when(colecticaClient.findRelatedItems(
+                        RelationshipDirection.BY_OBJECT,
+                        new ItemReference(agencyId, "pi-src"),
+                        List.of(STUDY_UNIT_ITEM_TYPE)))
+                .thenReturn(List.of(labelItem(STUDY_UNIT_ITEM_TYPE, agencyId, "su-1", "Enquête Emploi")));
+        when(colecticaClient.findRelatedItems(
+                        RelationshipDirection.BY_OBJECT, new ItemReference(agencyId, "su-1"), List.of(GROUP_ITEM_TYPE)))
+                .thenReturn(List.of(labelItem(GROUP_ITEM_TYPE, agencyId, "group-1", "Série Emploi")));
+        lenient()
+                .when(colecticaClient.getItem(agencyId, "su-1", null))
+                .thenReturn(new ColecticaItemResponse(
+                        STUDY_UNIT_ITEM_TYPE,
+                        agencyId,
+                        2,
+                        "su-1",
+                        "<Fragment xmlns:r=\"ddi:reusable:3_3\" xmlns=\"ddi:instance:3_3\">"
+                                + "<StudyUnit xmlns=\"ddi:studyunit:3_3\" isUniversallyUnique=\"true\"/>"
+                                + "</Fragment>",
+                        "2026-01-01T00:00:00",
+                        "resp",
+                        false,
+                        false,
+                        false,
+                        "fmt"));
+    }
+
+    private static Ddi4Variable sourceVariable(String agencyId, String id, String version) {
+        return new Ddi4Variable(
+                Ddi4Variable.TYPE,
+                CogsDate.ofDateTime("2026-01-01T00:00:00"),
+                Reference.synthesizeUrn(agencyId, id, version),
+                agencyId,
+                id,
+                version,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null);
     }
 
     // --- Plus de création à la volée : les LogicalProducts et schemes sont créés en amont (init,

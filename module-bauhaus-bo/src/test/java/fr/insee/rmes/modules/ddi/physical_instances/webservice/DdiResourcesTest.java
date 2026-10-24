@@ -383,6 +383,25 @@ class DdiResourcesTest {
     }
 
     @Test
+    void shouldCreatePhysicalInstanceReusingSourceVariables() {
+        PhysicalInstanceReuseVariablesRequest request = new PhysicalInstanceReuseVariablesRequest(
+                "New PI", "DR", "LR", "group-1", "fr.insee", List.of("VAR_1", "VAR_2"));
+        Ddi4Response created = createMockDdi4Response();
+        when(ddiService.reuseVariables(
+                        "fr.insee",
+                        "pi-src",
+                        new ReuseVariablesRequest(
+                                "New PI", "DR", "LR", "group-1", "fr.insee", List.of("VAR_1", "VAR_2"))))
+                .thenReturn(created);
+
+        ResponseEntity<Ddi4Response> result = ddiResources.reuseVariables("fr.insee", "pi-src", request);
+
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertEquals(MediaType.APPLICATION_JSON, result.getHeaders().getContentType());
+        assertEquals(created, result.getBody());
+    }
+
+    @Test
     void shouldCreatePhysicalInstance() {
         // Given
         CreatePhysicalInstanceRequest request = new CreatePhysicalInstanceRequest(

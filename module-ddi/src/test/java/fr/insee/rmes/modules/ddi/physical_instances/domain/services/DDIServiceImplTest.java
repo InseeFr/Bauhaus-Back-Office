@@ -48,6 +48,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialPhysical
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceParents;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceSearchRow;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.ReuseVariablesRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UpdatePhysicalInstanceRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UsageItem;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.VariableRepresentation;
@@ -595,6 +596,20 @@ class DDIServiceImplTest {
         Ddi4Response result = ddiService.duplicatePhysicalInstance("fr.insee", "pi-src", request);
 
         assertEquals(copy, result);
+    }
+
+    @Test
+    void shouldReturnTheNewInstanceAfterReusingVariables() {
+        ReuseVariablesRequest request =
+                new ReuseVariablesRequest("New PI", null, null, "group-1", "fr.insee", List.of("VAR_1"));
+        when(ddiRepository.reuseVariables("fr.insee", "pi-src", request))
+                .thenReturn(Reference.of("fr.insee", "pi-new", "1", "PhysicalInstance"));
+        Ddi4Response created = new Ddi4Response("new-schema", null, null, null, null, null, null, null);
+        when(ddiRepository.getPhysicalInstance("fr.insee", "pi-new")).thenReturn(created);
+
+        Ddi4Response result = ddiService.reuseVariables("fr.insee", "pi-src", request);
+
+        assertEquals(created, result);
     }
 
     @Test

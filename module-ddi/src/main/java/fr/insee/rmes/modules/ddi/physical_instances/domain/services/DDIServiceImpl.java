@@ -36,6 +36,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanc
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceParents;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceSearchRow;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.ReuseVariablesRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UpdatePhysicalInstanceRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.DDIRepository;
@@ -368,6 +369,19 @@ public class DDIServiceImpl implements DDIService {
         }
         Reference copy = ddiRepository.duplicatePhysicalInstance(agencyId, id, request);
         return ddiRepository.getPhysicalInstance(copy.agency(), copy.id());
+    }
+
+    @Override
+    public Ddi4Response reuseVariables(String agencyId, String id, ReuseVariablesRequest request) {
+        if (logger.isInfoEnabled()) {
+            logger.info(
+                    "Creating a physical instance reusing {} variables of {}/{}",
+                    request.variableIds().size(),
+                    forLog(agencyId),
+                    forLog(id));
+        }
+        Reference created = ddiRepository.reuseVariables(agencyId, id, request);
+        return ddiRepository.getPhysicalInstance(created.agency(), created.id());
     }
 
     @Override

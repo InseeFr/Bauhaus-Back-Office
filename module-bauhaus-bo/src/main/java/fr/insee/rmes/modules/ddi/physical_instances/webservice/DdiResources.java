@@ -291,6 +291,21 @@ public class DdiResources {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(copy);
     }
 
+    /**
+     * Nouvelle PhysicalInstance dans l'Étude de la source, réutilisant une partie de ses variables
+     * sans les copier (#1674).
+     */
+    @PostMapping("/physical-instance/{agencyId}/{id}/reuse-variables")
+    @PreAuthorize(
+            "@propertiesAccessPrivilegesChecker.hasAccess('DDI_PHYSICALINSTANCE', 'CREATE', #request.groupAgency + '|' + #request.groupId, authentication.principal)")
+    public ResponseEntity<Ddi4Response> reuseVariables(
+            @PathVariable String agencyId,
+            @PathVariable String id,
+            @Valid @RequestBody PhysicalInstanceReuseVariablesRequest request) {
+        Ddi4Response created = ddiService.reuseVariables(agencyId, id, request.toDomain());
+        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(created);
+    }
+
     @PutMapping("/physical-instance/{agencyId}/{id}")
     @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.UPDATE)
     public ResponseEntity<Void> replacePhysicalInstance(
