@@ -25,6 +25,7 @@ import fr.insee.rmes.model.operations.Indicator;
 import fr.insee.rmes.modules.operations.indicators.domain.model.IndicatorLink;
 import fr.insee.rmes.modules.operations.indicators.domain.model.commands.IndicatorCommand;
 import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
+import fr.insee.rmes.modules.shared_kernel.infrastructure.publication.ObjectPublished;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationIndicatorsQueries;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.utils.DateUtils;
@@ -43,6 +44,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -67,6 +69,7 @@ public class IndicatorsRepository {
     private final BauhausLanguagesProperties languages;
     private final OperationIndicatorsQueries operationIndicatorsQueries;
     private final OrganisationLookup organisationLookup;
+    private final ApplicationEventPublisher events;
 
     public IndicatorsRepository(
             RepositoryGestion repositoryGestion,
@@ -79,7 +82,8 @@ public class IndicatorsRepository {
             BauhausUriBuilder bauhausUriBuilder,
             BauhausLanguagesProperties languages,
             OperationIndicatorsQueries operationIndicatorsQueries,
-            OrganisationLookup organisationLookup) {
+            OrganisationLookup organisationLookup,
+            ApplicationEventPublisher events) {
         this.repositoryGestion = repositoryGestion;
         this.codeListService = codeListService;
         this.organizationsService = organizationsService;
@@ -91,6 +95,7 @@ public class IndicatorsRepository {
         this.languages = languages;
         this.operationIndicatorsQueries = operationIndicatorsQueries;
         this.organisationLookup = organisationLookup;
+        this.events = events;
     }
 
     void validate(Indicator indicator) throws RmesException {
@@ -430,26 +435,9 @@ public class IndicatorsRepository {
         indicatorPublication.publish(id);
 
         IRI indicatorURI = RdfUtils.objectIRI(ObjectType.INDICATOR, id);
-
-        Model model = new LinkedHashModel();
-        model.add(
-                indicatorURI,
-                INSEE.VALIDATION_STATE,
-                RdfUtils.setLiteralString(ValidationStatus.VALIDATED),
-                RdfUtils.productsGraph());
-        model.remove(
-                indicatorURI,
-                INSEE.VALIDATION_STATE,
-                RdfUtils.setLiteralString(ValidationStatus.UNPUBLISHED),
-                RdfUtils.productsGraph());
-        model.remove(
-                indicatorURI,
-                INSEE.VALIDATION_STATE,
-                RdfUtils.setLiteralString(ValidationStatus.MODIFIED),
-                RdfUtils.productsGraph());
         logger.info("Validate indicator : {}", indicatorURI);
 
-        repositoryGestion.objectValidation(indicatorURI, model);
+        events.publishEvent(new ObjectPublished(indicatorURI, RdfUtils.productsGraph()));
     }
 
     private void addOneWayLink(Model model, IRI indicURI, List<OperationsLink> links, IRI linkPredicate) {
