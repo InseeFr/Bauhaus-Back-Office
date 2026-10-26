@@ -41,7 +41,9 @@ class ConfiguredGroupsCodeListRefsProviderTest {
             "token",
             null,
             null,
-            DEFAULT_AGENCY);
+            DEFAULT_AGENCY,
+            null,
+            null);
 
     private ConfiguredGroupsCodeListRefsProvider provider(ItemReference... groups) {
         return new ConfiguredGroupsCodeListRefsProvider(instanceConfiguration, List.of(groups), colecticaClient);

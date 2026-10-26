@@ -13,7 +13,17 @@ final class ColecticaTestConfigurations {
     /** Instance {@code https://example.com}, paquet {@code fr.insee/pkg-1}, cache d'une heure. */
     static ColecticaConfiguration colecticaConfiguration(Map<String, String> itemTypes) {
         var server = new ColecticaConfiguration.ColecticaInstanceConfiguration(
-                "https://example.com", "/api/v1/", itemTypes, "resp", "format", "password", "user", "pass", "fr.insee");
+                "https://example.com",
+                "/api/v1/",
+                itemTypes,
+                "resp",
+                "format",
+                "password",
+                "user",
+                "pass",
+                "fr.insee",
+                null,
+                null);
         return new ColecticaConfiguration(
                 List.of("fr-FR"),
                 server,

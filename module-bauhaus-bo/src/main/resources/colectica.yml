@@ -34,6 +34,12 @@ fr.insee.rmes.bauhaus.colectica:
     apiPath: /api/v1/
     defaultAgencyId: fr.insee
 
+    # Timeouts des appels HTTP vers Colectica (format Spring Duration). Absents : 5s pour ouvrir la
+    # connexion, 2m pour attendre la réponse (les lectures de set et les écritures de gros items
+    # sont lentes). Sans eux, un Colectica qui ne répond plus bloquait le thread de la requête.
+    # connectTimeout: 5s
+    # readTimeout: 2m
+
     # Authentication mode:
     # - "password": Uses username/password credentials to obtain a token from /token/createtoken endpoint.
     #               The token is cached and automatically refreshed on 401/403 errors.

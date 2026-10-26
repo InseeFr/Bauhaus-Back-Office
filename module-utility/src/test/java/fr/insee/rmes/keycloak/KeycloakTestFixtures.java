@@ -16,7 +16,8 @@ final class KeycloakTestFixtures {
     private KeycloakTestFixtures() {}
 
     static KeycloakProperties properties() {
-        return new KeycloakProperties(new KeycloakProperties.Server("keycloak.test"), DEFAULT_REALM, COLECTICA_REALM);
+        return new KeycloakProperties(
+                new KeycloakProperties.Server("keycloak.test", null, null), DEFAULT_REALM, COLECTICA_REALM);
     }
 
     static KeycloakProperties propertiesWithoutServer() {

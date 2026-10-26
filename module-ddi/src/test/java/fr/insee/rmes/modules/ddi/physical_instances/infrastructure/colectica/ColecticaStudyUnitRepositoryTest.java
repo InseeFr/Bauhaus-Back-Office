@@ -31,7 +31,9 @@ class ColecticaStudyUnitRepositoryTest {
                 "token",
                 null,
                 null,
-                "fr.insee");
+                "fr.insee",
+                null,
+                null);
         return spy(new ColecticaStudyUnitRepository(
                 mock(ColecticaClient.class),
                 instanceConfig,

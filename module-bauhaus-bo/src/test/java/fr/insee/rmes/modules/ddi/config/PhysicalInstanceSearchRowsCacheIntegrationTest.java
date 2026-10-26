@@ -86,7 +86,9 @@ class PhysicalInstanceSearchRowsCacheIntegrationTest {
                     "password",
                     "user",
                     "pass",
-                    AGENCY);
+                    AGENCY,
+                    null,
+                    null);
             return new ColecticaConfiguration(
                     List.of("fr-FR"),
                     server,
