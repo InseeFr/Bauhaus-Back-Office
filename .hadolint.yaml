@@ -7,7 +7,7 @@
 # `continue-on-error` dans le workflow.
 
 # Dette mesurée le 2026-09-24 : nulle à ce niveau. Restent quatre `info`, DL3059
-# (RUN consécutifs, lignes 11 et 28 à 30).
+# (RUN consécutifs, lignes 11 et 32 à 34).
 # À garder en phase avec `hadolint-failure-threshold` du commons (`warning` par
 # défaut) : l'action passe son propre drapeau, elle ne lit pas celui-ci.
 failure-threshold: warning

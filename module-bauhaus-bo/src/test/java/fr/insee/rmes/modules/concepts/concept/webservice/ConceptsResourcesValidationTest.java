@@ -1,6 +1,7 @@
 package fr.insee.rmes.modules.concepts.concept.webservice;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
@@ -151,5 +152,29 @@ class ConceptsResourcesValidationTest {
         JSONAssert.assertEquals("""
                 {"prefLabelLg1": "Concept",
                  "disseminationStatus": "http://id.insee.fr/codes/base/statutDiffusion/Prive"}""", forwarded.getValue(), JSONCompareMode.STRICT);
+    }
+
+    @Test
+    void validateConcepts_whenTheListIsEmpty_shouldReturnBadRequest() throws Throwable {
+        mockMvc.perform(put("/concepts/{id}/validate", "c1000")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("[]"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("INVALID_REQUEST_BODY"))
+                .andExpect(jsonPath("$.errors[0].field").value("body"));
+
+        verify(conceptsService, never()).validateConcepts(anyList());
+    }
+
+    @Test
+    void validateConcepts_whenAnIdentifierIsBlank_shouldReturnBadRequest() throws Throwable {
+        mockMvc.perform(put("/concepts/{id}/validate", "c1000")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("[\"c1000\", \" \"]"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("INVALID_REQUEST_BODY"))
+                .andExpect(jsonPath("$.errors[0].field").value("body"));
+
+        verify(conceptsService, never()).validateConcepts(anyList());
     }
 }

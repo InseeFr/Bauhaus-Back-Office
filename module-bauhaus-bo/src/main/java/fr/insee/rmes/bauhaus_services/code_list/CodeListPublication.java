@@ -92,8 +92,6 @@ public class CodeListPublication extends RdfService {
 
             Resource codeListPublishResource = publicationUtils.tranformBaseURIToPublish(codeListOrCode);
             repositoryPublication.publishResource(codeListPublishResource, model, Constants.CODELIST, graph);
-        } catch (RmesException e) {
-            throw new RuntimeException(e);
         } finally {
             repoGestion.closeStatements(statements);
         }
