@@ -2188,6 +2188,36 @@ class DDIRepositoryImplTest {
         assertNull(result);
     }
 
+    /** #1671 : un item inconnu de Colectica (404) est absent, pas une erreur qui ressort en 401. */
+    @Test
+    void getItemXml_returnsNullWhenColecticaDoesNotKnowTheItem() {
+        String id = "3b317f4c-79ae-422c-8cd4-04ba9d2e4be4";
+        when(colecticaClient.getItem("fr.insee", id, "1"))
+                .thenThrow(HttpClientErrorException.create(HttpStatus.NOT_FOUND, "Not Found", null, null, null));
+        when(colecticaClient.getItem("fr.insee", id, null))
+                .thenThrow(HttpClientErrorException.create(HttpStatus.NOT_FOUND, "Not Found", null, null, null));
+
+        assertNull(ddiRepository.getItemXml("fr.insee", id, "1"));
+        assertNull(ddiRepository.getItemXml("fr.insee", id));
+    }
+
+    /** Colectica répond 400 à un identifiant qui n'est pas un UUID : l'item ne peut pas exister. */
+    @Test
+    void getItemXml_returnsNullWithoutCallingColecticaWhenTheIdIsNotAnIdentifier() {
+        assertNull(ddiRepository.getItemXml("fr.insee", "unknown", "1"));
+        assertNull(ddiRepository.getItemXml("fr.insee", "unknown"));
+
+        verify(colecticaClient, never()).getItem(any(), any(), any());
+    }
+
+    /** Colectica répond 400 à une version non numérique : l'item ne peut pas exister. */
+    @Test
+    void getItemXml_returnsNullWithoutCallingColecticaWhenTheVersionIsNotANumber() {
+        assertNull(ddiRepository.getItemXml("fr.insee", "3b317f4c-79ae-422c-8cd4-04ba9d2e4be4", "abc"));
+
+        verify(colecticaClient, never()).getItem(any(), any(), any());
+    }
+
     /**
      * Une StudyUnit sans PhysicalInstance sort quand même dans une {@code FragmentInstance} : le
      * contrat du endpoint est multi-fragments depuis #1145, indépendamment du nombre de fragments.
