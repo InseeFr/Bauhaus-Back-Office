@@ -16,6 +16,8 @@ import org.eclipse.rdf4j.model.*;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.impl.TreeModel;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
+import org.eclipse.rdf4j.query.QueryLanguage;
+import org.eclipse.rdf4j.query.Update;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
@@ -326,10 +328,14 @@ class RepositoryGestionTest {
         IRI resourceURI = valueFactory.createIRI("http://example.org/resource");
         Model model = new TreeModel();
 
+        Update update = mock(Update.class);
+        when(connection.prepareUpdate(eq(QueryLanguage.SPARQL), anyString())).thenReturn(update);
+
         repositoryGestion.objectValidation(resourceURI, model);
 
-        verify(connection).remove(resourceURI, INSEE.VALIDATION_STATE, null);
-        verify(connection).remove(resourceURI, INSEE.IS_VALIDATED, null);
+        verify(connection).prepareUpdate(QueryLanguage.SPARQL, statusRemoval(resourceURI, INSEE.VALIDATION_STATE));
+        verify(connection).prepareUpdate(QueryLanguage.SPARQL, statusRemoval(resourceURI, INSEE.IS_VALIDATED));
+        verify(update, times(2)).execute();
         verify(connection).add(model);
         verify(connection).close();
     }
@@ -341,14 +347,21 @@ class RepositoryGestionTest {
                 valueFactory.createIRI("http://example.org/resource2"));
         Model model = new TreeModel();
 
+        Update update = mock(Update.class);
+        when(connection.prepareUpdate(eq(QueryLanguage.SPARQL), anyString())).thenReturn(update);
+
         repositoryGestion.objectsValidation(collectionsToValidate, model);
 
         for (IRI item : collectionsToValidate) {
-            verify(connection).remove(item, INSEE.VALIDATION_STATE, null);
-            verify(connection).remove(item, INSEE.IS_VALIDATED, null);
+            verify(connection).prepareUpdate(QueryLanguage.SPARQL, statusRemoval(item, INSEE.VALIDATION_STATE));
+            verify(connection).prepareUpdate(QueryLanguage.SPARQL, statusRemoval(item, INSEE.IS_VALIDATED));
         }
         verify(connection).add(model);
         verify(connection).close();
+    }
+
+    private static String statusRemoval(IRI object, IRI predicate) {
+        return "DELETE WHERE { GRAPH ?graph { <%s> <%s> ?value } }".formatted(object, predicate);
     }
 
     @Test
