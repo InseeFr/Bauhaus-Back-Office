@@ -1,12 +1,17 @@
 package fr.insee.rmes.model.operations.documentations;
 
+import static fr.insee.rmes.modules.commons.webservice.ValidationMessages.REQUIRED;
+
 import com.fasterxml.jackson.annotation.JsonFormat;
+import jakarta.validation.constraints.NotBlank;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 
 public class DocumentationRubric {
 
+    // Les deux contrôles que faisait le service à l'écriture (attribut inconnu, rubrique sans type).
+    @NotBlank(message = REQUIRED)
     private String idAttribute;
 
     @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
@@ -14,9 +19,16 @@ public class DocumentationRubric {
 
     private String labelLg1;
     private String labelLg2;
+
     private String codeList;
+
+    @NotBlank(message = REQUIRED)
     private String rangeType;
+
+    @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
     private List<Document> documentsLg1;
+
+    @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
     private List<Document> documentsLg2;
 
     // Used for geography only

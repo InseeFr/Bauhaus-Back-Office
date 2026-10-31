@@ -20,6 +20,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 import org.springframework.http.HttpHeaders;
@@ -62,6 +63,21 @@ public class ColecticaClient {
     }
 
     // --- public API (no token parameter: auth is handled internally) ---
+
+    /**
+     * Checks that Colectica answers an authenticated request, via the cheapest search: {@code POST _query}
+     * capped to one result. Throws on any authentication or transport failure.
+     */
+    public void ping() {
+        withAuth(token -> restClient
+                .post()
+                .uri(baseApiUrl + "_query")
+                .contentType(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token)
+                .body(Map.of("itemTypes", List.of(), "maxResults", 1, "searchLatestVersion", true))
+                .retrieve()
+                .toBodilessEntity());
+    }
 
     /**
      * Searches items by type via {@code POST _query} (latest version).

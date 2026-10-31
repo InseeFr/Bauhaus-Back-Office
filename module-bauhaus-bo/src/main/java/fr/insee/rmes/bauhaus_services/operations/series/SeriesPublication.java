@@ -9,7 +9,6 @@ import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
-import fr.insee.rmes.graphdb.ontologies.DCTERMS;
 import fr.insee.rmes.json.JSONUtils;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationSeriesQueries;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
@@ -18,6 +17,7 @@ import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
+import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.json.JSONArray;
@@ -27,16 +27,21 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class SeriesPublication {
 
+    /** dcterms:subject : les thèmes pointent, comme dcat:theme des jeux de données, vers le concept publié. */
+    private static final String THEME = "subject";
+
     private static final Set<String> URI_PREDICATES_TO_TRANSFORM = Set.of(
             Constants.ISPARTOF,
             Constants.SEEALSO,
             Constants.REPLACES,
             Constants.ISREPLACEDBY,
             Constants.DATA_COLLECTOR,
+            Constants.CREATOR,
             Constants.CONTRIBUTOR,
             Constants.PUBLISHER,
             Constants.ACCRUAL_PERIODICITY,
-            Constants.TYPE);
+            Constants.TYPE,
+            THEME);
 
     private static final Set<String> PREDICATES_TO_IGNORE =
             Set.of(Constants.ISVALIDATED, Constants.VALIDATION_STATE, Constants.HAS_PART);
@@ -67,7 +72,7 @@ public class SeriesPublication {
         }
     }
 
-    public void publishSeries(String id, JSONObject series) throws RmesException {
+    public void publishSeries(String id, JSONObject series, Resource graph) throws RmesException {
         PublicationUtils.rejectIfAlreadyPublished(
                 "Series", id, operationsParentRepository.getFamOpSerValidationStatus(id));
 
@@ -85,16 +90,19 @@ public class SeriesPublication {
         Resource resource = RdfUtils.seriesIRI(id);
 
         try (RepositoryConnection con = repoGestion.getConnection();
-                RepositoryResult<Statement> statements = repoGestion.getStatements(con, resource);
-                RepositoryResult<Statement> hasPartStatements = repoGestion.getHasPartStatements(con, resource);
-                RepositoryResult<Statement> replacesStatements = repoGestion.getReplacesStatements(con, resource);
+                RepositoryResult<Statement> statements = repoGestion.getStatements(con, resource, graph);
+                RepositoryResult<Statement> hasPartStatements =
+                        repoGestion.getStatementsPredicateObject(con, DCTERMS.HAS_PART, resource, graph);
+                RepositoryResult<Statement> replacesStatements =
+                        repoGestion.getStatementsPredicateObject(con, DCTERMS.REPLACES, resource, graph);
                 RepositoryResult<Statement> isReplacedByStatements =
-                        repoGestion.getIsReplacedByStatements(con, resource)) {
+                        repoGestion.getStatementsPredicateObject(con, DCTERMS.IS_REPLACED_BY, resource, graph)) {
             checkIfSeriesExist(id, statements);
-            readAllTriplets(statements, model, hasPartStatements, replacesStatements, isReplacedByStatements, resource);
+            readAllTriplets(
+                    statements, model, hasPartStatements, replacesStatements, isReplacedByStatements, resource, graph);
         }
         Resource seriesToPublishResource = publicationUtils.tranformBaseURIToPublish(resource);
-        repositoryPublication.publishResource(seriesToPublishResource, model, "serie");
+        repositoryPublication.publishResource(seriesToPublishResource, model, "serie", graph);
     }
 
     private void readAllTriplets(
@@ -103,33 +111,35 @@ public class SeriesPublication {
             RepositoryResult<Statement> hasPartStatements,
             RepositoryResult<Statement> replacesStatements,
             RepositoryResult<Statement> isReplacedByStatements,
-            Resource resource)
+            Resource resource,
+            Resource graph)
             throws RmesException {
         while (statements.hasNext()) {
             Statement st = statements.next();
             String predicate = RdfUtils.toString(st.getPredicate());
 
             if (URI_PREDICATES_TO_TRANSFORM.stream().anyMatch(predicate::endsWith)) {
-                transformSubjectAndObject(model, st);
+                transformSubjectAndObject(model, st, graph);
             } else if (PREDICATES_TO_IGNORE.stream().noneMatch(predicate::endsWith)) {
                 model.add(
                         publicationUtils.tranformBaseURIToPublish(st.getSubject()),
                         st.getPredicate(),
                         st.getObject(),
-                        st.getContext());
+                        graph);
             }
-            addStatementsToModel(model, hasPartStatements);
-            addStatementsToModel(model, replacesStatements);
-            addStatementsToModel(model, isReplacedByStatements);
+            addStatementsToModel(model, hasPartStatements, graph);
+            addStatementsToModel(model, replacesStatements, graph);
+            addStatementsToModel(model, isReplacedByStatements, graph);
         }
 
         /*
          We have to query all published operations linked to this series and publish all of them
         */
-        addOperationsWhoHavePartWithToModel(resource, model);
+        addOperationsWhoHavePartWithToModel(resource, model, graph);
     }
 
-    private void addOperationsWhoHavePartWithToModel(Resource resource, Model model) throws RmesException {
+    private void addOperationsWhoHavePartWithToModel(Resource resource, Model model, Resource graph)
+            throws RmesException {
         JSONArray operations = repoGestion.getResponseAsArray(
                 operationSeriesQueries.getPublishedOperationsForSeries(resource.toString()));
         JSONUtils.stream(operations)
@@ -138,21 +148,21 @@ public class SeriesPublication {
                         publicationUtils.tranformBaseURIToPublish(resource),
                         DCTERMS.HAS_PART,
                         publicationUtils.tranformBaseURIToPublish(RdfUtils.createIRI(iri)),
-                        RdfUtils.operationsGraph()));
+                        graph));
     }
 
-    public void addStatementsToModel(Model model, RepositoryResult<Statement> statements) {
+    public void addStatementsToModel(Model model, RepositoryResult<Statement> statements, Resource graph) {
         while (statements.hasNext()) {
             Statement statement = statements.next();
-            transformSubjectAndObject(model, statement);
+            transformSubjectAndObject(model, statement, graph);
         }
     }
 
-    public void transformSubjectAndObject(Model model, Statement statement) {
+    public void transformSubjectAndObject(Model model, Statement statement, Resource graph) {
         model.add(
                 publicationUtils.tranformBaseURIToPublish(statement.getSubject()),
                 statement.getPredicate(),
                 publicationUtils.tranformBaseURIToPublish((Resource) statement.getObject()),
-                statement.getContext());
+                graph);
     }
 }

@@ -82,7 +82,8 @@ class DdiExceptionHandlerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.message").value("No study unit found for physical instance fr.insee/pi-111"));
+                .andExpect(jsonPath("$.message").value("No study unit found for physical instance fr.insee/pi-111"))
+                .andExpect(jsonPath("$.code").value("DDI_STUDY_UNIT_NOT_FOUND"));
     }
 
     @Test

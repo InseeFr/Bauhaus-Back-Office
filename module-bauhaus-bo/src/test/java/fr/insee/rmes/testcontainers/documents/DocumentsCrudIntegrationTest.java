@@ -1,74 +1,54 @@
 package fr.insee.rmes.testcontainers.documents;
 
-import static fr.insee.rmes.PropertiesKeys.DOCUMENTS_BASE_URI;
-import static fr.insee.rmes.PropertiesKeys.LINKS_BASE_URI;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.mock;
 
 import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.BauhausUriProperties;
-import fr.insee.rmes.Constants;
-import fr.insee.rmes.DocumentsStorageProperties;
-import fr.insee.rmes.bauhaus_services.DocumentsService;
-import fr.insee.rmes.bauhaus_services.operations.OperationsParentRepository;
-import fr.insee.rmes.bauhaus_services.operations.documentations.documents.DocumentsImpl;
-import fr.insee.rmes.bauhaus_services.operations.documentations.documents.DocumentsUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
-import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.exceptions.ErrorCodes;
-import fr.insee.rmes.exceptions.RmesBadRequestException;
-import fr.insee.rmes.exceptions.RmesNotAcceptableException;
-import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.graphdb.RepositoryInitiator;
 import fr.insee.rmes.graphdb.RepositoryUtils;
-import fr.insee.rmes.json.JSONUtils;
-import fr.insee.rmes.modules.commons.configuration.StorageProperties;
 import fr.insee.rmes.modules.commons.infrastructure.filessystem.FileSystemOperation;
-import fr.insee.rmes.persistance.sparql_queries.operations.OperationDocumentsQueries;
+import fr.insee.rmes.modules.operations.documents.domain.DomainDocumentManagementService;
+import fr.insee.rmes.modules.operations.documents.domain.exceptions.DocumentNotFoundException;
+import fr.insee.rmes.modules.operations.documents.domain.exceptions.DocumentRuleViolationException;
+import fr.insee.rmes.modules.operations.documents.domain.exceptions.DocumentRuleViolationException.Violation;
+import fr.insee.rmes.modules.operations.documents.domain.model.DocumentForm;
+import fr.insee.rmes.modules.operations.documents.domain.model.DocumentKind;
+import fr.insee.rmes.modules.operations.documents.domain.model.FileSize;
+import fr.insee.rmes.modules.operations.documents.domain.model.ManagedDocument;
+import fr.insee.rmes.modules.operations.documents.domain.model.StoredFile;
+import fr.insee.rmes.modules.operations.documents.domain.model.UploadedFile;
+import fr.insee.rmes.modules.operations.documents.infrastructure.graphdb.GraphDBManagedDocumentRepository;
+import fr.insee.rmes.modules.operations.documents.infrastructure.storage.FilesOperationsDocumentFileStorage;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.testcontainers.WithGraphDBContainer;
-import fr.insee.rmes.utils.IdGenerator;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Optional;
-import org.json.JSONArray;
-import org.json.JSONObject;
+import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 import org.junit.jupiter.api.io.TempDir;
-import org.springframework.core.io.Resource;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 
 /**
- * Cycle de vie complet d'un document et d'un lien contre un vrai GraphDB et un vrai stockage
- * de fichiers : c'est le seul endroit où les requêtes SPARQL de l'API documents et liens sont
- * réellement exécutées (création, relecture, mise à jour, remplacement du fichier, suppression).
+ * Cycle de vie complet d'un document et d'un lien contre un vrai GraphDB et un vrai stockage de
+ * fichiers, à travers le service de domaine et ses vrais adaptateurs : tout ce qui est écrit est
+ * relu, la taille du fichier comprise.
  *
- * <p>Les tests unitaires figent les règles métier avec un dépôt simulé ; ils ne diraient rien
- * d'une requête qui ne ramène pas ce qu'elle promet. Ici, tout ce qui est écrit est relu par
- * l'API elle-même.
- *
- * <p>Le conteneur GraphDB est partagé entre les classes de test : les assertions portent donc
- * sur la présence des objets créés par ce test, jamais sur des dénombrements globaux.
+ * <p>Le conteneur GraphDB est partagé entre les classes de test : les assertions portent donc sur
+ * les objets créés par ce test, jamais sur des dénombrements globaux.
  */
 @Tag("integration")
 class DocumentsCrudIntegrationTest extends WithGraphDBContainer {
 
     private static final String BASE_URI_GESTION = "http://bauhaus/";
-    /** Valeurs de bauhaus-core.properties : documents et liens ne se distinguent que par ce segment. */
     private static final String DOCUMENTS_PATH = "documents/document";
-
     private static final String LINKS_PATH = "documents/page";
 
     private final RepositoryGestion repositoryGestion = new RepositoryGestion(
@@ -77,133 +57,148 @@ class DocumentsCrudIntegrationTest extends WithGraphDBContainer {
     @TempDir
     Path storageFolder;
 
-    private DocumentsService documents;
+    private DomainDocumentManagementService documents;
 
     @BeforeEach
     void setUp() {
-        RdfUtils.setGraphs(GraphsPropertiesStub.stub());
-        RdfUtils.setBauhausUriBuilder(
-                new BauhausUriBuilder("http://id.insee.fr/", BASE_URI_GESTION, name -> switch (name) {
-                    case DOCUMENTS_BASE_URI -> Optional.of(DOCUMENTS_PATH);
-                    case LINKS_BASE_URI -> Optional.of(LINKS_PATH);
-                    default -> Optional.empty();
-                }));
-
-        BauhausUriProperties uris =
-                new BauhausUriProperties(BASE_URI_GESTION, LINKS_PATH, "codes", DOCUMENTS_PATH, "produits/indicateur");
-        OperationDocumentsQueries queries = new OperationDocumentsQueries(
-                uris, new BauhausLanguagesProperties("fr", "en"), GraphsPropertiesStub.stub());
-
-        DocumentsUtils documentsUtils = new DocumentsUtils(
+        GraphDBManagedDocumentRepository repository = new GraphDBManagedDocumentRepository(
                 repositoryGestion,
-                mock(IdGenerator.class),
-                mock(RepositoryPublication.class),
-                new BauhausLanguagesProperties("fr", "en"),
-                mock(PublicationUtils.class),
-                mock(OperationsParentRepository.class),
-                new FileSystemOperation(),
-                new StorageProperties(storageFolder.toString(), storageFolder.toString()),
-                queries,
-                new DocumentsStorageProperties(storageFolder.toString(), "http://bauhaus/"));
-        documents = new DocumentsImpl(documentsUtils);
+                GraphsPropertiesStub.stub(),
+                new BauhausUriProperties(BASE_URI_GESTION, LINKS_PATH, "codes", DOCUMENTS_PATH, "produits/indicateur"),
+                new BauhausLanguagesProperties("fr", "en"));
+        FilesOperationsDocumentFileStorage storage = new FilesOperationsDocumentFileStorage(
+                new FileSystemOperation(), storageFolder.toString(), storageFolder.toString());
+        documents = new DomainDocumentManagementService(repository, storage, _ -> List.of(), Set.of("pdf", "odt"));
+    }
+
+    private static DocumentForm labelled(String labelLg1) {
+        return new DocumentForm(labelLg1, null, null, null, null, null, null);
+    }
+
+    private static UploadedFile upload(String name, String content) {
+        return new UploadedFile(name, new ByteArrayInputStream(content.getBytes()), content.length());
+    }
+
+    private ManagedDocument read(DocumentKind kind, String id) throws Exception {
+        return documents.get(kind, id).document();
+    }
+
+    private static void assertViolation(Executable call, Violation violation) {
+        assertThatThrownBy(call::execute)
+                .isInstanceOfSatisfying(
+                        DocumentRuleViolationException.class,
+                        e -> assertThat(e.violation()).isEqualTo(violation));
     }
 
     @Test
-    @DisplayName("Un document créé est relu avec ses libellés, et son fichier est déposé dans le stockage")
+    @DisplayName("Un document créé est relu avec ses libellés et sa taille, et son fichier est déposé dans le stockage")
     void shouldCreateReadAndDownloadADocument() throws Exception {
-        String id = documents.createDocument("""
-                {"labelLg1": "Note méthodologique", "labelLg2": "Methodological note", "descriptionLg1": "Une note"}""", content("contenu du pdf"), "note_" + unique() + ".pdf");
+        String fileName = "note_" + unique() + ".pdf";
+        String id = documents.createDocument(
+                new DocumentForm(
+                        "Note méthodologique " + unique(),
+                        "Methodological note " + unique(),
+                        "Une note",
+                        null,
+                        "2026-09-24",
+                        "fr",
+                        null),
+                upload(fileName, "contenu du pdf"));
 
-        JSONObject document = documents.getDocument(id);
-        assertThat(document.getString(Constants.URI)).isEqualTo(BASE_URI_GESTION + DOCUMENTS_PATH + "/" + id);
-        assertThat(document.getString(Constants.LABEL_LG1)).isEqualTo("Note méthodologique");
-        assertThat(document.getString(Constants.LABEL_LG2)).isEqualTo("Methodological note");
-        assertThat(document.getString(Constants.DESCRIPTION_LG1)).isEqualTo("Une note");
+        ManagedDocument document = read(DocumentKind.DOCUMENT, id);
+        assertThat(document.uri()).isEqualTo(BASE_URI_GESTION + DOCUMENTS_PATH + "/" + id);
+        assertThat(document.form().descriptionLg1()).isEqualTo("Une note");
+        assertThat(document.form().updatedDate()).isEqualTo("2026-09-24");
+        assertThat(document.size()).isEqualTo(new FileSize(14));
+        assertThat(document.form().url()).isEqualTo("file://" + storageFolder.resolve(fileName));
+        assertThat(storageFolder.resolve(fileName)).hasContent("contenu du pdf");
 
-        Path storedFile = Path.of(document.getString(Constants.URL).replace("file://", ""));
-        assertThat(Files.readString(storedFile)).isEqualTo("contenu du pdf");
-
-        ResponseEntity<Resource> downloaded = documents.downloadDocument(id);
-        assertThat(downloaded.getBody().getContentAsByteArray()).asString().isEqualTo("contenu du pdf");
+        StoredFile file = documents.download(id);
+        try (InputStream content = file.content()) {
+            assertThat(content).hasContent("contenu du pdf");
+        }
     }
 
     @Test
     @DisplayName("Un document créé apparaît dans la liste de tous les documents")
     void shouldListTheCreatedDocument() throws Exception {
-        String id = documents.createDocument("""
-                {"labelLg1": "Document listé"}""", content("x"), "liste_" + unique() + ".pdf");
+        String id = documents.createDocument(
+                labelled("Document listé " + unique()), upload("liste_" + unique() + ".pdf", "x"));
 
-        assertThat(idsOf(new JSONArray(documents.getDocuments()))).contains(id);
+        assertThat(documents.getAll()).extracting(ManagedDocument::id).contains(id);
     }
 
     @Test
-    @DisplayName("Mettre à jour un document remplace ses libellés au lieu de les cumuler")
-    void shouldReplaceLabelsOnUpdate() throws Exception {
-        String id = documents.createDocument("""
-                {"labelLg1": "Libellé initial"}""", content("x"), "maj_" + unique() + ".pdf");
-        String url = documents.getDocument(id).getString(Constants.URL);
+    @DisplayName("Mettre à jour un document remplace ses libellés et garde son fichier et sa taille")
+    void shouldReplaceLabelsOnUpdateAndKeepTheFile() throws Exception {
+        String id = documents.createDocument(
+                new DocumentForm("Libellé initial " + unique(), "Initial " + unique(), null, null, null, null, null),
+                upload("maj_" + unique() + ".pdf", "12345"));
+        ManagedDocument before = read(DocumentKind.DOCUMENT, id);
 
-        // La mise à jour réécrit l'objet entier : le corps porte l'état complet du document,
-        // url comprise, sans quoi le lien vers le fichier serait perdu.
-        documents.setDocument(id, """
-                {"labelLg1": "Libellé corrigé", "labelLg2": "Fixed label", "url": "%s"}""".formatted(url));
+        documents.update(DocumentKind.DOCUMENT, id, labelled("Libellé corrigé " + id));
 
-        JSONObject document = documents.getDocument(id);
-        assertThat(document.getString(Constants.LABEL_LG1)).isEqualTo("Libellé corrigé");
-        assertThat(document.getString(Constants.LABEL_LG2)).isEqualTo("Fixed label");
-        assertThat(document.getString(Constants.URL)).isEqualTo(url);
+        ManagedDocument after = read(DocumentKind.DOCUMENT, id);
+        assertThat(after.form().labelLg1()).isEqualTo("Libellé corrigé " + id);
+        assertThat(after.form().labelLg2())
+                .as("l'ancien libellé n'est pas cumulé")
+                .isNull();
+        assertThat(after.form().url()).isEqualTo(before.form().url());
+        assertThat(after.size()).isEqualTo(new FileSize(5));
     }
 
     @Test
-    @DisplayName("Remplacer le fichier par un fichier d'un autre nom déplace le fichier et réécrit l'URL")
+    @DisplayName("Remplacer le fichier par un fichier d'un autre nom le déplace, réécrit l'URL et la taille")
     void shouldReplaceTheAttachedFile() throws Exception {
         String suffix = unique();
-        String id = documents.createDocument("""
-                {"labelLg1": "Document à remplacer"}""", content("version 1"), "fichier_" + suffix + ".pdf");
-        Path firstFile =
-                Path.of(documents.getDocument(id).getString(Constants.URL).replace("file://", ""));
+        String id = documents.createDocument(
+                labelled("Document à remplacer " + suffix), upload("fichier_" + suffix + ".pdf", "version 1"));
 
-        documents.changeDocument(id, content("version 2"), "fichier_" + suffix + "_v2.pdf");
+        assertThat(documents.replaceFile(id, upload("fichier_" + suffix + "_v2.pdf", "version deux")))
+                .contains("file://" + storageFolder.resolve("fichier_" + suffix + "_v2.pdf"));
 
-        Path secondFile =
-                Path.of(documents.getDocument(id).getString(Constants.URL).replace("file://", ""));
-        assertThat(secondFile.getFileName()).hasToString("fichier_" + suffix + "_v2.pdf");
-        assertThat(Files.readString(secondFile)).isEqualTo("version 2");
-        assertThat(firstFile).as("l'ancien fichier est retiré du stockage").doesNotExist();
+        ManagedDocument document = read(DocumentKind.DOCUMENT, id);
+        assertThat(document.size()).isEqualTo(new FileSize(12));
+        assertThat(storageFolder.resolve("fichier_" + suffix + "_v2.pdf")).hasContent("version deux");
+        assertThat(storageFolder.resolve("fichier_" + suffix + ".pdf"))
+                .as("l'ancien fichier est retiré du stockage")
+                .doesNotExist();
     }
 
     @Test
-    @DisplayName("Supprimer un document efface ses triplets et son fichier")
+    @DisplayName("Supprimer un document efface ses triplets, sa taille comprise, et son fichier")
     void shouldDeleteADocumentAndItsFile() throws Exception {
-        String id = documents.createDocument("""
-                {"labelLg1": "Document à supprimer"}""", content("x"), "suppr_" + unique() + ".pdf");
-        Path storedFile =
-                Path.of(documents.getDocument(id).getString(Constants.URL).replace("file://", ""));
+        String fileName = "suppr_" + unique() + ".pdf";
+        String id = documents.createDocument(labelled("Document à supprimer " + unique()), upload(fileName, "x"));
+        String iri = BASE_URI_GESTION + DOCUMENTS_PATH + "/" + id;
 
-        assertThat(documents.deleteDocument(id)).isEqualTo(HttpStatus.OK);
+        documents.delete(DocumentKind.DOCUMENT, id);
 
-        assertThat(storedFile).doesNotExist();
-        assertThatThrownBy(() -> documents.getDocument(id)).isInstanceOf(RmesNotFoundException.class);
+        assertThat(storageFolder.resolve(fileName)).doesNotExist();
+        assertThatThrownBy(() -> documents.get(DocumentKind.DOCUMENT, id))
+                .isInstanceOf(DocumentNotFoundException.class);
+        assertThat(repositoryGestion.getResponseAsBoolean("ASK { GRAPH ?g { <" + iri + "> ?p ?o } }"))
+                .as("aucun triplet orphelin, dcterms:extent compris")
+                .isFalse();
     }
 
     @Test
     @DisplayName("Un lien est créé, relu et supprimé sans jamais toucher au stockage de fichiers")
     void shouldHandleTheLinkLifecycleWithoutAnyFile() throws Exception {
         String url = "https://www.insee.fr/fr/statistiques/" + unique();
-        String id = documents.setLink("""
-                {"labelLg1": "Page Insee", "url": "%s"}""".formatted(url));
+        String id = documents.createLink(new DocumentForm("Page Insee " + unique(), null, null, null, null, null, url));
 
-        JSONObject link = documents.getLink(id);
-        assertThat(link.getString(Constants.URI)).isEqualTo(BASE_URI_GESTION + LINKS_PATH + "/" + id);
-        assertThat(link.getString(Constants.URL)).isEqualTo(url);
-        assertThat(link.getString(Constants.LABEL_LG1)).isEqualTo("Page Insee");
+        ManagedDocument link = read(DocumentKind.LINK, id);
+        assertThat(link.uri()).isEqualTo(BASE_URI_GESTION + LINKS_PATH + "/" + id);
+        assertThat(link.form().url()).isEqualTo(url);
+        assertThat(link.size()).isNull();
 
-        documents.setLink(id, """
-                {"labelLg1": "Page Insee mise à jour", "url": "%s"}""".formatted(url));
-        assertThat(documents.getLink(id).getString(Constants.LABEL_LG1)).isEqualTo("Page Insee mise à jour");
+        documents.update(
+                DocumentKind.LINK, id, new DocumentForm("Page mise à jour " + id, null, null, null, null, null, url));
+        assertThat(read(DocumentKind.LINK, id).form().labelLg1()).isEqualTo("Page mise à jour " + id);
 
-        assertThat(documents.deleteLink(id)).isEqualTo(HttpStatus.OK);
-        assertThatThrownBy(() -> documents.getLink(id)).isInstanceOf(RmesNotFoundException.class);
+        documents.delete(DocumentKind.LINK, id);
+        assertThatThrownBy(() -> documents.get(DocumentKind.LINK, id)).isInstanceOf(DocumentNotFoundException.class);
         assertThat(storageFolder).isEmptyDirectory();
     }
 
@@ -211,49 +206,53 @@ class DocumentsCrudIntegrationTest extends WithGraphDBContainer {
     @DisplayName("Deux liens ne peuvent pas partager la même URL")
     void shouldRejectTwoLinksSharingTheSameUrl() throws Exception {
         String url = "https://www.insee.fr/fr/doublon/" + unique();
-        documents.setLink("""
-                {"labelLg1": "Premier lien %s", "url": "%s"}""".formatted(unique(), url));
+        documents.createLink(new DocumentForm("Premier lien " + unique(), null, null, null, null, null, url));
 
-        assertThatThrownBy(() -> documents.setLink("""
-                {"labelLg1": "Second lien %s", "url": "%s"}""".formatted(unique(), url)))
-                .isInstanceOf(RmesNotAcceptableException.class)
-                .satisfies(thrown -> assertThat(((RmesException) thrown).getDetails())
-                        .contains(String.valueOf(ErrorCodes.LINK_EXISTING_URL)));
+        assertViolation(
+                () -> documents.createLink(
+                        new DocumentForm("Second lien " + unique(), null, null, null, null, null, url)),
+                Violation.LINK_URL_ALREADY_USED);
     }
 
     @Test
     @DisplayName("Deux documents ne peuvent pas partager le même libellé lg1")
     void shouldRejectTwoDocumentsSharingTheSameLabel() throws Exception {
         String label = "Libellé unique " + unique();
-        documents.createDocument("""
-                {"labelLg1": "%s"}""".formatted(label), content("x"), "unicite_" + unique() + ".pdf");
+        documents.createDocument(labelled(label), upload("unicite_" + unique() + ".pdf", "x"));
 
-        assertThatThrownBy(() ->
-                        documents.createDocument("""
-                {"labelLg1": "%s"}""".formatted(label), content("y"), "unicite_" + unique() + ".pdf"))
-                .isInstanceOf(RmesBadRequestException.class)
-                .satisfies(thrown -> assertThat(((RmesException) thrown).getDetails())
-                        .contains(ErrorCodes.OPERATION_DOCUMENT_LINK_EXISTING_LABEL_LG1));
+        assertViolation(
+                () -> documents.createDocument(labelled(label), upload("unicite_" + unique() + ".pdf", "y")),
+                Violation.LABEL_LG1_ALREADY_USED);
     }
 
     @Test
     @DisplayName("Un document encore rattaché à une rubrique de SIMS n'est pas supprimable")
     void shouldRefuseToDeleteADocumentAttachedToASims() throws Exception {
-        String id = documents.createDocument("""
-                {"labelLg1": "Document rattaché %s"}""".formatted(unique()), content("x"), "rattache_" + unique() + ".pdf");
+        String id = documents.createDocument(
+                labelled("Document rattaché " + unique()), upload("rattache_" + unique() + ".pdf", "x"));
         String documentIri = BASE_URI_GESTION + DOCUMENTS_PATH + "/" + id;
         String simsGraph = "http://rdf.insee.fr/graphes/documents-crud-it/sims-" + id;
         attachToSims(simsGraph, documentIri);
 
-        assertThatThrownBy(() -> documents.deleteDocument(id))
-                .isInstanceOf(RmesBadRequestException.class)
-                .satisfies(thrown -> assertThat(((RmesException) thrown).getDetails())
-                        .contains(String.valueOf(ErrorCodes.DOCUMENT_DELETION_LINKED)));
+        assertViolation(() -> documents.delete(DocumentKind.DOCUMENT, id), Violation.REFERENCED_BY_SIMS);
 
         repositoryGestion.executeUpdate("CLEAR GRAPH <" + simsGraph + ">");
-        assertThat(documents.deleteDocument(id))
+        documents.delete(DocumentKind.DOCUMENT, id);
+        assertThatThrownBy(() -> documents.get(DocumentKind.DOCUMENT, id))
                 .as("une fois le rattachement retiré, la suppression est acceptée")
-                .isEqualTo(HttpStatus.OK);
+                .isInstanceOf(DocumentNotFoundException.class);
+    }
+
+    @Test
+    @DisplayName("Un fichier de même nom qu'un autre document est refusé au lieu de l'écraser")
+    void shouldRefuseAFileNameAlreadyUsedByAnotherDocument() throws Exception {
+        String fileName = "partage_" + unique() + ".pdf";
+        documents.createDocument(labelled("Premier " + unique()), upload(fileName, "premier"));
+
+        assertViolation(
+                () -> documents.createDocument(labelled("Second " + unique()), upload(fileName, "second")),
+                Violation.FILE_ALREADY_EXISTS);
+        assertThat(storageFolder.resolve(fileName)).hasContent("premier");
     }
 
     /** Rattache le document à une rubrique de SIMS sous la forme attendue : une rdf:List. */
@@ -266,18 +265,7 @@ class DocumentsCrudIntegrationTest extends WithGraphDBContainer {
                 } }""".formatted(graph, graph, graph, graph, documentIri, graph));
     }
 
-    private static List<String> idsOf(JSONArray documents) {
-        return JSONUtils.stream(documents)
-                .map(doc -> doc.getString(Constants.ID))
-                .toList();
-    }
-
-    /** Le conteneur est partagé : chaque test travaille sur des libellés, URLs et noms de fichiers qui lui sont propres. */
-    private String unique() {
+    private static String unique() {
         return Long.toHexString(System.nanoTime());
-    }
-
-    private static InputStream content(String content) {
-        return new ByteArrayInputStream(content.getBytes());
     }
 }

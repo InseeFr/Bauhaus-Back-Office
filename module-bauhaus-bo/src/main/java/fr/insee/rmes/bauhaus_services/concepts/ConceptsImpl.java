@@ -35,7 +35,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -133,7 +132,6 @@ public class ConceptsImpl extends RdfService implements ConceptsService {
         if (graphArray.length() > 1) {
             JSONObject details = new JSONObject();
             details.put("idConcept", id);
-            details.put("graphs", graphArray);
             throw new RmesBadRequestException(
                     ErrorCodes.CONCEPT_DELETION_SEVERAL_GRAPHS,
                     THE_CONCEPT + id + " cannot be deleted because it is used in several graphs.",
@@ -144,7 +142,6 @@ public class ConceptsImpl extends RdfService implements ConceptsService {
         if (!listConcepts.equals("[]")) {
             JSONObject details = new JSONObject();
             details.put("idConcept", id);
-            details.put("linkedConcepts", listConcepts);
             throw new RmesBadRequestException(
                     ErrorCodes.CONCEPT_DELETION_LINKED,
                     THE_CONCEPT + id + " cannot be deleted because it is linked to other concepts.",
@@ -237,14 +234,7 @@ public class ConceptsImpl extends RdfService implements ConceptsService {
      */
     @Override
     public ResponseEntity<?> exportConcept(String id, String acceptHeader) throws RmesException {
-        ConceptForExport concept;
-        try {
-            concept = conceptsExport.getConceptData(id);
-        } catch (RmesException e) {
-            return ResponseEntity.status(e.getStatus())
-                    .contentType(MediaType.TEXT_PLAIN)
-                    .body(e.getDetails());
-        }
+        ConceptForExport concept = conceptsExport.getConceptData(id);
 
         Map<String, String> xmlContent = convertConceptInXml(concept);
         String fileName = getFileNameForExport(concept);

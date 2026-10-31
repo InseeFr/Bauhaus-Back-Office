@@ -2,9 +2,12 @@ package fr.insee.rmes.utils;
 
 import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mockStatic;
 
 import fr.insee.rmes.bauhaus_services.operations.documentations.documents.DocumentsUtils;
 import fr.insee.rmes.domain.exceptions.RmesException;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -13,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import org.junit.function.ThrowingRunnable;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 class ExportUtilsTest {
@@ -59,6 +63,35 @@ class ExportUtilsTest {
         assertEquals(
                 "Cannot invoke \"String.getBytes(java.nio.charset.Charset)\" because \"xmlData\" is null",
                 exception.getMessage());
+    }
+
+    @Test
+    void shouldFailExportFilesAsResponseWhenOneFileCannotBeWritten() {
+        Map<String, String> xmlContent = new HashMap<>();
+        xmlContent.put("red", "strawberry");
+        xmlContent.put("a".repeat(300), "too long a name for the file system");
+        RmesException exception = assertThrows(
+                RmesException.class, (ThrowingRunnable) () -> exportUtils.exportFilesAsResponse(xmlContent));
+        assertTrue(exception.getDetails().contains("FileSystemException"));
+    }
+
+    @Test
+    void shouldFailExportAsInputStreamWhenTempFileCannotBeCreated() {
+        Map<String, String> xmlContent = new HashMap<>();
+        xmlContent.put("red", "strawberry");
+        try (MockedStatic<File> file = mockStatic(File.class)) {
+            file.when(() -> File.createTempFile(any(), any())).thenThrow(new IOException("No space left on device"));
+            RmesException exception =
+                    assertThrows(RmesException.class, (ThrowingRunnable) () -> exportUtils.exportAsInputStream(
+                            "fileName",
+                            xmlContent,
+                            "/xslTransformerFiles/sims2fodt.xsl",
+                            "/xslTransformerFiles/simsRmes/rmesPatternContent.xml",
+                            "/xslTransformerFiles/simsRmes/toZipForRmes.zip",
+                            "documentation",
+                            ".odt"));
+            assertTrue(exception.getDetails().contains("No space left on device"));
+        }
     }
 
     @Test

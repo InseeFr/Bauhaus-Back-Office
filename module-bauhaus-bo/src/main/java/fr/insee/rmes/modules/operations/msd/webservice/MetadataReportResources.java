@@ -5,9 +5,11 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.OperationsDocumentationsService;
 import fr.insee.rmes.bauhaus_services.OperationsService;
+import fr.insee.rmes.domain.exceptions.CodedRmesException;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.ErrorCodes;
-import fr.insee.rmes.exceptions.RmesNotAcceptableException;
+import fr.insee.rmes.exceptions.RmesBadRequestException;
+import fr.insee.rmes.model.operations.documentations.Documentation;
 import fr.insee.rmes.modules.commons.configuration.ConditionalOnModule;
 import fr.insee.rmes.modules.commons.configuration.swagger.model.Accept;
 import fr.insee.rmes.modules.commons.domain.GenericInternalServerException;
@@ -24,6 +26,7 @@ import fr.insee.rmes.modules.users.domain.model.RBAC;
 import fr.insee.rmes.modules.users.webservice.HasAccess;
 import fr.insee.rmes.utils.HttpUtils;
 import fr.insee.rmes.utils.XMLUtils;
+import jakarta.validation.Valid;
 import java.io.IOException;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -39,6 +42,8 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/operations")
 @ConditionalOnModule("operations")
 public class MetadataReportResources {
+
+    public static final String SIMS_CREATION_FAILED = "SIMS_CREATION_FAILED";
 
     protected final OperationsService operationsService;
 
@@ -74,7 +79,6 @@ public class MetadataReportResources {
                 var jsonResultat = documentationsService.getMSDJson();
                 yield ResponseEntity.ok(jsonResultat);
             }
-            default -> ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE).build();
         };
     }
 
@@ -140,7 +144,6 @@ public class MetadataReportResources {
                 var jsonResultat = documentationsService.getFullSimsForJson(id);
                 yield ResponseEntity.ok(jsonResultat);
             }
-            default -> ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE).build();
         };
     }
 
@@ -153,27 +156,31 @@ public class MetadataReportResources {
 
     @HasAccess(module = RBAC.Module.OPERATION_SIMS, privilege = RBAC.Privilege.CREATE)
     @PostMapping(value = "/metadataReport", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> setMetadataReport(@RequestBody String body) throws RmesException {
-        String id = documentationsService.createMetadataReport(body);
+    public ResponseEntity<Object> setMetadataReport(@Valid @RequestBody Documentation sims) throws RmesException {
+        String id = documentationsService.createMetadataReport(sims);
         if (id == null) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(id);
+            throw new CodedRmesException(
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    SIMS_CREATION_FAILED,
+                    "The report could not be created.",
+                    null);
         }
         return ResponseEntity.status(HttpStatus.OK).body(id);
     }
 
     @HasAccess(module = RBAC.Module.OPERATION_SIMS, privilege = RBAC.Privilege.UPDATE)
     @PutMapping(value = "/metadataReport/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> setMetadataReportById(@PathVariable(Constants.ID) String id, @RequestBody String body)
-            throws RmesException {
-        documentationsService.setMetadataReport(id, body);
+    public ResponseEntity<Object> setMetadataReportById(
+            @PathVariable(Constants.ID) String id, @Valid @RequestBody Documentation sims) throws RmesException {
+        documentationsService.setMetadataReport(id, sims);
         return ResponseEntity.noContent().build();
     }
 
     @HasAccess(module = RBAC.Module.OPERATION_SIMS, privilege = RBAC.Privilege.DELETE)
     @DeleteMapping("/metadataReport/{id}")
     public ResponseEntity<Void> deleteMetadataReportById(@PathVariable(Constants.ID) String id) throws RmesException {
-        HttpStatus result = documentationsService.deleteMetadataReport(id);
-        return ResponseEntity.status(result.value()).build();
+        documentationsService.deleteMetadataReport(id);
+        return ResponseEntity.ok().build();
     }
 
     @HasAccess(module = RBAC.Module.OPERATION_SIMS, privilege = RBAC.Privilege.PUBLISH)
@@ -195,7 +202,7 @@ public class MetadataReportResources {
             @RequestParam(name = "document", defaultValue = "true") boolean document)
             throws RmesException {
         if (!lg1 && !lg2) {
-            throw new RmesNotAcceptableException(
+            throw new RmesBadRequestException(
                     ErrorCodes.SIMS_EXPORT_WITHOUT_LANGUAGE,
                     "at least one language must be selected for export",
                     "in export of sims: " + id);

@@ -20,7 +20,6 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StreamUtils;
 
@@ -105,24 +104,24 @@ public class OperationsDocumentationsImpl extends RdfService implements Operatio
      * CREATE
      */
     @Override
-    public String createMetadataReport(String body) throws RmesException {
-        return documentationsUtils.setMetadataReport(null, body, true);
+    public String createMetadataReport(Documentation sims) throws RmesException {
+        return documentationsUtils.setMetadataReport(null, sims, true);
     }
 
     /**
      * UPDATE
      */
     @Override
-    public void setMetadataReport(String id, String body) throws RmesException {
-        documentationsUtils.setMetadataReport(id, body, false);
+    public void setMetadataReport(String id, Documentation sims) throws RmesException {
+        documentationsUtils.setMetadataReport(id, sims, false);
     }
 
     /**
      * DELETE
      */
     @Override
-    public HttpStatus deleteMetadataReport(String id) throws RmesException {
-        return documentationsUtils.deleteMetadataReport(id);
+    public void deleteMetadataReport(String id) throws RmesException {
+        documentationsUtils.deleteMetadataReport(id);
     }
 
     /**

@@ -5,30 +5,45 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import fr.insee.rmes.BauhausLanguagesProperties;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
+import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.operations.families.domain.model.OperationFamily;
 import fr.insee.rmes.modules.operations.families.domain.model.OperationFamilySeries;
 import fr.insee.rmes.modules.operations.families.domain.model.OperationFamilySubject;
 import fr.insee.rmes.modules.operations.families.domain.model.PartialOperationFamily;
+import fr.insee.rmes.modules.shared_kernel.infrastructure.publication.ObjectPublished;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationQueries;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.utils.DiacriticSorter;
 import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 import java.util.List;
+import java.util.Optional;
 import org.apache.http.HttpStatus;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Statement;
+import org.eclipse.rdf4j.model.ValueFactory;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
+import org.eclipse.rdf4j.model.vocabulary.SKOS;
+import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 @ExtendWith(MockitoExtension.class)
 class GraphDBOperationFamilyRepositoryTest {
+
+    private static final ValueFactory VALUES = SimpleValueFactory.getInstance();
 
     @Mock
     private RepositoryGestion repositoryGestion;
@@ -45,6 +60,9 @@ class GraphDBOperationFamilyRepositoryTest {
     @Mock
     private PublicationUtils publicationUtils;
 
+    @Mock
+    private ApplicationEventPublisher events;
+
     private GraphDBOperationFamilyRepository repository;
 
     @BeforeEach
@@ -55,7 +73,8 @@ class GraphDBOperationFamilyRepositoryTest {
                 operationQueries,
                 repositoryPublication,
                 publicationUtils,
-                new BauhausLanguagesProperties("fr", "en"));
+                new BauhausLanguagesProperties("fr", "en"),
+                events);
     }
 
     @Test
@@ -64,10 +83,7 @@ class GraphDBOperationFamilyRepositoryTest {
         when(operationFamilyQueries.familiesQuery()).thenReturn("query");
         when(repositoryGestion.getResponseAsArray("query")).thenReturn(emptyArray);
 
-        try (MockedStatic<DiacriticSorter> mockedSorter = mockStatic(DiacriticSorter.class)) {
-            mockedSorter
-                    .when(() -> DiacriticSorter.sort(any(JSONArray.class), eq(PartialOperationFamily[].class), any()))
-                    .thenReturn(List.of());
+        try (var _ = diacriticSorterReturning(List.of())) {
 
             List<PartialOperationFamily> result = repository.getFamilies();
 
@@ -88,10 +104,7 @@ class GraphDBOperationFamilyRepositoryTest {
         when(operationFamilyQueries.familiesQuery()).thenReturn("query");
         when(repositoryGestion.getResponseAsArray("query")).thenReturn(familiesArray);
 
-        try (MockedStatic<DiacriticSorter> mockedSorter = mockStatic(DiacriticSorter.class)) {
-            mockedSorter
-                    .when(() -> DiacriticSorter.sort(any(JSONArray.class), eq(PartialOperationFamily[].class), any()))
-                    .thenReturn(expectedFamilies);
+        try (var _ = diacriticSorterReturning(expectedFamilies)) {
 
             List<PartialOperationFamily> result = repository.getFamilies();
 
@@ -129,7 +142,7 @@ class GraphDBOperationFamilyRepositoryTest {
     }
 
     @Test
-    void get_family_throws_exception_when_family_not_found() throws RmesException {
+    void get_family_throws_a_not_found_exception_when_family_not_found() throws RmesException {
         String familyId = "nonexistent";
         JSONObject emptyJson = new JSONObject();
 
@@ -138,7 +151,7 @@ class GraphDBOperationFamilyRepositoryTest {
 
         RmesException exception = assertThrows(RmesException.class, () -> repository.getFamily(familyId));
 
-        assertEquals(HttpStatus.SC_BAD_REQUEST, exception.getStatus());
+        assertEquals(HttpStatus.SC_NOT_FOUND, exception.getStatus());
         assertTrue(exception.getDetails().contains("Family " + familyId + " not found"));
     }
 
@@ -223,19 +236,9 @@ class GraphDBOperationFamilyRepositoryTest {
         JSONArray subjectsArray =
                 new JSONArray().put(new JSONObject().put("id", "sub1").put("labelLg1", "Subject 1"));
 
-        when(operationFamilyQueries.familyQuery(familyId)).thenReturn("familyQuery");
-        when(operationFamilyQueries.getSeries(familyId)).thenReturn("seriesQuery");
-        when(operationFamilyQueries.getSubjects(familyId)).thenReturn("subjectsQuery");
+        givenFullFamily(familyId, familyJson, seriesArray, subjectsArray);
 
-        when(repositoryGestion.getResponseAsObject("familyQuery")).thenReturn(familyJson);
-        when(repositoryGestion.getResponseAsArray("seriesQuery")).thenReturn(seriesArray);
-        when(repositoryGestion.getResponseAsArray("subjectsQuery")).thenReturn(subjectsArray);
-
-        try (MockedStatic<XhtmlToMarkdownUtils> mockedUtils = mockStatic(XhtmlToMarkdownUtils.class)) {
-            mockedUtils
-                    .when(() -> XhtmlToMarkdownUtils.convertJSONObject(any()))
-                    .then(invocation -> null);
-
+        try (var _ = xhtmlConversionIgnored()) {
             OperationFamily result = repository.getFullFamily(familyId);
 
             assertNotNull(result);
@@ -256,19 +259,9 @@ class GraphDBOperationFamilyRepositoryTest {
 
         JSONArray emptyArray = new JSONArray();
 
-        when(operationFamilyQueries.familyQuery(familyId)).thenReturn("familyQuery");
-        when(operationFamilyQueries.getSeries(familyId)).thenReturn("seriesQuery");
-        when(operationFamilyQueries.getSubjects(familyId)).thenReturn("subjectsQuery");
+        givenFullFamily(familyId, familyJson, emptyArray, emptyArray);
 
-        when(repositoryGestion.getResponseAsObject("familyQuery")).thenReturn(familyJson);
-        when(repositoryGestion.getResponseAsArray("seriesQuery")).thenReturn(emptyArray);
-        when(repositoryGestion.getResponseAsArray("subjectsQuery")).thenReturn(emptyArray);
-
-        try (MockedStatic<XhtmlToMarkdownUtils> mockedUtils = mockStatic(XhtmlToMarkdownUtils.class)) {
-            mockedUtils
-                    .when(() -> XhtmlToMarkdownUtils.convertJSONObject(any()))
-                    .then(invocation -> null);
-
+        try (var _ = xhtmlConversionIgnored()) {
             OperationFamily result = repository.getFullFamily(familyId);
 
             assertNotNull(result);
@@ -304,5 +297,58 @@ class GraphDBOperationFamilyRepositoryTest {
         when(repositoryGestion.getResponseAsArray("query")).thenReturn(new JSONArray().put(new JSONObject()));
 
         assertTrue(repository.getSeriesWithReport("s1").isEmpty());
+    }
+
+    @Test
+    void publish_announces_the_publication_with_the_operations_graph() throws RmesException {
+        RdfUtils.setGraphs(GraphsPropertiesStub.stub());
+        RdfUtils.setBauhausUriBuilder(
+                new BauhausUriBuilder("http://publication/", "http://bauhaus/", name -> Optional.of("famille")));
+        IRI familyIRI = VALUES.createIRI("http://bauhaus/famille/s1001");
+        givenManagementTriples(VALUES.createStatement(familyIRI, SKOS.PREF_LABEL, VALUES.createLiteral("Famille")));
+
+        repository.publish("s1001");
+
+        ArgumentCaptor<ObjectPublished> event = ArgumentCaptor.forClass(ObjectPublished.class);
+        verify(events).publishEvent(event.capture());
+        assertEquals(
+                new ObjectPublished(familyIRI, VALUES.createIRI("http://rdf.insee.fr/graphes/operations")),
+                event.getValue());
+    }
+
+    private static MockedStatic<DiacriticSorter> diacriticSorterReturning(List<PartialOperationFamily> families) {
+        MockedStatic<DiacriticSorter> mockedSorter = mockStatic(DiacriticSorter.class);
+        mockedSorter
+                .when(() -> DiacriticSorter.sort(any(JSONArray.class), eq(PartialOperationFamily[].class), any()))
+                .thenReturn(families);
+        return mockedSorter;
+    }
+
+    private static MockedStatic<XhtmlToMarkdownUtils> xhtmlConversionIgnored() {
+        MockedStatic<XhtmlToMarkdownUtils> mockedUtils = mockStatic(XhtmlToMarkdownUtils.class);
+        mockedUtils.when(() -> XhtmlToMarkdownUtils.convertJSONObject(any())).then(invocation -> null);
+        return mockedUtils;
+    }
+
+    /** La famille, ses séries et ses sujets sont lus par trois requêtes distinctes. */
+    private void givenFullFamily(String familyId, JSONObject familyJson, JSONArray series, JSONArray subjects)
+            throws RmesException {
+        when(operationFamilyQueries.familyQuery(familyId)).thenReturn("familyQuery");
+        when(operationFamilyQueries.getSeries(familyId)).thenReturn("seriesQuery");
+        when(operationFamilyQueries.getSubjects(familyId)).thenReturn("subjectsQuery");
+
+        when(repositoryGestion.getResponseAsObject("familyQuery")).thenReturn(familyJson);
+        when(repositoryGestion.getResponseAsArray("seriesQuery")).thenReturn(series);
+        when(repositoryGestion.getResponseAsArray("subjectsQuery")).thenReturn(subjects);
+    }
+
+    /** Les triplets de gestion que {@code publish} recopie vers le graphe de publication. */
+    @SuppressWarnings("unchecked")
+    private void givenManagementTriples(Statement statement) throws RmesException {
+        RepositoryResult<Statement> statements = mock(RepositoryResult.class);
+        when(statements.hasNext()).thenReturn(true, true, false);
+        when(statements.next()).thenReturn(statement);
+        when(repositoryGestion.getStatements(any(), any())).thenReturn(statements);
+        when(publicationUtils.tranformBaseURIToPublish(any())).thenAnswer(invocation -> invocation.getArgument(0));
     }
 }

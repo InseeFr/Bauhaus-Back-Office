@@ -1,0 +1,28 @@
+name: Publish release image
+
+# Publishes the image of a final release on Docker Hub, as :<version> and
+# :latest. The build itself lives in InseeFr/rmes-githubactions-commons, shared
+# with the other RMéS projects.
+
+on:
+  release:
+    types: [released]
+
+jobs:
+  docker:
+    name: Publish the image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      # On a release event the checked out ref is already the tag.
+      - uses: actions/checkout@v4
+      # A composite action receives no secret on its own: the Docker Hub
+      # credentials are passed explicitly.
+      - uses: InseeFr/rmes-githubactions-commons/.github/actions/docker-publish@main
+        with:
+          image: inseefr/bauhaus-back-office
+          dockerfile: Dockerfile.bauhaus
+          latest: 'true'
+          dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
+          dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}

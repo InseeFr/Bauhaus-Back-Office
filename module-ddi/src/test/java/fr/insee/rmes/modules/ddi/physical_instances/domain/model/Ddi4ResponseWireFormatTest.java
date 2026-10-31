@@ -1,5 +1,7 @@
 package fr.insee.rmes.modules.ddi.physical_instances.domain.model;
 
+import static fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4WireFormatFixtures.aPhysicalInstance;
+import static fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4WireFormatFixtures.assertSerializesToTheSchemaEnvelope;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -25,16 +27,7 @@ class Ddi4ResponseWireFormatTest {
         return new Ddi4Response(
                 Ddi4Response.SCHEMA,
                 List.of(Reference.of("fr.insee", "pi-1", "1", Ddi4PhysicalInstance.TYPE)),
-                List.of(new Ddi4PhysicalInstance(
-                        Ddi4PhysicalInstance.TYPE,
-                        null,
-                        "urn:ddi:fr.insee:pi-1:1",
-                        "fr.insee",
-                        "pi-1",
-                        "1",
-                        null,
-                        new Citation(LangStrings.of("fr-FR", "Ma PI")),
-                        null)),
+                List.of(aPhysicalInstance()),
                 List.of(new Ddi4DataRelationship(
                         Ddi4DataRelationship.TYPE,
                         null,
@@ -89,9 +82,7 @@ class Ddi4ResponseWireFormatTest {
 
     @Test
     void shouldSerializeToTheSchemaEnvelope() throws Exception {
-        JsonNode json = mapper.readTree(mapper.writeValueAsString(aResponse()));
-
-        assertThat(json.fieldNames()).toIterable().containsExactlyInAnyOrder("topLevelReferences", "items");
+        assertSerializesToTheSchemaEnvelope(mapper, aResponse());
     }
 
     @Test

@@ -5,9 +5,12 @@ import fr.insee.rmes.modules.commons.domain.model.Document;
 import fr.insee.rmes.modules.commons.domain.port.serverside.FilesOperations;
 import fr.insee.rmes.modules.commons.hexagonal.ServerSideAdaptor;
 import io.minio.*;
+import io.minio.errors.ErrorResponseException;
 import io.minio.errors.MinioException;
+import io.minio.messages.Item;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Iterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,6 +21,8 @@ public record MinioFilesOperation(MinioClient minioClient, String bucketName) im
      *
      */
     static final Logger logger = LoggerFactory.getLogger(MinioFilesOperation.class);
+
+    private static final String NO_SUCH_KEY = "NoSuchKey";
 
     @Override
     public InputStream read(Document document) {
@@ -88,24 +93,58 @@ public record MinioFilesOperation(MinioClient minioClient, String bucketName) im
 
     @Override
     public boolean exists(Document document) {
-        // String objectName = directoryGestion + "/" + filename;
-        logger.debug("Check existence of file with name {} in bucket {}", document.getFullPath(), bucketName);
+        String objectName = document.getFullPath();
+        logger.debug("Check existence of file with name {} in bucket {}", objectName, bucketName);
         try {
             return minioClient
                             .statObject(StatObjectArgs.builder()
                                     .bucket(bucketName)
-                                    .object(document.getFullPath())
+                                    .object(objectName)
                                     .build())
                             .size()
                     > 0;
-        } catch (MinioException _) {
-            return false;
+        } catch (ErrorResponseException e) {
+            if (NO_SUCH_KEY.equals(e.errorResponse().code())) {
+                return false;
+            }
+            throw existenceCheckFailure(objectName, e);
+        } catch (MinioException | IllegalStateException e) {
+            throw existenceCheckFailure(objectName, e);
         }
     }
 
+    /** Un « répertoire » MinIO n'est qu'un préfixe : il existe dès qu'un objet vit dessous. */
     @Override
     public boolean exists(String path) {
-        return true;
+        String prefix = path.endsWith("/") ? path : path + "/";
+        logger.debug("Check existence of directory {} in bucket {}", prefix, bucketName);
+        try {
+            Iterator<Result<Item>> objects = minioClient
+                    .listObjects(ListObjectsArgs.builder()
+                            .bucket(bucketName)
+                            .prefix(prefix)
+                            .maxKeys(1)
+                            .build())
+                    .iterator();
+            if (!objects.hasNext()) {
+                return false;
+            }
+            // Result.get() relève l'erreur de la requête de listage (MinIO injoignable, bucket absent…)
+            objects.next().get();
+            return true;
+        } catch (MinioException | IllegalStateException e) {
+            throw existenceCheckFailure(prefix, e);
+        }
+    }
+
+    /**
+     * MinioClient relance les {@link MinioException} et enveloppe toute autre cause (connexion
+     * refusée, timeout…) dans une {@link IllegalStateException} : les deux signalent un MinIO
+     * incapable de répondre, pas un fichier absent.
+     */
+    private RmesFileException existenceCheckFailure(String objectName, Exception cause) {
+        return new RmesFileException(
+                objectName, "Error checking existence of: " + objectName + " in bucket " + bucketName, cause);
     }
 
     @Override

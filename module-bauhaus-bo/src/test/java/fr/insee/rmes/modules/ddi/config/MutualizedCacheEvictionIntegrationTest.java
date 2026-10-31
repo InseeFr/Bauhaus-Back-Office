@@ -11,7 +11,6 @@ import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.Col
 import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.ColecticaConfiguration;
 import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.DDIRepositoryImpl;
 import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.MutualizedCodeListRefsProvider;
-import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
@@ -40,21 +39,8 @@ class MutualizedCacheEvictionIntegrationTest {
 
         @Bean
         ColecticaConfiguration colecticaConfiguration() {
-            var server = new ColecticaConfiguration.ColecticaInstanceConfiguration(
-                    "https://example.com",
-                    "/api/v1/",
-                    Map.of("CodeListScheme", "s", "CodeListGroup", "g", "CodeList", "c"),
-                    "resp",
-                    "format",
-                    "password",
-                    "user",
-                    "pass",
-                    "fr.insee");
-            return new ColecticaConfiguration(
-                    List.of("fr-FR"),
-                    server,
-                    new ColecticaConfiguration.PackageRef("fr.insee", "pkg-1", 1),
-                    Duration.ofHours(1));
+            return ColecticaTestConfigurations.colecticaConfiguration(
+                    Map.of("CodeListScheme", "s", "CodeListGroup", "g", "CodeList", "c"));
         }
 
         @Bean

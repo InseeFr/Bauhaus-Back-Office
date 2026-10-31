@@ -102,7 +102,8 @@ class CodesListsResourcesValidationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(bodyWithout(field, emptyValue)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.errors[0].field").value(field));
+                .andExpect(jsonPath("$.errors[0].field").value(field))
+                .andExpect(jsonPath("$.errors[0].message").value("Ce champ est obligatoire."));
     }
 
     @ParameterizedTest(name = "PUT /codeList/ID : {0} = [{1}]")

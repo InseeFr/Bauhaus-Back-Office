@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
+import fr.insee.rmes.modules.commons.webservice.ApiError;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Citation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Code;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeRepresentation;
@@ -179,12 +180,10 @@ class DdiResourcesSchemaValidationTest {
 
     @Test
     void shouldRejectTheLegacyColecticaFragmentSet() {
-        ResponseEntity<ValidationResponse> result = ddiResources.validateDdi4(COLECTICA_FRAGMENT_SET);
+        ResponseEntity<Object> result = ddiResources.validateDdi4(COLECTICA_FRAGMENT_SET);
 
         assertNotNull(result.getBody());
-        assertFalse(
-                result.getBody().valid(),
-                "Le format groupé par type ne circule plus : il doit être refusé, pas rattrapé");
+        assertFalse(isValid(result), "Le format groupé par type ne circule plus : il doit être refusé, pas rattrapé");
         assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
     }
 
@@ -205,13 +204,10 @@ class DdiResourcesSchemaValidationTest {
                 }
                 """;
 
-        ResponseEntity<ValidationResponse> result = ddiResources.validateDdi4(envelope);
+        ResponseEntity<Object> result = ddiResources.validateDdi4(envelope);
 
         assertNotNull(result.getBody());
-        assertTrue(
-                result.getBody().valid(),
-                "L'enveloppe du schéma doit être acceptée, erreurs : "
-                        + result.getBody().errors());
+        assertTrue(isValid(result), "L'enveloppe du schéma doit être acceptée, erreurs : " + violations(result));
         assertEquals(HttpStatus.OK, result.getStatusCode());
     }
 
@@ -225,14 +221,13 @@ class DdiResourcesSchemaValidationTest {
                 }
                 """;
 
-        ResponseEntity<ValidationResponse> result = ddiResources.validateDdi4(withUnknownKey);
+        ResponseEntity<Object> result = ddiResources.validateDdi4(withUnknownKey);
 
         assertNotNull(result.getBody());
-        assertFalse(result.getBody().valid());
+        assertFalse(isValid(result));
         assertTrue(
-                result.getBody().errors().stream().anyMatch(e -> e.contains("Variabel")),
-                "La clé inconnue doit être signalée, erreurs : "
-                        + result.getBody().errors());
+                violations(result).stream().anyMatch(e -> e.contains("Variabel")),
+                "La clé inconnue doit être signalée, erreurs : " + violations(result));
     }
 
     /**
@@ -327,13 +322,10 @@ class DdiResourcesSchemaValidationTest {
         // Mapper aux réglages par défaut : celui que Spring Boot utilise pour sérialiser la réponse.
         String asServedByTheGet = new ObjectMapper().writeValueAsString(response);
 
-        ResponseEntity<ValidationResponse> result = ddiResources.validateDdi4(asServedByTheGet);
+        ResponseEntity<Object> result = ddiResources.validateDdi4(asServedByTheGet);
 
         assertNotNull(result.getBody());
-        assertTrue(
-                result.getBody().valid(),
-                "La réponse du GET doit valider telle quelle, erreurs : "
-                        + result.getBody().errors());
+        assertTrue(isValid(result), "La réponse du GET doit valider telle quelle, erreurs : " + violations(result));
     }
 
     @Test
@@ -346,9 +338,20 @@ class DdiResourcesSchemaValidationTest {
                 }
                 """;
 
-        ResponseEntity<ValidationResponse> result = ddiResources.validateDdi4(withInvalidVariable);
+        ResponseEntity<Object> result = ddiResources.validateDdi4(withInvalidVariable);
 
         assertNotNull(result.getBody());
-        assertFalse(result.getBody().valid(), "Un item non conforme doit être vu : plus aucune enveloppe ne le masque");
+        assertFalse(isValid(result), "Un item non conforme doit être vu : plus aucune enveloppe ne le masque");
+    }
+
+    private static boolean isValid(ResponseEntity<Object> result) {
+        return result.getBody() instanceof ValidationResponse response && response.valid();
+    }
+
+    /** Écarts au schéma, portés par {@code errors} du 400 {@link ApiError}. */
+    private static List<String> violations(ResponseEntity<Object> result) {
+        return result.getBody() instanceof ApiError error && error.errors() != null
+                ? error.errors().stream().map(ApiError.FieldError::message).toList()
+                : List.of();
     }
 }

@@ -27,16 +27,6 @@ class FreeMarkerUtilsTest {
     }
 
     @Test
-    void shouldBuildRequestWithValidTemplate() throws RmesException {
-        Map<String, Object> params = new HashMap<>();
-        params.put("name", "World");
-
-        assertThrows(RmesException.class, () -> {
-            FreeMarkerUtils.buildRequest("", "nonexistent.ftl", params);
-        });
-    }
-
-    @Test
     void shouldThrowRmesExceptionWhenTemplateNotFound() {
         Map<String, Object> params = new HashMap<>();
         params.put("name", "World");

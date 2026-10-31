@@ -1,10 +1,13 @@
 package fr.insee.rmes.modules.organisations.webservice;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import fr.insee.rmes.bauhaus_services.OrganizationsService;
+import fr.insee.rmes.exceptions.RmesNotFoundException;
+import fr.insee.rmes.modules.organisations.domain.exceptions.OrganisationFetchException;
 import fr.insee.rmes.modules.organisations.domain.model.OrganisationSummary;
 import fr.insee.rmes.modules.organisations.domain.port.clientside.OrganisationsService;
 import java.util.List;
@@ -23,6 +26,25 @@ class OrganisationsResourcesTest {
 
     @Mock
     private OrganizationsService organizationsService;
+
+    /** L'échec remonte aux gestionnaires d'erreur au lieu d'un corps texte (ADR-1264). */
+    @Test
+    void shouldLetAFailedFetchReachTheErrorHandlers() throws Throwable {
+        when(organisationsService.getOrganisations()).thenThrow(new OrganisationFetchException());
+        var resources = new OrganisationsResources(organisationsService, organizationsService);
+
+        assertThatThrownBy(() -> resources.getOrganizations(null)).isInstanceOf(OrganisationFetchException.class);
+    }
+
+    @Test
+    void shouldLetAnUnknownOrganisationReachTheErrorHandlers() throws Throwable {
+        when(organizationsService.getOrganizationJsonString("unknown"))
+                .thenThrow(new RmesNotFoundException("Organization not found", "unknown"));
+        var resources = new OrganisationsResources(organisationsService, organizationsService);
+
+        assertThatThrownBy(() -> resources.getOrganizationByIdentifier("unknown", null))
+                .isInstanceOf(RmesNotFoundException.class);
+    }
 
     @Test
     void shouldListOrganisationsFromNewServiceMappingIdentifierToId() throws Throwable {
