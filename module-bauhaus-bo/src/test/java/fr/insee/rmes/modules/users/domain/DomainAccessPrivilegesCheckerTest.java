@@ -374,6 +374,22 @@ class DomainAccessPrivilegesCheckerTest {
     }
 
     @Test
+    void should_grant_access_to_a_classification_whose_contributor_matches_the_user_stamp()
+            throws MissingUserInformationException, StampFetchException, UnsupportedModuleException {
+        givenUpdateWithStampStrategyOnContributorsStamps(RBAC.Module.CLASSIFICATION_CLASSIFICATION, "STAMP-01");
+
+        assertThat(hasAccess("CLASSIFICATION_CLASSIFICATION", "UPDATE")).isTrue();
+    }
+
+    @Test
+    void should_deny_access_to_a_classification_whose_contributor_does_not_match_the_user_stamp()
+            throws MissingUserInformationException, StampFetchException, UnsupportedModuleException {
+        givenUpdateWithStampStrategyOnContributorsStamps(RBAC.Module.CLASSIFICATION_CLASSIFICATION, "STAMP-02");
+
+        assertThat(hasAccess("CLASSIFICATION_CLASSIFICATION", "UPDATE")).isFalse();
+    }
+
+    @Test
     void should_check_the_contributors_stamps_of_a_dataset()
             throws MissingUserInformationException, StampFetchException, UnsupportedModuleException {
         givenUpdateWithStampStrategyOnContributorsStamps(RBAC.Module.DATASET_DATASET, "STAMP-02");

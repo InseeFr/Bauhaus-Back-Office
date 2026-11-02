@@ -12,12 +12,13 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4GroupRespon
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.DDIRepository;
 import fr.insee.rmes.modules.operation.series.domain.port.serverside.SeriesCreatorsPort;
 import fr.insee.rmes.modules.organisations.domain.model.OrganisationOption;
-import fr.insee.rmes.modules.organisations.domain.port.clientside.OrganisationService;
+import fr.insee.rmes.modules.organisations.domain.port.serverside.OrganisationRepository;
 import fr.insee.rmes.modules.structures.infrastructure.graphdb.StructureQueries;
 import fr.insee.rmes.modules.users.domain.exceptions.StampFetchException;
 import fr.insee.rmes.modules.users.domain.exceptions.UnsupportedModuleException;
 import fr.insee.rmes.modules.users.domain.model.RBAC;
 import fr.insee.rmes.modules.users.domain.port.serverside.StampChecker;
+import fr.insee.rmes.persistance.sparql_queries.classifications.ClassificationsQueries;
 import fr.insee.rmes.persistance.sparql_queries.datasets.DatasetDistributionQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationSeriesQueries;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
@@ -45,8 +46,9 @@ public class GraphDbStampChecker implements StampChecker {
     private final DDIRepository ddiRepository;
     private final SeriesCreatorsPort seriesCreatorsPort;
     private final DatasetDistributionQueries datasetDistributionQueries;
-    private final OrganisationService organisationService;
+    private final OrganisationRepository organisationRepository;
     private final ContributorsQueries contributorsQueries;
+    private final ClassificationsQueries classificationsQueries;
     private final GraphsProperties graphs;
     private final GraphDBCollectionProperties collectionProperties;
     private final String datasetsGraph;
@@ -59,8 +61,9 @@ public class GraphDbStampChecker implements StampChecker {
             DDIRepository ddiRepository,
             SeriesCreatorsPort seriesCreatorsPort,
             DatasetDistributionQueries datasetDistributionQueries,
-            OrganisationService organisationService,
+            OrganisationRepository organisationRepository,
             ContributorsQueries contributorsQueries,
+            ClassificationsQueries classificationsQueries,
             GraphsProperties graphs,
             GraphDBCollectionProperties collectionProperties,
             @Value("${fr.insee.rmes.bauhaus.baseGraph}${fr.insee.rmes.bauhaus.datasets.graph}") String datasetsGraph,
@@ -72,8 +75,9 @@ public class GraphDbStampChecker implements StampChecker {
         this.ddiRepository = ddiRepository;
         this.seriesCreatorsPort = seriesCreatorsPort;
         this.datasetDistributionQueries = datasetDistributionQueries;
-        this.organisationService = organisationService;
+        this.organisationRepository = organisationRepository;
         this.contributorsQueries = contributorsQueries;
+        this.classificationsQueries = classificationsQueries;
         this.graphs = graphs;
         this.collectionProperties = collectionProperties;
         this.datasetsGraph = datasetsGraph;
@@ -137,6 +141,7 @@ public class GraphDbStampChecker implements StampChecker {
                         case DATASET_DATASET ->
                             contributorsQueries.getContributors(
                                     datasetsGraph, RdfUtils.createIRI(catalogRecordBaseUri + "/" + id));
+                        case CLASSIFICATION_CLASSIFICATION -> classificationContributorsQuery(id);
                         case CONCEPT_CONCEPT ->
                             contributorsQueries.getContributors(
                                     graphs.conceptsGraph(), RdfUtils.objectIRI(ObjectType.CONCEPT, id));
@@ -157,6 +162,16 @@ public class GraphDbStampChecker implements StampChecker {
         }
     }
 
+    /** Une nomenclature vit dans son propre graphe, découvert avec son IRI. */
+    private String classificationContributorsQuery(String id) throws RmesException {
+        JSONObject graphAndUri = repositoryGestion.getResponseAsObject(classificationsQueries.getGraphUriById(id));
+        if (graphAndUri.isEmpty()) {
+            throw new IllegalArgumentException("Unknown classification " + id);
+        }
+        return contributorsQueries.getContributors(
+                graphAndUri.getString("graph"), RdfUtils.createIRI(graphAndUri.getString("uri")));
+    }
+
     private List<String> getStamps(RBAC.Module module, String query) {
         return getStamps(module == RBAC.Module.DATASET_DISTRIBUTION ? "contributors" : "contributor", query);
     }
@@ -166,7 +181,7 @@ public class GraphDbStampChecker implements StampChecker {
         if (values.isEmpty()) return values;
         Map<String, OrganisationOption> organisationsMap;
         try {
-            organisationsMap = organisationService.getOrganisationsMap(
+            organisationsMap = organisationRepository.getOrganisationsMap(
                     values.stream().distinct().toList());
         } catch (RmesException e) {
             logger.warn("Failed to resolve organisation stamps; keeping raw values", e);

@@ -9,7 +9,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 
 @Target({ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
-@PreAuthorize("@propertiesAccessPrivilegesChecker.hasAccess('{module}', '{privilege}', #id, authentication.principal)")
+// `id` est soit l'identifiant brut, soit le record Id d'un @PathVariable : seul son identifiant est contrôlé.
+@PreAuthorize(
+        "@propertiesAccessPrivilegesChecker.hasAccess('{module}', '{privilege}', #id instanceof T(fr.insee.rmes.modules.commons.configuration.swagger.model.Id) ? #id.identifier() : #id, authentication.principal)")
 public @interface HasAccess {
     RBAC.Module module();
 

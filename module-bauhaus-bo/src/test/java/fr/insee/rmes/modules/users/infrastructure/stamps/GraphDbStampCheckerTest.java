@@ -18,11 +18,12 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.DDIRepository;
 import fr.insee.rmes.modules.operation.series.domain.port.serverside.SeriesCreatorsPort;
 import fr.insee.rmes.modules.organisations.domain.model.OrganisationOption;
-import fr.insee.rmes.modules.organisations.domain.port.clientside.OrganisationService;
+import fr.insee.rmes.modules.organisations.domain.port.serverside.OrganisationRepository;
 import fr.insee.rmes.modules.structures.infrastructure.graphdb.StructureQueries;
 import fr.insee.rmes.modules.users.domain.exceptions.StampFetchException;
 import fr.insee.rmes.modules.users.domain.exceptions.UnsupportedModuleException;
 import fr.insee.rmes.modules.users.domain.model.RBAC;
+import fr.insee.rmes.persistance.sparql_queries.classifications.ClassificationsQueries;
 import fr.insee.rmes.persistance.sparql_queries.datasets.DatasetDistributionQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationSeriesQueries;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
@@ -67,10 +68,13 @@ class GraphDbStampCheckerTest {
     private DatasetDistributionQueries datasetDistributionQueries;
 
     @Mock
-    private OrganisationService organisationService;
+    private OrganisationRepository organisationRepository;
 
     @Mock
     private ContributorsQueries contributorsQueries;
+
+    @Mock
+    private ClassificationsQueries classificationsQueries;
 
     private final GraphDBCollectionProperties collectionProperties =
             new GraphDBCollectionProperties("http://bauhaus/graph/concepts", "http://bauhaus/concepts/definitions");
@@ -89,8 +93,9 @@ class GraphDbStampCheckerTest {
                 ddiRepository,
                 seriesCreatorsPort,
                 datasetDistributionQueries,
-                organisationService,
+                organisationRepository,
                 contributorsQueries,
+                classificationsQueries,
                 GraphsPropertiesStub.stub(),
                 collectionProperties,
                 DATASETS_GRAPH,
@@ -283,6 +288,29 @@ class GraphDbStampCheckerTest {
     }
 
     @Test
+    void get_contributors_stamps_of_a_classification_reads_its_dc_contributor_in_its_own_graph()
+            throws StampFetchException, UnsupportedModuleException, RmesException {
+        String graph = "http://rdf.insee.fr/graphes/codes/nafr2";
+        String classificationIri = "http://bauhaus/codes/nafr2/naf";
+        when(classificationsQueries.getGraphUriById("nafr2")).thenReturn("SELECT-graph");
+        when(repositoryGestion.getResponseAsObject("SELECT-graph"))
+                .thenReturn(new JSONObject().put("graph", graph).put("uri", classificationIri));
+        givenContributorsOf(graph, classificationIri, "DG75-L201");
+
+        assertThat(checker.getContributorsStamps(RBAC.Module.CLASSIFICATION_CLASSIFICATION, "nafr2"))
+                .containsExactly("DG75-L201");
+    }
+
+    @Test
+    void get_contributors_stamps_of_an_unknown_classification_reports_a_fetch_failure() throws RmesException {
+        when(classificationsQueries.getGraphUriById("unknown")).thenReturn("SELECT-graph");
+        when(repositoryGestion.getResponseAsObject("SELECT-graph")).thenReturn(new JSONObject());
+
+        assertThatThrownBy(() -> checker.getContributorsStamps(RBAC.Module.CLASSIFICATION_CLASSIFICATION, "unknown"))
+                .isInstanceOf(StampFetchException.class);
+    }
+
+    @Test
     void get_creators_stamps_unsupported_module_throws_unsupported_module_exception() {
         assertThatThrownBy(() -> checker.getCreatorsStamps(RBAC.Module.CONCEPT_CONCEPT, "some-id"))
                 .isInstanceOf(UnsupportedModuleException.class);
@@ -294,7 +322,7 @@ class GraphDbStampCheckerTest {
         String orgIri1 = "http://id.insee.fr/organisations/insee/DG75-G401";
         String orgIri2 = "http://id.insee.fr/organisations/insee/DG75-G450";
         givenSeriesCreators(orgIri1, orgIri2);
-        when(organisationService.getOrganisationsMap(anyList()))
+        when(organisationRepository.getOrganisationsMap(anyList()))
                 .thenReturn(Map.of(
                         orgIri1, new OrganisationOption("DG75-G401", "Label 1"),
                         orgIri2, new OrganisationOption("DG75-G450", "Label 2")));
@@ -311,7 +339,7 @@ class GraphDbStampCheckerTest {
         String orgIri = "http://id.insee.fr/organisations/insee/DG75-G401";
         givenGroupResponse(new Ddi4GroupResponse(null, null, List.of(group(null, List.of(iri1))), null));
         when(seriesCreatorsPort.getCreatorsForSeries(List.of(iri1))).thenReturn(Map.of(iri1, List.of(orgIri)));
-        when(organisationService.getOrganisationsMap(anyList()))
+        when(organisationRepository.getOrganisationsMap(anyList()))
                 .thenReturn(Map.of(orgIri, new OrganisationOption("DG75-G401", "Label")));
 
         List<String> result = creatorsStampsOfGroup();
@@ -325,7 +353,7 @@ class GraphDbStampCheckerTest {
         String orgIri = "http://id.insee.fr/organisations/insee/DG75-G401";
         String unresolved = "DG75-UNKNOWN";
         givenSeriesCreators(orgIri, unresolved);
-        when(organisationService.getOrganisationsMap(anyList()))
+        when(organisationRepository.getOrganisationsMap(anyList()))
                 .thenReturn(Map.of(orgIri, new OrganisationOption("DG75-G401", "Label")));
 
         List<String> result = creatorsStampsOfSeries();
