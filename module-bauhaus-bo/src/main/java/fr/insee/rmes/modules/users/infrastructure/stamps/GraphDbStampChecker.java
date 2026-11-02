@@ -1,12 +1,13 @@
 package fr.insee.rmes.modules.users.infrastructure.stamps;
 
+import fr.insee.rmes.GraphsProperties;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.graphdb.ontologies.QB;
 import fr.insee.rmes.json.JSONUtils;
 import fr.insee.rmes.modules.commons.hexagonal.ServerSideAdaptor;
-import fr.insee.rmes.modules.datasets.datasets.infrastructure.DatasetQueries;
+import fr.insee.rmes.modules.concepts.collections.infrastructure.graphdb.GraphDBCollectionProperties;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4GroupResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.DDIRepository;
 import fr.insee.rmes.modules.operation.series.domain.port.serverside.SeriesCreatorsPort;
@@ -30,6 +31,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
 @ServerSideAdaptor
@@ -38,31 +40,44 @@ public class GraphDbStampChecker implements StampChecker {
     private static final Logger logger = LoggerFactory.getLogger(GraphDbStampChecker.class);
 
     private final RepositoryGestion repositoryGestion;
-    private final DatasetQueries datasetQueries;
     private final StructureQueries structureQueries;
     private final OperationSeriesQueries operationSeriesQueries;
     private final DDIRepository ddiRepository;
     private final SeriesCreatorsPort seriesCreatorsPort;
     private final DatasetDistributionQueries datasetDistributionQueries;
     private final OrganisationService organisationService;
+    private final ContributorsQueries contributorsQueries;
+    private final GraphsProperties graphs;
+    private final GraphDBCollectionProperties collectionProperties;
+    private final String datasetsGraph;
+    private final String catalogRecordBaseUri;
 
     public GraphDbStampChecker(
             RepositoryGestion repositoryGestion,
-            DatasetQueries datasetQueries,
             StructureQueries structureQueries,
             OperationSeriesQueries operationSeriesQueries,
             DDIRepository ddiRepository,
             SeriesCreatorsPort seriesCreatorsPort,
             DatasetDistributionQueries datasetDistributionQueries,
-            OrganisationService organisationService) {
+            OrganisationService organisationService,
+            ContributorsQueries contributorsQueries,
+            GraphsProperties graphs,
+            GraphDBCollectionProperties collectionProperties,
+            @Value("${fr.insee.rmes.bauhaus.baseGraph}${fr.insee.rmes.bauhaus.datasets.graph}") String datasetsGraph,
+            @Value("${fr.insee.rmes.bauhaus.sesame.gestion.baseURI}/${fr.insee.rmes.bauhaus.datasets.record.baseURI}")
+                    String catalogRecordBaseUri) {
         this.repositoryGestion = repositoryGestion;
-        this.datasetQueries = datasetQueries;
         this.structureQueries = structureQueries;
         this.operationSeriesQueries = operationSeriesQueries;
         this.ddiRepository = ddiRepository;
         this.seriesCreatorsPort = seriesCreatorsPort;
         this.datasetDistributionQueries = datasetDistributionQueries;
         this.organisationService = organisationService;
+        this.contributorsQueries = contributorsQueries;
+        this.graphs = graphs;
+        this.collectionProperties = collectionProperties;
+        this.datasetsGraph = datasetsGraph;
+        this.catalogRecordBaseUri = catalogRecordBaseUri;
     }
 
     @Override
@@ -112,29 +127,38 @@ public class GraphDbStampChecker implements StampChecker {
         try {
             var query =
                     switch (module) {
-                        case STRUCTURE_STRUCTURE -> {
-                            var iri = RdfUtils.objectIRI(ObjectType.STRUCTURE, id);
-                            yield structureQueries.getContributorsByStructureUri(iri.toString());
-                        }
-                        case STRUCTURE_COMPONENT -> {
-                            var iri = findStructureComponentIri(id);
-                            yield structureQueries.getContributorsByComponentUri(iri.toString());
-                        }
+                        case STRUCTURE_STRUCTURE ->
+                            contributorsQueries.getContributors(
+                                    graphs.structuresGraph(), RdfUtils.objectIRI(ObjectType.STRUCTURE, id));
+                        case STRUCTURE_COMPONENT ->
+                            contributorsQueries.getContributors(
+                                    graphs.structuresComponentsGraph(), findStructureComponentIri(id));
+                        // Le contributeur d'un jeu de données est porté par son entrée de catalogue.
+                        case DATASET_DATASET ->
+                            contributorsQueries.getContributors(
+                                    datasetsGraph, RdfUtils.createIRI(catalogRecordBaseUri + "/" + id));
+                        case CONCEPT_CONCEPT ->
+                            contributorsQueries.getContributors(
+                                    graphs.conceptsGraph(), RdfUtils.objectIRI(ObjectType.CONCEPT, id));
+                        case CONCEPT_COLLECTION ->
+                            contributorsQueries.getContributors(
+                                    graphs.conceptsGraph(), collectionProperties.getResourceIRI(id));
+                        // Celui d'une distribution aussi, atteinte par jointure depuis la distribution.
                         case DATASET_DISTRIBUTION -> {
                             var iri = RdfUtils.objectIRI(ObjectType.DISTRIBUTION, id);
                             yield datasetDistributionQueries.getContributorsByDistributionUri(iri.toString());
                         }
-                        case DATASET_DATASET -> {
-                            var iri = RdfUtils.objectIRI(ObjectType.DATASET, id);
-                            yield datasetQueries.getDatasetContributors(iri);
-                        }
                         default -> throw new UnsupportedModuleException(module);
                     };
-            return normalizeOrganisationStamps(this.getStamps("contributors", query));
+            return normalizeOrganisationStamps(this.getStamps(module, query));
         } catch (RmesException | IllegalArgumentException _) {
             // IllegalArgumentException : l'identifiant ne donne pas une IRI injectable dans la requête.
             throw new StampFetchException(module, id);
         }
+    }
+
+    private List<String> getStamps(RBAC.Module module, String query) {
+        return getStamps(module == RBAC.Module.DATASET_DISTRIBUTION ? "contributors" : "contributor", query);
     }
 
     private List<String> normalizeOrganisationStamps(List<String> values) {

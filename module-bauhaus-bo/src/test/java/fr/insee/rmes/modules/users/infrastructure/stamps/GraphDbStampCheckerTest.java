@@ -2,14 +2,16 @@ package fr.insee.rmes.modules.users.infrastructure.stamps;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.ObjectType;
-import fr.insee.rmes.modules.datasets.datasets.infrastructure.DatasetQueries;
+import fr.insee.rmes.modules.concepts.collections.infrastructure.graphdb.GraphDBCollectionProperties;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4GroupResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
@@ -40,15 +42,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class GraphDbStampCheckerTest {
 
+    private static final SimpleValueFactory VF = SimpleValueFactory.getInstance();
+    private static final String CONCEPTS_GRAPH = GraphsPropertiesStub.stub().conceptsGraph();
     private static final String SERIES_ID = "s42";
     private static final IRI SERIES_IRI =
             SimpleValueFactory.getInstance().createIRI("http://id.insee.fr/operations/serie/" + SERIES_ID);
 
     @Mock
     private RepositoryGestion repositoryGestion;
-
-    @Mock
-    private DatasetQueries datasetQueries;
 
     @Mock
     private StructureQueries structureQueries;
@@ -68,19 +69,43 @@ class GraphDbStampCheckerTest {
     @Mock
     private OrganisationService organisationService;
 
+    @Mock
+    private ContributorsQueries contributorsQueries;
+
+    private final GraphDBCollectionProperties collectionProperties =
+            new GraphDBCollectionProperties("http://bauhaus/graph/concepts", "http://bauhaus/concepts/definitions");
+
+    private static final String DATASETS_GRAPH = "http://rdf.insee.fr/graphes/catalogue";
+    private static final String CATALOG_RECORD_BASE_URI = "http://bauhaus/catalogues/entreeCatalogue";
+
     private GraphDbStampChecker checker;
 
     @BeforeEach
     void setUp() {
         checker = new GraphDbStampChecker(
                 repositoryGestion,
-                datasetQueries,
                 structureQueries,
                 operationSeriesQueries,
                 ddiRepository,
                 seriesCreatorsPort,
                 datasetDistributionQueries,
-                organisationService);
+                organisationService,
+                contributorsQueries,
+                GraphsPropertiesStub.stub(),
+                collectionProperties,
+                DATASETS_GRAPH,
+                CATALOG_RECORD_BASE_URI);
+    }
+
+    /** Les contributeurs de la ressource d'IRI donnée, lus dans le graphe donné, une ligne par valeur. */
+    private void givenContributorsOf(String graph, String iri, String... contributors) throws RmesException {
+        String query = "SELECT-contributors-" + iri;
+        when(contributorsQueries.getContributors(graph, VF.createIRI(iri))).thenReturn(query);
+        JSONArray rows = new JSONArray();
+        for (String contributor : contributors) {
+            rows.put(new JSONObject().put("contributor", contributor));
+        }
+        when(repositoryGestion.getResponseAsArray(query)).thenReturn(rows);
     }
 
     private static Ddi4Group group(List<Reference> studyUnitReference, List<String> seriesIris) {
@@ -180,8 +205,8 @@ class GraphDbStampCheckerTest {
     void get_contributors_stamps_reports_a_fetch_failure_when_the_id_cannot_be_injected() throws Exception {
         // Un identifiant qui ne peut pas être sérialisé en IRI fait échouer la construction de la
         // requête : c'est un échec de récupération du timbre, pas un plantage du contrôle d'accès.
-        IRI structureIri = SimpleValueFactory.getInstance().createIRI("http://bauhaus/structures/structure/1234");
-        when(structureQueries.getContributorsByStructureUri(structureIri.toString()))
+        IRI structureIri = VF.createIRI("http://bauhaus/structures/structure/1234");
+        when(contributorsQueries.getContributors(GraphsPropertiesStub.stub().structuresGraph(), structureIri))
                 .thenThrow(new IllegalArgumentException("Character forbidden in an IRI"));
 
         try (MockedStatic<RdfUtils> mocked = mockStatic(RdfUtils.class)) {
@@ -190,6 +215,71 @@ class GraphDbStampCheckerTest {
             assertThatThrownBy(() -> checker.getContributorsStamps(RBAC.Module.STRUCTURE_STRUCTURE, "1234"))
                     .isInstanceOf(StampFetchException.class);
         }
+    }
+
+    @Test
+    void get_contributors_stamps_of_a_structure_reads_its_dc_contributor_in_the_structures_graph()
+            throws StampFetchException, UnsupportedModuleException, RmesException {
+        IRI structureIri = VF.createIRI("http://bauhaus/structures/structure/1234");
+        givenContributorsOf(GraphsPropertiesStub.stub().structuresGraph(), structureIri.toString(), "DG75-L201");
+
+        try (MockedStatic<RdfUtils> mocked = mockStatic(RdfUtils.class)) {
+            mocked.when(() -> RdfUtils.objectIRI(ObjectType.STRUCTURE, "1234")).thenReturn(structureIri);
+
+            assertThat(checker.getContributorsStamps(RBAC.Module.STRUCTURE_STRUCTURE, "1234"))
+                    .containsExactly("DG75-L201");
+        }
+    }
+
+    @Test
+    void get_contributors_stamps_of_a_component_reads_its_dc_contributor_in_the_components_graph()
+            throws StampFetchException, UnsupportedModuleException, RmesException {
+        IRI componentIri = VF.createIRI("http://bauhaus/structures/attribut/a1");
+        when(structureQueries.getComponentType("a1")).thenReturn("SELECT-type");
+        when(repositoryGestion.getResponseAsObject("SELECT-type"))
+                .thenReturn(new JSONObject().put("type", "http://purl.org/linked-data/cube#AttributeProperty"));
+        givenContributorsOf(
+                GraphsPropertiesStub.stub().structuresComponentsGraph(), componentIri.toString(), "DG75-L201");
+
+        try (MockedStatic<RdfUtils> mocked = mockStatic(RdfUtils.class)) {
+            mocked.when(() -> RdfUtils.toString(any(IRI.class))).thenCallRealMethod();
+            mocked.when(() -> RdfUtils.structureComponentAttributeIRI("a1")).thenReturn(componentIri);
+
+            assertThat(checker.getContributorsStamps(RBAC.Module.STRUCTURE_COMPONENT, "a1"))
+                    .containsExactly("DG75-L201");
+        }
+    }
+
+    @Test
+    void get_contributors_stamps_of_a_dataset_reads_the_dc_contributor_of_its_catalog_record()
+            throws StampFetchException, UnsupportedModuleException, RmesException {
+        givenContributorsOf(DATASETS_GRAPH, CATALOG_RECORD_BASE_URI + "/jd1000", "DG75-L201");
+
+        assertThat(checker.getContributorsStamps(RBAC.Module.DATASET_DATASET, "jd1000"))
+                .containsExactly("DG75-L201");
+    }
+
+    @Test
+    void get_contributors_stamps_of_a_concept_reads_its_dc_contributor_in_the_concepts_graph()
+            throws StampFetchException, UnsupportedModuleException, RmesException {
+        IRI conceptIri = VF.createIRI("http://bauhaus/concepts/definition/c1000");
+        givenContributorsOf(CONCEPTS_GRAPH, conceptIri.toString(), "DG75-L201");
+
+        try (MockedStatic<RdfUtils> mocked = mockStatic(RdfUtils.class)) {
+            mocked.when(() -> RdfUtils.objectIRI(ObjectType.CONCEPT, "c1000")).thenReturn(conceptIri);
+
+            assertThat(checker.getContributorsStamps(RBAC.Module.CONCEPT_CONCEPT, "c1000"))
+                    .containsExactly("DG75-L201");
+        }
+    }
+
+    @Test
+    void get_contributors_stamps_of_a_collection_reads_its_dc_contributor_in_the_concepts_graph()
+            throws StampFetchException, UnsupportedModuleException, RmesException {
+        givenContributorsOf(CONCEPTS_GRAPH, "http://bauhaus/concepts/definitions/col1", "DG75-L201");
+
+        assertThat(checker.getContributorsStamps(RBAC.Module.CONCEPT_COLLECTION, "col1"))
+                .containsExactly("DG75-L201");
     }
 
     @Test
