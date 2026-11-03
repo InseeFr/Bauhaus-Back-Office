@@ -28,6 +28,7 @@ import fr.insee.rmes.model.operations.Indicator;
 import fr.insee.rmes.modules.operations.indicators.domain.model.IndicatorLink;
 import fr.insee.rmes.modules.operations.indicators.domain.model.commands.IndicatorCommand;
 import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
+import fr.insee.rmes.modules.shared_kernel.infrastructure.publication.ObjectPublished;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationIndicatorsQueries;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import java.util.ArrayList;
@@ -50,6 +51,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 
 @AppSpringBootTest
 @ExtendWith(MockitoExtension.class)
@@ -59,6 +61,12 @@ class IndicatorsRepositoryTest {
 
     @Mock
     private OperationIndicatorsQueries operationIndicatorsQueries;
+
+    @Mock
+    private IndicatorPublication indicatorPublication;
+
+    @Mock
+    private ApplicationEventPublisher events;
 
     @Autowired
     private OperationsObjectMapper operationsObjectMapper;
@@ -375,6 +383,39 @@ class IndicatorsRepositoryTest {
         assertThat(exception.getStatus()).isEqualTo(404);
     }
 
+    @Test
+    void shouldAnnounceThePublicationWithTheProductsGraph() throws RmesException {
+        IndicatorsRepository indicatorsRepository = spy(indicatorsRepository());
+        Indicator indicator = new Indicator();
+        doReturn(indicator).when(indicatorsRepository).getIndicatorById("p1000", false);
+
+        indicatorsRepository.validateIndicator("p1000");
+
+        ArgumentCaptor<ObjectPublished> event = ArgumentCaptor.forClass(ObjectPublished.class);
+        verify(events).publishEvent(event.capture());
+        assertThat(event.getValue())
+                .isEqualTo(new ObjectPublished(
+                        RdfUtils.objectIRI(ObjectType.INDICATOR, "p1000"),
+                        SimpleValueFactory.getInstance().createIRI("http://rdf.insee.fr/graphes/produits")));
+    }
+
+    @Test
+    void shouldNeitherPublishNorAnnounceAnIndicatorWhoseSeriesAreNotPublished() throws RmesException {
+        IndicatorsRepository indicatorsRepository = spy(indicatorsRepository());
+        Indicator indicator = new Indicator();
+        doReturn(indicator).when(indicatorsRepository).getIndicatorById("p1000", false);
+        doThrow(RmesBadRequestException.coded(
+                        IndicatorErrorCode.VALIDATION_UNVALIDATED_SERIES,
+                        "An indicator can be published if and only if all parent series have been published."))
+                .when(indicatorPublication)
+                .validate(indicator);
+
+        assertThrows(RmesBadRequestException.class, () -> indicatorsRepository.validateIndicator("p1000"));
+
+        verify(indicatorPublication, never()).publish(any());
+        verifyNoInteractions(events);
+    }
+
     private IndicatorsRepository indicatorsRepository() {
         return indicatorsRepository(operationIndicatorsQueries, null);
     }
@@ -393,13 +434,14 @@ class IndicatorsRepositoryTest {
                 repositoryGestion,
                 codeListService,
                 null,
-                null,
+                indicatorPublication,
                 operationsObjectMapper,
                 null,
                 null,
                 bauhausUriBuilder,
                 new BauhausLanguagesProperties("fr", "en"),
                 indicatorsQueries,
-                organisationLookup);
+                organisationLookup,
+                events);
     }
 }

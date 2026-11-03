@@ -5,6 +5,7 @@ import static fr.insee.rmes.modules.commons.webservice.ValidationMessages.REQUIR
 import fr.insee.rmes.modules.operations.families.domain.model.commands.CreateFamilyCommand;
 import fr.insee.rmes.modules.operations.families.domain.model.commands.UpdateFamilyCommand;
 import jakarta.validation.constraints.NotBlank;
+import java.util.List;
 
 /**
  * Corps des requêtes de création et de mise à jour d'une famille.
@@ -21,13 +22,14 @@ public record FamilyRequest(
         @NotBlank(message = REQUIRED) String prefLabelLg2,
         String abstractLg1,
         String abstractLg2,
-        String created) {
+        String created,
+        List<String> contributor) {
 
     CreateFamilyCommand toCreateCommand() {
-        return new CreateFamilyCommand(prefLabelLg1, prefLabelLg2, abstractLg1, abstractLg2);
+        return new CreateFamilyCommand(prefLabelLg1, prefLabelLg2, abstractLg1, abstractLg2, contributor);
     }
 
     UpdateFamilyCommand toUpdateCommand(String id) {
-        return new UpdateFamilyCommand(id, prefLabelLg1, prefLabelLg2, abstractLg1, abstractLg2, created);
+        return new UpdateFamilyCommand(id, prefLabelLg1, prefLabelLg2, abstractLg1, abstractLg2, created, contributor);
     }
 }

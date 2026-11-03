@@ -1,13 +1,14 @@
 SELECT ?id ?prefLabelLg1 ?prefLabelLg2 ?created ?modified ?altLabelLg1 ?altLabelLg2  ?abstractLg1 ?abstractLg2  ?historyNoteLg1 ?historyNoteLg2
 ?accrualPeriodicityCode ?accrualPeriodicityList  ?publishers ?creators  ?idSims  ?validationState
 WHERE {
+    <#-- Le libellé d'abord : un OPTIONAL en tête lierait ?indic à tout objet daté, et les
+         dialectes SPARQL stricts (Fuseki) ne rendraient plus l'indicateur sans date. -->
+    ?indic skos:prefLabel ?prefLabelLg1
+    FILTER (lang(?prefLabelLg1) = ${LG1})
     FILTER(STRENDS(STR(?indic),${INDICATOR_URI_SUFFIX})) .
 
     OPTIONAL { ?indic dcterms:created ?created } .
     OPTIONAL { ?indic dcterms:modified ?modified } .
-
-    ?indic skos:prefLabel ?prefLabelLg1
-    FILTER (lang(?prefLabelLg1) = ${LG1})
     OPTIONAL{?indic skos:prefLabel ?prefLabelLg2
     FILTER (lang(?prefLabelLg2) = ${LG2}) }
     OPTIONAL{?indic skos:altLabel ?altLabelLg1

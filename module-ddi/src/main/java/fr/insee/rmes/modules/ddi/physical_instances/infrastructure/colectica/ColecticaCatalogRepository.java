@@ -46,6 +46,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.client.HttpClientErrorException;
 
 /**
  * Listings et recherches du catalogue Colectica : tout ce qui s'obtient par un {@code _query} global
@@ -426,9 +427,21 @@ class ColecticaCatalogRepository {
                 .toList();
     }
 
+    /**
+     * @return le XML de l'item, ou {@code null} s'il n'existe pas. Colectica répond 400 à un
+     *     identifiant qui n'est pas un UUID ou à une version non numérique, 404 à un item inconnu :
+     *     tous trois valent « absent » (#1671).
+     */
     String getItemXml(String agency, String id, String version) {
-        ColecticaItemResponse response = colecticaClient.getItem(agency, id, version);
-        return response != null ? response.item() : null;
+        if (!ColecticaIdentifiers.isIdentifier(id) || (version != null && !version.matches("\\d+"))) {
+            return null;
+        }
+        try {
+            ColecticaItemResponse response = colecticaClient.getItem(agency, id, version);
+            return response != null ? response.item() : null;
+        } catch (HttpClientErrorException.NotFound _) {
+            return null;
+        }
     }
 
     private <T> List<T> queryPartials(String itemTypeUuid, PartialFactory<T> factory) {

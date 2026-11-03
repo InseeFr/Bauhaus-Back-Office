@@ -38,13 +38,9 @@ class ValidatedStatusWriteTest {
 
     private static final Set<String> FROZEN = Set.of(
             "module-bauhaus-bo/src/main/java/fr/insee/rmes/bauhaus_services/classifications/ClassificationsServiceImpl.java",
-            "module-bauhaus-bo/src/main/java/fr/insee/rmes/bauhaus_services/code_list/CodeListServiceImpl.java",
             "module-bauhaus-bo/src/main/java/fr/insee/rmes/bauhaus_services/concepts/collections/LegacyCollectionsRepository.java",
             "module-bauhaus-bo/src/main/java/fr/insee/rmes/bauhaus_services/concepts/concepts/LegacyConceptsRepository.java",
             "module-bauhaus-bo/src/main/java/fr/insee/rmes/bauhaus_services/operations/documentations/DocumentationsUtils.java",
-            "module-bauhaus-bo/src/main/java/fr/insee/rmes/bauhaus_services/operations/indicators/IndicatorsRepository.java",
-            "module-bauhaus-bo/src/main/java/fr/insee/rmes/bauhaus_services/operations/operations/OperationsRepository.java",
-            "module-bauhaus-bo/src/main/java/fr/insee/rmes/bauhaus_services/operations/series/SeriesRepository.java",
             "module-bauhaus-bo/src/main/java/fr/insee/rmes/bauhaus_services/structures/persistence/StructureComponentRepository.java",
             "module-bauhaus-bo/src/main/java/fr/insee/rmes/bauhaus_services/structures/persistence/StructureRepository.java");
 

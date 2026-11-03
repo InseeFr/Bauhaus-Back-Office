@@ -109,7 +109,9 @@ class LocalColecticaGroupInitConfigurationTest {
                 "token",
                 null,
                 null,
-                "fr.insee");
+                "fr.insee",
+                null,
+                null);
         return new ColecticaConfiguration(List.of("fr-FR"), instanceConfig, null, null);
     }
 
@@ -1014,7 +1016,9 @@ class LocalColecticaGroupInitConfigurationTest {
                 "token",
                 null,
                 null,
-                "fr.insee");
+                "fr.insee",
+                null,
+                null);
         return new ColecticaConfiguration(List.of("fr-FR"), instanceConfig, null, null);
     }
 

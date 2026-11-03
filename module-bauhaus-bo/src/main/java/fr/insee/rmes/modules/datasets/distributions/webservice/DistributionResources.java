@@ -112,7 +112,7 @@ public class DistributionResources {
 
     @PatchMapping(value = "/{id}", consumes = APPLICATION_JSON_VALUE)
     @HasAccess(module = RBAC.Module.DATASET_DISTRIBUTION, privilege = RBAC.Privilege.UPDATE)
-    public void patchDistribution(@PathVariable("id") String id, @RequestBody PatchDistribution distribution)
+    public void patchDistribution(@PathVariable("id") String id, @Valid @RequestBody PatchDistribution distribution)
             throws RmesException {
         this.distributionService.patchDistribution(id, distribution);
     }

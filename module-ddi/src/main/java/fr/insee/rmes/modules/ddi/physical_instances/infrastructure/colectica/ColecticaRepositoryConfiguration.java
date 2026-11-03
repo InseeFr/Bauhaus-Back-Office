@@ -3,6 +3,7 @@ package fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica;
 import fr.insee.rmes.colectica.client.ColecticaClient;
 import fr.insee.rmes.colectica.client.ItemReference;
 import fr.insee.rmes.colectica.client.auth.ColecticaCredentials;
+import fr.insee.rmes.http.RestClients;
 import fr.insee.rmes.keycloak.TokenService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3toDDI4ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI4toDDI3ConverterService;
@@ -22,7 +23,7 @@ public class ColecticaRepositoryConfiguration {
 
     /**
      * The Colectica SDK owns the only {@link RestClient} used to reach Colectica; the application code
-     * talks to Colectica exclusively through this bean.
+     * talks to Colectica exclusively through this bean. Its timeouts come from the instance configuration.
      */
     @Bean
     public ColecticaClient colecticaClient(
@@ -32,7 +33,11 @@ public class ColecticaRepositoryConfiguration {
                 ? new ColecticaCredentials.BearerToken(
                         colecticaTokenService::getAccessToken, colecticaTokenService::invalidate)
                 : new ColecticaCredentials.UserPassword(server.username(), server.password());
-        return new ColecticaClient(RestClient.create(), server.baseApiUrl(), server.baseServerUrl(), credentials);
+        return new ColecticaClient(
+                RestClients.withTimeouts(server.connectTimeout(), server.readTimeout()),
+                server.baseApiUrl(),
+                server.baseServerUrl(),
+                credentials);
     }
 
     /**

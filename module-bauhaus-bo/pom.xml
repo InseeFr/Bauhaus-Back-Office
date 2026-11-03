@@ -8,7 +8,7 @@
   </parent>
 
   <artifactId>module-bauhaus-bo</artifactId>
-  <version>4.22.0-rc4</version>
+  <version>4.23.0-rc1</version>
   <name>module-bauhaus-bo</name>
 
   <dependencies>
@@ -94,15 +94,11 @@
       <artifactId>spring-boot-restclient</artifactId>
       <scope>test</scope>
     </dependency>
-    <!-- Enregistre SPARQLParserFactory dans le QueryParserRegistry : permet aux tests de rendre une
-         requête et de la faire analyser par le parseur, sans dépôt. Le runtime n'en a pas besoin,
-         c'est GraphDB qui analyse les requêtes envoyées par rdf4j-repository-http. -->
-    <dependency>
-      <groupId>org.eclipse.rdf4j</groupId>
-      <artifactId>rdf4j-queryparser-sparql</artifactId>
-      <version>${rdf4j.version}</version>
-      <scope>test</scope>
-    </dependency>
+    <!-- Pas de rdf4j-queryparser-sparql en scope test ici : rdf4j-repository-sparql l'apporte en
+         compile, et SPARQLConnection s'en sert pour toute écriture vers Fuseki. Une déclaration
+         directe en test l'emporterait et le sortirait du jar livré (NoClassDefFoundError sur
+         SPARQLQueries au premier ajout de triplets). Les tests qui analysent une requête rendue
+         (SPARQLParserFactory) le trouvent par la même voie. -->
   </dependencies>
   <build>
     <sourceDirectory>src/main/java</sourceDirectory>

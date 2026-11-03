@@ -8,7 +8,7 @@ COPY mvnw mvnw
 COPY . .
 
 RUN chmod +x mvnw
-RUN ./mvnw -T 1C clean install -Dmaven.test.skip=true -X --no-transfer-progress --batch-mode --errors --fail-at-end --show-version
+RUN ./mvnw -T 1C clean install -Dmaven.test.skip=true --no-transfer-progress --batch-mode --errors --fail-at-end --show-version
 
 # Éclate l'uber-jar dans la disposition « efficiente » recommandée par Spring Boot
 # (https://docs.spring.io/spring-boot/reference/packaging/efficient.html) : les dépendances
@@ -22,14 +22,18 @@ RUN cp module-bauhaus-bo/target/module-bauhaus-bo-*.jar bauhaus.jar \
 
 FROM eclipse-temurin:25-jre-jammy
 
+# Changer la version impose de changer l'empreinte : celle publiée par Maven Central à côté du
+# jar (même URL suffixée de .sha256). Un fichier altéré ou une empreinte périmée fait échouer
+# le build au lieu d'embarquer un agent inconnu dans la JVM.
 ARG ELASTIC_APM_VERSION=1.55.4
+ARG ELASTIC_APM_SHA256=dc084bc06f34021b408effc957c458dce8278aab8859f173a3c2f9b085e032c4
 
 RUN groupadd -g 10000 javagroup
 RUN useradd -u 10000 -g javagroup -s /usr/sbin/nologin javauser
 RUN mkdir /opt/app/
 RUN chown -R 10000:10000 /opt/app/
 
-ADD https://repo.maven.apache.org/maven2/co/elastic/apm/elastic-apm-agent/$ELASTIC_APM_VERSION/elastic-apm-agent-$ELASTIC_APM_VERSION.jar /opt/elastic_apm/java/elastic-apm-agent.jar
+ADD --checksum=sha256:$ELASTIC_APM_SHA256 https://repo.maven.apache.org/maven2/co/elastic/apm/elastic-apm-agent/$ELASTIC_APM_VERSION/elastic-apm-agent-$ELASTIC_APM_VERSION.jar /opt/elastic_apm/java/elastic-apm-agent.jar
 RUN chown -R 10000:10000 /opt/elastic_apm/
 
 USER 10000

@@ -17,8 +17,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class StructureQueries {
 
-    private static final String URI_STRUCTURE = "URI_STRUCTURE";
-    private static final String URI_COMPONENT = "URI_COMPONENT";
     public static final String CODES_LISTS_GRAPH = "CODES_LISTS_GRAPH";
 
     private final BauhausLanguagesProperties languages;
@@ -137,18 +135,6 @@ public class StructureQueries {
         Map<String, Object> params = initParams();
         params.put("CODES_LIST", SparqlLiterals.iri(codeList));
         return buildStructureRequest("getUriClasseOwl.ftlh", params);
-    }
-
-    public String getContributorsByStructureUri(String uriStructure) throws RmesException {
-        Map<String, Object> params = initParams();
-        params.put(URI_STRUCTURE, SparqlLiterals.iri(uriStructure));
-        return buildStructureRequest("getStructureContributorsByUriQuery.ftlh", params);
-    }
-
-    public String getContributorsByComponentUri(String uriComponent) throws RmesException {
-        Map<String, Object> params = initParams();
-        params.put(URI_COMPONENT, SparqlLiterals.iri(uriComponent));
-        return buildStructureRequest("getComponentContributorsByUriQuery.ftlh", params);
     }
 
     public String getStructureContributors(IRI iri) throws RmesException {

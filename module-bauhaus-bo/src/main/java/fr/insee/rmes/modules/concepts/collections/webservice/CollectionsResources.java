@@ -1,5 +1,6 @@
 package fr.insee.rmes.modules.concepts.collections.webservice;
 
+import static fr.insee.rmes.modules.commons.webservice.ValidationMessages.REQUIRED;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 import fr.insee.rmes.modules.commons.configuration.ConditionalOnModule;
@@ -12,6 +13,8 @@ import fr.insee.rmes.modules.shared_kernel.domain.model.Language;
 import fr.insee.rmes.modules.users.domain.model.RBAC;
 import fr.insee.rmes.modules.users.webservice.HasAccess;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
@@ -103,7 +106,7 @@ public class CollectionsResources {
 
     @PostMapping(produces = MediaType.TEXT_PLAIN_VALUE)
     @HasAccess(module = RBAC.Module.CONCEPT_COLLECTION, privilege = RBAC.Privilege.CREATE)
-    String create(@RequestBody CreateCollectionRequest collection, HttpServletResponse response) {
+    String create(@Valid @RequestBody CreateCollectionRequest collection, HttpServletResponse response) {
         try {
             var collectionId = this.service.createCollection(collection.toCreateCommand());
 
@@ -129,7 +132,7 @@ public class CollectionsResources {
 
     @PutMapping("/{id}")
     @HasAccess(module = RBAC.Module.CONCEPT_COLLECTION, privilege = RBAC.Privilege.UPDATE)
-    void update(@PathVariable String id, @RequestBody UpdateCollectionRequest collection) {
+    void update(@PathVariable String id, @Valid @RequestBody UpdateCollectionRequest collection) {
         try {
 
             if (!id.equalsIgnoreCase(collection.id())) {
@@ -220,7 +223,8 @@ public class CollectionsResources {
 
     @PutMapping(value = "/{id}/validate", consumes = APPLICATION_JSON_VALUE)
     @HasAccess(module = RBAC.Module.CONCEPT_COLLECTION, privilege = RBAC.Privilege.PUBLISH)
-    ResponseEntity<Void> publish(@PathVariable String id, @RequestBody List<String> collectionIds) {
+    ResponseEntity<Void> publish(
+            @PathVariable String id, @Valid @RequestBody @NotEmpty(message = REQUIRED) List<String> collectionIds) {
         try {
             this.service.publishCollections(
                     collectionIds.stream().map(CollectionId::new).toList());

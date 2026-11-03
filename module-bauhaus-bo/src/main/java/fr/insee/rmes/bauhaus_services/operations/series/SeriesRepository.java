@@ -32,6 +32,7 @@ import fr.insee.rmes.modules.operations.series.domain.model.Series;
 import fr.insee.rmes.modules.operations.series.domain.model.SeriesLink;
 import fr.insee.rmes.modules.operations.series.domain.model.commands.SeriesCommand;
 import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
+import fr.insee.rmes.modules.shared_kernel.infrastructure.publication.ObjectPublished;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationSeriesQueries;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.utils.*;
@@ -586,30 +587,12 @@ public class SeriesRepository {
     }
 
     public void setSeriesValidation(String id) throws RmesException {
-        IRI seriesURI = RdfUtils.objectIRI(ObjectType.SERIES, id);
-
-        Model model = new LinkedHashModel();
         JSONObject serieJson = getSeriesJsonById(id, EncodingType.XML);
         seriesPublication.publishSeries(id, serieJson, RdfUtils.operationsGraph());
 
-        model.add(
-                seriesURI,
-                INSEE.VALIDATION_STATE,
-                RdfUtils.setLiteralString(ValidationStatus.VALIDATED),
-                RdfUtils.operationsGraph());
-        model.remove(
-                seriesURI,
-                INSEE.VALIDATION_STATE,
-                RdfUtils.setLiteralString(ValidationStatus.UNPUBLISHED),
-                RdfUtils.operationsGraph());
-        model.remove(
-                seriesURI,
-                INSEE.VALIDATION_STATE,
-                RdfUtils.setLiteralString(ValidationStatus.MODIFIED),
-                RdfUtils.operationsGraph());
+        IRI seriesURI = RdfUtils.objectIRI(ObjectType.SERIES, id);
         logger.info("Validate series : {}", seriesURI);
-
-        repositoryGestion.objectValidation(seriesURI, model);
+        events.publishEvent(new ObjectPublished(seriesURI, RdfUtils.operationsGraph()));
     }
 
     public boolean isSeriesAndOperationsExist(List<String> iris) throws RmesException {

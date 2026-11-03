@@ -33,6 +33,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -88,10 +89,10 @@ public class DocumentsResources {
     @PostMapping(value = "/document", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @HasAccess(module = RBAC.Module.OPERATION_DOCUMENT, privilege = RBAC.Privilege.CREATE)
     public ResponseEntity<String> createDocument(
-            @RequestParam("body") String body, @RequestParam("file") MultipartFile file)
+            @Valid @RequestPart("body") DocumentRequest body, @RequestParam("file") MultipartFile file)
             throws RmesException, IOException {
         try {
-            String id = documents.createDocument(DocumentRequest.fromJson(body).toForm(), uploaded(file));
+            String id = documents.createDocument(body.toForm(), uploaded(file));
             URI location = ServletUriComponentsBuilder.fromCurrentRequest()
                     .path("/{id}")
                     .buildAndExpand(id)
@@ -137,12 +138,11 @@ public class DocumentsResources {
         return ResponseEntity.ok(describe(DocumentKind.LINK, id));
     }
 
-    @PostMapping("/link")
+    @PostMapping(value = "/link", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @HasAccess(module = RBAC.Module.OPERATION_DOCUMENT, privilege = RBAC.Privilege.CREATE)
-    public ResponseEntity<String> createLink(@RequestParam("body") String body) throws RmesException {
+    public ResponseEntity<String> createLink(@Valid @RequestPart("body") DocumentRequest body) throws RmesException {
         try {
-            return ResponseEntity.ok(
-                    documents.createLink(DocumentRequest.fromJson(body).toForm()));
+            return ResponseEntity.ok(documents.createLink(body.toForm()));
         } catch (DocumentRuleViolationException e) {
             throw refused(e);
         }

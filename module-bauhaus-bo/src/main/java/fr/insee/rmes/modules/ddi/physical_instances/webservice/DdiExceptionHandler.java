@@ -2,6 +2,7 @@ package fr.insee.rmes.modules.ddi.physical_instances.webservice;
 
 import fr.insee.rmes.modules.commons.webservice.ApiError;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.DdiItemNotFoundException;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.InvalidReuseVariablesException;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.InvalidSentinelValuesException;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.MissingSchemeException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -42,6 +43,14 @@ public class DdiExceptionHandler {
     /** Valeurs sentinelles (#1566) : labels obligatoires manquants dans le payload de save. */
     @ExceptionHandler(InvalidSentinelValuesException.class)
     public ResponseEntity<ApiError> handleInvalidSentinelValues(InvalidSentinelValuesException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(new ApiError(ex.getMessage(), ex.code().name(), ex.params()));
+    }
+
+    /** Réutilisation de variables (#1674) : groupe ou variables étrangers à la PI source. */
+    @ExceptionHandler(InvalidReuseVariablesException.class)
+    public ResponseEntity<ApiError> handleInvalidReuseVariables(InvalidReuseVariablesException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(new ApiError(ex.getMessage(), ex.code().name(), ex.params()));

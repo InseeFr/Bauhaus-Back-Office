@@ -99,7 +99,8 @@ class DomainFamilyServiceTest {
     void create_family_should_save_the_family_unpublished_under_a_generated_id() throws Exception {
         when(operationFamilyRepository.generateId()).thenReturn("s1001");
 
-        String id = familyService.createFamily(new CreateFamilyCommand("Famille", "Family", "Résumé", "Abstract"));
+        String id = familyService.createFamily(
+                new CreateFamilyCommand("Famille", "Family", "Résumé", "Abstract", List.of()));
 
         assertEquals("s1001", id);
         ArgumentCaptor<OperationFamily> captor = ArgumentCaptor.forClass(OperationFamily.class);
@@ -116,6 +117,30 @@ class DomainFamilyServiceTest {
     }
 
     @Test
+    void create_family_should_save_its_contributors() throws Exception {
+        when(operationFamilyRepository.generateId()).thenReturn("s1001");
+
+        familyService.createFamily(new CreateFamilyCommand("Famille", "Family", null, null, List.of("DG75-L201")));
+
+        ArgumentCaptor<OperationFamily> captor = ArgumentCaptor.forClass(OperationFamily.class);
+        verify(operationFamilyRepository).save(captor.capture());
+        assertEquals(List.of("DG75-L201"), captor.getValue().contributors());
+    }
+
+    @Test
+    void update_family_should_save_its_contributors() throws Exception {
+        when(operationFamilyRepository.exists("s1001")).thenReturn(true);
+        when(operationFamilyRepository.getValidationStatus("s1001")).thenReturn(ValidationStatus.UNPUBLISHED);
+
+        familyService.updateFamily(
+                new UpdateFamilyCommand("s1001", "Famille", "Family", null, null, null, List.of("DG75-L201")));
+
+        ArgumentCaptor<OperationFamily> captor = ArgumentCaptor.forClass(OperationFamily.class);
+        verify(operationFamilyRepository).save(captor.capture());
+        assertEquals(List.of("DG75-L201"), captor.getValue().contributors());
+    }
+
+    @Test
     void create_family_should_reject_a_pref_label_lg1_already_used_by_another_family() throws Exception {
         when(operationFamilyRepository.generateId()).thenReturn("s1001");
         when(operationFamilyRepository.isPrefLabelAlreadyUsed("s1001", "Famille", Language.lg1))
@@ -123,7 +148,7 @@ class DomainFamilyServiceTest {
 
         FamilyPrefLabelAlreadyUsedException exception = assertThrows(
                 FamilyPrefLabelAlreadyUsedException.class,
-                () -> familyService.createFamily(new CreateFamilyCommand("Famille", "Family", null, null)));
+                () -> familyService.createFamily(new CreateFamilyCommand("Famille", "Family", null, null, List.of())));
 
         assertEquals(Language.lg1, exception.language());
         verify(operationFamilyRepository, never()).save(any());
@@ -139,7 +164,7 @@ class DomainFamilyServiceTest {
 
         FamilyPrefLabelAlreadyUsedException exception = assertThrows(
                 FamilyPrefLabelAlreadyUsedException.class,
-                () -> familyService.createFamily(new CreateFamilyCommand("Famille", "Family", null, null)));
+                () -> familyService.createFamily(new CreateFamilyCommand("Famille", "Family", null, null, List.of())));
 
         assertEquals(Language.lg2, exception.language());
         verify(operationFamilyRepository, never()).save(any());
@@ -152,7 +177,7 @@ class DomainFamilyServiceTest {
         assertThrows(
                 FamilyNotFoundException.class,
                 () -> familyService.updateFamily(
-                        new UpdateFamilyCommand("s1001", "Famille", "Family", null, null, null)));
+                        new UpdateFamilyCommand("s1001", "Famille", "Family", null, null, null, List.of())));
 
         verify(operationFamilyRepository, never()).save(any());
     }
@@ -162,8 +187,8 @@ class DomainFamilyServiceTest {
         when(operationFamilyRepository.exists("s1001")).thenReturn(true);
         when(operationFamilyRepository.getValidationStatus("s1001")).thenReturn(ValidationStatus.UNPUBLISHED);
 
-        familyService.updateFamily(
-                new UpdateFamilyCommand("s1001", "Famille", "Family", "Résumé", "Abstract", "2026-01-01T00:00:00"));
+        familyService.updateFamily(new UpdateFamilyCommand(
+                "s1001", "Famille", "Family", "Résumé", "Abstract", "2026-01-01T00:00:00", List.of()));
 
         ArgumentCaptor<OperationFamily> captor = ArgumentCaptor.forClass(OperationFamily.class);
         verify(operationFamilyRepository).save(captor.capture());
@@ -178,7 +203,7 @@ class DomainFamilyServiceTest {
         when(operationFamilyRepository.exists("s1001")).thenReturn(true);
         when(operationFamilyRepository.getValidationStatus("s1001")).thenReturn(ValidationStatus.VALIDATED);
 
-        familyService.updateFamily(new UpdateFamilyCommand("s1001", "Famille", "Family", null, null, null));
+        familyService.updateFamily(new UpdateFamilyCommand("s1001", "Famille", "Family", null, null, null, List.of()));
 
         ArgumentCaptor<OperationFamily> captor = ArgumentCaptor.forClass(OperationFamily.class);
         verify(operationFamilyRepository).save(captor.capture());

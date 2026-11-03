@@ -1,12 +1,12 @@
 SELECT ?id
-       (SAMPLE(?labelLg1) AS ?labelLg1)
-       (SAMPLE(?creator) AS ?creator)
-       (SAMPLE(?disseminationStatus) AS ?disseminationStatus)
-       (SAMPLE(?validationStatus) AS ?validationStatus)
+       (SAMPLE(?labelLg1Value) AS ?labelLg1)
+       (SAMPLE(?creatorValue) AS ?creator)
+       (SAMPLE(?disseminationStatusValue) AS ?disseminationStatus)
+       (SAMPLE(?validationStatusValue) AS ?validationStatus)
        (GROUP_CONCAT(DISTINCT ?wasGeneratedIRI; separator=" ") AS ?wasGeneratedIRIs)
-       (SAMPLE(?created) AS ?created)
-       (SAMPLE(?updated) AS ?updated)
-       (SAMPLE(?altIdentifier) AS ?altIdentifier)
+       (SAMPLE(?createdValue) AS ?created)
+       (SAMPLE(?updatedValue) AS ?updated)
+       (SAMPLE(?altIdentifierValue) AS ?altIdentifier)
 
 FROM ${DATASET_GRAPH}
 FROM ${ADMS_GRAPH}
@@ -17,20 +17,20 @@ WHERE {
     ?uri dcterms:identifier ?id .
 
     OPTIONAL {
-        ?uri dcterms:title ?labelLg1
-        FILTER (lang(?labelLg1) = ${LG1}) .
+        ?uri dcterms:title ?labelLg1Value
+        FILTER (lang(?labelLg1Value) = ${LG1}) .
     }
 
     OPTIONAL {
-        ?uri ^foaf:primaryTopic/dc:creator ?creator .
+        ?uri ^foaf:primaryTopic/dc:creator ?creatorValue .
     }
 
     OPTIONAL {
-        ?uri insee:disseminationStatus ?disseminationStatus .
+        ?uri insee:disseminationStatus ?disseminationStatusValue .
     }
 
     OPTIONAL {
-        ?uri insee:validationState ?validationStatus .
+        ?uri insee:validationState ?validationStatusValue .
     }
 
     OPTIONAL {
@@ -38,17 +38,17 @@ WHERE {
     }
 
     OPTIONAL {
-        ?uri ^foaf:primaryTopic/dcterms:created ?created .
+        ?uri ^foaf:primaryTopic/dcterms:created ?createdValue .
     }
 
     OPTIONAL {
-        ?uri ^foaf:primaryTopic/dcterms:modified ?updated .
+        ?uri ^foaf:primaryTopic/dcterms:modified ?updatedValue .
     }
 
     OPTIONAL {
         ?uri adms:identifier ?admsIdentifierUri .
         ?admsIdentifierUri rdf:type adms:Identifier .
-        ?admsIdentifierUri skos:notation ?altIdentifier .
+        ?admsIdentifierUri skos:notation ?altIdentifierValue .
     }
 }
 GROUP BY ?id

@@ -6,7 +6,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -20,11 +21,13 @@ import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
+import fr.insee.rmes.exceptions.errors.CodesListErrorCodes;
 import fr.insee.rmes.graphdb.ontologies.INSEE;
 import fr.insee.rmes.modules.codeslists.codeslists.infrastructure.graphdb.CodeListsQueries;
 import fr.insee.rmes.modules.codeslists.codeslists.webservice.CodeRequest;
 import fr.insee.rmes.modules.commons.configuration.swagger.model.code_list.CodeList;
 import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
+import fr.insee.rmes.modules.shared_kernel.infrastructure.publication.ObjectPublished;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import java.util.List;
 import java.util.Optional;
@@ -40,8 +43,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 /**
  * Écriture d'une liste de codes, avec le vrai {@link RdfUtils} : ce que ces tests vérifient, ce
@@ -60,6 +65,9 @@ class CodeListServiceImplWriteTest {
     @Mock
     CodeListPublication codeListPublication;
 
+    @Mock
+    ApplicationEventPublisher events;
+
     private CodeListServiceImpl codeListService;
 
     @BeforeEach
@@ -74,7 +82,8 @@ class CodeListServiceImplWriteTest {
                 new BauhausLanguagesProperties("fr", "en"),
                 null,
                 codeListPublication,
-                codeListsQueries);
+                codeListsQueries,
+                events);
     }
 
     @Test
@@ -301,17 +310,32 @@ class CodeListServiceImplWriteTest {
     }
 
     @Test
-    void shouldPublishTheCodeListAndItsCodesAndValidateIt() throws RmesException {
+    void shouldPublishTheCodeListAndItsCodesThenAnnounceThePublicationWithTheCodesListGraph() throws RmesException {
         stubDetailedPartialCodeList(unpublishedCodeList(), new JSONArray());
 
         codeListService.publishCodeList("id", CodeListKind.FULL);
 
         IRI codeListIri = RdfUtils.createIRI("http://bauhaus/codes/id");
-        verify(codeListPublication).publishCodeListAndCodes(codeListIri, RdfUtils.codesListGraph());
-        ArgumentCaptor<Model> modelCaptor = ArgumentCaptor.forClass(Model.class);
-        verify(repoGestion).objectValidation(eq(codeListIri), modelCaptor.capture());
-        assertThat(objectsOf(modelCaptor.getValue(), INSEE.VALIDATION_STATE))
-                .containsExactly(ValidationStatus.VALIDATED.getValue());
+        InOrder order = inOrder(codeListPublication, events);
+        order.verify(codeListPublication).publishCodeListAndCodes(codeListIri, RdfUtils.codesListGraph());
+        ArgumentCaptor<ObjectPublished> event = ArgumentCaptor.forClass(ObjectPublished.class);
+        order.verify(events).publishEvent(event.capture());
+        assertThat(event.getValue())
+                .isEqualTo(new ObjectPublished(codeListIri, RdfUtils.createIRI("http://rdf.insee.fr/graphes/codes")));
+        verify(repoGestion, never()).objectValidation(any(), any());
+    }
+
+    @Test
+    void shouldNotAnnounceThePublicationWhenTheCodeListCannotBePublished() throws RmesException {
+        stubDetailedPartialCodeList(unpublishedCodeList(), new JSONArray());
+        IRI codeListIri = RdfUtils.createIRI("http://bauhaus/codes/id");
+        doThrow(new RmesNotFoundException(CodesListErrorCodes.CODE_LIST_UNKNOWN_ID, "CodeList not found", "id"))
+                .when(codeListPublication)
+                .publishCodeListAndCodes(codeListIri, RdfUtils.codesListGraph());
+
+        assertThrows(RmesNotFoundException.class, () -> codeListService.publishCodeList("id", CodeListKind.FULL));
+
+        verify(events, never()).publishEvent(any());
     }
 
     @Test

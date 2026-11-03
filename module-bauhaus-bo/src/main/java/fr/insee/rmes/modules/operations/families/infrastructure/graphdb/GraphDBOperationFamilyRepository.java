@@ -34,6 +34,7 @@ import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
+import org.eclipse.rdf4j.model.vocabulary.DC;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;
@@ -104,7 +105,11 @@ public class GraphDBOperationFamilyRepository implements OperationFamilyReposito
         }
         XhtmlToMarkdownUtils.convertJSONObject(family);
 
-        return OperationFamily.fromJson(family);
+        List<String> contributors = new ArrayList<>();
+        JSONUtils.stream(repositoryGestion.getResponseAsArray(
+                        operationFamilyQueries.getContributors(RdfUtils.toString(familyIRI(id)))))
+                .forEach(row -> contributors.add(row.getString("contributor")));
+        return OperationFamily.fromJson(family).withContributors(contributors);
     }
 
     @Override
@@ -195,6 +200,11 @@ public class GraphDBOperationFamilyRepository implements OperationFamilyReposito
         RdfUtils.addTripleStringMdToXhtml(familyURI, DCTERMS.ABSTRACT, family.abstractLg2(), lg2(), model, graph);
         RdfUtils.addTripleDateTime(familyURI, DCTERMS.CREATED, family.created(), model, graph);
         RdfUtils.addTripleDateTime(familyURI, DCTERMS.MODIFIED, family.modified(), model, graph);
+        if (family.contributors() != null) {
+            family.contributors()
+                    .forEach(
+                            contributor -> RdfUtils.addTripleUri(familyURI, DC.CONTRIBUTOR, contributor, model, graph));
+        }
 
         repositoryGestion.keepHierarchicalOperationLinks(familyURI, model);
         repositoryGestion.loadSimpleObject(familyURI, model);

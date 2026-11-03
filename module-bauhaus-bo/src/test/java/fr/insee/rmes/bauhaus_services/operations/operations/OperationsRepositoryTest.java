@@ -20,6 +20,7 @@ import fr.insee.rmes.modules.operation.domain.event.BilingualLabel;
 import fr.insee.rmes.modules.operation.domain.event.OperationSaved;
 import fr.insee.rmes.modules.operations.operations.domain.model.commands.OperationCommand;
 import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
+import fr.insee.rmes.modules.shared_kernel.infrastructure.publication.ObjectPublished;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationsOperationQueries;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import java.util.Optional;
@@ -27,6 +28,7 @@ import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.XSD;
+import org.json.JSONObject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -60,6 +62,9 @@ class OperationsRepositoryTest {
 
     @Mock
     DocumentationsUtils documentationsUtils;
+
+    @Mock
+    OperationPublication operationPublication;
 
     @Spy
     BauhausUriBuilder bauhausUriBuilder =
@@ -202,5 +207,22 @@ class OperationsRepositoryTest {
                 new OperationCommand("Enquête emploi", null, null, null, null, null, null, "2026-01-01T00:00:00"));
 
         verify(repositoryGestion).loadSimpleObject(eq(RdfUtils.objectIRI(ObjectType.OPERATION, "o1500")), any());
+    }
+
+    @Test
+    void setOperationValidation_announcesThePublicationWithTheOperationsGraph() throws RmesException {
+        OperationsRepository repository = spy(operationsRepository);
+        JSONObject operationJson = new JSONObject();
+        doReturn(operationJson).when(repository).getOperationJsonById("s1500");
+
+        repository.setOperationValidation("s1500");
+
+        verify(operationPublication).publishOperation("s1500", operationJson, RdfUtils.operationsGraph());
+        ArgumentCaptor<ObjectPublished> event = ArgumentCaptor.forClass(ObjectPublished.class);
+        verify(events).publishEvent(event.capture());
+        assertThat(event.getValue())
+                .isEqualTo(new ObjectPublished(
+                        RdfUtils.objectIRI(ObjectType.OPERATION, "s1500"),
+                        SimpleValueFactory.getInstance().createIRI("http://rdf.insee.fr/graphes/operations")));
     }
 }

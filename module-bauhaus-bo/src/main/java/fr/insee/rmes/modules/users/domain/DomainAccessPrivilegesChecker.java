@@ -175,8 +175,14 @@ public class DomainAccessPrivilegesChecker implements AccessPrivilegesCheckerSer
     private List<String> getStamps(RBAC.Module module, String id)
             throws StampFetchException, UnsupportedModuleException {
         return switch (module) {
+            case OPERATION_FAMILY ->
+                this.infrastructureStampChecker.getContributorsStamps(RBAC.Module.OPERATION_FAMILY, id);
             case OPERATION_SERIES ->
                 this.infrastructureStampChecker.getCreatorsStamps(RBAC.Module.OPERATION_SERIES, id);
+            case OPERATION_OPERATION ->
+                this.infrastructureStampChecker.getCreatorsStamps(RBAC.Module.OPERATION_OPERATION, id);
+            case OPERATION_INDICATOR ->
+                this.infrastructureStampChecker.getCreatorsStamps(RBAC.Module.OPERATION_INDICATOR, id);
             case DDI_PHYSICALINSTANCE ->
                 this.infrastructureStampChecker.getCreatorsStamps(RBAC.Module.DDI_PHYSICALINSTANCE, id);
 
@@ -184,6 +190,19 @@ public class DomainAccessPrivilegesChecker implements AccessPrivilegesCheckerSer
                 this.infrastructureStampChecker.getContributorsStamps(RBAC.Module.STRUCTURE_STRUCTURE, id);
             case STRUCTURE_COMPONENT ->
                 this.infrastructureStampChecker.getContributorsStamps(RBAC.Module.STRUCTURE_COMPONENT, id);
+
+            case CLASSIFICATION_CLASSIFICATION ->
+                this.infrastructureStampChecker.getContributorsStamps(RBAC.Module.CLASSIFICATION_CLASSIFICATION, id);
+
+            case CODESLIST_CODESLIST ->
+                this.infrastructureStampChecker.getContributorsStamps(RBAC.Module.CODESLIST_CODESLIST, id);
+            case CODESLIST_PARTIALCODESLIST ->
+                this.infrastructureStampChecker.getContributorsStamps(RBAC.Module.CODESLIST_PARTIALCODESLIST, id);
+
+            case CONCEPT_CONCEPT ->
+                this.infrastructureStampChecker.getContributorsStamps(RBAC.Module.CONCEPT_CONCEPT, id);
+            case CONCEPT_COLLECTION ->
+                this.infrastructureStampChecker.getContributorsStamps(RBAC.Module.CONCEPT_COLLECTION, id);
 
             case DATASET_DATASET ->
                 this.infrastructureStampChecker.getContributorsStamps(RBAC.Module.DATASET_DATASET, id);

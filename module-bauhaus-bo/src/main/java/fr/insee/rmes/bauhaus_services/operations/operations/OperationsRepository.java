@@ -23,6 +23,7 @@ import fr.insee.rmes.modules.operation.domain.event.BilingualLabel;
 import fr.insee.rmes.modules.operation.domain.event.OperationSaved;
 import fr.insee.rmes.modules.operations.operations.domain.model.commands.OperationCommand;
 import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
+import fr.insee.rmes.modules.shared_kernel.infrastructure.publication.ObjectPublished;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationSeriesQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationsOperationQueries;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
@@ -275,30 +276,11 @@ public class OperationsRepository extends RdfService {
     }
 
     public void setOperationValidation(String idOperation) throws RmesException {
-        Model model = new LinkedHashModel();
-
-        // PUBLISH
         JSONObject operationJson = getOperationJsonById(idOperation);
         operationPublication.publishOperation(idOperation, operationJson, RdfUtils.operationsGraph());
 
-        // UPDATE GESTION TO MARK AS PUBLISHED
         IRI operationURI = RdfUtils.objectIRI(ObjectType.OPERATION, idOperation);
-        model.add(
-                operationURI,
-                INSEE.VALIDATION_STATE,
-                RdfUtils.setLiteralString(ValidationStatus.VALIDATED),
-                RdfUtils.operationsGraph());
-        model.remove(
-                operationURI,
-                INSEE.VALIDATION_STATE,
-                RdfUtils.setLiteralString(ValidationStatus.UNPUBLISHED),
-                RdfUtils.operationsGraph());
-        model.remove(
-                operationURI,
-                INSEE.VALIDATION_STATE,
-                RdfUtils.setLiteralString(ValidationStatus.MODIFIED),
-                RdfUtils.operationsGraph());
         logger.info("Validate operation : {}", operationURI);
-        repoGestion.objectValidation(operationURI, model);
+        events.publishEvent(new ObjectPublished(operationURI, RdfUtils.operationsGraph()));
     }
 }

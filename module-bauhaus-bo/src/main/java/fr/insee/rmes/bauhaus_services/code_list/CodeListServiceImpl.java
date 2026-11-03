@@ -22,6 +22,7 @@ import fr.insee.rmes.modules.codeslists.partialcodeslists.model.PartialCodesList
 import fr.insee.rmes.modules.commons.configuration.swagger.model.code_list.CodeList;
 import fr.insee.rmes.modules.commons.configuration.swagger.model.code_list.Page;
 import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
+import fr.insee.rmes.modules.shared_kernel.infrastructure.publication.ObjectPublished;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.Deserializer;
@@ -37,6 +38,7 @@ import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.vocabulary.*;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -61,6 +63,8 @@ public class CodeListServiceImpl extends RdfService implements CodeListService {
 
     private final CodeListsQueries codeListsQueries;
 
+    private final ApplicationEventPublisher events;
+
     public CodeListServiceImpl(
             RepositoryGestion repoGestion,
             IdGenerator idGenerator,
@@ -68,11 +72,13 @@ public class CodeListServiceImpl extends RdfService implements CodeListService {
             BauhausLanguagesProperties languages,
             PublicationUtils publicationUtils,
             CodeListPublication codeListPublication,
-            CodeListsQueries codeListsQueries) {
+            CodeListsQueries codeListsQueries,
+            ApplicationEventPublisher events) {
         super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
         this.languages = languages;
         this.codeListPublication = codeListPublication;
         this.codeListsQueries = codeListsQueries;
+        this.events = events;
     }
 
     @Override
@@ -391,25 +397,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService {
         IRI codelist = RdfUtils.createIRI(iri);
 
         codeListPublication.publishCodeListAndCodes(codelist, RdfUtils.codesListGraph());
-
-        Model model = new LinkedHashModel();
-        model.add(
-                codelist,
-                INSEE.VALIDATION_STATE,
-                RdfUtils.setLiteralString(ValidationStatus.VALIDATED),
-                RdfUtils.codesListGraph());
-        model.remove(
-                codelist,
-                INSEE.VALIDATION_STATE,
-                RdfUtils.setLiteralString(ValidationStatus.UNPUBLISHED),
-                RdfUtils.codesListGraph());
-        model.remove(
-                codelist,
-                INSEE.VALIDATION_STATE,
-                RdfUtils.setLiteralString(ValidationStatus.MODIFIED),
-                RdfUtils.codesListGraph());
-
-        repoGestion.objectValidation(codelist, model);
+        events.publishEvent(new ObjectPublished(codelist, RdfUtils.codesListGraph()));
     }
 
     private String createOrUpdateCodeList(

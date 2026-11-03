@@ -292,8 +292,7 @@ public class RepositoryGestion {
     public void objectsValidation(List<IRI> collectionsToValidateList, Model model) throws RmesException {
         try (RepositoryConnection conn = gestionConnection()) {
             for (IRI item : collectionsToValidateList) {
-                conn.remove(item, INSEE.VALIDATION_STATE, null);
-                conn.remove(item, INSEE.IS_VALIDATED, null);
+                removeValidationStatusFromEveryGraph(conn, item);
             }
             conn.add(model);
         } catch (RepositoryException e) {
@@ -303,11 +302,23 @@ public class RepositoryGestion {
 
     public void objectValidation(IRI ressourceURI, Model model) throws RmesException {
         try (RepositoryConnection conn = gestionConnection()) {
-            conn.remove(ressourceURI, INSEE.VALIDATION_STATE, null);
-            conn.remove(ressourceURI, INSEE.IS_VALIDATED, null);
+            removeValidationStatusFromEveryGraph(conn, ressourceURI);
             conn.add(model);
         } catch (RepositoryException e) {
             throwsRmesException(e, "Failure validation : " + ressourceURI);
+        }
+    }
+
+    /**
+     * Efface le statut dans tous les graphes nommés, par SPARQL : un {@code remove} sans graphe ne
+     * supprime rien hors de GraphDB, dont le graphe par défaut est l'union des graphes nommés.
+     */
+    private static void removeValidationStatusFromEveryGraph(RepositoryConnection conn, IRI object) {
+        for (IRI predicate : List.of(INSEE.VALIDATION_STATE, INSEE.IS_VALIDATED)) {
+            conn.prepareUpdate(
+                            QueryLanguage.SPARQL,
+                            "DELETE WHERE { GRAPH ?graph { <%s> <%s> ?value } }".formatted(object, predicate))
+                    .execute();
         }
     }
 

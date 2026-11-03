@@ -78,6 +78,7 @@ public class DomainDocumentManagementService implements DocumentManagementServic
     public String createDocument(DocumentForm form, UploadedFile file)
             throws RmesException, DocumentRuleViolationException {
         checkFileName(file.name());
+        checkExtensionIsAllowed(file.name());
         String id = repository.nextId();
         String uri = repository.uriOf(DocumentKind.DOCUMENT, id);
         checkLabels(form, uri);

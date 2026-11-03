@@ -22,7 +22,9 @@ class ColecticaConfigurationTest {
                     "password",
                     "user",
                     "pass",
-                    "fr.insee");
+                    "fr.insee",
+                    null,
+                    null);
 
     @Test
     void should_throw_exception_when_langs_is_null() {

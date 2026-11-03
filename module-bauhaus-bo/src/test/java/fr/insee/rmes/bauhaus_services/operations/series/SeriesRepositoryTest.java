@@ -27,6 +27,7 @@ import fr.insee.rmes.modules.operation.domain.event.SeriesSaved;
 import fr.insee.rmes.modules.operations.series.domain.model.Series;
 import fr.insee.rmes.modules.operations.series.domain.model.commands.SeriesCommand;
 import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
+import fr.insee.rmes.modules.shared_kernel.infrastructure.publication.ObjectPublished;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationSeriesQueries;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.utils.EncodingType;
@@ -276,6 +277,37 @@ class SeriesRepositoryTest {
                         "s1001",
                         new BilingualLabel("Recensement", "Census"),
                         new BilingualLabel("RP", "CENS")));
+    }
+
+    @Test
+    void setSeriesValidation_announcesThePublicationWithTheOperationsGraph() throws RmesException {
+        ApplicationEventPublisher events = mock(ApplicationEventPublisher.class);
+        SeriesPublication seriesPublication = mock(SeriesPublication.class);
+        when(repositoryGestion.getResponseAsObject(any())).thenReturn(new JSONObject(Map.of("id", "s1001")));
+        when(repositoryGestion.getResponseAsArray(any())).thenReturn(new JSONArray());
+        when(repositoryGestion.getResponseAsJSONList(any())).thenReturn(new JSONArray());
+        SeriesRepository seriesRepository = new SeriesRepository(
+                new BauhausLanguagesProperties("fr", "en"),
+                repositoryGestion,
+                null,
+                null,
+                operationsObjectMapper,
+                null,
+                seriesPublication,
+                null,
+                null,
+                null,
+                operationSeriesQueries,
+                null,
+                events);
+
+        seriesRepository.setSeriesValidation("s1001");
+
+        ArgumentCaptor<ObjectPublished> captor = ArgumentCaptor.forClass(ObjectPublished.class);
+        verify(events).publishEvent(captor.capture());
+        assertThat(captor.getValue())
+                .isEqualTo(new ObjectPublished(
+                        RdfUtils.objectIRI(ObjectType.SERIES, "s1001"), RdfUtils.operationsGraph()));
     }
 
     @Test

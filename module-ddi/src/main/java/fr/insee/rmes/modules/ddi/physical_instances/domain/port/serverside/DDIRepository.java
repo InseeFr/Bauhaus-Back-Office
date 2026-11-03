@@ -29,6 +29,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanc
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceParents;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceSearchRow;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.ReuseVariablesRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UpdatePhysicalInstanceRequest;
 import java.util.Collection;
 import java.util.List;
@@ -95,6 +96,14 @@ public interface DDIRepository {
      * @return la référence de la PhysicalInstance créée
      */
     Reference duplicatePhysicalInstance(String agencyId, String id, DuplicatePhysicalInstanceRequest request);
+
+    /**
+     * Crée une PhysicalInstance dans l'Étude de {@code agencyId/id}, qui réutilise les variables
+     * choisies de la source sans les copier (#1674) : son LogicalRecord les référence telles quelles.
+     *
+     * @return la référence de la PhysicalInstance créée
+     */
+    Reference reuseVariables(String agencyId, String id, ReuseVariablesRequest request);
 
     Ddi4Response createPhysicalInstance(CreatePhysicalInstanceRequest request);
 

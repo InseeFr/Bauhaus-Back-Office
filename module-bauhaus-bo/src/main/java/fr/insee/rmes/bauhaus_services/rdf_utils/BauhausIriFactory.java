@@ -50,7 +50,11 @@ public class BauhausIriFactory {
         return uriBuilder.getBaseUriGestion(ObjectType.CONCEPT);
     }
 
-    private IRI objectIri(ObjectType objectType, String id) {
+    /**
+     * IRI de gestion de l'objet d'identifiant donné. Un identifiant déjà absolu est repris tel
+     * quel.
+     */
+    public IRI objectIri(ObjectType objectType, String id) {
         if (isAbsoluteUri(id)) {
             return RdfTriples.iri(id);
         }

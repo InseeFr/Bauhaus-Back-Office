@@ -73,7 +73,8 @@ class CodeListServiceImplTest {
                 new BauhausLanguagesProperties("fr", "en"),
                 null,
                 null,
-                codeListsQueries));
+                codeListsQueries,
+                null));
         doReturn(codesList).when(service).getDetailedCodesListJson(notation);
         return service;
     }
@@ -339,7 +340,8 @@ class CodeListServiceImplTest {
                 new BauhausLanguagesProperties("fr", "en"),
                 null,
                 null,
-                codeListsQueries);
+                codeListsQueries,
+                null);
 
         try (MockedStatic<RdfUtils> mockedRdfUtils = Mockito.mockStatic(RdfUtils.class, CALLS_REAL_METHODS)) {
             mockedRdfUtils

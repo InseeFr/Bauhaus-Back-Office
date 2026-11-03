@@ -31,6 +31,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanc
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceParents;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceSearchRow;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.ReuseVariablesRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UpdatePhysicalInstanceRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3toDDI4ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI4toDDI3ConverterService;
@@ -299,6 +300,13 @@ public class DDIRepositoryImpl implements DDIRepository {
     @CacheEvict(cacheNames = ColecticaCacheNames.PHYSICAL_INSTANCE_SEARCH_ROWS, allEntries = true)
     public Reference duplicatePhysicalInstance(String agencyId, String id, DuplicatePhysicalInstanceRequest request) {
         return physicalInstanceWriter.duplicatePhysicalInstance(agencyId, id, request);
+    }
+
+    @Override
+    @CacheEvict(cacheNames = ColecticaCacheNames.PHYSICAL_INSTANCE_SEARCH_ROWS, allEntries = true)
+    public Reference reuseVariables(String agencyId, String id, ReuseVariablesRequest request) {
+        return physicalInstanceWriter.reuseVariables(
+                agencyId, id, request, catalog.getPhysicalInstanceParents(agencyId, id));
     }
 
     /** Les parents ne changent pas : la ligne de recherche est mise à jour en place. */
