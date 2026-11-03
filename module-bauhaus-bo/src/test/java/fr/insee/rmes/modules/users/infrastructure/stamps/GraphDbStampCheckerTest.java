@@ -23,6 +23,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4GroupRespon
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.DDIRepository;
 import fr.insee.rmes.modules.operation.series.domain.port.serverside.SeriesCreatorsPort;
+import fr.insee.rmes.modules.operations.msd.infrastructure.graphdb.DocumentationQueries;
 import fr.insee.rmes.modules.organisations.domain.model.OrganisationOption;
 import fr.insee.rmes.modules.organisations.domain.port.serverside.OrganisationRepository;
 import fr.insee.rmes.modules.structures.infrastructure.graphdb.StructureQueries;
@@ -85,6 +86,9 @@ class GraphDbStampCheckerTest {
     @Mock
     private CodeListsQueries codeListsQueries;
 
+    @Mock
+    private DocumentationQueries documentationQueries;
+
     private final GraphDBCollectionProperties collectionProperties =
             new GraphDBCollectionProperties("http://bauhaus/graph/concepts", "http://bauhaus/concepts/definitions");
 
@@ -120,6 +124,7 @@ class GraphDbStampCheckerTest {
                 contributorsQueries,
                 classificationsQueries,
                 codeListsQueries,
+                documentationQueries,
                 GraphsPropertiesStub.stub(),
                 collectionProperties,
                 iriFactory,
@@ -395,6 +400,18 @@ class GraphDbStampCheckerTest {
                 .thenReturn(new JSONArray().put(new JSONObject().put("contributor", "DG75-G401")));
 
         assertThat(checker.getCreatorsStamps(RBAC.Module.OPERATION_INDICATOR, "p1"))
+                .containsExactly("DG75-G401");
+    }
+
+    /** Un rapport SIMS n'a pas de créateur propre : ce sont ceux de sa cible (voir la requête). */
+    @Test
+    void get_creators_stamps_of_a_sims_reads_the_dc_creator_of_its_target()
+            throws StampFetchException, UnsupportedModuleException, RmesException {
+        when(documentationQueries.getTargetCreators("1679")).thenReturn("SELECT-creators-of-sims-target");
+        when(repositoryGestion.getResponseAsArray("SELECT-creators-of-sims-target"))
+                .thenReturn(new JSONArray().put(new JSONObject().put("creators", "DG75-G401")));
+
+        assertThat(checker.getCreatorsStamps(RBAC.Module.OPERATION_SIMS, "1679"))
                 .containsExactly("DG75-G401");
     }
 

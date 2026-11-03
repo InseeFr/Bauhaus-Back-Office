@@ -13,6 +13,7 @@ import fr.insee.rmes.modules.concepts.collections.infrastructure.graphdb.GraphDB
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4GroupResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.DDIRepository;
 import fr.insee.rmes.modules.operation.series.domain.port.serverside.SeriesCreatorsPort;
+import fr.insee.rmes.modules.operations.msd.infrastructure.graphdb.DocumentationQueries;
 import fr.insee.rmes.modules.organisations.domain.model.OrganisationOption;
 import fr.insee.rmes.modules.organisations.domain.port.serverside.OrganisationRepository;
 import fr.insee.rmes.modules.structures.infrastructure.graphdb.StructureQueries;
@@ -52,6 +53,7 @@ public class GraphDbStampChecker implements StampChecker {
     private final ContributorsQueries contributorsQueries;
     private final ClassificationsQueries classificationsQueries;
     private final CodeListsQueries codeListsQueries;
+    private final DocumentationQueries documentationQueries;
     private final GraphsProperties graphs;
     private final GraphDBCollectionProperties collectionProperties;
     private final BauhausIriFactory iriFactory;
@@ -69,6 +71,7 @@ public class GraphDbStampChecker implements StampChecker {
             ContributorsQueries contributorsQueries,
             ClassificationsQueries classificationsQueries,
             CodeListsQueries codeListsQueries,
+            DocumentationQueries documentationQueries,
             GraphsProperties graphs,
             GraphDBCollectionProperties collectionProperties,
             BauhausIriFactory iriFactory,
@@ -85,6 +88,7 @@ public class GraphDbStampChecker implements StampChecker {
         this.contributorsQueries = contributorsQueries;
         this.classificationsQueries = classificationsQueries;
         this.codeListsQueries = codeListsQueries;
+        this.documentationQueries = documentationQueries;
         this.graphs = graphs;
         this.collectionProperties = collectionProperties;
         this.iriFactory = iriFactory;
@@ -114,6 +118,10 @@ public class GraphDbStampChecker implements StampChecker {
                             "contributor",
                             contributorsQueries.getCreators(
                                     graphs.productsGraph(), iriFactory.objectIri(ObjectType.INDICATOR, id))));
+                // Un rapport n'a pas de créateur propre : ce sont ceux de sa cible (série, série
+                // parente d'une opération, ou indicateur).
+                case OPERATION_SIMS ->
+                    normalizeOrganisationStamps(this.getStamps("creators", documentationQueries.getTargetCreators(id)));
                 case DDI_PHYSICALINSTANCE -> {
                     if (id == null) yield List.of();
                     String[] parts = id.split("\\|", 2);

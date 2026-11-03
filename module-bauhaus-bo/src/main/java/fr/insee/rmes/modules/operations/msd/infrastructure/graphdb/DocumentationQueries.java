@@ -71,6 +71,15 @@ public class DocumentationQueries {
         return buildRequest("getTargetByIdSimsQuery.ftlh", params);
     }
 
+    /** Les créateurs de la cible du rapport, sous {@code ?creators} : voir le gabarit. */
+    public String getTargetCreators(String idSims) throws RmesException {
+        Map<String, Object> params = new HashMap<>();
+        params.put(DOCUMENTATION_GRAPH_IRI, SparqlLiterals.iri(graphs.documentationsGraph() + "/" + idSims));
+        params.put("OPERATIONS_GRAPH", SparqlLiterals.iri(graphs.operationsGraph()));
+        params.put("PRODUCTS_GRAPH", SparqlLiterals.iri(graphs.productsGraph()));
+        return buildRequest("getSimsTargetCreatorsQuery.ftlh", params);
+    }
+
     public String getSimsByTarget(String idTarget) throws RmesException {
         Map<String, Object> params = initParams();
         params.put("idTarget", SparqlLiterals.literal(idTarget));
