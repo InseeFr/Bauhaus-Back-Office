@@ -161,7 +161,7 @@ class GraphDBOperationFamilyRepositoryTest {
                         .put(new JSONObject().put("contributor", "DG75-L201"))
                         .put(new JSONObject().put("contributor", "DG75-H250")));
 
-        try (MockedStatic<XhtmlToMarkdownUtils> ignored = xhtmlConversionIgnored()) {
+        try (MockedStatic<XhtmlToMarkdownUtils> _ = xhtmlConversionIgnored()) {
             assertEquals(
                     List.of("DG75-L201", "DG75-H250"),
                     repository.getFamily("s1001").contributors());

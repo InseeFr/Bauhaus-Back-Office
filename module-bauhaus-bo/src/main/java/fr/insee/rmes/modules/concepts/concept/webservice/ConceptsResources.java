@@ -178,8 +178,8 @@ public class ConceptsResources {
     @PutMapping(value = "/{id}/validate", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> setConceptsValidation(
             @PathVariable(Constants.ID) String id,
-            @Valid @RequestBody @NotEmpty(message = REQUIRED) List<@NotBlank(message = REQUIRED) String> idsToValidate)
-            throws RmesException {
+            @Valid @RequestBody @NotEmpty(message = REQUIRED)
+                    List<@NotBlank(message = REQUIRED) String> idsToValidate) {
         try {
             List<ConceptId> conceptIds =
                     idsToValidate.stream().map(ConceptId::new).toList();
