@@ -1,10 +1,5 @@
 package fr.insee.rmes.keycloak;
 
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
-
-import org.springframework.web.client.RestClient;
-
 /** What {@link KeycloakServiceTest} and {@link ColecticaKeycloakServiceTest} set up alike. */
 final class KeycloakTestFixtures {
 
@@ -31,16 +26,5 @@ final class KeycloakTestFixtures {
                 return accessToken;
             }
         };
-    }
-
-    /** Routes {@code client.post().uri(..).retrieve()} to {@code responseSpec}. */
-    static void stubTokenRequest(
-            RestClient client,
-            RestClient.RequestBodyUriSpec requestBodyUriSpec,
-            RestClient.RequestBodySpec requestBodySpec,
-            RestClient.ResponseSpec responseSpec) {
-        when(client.post()).thenReturn(requestBodyUriSpec);
-        when(requestBodyUriSpec.uri(anyString())).thenReturn(requestBodySpec);
-        when(requestBodySpec.retrieve()).thenReturn(responseSpec);
     }
 }
