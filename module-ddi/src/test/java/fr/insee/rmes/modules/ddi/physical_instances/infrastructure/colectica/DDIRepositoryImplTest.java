@@ -5943,6 +5943,58 @@ class DDIRepositoryImplTest {
         assertNull(ddiRepository.getGroup("fr.insee", "00000000-0000-0000-0000-000000000000"));
     }
 
+    /**
+     * Le miroir des opérations réécrit le Group à partir de cette relecture (issue #1151). Le ddiset
+     * peut rendre un état antérieur au dernier remplacement de l'item : relu là, le Group revenait à
+     * l'ancien libellé de sa série et perdait la StudyUnit qu'on venait d'y classer.
+     */
+    @Test
+    void findGroup_readsTheLatestGroupItemRatherThanItsDdiset() {
+        String groupId = "10a689ce-7006-429b-8e84-036b7787b422";
+        String latestXml = "<Fragment xmlns=\"ddi:instance:3_3\"><Group>série toto2</Group></Fragment>";
+        lenient()
+                .when(colecticaClient.getDdiSet(anyString(), anyString()))
+                .thenReturn("<ddi:FragmentInstance xmlns:ddi=\"ddi:instance:3_3\"/>".getBytes(StandardCharsets.UTF_8));
+        when(colecticaClient.getItem("fr.insee", groupId, null))
+                .thenReturn(new ColecticaItemResponse(
+                        "4bd6eef6-99df-40e6-9b11-5b8f64e5cb23",
+                        "fr.insee",
+                        1,
+                        groupId,
+                        latestXml,
+                        null,
+                        null,
+                        false,
+                        false,
+                        false,
+                        null));
+        Ddi4Group latest = new Ddi4Group(
+                Ddi4Group.TYPE,
+                null,
+                "urn:ddi:fr.insee:" + groupId + ":1",
+                "fr.insee",
+                groupId,
+                "1",
+                null,
+                new Citation(LangStrings.of("fr-FR", "série toto2")),
+                List.of(Reference.of("fr.insee", "su-1", "1", "StudyUnit")),
+                null,
+                null);
+        when(ddi3ToDdi4Converter.toGroup(latestXml)).thenReturn(latest);
+
+        assertThat(ddiRepository.findGroup("fr.insee", groupId)).contains(latest);
+        verify(colecticaClient, never()).getDdiSet(anyString(), anyString());
+    }
+
+    @Test
+    void findGroup_isEmptyWhenColecticaDoesNotKnowTheGroup() {
+        when(colecticaClient.getItem(anyString(), anyString(), isNull()))
+                .thenThrow(HttpClientErrorException.create(HttpStatus.NOT_FOUND, "Not Found", null, null, null));
+
+        assertThat(ddiRepository.findGroup("fr.insee", "10a689ce-7006-429b-8e84-036b7787b422"))
+                .isEmpty();
+    }
+
     @Test
     void getGroup_returnsNullWithoutCallingColecticaWhenTheIdIsNotAnIdentifier() {
         // Colectica n'accepte que des UUID : son ddiset répond 500 à un autre identifiant.

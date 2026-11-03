@@ -146,6 +146,35 @@ class DDI3toDDI4ConverterServiceImplTest {
         assertEquals("su-1", group.studyUnitReference().get(0).id());
     }
 
+    /**
+     * Le miroir des opérations réécrit le Group à partir de cette relecture : ce qu'elle ne remonte
+     * pas est effacé de Colectica à l'écriture suivante.
+     */
+    @Test
+    void shouldReadBackEverythingTheOperationsMirrorRewritesOnAGroup() {
+        Ddi4Group original = new Ddi4Group(
+                Ddi4Group.TYPE,
+                CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
+                "urn:ddi:fr.insee:group-id:1",
+                "fr.insee",
+                "group-id",
+                "1",
+                "resp",
+                new Citation(
+                        List.of(new LangString("fr-FR", "Série toto2"), new LangString("en-IE", "Toto2 series")),
+                        List.of(new LangString("fr-FR", "toto2"))),
+                List.of(Reference.of("fr.insee", "su-1", "1", "StudyUnit")),
+                List.of("http://id.insee.fr/operations/serie/s1001"),
+                "insee:StatisticalOperationSeries",
+                List.of(Reference.of("fr.insee", "lp-1", "1", "LogicalProduct")));
+        String groupXml = new Ddi4ToLifecycle33("abcde").toGroup(original).xmlText(fragmentOptions(GROUP_NS));
+
+        Ddi4Group group = converter.toGroup(groupXml);
+
+        assertEquals(original.citation(), group.citation());
+        assertEquals(original.logicalProductReference(), group.logicalProductReference());
+    }
+
     @Test
     void shouldParseCategorySchemeFromFragmentXml() {
         Ddi4CategoryScheme original = new Ddi4CategoryScheme(

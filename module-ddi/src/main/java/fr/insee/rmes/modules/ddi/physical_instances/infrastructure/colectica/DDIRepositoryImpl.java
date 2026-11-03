@@ -334,7 +334,7 @@ public class DDIRepositoryImpl implements DDIRepository {
 
     @Override
     public Optional<Ddi4Group> findGroup(String agencyId, String id) {
-        return groupReader.findGroup(agencyId, id);
+        return itemByIdReader.findGroup(agencyId, id);
     }
 
     @Override

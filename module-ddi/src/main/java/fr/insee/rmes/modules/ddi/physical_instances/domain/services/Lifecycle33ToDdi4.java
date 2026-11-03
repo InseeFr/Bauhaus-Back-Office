@@ -383,6 +383,10 @@ public class Lifecycle33ToDdi4 {
         for (ReferenceType ref : group.getStudyUnitReferenceArray()) {
             suRefs.add(readReference(ref));
         }
+        List<Reference> logicalProductRefs = new ArrayList<>();
+        for (ReferenceType ref : group.getLogicalProductReferenceArray()) {
+            logicalProductRefs.add(readReference(ref));
+        }
         return new Ddi4Group(
                 Ddi4Group.TYPE,
                 CogsDate.ofDateTime(group.xgetVersionDate().getStringValue()),
@@ -394,7 +398,8 @@ public class Lifecycle33ToDdi4 {
                 readCitation(group.getCitation()),
                 suRefs,
                 seriesIris.isEmpty() ? null : seriesIris,
-                group.getTypeOfGroup() != null ? group.getTypeOfGroup().getStringValue() : null);
+                group.getTypeOfGroup() != null ? group.getTypeOfGroup().getStringValue() : null,
+                logicalProductRefs.isEmpty() ? null : logicalProductRefs);
     }
 
     public Ddi4StudyUnit toStudyUnit(FragmentDocument doc) {
