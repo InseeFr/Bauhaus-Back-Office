@@ -25,4 +25,19 @@ class ContributorsQueriesTest {
                 }
                 """));
     }
+
+    @Test
+    void reads_the_dc_creator_of_the_resource_in_its_graph() throws RmesException {
+        var iri = SimpleValueFactory.getInstance().createIRI("http://bauhaus/produits/indicateur/p1");
+
+        String sparql = normalize(queries.getCreators("http://rdf.insee.fr/graphes/produits", iri));
+
+        assertThat(sparql).isEqualTo(normalize("""
+                SELECT ?contributor
+                FROM <http://rdf.insee.fr/graphes/produits>
+                WHERE {
+                    <http://bauhaus/produits/indicateur/p1> dc:creator ?contributor .
+                }
+                """));
+    }
 }

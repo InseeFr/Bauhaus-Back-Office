@@ -395,6 +395,24 @@ class GraphDbStampCheckerTest {
     }
 
     @Test
+    void get_creators_stamps_of_an_indicator_reads_its_dc_creator_in_the_products_graph()
+            throws StampFetchException, UnsupportedModuleException, RmesException {
+        IRI indicatorIri = VF.createIRI("http://bauhaus/produits/indicateur/p1");
+        String query = "SELECT-creators-of-indicator";
+        when(contributorsQueries.getCreators(GraphsPropertiesStub.stub().productsGraph(), indicatorIri))
+                .thenReturn(query);
+        when(repositoryGestion.getResponseAsArray(query))
+                .thenReturn(new JSONArray().put(new JSONObject().put("contributor", "DG75-G401")));
+
+        try (MockedStatic<RdfUtils> mocked = mockStatic(RdfUtils.class)) {
+            mocked.when(() -> RdfUtils.objectIRI(ObjectType.INDICATOR, "p1")).thenReturn(indicatorIri);
+
+            assertThat(checker.getCreatorsStamps(RBAC.Module.OPERATION_INDICATOR, "p1"))
+                    .containsExactly("DG75-G401");
+        }
+    }
+
+    @Test
     void get_creators_stamps_operation_series_normalizes_uris_to_stamp_codes()
             throws StampFetchException, UnsupportedModuleException, RmesException {
         String orgIri1 = "http://id.insee.fr/organisations/insee/DG75-G401";

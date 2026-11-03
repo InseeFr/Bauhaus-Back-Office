@@ -105,6 +105,11 @@ public class GraphDbStampChecker implements StampChecker {
                     yield normalizeOrganisationStamps(
                             this.getStamps("creators", operationSeriesQueries.getCreatorsBySeriesUri(iri.toString())));
                 }
+                case OPERATION_INDICATOR ->
+                    normalizeOrganisationStamps(this.getStamps(
+                            "contributor",
+                            contributorsQueries.getCreators(
+                                    graphs.productsGraph(), RdfUtils.objectIRI(ObjectType.INDICATOR, id))));
                 case DDI_PHYSICALINSTANCE -> {
                     if (id == null) yield List.of();
                     String[] parts = id.split("\\|", 2);
