@@ -9,8 +9,11 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Citation;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CategoryScheme;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4LogicalProduct;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedRepresentationScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4VariableScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LangString;
@@ -125,6 +128,73 @@ class DomainOperationsMirrorServiceTest {
 
         assertThat(capturedGroup().version()).isEqualTo("3");
         verify(studyUnitService, never()).createOrUpdate(any());
+    }
+
+    @Test
+    void mirrorSeries_createsTheSchemesThenTheirLogicalProductThenTheGroup() {
+        mirrorCensusSeriesWithoutExistingGroup();
+
+        ArgumentCaptor<Ddi4CodeListScheme> codeListScheme = ArgumentCaptor.forClass(Ddi4CodeListScheme.class);
+        ArgumentCaptor<Ddi4CategoryScheme> categoryScheme = ArgumentCaptor.forClass(Ddi4CategoryScheme.class);
+        ArgumentCaptor<Ddi4ManagedRepresentationScheme> managedRepresentationScheme =
+                ArgumentCaptor.forClass(Ddi4ManagedRepresentationScheme.class);
+        ArgumentCaptor<Ddi4LogicalProduct> logicalProduct = ArgumentCaptor.forClass(Ddi4LogicalProduct.class);
+        ArgumentCaptor<Ddi4Group> group = ArgumentCaptor.forClass(Ddi4Group.class);
+        InOrder inOrder = inOrder(ddiService, groupService);
+        inOrder.verify(ddiService).createCodeListScheme(codeListScheme.capture());
+        inOrder.verify(ddiService).createCategoryScheme(categoryScheme.capture());
+        inOrder.verify(ddiService).createManagedRepresentationScheme(managedRepresentationScheme.capture());
+        inOrder.verify(ddiService).createLogicalProduct(logicalProduct.capture());
+        inOrder.verify(groupService).createOrUpdate(group.capture());
+
+        assertThat(logicalProduct.getValue().name()).isEqualTo("LP-RP");
+        assertThat(logicalProduct.getValue().label()).containsExactly(new LangString("fr-FR", "RP"));
+        assertThat(logicalProduct.getValue().codeListSchemeReference())
+                .containsExactly(Reference.of(AGENCY, codeListScheme.getValue().id(), "1", "CodeListScheme"));
+        assertThat(logicalProduct.getValue().categorySchemeReference())
+                .containsExactly(Reference.of(AGENCY, categoryScheme.getValue().id(), "1", "CategoryScheme"));
+        assertThat(logicalProduct.getValue().managedRepresentationSchemeReference())
+                .containsExactly(Reference.of(
+                        AGENCY, managedRepresentationScheme.getValue().id(), "1", "ManagedRepresentationScheme"));
+        assertThat(logicalProduct.getValue().variableSchemeReference())
+                .as("la VariableScheme vit dans le LogicalProduct de la StudyUnit, jamais dans celui du Group")
+                .isNull();
+        assertThat(group.getValue().logicalProductReference())
+                .containsExactly(Reference.of(AGENCY, logicalProduct.getValue().id(), "1", "LogicalProduct"));
+    }
+
+    @Test
+    void mirrorSeries_givesALogicalProductToAnExistingGroupThatHasNone() {
+        when(groupService.find(AGENCY, expectedGroupId()))
+                .thenReturn(Optional.of(existingGroup("1", "Ancien libellé", null, List.of(SERIES_IRI), null)));
+
+        service.mirror(new SeriesSaved(
+                SERIES_IRI, "s1001", new BilingualLabel("Nouveau libellé", null), new BilingualLabel(null, null)));
+
+        ArgumentCaptor<Ddi4LogicalProduct> logicalProduct = ArgumentCaptor.forClass(Ddi4LogicalProduct.class);
+        verify(ddiService).createLogicalProduct(logicalProduct.capture());
+        assertThat(logicalProduct.getValue().name())
+                .as("sans libellé court, le libellé long en tient lieu")
+                .isEqualTo("LP-NOUVEAULIBELLE");
+        assertThat(capturedGroup().logicalProductReference())
+                .containsExactly(Reference.of(AGENCY, logicalProduct.getValue().id(), "1", "LogicalProduct"));
+    }
+
+    @Test
+    void mirrorSeries_leavesTheLogicalProductOfTheGroupAloneWhenItAlreadyHasOne() {
+        Reference logicalProduct = Reference.of(AGENCY, "lp-1", "1", "LogicalProduct");
+        when(groupService.find(AGENCY, expectedGroupId()))
+                .thenReturn(Optional.of(
+                        existingGroup("1", "Ancien libellé", null, List.of(SERIES_IRI), List.of(logicalProduct))));
+
+        service.mirror(new SeriesSaved(
+                SERIES_IRI, "s1001", new BilingualLabel("Nouveau libellé", null), new BilingualLabel(null, null)));
+
+        verify(ddiService, never()).createLogicalProduct(any());
+        verify(ddiService, never()).createCodeListScheme(any());
+        verify(ddiService, never()).createCategoryScheme(any());
+        verify(ddiService, never()).createManagedRepresentationScheme(any());
+        assertThat(capturedGroup().logicalProductReference()).containsExactly(logicalProduct);
     }
 
     private Ddi4Group capturedGroup() {
