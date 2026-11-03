@@ -194,6 +194,11 @@ public class GraphDbStampChecker implements StampChecker {
         }
     }
 
+    @Override
+    public List<String> toStamps(List<String> organisations) {
+        return normalizeOrganisationStamps(organisations);
+    }
+
     /** Une nomenclature vit dans son propre graphe, découvert avec son IRI. */
     private String classificationContributorsQuery(String id) throws RmesException {
         JSONObject graphAndUri = repositoryGestion.getResponseAsObject(classificationsQueries.getGraphUriById(id));

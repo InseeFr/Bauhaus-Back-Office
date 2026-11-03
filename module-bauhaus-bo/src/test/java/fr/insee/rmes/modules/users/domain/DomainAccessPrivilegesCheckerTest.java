@@ -14,6 +14,7 @@ import fr.insee.rmes.modules.users.domain.model.User;
 import fr.insee.rmes.modules.users.domain.port.serverside.RbacFetcher;
 import fr.insee.rmes.modules.users.domain.port.serverside.StampChecker;
 import fr.insee.rmes.modules.users.domain.port.serverside.UserDecoder;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -527,5 +528,87 @@ class DomainAccessPrivilegesCheckerTest {
         givenUpdateWithStampStrategyOnContributorsStamps(RBAC.Module.DATASET_DATASET, "STAMP-02");
 
         assertThat(hasAccess("DATASET_DATASET", "UPDATE")).isFalse();
+    }
+
+    /**
+     * Création sous la stratégie STAMP : l'utilisateur, timbré STAMP-01 et STAMP-02, doit compter
+     * l'un de ses timbres parmi les organisations propriétaires postées.
+     */
+    private void givenFamilyCreateWithStrategy(RBAC.Strategy strategy) throws MissingUserInformationException {
+        givenUserWithPrivilege(
+                userWithStamps("ssm", "STAMP-01", "STAMP-02"),
+                RBAC.Module.OPERATION_FAMILY,
+                RBAC.Privilege.CREATE,
+                strategy);
+    }
+
+    private boolean hasFamilyCreateAccess(List<String> owners) throws MissingUserInformationException {
+        return accessChecker.hasCreateAccess("OPERATION_FAMILY", owners, PRINCIPAL);
+    }
+
+    @Test
+    void should_grant_creation_with_stamp_strategy_when_one_owner_is_a_user_stamp()
+            throws MissingUserInformationException {
+        givenFamilyCreateWithStrategy(RBAC.Strategy.STAMP);
+        var owners =
+                List.of("http://bauhaus/organisations/insee/DG75-G999", "http://bauhaus/organisations/insee/STAMP-02");
+        when(stampChecker.toStamps(owners)).thenReturn(List.of("DG75-G999", "STAMP-02"));
+
+        assertThat(hasFamilyCreateAccess(owners)).isTrue();
+    }
+
+    @Test
+    void should_deny_creation_with_stamp_strategy_when_no_owner_is_a_user_stamp()
+            throws MissingUserInformationException {
+        givenFamilyCreateWithStrategy(RBAC.Strategy.STAMP);
+        var owners = List.of("http://bauhaus/organisations/insee/DG75-G999");
+        when(stampChecker.toStamps(owners)).thenReturn(List.of("DG75-G999"));
+
+        assertThat(hasFamilyCreateAccess(owners)).isFalse();
+    }
+
+    /** Une ressource créée sans propriétaire échapperait ensuite à tout contrôle par timbre. */
+    @Test
+    void should_deny_creation_with_stamp_strategy_without_any_owner() throws MissingUserInformationException {
+        givenFamilyCreateWithStrategy(RBAC.Strategy.STAMP);
+
+        assertThat(hasFamilyCreateAccess(List.of())).isFalse();
+    }
+
+    @Test
+    void should_deny_creation_with_stamp_strategy_when_the_owners_are_absent_from_the_body()
+            throws MissingUserInformationException {
+        givenFamilyCreateWithStrategy(RBAC.Strategy.STAMP);
+
+        assertThat(hasFamilyCreateAccess(null)).isFalse();
+    }
+
+    /** La stratégie ALL laisse créer au nom de n'importe quelle organisation. */
+    @Test
+    void should_grant_creation_with_all_strategy_whatever_the_owners() throws MissingUserInformationException {
+        givenFamilyCreateWithStrategy(RBAC.Strategy.ALL);
+
+        assertThat(hasFamilyCreateAccess(List.of("http://bauhaus/organisations/insee/DG75-G999")))
+                .isTrue();
+    }
+
+    @Test
+    void should_deny_creation_without_the_create_privilege() throws MissingUserInformationException {
+        givenUserWithPrivilege(
+                userWithStamps("ssm", "STAMP-01"),
+                RBAC.Module.OPERATION_FAMILY,
+                RBAC.Privilege.UPDATE,
+                RBAC.Strategy.ALL);
+
+        assertThat(hasFamilyCreateAccess(List.of("STAMP-01"))).isFalse();
+    }
+
+    /** {@code "contributor": [null, "STAMP-01"]} : les valeurs nulles du corps sont ignorées. */
+    @Test
+    void should_ignore_null_owners_posted_in_the_request() throws MissingUserInformationException {
+        givenFamilyCreateWithStrategy(RBAC.Strategy.STAMP);
+        when(stampChecker.toStamps(List.of("STAMP-01"))).thenReturn(List.of("STAMP-01"));
+
+        assertThat(hasFamilyCreateAccess(Arrays.asList(null, "STAMP-01"))).isTrue();
     }
 }

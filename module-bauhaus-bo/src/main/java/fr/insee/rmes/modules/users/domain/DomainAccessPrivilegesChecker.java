@@ -10,8 +10,10 @@ import fr.insee.rmes.modules.users.domain.port.clientside.AccessPrivilegesChecke
 import fr.insee.rmes.modules.users.domain.port.serverside.RbacFetcher;
 import fr.insee.rmes.modules.users.domain.port.serverside.StampChecker;
 import fr.insee.rmes.modules.users.domain.port.serverside.UserDecoder;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import org.slf4j.Logger;
@@ -54,6 +56,68 @@ public class DomainAccessPrivilegesChecker implements AccessPrivilegesCheckerSer
                 privilege,
                 id);
         return granted;
+    }
+
+    @Override
+    public boolean hasCreateAccess(String module, Collection<String> owners, Object principal)
+            throws MissingUserInformationException {
+        var user = this.decoder.fromPrincipal(principal);
+        if (user.isEmpty()) {
+            logger.debug("Creation denied: no user could be decoded from the principal");
+            return false;
+        }
+        var granted = hasCreateAccess(module, owners, user.get());
+        logger.debug(
+                "Creation {} for user {} on module={} with owners {}",
+                granted ? "granted" : "denied",
+                user.get().id(),
+                module,
+                owners);
+        return granted;
+    }
+
+    /**
+     * Le contrôle par timbre d'une création porte sur le corps de la requête : aucune ressource
+     * n'existe encore pour relire ses propriétaires en base. Contrairement à une ressource
+     * existante sans propriétaire, une création sans propriétaire est refusée : la ressource
+     * échapperait ensuite à tout contrôle par timbre.
+     */
+    private boolean hasCreateAccess(String moduleIdentifier, Collection<String> owners, User user) {
+        RBAC.Module module;
+        try {
+            module = RBAC.Module.valueOf(moduleIdentifier);
+        } catch (IllegalArgumentException e) {
+            logger.warn("Invalid module identifier: {}", moduleIdentifier, e);
+            return false;
+        }
+
+        var privilegeAndStrategy =
+                findStrategyByPrivilege(RBAC.Privilege.CREATE, findModuleAccessPrivileges(user, module));
+        if (privilegeAndStrategy.isEmpty()) {
+            logger.debug("Creation denied: roles {} grant no CREATE privilege on module {}", user.roles(), module);
+            return false;
+        }
+
+        return switch (privilegeAndStrategy.get().strategy()) {
+            case ALL -> !user.getStamps().isEmpty();
+            case STAMP -> {
+                var postedOwners = owners == null
+                        ? List.<String>of()
+                        : owners.stream().filter(Objects::nonNull).toList();
+                if (postedOwners.isEmpty()) {
+                    logger.debug("Creation denied: strategy STAMP but no owner in the request");
+                    yield false;
+                }
+                var ownersStamps = infrastructureStampChecker.toStamps(postedOwners);
+                logger.debug(
+                        "Strategy STAMP: owners stamps {}, user {} has stamps {}",
+                        ownersStamps,
+                        user.id(),
+                        user.getStamps());
+                yield ownersStamps.stream().anyMatch(user.getStamps()::contains);
+            }
+            case NONE -> false;
+        };
     }
 
     private boolean hasAcccess(String moduleIdentifer, String privilegeIdentifier, String id, User user) {

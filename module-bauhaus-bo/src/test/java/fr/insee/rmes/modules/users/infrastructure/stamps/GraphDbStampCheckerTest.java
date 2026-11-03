@@ -459,4 +459,14 @@ class GraphDbStampCheckerTest {
 
         assertThat(result).containsExactlyInAnyOrder("DG75-G401", "DG75-UNKNOWN");
     }
+
+    @Test
+    void to_stamps_resolves_organisation_iris_and_keeps_stamps_and_unknown_values() throws RmesException {
+        String orgIri = "http://bauhaus/organisations/insee/DG75-G401";
+        when(organisationRepository.getOrganisationsMap(anyList()))
+                .thenReturn(Map.of(orgIri, new OrganisationOption("DG75-G401", "Label")));
+
+        assertThat(checker.toStamps(List.of(orgIri, "DG75-L201", "http://bauhaus/organisations/unknown")))
+                .containsExactly("DG75-G401", "DG75-L201", "http://bauhaus/organisations/unknown");
+    }
 }

@@ -139,7 +139,7 @@ class TestFamiliesResourcesEnvProd {
     @MethodSource("provideDataForPostEndpoints")
     @ParameterizedTest
     void createFamily(Integer code, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
-        when(checker.hasAccess(any(), any(), any(), any())).thenReturn(hasAccessReturn);
+        when(checker.hasCreateAccess(any(), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
         var request = post("/operations/family")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -218,5 +218,29 @@ class TestFamiliesResourcesEnvProd {
                         .header("Authorization", "Bearer toto"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.contributor[0]").value("http://bauhaus/organisations/insee/DG75-L201"));
+    }
+
+    /**
+     * Une famille n'existe pas encore à sa création : le contrôle par timbre porte sur les
+     * contributeurs postés, que l'utilisateur doit compter parmi ses organisations.
+     */
+    @Test
+    void checks_the_creation_access_on_the_posted_contributors() throws Exception, MissingUserInformationException {
+        when(checker.hasCreateAccess(
+                        eq("OPERATION_FAMILY"),
+                        eq(List.of("http://bauhaus/organisations/insee/DG75-L201", "DG75-G401")),
+                        any()))
+                .thenReturn(true);
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
+
+        mvc.perform(post("/operations/family")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header("Authorization", "Bearer toto")
+                        .content("""
+                                {"prefLabelLg1": "Famille", "prefLabelLg2": "Family",
+                                 "contributor": ["http://bauhaus/organisations/insee/DG75-L201", "DG75-G401"]}
+                                """))
+                .andExpect(status().isOk());
     }
 }
