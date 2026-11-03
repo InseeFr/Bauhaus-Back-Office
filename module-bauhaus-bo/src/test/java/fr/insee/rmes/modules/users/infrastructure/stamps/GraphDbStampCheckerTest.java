@@ -11,6 +11,7 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.ObjectType;
+import fr.insee.rmes.modules.codeslists.codeslists.infrastructure.graphdb.CodeListsQueries;
 import fr.insee.rmes.modules.concepts.collections.infrastructure.graphdb.GraphDBCollectionProperties;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4GroupResponse;
@@ -76,6 +77,9 @@ class GraphDbStampCheckerTest {
     @Mock
     private ClassificationsQueries classificationsQueries;
 
+    @Mock
+    private CodeListsQueries codeListsQueries;
+
     private final GraphDBCollectionProperties collectionProperties =
             new GraphDBCollectionProperties("http://bauhaus/graph/concepts", "http://bauhaus/concepts/definitions");
 
@@ -96,6 +100,7 @@ class GraphDbStampCheckerTest {
                 organisationRepository,
                 contributorsQueries,
                 classificationsQueries,
+                codeListsQueries,
                 GraphsPropertiesStub.stub(),
                 collectionProperties,
                 DATASETS_GRAPH,
@@ -307,6 +312,43 @@ class GraphDbStampCheckerTest {
         when(repositoryGestion.getResponseAsObject("SELECT-graph")).thenReturn(new JSONObject());
 
         assertThatThrownBy(() -> checker.getContributorsStamps(RBAC.Module.CLASSIFICATION_CLASSIFICATION, "unknown"))
+                .isInstanceOf(StampFetchException.class);
+    }
+
+    /** La liste de codes de notation donnée a l'IRI donnée. */
+    private void givenCodesList(String notation, String iri) throws RmesException {
+        when(codeListsQueries.getDetailedCodeListByNotation(notation)).thenReturn("SELECT-" + notation);
+        when(repositoryGestion.getResponseAsObject("SELECT-" + notation))
+                .thenReturn(iri == null ? new JSONObject() : new JSONObject().put("iri", iri));
+    }
+
+    @Test
+    void get_contributors_stamps_of_a_codes_list_reads_the_dc_contributor_of_the_iri_found_by_its_notation()
+            throws StampFetchException, UnsupportedModuleException, RmesException {
+        String iri = "http://bauhaus/codes/cl-sexe";
+        givenCodesList("CL_SEXE", iri);
+        givenContributorsOf(GraphsPropertiesStub.stub().codeListGraph(), iri, "DG75-L201");
+
+        assertThat(checker.getContributorsStamps(RBAC.Module.CODESLIST_CODESLIST, "CL_SEXE"))
+                .containsExactly("DG75-L201");
+    }
+
+    @Test
+    void get_contributors_stamps_of_a_partial_codes_list_reads_the_dc_contributor_of_the_iri_found_by_its_notation()
+            throws StampFetchException, UnsupportedModuleException, RmesException {
+        String iri = "http://bauhaus/codes/cl-sexe-partielle";
+        givenCodesList("CL_SEXE_P", iri);
+        givenContributorsOf(GraphsPropertiesStub.stub().codeListGraph(), iri, "DG75-L201");
+
+        assertThat(checker.getContributorsStamps(RBAC.Module.CODESLIST_PARTIALCODESLIST, "CL_SEXE_P"))
+                .containsExactly("DG75-L201");
+    }
+
+    @Test
+    void get_contributors_stamps_of_an_unknown_codes_list_reports_a_fetch_failure() throws RmesException {
+        givenCodesList("unknown", null);
+
+        assertThatThrownBy(() -> checker.getContributorsStamps(RBAC.Module.CODESLIST_CODESLIST, "unknown"))
                 .isInstanceOf(StampFetchException.class);
     }
 

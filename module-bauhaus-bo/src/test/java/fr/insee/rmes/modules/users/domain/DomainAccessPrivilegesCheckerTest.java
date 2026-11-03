@@ -390,6 +390,38 @@ class DomainAccessPrivilegesCheckerTest {
     }
 
     @Test
+    void should_grant_access_to_a_codes_list_whose_contributor_matches_the_user_stamp()
+            throws MissingUserInformationException, StampFetchException, UnsupportedModuleException {
+        givenUpdateWithStampStrategyOnContributorsStamps(RBAC.Module.CODESLIST_CODESLIST, "STAMP-01");
+
+        assertThat(hasAccess("CODESLIST_CODESLIST", "UPDATE")).isTrue();
+    }
+
+    @Test
+    void should_deny_access_to_a_codes_list_whose_contributor_does_not_match_the_user_stamp()
+            throws MissingUserInformationException, StampFetchException, UnsupportedModuleException {
+        givenUpdateWithStampStrategyOnContributorsStamps(RBAC.Module.CODESLIST_CODESLIST, "STAMP-02");
+
+        assertThat(hasAccess("CODESLIST_CODESLIST", "UPDATE")).isFalse();
+    }
+
+    @Test
+    void should_grant_access_to_a_partial_codes_list_whose_contributor_matches_the_user_stamp()
+            throws MissingUserInformationException, StampFetchException, UnsupportedModuleException {
+        givenUpdateWithStampStrategyOnContributorsStamps(RBAC.Module.CODESLIST_PARTIALCODESLIST, "STAMP-01");
+
+        assertThat(hasAccess("CODESLIST_PARTIALCODESLIST", "UPDATE")).isTrue();
+    }
+
+    @Test
+    void should_deny_access_to_a_partial_codes_list_whose_contributor_does_not_match_the_user_stamp()
+            throws MissingUserInformationException, StampFetchException, UnsupportedModuleException {
+        givenUpdateWithStampStrategyOnContributorsStamps(RBAC.Module.CODESLIST_PARTIALCODESLIST, "STAMP-02");
+
+        assertThat(hasAccess("CODESLIST_PARTIALCODESLIST", "UPDATE")).isFalse();
+    }
+
+    @Test
     void should_check_the_contributors_stamps_of_a_dataset()
             throws MissingUserInformationException, StampFetchException, UnsupportedModuleException {
         givenUpdateWithStampStrategyOnContributorsStamps(RBAC.Module.DATASET_DATASET, "STAMP-02");

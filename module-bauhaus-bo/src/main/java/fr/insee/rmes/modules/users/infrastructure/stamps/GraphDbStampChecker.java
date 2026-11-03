@@ -6,6 +6,7 @@ import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.graphdb.ontologies.QB;
 import fr.insee.rmes.json.JSONUtils;
+import fr.insee.rmes.modules.codeslists.codeslists.infrastructure.graphdb.CodeListsQueries;
 import fr.insee.rmes.modules.commons.hexagonal.ServerSideAdaptor;
 import fr.insee.rmes.modules.concepts.collections.infrastructure.graphdb.GraphDBCollectionProperties;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4GroupResponse;
@@ -49,6 +50,7 @@ public class GraphDbStampChecker implements StampChecker {
     private final OrganisationRepository organisationRepository;
     private final ContributorsQueries contributorsQueries;
     private final ClassificationsQueries classificationsQueries;
+    private final CodeListsQueries codeListsQueries;
     private final GraphsProperties graphs;
     private final GraphDBCollectionProperties collectionProperties;
     private final String datasetsGraph;
@@ -64,6 +66,7 @@ public class GraphDbStampChecker implements StampChecker {
             OrganisationRepository organisationRepository,
             ContributorsQueries contributorsQueries,
             ClassificationsQueries classificationsQueries,
+            CodeListsQueries codeListsQueries,
             GraphsProperties graphs,
             GraphDBCollectionProperties collectionProperties,
             @Value("${fr.insee.rmes.bauhaus.baseGraph}${fr.insee.rmes.bauhaus.datasets.graph}") String datasetsGraph,
@@ -78,6 +81,7 @@ public class GraphDbStampChecker implements StampChecker {
         this.organisationRepository = organisationRepository;
         this.contributorsQueries = contributorsQueries;
         this.classificationsQueries = classificationsQueries;
+        this.codeListsQueries = codeListsQueries;
         this.graphs = graphs;
         this.collectionProperties = collectionProperties;
         this.datasetsGraph = datasetsGraph;
@@ -142,6 +146,7 @@ public class GraphDbStampChecker implements StampChecker {
                             contributorsQueries.getContributors(
                                     datasetsGraph, RdfUtils.createIRI(catalogRecordBaseUri + "/" + id));
                         case CLASSIFICATION_CLASSIFICATION -> classificationContributorsQuery(id);
+                        case CODESLIST_CODESLIST, CODESLIST_PARTIALCODESLIST -> codesListContributorsQuery(id);
                         case CONCEPT_CONCEPT ->
                             contributorsQueries.getContributors(
                                     graphs.conceptsGraph(), RdfUtils.objectIRI(ObjectType.CONCEPT, id));
@@ -170,6 +175,20 @@ public class GraphDbStampChecker implements StampChecker {
         }
         return contributorsQueries.getContributors(
                 graphAndUri.getString("graph"), RdfUtils.createIRI(graphAndUri.getString("uri")));
+    }
+
+    /**
+     * Une liste de codes, complète ou partielle, est adressée par sa notation : son IRI, identité
+     * stable, est relue en base.
+     */
+    private String codesListContributorsQuery(String notation) throws RmesException {
+        JSONObject codesList =
+                repositoryGestion.getResponseAsObject(codeListsQueries.getDetailedCodeListByNotation(notation));
+        if (!codesList.has("iri")) {
+            throw new IllegalArgumentException("Unknown codes list " + notation);
+        }
+        return contributorsQueries.getContributors(
+                graphs.codeListGraph(), RdfUtils.createIRI(codesList.getString("iri")));
     }
 
     private List<String> getStamps(RBAC.Module module, String query) {

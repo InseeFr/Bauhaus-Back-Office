@@ -188,6 +188,11 @@ public class DomainAccessPrivilegesChecker implements AccessPrivilegesCheckerSer
             case CLASSIFICATION_CLASSIFICATION ->
                 this.infrastructureStampChecker.getContributorsStamps(RBAC.Module.CLASSIFICATION_CLASSIFICATION, id);
 
+            case CODESLIST_CODESLIST ->
+                this.infrastructureStampChecker.getContributorsStamps(RBAC.Module.CODESLIST_CODESLIST, id);
+            case CODESLIST_PARTIALCODESLIST ->
+                this.infrastructureStampChecker.getContributorsStamps(RBAC.Module.CODESLIST_PARTIALCODESLIST, id);
+
             case CONCEPT_CONCEPT ->
                 this.infrastructureStampChecker.getContributorsStamps(RBAC.Module.CONCEPT_CONCEPT, id);
             case CONCEPT_COLLECTION ->
