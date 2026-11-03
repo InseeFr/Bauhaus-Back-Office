@@ -372,6 +372,28 @@ class GraphDbStampCheckerTest {
                 .isInstanceOf(UnsupportedModuleException.class);
     }
 
+    /**
+     * Une opération n'a pas de créateur propre : ce sont ceux de sa série parente, qui la porte en
+     * {@code dcterms:hasPart}, que la requête par IRI lit pour une opération.
+     */
+    @Test
+    void get_creators_stamps_of_an_operation_reads_the_dc_creator_of_its_parent_series()
+            throws StampFetchException, UnsupportedModuleException, RmesException {
+        IRI operationIri = VF.createIRI("http://id.insee.fr/operations/operation/s42-op1");
+        when(operationSeriesQueries.getCreatorsBySeriesUri(operationIri.toString()))
+                .thenReturn("SELECT-creators-of-parent-series");
+        when(repositoryGestion.getResponseAsArray("SELECT-creators-of-parent-series"))
+                .thenReturn(new JSONArray().put(new JSONObject().put("creators", "DG75-G401")));
+
+        try (MockedStatic<RdfUtils> mocked = mockStatic(RdfUtils.class)) {
+            mocked.when(() -> RdfUtils.objectIRI(ObjectType.OPERATION, "s42-op1"))
+                    .thenReturn(operationIri);
+
+            assertThat(checker.getCreatorsStamps(RBAC.Module.OPERATION_OPERATION, "s42-op1"))
+                    .containsExactly("DG75-G401");
+        }
+    }
+
     @Test
     void get_creators_stamps_operation_series_normalizes_uris_to_stamp_codes()
             throws StampFetchException, UnsupportedModuleException, RmesException {

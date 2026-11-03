@@ -98,6 +98,13 @@ public class GraphDbStampChecker implements StampChecker {
                     yield normalizeOrganisationStamps(
                             this.getStamps("creators", operationSeriesQueries.getCreatorsBySeriesUri(iri.toString())));
                 }
+                // Une opération n'a pas de créateur propre : ce sont ceux de sa série parente, que la
+                // requête par IRI retrouve par le dcterms:hasPart de la série.
+                case OPERATION_OPERATION -> {
+                    var iri = RdfUtils.objectIRI(ObjectType.OPERATION, id);
+                    yield normalizeOrganisationStamps(
+                            this.getStamps("creators", operationSeriesQueries.getCreatorsBySeriesUri(iri.toString())));
+                }
                 case DDI_PHYSICALINSTANCE -> {
                     if (id == null) yield List.of();
                     String[] parts = id.split("\\|", 2);

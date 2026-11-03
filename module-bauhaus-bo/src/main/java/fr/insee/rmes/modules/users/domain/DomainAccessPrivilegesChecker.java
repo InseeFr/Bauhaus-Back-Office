@@ -179,6 +179,8 @@ public class DomainAccessPrivilegesChecker implements AccessPrivilegesCheckerSer
                 this.infrastructureStampChecker.getContributorsStamps(RBAC.Module.OPERATION_FAMILY, id);
             case OPERATION_SERIES ->
                 this.infrastructureStampChecker.getCreatorsStamps(RBAC.Module.OPERATION_SERIES, id);
+            case OPERATION_OPERATION ->
+                this.infrastructureStampChecker.getCreatorsStamps(RBAC.Module.OPERATION_OPERATION, id);
             case DDI_PHYSICALINSTANCE ->
                 this.infrastructureStampChecker.getCreatorsStamps(RBAC.Module.DDI_PHYSICALINSTANCE, id);
 

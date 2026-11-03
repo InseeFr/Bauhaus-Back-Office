@@ -438,6 +438,34 @@ class DomainAccessPrivilegesCheckerTest {
     }
 
     @Test
+    void should_grant_access_to_an_operation_whose_parent_series_creator_matches_the_user_stamp()
+            throws MissingUserInformationException, StampFetchException, UnsupportedModuleException {
+        givenUserWithPrivilege(
+                userWithStamps("ssm", "STAMP-01"),
+                RBAC.Module.OPERATION_OPERATION,
+                RBAC.Privilege.UPDATE,
+                RBAC.Strategy.STAMP);
+        when(stampChecker.getCreatorsStamps(RBAC.Module.OPERATION_OPERATION, RESOURCE_ID))
+                .thenReturn(List.of("STAMP-01"));
+
+        assertThat(hasAccess("OPERATION_OPERATION", "UPDATE")).isTrue();
+    }
+
+    @Test
+    void should_deny_access_to_an_operation_whose_parent_series_creator_does_not_match_the_user_stamp()
+            throws MissingUserInformationException, StampFetchException, UnsupportedModuleException {
+        givenUserWithPrivilege(
+                userWithStamps("ssm", "STAMP-01"),
+                RBAC.Module.OPERATION_OPERATION,
+                RBAC.Privilege.UPDATE,
+                RBAC.Strategy.STAMP);
+        when(stampChecker.getCreatorsStamps(RBAC.Module.OPERATION_OPERATION, RESOURCE_ID))
+                .thenReturn(List.of("STAMP-02"));
+
+        assertThat(hasAccess("OPERATION_OPERATION", "UPDATE")).isFalse();
+    }
+
+    @Test
     void should_check_the_contributors_stamps_of_a_dataset()
             throws MissingUserInformationException, StampFetchException, UnsupportedModuleException {
         givenUpdateWithStampStrategyOnContributorsStamps(RBAC.Module.DATASET_DATASET, "STAMP-02");
