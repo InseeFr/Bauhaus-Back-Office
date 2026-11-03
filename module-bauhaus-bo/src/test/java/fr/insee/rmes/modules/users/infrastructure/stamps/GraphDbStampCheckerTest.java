@@ -1,16 +1,21 @@
 package fr.insee.rmes.modules.users.infrastructure.stamps;
 
+import static fr.insee.rmes.PropertiesKeys.CONCEPTS_BASE_URI;
+import static fr.insee.rmes.PropertiesKeys.OPERATIONS_BASE_URI;
+import static fr.insee.rmes.PropertiesKeys.OP_FAMILIES_BASE_URI;
+import static fr.insee.rmes.PropertiesKeys.OP_SERIES_BASE_URI;
+import static fr.insee.rmes.PropertiesKeys.PRODUCTS_BASE_URI;
+import static fr.insee.rmes.PropertiesKeys.STRUCTURES_BASE_URI;
+import static fr.insee.rmes.PropertiesKeys.STRUCTURES_COMPONENTS_BASE_URI;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausIriFactory;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
 import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.modules.codeslists.codeslists.infrastructure.graphdb.CodeListsQueries;
 import fr.insee.rmes.modules.concepts.collections.infrastructure.graphdb.GraphDBCollectionProperties;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
@@ -30,6 +35,7 @@ import fr.insee.rmes.persistance.sparql_queries.operations.OperationSeriesQuerie
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.json.JSONArray;
@@ -38,7 +44,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
@@ -48,7 +53,7 @@ class GraphDbStampCheckerTest {
     private static final String CONCEPTS_GRAPH = GraphsPropertiesStub.stub().conceptsGraph();
     private static final String SERIES_ID = "s42";
     private static final IRI SERIES_IRI =
-            SimpleValueFactory.getInstance().createIRI("http://id.insee.fr/operations/serie/" + SERIES_ID);
+            SimpleValueFactory.getInstance().createIRI("http://bauhaus/operations/serie/" + SERIES_ID);
 
     @Mock
     private RepositoryGestion repositoryGestion;
@@ -83,6 +88,20 @@ class GraphDbStampCheckerTest {
     private final GraphDBCollectionProperties collectionProperties =
             new GraphDBCollectionProperties("http://bauhaus/graph/concepts", "http://bauhaus/concepts/definitions");
 
+    /** Fabrique réelle : les IRI qu'elle construit font partie de ce que ces tests vérifient. */
+    private final BauhausIriFactory iriFactory = new BauhausIriFactory(
+            GraphsPropertiesStub.stub(),
+            new BauhausUriBuilder("http://publication/", "http://bauhaus/", name -> switch (name) {
+                case CONCEPTS_BASE_URI -> Optional.of("concepts/definition");
+                case OP_FAMILIES_BASE_URI -> Optional.of("operations/famille");
+                case OP_SERIES_BASE_URI -> Optional.of("operations/serie");
+                case OPERATIONS_BASE_URI -> Optional.of("operations/operation");
+                case PRODUCTS_BASE_URI -> Optional.of("produits/indicateur");
+                case STRUCTURES_BASE_URI -> Optional.of("structures/structure");
+                case STRUCTURES_COMPONENTS_BASE_URI -> Optional.of("structures/");
+                default -> Optional.empty();
+            }));
+
     private static final String DATASETS_GRAPH = "http://rdf.insee.fr/graphes/catalogue";
     private static final String CATALOG_RECORD_BASE_URI = "http://bauhaus/catalogues/entreeCatalogue";
 
@@ -103,6 +122,7 @@ class GraphDbStampCheckerTest {
                 codeListsQueries,
                 GraphsPropertiesStub.stub(),
                 collectionProperties,
+                iriFactory,
                 DATASETS_GRAPH,
                 CATALOG_RECORD_BASE_URI);
     }
@@ -154,11 +174,7 @@ class GraphDbStampCheckerTest {
     }
 
     private List<String> creatorsStampsOfSeries() throws StampFetchException, UnsupportedModuleException {
-        try (MockedStatic<RdfUtils> mocked = mockStatic(RdfUtils.class)) {
-            mocked.when(() -> RdfUtils.objectIRI(ObjectType.SERIES, SERIES_ID)).thenReturn(SERIES_IRI);
-
-            return checker.getCreatorsStamps(RBAC.Module.OPERATION_SERIES, SERIES_ID);
-        }
+        return checker.getCreatorsStamps(RBAC.Module.OPERATION_SERIES, SERIES_ID);
     }
 
     @Test
@@ -219,12 +235,8 @@ class GraphDbStampCheckerTest {
         when(contributorsQueries.getContributors(GraphsPropertiesStub.stub().structuresGraph(), structureIri))
                 .thenThrow(new IllegalArgumentException("Character forbidden in an IRI"));
 
-        try (MockedStatic<RdfUtils> mocked = mockStatic(RdfUtils.class)) {
-            mocked.when(() -> RdfUtils.objectIRI(ObjectType.STRUCTURE, "1234")).thenReturn(structureIri);
-
-            assertThatThrownBy(() -> checker.getContributorsStamps(RBAC.Module.STRUCTURE_STRUCTURE, "1234"))
-                    .isInstanceOf(StampFetchException.class);
-        }
+        assertThatThrownBy(() -> checker.getContributorsStamps(RBAC.Module.STRUCTURE_STRUCTURE, "1234"))
+                .isInstanceOf(StampFetchException.class);
     }
 
     @Test
@@ -233,12 +245,8 @@ class GraphDbStampCheckerTest {
         IRI structureIri = VF.createIRI("http://bauhaus/structures/structure/1234");
         givenContributorsOf(GraphsPropertiesStub.stub().structuresGraph(), structureIri.toString(), "DG75-L201");
 
-        try (MockedStatic<RdfUtils> mocked = mockStatic(RdfUtils.class)) {
-            mocked.when(() -> RdfUtils.objectIRI(ObjectType.STRUCTURE, "1234")).thenReturn(structureIri);
-
-            assertThat(checker.getContributorsStamps(RBAC.Module.STRUCTURE_STRUCTURE, "1234"))
-                    .containsExactly("DG75-L201");
-        }
+        assertThat(checker.getContributorsStamps(RBAC.Module.STRUCTURE_STRUCTURE, "1234"))
+                .containsExactly("DG75-L201");
     }
 
     @Test
@@ -251,13 +259,8 @@ class GraphDbStampCheckerTest {
         givenContributorsOf(
                 GraphsPropertiesStub.stub().structuresComponentsGraph(), componentIri.toString(), "DG75-L201");
 
-        try (MockedStatic<RdfUtils> mocked = mockStatic(RdfUtils.class)) {
-            mocked.when(() -> RdfUtils.toString(any(IRI.class))).thenCallRealMethod();
-            mocked.when(() -> RdfUtils.structureComponentAttributeIRI("a1")).thenReturn(componentIri);
-
-            assertThat(checker.getContributorsStamps(RBAC.Module.STRUCTURE_COMPONENT, "a1"))
-                    .containsExactly("DG75-L201");
-        }
+        assertThat(checker.getContributorsStamps(RBAC.Module.STRUCTURE_COMPONENT, "a1"))
+                .containsExactly("DG75-L201");
     }
 
     @Test
@@ -275,12 +278,8 @@ class GraphDbStampCheckerTest {
         IRI conceptIri = VF.createIRI("http://bauhaus/concepts/definition/c1000");
         givenContributorsOf(CONCEPTS_GRAPH, conceptIri.toString(), "DG75-L201");
 
-        try (MockedStatic<RdfUtils> mocked = mockStatic(RdfUtils.class)) {
-            mocked.when(() -> RdfUtils.objectIRI(ObjectType.CONCEPT, "c1000")).thenReturn(conceptIri);
-
-            assertThat(checker.getContributorsStamps(RBAC.Module.CONCEPT_CONCEPT, "c1000"))
-                    .containsExactly("DG75-L201");
-        }
+        assertThat(checker.getContributorsStamps(RBAC.Module.CONCEPT_CONCEPT, "c1000"))
+                .containsExactly("DG75-L201");
     }
 
     @Test
@@ -298,12 +297,8 @@ class GraphDbStampCheckerTest {
         IRI familyIri = VF.createIRI("http://bauhaus/operations/famille/s1");
         givenContributorsOf(GraphsPropertiesStub.stub().operationsGraph(), familyIri.toString(), "DG75-L201");
 
-        try (MockedStatic<RdfUtils> mocked = mockStatic(RdfUtils.class)) {
-            mocked.when(() -> RdfUtils.objectIRI(ObjectType.FAMILY, "s1")).thenReturn(familyIri);
-
-            assertThat(checker.getContributorsStamps(RBAC.Module.OPERATION_FAMILY, "s1"))
-                    .containsExactly("DG75-L201");
-        }
+        assertThat(checker.getContributorsStamps(RBAC.Module.OPERATION_FAMILY, "s1"))
+                .containsExactly("DG75-L201");
     }
 
     @Test
@@ -379,19 +374,14 @@ class GraphDbStampCheckerTest {
     @Test
     void get_creators_stamps_of_an_operation_reads_the_dc_creator_of_its_parent_series()
             throws StampFetchException, UnsupportedModuleException, RmesException {
-        IRI operationIri = VF.createIRI("http://id.insee.fr/operations/operation/s42-op1");
+        IRI operationIri = VF.createIRI("http://bauhaus/operations/operation/s42-op1");
         when(operationSeriesQueries.getCreatorsBySeriesUri(operationIri.toString()))
                 .thenReturn("SELECT-creators-of-parent-series");
         when(repositoryGestion.getResponseAsArray("SELECT-creators-of-parent-series"))
                 .thenReturn(new JSONArray().put(new JSONObject().put("creators", "DG75-G401")));
 
-        try (MockedStatic<RdfUtils> mocked = mockStatic(RdfUtils.class)) {
-            mocked.when(() -> RdfUtils.objectIRI(ObjectType.OPERATION, "s42-op1"))
-                    .thenReturn(operationIri);
-
-            assertThat(checker.getCreatorsStamps(RBAC.Module.OPERATION_OPERATION, "s42-op1"))
-                    .containsExactly("DG75-G401");
-        }
+        assertThat(checker.getCreatorsStamps(RBAC.Module.OPERATION_OPERATION, "s42-op1"))
+                .containsExactly("DG75-G401");
     }
 
     @Test
@@ -404,12 +394,8 @@ class GraphDbStampCheckerTest {
         when(repositoryGestion.getResponseAsArray(query))
                 .thenReturn(new JSONArray().put(new JSONObject().put("contributor", "DG75-G401")));
 
-        try (MockedStatic<RdfUtils> mocked = mockStatic(RdfUtils.class)) {
-            mocked.when(() -> RdfUtils.objectIRI(ObjectType.INDICATOR, "p1")).thenReturn(indicatorIri);
-
-            assertThat(checker.getCreatorsStamps(RBAC.Module.OPERATION_INDICATOR, "p1"))
-                    .containsExactly("DG75-G401");
-        }
+        assertThat(checker.getCreatorsStamps(RBAC.Module.OPERATION_INDICATOR, "p1"))
+                .containsExactly("DG75-G401");
     }
 
     @Test

@@ -1,7 +1,8 @@
 package fr.insee.rmes.modules.users.infrastructure.stamps;
 
 import fr.insee.rmes.GraphsProperties;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausIriFactory;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfTriples;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.graphdb.ontologies.QB;
@@ -53,6 +54,7 @@ public class GraphDbStampChecker implements StampChecker {
     private final CodeListsQueries codeListsQueries;
     private final GraphsProperties graphs;
     private final GraphDBCollectionProperties collectionProperties;
+    private final BauhausIriFactory iriFactory;
     private final String datasetsGraph;
     private final String catalogRecordBaseUri;
 
@@ -69,6 +71,7 @@ public class GraphDbStampChecker implements StampChecker {
             CodeListsQueries codeListsQueries,
             GraphsProperties graphs,
             GraphDBCollectionProperties collectionProperties,
+            BauhausIriFactory iriFactory,
             @Value("${fr.insee.rmes.bauhaus.baseGraph}${fr.insee.rmes.bauhaus.datasets.graph}") String datasetsGraph,
             @Value("${fr.insee.rmes.bauhaus.sesame.gestion.baseURI}/${fr.insee.rmes.bauhaus.datasets.record.baseURI}")
                     String catalogRecordBaseUri) {
@@ -84,6 +87,7 @@ public class GraphDbStampChecker implements StampChecker {
         this.codeListsQueries = codeListsQueries;
         this.graphs = graphs;
         this.collectionProperties = collectionProperties;
+        this.iriFactory = iriFactory;
         this.datasetsGraph = datasetsGraph;
         this.catalogRecordBaseUri = catalogRecordBaseUri;
     }
@@ -94,14 +98,14 @@ public class GraphDbStampChecker implements StampChecker {
         try {
             return switch (module) {
                 case OPERATION_SERIES -> {
-                    var iri = RdfUtils.objectIRI(ObjectType.SERIES, id);
+                    var iri = iriFactory.objectIri(ObjectType.SERIES, id);
                     yield normalizeOrganisationStamps(
                             this.getStamps("creators", operationSeriesQueries.getCreatorsBySeriesUri(iri.toString())));
                 }
                 // Une opération n'a pas de créateur propre : ce sont ceux de sa série parente, que la
                 // requête par IRI retrouve par le dcterms:hasPart de la série.
                 case OPERATION_OPERATION -> {
-                    var iri = RdfUtils.objectIRI(ObjectType.OPERATION, id);
+                    var iri = iriFactory.objectIri(ObjectType.OPERATION, id);
                     yield normalizeOrganisationStamps(
                             this.getStamps("creators", operationSeriesQueries.getCreatorsBySeriesUri(iri.toString())));
                 }
@@ -109,7 +113,7 @@ public class GraphDbStampChecker implements StampChecker {
                     normalizeOrganisationStamps(this.getStamps(
                             "contributor",
                             contributorsQueries.getCreators(
-                                    graphs.productsGraph(), RdfUtils.objectIRI(ObjectType.INDICATOR, id))));
+                                    graphs.productsGraph(), iriFactory.objectIri(ObjectType.INDICATOR, id))));
                 case DDI_PHYSICALINSTANCE -> {
                     if (id == null) yield List.of();
                     String[] parts = id.split("\\|", 2);
@@ -149,28 +153,28 @@ public class GraphDbStampChecker implements StampChecker {
                     switch (module) {
                         case OPERATION_FAMILY ->
                             contributorsQueries.getContributors(
-                                    graphs.operationsGraph(), RdfUtils.objectIRI(ObjectType.FAMILY, id));
+                                    graphs.operationsGraph(), iriFactory.objectIri(ObjectType.FAMILY, id));
                         case STRUCTURE_STRUCTURE ->
                             contributorsQueries.getContributors(
-                                    graphs.structuresGraph(), RdfUtils.objectIRI(ObjectType.STRUCTURE, id));
+                                    graphs.structuresGraph(), iriFactory.objectIri(ObjectType.STRUCTURE, id));
                         case STRUCTURE_COMPONENT ->
                             contributorsQueries.getContributors(
                                     graphs.structuresComponentsGraph(), findStructureComponentIri(id));
                         // Le contributeur d'un jeu de données est porté par son entrée de catalogue.
                         case DATASET_DATASET ->
                             contributorsQueries.getContributors(
-                                    datasetsGraph, RdfUtils.createIRI(catalogRecordBaseUri + "/" + id));
+                                    datasetsGraph, RdfTriples.iri(catalogRecordBaseUri + "/" + id));
                         case CLASSIFICATION_CLASSIFICATION -> classificationContributorsQuery(id);
                         case CODESLIST_CODESLIST, CODESLIST_PARTIALCODESLIST -> codesListContributorsQuery(id);
                         case CONCEPT_CONCEPT ->
                             contributorsQueries.getContributors(
-                                    graphs.conceptsGraph(), RdfUtils.objectIRI(ObjectType.CONCEPT, id));
+                                    graphs.conceptsGraph(), iriFactory.objectIri(ObjectType.CONCEPT, id));
                         case CONCEPT_COLLECTION ->
                             contributorsQueries.getContributors(
                                     graphs.conceptsGraph(), collectionProperties.getResourceIRI(id));
                         // Celui d'une distribution aussi, atteinte par jointure depuis la distribution.
                         case DATASET_DISTRIBUTION -> {
-                            var iri = RdfUtils.objectIRI(ObjectType.DISTRIBUTION, id);
+                            var iri = iriFactory.objectIri(ObjectType.DISTRIBUTION, id);
                             yield datasetDistributionQueries.getContributorsByDistributionUri(iri.toString());
                         }
                         default -> throw new UnsupportedModuleException(module);
@@ -189,7 +193,7 @@ public class GraphDbStampChecker implements StampChecker {
             throw new IllegalArgumentException("Unknown classification " + id);
         }
         return contributorsQueries.getContributors(
-                graphAndUri.getString("graph"), RdfUtils.createIRI(graphAndUri.getString("uri")));
+                graphAndUri.getString("graph"), RdfTriples.iri(graphAndUri.getString("uri")));
     }
 
     /**
@@ -202,8 +206,7 @@ public class GraphDbStampChecker implements StampChecker {
         if (!codesList.has("iri")) {
             throw new IllegalArgumentException("Unknown codes list " + notation);
         }
-        return contributorsQueries.getContributors(
-                graphs.codeListGraph(), RdfUtils.createIRI(codesList.getString("iri")));
+        return contributorsQueries.getContributors(graphs.codeListGraph(), RdfTriples.iri(codesList.getString("iri")));
     }
 
     private List<String> getStamps(RBAC.Module module, String query) {
@@ -239,12 +242,12 @@ public class GraphDbStampChecker implements StampChecker {
     private IRI findStructureComponentIri(String componentId) throws RmesException {
         JSONObject type = repositoryGestion.getResponseAsObject(structureQueries.getComponentType(componentId));
         String componentType = type.getString("type");
-        if (componentType.equals(RdfUtils.toString(QB.ATTRIBUTE_PROPERTY))) {
-            return RdfUtils.structureComponentAttributeIRI(componentId);
-        } else if (componentType.equals(RdfUtils.toString(QB.DIMENSION_PROPERTY))) {
-            return RdfUtils.structureComponentDimensionIRI(componentId);
+        if (componentType.equals(QB.ATTRIBUTE_PROPERTY.toString())) {
+            return iriFactory.structureComponentAttribute(componentId);
+        } else if (componentType.equals(QB.DIMENSION_PROPERTY.toString())) {
+            return iriFactory.structureComponentDimension(componentId);
         } else {
-            return RdfUtils.structureComponentMeasureIRI(componentId);
+            return iriFactory.structureComponentMeasure(componentId);
         }
     }
 
