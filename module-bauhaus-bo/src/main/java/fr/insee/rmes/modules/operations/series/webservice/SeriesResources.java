@@ -10,6 +10,7 @@ import fr.insee.rmes.modules.commons.configuration.ConditionalOnModule;
 import fr.insee.rmes.modules.operations.families.webservice.FamilyResources;
 import fr.insee.rmes.modules.users.domain.model.RBAC;
 import fr.insee.rmes.modules.users.webservice.HasAccess;
+import fr.insee.rmes.modules.users.webservice.HasCreateAccess;
 import fr.insee.rmes.utils.XMLUtils;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -116,7 +117,7 @@ public class SeriesResources {
         return ResponseEntity.status(HttpStatus.OK).body(operations);
     }
 
-    @HasAccess(module = RBAC.Module.OPERATION_SERIES, privilege = RBAC.Privilege.CREATE)
+    @HasCreateAccess(module = RBAC.Module.OPERATION_SERIES, owners = "#body.creators()")
     @PostMapping(value = "/series", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> createSeries(@Valid @RequestBody SeriesRequest body) throws RmesException {
         String id = operationsService.createSeries(body.toCommand());
