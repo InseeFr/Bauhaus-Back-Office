@@ -175,6 +175,8 @@ public class DomainAccessPrivilegesChecker implements AccessPrivilegesCheckerSer
     private List<String> getStamps(RBAC.Module module, String id)
             throws StampFetchException, UnsupportedModuleException {
         return switch (module) {
+            case OPERATION_FAMILY ->
+                this.infrastructureStampChecker.getContributorsStamps(RBAC.Module.OPERATION_FAMILY, id);
             case OPERATION_SERIES ->
                 this.infrastructureStampChecker.getCreatorsStamps(RBAC.Module.OPERATION_SERIES, id);
             case DDI_PHYSICALINSTANCE ->

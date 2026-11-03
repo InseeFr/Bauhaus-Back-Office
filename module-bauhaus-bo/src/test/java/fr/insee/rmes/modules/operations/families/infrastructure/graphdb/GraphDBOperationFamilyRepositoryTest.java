@@ -2,6 +2,7 @@ package fr.insee.rmes.modules.operations.families.infrastructure.graphdb;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 import fr.insee.rmes.BauhausLanguagesProperties;
@@ -22,11 +23,14 @@ import fr.insee.rmes.utils.DiacriticSorter;
 import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import org.apache.http.HttpStatus;
 import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
+import org.eclipse.rdf4j.model.vocabulary.DC;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;
 import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.json.JSONArray;
@@ -123,6 +127,7 @@ class GraphDBOperationFamilyRepositoryTest {
 
         when(operationFamilyQueries.familyQuery(familyId)).thenReturn("query");
         when(repositoryGestion.getResponseAsObject("query")).thenReturn(familyJson);
+        givenNoContributors();
 
         try (MockedStatic<XhtmlToMarkdownUtils> mockedUtils = mockStatic(XhtmlToMarkdownUtils.class)) {
             mockedUtils
@@ -139,6 +144,58 @@ class GraphDBOperationFamilyRepositoryTest {
             verify(repositoryGestion).getResponseAsObject("query");
             mockedUtils.verify(() -> XhtmlToMarkdownUtils.convertJSONObject(familyJson));
         }
+    }
+
+    @Test
+    void get_family_reads_its_contributors() throws RmesException {
+        RdfUtils.setGraphs(GraphsPropertiesStub.stub());
+        RdfUtils.setBauhausUriBuilder(
+                new BauhausUriBuilder("http://publication/", "http://bauhaus/", name -> Optional.of("famille")));
+        JSONObject familyJson = new JSONObject().put("id", "s1001").put("prefLabelLg1", "Famille");
+        when(operationFamilyQueries.familyQuery("s1001")).thenReturn("familyQuery");
+        when(repositoryGestion.getResponseAsObject("familyQuery")).thenReturn(familyJson);
+        when(operationFamilyQueries.getContributors("http://bauhaus/famille/s1001"))
+                .thenReturn("contributorsQuery");
+        when(repositoryGestion.getResponseAsArray("contributorsQuery"))
+                .thenReturn(new JSONArray()
+                        .put(new JSONObject().put("contributor", "DG75-L201"))
+                        .put(new JSONObject().put("contributor", "DG75-H250")));
+
+        try (MockedStatic<XhtmlToMarkdownUtils> ignored = xhtmlConversionIgnored()) {
+            assertEquals(
+                    List.of("DG75-L201", "DG75-H250"),
+                    repository.getFamily("s1001").contributors());
+        }
+    }
+
+    @Test
+    void save_writes_each_contributor_as_a_dc_contributor_of_the_family() throws RmesException {
+        RdfUtils.setGraphs(GraphsPropertiesStub.stub());
+        RdfUtils.setBauhausUriBuilder(
+                new BauhausUriBuilder("http://publication/", "http://bauhaus/", name -> Optional.of("famille")));
+        IRI familyIRI = VALUES.createIRI("http://bauhaus/famille/s1001");
+        OperationFamily family = new OperationFamily(
+                "s1001",
+                "Famille",
+                "Family",
+                null,
+                null,
+                "Unpublished",
+                null,
+                null,
+                List.of("http://bauhaus/organisations/insee/DG75-L201", "http://bauhaus/organisations/insee/DG75-H250"),
+                List.of(),
+                List.of());
+
+        repository.save(family);
+
+        ArgumentCaptor<Model> model = ArgumentCaptor.forClass(Model.class);
+        verify(repositoryGestion).loadSimpleObject(eq(familyIRI), model.capture());
+        assertEquals(
+                Set.of(
+                        VALUES.createIRI("http://bauhaus/organisations/insee/DG75-L201"),
+                        VALUES.createIRI("http://bauhaus/organisations/insee/DG75-H250")),
+                model.getValue().filter(familyIRI, DC.CONTRIBUTOR, null).objects());
     }
 
     @Test
@@ -340,6 +397,13 @@ class GraphDBOperationFamilyRepositoryTest {
         when(repositoryGestion.getResponseAsObject("familyQuery")).thenReturn(familyJson);
         when(repositoryGestion.getResponseAsArray("seriesQuery")).thenReturn(series);
         when(repositoryGestion.getResponseAsArray("subjectsQuery")).thenReturn(subjects);
+        givenNoContributors();
+    }
+
+    /** La famille n'a aucun contributeur. */
+    private void givenNoContributors() throws RmesException {
+        when(operationFamilyQueries.getContributors(any())).thenReturn("contributorsQuery");
+        when(repositoryGestion.getResponseAsArray("contributorsQuery")).thenReturn(new JSONArray());
     }
 
     /** Les triplets de gestion que {@code publish} recopie vers le graphe de publication. */

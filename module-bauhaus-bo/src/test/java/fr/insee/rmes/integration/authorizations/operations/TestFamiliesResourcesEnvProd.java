@@ -1,8 +1,10 @@
 package fr.insee.rmes.integration.authorizations.operations;
 
 import static fr.insee.rmes.integration.authorizations.TokenForTestsConfiguration.*;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import fr.insee.rmes.config.auth.UserAuthTestConfiguration;
@@ -15,7 +17,9 @@ import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationExcep
 import fr.insee.rmes.modules.users.domain.port.clientside.AccessPrivilegesCheckerService;
 import fr.insee.rmes.modules.users.infrastructure.JwtProperties;
 import java.util.Collections;
+import java.util.List;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -32,6 +36,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
 @WebMvcTest(
         controllers = FamilyResources.class,
@@ -101,6 +106,7 @@ class TestFamiliesResourcesEnvProd {
                         "created",
                         "modified",
                         Collections.emptyList(),
+                        Collections.emptyList(),
                         Collections.emptyList()));
         var request = get(url).contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
         request.header("Authorization", "Bearer toto");
@@ -160,5 +166,57 @@ class TestFamiliesResourcesEnvProd {
         request.header("Authorization", "Bearer toto");
 
         mvc.perform(request).andExpect(status().is(code));
+    }
+
+    /**
+     * La stratégie STAMP compare le timbre de l'utilisateur aux contributeurs de la famille :
+     * chaque écriture sur une famille existante doit donc transmettre son identifiant au contrôle
+     * d'accès. Seul cet identifiant est autorisé.
+     */
+    private static Stream<Arguments> familyWritesCheckedOnTheFamilyId() {
+        return Stream.of(
+                Arguments.of("UPDATE", put("/operations/family/s1").content(FAMILY_BODY)),
+                Arguments.of("PUBLISH", put("/operations/family/s1/validate")));
+    }
+
+    @MethodSource("familyWritesCheckedOnTheFamilyId")
+    @ParameterizedTest
+    void checks_the_access_on_the_family_id(String privilege, MockHttpServletRequestBuilder request)
+            throws Exception, MissingUserInformationException {
+        when(checker.hasAccess(eq("OPERATION_FAMILY"), eq(privilege), eq("s1"), any()))
+                .thenReturn(true);
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
+
+        request.contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer toto");
+
+        mvc.perform(request).andExpect(status().isOk());
+    }
+
+    @Test
+    void exposes_the_contributors_of_a_family_under_the_contributor_key()
+            throws Exception, MissingUserInformationException {
+        when(checker.hasAccess(any(), any(), any(), any())).thenReturn(true);
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
+        when(familyService.getFamily("s1"))
+                .thenReturn(new OperationFamily(
+                        "s1",
+                        "Famille",
+                        "Family",
+                        null,
+                        null,
+                        "Unpublished",
+                        null,
+                        null,
+                        List.of("http://bauhaus/organisations/insee/DG75-L201"),
+                        Collections.emptyList(),
+                        Collections.emptyList()));
+
+        mvc.perform(get("/operations/family/s1")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header("Authorization", "Bearer toto"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.contributor[0]").value("http://bauhaus/organisations/insee/DG75-L201"));
     }
 }

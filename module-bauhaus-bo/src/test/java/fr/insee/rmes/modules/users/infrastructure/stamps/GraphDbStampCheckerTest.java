@@ -293,6 +293,20 @@ class GraphDbStampCheckerTest {
     }
 
     @Test
+    void get_contributors_stamps_of_a_family_reads_its_dc_contributor_in_the_operations_graph()
+            throws StampFetchException, UnsupportedModuleException, RmesException {
+        IRI familyIri = VF.createIRI("http://bauhaus/operations/famille/s1");
+        givenContributorsOf(GraphsPropertiesStub.stub().operationsGraph(), familyIri.toString(), "DG75-L201");
+
+        try (MockedStatic<RdfUtils> mocked = mockStatic(RdfUtils.class)) {
+            mocked.when(() -> RdfUtils.objectIRI(ObjectType.FAMILY, "s1")).thenReturn(familyIri);
+
+            assertThat(checker.getContributorsStamps(RBAC.Module.OPERATION_FAMILY, "s1"))
+                    .containsExactly("DG75-L201");
+        }
+    }
+
+    @Test
     void get_contributors_stamps_of_a_classification_reads_its_dc_contributor_in_its_own_graph()
             throws StampFetchException, UnsupportedModuleException, RmesException {
         String graph = "http://rdf.insee.fr/graphes/codes/nafr2";

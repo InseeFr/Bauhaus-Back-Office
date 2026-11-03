@@ -135,6 +135,9 @@ public class GraphDbStampChecker implements StampChecker {
         try {
             var query =
                     switch (module) {
+                        case OPERATION_FAMILY ->
+                            contributorsQueries.getContributors(
+                                    graphs.operationsGraph(), RdfUtils.objectIRI(ObjectType.FAMILY, id));
                         case STRUCTURE_STRUCTURE ->
                             contributorsQueries.getContributors(
                                     graphs.structuresGraph(), RdfUtils.objectIRI(ObjectType.STRUCTURE, id));

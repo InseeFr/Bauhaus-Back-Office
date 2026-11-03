@@ -52,6 +52,13 @@ public class OperationFamilyQueries {
         return buildRequest("getFamily.ftlh", params);
     }
 
+    public String getContributors(String familyIri) throws RmesException {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put(OPERATIONS_GRAPH, SparqlLiterals.iri(baseGraph + operationsGraph));
+        params.put("FAMILY", SparqlLiterals.iri(familyIri));
+        return buildRequest("getFamilyContributors.ftlh", params);
+    }
+
     public String getSeries(String idFamily) throws RmesException {
         HashMap<String, Object> params = new HashMap<>();
         params.put(OPERATIONS_GRAPH, SparqlLiterals.iri(baseGraph + operationsGraph));
