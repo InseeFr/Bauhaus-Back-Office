@@ -423,6 +423,37 @@ rbac:
         read: ALL
       codeslist_partialcodeslist:
         read: ALL
+    Gestionnaire_ensemble_series_RMESGNCS:
+      operation_family:
+        read: ALL
+      operation_series:
+        read: ALL
+        update: ALL
+        publish: ALL
+      operation_operation:
+        create: ALL
+        read: ALL
+        update: ALL
+        publish: ALL
+      operation_indicator:
+        read: ALL
+      operation_sims:
+        create: ALL
+        read: ALL
+        update: ALL
+        publish: ALL
+      operation_document:
+        create: ALL
+        read: ALL
+        update: ALL
+        delete: ALL
+        publish: ALL
+      ddi_physicalinstance:
+        create: ALL
+        read: ALL
+        update: ALL
+        delete: ALL
+        publish: ALL
     Gestionnaire_liste_codes_RMESGNCS:
       codeslist_codeslist:
         read: ALL
