@@ -103,7 +103,7 @@ class LocalColecticaGroupInitConfigurationTest {
         var instanceConfig = new ColecticaConfiguration.ColecticaInstanceConfiguration(
                 "http://localhost:8082",
                 "/api/v1/",
-                null,
+                ColecticaTestItemTypes.CONFIGURED,
                 "bauhaus",
                 "DC337820-AF3A-4C0B-82F9-CF02535CDE83",
                 "token",
@@ -1008,7 +1008,7 @@ class LocalColecticaGroupInitConfigurationTest {
         var instanceConfig = new ColecticaConfiguration.ColecticaInstanceConfiguration(
                 "http://localhost:8082",
                 "/api/v1/",
-                Map.of("CodeListGroup", CODE_LIST_GROUP_ITEM_TYPE),
+                ColecticaTestItemTypes.configuredWith(Map.of("CodeListGroup", CODE_LIST_GROUP_ITEM_TYPE)),
                 "bauhaus",
                 "DC337820-AF3A-4C0B-82F9-CF02535CDE83",
                 "token",

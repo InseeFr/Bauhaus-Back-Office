@@ -5,6 +5,7 @@ import static fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colect
 import static fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.ColecticaItemTypes.LOGICAL_PRODUCT;
 import static fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.ColecticaItemTypes.PHYSICAL_INSTANCE;
 import static fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.ColecticaItemTypes.VARIABLE;
+import static fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.ColecticaItemTypes.VARIABLE_GROUP;
 import static fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.ColecticaItemTypes.VARIABLE_SCHEME;
 
 import fr.insee.rmes.colectica.client.ColecticaClient;
@@ -17,8 +18,12 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi3Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Variable;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3toDDI4ConverterService;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,7 +33,8 @@ import org.slf4j.LoggerFactory;
  * <p>Deux lectures, toutes deux en descente {@code bysubject} :
  *
  * <ul>
- *   <li>le vivier : StudyUnit → LogicalProduct → VariableScheme → Variable ;
+ *   <li>le vivier : StudyUnit → LogicalProduct → VariableScheme → Variable, y compris les variables
+ *       rangées dans des VariableGroup, imbriqués ou non, sous le VariableScheme ;
  *   <li>les usages : StudyUnit → PhysicalInstance → DataRelationship → Variable.
  * </ul>
  */
@@ -66,7 +72,7 @@ class ColecticaStudyUnitVariablesReader {
 
         List<ColecticaItem> variables = new ArrayList<>();
         for (ItemReference variableScheme : variableSchemes) {
-            variables.addAll(children(variableScheme, VARIABLE));
+            variables.addAll(variablesUnder(variableScheme));
         }
         variables = ColecticaItems.latestVersions(variables);
         if (variables.isEmpty()) {
@@ -109,6 +115,26 @@ class ColecticaStudyUnitVariablesReader {
             }
         }
         return usages.stream().distinct().toList();
+    }
+
+    /**
+     * Variables de {@code variableScheme} : celles qu'il référence directement et celles de ses
+     * VariableGroup, à toute profondeur. Chaque groupe n'est visité qu'une fois, ce qui protège d'un
+     * cycle de références entre groupes.
+     */
+    private List<ColecticaItem> variablesUnder(ItemReference variableScheme) {
+        List<ColecticaItem> variables = new ArrayList<>();
+        Set<ItemReference> visited = new HashSet<>();
+        Deque<ItemReference> toVisit = new ArrayDeque<>(List.of(variableScheme));
+        while (!toVisit.isEmpty()) {
+            ItemReference container = toVisit.pop();
+            if (!visited.add(container)) {
+                continue;
+            }
+            variables.addAll(children(container, VARIABLE));
+            toVisit.addAll(ColecticaRelationships.childrenOfType(colecticaClient, container, itemType(VARIABLE_GROUP)));
+        }
+        return variables;
     }
 
     /** Items de {@code typeKey} directement référencés par {@code subject}, avec leur libellé. */

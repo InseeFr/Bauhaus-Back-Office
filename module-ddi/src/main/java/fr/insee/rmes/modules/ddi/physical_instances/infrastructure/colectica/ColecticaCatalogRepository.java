@@ -2,10 +2,10 @@ package fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica;
 
 import static fr.insee.rmes.domain.logging.LogSanitizer.forLog;
 import static fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.ColecticaItemTypes.CODE_LIST_SCHEME;
-import static fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.ColecticaItemTypes.GROUP_UUID;
+import static fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.ColecticaItemTypes.GROUP;
 import static fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.ColecticaItemTypes.LOGICAL_PRODUCT;
 import static fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.ColecticaItemTypes.PHYSICAL_INSTANCE;
-import static fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.ColecticaItemTypes.STUDY_UNIT_UUID;
+import static fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.ColecticaItemTypes.STUDY_UNIT;
 
 import fr.insee.rmes.colectica.client.ColecticaClient;
 import fr.insee.rmes.colectica.client.ItemReference;
@@ -99,7 +99,7 @@ class ColecticaCatalogRepository {
 
     List<PartialStudyUnit> getStudyUnits() {
         logger.info("Getting study units from Colectica API via HTTP");
-        return queryPartials(STUDY_UNIT_UUID, PartialStudyUnit::new);
+        return queryPartials(itemType(STUDY_UNIT), PartialStudyUnit::new);
     }
 
     /**
@@ -118,7 +118,7 @@ class ColecticaCatalogRepository {
     List<PartialGroup> getGroups() {
         logger.info("Getting groups from Colectica API via HTTP");
 
-        List<ColecticaItem> groups = latestItemsOfType(GROUP_UUID);
+        List<ColecticaItem> groups = latestItemsOfType(itemType(GROUP));
         if (groups.isEmpty()) {
             return List.of();
         }
@@ -218,17 +218,17 @@ class ColecticaCatalogRepository {
         Set<String> attachedKeys = new HashSet<>();
 
         Map<String, ColecticaItem> latestStudyUnitByKey = new HashMap<>();
-        for (ColecticaItem studyUnit : latestItemsOfType(STUDY_UNIT_UUID)) {
+        for (ColecticaItem studyUnit : latestItemsOfType(itemType(STUDY_UNIT))) {
             latestStudyUnitByKey.put(ColecticaItems.key(studyUnit.agencyId(), studyUnit.identifier()), studyUnit);
         }
 
-        for (ColecticaItem group : latestItemsOfType(GROUP_UUID)) {
+        for (ColecticaItem group : latestItemsOfType(itemType(GROUP))) {
             String groupLabel = labels.of(group);
             List<ColecticaItem> referencedStudyUnits = ColecticaItems.latestVersions(colecticaClient.findRelatedItems(
                     RelationshipDirection.BY_SUBJECT,
                     ColecticaItems.itemRef(group),
                     group.version(),
-                    List.of(STUDY_UNIT_UUID)));
+                    List.of(itemType(STUDY_UNIT))));
             for (ColecticaItem referenced : referencedStudyUnits) {
                 ColecticaItem studyUnit = latestStudyUnitByKey.getOrDefault(
                         ColecticaItems.key(referenced.agencyId(), referenced.identifier()), referenced);
@@ -278,11 +278,11 @@ class ColecticaCatalogRepository {
      * connus sans lire le Group ni la StudyUnit.
      */
     PhysicalInstanceParents getPhysicalInstanceParents(String agencyId, String id) {
-        ColecticaItem studyUnitItem = firstRelated(new ItemReference(agencyId, id), STUDY_UNIT_UUID)
+        ColecticaItem studyUnitItem = firstRelated(new ItemReference(agencyId, id), itemType(STUDY_UNIT))
                 .orElseThrow(() -> new StudyUnitNotFoundException(
                         "No study unit found for physical instance " + agencyId + "/" + id));
 
-        ColecticaItem groupItem = firstRelated(ColecticaItems.itemRef(studyUnitItem), GROUP_UUID)
+        ColecticaItem groupItem = firstRelated(ColecticaItems.itemRef(studyUnitItem), itemType(GROUP))
                 .orElseThrow(() -> new RuntimeException("No group found for study unit " + studyUnitItem.agencyId()
                         + "/" + studyUnitItem.identifier()));
 
@@ -375,7 +375,7 @@ class ColecticaCatalogRepository {
         if (logger.isInfoEnabled()) {
             logger.info("Searching StudyUnits by operationIris: {}", forLog(String.valueOf(operationIris)));
         }
-        ColecticaResponse studyUnits = colecticaClient.query(List.of(STUDY_UNIT_UUID));
+        ColecticaResponse studyUnits = colecticaClient.query(List.of(itemType(STUDY_UNIT)));
         List<GetDescriptionsRequest.IdentifierRef> identifiers = ColecticaItems.identifiersOf(studyUnits.results());
         if (identifiers.isEmpty()) {
             return List.of();

@@ -80,7 +80,7 @@ class PhysicalInstanceSearchRowsCacheIntegrationTest {
             var server = new ColecticaConfiguration.ColecticaInstanceConfiguration(
                     "https://example.com",
                     "/api/v1/",
-                    Map.of("PhysicalInstance", PI_TYPE, "StudyUnit", STUDY_UNIT_TYPE),
+                    Map.of("PhysicalInstance", PI_TYPE, "StudyUnit", STUDY_UNIT_TYPE, "Group", GROUP_TYPE),
                     "resp",
                     "format",
                     "password",
