@@ -4846,14 +4846,9 @@ class DDIRepositoryImplTest {
                 .thenReturn(List.of(labelItem(GROUP_ITEM_TYPE, "fr.insee", "group-1", "group-1")));
 
         // Scheme resolution: Group -> LogicalProduct -> CodeListScheme
-        when(colecticaClient.findRelatedDescriptions(
-                        RelationshipDirection.BY_SUBJECT, new ItemReference("fr.insee", "group-1"), List.of("lp-type")))
-                .thenReturn(List.of(new ItemReference("fr.insee", "lp-1")));
-        when(colecticaClient.findRelatedDescriptions(
-                        RelationshipDirection.BY_SUBJECT,
-                        new ItemReference("fr.insee", "lp-1"),
-                        List.of(CODE_LIST_SCHEME_TYPE)))
-                .thenReturn(List.of(new ItemReference("fr.insee", "CLS_1")));
+        stubChildrenOfLatestVersion("fr.insee", "group-1", "lp-type", List.of(new ItemReference("fr.insee", "lp-1")));
+        stubChildrenOfLatestVersion(
+                "fr.insee", "lp-1", CODE_LIST_SCHEME_TYPE, List.of(new ItemReference("fr.insee", "CLS_1")));
 
         // Existing scheme already references CL_EXISTING.
         ColecticaItemResponse existingScheme = new ColecticaItemResponse(
@@ -4964,14 +4959,12 @@ class DDIRepositoryImplTest {
                 .thenReturn(List.of(labelItem(GROUP_ITEM_TYPE, "fr.insee", "group-1", "group-1")));
 
         // Scheme resolution: Group -> LogicalProduct -> ManagedRepresentationScheme
-        when(colecticaClient.findRelatedDescriptions(
-                        RelationshipDirection.BY_SUBJECT, new ItemReference("fr.insee", "group-1"), List.of("lp-type")))
-                .thenReturn(List.of(new ItemReference("fr.insee", "lp-1")));
-        when(colecticaClient.findRelatedDescriptions(
-                        RelationshipDirection.BY_SUBJECT,
-                        new ItemReference("fr.insee", "lp-1"),
-                        List.of(MANAGED_REPRESENTATION_SCHEME_TYPE)))
-                .thenReturn(List.of(new ItemReference("fr.insee", "MRS_1")));
+        stubChildrenOfLatestVersion("fr.insee", "group-1", "lp-type", List.of(new ItemReference("fr.insee", "lp-1")));
+        stubChildrenOfLatestVersion(
+                "fr.insee",
+                "lp-1",
+                MANAGED_REPRESENTATION_SCHEME_TYPE,
+                List.of(new ItemReference("fr.insee", "MRS_1")));
 
         // Existing scheme already references MMVR_EXISTING.
         ColecticaItemResponse existingScheme = new ColecticaItemResponse(
@@ -5114,12 +5107,8 @@ class DDIRepositoryImplTest {
                         List.of(GROUP_ITEM_TYPE)))
                 .thenReturn(List.of(labelItem(GROUP_ITEM_TYPE, "fr.insee", "group-1", "group-1")));
         // Group -> LogicalProduct -> CategoryScheme
-        when(colecticaClient.findRelatedDescriptions(
-                        RelationshipDirection.BY_SUBJECT, new ItemReference("fr.insee", "group-1"), List.of("lp-type")))
-                .thenReturn(List.of(new ItemReference("fr.insee", "lp-1")));
-        when(colecticaClient.findRelatedDescriptions(
-                        RelationshipDirection.BY_SUBJECT, new ItemReference("fr.insee", "lp-1"), List.of("cats-type")))
-                .thenReturn(List.of(new ItemReference("fr.insee", "CATS_1")));
+        stubChildrenOfLatestVersion("fr.insee", "group-1", "lp-type", List.of(new ItemReference("fr.insee", "lp-1")));
+        stubChildrenOfLatestVersion("fr.insee", "lp-1", "cats-type", List.of(new ItemReference("fr.insee", "CATS_1")));
 
         when(colecticaClient.getItem("fr.insee", "CATS_1", null))
                 .thenReturn(new ColecticaItemResponse(
@@ -5532,12 +5521,8 @@ class DDIRepositoryImplTest {
                         "fmt"));
 
         // La StudyUnit cible expose déjà un VariableScheme (StudyUnit -> LP -> VS)
-        when(colecticaClient.findRelatedDescriptions(
-                        RelationshipDirection.BY_SUBJECT, new ItemReference("fr.insee", "su-1"), List.of("lp-type")))
-                .thenReturn(List.of(new ItemReference("fr.insee", "lp-1")));
-        when(colecticaClient.findRelatedDescriptions(
-                        RelationshipDirection.BY_SUBJECT, new ItemReference("fr.insee", "lp-1"), List.of("vs-type")))
-                .thenReturn(List.of(new ItemReference("fr.insee", "VS_1")));
+        stubChildrenOfLatestVersion("fr.insee", "su-1", "lp-type", List.of(new ItemReference("fr.insee", "lp-1")));
+        stubChildrenOfLatestVersion("fr.insee", "lp-1", "vs-type", List.of(new ItemReference("fr.insee", "VS_1")));
         when(colecticaClient.getItem("fr.insee", "VS_1", null))
                 .thenReturn(new ColecticaItemResponse(
                         "vs-type",
@@ -5658,9 +5643,7 @@ class DDIRepositoryImplTest {
                         Map.of("LogicalProduct", "lp-type", "CodeListScheme", CODE_LIST_SCHEME_TYPE)));
         when(colecticaConfiguration.mutualizedCodesPackage()).thenReturn(null);
         stubPhysicalInstanceParents();
-        when(colecticaClient.findRelatedDescriptions(
-                        RelationshipDirection.BY_SUBJECT, new ItemReference("fr.insee", "group-1"), List.of("lp-type")))
-                .thenReturn(List.of());
+        stubChildrenOfLatestVersion("fr.insee", "group-1", "lp-type", List.of());
         Ddi4CodeList codeList = new Ddi4CodeList(
                 Ddi4CodeList.TYPE,
                 CogsDate.ofDateTime("2026-01-01T00:00:00"),
@@ -5692,12 +5675,8 @@ class DDIRepositoryImplTest {
                 .thenReturn(ColecticaTestItemTypes.configuredWith(
                         Map.of("LogicalProduct", "lp-type", "CategoryScheme", "cats-type")));
         stubPhysicalInstanceParents();
-        when(colecticaClient.findRelatedDescriptions(
-                        RelationshipDirection.BY_SUBJECT, new ItemReference("fr.insee", "group-1"), List.of("lp-type")))
-                .thenReturn(List.of(new ItemReference("fr.insee", "lp-1")));
-        when(colecticaClient.findRelatedDescriptions(
-                        RelationshipDirection.BY_SUBJECT, new ItemReference("fr.insee", "lp-1"), List.of("cats-type")))
-                .thenReturn(List.of());
+        stubChildrenOfLatestVersion("fr.insee", "group-1", "lp-type", List.of(new ItemReference("fr.insee", "lp-1")));
+        stubChildrenOfLatestVersion("fr.insee", "lp-1", "cats-type", List.of());
         Ddi4Category category = new Ddi4Category(
                 Ddi4Category.TYPE,
                 CogsDate.ofDateTime("2026-01-01T00:00:00"),
@@ -5730,14 +5709,8 @@ class DDIRepositoryImplTest {
                         "ManagedRepresentationScheme",
                         MANAGED_REPRESENTATION_SCHEME_TYPE)));
         stubPhysicalInstanceParents();
-        when(colecticaClient.findRelatedDescriptions(
-                        RelationshipDirection.BY_SUBJECT, new ItemReference("fr.insee", "group-1"), List.of("lp-type")))
-                .thenReturn(List.of(new ItemReference("fr.insee", "lp-1")));
-        when(colecticaClient.findRelatedDescriptions(
-                        RelationshipDirection.BY_SUBJECT,
-                        new ItemReference("fr.insee", "lp-1"),
-                        List.of(MANAGED_REPRESENTATION_SCHEME_TYPE)))
-                .thenReturn(List.of());
+        stubChildrenOfLatestVersion("fr.insee", "group-1", "lp-type", List.of(new ItemReference("fr.insee", "lp-1")));
+        stubChildrenOfLatestVersion("fr.insee", "lp-1", MANAGED_REPRESENTATION_SCHEME_TYPE, List.of());
         Ddi4ManagedMissingValuesRepresentation mmvr = new Ddi4ManagedMissingValuesRepresentation(
                 Ddi4ManagedMissingValuesRepresentation.TYPE,
                 CogsDate.ofDateTime("2026-01-01T00:00:00"),
@@ -5769,9 +5742,7 @@ class DDIRepositoryImplTest {
                 .thenReturn(ColecticaTestItemTypes.configuredWith(
                         Map.of("LogicalProduct", "lp-type", "VariableScheme", "vs-type")));
         stubPhysicalInstanceParents();
-        when(colecticaClient.findRelatedDescriptions(
-                        RelationshipDirection.BY_SUBJECT, new ItemReference("fr.insee", "su-1"), List.of("lp-type")))
-                .thenReturn(List.of());
+        stubChildrenOfLatestVersion("fr.insee", "su-1", "lp-type", List.of());
 
         assertThatThrownBy(() -> ddiRepository.updateFullPhysicalInstance("fr.insee", "pi-1", ddi4WithOneVariable()))
                 .isInstanceOf(MissingSchemeException.class)
@@ -5792,9 +5763,11 @@ class DDIRepositoryImplTest {
                 .thenReturn(ColecticaTestItemTypes.configuredWith(
                         Map.of("LogicalProduct", "lp-type", "VariableScheme", "vs-type")));
         stubPhysicalInstanceParents();
-        when(colecticaClient.findRelatedDescriptions(
-                        RelationshipDirection.BY_SUBJECT, new ItemReference("fr.insee", "su-1"), List.of("lp-type")))
-                .thenReturn(List.of(new ItemReference("fr.insee", "lp-1"), new ItemReference("fr.insee", "lp-2")));
+        stubChildrenOfLatestVersion(
+                "fr.insee",
+                "su-1",
+                "lp-type",
+                List.of(new ItemReference("fr.insee", "lp-1"), new ItemReference("fr.insee", "lp-2")));
 
         assertThatThrownBy(() -> ddiRepository.updateFullPhysicalInstance("fr.insee", "pi-1", ddi4WithOneVariable()))
                 .isInstanceOf(MissingSchemeException.class)
@@ -5816,15 +5789,15 @@ class DDIRepositoryImplTest {
                         Map.of("LogicalProduct", "lp-type", "VariableScheme", "vs-type")));
         stubPhysicalInstanceParents();
         // Une relation par version de la StudyUnit : le même LogicalProduct ressort autant de fois.
-        when(colecticaClient.findRelatedDescriptions(
-                        RelationshipDirection.BY_SUBJECT, new ItemReference("fr.insee", "su-1"), List.of("lp-type")))
-                .thenReturn(List.of(
+        stubChildrenOfLatestVersion(
+                "fr.insee",
+                "su-1",
+                "lp-type",
+                List.of(
                         new ItemReference("fr.insee", "lp-1"),
                         new ItemReference("fr.insee", "lp-1"),
                         new ItemReference("fr.insee", "lp-1")));
-        when(colecticaClient.findRelatedDescriptions(
-                        RelationshipDirection.BY_SUBJECT, new ItemReference("fr.insee", "lp-1"), List.of("vs-type")))
-                .thenReturn(List.of(new ItemReference("fr.insee", "VS_1")));
+        stubChildrenOfLatestVersion("fr.insee", "lp-1", "vs-type", List.of(new ItemReference("fr.insee", "VS_1")));
         when(colecticaClient.getItem("fr.insee", "VS_1", null))
                 .thenReturn(new ColecticaItemResponse(
                         "vs-type",
@@ -5872,18 +5845,175 @@ class DDIRepositoryImplTest {
     }
 
     @Test
+    void updateFullPhysicalInstance_filesVariablesUnderTheLogicalProductOfTheLatestStudyUnitVersion() {
+        stubPhysicalInstanceConversion();
+        when(instanceConfiguration.itemTypes())
+                .thenReturn(ColecticaTestItemTypes.configuredWith(
+                        Map.of("LogicalProduct", "lp-type", "VariableScheme", "vs-type")));
+        stubPhysicalInstanceParents();
+        // Toutes versions confondues, la StudyUnit référence lp-1 (v1) puis lp-2 (v2) : seule la v2
+        // compte.
+        lenient()
+                .when(colecticaClient.findRelatedDescriptions(
+                        RelationshipDirection.BY_SUBJECT, new ItemReference("fr.insee", "su-1"), List.of("lp-type")))
+                .thenReturn(List.of(new ItemReference("fr.insee", "lp-1"), new ItemReference("fr.insee", "lp-2")));
+        stubLatestVersion("su-1", 2);
+        when(colecticaClient.findRelatedDescriptions(
+                        RelationshipDirection.BY_SUBJECT, new ItemReference("fr.insee", "su-1"), 2, List.of("lp-type")))
+                .thenReturn(List.of(new ItemReference("fr.insee", "lp-2")));
+        stubLatestVersion("lp-2", 3);
+        when(colecticaClient.findRelatedDescriptions(
+                        RelationshipDirection.BY_SUBJECT, new ItemReference("fr.insee", "lp-2"), 3, List.of("vs-type")))
+                .thenReturn(List.of(new ItemReference("fr.insee", "VS_2")));
+        when(colecticaClient.getItem("fr.insee", "VS_2", null))
+                .thenReturn(new ColecticaItemResponse(
+                        "vs-type",
+                        "fr.insee",
+                        1,
+                        "VS_2",
+                        "<vs/>",
+                        "2026-01-01T00:00:00",
+                        "resp",
+                        false,
+                        false,
+                        false,
+                        "fmt"));
+        when(ddi3ToDdi4Converter.toVariableScheme("<vs/>"))
+                .thenReturn(new Ddi4VariableScheme(
+                        Ddi4VariableScheme.TYPE,
+                        CogsDate.ofDateTime("2026-01-01T00:00:00"),
+                        "urn:ddi:fr.insee:VS_2:1",
+                        "fr.insee",
+                        "VS_2",
+                        "1",
+                        LangStrings.of("fr-FR", "VS"),
+                        List.of()));
+        ArgumentCaptor<Ddi4VariableScheme> vsCaptor = ArgumentCaptor.forClass(Ddi4VariableScheme.class);
+        when(ddi4ToDdi3Converter.toVariableSchemeItem(vsCaptor.capture()))
+                .thenReturn(new Ddi3Response.Ddi3Item(
+                        "vs-type",
+                        "fr.insee",
+                        "1",
+                        "VS_2",
+                        "<vs-updated/>",
+                        "2026-01-01T00:00:00",
+                        "resp",
+                        false,
+                        false,
+                        false,
+                        "fmt"));
+
+        ddiRepository.updateFullPhysicalInstance("fr.insee", "pi-1", ddi4WithOneVariable());
+
+        assertThat(vsCaptor.getValue().id()).isEqualTo("VS_2");
+        assertThat(vsCaptor.getValue().variableReference())
+                .extracting(Reference::id)
+                .containsExactly("VAR_1");
+        verify(colecticaClient).createOrUpdateItems(any());
+    }
+
+    @Test
+    void updateFullPhysicalInstance_filesCategoriesUnderTheLogicalProductOfTheLatestGroupVersion() {
+        stubPhysicalInstanceConversion();
+        when(instanceConfiguration.itemTypes())
+                .thenReturn(ColecticaTestItemTypes.configuredWith(
+                        Map.of("LogicalProduct", "lp-type", "CategoryScheme", "cats-type")));
+        stubPhysicalInstanceParents();
+        // lp-old, retiré du Group par sa v2, porte encore un CategoryScheme : il ne doit pas servir.
+        lenient()
+                .when(colecticaClient.findRelatedDescriptions(
+                        RelationshipDirection.BY_SUBJECT, new ItemReference("fr.insee", "group-1"), List.of("lp-type")))
+                .thenReturn(List.of(new ItemReference("fr.insee", "lp-old"), new ItemReference("fr.insee", "lp-new")));
+        lenient()
+                .when(colecticaClient.findRelatedDescriptions(
+                        RelationshipDirection.BY_SUBJECT,
+                        new ItemReference("fr.insee", "lp-old"),
+                        List.of("cats-type")))
+                .thenReturn(List.of(new ItemReference("fr.insee", "CS_OLD")));
+        stubLatestVersion("group-1", 2);
+        when(colecticaClient.findRelatedDescriptions(
+                        RelationshipDirection.BY_SUBJECT,
+                        new ItemReference("fr.insee", "group-1"),
+                        2,
+                        List.of("lp-type")))
+                .thenReturn(List.of(new ItemReference("fr.insee", "lp-new")));
+        stubLatestVersion("lp-new", 1);
+        when(colecticaClient.findRelatedDescriptions(
+                        RelationshipDirection.BY_SUBJECT,
+                        new ItemReference("fr.insee", "lp-new"),
+                        1,
+                        List.of("cats-type")))
+                .thenReturn(List.of(new ItemReference("fr.insee", "CS_NEW")));
+        when(colecticaClient.getItem("fr.insee", "CS_NEW", null))
+                .thenReturn(new ColecticaItemResponse(
+                        "cats-type",
+                        "fr.insee",
+                        1,
+                        "CS_NEW",
+                        "<cs/>",
+                        "2026-01-01T00:00:00",
+                        "resp",
+                        false,
+                        false,
+                        false,
+                        "fmt"));
+        when(ddi3ToDdi4Converter.toCategoryScheme("<cs/>"))
+                .thenReturn(new Ddi4CategoryScheme(
+                        Ddi4CategoryScheme.TYPE,
+                        CogsDate.ofDateTime("2026-01-01T00:00:00"),
+                        "urn:ddi:fr.insee:CS_NEW:1",
+                        "fr.insee",
+                        "CS_NEW",
+                        "1",
+                        LangStrings.of("fr-FR", "CS"),
+                        List.of()));
+        ArgumentCaptor<Ddi4CategoryScheme> csCaptor = ArgumentCaptor.forClass(Ddi4CategoryScheme.class);
+        when(ddi4ToDdi3Converter.toCategorySchemeItem(csCaptor.capture()))
+                .thenReturn(new Ddi3Response.Ddi3Item(
+                        "cats-type",
+                        "fr.insee",
+                        "1",
+                        "CS_NEW",
+                        "<cs-updated/>",
+                        "2026-01-01T00:00:00",
+                        "resp",
+                        false,
+                        false,
+                        false,
+                        "fmt"));
+        Ddi4Category category = new Ddi4Category(
+                Ddi4Category.TYPE,
+                CogsDate.ofDateTime("2026-01-01T00:00:00"),
+                "urn:ddi:fr.insee:CAT_NEW:1",
+                "fr.insee",
+                "CAT_NEW",
+                "1",
+                LangStrings.of("fr-FR", "cat"));
+        Ddi4Response ddi4 = new Ddi4Response("schema", null, null, null, null, null, List.of(category), null);
+
+        ddiRepository.updateFullPhysicalInstance("fr.insee", "pi-1", ddi4);
+
+        assertThat(csCaptor.getValue().id()).isEqualTo("CS_NEW");
+        assertThat(csCaptor.getValue().categoryReference())
+                .extracting(Reference::id)
+                .containsExactly("CAT_NEW");
+    }
+
+    /** Dernière version d'un item {@code fr.insee}, telle que rendue par {@code _getLatestVersionNumbers}. */
+    private void stubLatestVersion(String id, int version) {
+        when(colecticaClient.getLatestVersionNumbers(List.of(new ItemReference("fr.insee", id))))
+                .thenReturn(List.of(new ColecticaSetItem(id, version, "fr.insee")));
+    }
+
+    @Test
     void updateFullPhysicalInstance_rejectsVariablesWhenStudyUnitLogicalProductHasNoVariableScheme() {
         stubPhysicalInstanceConversion();
         when(instanceConfiguration.itemTypes())
                 .thenReturn(ColecticaTestItemTypes.configuredWith(
                         Map.of("LogicalProduct", "lp-type", "VariableScheme", "vs-type")));
         stubPhysicalInstanceParents();
-        when(colecticaClient.findRelatedDescriptions(
-                        RelationshipDirection.BY_SUBJECT, new ItemReference("fr.insee", "su-1"), List.of("lp-type")))
-                .thenReturn(List.of(new ItemReference("fr.insee", "lp-1")));
-        when(colecticaClient.findRelatedDescriptions(
-                        RelationshipDirection.BY_SUBJECT, new ItemReference("fr.insee", "lp-1"), List.of("vs-type")))
-                .thenReturn(List.of());
+        stubChildrenOfLatestVersion("fr.insee", "su-1", "lp-type", List.of(new ItemReference("fr.insee", "lp-1")));
+        stubChildrenOfLatestVersion("fr.insee", "lp-1", "vs-type", List.of());
 
         assertThatThrownBy(() -> ddiRepository.updateFullPhysicalInstance("fr.insee", "pi-1", ddi4WithOneVariable()))
                 .isInstanceOf(MissingSchemeException.class)
@@ -5895,6 +6025,19 @@ class DDIRepositoryImplTest {
                     assertThat(ex.params()).isEqualTo(Map.of("studyUnit", "Enquête Emploi"));
                 });
         verify(colecticaClient, never()).createOrUpdateItems(any());
+    }
+
+    /**
+     * Enfants de la dernière version ({@code 1}) de {@code agencyId/parentId} : résolution du numéro
+     * de version puis requête {@code bysubject} restreinte à cette version.
+     */
+    private void stubChildrenOfLatestVersion(
+            String agencyId, String parentId, String childType, List<ItemReference> children) {
+        when(colecticaClient.getLatestVersionNumbers(List.of(new ItemReference(agencyId, parentId))))
+                .thenReturn(List.of(new ColecticaSetItem(parentId, 1, agencyId)));
+        when(colecticaClient.findRelatedDescriptions(
+                        RelationshipDirection.BY_SUBJECT, new ItemReference(agencyId, parentId), 1, List.of(childType)))
+                .thenReturn(children);
     }
 
     private void stubPhysicalInstanceConversion() {

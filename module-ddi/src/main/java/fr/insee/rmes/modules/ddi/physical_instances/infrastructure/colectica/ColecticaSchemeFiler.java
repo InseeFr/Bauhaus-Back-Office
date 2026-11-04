@@ -8,7 +8,6 @@ import static fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colect
 
 import fr.insee.rmes.colectica.client.ColecticaClient;
 import fr.insee.rmes.colectica.client.ItemReference;
-import fr.insee.rmes.colectica.client.RelationshipDirection;
 import fr.insee.rmes.colectica.client.dto.ColecticaItemResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.MissingSchemeException;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.StudyUnitNotFoundException;
@@ -377,20 +376,26 @@ class ColecticaSchemeFiler {
                 .toList();
     }
 
-    /** Les LogicalProducts rangés par un conteneur (Group ou StudyUnit), via {@code bysubject}. */
+    /**
+     * Les LogicalProducts rangés par la dernière version d'un conteneur (Group ou StudyUnit), via
+     * {@code bysubject}. Un LogicalProduct retiré par une version ultérieure du conteneur n'en fait
+     * plus partie.
+     */
     private List<ItemReference> findContainerLogicalProducts(String containerAgency, String containerId) {
-        return ColecticaRelationships.childrenOfType(
+        return ColecticaRelationships.childrenOfLatestVersion(
                 colecticaClient, new ItemReference(containerAgency, containerId), itemType(LOGICAL_PRODUCT));
     }
 
-    /** Cherche un scheme rangé sous l'un des {@code logicalProducts}. Vide quand il n'en existe pas. */
+    /**
+     * Cherche un scheme rangé sous la dernière version de l'un des {@code logicalProducts}. Vide quand
+     * il n'en existe pas.
+     */
     private Optional<ItemReference> findScheme(List<ItemReference> logicalProducts, String schemeTypeKey) {
         String schemeType = itemType(schemeTypeKey);
         for (ItemReference logicalProduct : logicalProducts) {
-            Optional<ItemReference> scheme = colecticaClient
-                    .findRelatedDescriptions(RelationshipDirection.BY_SUBJECT, logicalProduct, List.of(schemeType))
-                    .stream()
-                    .findFirst();
+            Optional<ItemReference> scheme =
+                    ColecticaRelationships.childrenOfLatestVersion(colecticaClient, logicalProduct, schemeType).stream()
+                            .findFirst();
             if (scheme.isPresent()) {
                 return scheme;
             }
