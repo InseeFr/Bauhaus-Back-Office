@@ -10,7 +10,7 @@ fr.insee.rmes.bauhaus.colectica:
   # rien n'est écouté, le chemin d'écriture RDF est inchangé.
   # La synchronisation est synchrone et bloquante : si Colectica refuse l'écriture, la requête échoue.
   operations-mirror:
-    enabled: false
+    enabled: true
 
   server:
     # Primary Colectica Instance
