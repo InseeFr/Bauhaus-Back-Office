@@ -20,6 +20,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnitRe
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4VariableScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.DuplicatePhysicalInstanceRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.MutualizedCodeListCodes;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.OperationStudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodesList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialGroup;
@@ -223,6 +224,11 @@ public class DDIRepositoryImpl implements DDIRepository {
     @Override
     public List<PartialPhysicalInstance> findPhysicalInstancesByOperationIris(Collection<String> operationIris) {
         return catalog.findPhysicalInstancesByOperationIris(operationIris);
+    }
+
+    @Override
+    public List<OperationStudyUnit> findStudyUnitsByOperationIris(Collection<String> operationIris) {
+        return catalog.findStudyUnitsByOperationIris(operationIris);
     }
 
     @Override

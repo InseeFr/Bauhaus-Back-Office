@@ -32,6 +32,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIIt
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.Ddi4SchemaService;
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.CodeListSummaryResponse;
+import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.OperationStudyUnitResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PartialPhysicalInstanceResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PhysicalInstanceParentsResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PhysicalInstanceSearchResponse;
@@ -975,6 +976,23 @@ class DdiResourcesTest {
         List<PartialPhysicalInstanceResponse> result = assertOkListOfSize(response, 1);
         assertEquals("pi-1", result.getFirst().getId());
         assertEquals("Individus", result.getFirst().getLabel());
+    }
+
+    // --- GET /ddi/operation/{id}/study-units ---
+
+    @Test
+    void getOperationStudyUnits_givesEachStudyUnitOfTheOperationWithItsGroup() {
+        when(ddiService.getStudyUnitsByOperation("s1268"))
+                .thenReturn(List.of(new OperationStudyUnit("fr.insee", "su-1", "Alpha", "fr.insee", "grp-1", "Série")));
+
+        ResponseEntity<List<OperationStudyUnitResponse>> response = ddiResources.getOperationStudyUnits("s1268");
+
+        List<OperationStudyUnitResponse> result = assertOkListOfSize(response, 1);
+        assertEquals(
+                new OperationStudyUnitResponse(
+                        new OperationStudyUnitResponse.Ref("fr.insee", "su-1", "Alpha"),
+                        new OperationStudyUnitResponse.Ref("fr.insee", "grp-1", "Série")),
+                result.getFirst());
     }
 
     // --- GET /ddi/operation/{id}/fichiers (JSON, public) ---

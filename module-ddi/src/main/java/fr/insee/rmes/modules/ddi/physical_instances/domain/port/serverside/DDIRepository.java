@@ -18,6 +18,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnitRe
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4VariableScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.DuplicatePhysicalInstanceRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.MutualizedCodeListCodes;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.OperationStudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodesList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialGroup;
@@ -227,4 +228,10 @@ public interface DDIRepository {
      * {@code operationIris} (une opération peut en avoir plusieurs) ; vide si aucune ne la reflète.
      */
     List<PartialPhysicalInstance> findPhysicalInstancesByOperationIris(Collection<String> operationIris);
+
+    /**
+     * Les StudyUnits dont un {@code r:UserID} vaut l'une des {@code operationIris}, chacune avec le
+     * Group qui la classe ; une StudyUnit sans Group est écartée. Vide si aucune ne reflète l'opération.
+     */
+    List<OperationStudyUnit> findStudyUnitsByOperationIris(Collection<String> operationIris);
 }

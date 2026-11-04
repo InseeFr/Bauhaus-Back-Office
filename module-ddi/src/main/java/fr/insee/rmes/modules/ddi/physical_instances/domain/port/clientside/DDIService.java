@@ -16,6 +16,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnitRe
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4VariableScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.DuplicatePhysicalInstanceRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.MutualizedCodeListCodes;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.OperationStudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodesList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialGroup;
@@ -176,4 +177,10 @@ public interface DDIService {
      * {@code operationId}, quelle que soit l'IRI sous laquelle elles la désignent ; vide sans miroir.
      */
     List<PartialPhysicalInstance> getPhysicalInstancesByOperation(String operationId);
+
+    /**
+     * Les StudyUnits miroirs de l'opération d'identifiant {@code operationId}, chacune avec le Group
+     * qui la classe : là où créer un fichier de données de l'opération. Vide sans miroir.
+     */
+    List<OperationStudyUnit> getStudyUnitsByOperation(String operationId);
 }

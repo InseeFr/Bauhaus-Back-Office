@@ -22,6 +22,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4PhysicalIns
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnitResponse;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.OperationStudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialGroup;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialLogicalProduct;
@@ -43,6 +44,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -338,6 +340,34 @@ class ColecticaCatalogRepository {
                 .toList();
     }
 
+    /**
+     * Les StudyUnits miroirs de l'opération, chacune avec le Group qui la classe — là où un nouveau
+     * fichier de données de l'opération doit être rangé. Une StudyUnit qu'aucun Group ne classe est
+     * écartée : elle ne saurait recevoir de fichier.
+     */
+    List<OperationStudyUnit> findStudyUnitsByOperationIris(Collection<String> operationIris) {
+        ColecticaResponse studyUnits = colecticaClient.query(List.of(STUDY_UNIT_UUID));
+        Map<String, ColecticaItem> listedByKey = studyUnits.results().stream()
+                .collect(Collectors.toMap(
+                        item -> ColecticaItems.key(item.agencyId(), item.identifier()),
+                        Function.identity(),
+                        (first, _) -> first));
+        List<OperationStudyUnit> result = new ArrayList<>();
+        for (ColecticaItemResponse studyUnit : studyUnitsMirroring(studyUnits, operationIris)) {
+            ItemReference reference = new ItemReference(studyUnit.agencyId(), studyUnit.identifier());
+            ColecticaItem listed = listedByKey.get(ColecticaItems.key(studyUnit.agencyId(), studyUnit.identifier()));
+            firstRelated(reference, GROUP_UUID)
+                    .ifPresent(group -> result.add(new OperationStudyUnit(
+                            studyUnit.agencyId(),
+                            studyUnit.identifier(),
+                            listed == null ? null : displayLabel(listed),
+                            group.agencyId(),
+                            group.identifier(),
+                            displayLabel(group))));
+        }
+        return result;
+    }
+
     /** Les mêmes fragments, projetés en DDI 4 pour la négociation JSON (#1145). */
     Optional<Ddi4StudyUnitResponse> findStudyUnitByOperationIri(String operationIri) {
         return findStudyUnitFragmentsByOperationIri(operationIri).map(this::toDdi4);
@@ -373,10 +403,15 @@ class ColecticaCatalogRepository {
 
     /** Les StudyUnits dont un {@code r:UserID} vaut l'une des {@code operationIris}, dans l'ordre de Colectica. */
     private List<ColecticaItemResponse> studyUnitsMirroring(Collection<String> operationIris) {
+        return studyUnitsMirroring(colecticaClient.query(List.of(STUDY_UNIT_UUID)), operationIris);
+    }
+
+    /** Parmi les StudyUnits déjà listées, celles dont un {@code r:UserID} vaut l'une des {@code operationIris}. */
+    private List<ColecticaItemResponse> studyUnitsMirroring(
+            ColecticaResponse studyUnits, Collection<String> operationIris) {
         if (logger.isInfoEnabled()) {
             logger.info("Searching StudyUnits by operationIris: {}", forLog(String.valueOf(operationIris)));
         }
-        ColecticaResponse studyUnits = colecticaClient.query(List.of(STUDY_UNIT_UUID));
         List<GetDescriptionsRequest.IdentifierRef> identifiers = ColecticaItems.identifiersOf(studyUnits.results());
         if (identifiers.isEmpty()) {
             return List.of();

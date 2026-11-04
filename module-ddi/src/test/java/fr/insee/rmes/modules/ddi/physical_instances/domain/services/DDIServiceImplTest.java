@@ -39,6 +39,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.DuplicatePhysic
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LangString;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LangStrings;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.MutualizedCodeListCodes;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.OperationStudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodesList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialGroup;
@@ -1339,6 +1340,19 @@ class DDIServiceImplTest {
         when(ddiRepository.findPhysicalInstancesByOperationIris(iris)).thenReturn(expected);
 
         assertEquals(expected, ddiService.getPhysicalInstancesByOperation("s1268"));
+    }
+
+    /** Les études où ranger un fichier de l'opération, quelle que soit l'IRI qui la désigne. */
+    @Test
+    void shouldGetStudyUnitsByOperation_looksUpEveryIriOfTheOperation() {
+        List<String> iris =
+                List.of("http://id.insee.fr/operations/operation/s1268", "http://bauhaus/operations/operation/s1268");
+        when(operationIrisPort.irisOf("s1268")).thenReturn(iris);
+        List<OperationStudyUnit> expected =
+                List.of(new OperationStudyUnit("fr.insee", "su-1", "Alpha", "fr.insee", "grp-1", "Série"));
+        when(ddiRepository.findStudyUnitsByOperationIris(iris)).thenReturn(expected);
+
+        assertEquals(expected, ddiService.getStudyUnitsByOperation("s1268"));
     }
 
     @Test

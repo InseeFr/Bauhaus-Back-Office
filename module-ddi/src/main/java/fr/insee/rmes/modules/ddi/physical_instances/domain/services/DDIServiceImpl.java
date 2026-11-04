@@ -26,6 +26,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4VariableSch
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.DuplicatePhysicalInstanceRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LangString;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.MutualizedCodeListCodes;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.OperationStudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodesList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialGroup;
@@ -678,5 +679,13 @@ public class DDIServiceImpl implements DDIService {
             logger.info("Getting physical instances by operation: {}", forLog(operationId));
         }
         return ddiRepository.findPhysicalInstancesByOperationIris(operationIrisPort.irisOf(operationId));
+    }
+
+    @Override
+    public List<OperationStudyUnit> getStudyUnitsByOperation(String operationId) {
+        if (logger.isInfoEnabled()) {
+            logger.info("Getting study units by operation: {}", forLog(operationId));
+        }
+        return ddiRepository.findStudyUnitsByOperationIris(operationIrisPort.irisOf(operationId));
     }
 }

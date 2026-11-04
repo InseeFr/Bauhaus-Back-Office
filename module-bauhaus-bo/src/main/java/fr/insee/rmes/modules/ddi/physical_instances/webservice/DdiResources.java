@@ -22,6 +22,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIIt
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.Ddi4SchemaService;
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.CodeListSummaryResponse;
+import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.OperationStudyUnitResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PartialPhysicalInstanceResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PhysicalInstanceParentsResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PhysicalInstanceSearchResponse;
@@ -122,6 +123,19 @@ public class DdiResources {
             @PathVariable(Constants.ID) String id) {
         return ResponseEntity.ok(ddiService.getPhysicalInstancesByOperation(id).stream()
                 .map(PartialPhysicalInstanceResponse::fromDomain)
+                .toList());
+    }
+
+    /**
+     * Études d'une opération, chacune avec le groupe (miroir de la série) qui la classe : c'est là
+     * que la fiche de l'opération range un nouveau fichier de données.
+     */
+    @GetMapping("/operation/{id}/study-units")
+    @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.READ)
+    public ResponseEntity<List<OperationStudyUnitResponse>> getOperationStudyUnits(
+            @PathVariable(Constants.ID) String id) {
+        return ResponseEntity.ok(ddiService.getStudyUnitsByOperation(id).stream()
+                .map(OperationStudyUnitResponse::fromDomain)
                 .toList());
     }
 

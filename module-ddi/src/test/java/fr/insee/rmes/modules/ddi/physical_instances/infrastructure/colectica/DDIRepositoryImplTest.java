@@ -2434,6 +2434,57 @@ class DDIRepositoryImplTest {
                 .isEmpty();
     }
 
+    /**
+     * Création d'un fichier de données depuis la fiche d'une opération : chaque StudyUnit miroir
+     * ressort avec le Group (miroir de la série) sous lequel elle est classée.
+     */
+    @Test
+    void shouldFindStudyUnitsByOperationIris_withTheGroupOfEach() {
+        String operationIri = "http://bauhaus/operations/operation/s1268";
+        when(colecticaClient.query(List.of(STUDY_UNIT_ITEM_TYPE)))
+                .thenReturn(new ColecticaResponse(
+                        List.of(
+                                labelItem(STUDY_UNIT_ITEM_TYPE, "fr.insee", "su-alpha", "Alpha"),
+                                labelItem(STUDY_UNIT_ITEM_TYPE, "fr.insee", "su-other", "Autre")),
+                        2,
+                        2,
+                        null,
+                        null,
+                        null));
+        when(colecticaClient.getDescriptions(anyList())).thenReturn(new ColecticaItemResponse[] {
+            studyUnitItemResponse("fr.insee", "su-alpha", studyUnitFragment(operationIri, "")),
+            studyUnitItemResponse(
+                    "fr.insee", "su-other", studyUnitFragment("http://bauhaus/operations/operation/s9999", ""))
+        });
+        when(colecticaClient.findRelatedItems(
+                        RelationshipDirection.BY_OBJECT,
+                        new ItemReference("fr.insee", "su-alpha"),
+                        List.of(GROUP_ITEM_TYPE)))
+                .thenReturn(List.of(labelItem(GROUP_ITEM_TYPE, "fr.insee", "grp-1", "Enquête emploi")));
+
+        List<OperationStudyUnit> result = ddiRepository.findStudyUnitsByOperationIris(List.of(operationIri));
+
+        assertThat(result)
+                .containsExactly(
+                        new OperationStudyUnit("fr.insee", "su-alpha", "Alpha", "fr.insee", "grp-1", "Enquête emploi"));
+    }
+
+    /** Une StudyUnit qu'aucun Group ne classe ne peut pas recevoir de fichier : elle est écartée. */
+    @Test
+    void shouldFindStudyUnitsByOperationIris_skipsAStudyUnitWithoutGroup() {
+        String operationIri = "http://bauhaus/operations/operation/s1268";
+        when(colecticaClient.query(List.of(STUDY_UNIT_ITEM_TYPE)))
+                .thenReturn(studyUnitQueryResponse("fr.insee", "su-alpha"));
+        when(colecticaClient.getDescriptions(anyList())).thenReturn(new ColecticaItemResponse[] {
+            studyUnitItemResponse("fr.insee", "su-alpha", studyUnitFragment(operationIri, ""))
+        });
+        when(colecticaClient.findRelatedItems(eq(RelationshipDirection.BY_OBJECT), any(), anyList()))
+                .thenReturn(List.of());
+
+        assertThat(ddiRepository.findStudyUnitsByOperationIris(List.of(operationIri)))
+                .isEmpty();
+    }
+
     private static ColecticaResponse studyUnitQueryResponse(String agency, String id) {
         ColecticaItem suItem = aColecticaItem("30ea0200-7121-4f01-8d21-a931a182b86d", id)
                 .itemName("BPE 2021")
