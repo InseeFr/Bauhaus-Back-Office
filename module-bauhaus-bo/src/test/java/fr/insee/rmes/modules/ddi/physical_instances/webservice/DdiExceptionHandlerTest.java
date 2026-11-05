@@ -82,7 +82,9 @@ class DdiExceptionHandlerTest {
 
         mockMvc.perform(put("/ddi/physical-instance/fr.insee/pi-111")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{}"))
+                        .content("""
+                                {"items": [{"$type": "PhysicalInstance", "Agency": "fr.insee", "ID": "pi-111", "Version": "1"}]}
+                                """))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("No study unit found for physical instance fr.insee/pi-111"))
                 .andExpect(jsonPath("$.code").value("DDI_STUDY_UNIT_NOT_FOUND"));
@@ -121,7 +123,9 @@ class DdiExceptionHandlerTest {
 
         mockMvc.perform(put("/ddi/physical-instance/fr.insee/pi-111")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{}"))
+                        .content("""
+                                {"items": [{"$type": "PhysicalInstance", "Agency": "fr.insee", "ID": "pi-111", "Version": "1"}]}
+                                """))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.message").value(message))
                 .andExpect(jsonPath("$.code").value("GROUP_MISSING_CODE_LIST_SCHEME"))

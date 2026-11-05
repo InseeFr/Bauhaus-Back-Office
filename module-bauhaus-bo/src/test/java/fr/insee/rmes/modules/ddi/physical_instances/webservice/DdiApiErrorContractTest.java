@@ -104,7 +104,9 @@ class DdiApiErrorContractTest {
 
         mockMvc.perform(put("/ddi/physical-instance/{agencyId}/{id}", "fr.insee", "pi-1")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{}"))
+                        .content("""
+                                {"items": [{"$type": "PhysicalInstance", "Agency": "fr.insee", "ID": "pi-1", "Version": "1"}]}
+                                """))
                 .andExpect(status().isBadRequest())
                 .andExpect(apiError())
                 .andExpect(jsonPath("$.code").value("DDI_SENTINEL_REPRESENTATION_LABEL_REQUIRED"))

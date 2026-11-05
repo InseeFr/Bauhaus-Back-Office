@@ -339,7 +339,17 @@ class DdiResourcesTest {
         when(ddiService.updatePhysicalInstance(agencyId, instanceId, request)).thenReturn(expectedResponse);
 
         // When
-        ResponseEntity<Ddi4Response> result = ddiResources.updatePhysicalInstance(agencyId, instanceId, request);
+        ResponseEntity<Ddi4Response> result = ddiResources.updatePhysicalInstance(
+                agencyId,
+                instanceId,
+                new PhysicalInstanceUpdateRequest(
+                        request.physicalInstanceLabel(),
+                        request.dataRelationshipLabel(),
+                        request.logicalRecordLabel(),
+                        null,
+                        null,
+                        null,
+                        null));
 
         // Then
         assertOkDdi4Json(result);
@@ -417,7 +427,14 @@ class DdiResourcesTest {
         when(ddiService.createPhysicalInstance(request)).thenReturn(expectedResponse);
 
         // When
-        ResponseEntity<Ddi4Response> result = ddiResources.createPhysicalInstance(request);
+        ResponseEntity<Ddi4Response> result = ddiResources.createPhysicalInstance(new PhysicalInstanceCreationRequest(
+                request.physicalInstanceLabel(),
+                request.dataRelationshipLabel(),
+                request.logicalRecordLabel(),
+                request.studyUnitId(),
+                request.studyUnitAgency(),
+                request.groupId(),
+                request.groupAgency()));
 
         // Then
         Ddi4Response responseBody = assertOkDdi4Json(result);
