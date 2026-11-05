@@ -3,6 +3,7 @@ package fr.insee.rmes.modules.ddi.config;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
+import fr.insee.rmes.bauhaus_services.geography.GeographyServiceImpl;
 import fr.insee.rmes.colectica.client.ColecticaClient;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3toDDI4ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI4toDDI3ConverterService;
@@ -96,7 +97,9 @@ class MutualizedCacheEvictionIntegrationTest {
 
     @Test
     void evictAllCaches_clearsEveryColecticaRegion() {
+        // Le cache des territoires partage le gestionnaire mais ne relève pas de Colectica.
         List<Cache> regions = cacheManager.getCacheNames().stream()
+                .filter(name -> !GeographyServiceImpl.GEO_FEATURES_CACHE.equals(name))
                 .map(cacheManager::getCache)
                 .toList();
         assertThat(regions)
