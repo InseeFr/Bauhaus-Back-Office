@@ -11,6 +11,7 @@ import fr.insee.rmes.modules.operations.families.webservice.FamilyResources;
 import fr.insee.rmes.modules.users.domain.model.RBAC;
 import fr.insee.rmes.modules.users.webservice.HasAccess;
 import fr.insee.rmes.utils.XMLUtils;
+import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.hateoas.MediaTypes;
@@ -94,9 +95,9 @@ public class SeriesResources {
 
     @HasAccess(module = RBAC.Module.OPERATION_SERIES, privilege = RBAC.Privilege.UPDATE)
     @PutMapping(value = "/series/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> setSeriesById(@PathVariable(Constants.ID) String id, @RequestBody String body)
-            throws RmesException {
-        operationsService.setSeries(id, body);
+    public ResponseEntity<Object> setSeriesById(
+            @PathVariable(Constants.ID) String id, @Valid @RequestBody SeriesRequest body) throws RmesException {
+        operationsService.setSeries(id, body.toCommand());
         return ResponseEntity.ok(id);
     }
 
@@ -117,8 +118,8 @@ public class SeriesResources {
 
     @HasAccess(module = RBAC.Module.OPERATION_SERIES, privilege = RBAC.Privilege.CREATE)
     @PostMapping(value = "/series", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> createSeries(@RequestBody String body) throws RmesException {
-        String id = operationsService.createSeries(body);
+    public ResponseEntity<Object> createSeries(@Valid @RequestBody SeriesRequest body) throws RmesException {
+        String id = operationsService.createSeries(body.toCommand());
         return ResponseEntity.status(HttpStatus.OK).body(id);
     }
 

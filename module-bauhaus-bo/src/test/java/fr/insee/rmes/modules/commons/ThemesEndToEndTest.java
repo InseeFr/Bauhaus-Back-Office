@@ -1,5 +1,7 @@
 package fr.insee.rmes.modules.commons;
 
+import static fr.insee.rmes.testcontainers.GraphDbTestProperties.registerGestion;
+
 import fr.insee.rmes.testcontainers.WithGraphDBContainer;
 import org.json.JSONException;
 import org.junit.jupiter.api.DisplayName;
@@ -20,9 +22,7 @@ class ThemesEndToEndTest extends WithGraphDBContainer {
 
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
-        String sesameServer = "http://" + container.getHost() + ":" + container.getMappedPort(7200);
-        registry.add("fr.insee.rmes.bauhaus.sesame.gestion.sesameServer", () -> sesameServer);
-        registry.add("fr.insee.rmes.bauhaus.sesame.gestion.repository", () -> BAUHAUS_TEST_REPOSITORY);
+        registerGestion(registry);
         container.withInitFolder("fr/insee/rmes/modules/commons").withTrigFiles("themes-end-to-end-test.trig");
     }
 

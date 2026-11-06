@@ -476,7 +476,8 @@ public class LocalColecticaGroupInitConfiguration {
 
             // Step 4: Verify items in Colectica by querying back
             logger.info("Step 4: Verifying created items in Colectica via _query");
-            verifyItemsInColectica(colecticaClient);
+            verifyItemsInColectica(
+                    colecticaClient, colecticaConfiguration.server().itemTypes());
         };
     }
 
@@ -1409,9 +1410,9 @@ public class LocalColecticaGroupInitConfiguration {
         return options;
     }
 
-    private void verifyItemsInColectica(ColecticaClient colecticaClient) {
-        String groupItemType = "4bd6eef6-99df-40e6-9b11-5b8f64e5cb23";
-        String studyUnitItemType = "752a535b-b548-4fbe-97e4-f26a02d9e413";
+    private void verifyItemsInColectica(ColecticaClient colecticaClient, Map<String, String> itemTypes) {
+        String groupItemType = itemTypes.get(ColecticaItemTypes.GROUP);
+        String studyUnitItemType = itemTypes.get(ColecticaItemTypes.STUDY_UNIT);
 
         // Query Groups
         try {

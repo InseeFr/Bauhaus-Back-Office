@@ -1,5 +1,6 @@
 package fr.insee.rmes.bauhaus_services.concepts.collections;
 
+import static fr.insee.rmes.bauhaus_services.concepts.ValidationStateModels.validationStateOf;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -10,14 +11,12 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.graphdb.ontologies.INSEE;
 import fr.insee.rmes.modules.concepts.collections.infrastructure.graphdb.GraphDBCollectionProperties;
 import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import java.util.Collection;
 import java.util.Optional;
 import org.eclipse.rdf4j.model.Model;
-import org.eclipse.rdf4j.model.Statement;
 import org.json.JSONArray;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -104,15 +103,6 @@ class LegacyCollectionsRepositoryTest {
         ArgumentCaptor<Model> modelCaptor = ArgumentCaptor.forClass(Model.class);
         verify(repositoryGestion).objectsValidation(anyList(), modelCaptor.capture());
         assertEquals(ValidationStatus.VALIDATED.getValue(), validationStateOf(modelCaptor.getValue()));
-    }
-
-    private static String validationStateOf(Model model) {
-        for (Statement st : model) {
-            if (st.getPredicate().equals(INSEE.VALIDATION_STATE)) {
-                return st.getObject().stringValue();
-            }
-        }
-        return null;
     }
 
     @Test

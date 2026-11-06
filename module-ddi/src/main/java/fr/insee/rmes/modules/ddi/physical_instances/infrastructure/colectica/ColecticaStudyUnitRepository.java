@@ -18,7 +18,6 @@ import org.slf4j.LoggerFactory;
 public class ColecticaStudyUnitRepository extends AbstractColecticaItemRepository implements StudyUnitRepository {
 
     private static final Logger logger = LoggerFactory.getLogger(ColecticaStudyUnitRepository.class);
-    private static final String STUDY_UNIT_ITEM_TYPE = "30ea0200-7121-4f01-8d21-a931a182b86d";
 
     private final DDIRepository ddiRepository;
 
@@ -97,7 +96,7 @@ public class ColecticaStudyUnitRepository extends AbstractColecticaItemRepositor
                 studyUnit.agency(),
                 studyUnit.urn());
         try {
-            createOrUpdateItem(STUDY_UNIT_ITEM_TYPE, studyUnit);
+            createOrUpdateItem(instanceConfiguration.itemTypes().get(ColecticaItemTypes.STUDY_UNIT), studyUnit);
             logger.info("Study unit successfully sent to Colectica: id={}", studyUnit.id());
         } catch (RuntimeException e) {
             logger.error("Unexpected error creating study unit in Colectica: id={}", studyUnit.id(), e);

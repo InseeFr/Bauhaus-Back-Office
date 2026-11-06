@@ -1,5 +1,7 @@
 package fr.insee.rmes.modules.codeslists.codeslists.webservice;
 
+import static fr.insee.rmes.modules.commons.webservice.ValidationMessages.REQUIRED;
+
 import fr.insee.rmes.modules.codeslists.codeslists.domain.model.commands.CreateCodesListCommand;
 import fr.insee.rmes.modules.codeslists.codeslists.domain.model.commands.UpdateCodesListCommand;
 import jakarta.validation.Valid;
@@ -25,25 +27,21 @@ import java.util.List;
  *              {@code /detailed/{id}/codes}), mais s'ils sont là ils doivent être complets.
  */
 public record CodesListRequest(
-        @NotBlank(message = "id is required") String id,
-        @NotBlank(message = "labelLg1 is required") String labelLg1,
-        @NotBlank(message = "labelLg2 is required") String labelLg2,
+        @NotBlank(message = REQUIRED) String id,
+        @NotBlank(message = REQUIRED) String labelLg1,
+        @NotBlank(message = REQUIRED) String labelLg2,
         String descriptionLg1,
         String descriptionLg2,
-        @NotBlank(message = "creator is required") String creator,
+        @NotBlank(message = REQUIRED) String creator,
         List<String> contributor,
 
-        @NotBlank(message = "disseminationStatus is required")
-        String disseminationStatus,
+        @NotBlank(message = REQUIRED) String disseminationStatus,
 
-        @NotBlank(message = "lastListUriSegment is required")
-        String lastListUriSegment,
+        @NotBlank(message = REQUIRED) String lastListUriSegment,
 
-        @NotBlank(message = "lastClassUriSegment is required")
-        String lastClassUriSegment,
+        @NotBlank(message = REQUIRED) String lastClassUriSegment,
 
-        @NotBlank(message = "lastCodeUriSegment is required")
-        String lastCodeUriSegment,
+        @NotBlank(message = REQUIRED) String lastCodeUriSegment,
 
         List<@Valid CodeRequest> codes) {
 

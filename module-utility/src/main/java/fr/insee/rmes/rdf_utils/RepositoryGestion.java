@@ -10,10 +10,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
+import org.eclipse.rdf4j.common.exception.RDF4JException;
 import org.eclipse.rdf4j.model.*;
-import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
+import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;
+import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.RepositoryResult;
@@ -134,37 +136,6 @@ public class RepositoryGestion {
         return statements;
     }
 
-    public RepositoryResult<Statement> getHasPartStatements(RepositoryConnection con, Resource object)
-            throws RmesException {
-        return getStatementsPredicateObject(con, DCTERMS.HAS_PART, object);
-    }
-
-    public RepositoryResult<Statement> getReplacesStatements(RepositoryConnection con, Resource object)
-            throws RmesException {
-        return getStatementsPredicateObject(con, DCTERMS.REPLACES, object);
-    }
-
-    public RepositoryResult<Statement> getIsReplacedByStatements(RepositoryConnection con, Resource object)
-            throws RmesException {
-        return getStatementsPredicateObject(con, DCTERMS.IS_REPLACED_BY, object);
-    }
-
-    public RepositoryResult<Statement> getStatementsPredicateObject(
-            RepositoryConnection con, IRI predicate, Resource object) throws RmesException {
-
-        if (con == null) {
-            con = gestionConnection();
-        }
-
-        RepositoryResult<Statement> statements = null;
-        try {
-            statements = con.getStatements(null, predicate, object, false);
-        } catch (RepositoryException e) {
-            throwsRmesException(e, "Failure get " + predicate + " statements : " + object);
-        }
-        return statements;
-    }
-
     public void closeStatements(RepositoryResult<Statement> statements) throws RmesException {
         try {
             statements.close();
@@ -249,6 +220,31 @@ public class RepositoryGestion {
                 FAILURE_LOAD_OBJECT + object);
     }
 
+    /**
+     * Exécute les mises à jour SPARQL puis remplace les triplets de chaque objet dans son graphe, en
+     * une seule transaction : si une étape échoue, la base reste dans son état d'avant l'appel.
+     */
+    public void replaceObjects(List<String> updates, List<SubjectModelGraph> objects) throws RmesException {
+        try (RepositoryConnection connection = gestionConnection()) {
+            connection.begin();
+            try {
+                for (String update : updates) {
+                    connection.prepareUpdate(QueryLanguage.SPARQL, update).execute();
+                }
+                for (SubjectModelGraph object : objects) {
+                    connection.remove(object.subject(), null, null, object.graph());
+                    connection.add(object.model());
+                }
+                connection.commit();
+            } catch (RDF4JException e) {
+                connection.rollback();
+                throw e;
+            }
+        } catch (RDF4JException e) {
+            throw new RmesException("Failure while replacing objects", e);
+        }
+    }
+
     public void deleteObject(IRI object, RepositoryConnection conn) throws RmesException {
         processConnection(connection -> connection.remove(object, null, null), conn, "delete " + object);
     }
@@ -320,8 +316,12 @@ public class RepositoryGestion {
         getStatementsAndRemove(concept, typeOfLink);
     }
 
+    /**
+     * Retire les liens symétriques qui pointent vers l'objet : son modèle les réécrit tous, dans les
+     * deux sens, et ceux qu'il ne porte plus doivent disparaître aussi de l'autre extrémité.
+     */
     private void clearReplaceLinks(Resource object) throws RmesException {
-        List<IRI> typeOfLink = Arrays.asList(DCTERMS.REPLACES, DCTERMS.IS_REPLACED_BY);
+        List<IRI> typeOfLink = Arrays.asList(DCTERMS.REPLACES, DCTERMS.IS_REPLACED_BY, RDFS.SEEALSO);
         getStatementsAndRemove(object, typeOfLink);
     }
 
@@ -341,9 +341,9 @@ public class RepositoryGestion {
         }
     }
 
-    public void clearStructureNodeAndComponents(Resource structure) throws RmesException {
+    public void clearStructureNodeAndComponents(Resource structure, Resource graph) throws RmesException {
         repositoryUtils.clearStructureAndComponents(
-                structure, repositoryUtils.initRepository(rdfGestion.getUrlServer(), rdfGestion.repositoryId()));
+                structure, graph, repositoryUtils.initRepository(rdfGestion.getUrlServer(), rdfGestion.repositoryId()));
     }
 
     public void keepHierarchicalOperationLinks(Resource object, Model model) throws RmesException {
@@ -401,23 +401,6 @@ public class RepositoryGestion {
         }
     }
 
-    public void bulkOverrideTriplets(List<SubjectModelGraph> updates) throws RmesException {
-        Model combinedModel = new LinkedHashModel();
-        try (RepositoryConnection connection = gestionConnection()) {
-            connection.begin();
-            for (SubjectModelGraph update : updates) {
-                update.model()
-                        .predicates()
-                        .forEach(predicate -> connection.remove(update.subject(), predicate, null, update.graph()));
-                combinedModel.addAll(update.model());
-            }
-            connection.add(combinedModel);
-            connection.commit();
-        } catch (RepositoryException e) {
-            throw new RmesException("Failure bulk override triplets", e);
-        }
-    }
-
     public RepositoryResult<Statement> getCompleteGraph(RepositoryConnection con, Resource graphIri)
             throws RmesException {
         return repositoryUtils.getCompleteGraph(con, graphIri);
@@ -429,5 +412,44 @@ public class RepositoryGestion {
         List<String> results = new ArrayList<>();
         array.iterator().forEachRemaining(r -> results.add(((JSONObject) r).getString(queryKey)));
         object.put(objectKey, results);
+    }
+
+    /**
+     * Triplets du sujet dans le graphe donné. À préférer à {@link #getStatements(RepositoryConnection,
+     * Resource)} : sans graphe nommé, la lecture ne rend rien sur un triplestore dont le graphe par
+     * défaut n'est pas l'union des graphes nommés, et les triplets lus n'y portent pas leur graphe.
+     */
+    public RepositoryResult<Statement> getStatements(RepositoryConnection con, Resource subject, Resource graph)
+            throws RmesException {
+        RepositoryResult<Statement> statements = null;
+        if (con == null) {
+            con = gestionConnection();
+        }
+
+        try {
+            statements = con.getStatements(subject, null, null, false, graph);
+        } catch (RepositoryException e) {
+            throwsRmesException(e, "Failure get statements : " + subject + " in " + graph);
+        }
+        return statements;
+    }
+
+    /**
+     * Triplets de prédicat et d'objet donnés dans le graphe donné, pour la même raison que {@link
+     * #getStatements(RepositoryConnection, Resource, Resource)}.
+     */
+    public RepositoryResult<Statement> getStatementsPredicateObject(
+            RepositoryConnection con, IRI predicate, Resource object, Resource graph) throws RmesException {
+        RepositoryResult<Statement> statements = null;
+        if (con == null) {
+            con = gestionConnection();
+        }
+
+        try {
+            statements = con.getStatements(null, predicate, object, false, graph);
+        } catch (RepositoryException e) {
+            throwsRmesException(e, "Failure get " + predicate + " statements : " + object + " in " + graph);
+        }
+        return statements;
     }
 }

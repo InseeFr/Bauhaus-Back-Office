@@ -6,8 +6,11 @@ import fr.insee.rmes.modules.ddi.operations_mirror.domain.model.DdiShortName;
 import fr.insee.rmes.modules.ddi.operations_mirror.domain.port.clientside.OperationsMirrorService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Citation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CogsDate;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CategoryScheme;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4LogicalProduct;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedRepresentationScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4VariableScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LangString;
@@ -47,6 +50,12 @@ public class DomainOperationsMirrorService implements OperationsMirrorService {
     private static final String LOGICAL_PRODUCT_NAME_PREFIX = "LP-";
     private static final String VARIABLE_SCHEME_NAME_PREFIX = "VS-";
     private static final String VARIABLE_SCHEME_LABEL_PREFIX = "Ensemble de variables ";
+    private static final String CODE_LIST_SCHEME_ROLE = "codelistscheme";
+    private static final String CATEGORY_SCHEME_ROLE = "categoryscheme";
+    private static final String MANAGED_REPRESENTATION_SCHEME_ROLE = "managedrepresentationscheme";
+    private static final String CODE_LIST_SCHEME_LABEL_PREFIX = "Ensemble de listes de codes ";
+    private static final String CATEGORY_SCHEME_LABEL_PREFIX = "Ensemble de catégories ";
+    private static final String MANAGED_REPRESENTATION_SCHEME_LABEL_PREFIX = "Ensemble de représentations ";
 
     private final GroupService groupService;
     private final StudyUnitService studyUnitService;
@@ -74,6 +83,14 @@ public class DomainOperationsMirrorService implements OperationsMirrorService {
         String version = existing.map(Ddi4Group::version).orElse(FIRST_VERSION);
         logger.info("Mirroring series {} as DDI group {} (version {})", event.iri(), groupId, version);
 
+        // Comme pour une opération, le LogicalProduct et ses schemes passent avant le Group qui les
+        // référence. Un Group qui a déjà le sien (créé par l'init, ou à un précédent enregistrement)
+        // le garde : on n'en fabrique pas un second.
+        List<Reference> logicalProducts = existing.map(Ddi4Group::logicalProductReference)
+                .filter(references -> !references.isEmpty())
+                .orElseGet(() -> List.of(
+                        createGroupLogicalProduct(event.iri(), shortLabelOf(event.prefLabel(), event.altLabel()))));
+
         groupService.createOrUpdate(new Ddi4Group(
                 Ddi4Group.TYPE,
                 now(),
@@ -86,13 +103,13 @@ public class DomainOperationsMirrorService implements OperationsMirrorService {
                 existing.map(Ddi4Group::studyUnitReference).orElse(null),
                 seriesIrisOf(existing, event.iri()),
                 SERIES_TYPE_OF_GROUP,
-                existing.map(Ddi4Group::logicalProductReference).orElse(null)));
+                logicalProducts));
     }
 
     @Override
     public void mirror(OperationSaved event) {
         String studyUnitId = DdiMirrorIdentity.of(event.iri());
-        String shortLabel = shortLabelOf(event);
+        String shortLabel = shortLabelOf(event.prefLabel(), event.altLabel());
         logger.info("Mirroring operation {} as DDI study unit {}", event.iri(), studyUnitId);
 
         // La VariableScheme avant le LogicalProduct qui la classe, lui-même avant la StudyUnit qui le
@@ -198,17 +215,74 @@ public class DomainOperationsMirrorService implements OperationsMirrorService {
     }
 
     /**
-     * Le nom court de l'opération, sur lequel se construisent les libellés et les noms de sa
-     * VariableScheme et de son LogicalProduct. À défaut de nom court, le libellé long en tient lieu :
-     * ces objets ont besoin d'un libellé quoi qu'il arrive.
+     * Crée les schemes (initialement vides) du Group d'une série — CodeListScheme, CategoryScheme,
+     * ManagedRepresentationScheme — puis le LogicalProduct qui les classe, et rend la référence vers
+     * ce LogicalProduct. La VariableScheme n'en fait pas partie : elle vit dans le LogicalProduct de
+     * chaque StudyUnit.
      */
-    private static String shortLabelOf(OperationSaved event) {
-        if (event.altLabel() != null && !event.altLabel().isEmpty()) {
-            return event.altLabel().lg1() != null
-                    ? event.altLabel().lg1()
-                    : event.altLabel().lg2();
+    private Reference createGroupLogicalProduct(String seriesIri, String shortLabel) {
+        String codeListSchemeId = DdiMirrorIdentity.of(seriesIri, CODE_LIST_SCHEME_ROLE);
+        ddiService.createCodeListScheme(new Ddi4CodeListScheme(
+                Ddi4CodeListScheme.TYPE,
+                now(),
+                DdiMirrorIdentity.urn(agencyId, codeListSchemeId, FIRST_VERSION),
+                agencyId,
+                codeListSchemeId,
+                FIRST_VERSION,
+                labelIn(languages.get(0), CODE_LIST_SCHEME_LABEL_PREFIX + shortLabel),
+                List.of()));
+
+        String categorySchemeId = DdiMirrorIdentity.of(seriesIri, CATEGORY_SCHEME_ROLE);
+        ddiService.createCategoryScheme(new Ddi4CategoryScheme(
+                Ddi4CategoryScheme.TYPE,
+                now(),
+                DdiMirrorIdentity.urn(agencyId, categorySchemeId, FIRST_VERSION),
+                agencyId,
+                categorySchemeId,
+                FIRST_VERSION,
+                labelIn(languages.get(0), CATEGORY_SCHEME_LABEL_PREFIX + shortLabel),
+                List.of()));
+
+        String managedRepresentationSchemeId = DdiMirrorIdentity.of(seriesIri, MANAGED_REPRESENTATION_SCHEME_ROLE);
+        ddiService.createManagedRepresentationScheme(new Ddi4ManagedRepresentationScheme(
+                Ddi4ManagedRepresentationScheme.TYPE,
+                now(),
+                DdiMirrorIdentity.urn(agencyId, managedRepresentationSchemeId, FIRST_VERSION),
+                agencyId,
+                managedRepresentationSchemeId,
+                FIRST_VERSION,
+                labelIn(languages.get(0), MANAGED_REPRESENTATION_SCHEME_LABEL_PREFIX + shortLabel),
+                List.of()));
+
+        String logicalProductId = DdiMirrorIdentity.of(seriesIri, LOGICAL_PRODUCT_ROLE);
+        ddiService.createLogicalProduct(new Ddi4LogicalProduct(
+                Ddi4LogicalProduct.TYPE,
+                now(),
+                DdiMirrorIdentity.urn(agencyId, logicalProductId, FIRST_VERSION),
+                agencyId,
+                logicalProductId,
+                FIRST_VERSION,
+                labelIn(languages.get(0), shortLabel),
+                List.of(Reference.of(agencyId, codeListSchemeId, FIRST_VERSION, "CodeListScheme")),
+                List.of(Reference.of(agencyId, categorySchemeId, FIRST_VERSION, "CategoryScheme")),
+                null,
+                List.of(Reference.of(
+                        agencyId, managedRepresentationSchemeId, FIRST_VERSION, "ManagedRepresentationScheme")),
+                DdiShortName.prefixed(LOGICAL_PRODUCT_NAME_PREFIX, shortLabel)));
+
+        return Reference.of(agencyId, logicalProductId, FIRST_VERSION, "LogicalProduct");
+    }
+
+    /**
+     * Le nom court de la ressource, sur lequel se construisent les libellés et les noms de son
+     * LogicalProduct et de ses schemes. À défaut de nom court, le libellé long en tient lieu : ces
+     * objets ont besoin d'un libellé quoi qu'il arrive.
+     */
+    private static String shortLabelOf(BilingualLabel prefLabel, BilingualLabel altLabel) {
+        if (altLabel != null && !altLabel.isEmpty()) {
+            return altLabel.lg1() != null ? altLabel.lg1() : altLabel.lg2();
         }
-        return event.prefLabel() == null ? "" : event.prefLabel().lg1();
+        return prefLabel == null ? "" : prefLabel.lg1();
     }
 
     private static List<LangString> labelIn(String language, String value) {

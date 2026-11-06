@@ -1,12 +1,25 @@
 package fr.insee.rmes.modules.geographies.model;
 
+import static fr.insee.rmes.modules.commons.webservice.ValidationMessages.REQUIRED;
+
+import jakarta.validation.constraints.NotBlank;
 import java.util.List;
 
+/**
+ * Territoire géographique, tel que lu et tel qu'écrit : c'est aussi le corps des requêtes de création
+ * et de modification. Les contraintes reprennent celles du formulaire et du service (qui vérifie encore
+ * la présence des libellés, sans Bean Validation).
+ */
 public class GeoFeature {
 
     private String id;
+
+    @NotBlank(message = REQUIRED)
     private String labelLg1;
+
+    @NotBlank(message = REQUIRED)
     private String labelLg2;
+
     private List<GeoFeature> unions;
     private List<GeoFeature> difference;
     private String code;

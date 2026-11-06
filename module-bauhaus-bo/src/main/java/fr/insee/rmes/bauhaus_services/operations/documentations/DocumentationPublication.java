@@ -29,14 +29,10 @@ import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.RepositoryResult;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
 @Repository
 public class DocumentationPublication {
-
-    private final Logger logger = LoggerFactory.getLogger(DocumentationPublication.class);
 
     private final RepositoryGestion repoGestion;
     private final RepositoryPublication repositoryPublication;
@@ -224,17 +220,14 @@ public class DocumentationPublication {
             String markdownContent = markdownValues.get(textResource);
 
             if (markdownContent != null) {
-                try {
-                    String htmlContent = XhtmlToMarkdownUtils.markdownToXhtml(markdownContent);
-                    Resource publishedSubject = publicationUtils.tranformBaseURIToPublish(textResource);
-                    model.add(
-                            publishedSubject,
-                            INSEE.HTML,
-                            RdfUtils.setLiteralString(htmlContent),
-                            publicationUtils.tranformBaseURIToPublish(RdfUtils.simsGraph(simsId)));
-                } catch (Exception e) {
-                    logger.error("Error processing TEXT resource {}: {}", textResource, e.getMessage());
-                }
+
+                String htmlContent = XhtmlToMarkdownUtils.markdownToXhtml(markdownContent);
+                Resource publishedSubject = publicationUtils.tranformBaseURIToPublish(textResource);
+                model.add(
+                        publishedSubject,
+                        INSEE.HTML,
+                        RdfUtils.setLiteralString(htmlContent),
+                        publicationUtils.tranformBaseURIToPublish(RdfUtils.simsGraph(simsId)));
             }
         }
     }

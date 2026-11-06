@@ -14,7 +14,6 @@ import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
-import fr.insee.rmes.exceptions.errors.CodesListErrorCodes;
 import fr.insee.rmes.graphdb.ontologies.INSEE;
 import fr.insee.rmes.graphdb.ontologies.QB;
 import fr.insee.rmes.json.JSONUtils;
@@ -225,7 +224,7 @@ public class StructureRepository extends RdfService {
 
         structure.setUpdated(DateUtils.getCurrentDate());
         IRI structureIri = RdfUtils.structureIRI(structure.getId());
-        repoGestion.clearStructureNodeAndComponents(structureIri);
+        repoGestion.clearStructureNodeAndComponents(structureIri, RdfUtils.structureGraph());
 
         String status = getValidationStatus(id);
         if (status.equals(ValidationStatus.UNPUBLISHED.getValue()) || status.equals(Constants.UNDEFINED)) {
@@ -275,7 +274,7 @@ public class StructureRepository extends RdfService {
             Structure structure, String structureId, IRI structureIri, Resource graph, ValidationStatus status)
             throws RmesException {
 
-        repoGestion.clearStructureNodeAndComponents(structureIri);
+        repoGestion.clearStructureNodeAndComponents(structureIri, graph);
 
         Model model = new LinkedHashModel();
 
@@ -457,10 +456,10 @@ public class StructureRepository extends RdfService {
                 .orElseThrow(() -> new RmesNotFoundException("Structure not found", structureId));
         if (!structureState.equalsIgnoreCase("Unpublished")) {
             throw new RmesBadRequestException(
-                    CodesListErrorCodes.STRUCTURE_DELETE_ONLY_UNPUBLISHED, "Only unpublished codelist can be deleted");
+                    ErrorCodes.STRUCTURE_DELETE_ONLY_UNPUBLISHED, "Only unpublished structures can be deleted");
         } else {
             IRI structureIri = RdfUtils.structureIRI(structureId);
-            repoGestion.clearStructureNodeAndComponents(structureIri);
+            repoGestion.clearStructureNodeAndComponents(structureIri, RdfUtils.structureGraph());
             repoGestion.deleteObject(structureIri, null);
         }
     }
@@ -506,10 +505,10 @@ public class StructureRepository extends RdfService {
 
         IRI structureIri = RdfUtils.structureIRI(structureObject.getId());
 
-        this.structurePublication.publish(structureIri);
+        this.structurePublication.publish(structureIri, RdfUtils.structureGraph());
 
         structureObject.setUpdated(DateUtils.getCurrentDate());
-        repoGestion.clearStructureNodeAndComponents(structureIri);
+        repoGestion.clearStructureNodeAndComponents(structureIri, RdfUtils.structureGraph());
         createRdfStructure(structureObject, ValidationStatus.VALIDATED);
 
         return structure.toString();

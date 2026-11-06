@@ -1,9 +1,18 @@
 package fr.insee.rmes.model.operations.documentations;
 
+import static fr.insee.rmes.modules.commons.webservice.ValidationMessages.REQUIRED;
+
 import com.fasterxml.jackson.annotation.JsonFormat;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 
+/**
+ * Rapport SIMS, tel qu'écrit : c'est aussi le corps des requêtes de création et de modification.
+ * Une erreur sur une rubrique est nommée par son indice ({@code rubrics[3].rangeType}), que le front
+ * traduit en nom de rubrique.
+ */
 public class Documentation {
 
     private String id;
@@ -16,11 +25,13 @@ public class Documentation {
 
     private String updated;
 
+    @NotBlank(message = REQUIRED)
     private String labelLg1;
+
     private String labelLg2;
 
     @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
-    private List<DocumentationRubric> rubrics;
+    private List<@Valid DocumentationRubric> rubrics;
 
     public String getId() {
         return id;

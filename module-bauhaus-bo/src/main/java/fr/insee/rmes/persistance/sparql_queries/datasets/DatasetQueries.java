@@ -4,6 +4,7 @@ import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.freemarker.FreeMarkerUtils;
 import fr.insee.rmes.graphdb.SparqlLiterals;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -115,11 +116,28 @@ public class DatasetQueries {
         return FreeMarkerUtils.buildRequest(ROOT_DIRECTORY, "deleteDatasetTemporalCoverageWhiteNode.ftlh", params);
     }
 
-    public String getDatasetDerivedFrom(String id, String datasetsGraph) throws RmesException {
+    public String getDatasetLineage(String id, String datasetsGraph) throws RmesException {
+        return getDatasetArraysWithLanguages("getDatasetLineage.ftlh", datasetsGraph, id);
+    }
+
+    public String getDatasetUnmanagedLineage(String id, String datasetsGraph) throws RmesException {
+        return getDatasetArraysWithLanguages("getDatasetUnmanagedLineage.ftlh", datasetsGraph, id);
+    }
+
+    public String getDatasetsByIdentifiers(Collection<String> ids, String datasetsGraph) throws RmesException {
         HashMap<String, Object> params = new HashMap<>();
         params.put(DATASET_GRAPH, SparqlLiterals.iri(datasetsGraph));
+        params.put("IDS", ids.stream().map(SparqlLiterals::literal).toList());
+        return FreeMarkerUtils.buildRequest(ROOT_DIRECTORY, "getDatasetsByIdentifiers.ftlh", params);
+    }
+
+    private String getDatasetArraysWithLanguages(String path, String datasetsGraph, String id) throws RmesException {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put(DATASET_GRAPH, SparqlLiterals.iri(datasetsGraph));
+        params.put("LG1", SparqlLiterals.literal(languages.lg1()));
+        params.put("LG2", SparqlLiterals.literal(languages.lg2()));
         params.put("ID", SparqlLiterals.literal(id));
-        return FreeMarkerUtils.buildRequest(ROOT_DIRECTORY, "getDatasetDerivedFrom.ftlh", params);
+        return FreeMarkerUtils.buildRequest(ROOT_DIRECTORY, path, params);
     }
 
     public String deleteDatasetQualifiedDerivationWhiteNode(String id, String datasetsGraph) throws RmesException {

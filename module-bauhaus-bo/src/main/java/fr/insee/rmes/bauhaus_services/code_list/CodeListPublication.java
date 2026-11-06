@@ -51,9 +51,9 @@ public class CodeListPublication extends RdfService {
                 || pred.endsWith("lastCodeUriSegment");
     }
 
-    private void publishCodeListAndCodesWithConnection(Resource codeListOrCode, RepositoryConnection connection)
-            throws RmesException {
-        RepositoryResult<Statement> statements = repoGestion.getStatements(connection, codeListOrCode);
+    private void publishCodeListAndCodesWithConnection(
+            Resource codeListOrCode, Resource graph, RepositoryConnection connection) throws RmesException {
+        RepositoryResult<Statement> statements = repoGestion.getStatements(connection, codeListOrCode, graph);
 
         try {
             checkIfResourceExists(statements, codeListOrCode);
@@ -70,28 +70,28 @@ public class CodeListPublication extends RdfService {
                 String predicate = RdfUtils.toString(st.getPredicate());
                 String object = st.getObject().stringValue();
                 if (RDFS.SEEALSO.toString().equalsIgnoreCase(predicate)) {
-                    publishSeeAlsoTriplets(object, connection);
+                    publishSeeAlsoTriplets(object, graph, connection);
 
                     model.add(
                             publicationUtils.tranformBaseURIToPublish(st.getSubject()),
                             st.getPredicate(),
                             publicationUtils.tranformBaseURIToPublish(
                                     RdfUtils.createIRI(st.getObject().stringValue())),
-                            st.getContext());
+                            graph);
 
                 } else {
                     model.add(
                             publicationUtils.tranformBaseURIToPublish(st.getSubject()),
                             st.getPredicate(),
                             st.getObject(),
-                            st.getContext());
+                            graph);
                 }
             }
 
-            addCodesStatement(codeListOrCode, connection);
+            addCodesStatement(codeListOrCode, graph, connection);
 
             Resource codeListPublishResource = publicationUtils.tranformBaseURIToPublish(codeListOrCode);
-            repositoryPublication.publishResource(codeListPublishResource, model, Constants.CODELIST);
+            repositoryPublication.publishResource(codeListPublishResource, model, Constants.CODELIST, graph);
         } catch (RmesException e) {
             throw new RuntimeException(e);
         } finally {
@@ -99,23 +99,28 @@ public class CodeListPublication extends RdfService {
         }
     }
 
-    public void publishCodeListAndCodes(Resource codeListOrCode) throws RmesException {
+    /**
+     * Publie la liste, la classe OWL qu'elle cite en {@code rdfs:seeAlso} et ses codes. Tous sont lus
+     * et publiés dans {@code graph}, le graphe des listes de codes.
+     */
+    public void publishCodeListAndCodes(Resource codeListOrCode, Resource graph) throws RmesException {
         try (RepositoryConnection connection = repoGestion.getConnection()) {
-            publishCodeListAndCodesWithConnection(codeListOrCode, connection);
+            publishCodeListAndCodesWithConnection(codeListOrCode, graph, connection);
         } catch (RepositoryException e) {
             throw new RmesException(
                     HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), Constants.REPOSITORY_EXCEPTION);
         }
     }
 
-    private void addCodesStatement(Resource codeListOrCode, RepositoryConnection connection) throws RmesException {
+    private void addCodesStatement(Resource codeListOrCode, Resource graph, RepositoryConnection connection)
+            throws RmesException {
 
         RepositoryResult<Statement> statements =
-                repoGestion.getStatementsPredicateObject(connection, SKOS.IN_SCHEME, codeListOrCode);
+                repoGestion.getStatementsPredicateObject(connection, SKOS.IN_SCHEME, codeListOrCode, graph);
         while (statements.hasNext()) {
             Model model = new LinkedHashModel();
             Statement st = statements.next();
-            RepositoryResult<Statement> codeStatements = repoGestion.getStatements(connection, st.getSubject());
+            RepositoryResult<Statement> codeStatements = repoGestion.getStatements(connection, st.getSubject(), graph);
             while (codeStatements.hasNext()) {
                 Statement codeStatement = codeStatements.next();
 
@@ -134,25 +139,26 @@ public class CodeListPublication extends RdfService {
                             codeStatement.getPredicate(),
                             publicationUtils.tranformBaseURIToPublish(
                                     RdfUtils.createIRI(codeStatement.getObject().stringValue())),
-                            codeStatement.getContext());
+                            graph);
                 } else {
                     model.add(
                             publicationUtils.tranformBaseURIToPublish(codeStatement.getSubject()),
                             codeStatement.getPredicate(),
                             codeStatement.getObject(),
-                            codeStatement.getContext());
+                            graph);
                 }
             }
             Resource codePublishResource = publicationUtils.tranformBaseURIToPublish(st.getSubject());
-            repositoryPublication.publishResource(codePublishResource, model, Constants.CODELIST);
+            repositoryPublication.publishResource(codePublishResource, model, Constants.CODELIST, graph);
         }
     }
 
-    private void publishSeeAlsoTriplets(String seeAlso, RepositoryConnection connection) throws RmesException {
+    private void publishSeeAlsoTriplets(String seeAlso, Resource graph, RepositoryConnection connection)
+            throws RmesException {
         Model model = new LinkedHashModel();
 
         IRI seeAlsoIri = RdfUtils.createIRI(seeAlso);
-        RepositoryResult<Statement> statements = repoGestion.getStatements(connection, seeAlsoIri);
+        RepositoryResult<Statement> statements = repoGestion.getStatements(connection, seeAlsoIri, graph);
         try {
             checkIfResourceExists(statements, seeAlsoIri);
 
@@ -167,11 +173,11 @@ public class CodeListPublication extends RdfService {
                         publicationUtils.tranformBaseURIToPublish(st.getSubject()),
                         st.getPredicate(),
                         st.getObject(),
-                        st.getContext());
+                        graph);
             }
 
             Resource codeListPublishResource = publicationUtils.tranformBaseURIToPublish(seeAlsoIri);
-            repositoryPublication.publishResource(codeListPublishResource, model, Constants.CODELIST);
+            repositoryPublication.publishResource(codeListPublishResource, model, Constants.CODELIST, graph);
 
         } catch (RepositoryException e) {
             throw new RmesException(

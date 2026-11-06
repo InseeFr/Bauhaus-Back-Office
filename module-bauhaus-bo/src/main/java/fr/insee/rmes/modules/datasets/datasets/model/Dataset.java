@@ -1,15 +1,31 @@
 package fr.insee.rmes.modules.datasets.datasets.model;
 
+import static fr.insee.rmes.modules.commons.webservice.ValidationMessages.INVALID_IDENTIFIER;
+import static fr.insee.rmes.modules.commons.webservice.ValidationMessages.REQUIRED;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import java.util.List;
 
+/**
+ * Jeu de données, tel que lu et tel qu'écrit : c'est aussi le corps des requêtes de création et de
+ * modification. Les contraintes reprennent celles du formulaire et du service (qui les vérifie encore
+ * pour la modification partielle, sans Bean Validation).
+ */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Dataset {
 
     // Informations Générales
 
+    @NotBlank(message = REQUIRED)
     private String labelLg1;
+
+    @NotBlank(message = REQUIRED)
     private String labelLg2;
+
     private String subTitleLg1;
     private String subTitleLg2;
     private String accrualPeriodicity;
@@ -27,6 +43,7 @@ public class Dataset {
 
     private String issued;
 
+    @Pattern(regexp = "^[a-zA-Z0-9-_]+$", message = INVALID_IDENTIFIER)
     private String altIdentifier;
 
     public String getLabelLg1() {
@@ -281,11 +298,17 @@ public class Dataset {
     private String abstractLg2;
     private String cautionLg1;
     private String cautionLg2;
+
+    @NotBlank(message = REQUIRED)
     private String disseminationStatus;
+
     private List<String> wasGeneratedIRIs;
+    private WasDerivedFrom wasDerivedFrom;
     private List<String> themes;
     private String validationState;
 
+    @NotNull(message = REQUIRED)
+    @Valid
     private CatalogRecord catalogRecord;
 
     public String getId() {
@@ -358,6 +381,14 @@ public class Dataset {
 
     public void setWasGeneratedIRIs(List<String> wasGeneratedIds) {
         this.wasGeneratedIRIs = wasGeneratedIds;
+    }
+
+    public WasDerivedFrom getWasDerivedFrom() {
+        return wasDerivedFrom;
+    }
+
+    public void setWasDerivedFrom(WasDerivedFrom wasDerivedFrom) {
+        this.wasDerivedFrom = wasDerivedFrom;
     }
 
     public List<String> getThemes() {

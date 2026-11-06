@@ -28,6 +28,8 @@ import org.json.JSONObject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.*;
 import org.mockito.InOrder;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -379,24 +381,14 @@ class CodeListServiceImplTest {
                 .contains("\"message\":\"CodeList not found\"");
     }
 
-    @Test
-    void deleteCodeList_whenCodeListDoesNotExist_shouldThrowNotFound() throws RmesException {
+    @ParameterizedTest
+    @EnumSource(CodeListKind.class)
+    void deleteCodeList_whenCodeListDoesNotExist_shouldThrowNotFound(CodeListKind kind) throws RmesException {
         when(codeListsQueries.getDetailedCodeListByNotation("unknown")).thenReturn("detailed-query");
         when(repositoryGestion.getResponseAsObject("detailed-query")).thenReturn(new JSONObject());
 
-        RmesException exception = assertThrows(
-                RmesNotFoundException.class, () -> codeListService.deleteCodeList("unknown", CodeListKind.FULL));
-
-        assertEquals(404, exception.getStatus());
-    }
-
-    @Test
-    void deleteCodeList_whenPartialCodeListDoesNotExist_shouldThrowNotFound() throws RmesException {
-        when(codeListsQueries.getDetailedCodeListByNotation("unknown")).thenReturn("detailed-query");
-        when(repositoryGestion.getResponseAsObject("detailed-query")).thenReturn(new JSONObject());
-
-        RmesException exception = assertThrows(
-                RmesNotFoundException.class, () -> codeListService.deleteCodeList("unknown", CodeListKind.PARTIAL));
+        RmesException exception =
+                assertThrows(RmesNotFoundException.class, () -> codeListService.deleteCodeList("unknown", kind));
 
         assertEquals(404, exception.getStatus());
     }

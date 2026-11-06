@@ -138,6 +138,18 @@ public interface DDIService {
      */
     List<CodeListVariableUsage> getVariablesUsingMissingValuesRepresentation(String agencyId, String mmvrId);
 
+    /**
+     * Les variables du VariableScheme de la StudyUnit, réutilisables par ses PhysicalInstances
+     * (#1387).
+     */
+    Ddi4Response getStudyUnitVariables(String agencyId, String studyUnitId);
+
+    /**
+     * Les variables utilisées par chaque PhysicalInstance de la StudyUnit : une variable présente
+     * dans plusieurs fichiers est partagée (#1387).
+     */
+    List<CodeListVariableUsage> getStudyUnitVariableUsages(String agencyId, String studyUnitId);
+
     String getItemXml(String agency, String id, String version);
 
     String getItemXml(String agency, String id);
@@ -151,4 +163,10 @@ public interface DDIService {
      * pendant JSON de {@link #getStudyUnitXmlByOperationIri(String)}.
      */
     Optional<Ddi4StudyUnitResponse> getStudyUnitByOperationIri(String operationIri);
+
+    /**
+     * Les PhysicalInstances de toutes les StudyUnits miroirs de l'opération d'identifiant
+     * {@code operationId}, quelle que soit l'IRI sous laquelle elles la désignent ; vide sans miroir.
+     */
+    List<PartialPhysicalInstance> getPhysicalInstancesByOperation(String operationId);
 }

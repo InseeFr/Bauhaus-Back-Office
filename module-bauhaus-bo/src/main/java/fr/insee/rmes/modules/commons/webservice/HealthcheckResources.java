@@ -2,11 +2,13 @@ package fr.insee.rmes.modules.commons.webservice;
 
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.modules.commons.healthcheck.DependencyProbe;
 import fr.insee.rmes.modules.commons.security.PublicEndpoint;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
 import java.util.StringJoiner;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -18,6 +20,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * Endpoint public : la réponse dit ce qui répond, jamais pourquoi ça ne répond pas. Les causes
+ * (messages d'exception, chemins, hôtes) ne vont que dans les logs.
+ */
 @RestController
 @RequestMapping("healthcheck")
 public class HealthcheckResources extends GenericResources {
@@ -28,6 +34,8 @@ public class HealthcheckResources extends GenericResources {
 
     private static final String SPARQL_QUERY = "SELECT * { ?s a ?t } LIMIT 1";
 
+    private static final String WITNESS_FILE = "testHealthcheck.txt";
+
     private final RepositoryGestion repoGestion;
 
     private final RepositoryPublication repositoryPublication;
@@ -35,6 +43,8 @@ public class HealthcheckResources extends GenericResources {
     private final String documentsStoragePublicationInterne;
     private final String documentsStoragePublicationExterne;
     private final String documentsStorageGestion;
+
+    private final List<DependencyProbe> dependencyProbes;
 
     private static final Logger logger = LoggerFactory.getLogger(HealthcheckResources.class);
 
@@ -44,12 +54,14 @@ public class HealthcheckResources extends GenericResources {
             @Value("${fr.insee.rmes.bauhaus.storage.document.publication.interne}")
                     String documentsStoragePublicationInterne,
             @Value("${fr.insee.rmes.bauhaus.storage.document.publication}") String documentsStoragePublicationExterne,
-            @Value("${fr.insee.rmes.bauhaus.storage.document.gestion}") String documentsStorageGestion) {
+            @Value("${fr.insee.rmes.bauhaus.storage.document.gestion}") String documentsStorageGestion,
+            List<DependencyProbe> dependencyProbes) {
         this.repoGestion = repoGestion;
         this.repositoryPublication = repositoryPublication;
         this.documentsStoragePublicationInterne = documentsStoragePublicationInterne;
         this.documentsStoragePublicationExterne = documentsStoragePublicationExterne;
         this.documentsStorageGestion = documentsStorageGestion;
+        this.dependencyProbes = dependencyProbes;
     }
 
     @PublicEndpoint
@@ -64,6 +76,7 @@ public class HealthcheckResources extends GenericResources {
 
         checkDatabase(errorMessage, stateResult);
         checkStrorage(errorMessage, stateResult);
+        checkExternalServices(errorMessage, stateResult);
 
         // print result in log
         logger.debug("{}", stateResult);
@@ -108,18 +121,37 @@ public class HealthcheckResources extends GenericResources {
                 stateResult.add(" -").add(repoName).add(OK_STATE);
             }
         } catch (Exception e) {
-            errorMessage.add("-").add(repoName).add(e.getMessage()).add("\n");
             logger.error("Test connexion {}", repoName, e);
-            stateResult.add(" -").add(repoName).add(KO_STATE);
+            reportUnreachable(repoName, errorMessage, stateResult);
         }
+    }
+
+    private void checkExternalServices(StringJoiner errorMessage, StringJoiner stateResult) {
+        if (dependencyProbes.isEmpty()) {
+            return;
+        }
+        stateResult.add("External services \n");
+        for (DependencyProbe probe : dependencyProbes) {
+            try {
+                probe.check().run();
+                stateResult.add(" -").add(probe.name()).add(OK_STATE);
+            } catch (Exception e) {
+                logger.error("Test connexion {}", probe.name(), e);
+                reportUnreachable(probe.name(), errorMessage, stateResult);
+            }
+        }
+    }
+
+    private static void reportUnreachable(String name, StringJoiner errorMessage, StringJoiner stateResult) {
+        errorMessage.add("-").add(name).add("unreachable \n");
+        stateResult.add(" -").add(name).add(KO_STATE);
     }
 
     private void checkDocumentStorage(
             String pathToStorage, String storageType, StringJoiner stateResult, StringJoiner errorMessage) {
-        String dirPath = pathToStorage + "testHealthcheck.txt";
-        File testFile = new File(dirPath);
+        Path testFile = Path.of(pathToStorage, WITNESS_FILE);
         try {
-            if (!testFile.createNewFile()) {
+            if (!testFile.toFile().createNewFile()) {
                 errorMessage
                         .add("- File for healthcheck already exists in")
                         .add(storageType)
@@ -128,19 +160,15 @@ public class HealthcheckResources extends GenericResources {
             } else {
                 stateResult.add(" - File creation").add(storageType).add(OK_STATE);
             }
-            if (!Files.deleteIfExists(testFile.toPath())) {
+            if (!Files.deleteIfExists(testFile)) {
                 errorMessage.add("- Can't delete test file").add(storageType).add("\n");
                 stateResult.add(" - File deletion").add(storageType).add(KO_STATE);
             } else {
                 stateResult.add(" - File deletion").add(storageType).add(OK_STATE);
             }
         } catch (IOException e) {
-            errorMessage
-                    .add("- IOException to save file in")
-                    .add(pathToStorage)
-                    .add("-")
-                    .add(e.getMessage())
-                    .add("\n");
+            logger.error("Test document storage {} ({})", storageType, testFile, e);
+            errorMessage.add("- Can't write test file in").add(storageType).add("\n");
             stateResult.add(" - Document storage").add(storageType).add(KO_STATE);
         }
     }

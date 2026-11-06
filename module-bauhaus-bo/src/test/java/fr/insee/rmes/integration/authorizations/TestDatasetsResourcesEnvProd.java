@@ -50,6 +50,10 @@ class TestDatasetsResourcesEnvProd extends AbstractResourcesEnvProd {
     @MockitoBean
     DatasetService datasetService;
 
+    private static final String DATASET_BODY = """
+            {"labelLg1": "Jeu de données", "labelLg2": "Dataset", "disseminationStatus": "PublicGenerique",
+             "catalogRecord": {"creator": "DG75-L201", "contributor": ["DG75-L201"]}}""";
+
     private static Stream<Arguments> provideDataForGetEndpoints() {
         return Stream.of(
                 Arguments.of("/datasets", 200, true),
@@ -84,7 +88,7 @@ class TestDatasetsResourcesEnvProd extends AbstractResourcesEnvProd {
         var request = post("/datasets")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content("{\"id\": \"1\"}");
+                .content(DATASET_BODY);
         request.header("Authorization", "Bearer toto");
 
         mvc.perform(request).andExpect(status().is(code));
@@ -102,7 +106,7 @@ class TestDatasetsResourcesEnvProd extends AbstractResourcesEnvProd {
         var request = put("/datasets/1")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.TEXT_PLAIN_VALUE)
-                .content("{\"id\": \"1\"}");
+                .content(DATASET_BODY);
         request.header("Authorization", "Bearer toto");
 
         mvc.perform(request).andExpect(status().is(code));

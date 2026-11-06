@@ -1,6 +1,9 @@
 package fr.insee.rmes.bauhaus_services.operations.series;
 
+import static fr.insee.rmes.bauhaus_services.operations.OperationsRdfModelAssertions.assertAbstractsWrittenAsPlainMarkdownLiterals;
+import static fr.insee.rmes.bauhaus_services.operations.OperationsRdfModelAssertions.assertSingleIriObject;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.*;
 
@@ -14,16 +17,21 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.utils.OrganisationLookup;
 import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.exceptions.RmesNotAcceptableException;
+import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.graphdb.ontologies.ADMS;
+import fr.insee.rmes.json.JSONUtils;
 import fr.insee.rmes.model.links.OperationsLink;
 import fr.insee.rmes.modules.operation.domain.event.BilingualLabel;
 import fr.insee.rmes.modules.operation.domain.event.SeriesSaved;
 import fr.insee.rmes.modules.operations.series.domain.model.Series;
+import fr.insee.rmes.modules.operations.series.domain.model.commands.SeriesCommand;
 import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
+import fr.insee.rmes.persistance.sparql_queries.operations.OperationSeriesQueries;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.utils.EncodingType;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -33,7 +41,9 @@ import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.DC;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
-import org.junit.jupiter.api.Assertions;
+import org.eclipse.rdf4j.model.vocabulary.RDFS;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -51,22 +61,12 @@ class SeriesRepositoryTest {
     @Autowired
     private OperationsObjectMapper operationsObjectMapper;
 
+    @Autowired
+    private OperationSeriesQueries operationSeriesQueries;
+
     @Test
     void shouldAddAbstractPropertyAsPlainMarkdownLiterals() {
-        SeriesRepository seriesRepository = new SeriesRepository(
-                new BauhausLanguagesProperties("fr", "en"),
-                repositoryGestion,
-                null,
-                null,
-                operationsObjectMapper,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null);
+        SeriesRepository seriesRepository = seriesRepository(null, null);
 
         var series = new Series();
         series.setId("1");
@@ -74,26 +74,7 @@ class SeriesRepositoryTest {
         series.setAbstractLg2("setAbstractLg2");
         IRI seriesIri = SimpleValueFactory.getInstance().createIRI("http://purl.org/dc/dcmitype/" + series.getId());
 
-        Model model = new LinkedHashModel();
-
-        SimpleValueFactory simpleValueFactory = SimpleValueFactory.getInstance();
-
-        seriesRepository.addMulltiLangValues(
-                model,
-                seriesIri,
-                simpleValueFactory.createIRI("http://purl.org/dc/dcmitype/"),
-                "fr",
-                "en",
-                DCTERMS.ABSTRACT);
-
-        Assertions.assertEquals(
-                model.subjects().toArray()[0], simpleValueFactory.createIRI("http://purl.org/dc/dcmitype/1"));
-
-        Assertions.assertEquals(
-                model.predicates().toArray()[0], simpleValueFactory.createIRI(DCTERMS.ABSTRACT.toString()));
-
-        Assertions.assertEquals("\"<p>fr</p>\"@fr", model.objects().toArray()[0].toString());
-        Assertions.assertEquals("\"<p>en</p>\"@en", model.objects().toArray()[1].toString());
+        assertAbstractsWrittenAsPlainMarkdownLiterals(seriesIri, seriesRepository::addMulltiLangValues);
     }
 
     private static final IRI TEST_GRAPH = SimpleValueFactory.getInstance().createIRI("http://test/operations");
@@ -101,20 +82,7 @@ class SeriesRepositoryTest {
     @Test
     void createRdfSeries_addsAdmsIdentifierTriple() throws RmesException {
         SeriesValidator validator = mock(SeriesValidator.class);
-        SeriesRepository seriesRepository = new SeriesRepository(
-                new BauhausLanguagesProperties("fr", "en"),
-                repositoryGestion,
-                null,
-                null,
-                operationsObjectMapper,
-                null,
-                null,
-                null,
-                null,
-                validator,
-                null,
-                null,
-                null);
+        SeriesRepository seriesRepository = seriesRepository(validator, null);
         Series series = new Series();
         series.setId("s2000");
         series.setPrefLabelLg1("Série de test");
@@ -131,99 +99,116 @@ class SeriesRepositoryTest {
     }
 
     @Test
-    void addOperationLinksOrganization_writesIriPassthrough_whenLinkIdIsAlreadyAnIri() throws RmesException {
-        OrganisationLookup lookup = mock(OrganisationLookup.class);
-        when(lookup.resolve("http://bauhaus/organisations/DG75-A001"))
-                .thenReturn(Optional.of("http://bauhaus/organisations/DG75-A001"));
-        SeriesRepository seriesRepository = new SeriesRepository(
-                new BauhausLanguagesProperties("fr", "en"),
-                repositoryGestion,
-                null,
-                null,
-                operationsObjectMapper,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                lookup,
-                null);
-        SimpleValueFactory vf = SimpleValueFactory.getInstance();
-        IRI seriesURI = vf.createIRI("http://bauhaus/series/s1");
-        Model model = new LinkedHashModel();
-        OperationsLink link = new OperationsLink();
-        link.id = "http://bauhaus/organisations/DG75-A001";
+    void createRdfSeries_writesTheSeeAlsoLinkBackFromEachLinkedObjectInItsOwnGraph() throws RmesException {
+        BauhausUriBuilder bauhausUriBuilder = new BauhausUriBuilder(
+                "http://bauhaus/publication/", "http://bauhaus/gestion/", p -> Optional.of("operations"));
+        SeriesRepository seriesRepository = seriesRepository(mock(SeriesValidator.class), null, bauhausUriBuilder);
+        Series series = new Series();
+        series.setId("s2000");
+        series.setPrefLabelLg1("Série de test");
+        series.setSeeAlso(List.of(
+                OperationsLink.of("p1", "indicator", null, null), OperationsLink.of("s3", "series", null, null)));
 
-        seriesRepository.addOperationLinksOrganization(List.of(link), DCTERMS.PUBLISHER, model, seriesURI, TEST_GRAPH);
+        seriesRepository.createRdfSeries(series, null, ValidationStatus.UNPUBLISHED);
 
-        IRI publisher = vf.createIRI(DCTERMS.PUBLISHER.toString());
-        List<Value> publishers = model.filter(seriesURI, publisher, null).stream()
+        ArgumentCaptor<Model> captor = ArgumentCaptor.forClass(Model.class);
+        verify(repositoryGestion).loadObjectWithReplaceLinks(any(), captor.capture());
+        IRI seriesURI = RdfUtils.objectIRI(ObjectType.SERIES, "s2000");
+        IRI linkedIndicator = RdfUtils.toURI(bauhausUriBuilder.getCompleteUriGestion("indicator", "p1"));
+        IRI linkedSeries = RdfUtils.toURI(bauhausUriBuilder.getCompleteUriGestion("series", "s3"));
+        Model model = captor.getValue();
+        assertThat(model.contains(linkedIndicator, RDFS.SEEALSO, seriesURI, RdfUtils.productsGraph()))
+                .isTrue();
+        assertThat(model.contains(linkedSeries, RDFS.SEEALSO, seriesURI, RdfUtils.operationsGraph()))
+                .isTrue();
+    }
+
+    @Test
+    void createRdfSeries_writesEachThemeAsADctermsSubjectIri() throws RmesException {
+        SeriesRepository seriesRepository = seriesRepository(mock(SeriesValidator.class), null);
+        Series series = new Series();
+        series.setId("s2000");
+        series.setPrefLabelLg1("Série de test");
+        series.setThemes(List.of("http://bauhaus/concepts/themes/th1", "http://bauhaus/concepts/themes/th2"));
+
+        seriesRepository.createRdfSeries(series, null, ValidationStatus.UNPUBLISHED);
+
+        ArgumentCaptor<Model> captor = ArgumentCaptor.forClass(Model.class);
+        verify(repositoryGestion).loadObjectWithReplaceLinks(any(), captor.capture());
+        IRI seriesURI = RdfUtils.objectIRI(ObjectType.SERIES, "s2000");
+        List<Value> themes = captor.getValue().filter(seriesURI, DCTERMS.SUBJECT, null).stream()
                 .map(Statement::getObject)
                 .toList();
-        assertThat(publishers).hasSize(1);
-        assertThat(publishers.get(0)).isInstanceOf(IRI.class);
-        assertThat(publishers.get(0).stringValue()).isEqualTo("http://bauhaus/organisations/DG75-A001");
+        assertThat(themes).allMatch(IRI.class::isInstance, "every dcterms:subject object must be an IRI");
+        assertThat(themes)
+                .extracting(Value::stringValue)
+                .containsExactlyInAnyOrder("http://bauhaus/concepts/themes/th1", "http://bauhaus/concepts/themes/th2");
+    }
+
+    @Test
+    void getSeriesJsonById_returnsTheThemesOfTheSeries() throws RmesException {
+        String themesQuery = operationSeriesQueries.getThemesBySeriesIri(
+                RdfUtils.objectIRI(ObjectType.SERIES, "s2000").stringValue());
+        when(repositoryGestion.getResponseAsObject(any())).thenReturn(new JSONObject(Map.of("id", "s2000")));
+        when(repositoryGestion.getResponseAsArray(any())).thenReturn(new JSONArray());
+        when(repositoryGestion.getResponseAsJSONList(any())).thenReturn(new JSONArray());
+        when(repositoryGestion.getResponseAsJSONList(themesQuery))
+                .thenReturn(new JSONArray(List.of("http://bauhaus/concepts/themes/th1")));
+
+        JSONObject series = seriesRepository(null, null).getSeriesJsonById("s2000", EncodingType.XML);
+
+        assertThat(JSONUtils.jsonArrayToList(series.getJSONArray("themes")))
+                .containsExactly("http://bauhaus/concepts/themes/th1");
+    }
+
+    @Test
+    void getSeriesById_whenTheStoredSeriesCannotBeMapped_shouldThrowInsteadOfReturningAnEmptySeries()
+            throws RmesException {
+        // Un texte ne se lit pas comme une liste d'opérations : avant, l'erreur était journalisée et
+        // une série vide renvoyée à l'appelant (export SIMS, libellés des opérations…).
+        when(repositoryGestion.getResponseAsObject(any()))
+                .thenReturn(
+                        new JSONObject(Map.of("id", "s2000", "operations", "not a list")),
+                        new JSONObject(Map.of("id", "f1")));
+        when(repositoryGestion.getResponseAsArray(any())).thenReturn(new JSONArray());
+        when(repositoryGestion.getResponseAsJSONList(any())).thenReturn(new JSONArray());
+        SeriesRepository seriesRepository = seriesRepository(null, null);
+
+        assertThrows(RmesException.class, () -> seriesRepository.getSeriesById("s2000", EncodingType.XML));
+    }
+
+    @Test
+    void addOperationLinksOrganization_writesIriPassthrough_whenLinkIdIsAlreadyAnIri() throws RmesException {
+        assertOrganisationLinkWrittenAsIri("http://bauhaus/organisations/DG75-A001", DCTERMS.PUBLISHER);
     }
 
     @Test
     void addOperationLinksOrganization_resolvesLegacyIdViaLookup() throws RmesException {
+        assertOrganisationLinkWrittenAsIri("DG75-A001", DCTERMS.CONTRIBUTOR);
+    }
+
+    /** Le lien d'organisation {@code linkId} est résolu par le lookup et écrit comme une IRI. */
+    private void assertOrganisationLinkWrittenAsIri(String linkId, IRI predicate) throws RmesException {
         OrganisationLookup lookup = mock(OrganisationLookup.class);
-        when(lookup.resolve("DG75-A001")).thenReturn(Optional.of("http://bauhaus/organisations/DG75-A001"));
-        SeriesRepository seriesRepository = new SeriesRepository(
-                new BauhausLanguagesProperties("fr", "en"),
-                repositoryGestion,
-                null,
-                null,
-                operationsObjectMapper,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                lookup,
-                null);
+        when(lookup.resolve(linkId)).thenReturn(Optional.of("http://bauhaus/organisations/DG75-A001"));
+        SeriesRepository seriesRepository = seriesRepository(null, lookup);
         SimpleValueFactory vf = SimpleValueFactory.getInstance();
         IRI seriesURI = vf.createIRI("http://bauhaus/series/s1");
         Model model = new LinkedHashModel();
         OperationsLink link = new OperationsLink();
-        link.id = "DG75-A001";
+        link.id = linkId;
 
-        seriesRepository.addOperationLinksOrganization(
-                List.of(link), DCTERMS.CONTRIBUTOR, model, seriesURI, TEST_GRAPH);
+        seriesRepository.addOperationLinksOrganization(List.of(link), predicate, model, seriesURI, TEST_GRAPH);
 
-        IRI contributor = vf.createIRI(DCTERMS.CONTRIBUTOR.toString());
-        List<Value> contributors = model.filter(seriesURI, contributor, null).stream()
-                .map(Statement::getObject)
-                .toList();
-        assertThat(contributors).hasSize(1);
-        assertThat(contributors.get(0)).isInstanceOf(IRI.class);
-        assertThat(contributors.get(0).stringValue()).isEqualTo("http://bauhaus/organisations/DG75-A001");
+        assertSingleIriObject(model, seriesURI, predicate, "http://bauhaus/organisations/DG75-A001");
     }
 
     @Test
     void setSeries_shouldNotRejectWith406_whenBodyContainsBothIdSimsAndOperations() {
-        SeriesRepository seriesRepository = new SeriesRepository(
-                new BauhausLanguagesProperties("fr", "en"),
-                repositoryGestion,
-                null,
-                null,
-                operationsObjectMapper,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null);
-        String body =
-                "{\"idSims\":\"sims-1\",\"operations\":[{\"id\":\"op1\",\"labelLg1\":\"L1\",\"labelLg2\":\"L2\"}]}";
-
+        SeriesRepository seriesRepository = seriesRepository(null, null);
         try {
-            seriesRepository.setSeries("1", body);
-        } catch (RmesNotAcceptableException e) {
+            seriesRepository.setSeries("1", command("Série", null, null, null, "sims-1"));
+        } catch (RmesBadRequestException e) {
             if (e.getDetails().contains("A series cannot have both a Sims and Operation(s)")) {
                 fail("La mise à jour d'une série combinant idSims et operations ne devrait plus lever 406 : "
                         + e.getDetails());
@@ -235,20 +220,7 @@ class SeriesRepositoryTest {
 
     @Test
     void addCreators_writesEachCreatorAsAnIriTriple() {
-        SeriesRepository seriesRepository = new SeriesRepository(
-                new BauhausLanguagesProperties("fr", "en"),
-                repositoryGestion,
-                null,
-                null,
-                operationsObjectMapper,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null);
+        SeriesRepository seriesRepository = seriesRepository(null, null);
         SimpleValueFactory vf = SimpleValueFactory.getInstance();
         IRI seriesURI = vf.createIRI("http://bauhaus/series/s1");
         Model model = new LinkedHashModel();
@@ -294,8 +266,7 @@ class SeriesRepositoryTest {
                 null,
                 events);
 
-        seriesRepository.setSeries("s1001", """
-                {"id":"s1001","prefLabelLg1":"Recensement","prefLabelLg2":"Census",                "altLabelLg1":"RP","altLabelLg2":"CENS"}""");
+        seriesRepository.setSeries("s1001", command("Recensement", "Census", "RP", "CENS", null));
 
         ArgumentCaptor<SeriesSaved> captor = ArgumentCaptor.forClass(SeriesSaved.class);
         verify(events).publishEvent(captor.capture());
@@ -314,6 +285,7 @@ class SeriesRepositoryTest {
         when(uriBuilder.getCompleteUriPublication("series", "s1001"))
                 .thenReturn("http://id.insee.fr/operations/serie/s1001");
         OperationsObjectMapper objectMapper = mock(OperationsObjectMapper.class);
+        when(objectMapper.createId()).thenReturn("s1001");
         when(objectMapper.checkIfObjectExists(ObjectType.FAMILY, "f1")).thenReturn(true);
         SeriesRepository seriesRepository = new SeriesRepository(
                 new BauhausLanguagesProperties("fr", "en"),
@@ -330,12 +302,88 @@ class SeriesRepositoryTest {
                 null,
                 events);
 
-        seriesRepository.createSeries("""
-                {"id":"s1001","prefLabelLg1":"Recensement","family":{"id":"f1"}}""");
+        seriesRepository.createSeries(commandInFamily("Recensement", "f1"));
 
         ArgumentCaptor<SeriesSaved> captor = ArgumentCaptor.forClass(SeriesSaved.class);
         verify(events).publishEvent(captor.capture());
         assertThat(captor.getValue().iri()).isEqualTo("http://id.insee.fr/operations/serie/s1001");
         assertThat(captor.getValue().prefLabel()).isEqualTo(new BilingualLabel("Recensement", null));
+    }
+
+    private static SeriesCommand command(
+            String prefLabelLg1, String prefLabelLg2, String altLabelLg1, String altLabelLg2, String idSims) {
+        return new SeriesCommand(
+                prefLabelLg1,
+                prefLabelLg2,
+                altLabelLg1,
+                altLabelLg2,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                idSims,
+                null);
+    }
+
+    private static SeriesCommand commandInFamily(String prefLabelLg1, String familyId) {
+        return new SeriesCommand(
+                prefLabelLg1,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                familyId,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null);
+    }
+
+    private SeriesRepository seriesRepository(SeriesValidator validator, OrganisationLookup organisationLookup) {
+        return seriesRepository(validator, organisationLookup, null);
+    }
+
+    private SeriesRepository seriesRepository(
+            SeriesValidator validator, OrganisationLookup organisationLookup, BauhausUriBuilder bauhausUriBuilder) {
+        return new SeriesRepository(
+                new BauhausLanguagesProperties("fr", "en"),
+                repositoryGestion,
+                null,
+                null,
+                operationsObjectMapper,
+                null,
+                null,
+                null,
+                bauhausUriBuilder,
+                validator,
+                operationSeriesQueries,
+                organisationLookup,
+                null);
     }
 }

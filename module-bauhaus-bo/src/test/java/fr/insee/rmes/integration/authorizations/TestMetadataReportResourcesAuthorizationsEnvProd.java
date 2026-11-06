@@ -259,7 +259,7 @@ class TestMetadataReportResourcesAuthorizationsEnvProd extends AbstractResources
 
     @Test
     void postMetadataReportAdmin_OK() throws Exception, MissingUserInformationException {
-        when(documentationsService.createMetadataReport(anyString())).thenReturn("{}");
+        when(documentationsService.createMetadataReport(any())).thenReturn("{}");
         when(checker.hasAccess(any(), any(), any(), any())).thenReturn(true);
 
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
@@ -289,7 +289,7 @@ class TestMetadataReportResourcesAuthorizationsEnvProd extends AbstractResources
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("Gestionnaire_indicateur_RMESGNCS"));
         when(checker.hasAccess(any(), any(), any(), any())).thenReturn(true);
 
-        when(documentationsService.createMetadataReport(anyString())).thenReturn("{}");
+        when(documentationsService.createMetadataReport(any())).thenReturn("{}");
         mvc.perform(post("/operations/metadataReport")
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("Authorization", "Bearer toto")
