@@ -15,6 +15,7 @@ import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.util.Values;
+import org.eclipse.rdf4j.model.vocabulary.SKOS;
 import org.json.JSONArray;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -29,6 +30,7 @@ import org.junit.jupiter.api.Test;
 class RepositoryGestionFusekiIntegrationTest extends WithFusekiContainer {
 
     private static final IRI GRAPH = Values.iri("http://rdf.insee.fr/graphes/concepts/definitions");
+    private static final IRI OPERATIONS_GRAPH = Values.iri("http://rdf.insee.fr/graphes/operations");
 
     private final RepositoryGestion repositoryGestion = new RepositoryGestion(
             getRdfGestionConnectionDetails(),
@@ -61,6 +63,43 @@ class RepositoryGestionFusekiIntegrationTest extends WithFusekiContainer {
 
         assertThat(statusesOf(first)).containsExactly("Validated");
         assertThat(statusesOf(second)).containsExactly("Validated");
+    }
+
+    @Test
+    void loadSimpleObject_replaces_the_previous_triples_of_the_object() throws RmesException {
+        IRI family = Values.iri("http://bauhaus/operations/famille/s9001");
+
+        repositoryGestion.loadSimpleObject(family, labelled(family, "Première version"), null);
+        repositoryGestion.loadSimpleObject(family, labelled(family, "Deuxième version"), null);
+
+        assertThat(prefLabelsOf(family)).containsExactly("Deuxième version");
+    }
+
+    @Test
+    void deleteObject_removes_every_triple_of_the_object() throws RmesException {
+        IRI family = Values.iri("http://bauhaus/operations/famille/s9002");
+        repositoryGestion.loadSimpleObject(family, labelled(family, "À supprimer"), null);
+
+        repositoryGestion.deleteObject(family);
+
+        assertThat(repositoryGestion
+                        .getResponseAsArray("SELECT ?p WHERE { GRAPH ?g { <%s> ?p ?o } }".formatted(family))
+                        .length())
+                .isZero();
+    }
+
+    private static Model labelled(IRI object, String label) {
+        Model model = new LinkedHashModel();
+        model.add(object, SKOS.PREF_LABEL, Values.literal(label, "fr"), OPERATIONS_GRAPH);
+        return model;
+    }
+
+    private List<String> prefLabelsOf(IRI object) throws RmesException {
+        JSONArray rows = repositoryGestion.getResponseAsArray("SELECT ?label WHERE { GRAPH <%s> { <%s> <%s> ?label } }"
+                .formatted(OPERATIONS_GRAPH, object, SKOS.PREF_LABEL));
+        return IntStream.range(0, rows.length())
+                .mapToObj(i -> rows.getJSONObject(i).getString("label"))
+                .toList();
     }
 
     private void storeStatus(IRI object, String status) throws RmesException {

@@ -294,9 +294,13 @@ class RepositoryGestionTest {
         IRI object = valueFactory.createIRI("http://example.org/object");
         Model model = new TreeModel();
 
+        Update update = mock(Update.class);
+        when(connection.prepareUpdate(eq(QueryLanguage.SPARQL), anyString())).thenReturn(update);
+
         repositoryGestion.loadSimpleObject(object, model, connection);
 
-        verify(connection).remove(object, null, null);
+        verify(connection).prepareUpdate(QueryLanguage.SPARQL, subjectRemoval(object));
+        verify(update).execute();
         verify(connection).add(model);
         verify(connection).close();
     }
@@ -305,9 +309,13 @@ class RepositoryGestionTest {
     void shouldDeleteObject() throws RmesException {
         IRI object = valueFactory.createIRI("http://example.org/object");
 
+        Update update = mock(Update.class);
+        when(connection.prepareUpdate(eq(QueryLanguage.SPARQL), anyString())).thenReturn(update);
+
         repositoryGestion.deleteObject(object, connection);
 
-        verify(connection).remove(object, null, null);
+        verify(connection).prepareUpdate(QueryLanguage.SPARQL, subjectRemoval(object));
+        verify(update).execute();
         verify(connection).close();
     }
 
@@ -358,6 +366,10 @@ class RepositoryGestionTest {
         }
         verify(connection).add(model);
         verify(connection).close();
+    }
+
+    private static String subjectRemoval(IRI subject) {
+        return "DELETE WHERE { GRAPH ?graph { <%s> ?predicate ?value } }".formatted(subject);
     }
 
     private static String statusRemoval(IRI object, IRI predicate) {

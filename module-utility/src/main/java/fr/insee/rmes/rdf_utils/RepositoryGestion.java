@@ -209,7 +209,7 @@ public class RepositoryGestion {
         processConnection(
                 connection -> {
                     logger.info("Removing existing triples for object: {}", object);
-                    connection.remove(object, null, null);
+                    removeSubjectFromEveryGraph(connection, object);
 
                     logger.info("Adding new triples");
                     model.forEach(statement -> logger.info("Triplet: {}", statement));
@@ -246,7 +246,7 @@ public class RepositoryGestion {
     }
 
     public void deleteObject(IRI object, RepositoryConnection conn) throws RmesException {
-        processConnection(connection -> connection.remove(object, null, null), conn, "delete " + object);
+        processConnection(connection -> removeSubjectFromEveryGraph(connection, object), conn, "delete " + object);
     }
 
     public void deleteObject(IRI object) throws RmesException {
@@ -320,6 +320,17 @@ public class RepositoryGestion {
                             "DELETE WHERE { GRAPH ?graph { <%s> <%s> ?value } }".formatted(object, predicate))
                     .execute();
         }
+    }
+
+    /**
+     * Efface les triplets du sujet dans tous les graphes nommés, par SPARQL, pour la même raison que
+     * {@link #removeValidationStatusFromEveryGraph}.
+     */
+    private static void removeSubjectFromEveryGraph(RepositoryConnection conn, IRI subject) {
+        conn.prepareUpdate(
+                        QueryLanguage.SPARQL,
+                        "DELETE WHERE { GRAPH ?graph { <%s> ?predicate ?value } }".formatted(subject))
+                .execute();
     }
 
     public void clearConceptLinks(Resource concept) throws RmesException {
