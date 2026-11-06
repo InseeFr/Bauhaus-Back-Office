@@ -1,5 +1,7 @@
 package fr.insee.rmes.bauhaus_services.geography;
 
+import static fr.insee.rmes.domain.logging.LogSanitizer.forLog;
+
 import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.GeographyService;
@@ -174,7 +176,7 @@ public class GeographyServiceImpl extends RdfService implements GeographyService
             geoFeature.setCode(id.toString());
         }
         String iri = createRdfGeoFeature(geoFeature);
-        logger.info("Create geofeature : {} - {}", id, geoFeature.getLabelLg1());
+        logger.info("Create geofeature : {} - {}", id, forLog(geoFeature.getLabelLg1()));
         return iri;
     }
 
