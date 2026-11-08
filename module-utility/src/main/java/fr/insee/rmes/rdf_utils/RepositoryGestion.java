@@ -148,17 +148,17 @@ public class RepositoryGestion {
         try (RepositoryConnection conn = gestionConnection()) {
             // notes to delete
             for (IRI note : notesToDeleteAndUpdate.get(0)) {
-                conn.remove(note, null, null);
+                removeSubjectFromEveryGraph(conn, note);
             }
             // notes to update
             for (IRI note : notesToDeleteAndUpdate.get(1)) {
-                conn.remove(note, EVOC.NOTE_LITERAL, null);
+                deleteInEveryGraph(conn, "<%s> <%s> ?value".formatted(note, EVOC.NOTE_LITERAL));
             }
             // links to delete
             clearConceptLinks(concept);
 
             loadSimpleObject(concept, model, conn);
-        } catch (RepositoryException e) {
+        } catch (RDF4JException e) {
             throwsRmesException(e, "Failure load concept : " + concept);
         }
     }
@@ -315,10 +315,7 @@ public class RepositoryGestion {
      */
     private static void removeValidationStatusFromEveryGraph(RepositoryConnection conn, IRI object) {
         for (IRI predicate : List.of(INSEE.VALIDATION_STATE, INSEE.IS_VALIDATED)) {
-            conn.prepareUpdate(
-                            QueryLanguage.SPARQL,
-                            "DELETE WHERE { GRAPH ?graph { <%s> <%s> ?value } }".formatted(object, predicate))
-                    .execute();
+            deleteInEveryGraph(conn, "<%s> <%s> ?value".formatted(object, predicate));
         }
     }
 
@@ -327,9 +324,12 @@ public class RepositoryGestion {
      * {@link #removeValidationStatusFromEveryGraph}.
      */
     private static void removeSubjectFromEveryGraph(RepositoryConnection conn, IRI subject) {
-        conn.prepareUpdate(
-                        QueryLanguage.SPARQL,
-                        "DELETE WHERE { GRAPH ?graph { <%s> ?predicate ?value } }".formatted(subject))
+        deleteInEveryGraph(conn, "<%s> ?predicate ?value".formatted(subject));
+    }
+
+    /** Efface, dans tous les graphes nommés, les triplets qui correspondent au motif SPARQL donné. */
+    private static void deleteInEveryGraph(RepositoryConnection conn, String triplePattern) {
+        conn.prepareUpdate(QueryLanguage.SPARQL, "DELETE WHERE { GRAPH ?graph { %s } }".formatted(triplePattern))
                 .execute();
     }
 
@@ -347,19 +347,16 @@ public class RepositoryGestion {
         getStatementsAndRemove(object, typeOfLink);
     }
 
+    /** Efface, dans tous les graphes nommés, les liens des types donnés qui pointent vers l'objet. */
     private void getStatementsAndRemove(Resource object, List<IRI> typeOfLink) throws RmesException {
-        String exceptionCirucmstances = "";
+        String exceptionCircumstances = "";
         try (RepositoryConnection conn = gestionConnection()) {
             for (IRI predicat : typeOfLink) {
-                exceptionCirucmstances = "get " + predicat + " links from " + object;
-                try (RepositoryResult<Statement> statements = conn.getStatements(null, predicat, object, false)) {
-                    exceptionCirucmstances = "remove " + predicat + " links from " + object;
-                    conn.remove(statements);
-                }
+                exceptionCircumstances = "remove " + predicat + " links to " + object;
+                deleteInEveryGraph(conn, "?subject <%s> <%s>".formatted(predicat, object));
             }
-        } catch (RepositoryException e) {
-
-            throwsRmesException(e, "Failure " + exceptionCirucmstances);
+        } catch (RDF4JException e) {
+            throwsRmesException(e, "Failure " + exceptionCircumstances);
         }
     }
 

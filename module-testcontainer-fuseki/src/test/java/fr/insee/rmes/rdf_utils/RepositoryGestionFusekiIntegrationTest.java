@@ -6,6 +6,7 @@ import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.RdfBasicCredentials;
 import fr.insee.rmes.graphdb.RepositoryInitiator;
 import fr.insee.rmes.graphdb.RepositoryUtils;
+import fr.insee.rmes.graphdb.ontologies.EVOC;
 import fr.insee.rmes.graphdb.ontologies.INSEE;
 import fr.insee.rmes.testcontainers.FusekiContainer;
 import fr.insee.rmes.testcontainers.WithFusekiContainer;
@@ -15,6 +16,7 @@ import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.util.Values;
+import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;
 import org.json.JSONArray;
 import org.junit.jupiter.api.Tag;
@@ -86,6 +88,65 @@ class RepositoryGestionFusekiIntegrationTest extends WithFusekiContainer {
                         .getResponseAsArray("SELECT ?p WHERE { GRAPH ?g { <%s> ?p ?o } }".formatted(family))
                         .length())
                 .isZero();
+    }
+
+    @Test
+    void loadConcept_removes_every_triple_of_a_deleted_note() throws RmesException {
+        IRI concept = Values.iri("http://bauhaus/concepts/concept/c9101");
+        IRI note = Values.iri("http://bauhaus/concepts/concept/c9101/definition/1/fr");
+        storeNote(note, "Ancienne définition");
+
+        repositoryGestion.loadConcept(concept, labelled(concept, "Concept"), List.of(List.of(note), List.of()));
+
+        assertThat(triplesOf(note)).isZero();
+    }
+
+    @Test
+    void loadConcept_removes_the_previous_literal_of_an_updated_note() throws RmesException {
+        IRI concept = Values.iri("http://bauhaus/concepts/concept/c9102");
+        IRI note = Values.iri("http://bauhaus/concepts/concept/c9102/definition/1/fr");
+        storeNote(note, "Ancienne définition");
+        Model model = labelled(concept, "Concept");
+        model.add(note, EVOC.NOTE_LITERAL, Values.literal("Nouvelle définition"), GRAPH);
+
+        repositoryGestion.loadConcept(concept, model, List.of(List.of(), List.of(note)));
+
+        assertThat(noteLiteralsOf(note)).containsExactly("Nouvelle définition");
+    }
+
+    @Test
+    void loadConcept_removes_the_broader_links_pointing_to_the_concept() throws RmesException {
+        IRI parent = Values.iri("http://bauhaus/concepts/concept/c9103");
+        IRI child = Values.iri("http://bauhaus/concepts/concept/c9104");
+        repositoryGestion.executeUpdate("INSERT DATA { GRAPH <%s> { <%s> <%s> <%s> . <%s> <%s> <%s> } }"
+                .formatted(GRAPH, child, SKOS.BROADER, parent, parent, SKOS.NARROWER, child));
+
+        repositoryGestion.loadConcept(parent, labelled(parent, "Parent sans enfant"), List.of(List.of(), List.of()));
+
+        assertThat(repositoryGestion
+                        .getResponseAsArray("SELECT ?g WHERE { GRAPH ?g { <%s> <%s> <%s> } }"
+                                .formatted(child, SKOS.BROADER, parent))
+                        .length())
+                .isZero();
+    }
+
+    private void storeNote(IRI note, String text) throws RmesException {
+        repositoryGestion.executeUpdate("INSERT DATA { GRAPH <%s> { <%s> <%s> \"%s\"@fr . <%s> <%s> \"fr\" } }"
+                .formatted(GRAPH, note, EVOC.NOTE_LITERAL, text, note, DCTERMS.LANGUAGE));
+    }
+
+    private int triplesOf(IRI subject) throws RmesException {
+        return repositoryGestion
+                .getResponseAsArray("SELECT ?p WHERE { GRAPH ?g { <%s> ?p ?o } }".formatted(subject))
+                .length();
+    }
+
+    private List<String> noteLiteralsOf(IRI note) throws RmesException {
+        JSONArray rows = repositoryGestion.getResponseAsArray(
+                "SELECT ?text WHERE { GRAPH ?g { <%s> <%s> ?text } }".formatted(note, EVOC.NOTE_LITERAL));
+        return IntStream.range(0, rows.length())
+                .mapToObj(i -> rows.getJSONObject(i).getString("text"))
+                .toList();
     }
 
     private static Model labelled(IRI object, String label) {

@@ -9,13 +9,12 @@ import java.util.List;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
-import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;
+import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
-import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.json.JSONArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -262,9 +261,14 @@ public class RepositoryPublication {
         List<IRI> typeOfLink = Arrays.asList(
                 SKOS.BROADER, SKOS.NARROWER, SKOS.MEMBER, DCTERMS.REPLACES, SKOS.RELATED, DCTERMS.IS_REPLACED_BY);
 
+        // Effacement par SPARQL dans tous les graphes nommés : un remove sans graphe ne supprime rien
+        // hors de GraphDB, dont le graphe par défaut est l'union des graphes nommés.
         for (IRI predicat : typeOfLink) {
-            try (RepositoryResult<Statement> statements = conn.getStatements(null, predicat, concept, false)) {
-                conn.remove(statements);
+            try {
+                conn.prepareUpdate(
+                                QueryLanguage.SPARQL,
+                                "DELETE WHERE { GRAPH ?graph { ?subject <%s> <%s> } }".formatted(predicat, concept))
+                        .execute();
             } catch (RepositoryException e) {
                 throwIfUnauthorized(e, "Clear of concept links : " + concept);
                 throw unavailableRepository(e);
