@@ -32,10 +32,14 @@ import fr.insee.rmes.modules.users.domain.port.clientside.UserService;
 import fr.insee.rmes.modules.users.infrastructure.UserProvider;
 import fr.insee.rmes.modules.users.webservice.HasAccess;
 import jakarta.validation.Valid;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import org.jspecify.annotations.Nullable;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.format.annotation.DateTimeFormat.ISO;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -49,6 +53,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -59,6 +64,9 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 public class DdiResources {
 
     static final String DDI4_INVALID = "DDI4_INVALID";
+
+    /** Paramètre de filtre du endpoint {@code /operation/{id}/fichiers} (#1176). */
+    static final String DATE_MISE_A_JOUR = "dateMiseAJour";
 
     private final DDIService ddiService;
     private final DDI4toDDI3ConverterService ddi4toDdi3ConverterService;
@@ -427,22 +435,34 @@ public class DdiResources {
      * Depuis #1145 la sortie ne se limite plus au StudyUnit : les PhysicalInstances qu'il référence
      * sont déréférencées et l'accompagnent — fragments d'une même {@code <FragmentInstance>} côté
      * XML, items de l'enveloppe {@code topLevelReferences}/{@code items} côté JSON.
+     * <p>
+     * #1176 : {@code dateMiseAJour} ({@code AAAA-MM-JJ}, à 0:00:00 heure de Paris) ne garde que les
+     * PhysicalInstances modifiées à cette date ou après ; la StudyUnit sort toujours. Une date mal
+     * formée répond 400.
      */
     @GetMapping(value = "/public/operation/{id}/fichiers", produces = MediaType.APPLICATION_JSON_VALUE)
     @PublicEndpoint
-    public ResponseEntity<Ddi4StudyUnitResponse> getOperationStudyUnitJson(@PathVariable(Constants.ID) String id) {
+    public ResponseEntity<Ddi4StudyUnitResponse> getOperationStudyUnitJson(
+            @PathVariable(Constants.ID) String id,
+            @RequestParam(name = DATE_MISE_A_JOUR, required = false) @DateTimeFormat(iso = ISO.DATE) @Nullable
+                    LocalDate dateMiseAJour) {
         String operationIri = bauhausUriBuilder.getCompleteUriPublication("operation", id);
 
-        return DdiResponses.json(
-                ddiService.getStudyUnitByOperationIri(operationIri).orElse(null));
+        return DdiResponses.json(ddiService
+                .getStudyUnitByOperationIri(operationIri, dateMiseAJour)
+                .orElse(null));
     }
 
     @GetMapping(value = "/public/operation/{id}/fichiers", produces = MediaType.APPLICATION_XML_VALUE)
     @PublicEndpoint
-    public ResponseEntity<String> getOperationStudyUnitXml(@PathVariable(Constants.ID) String id) {
+    public ResponseEntity<String> getOperationStudyUnitXml(
+            @PathVariable(Constants.ID) String id,
+            @RequestParam(name = DATE_MISE_A_JOUR, required = false) @DateTimeFormat(iso = ISO.DATE) @Nullable
+                    LocalDate dateMiseAJour) {
         String operationIri = bauhausUriBuilder.getCompleteUriPublication("operation", id);
-        return DdiResponses.xml(
-                ddiService.getStudyUnitXmlByOperationIri(operationIri).orElse(null));
+        return DdiResponses.xml(ddiService
+                .getStudyUnitXmlByOperationIri(operationIri, dateMiseAJour)
+                .orElse(null));
     }
 
     @PostMapping("/validate")

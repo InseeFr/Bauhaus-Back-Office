@@ -5,6 +5,7 @@ import static fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colect
 import static fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.ColecticaItemTypes.LOGICAL_PRODUCT;
 import static fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.ColecticaItemTypes.PHYSICAL_INSTANCE;
 import static fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.ColecticaItemTypes.VARIABLE;
+import static fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.ColecticaItemTypes.VARIABLE_GROUP;
 import static fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.ColecticaItemTypes.VARIABLE_SCHEME;
 
 import fr.insee.rmes.colectica.client.ColecticaClient;
@@ -17,8 +18,16 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi3Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Variable;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3toDDI4ConverterService;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,7 +37,8 @@ import org.slf4j.LoggerFactory;
  * <p>Deux lectures, toutes deux en descente {@code bysubject} :
  *
  * <ul>
- *   <li>le vivier : StudyUnit → LogicalProduct → VariableScheme → Variable ;
+ *   <li>le vivier : StudyUnit → LogicalProduct → VariableScheme → Variable, y compris les variables
+ *       rangées dans des VariableGroup, imbriqués ou non, sous le VariableScheme ;
  *   <li>les usages : StudyUnit → PhysicalInstance → DataRelationship → Variable.
  * </ul>
  */
@@ -66,7 +76,7 @@ class ColecticaStudyUnitVariablesReader {
 
         List<ColecticaItem> variables = new ArrayList<>();
         for (ItemReference variableScheme : variableSchemes) {
-            variables.addAll(children(variableScheme, VARIABLE));
+            variables.addAll(variablesUnder(variableScheme));
         }
         variables = ColecticaItems.latestVersions(variables);
         if (variables.isEmpty()) {
@@ -87,28 +97,74 @@ class ColecticaStudyUnitVariablesReader {
                     forLog(agencyId),
                     forLog(studyUnitId));
         }
-        List<CodeListVariableUsage> usages = new ArrayList<>();
         List<ColecticaItem> physicalInstances =
                 ColecticaItems.latestVersions(children(new ItemReference(agencyId, studyUnitId), PHYSICAL_INSTANCE));
-        for (ColecticaItem physicalInstance : physicalInstances) {
-            List<ItemReference> dataRelationships = ColecticaRelationships.childrenOfType(
-                    colecticaClient, ColecticaItems.itemRef(physicalInstance), itemType(DATA_RELATIONSHIP));
-            for (ItemReference dataRelationship : dataRelationships) {
-                for (ColecticaItem variable : ColecticaItems.latestVersions(children(dataRelationship, VARIABLE))) {
-                    usages.add(new CodeListVariableUsage(
-                            agencyId,
-                            studyUnitId,
-                            null,
-                            physicalInstance.agencyId(),
-                            physicalInstance.identifier(),
-                            labels.of(physicalInstance),
-                            variable.agencyId(),
-                            variable.identifier(),
-                            labels.of(variable)));
-                }
+        // Une descente PI → DataRelationship → Variable par PI, indépendantes les unes des autres :
+        // lancées en parallèle, la réponse coûte la PI la plus lente plutôt que la somme (deux appels
+        // bysubject ou plus par PI, ~6 s en série contre ~1 s mesurés sur 16 PI de la démo).
+        try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
+            List<Future<List<CodeListVariableUsage>>> perPhysicalInstance = physicalInstances.stream()
+                    .map(physicalInstance -> executor.submit(() -> usagesOf(agencyId, studyUnitId, physicalInstance)))
+                    .toList();
+            List<CodeListVariableUsage> usages = new ArrayList<>();
+            for (Future<List<CodeListVariableUsage>> future : perPhysicalInstance) {
+                usages.addAll(future.get());
+            }
+            return usages.stream().distinct().toList();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException(
+                    "Interrupted while fetching variable usages of study unit " + agencyId + "/" + studyUnitId, e);
+        } catch (ExecutionException e) {
+            // Remonte l'exception d'origine (404 Colectica, etc.) telle que le code séquentiel la levait.
+            if (e.getCause() instanceof RuntimeException runtime) {
+                throw runtime;
+            }
+            throw new IllegalStateException(
+                    "Failed to fetch variable usages of study unit " + agencyId + "/" + studyUnitId, e.getCause());
+        }
+    }
+
+    /** Les variables de chaque DataRelationship de {@code physicalInstance}, une ligne par variable. */
+    private List<CodeListVariableUsage> usagesOf(String agencyId, String studyUnitId, ColecticaItem physicalInstance) {
+        List<CodeListVariableUsage> usages = new ArrayList<>();
+        List<ItemReference> dataRelationships = ColecticaRelationships.childrenOfType(
+                colecticaClient, ColecticaItems.itemRef(physicalInstance), itemType(DATA_RELATIONSHIP));
+        for (ItemReference dataRelationship : dataRelationships) {
+            for (ColecticaItem variable : ColecticaItems.latestVersions(children(dataRelationship, VARIABLE))) {
+                usages.add(new CodeListVariableUsage(
+                        agencyId,
+                        studyUnitId,
+                        null,
+                        physicalInstance.agencyId(),
+                        physicalInstance.identifier(),
+                        labels.of(physicalInstance),
+                        variable.agencyId(),
+                        variable.identifier(),
+                        labels.of(variable)));
             }
         }
-        return usages.stream().distinct().toList();
+        return usages;
+    }
+
+    /**
+     * Variables de {@code variableScheme} : celles qu'il référence directement et celles de ses
+     * VariableGroup, à toute profondeur. Chaque groupe n'est visité qu'une fois, ce qui protège d'un
+     * cycle de références entre groupes.
+     */
+    private List<ColecticaItem> variablesUnder(ItemReference variableScheme) {
+        List<ColecticaItem> variables = new ArrayList<>();
+        Set<ItemReference> visited = new HashSet<>();
+        Deque<ItemReference> toVisit = new ArrayDeque<>(List.of(variableScheme));
+        while (!toVisit.isEmpty()) {
+            ItemReference container = toVisit.pop();
+            if (!visited.add(container)) {
+                continue;
+            }
+            variables.addAll(children(container, VARIABLE));
+            toVisit.addAll(ColecticaRelationships.childrenOfType(colecticaClient, container, itemType(VARIABLE_GROUP)));
+        }
+        return variables;
     }
 
     /** Items de {@code typeKey} directement référencés par {@code subject}, avec leur libellé. */

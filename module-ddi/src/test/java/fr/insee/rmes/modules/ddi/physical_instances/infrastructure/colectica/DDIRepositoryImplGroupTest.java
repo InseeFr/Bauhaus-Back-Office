@@ -43,6 +43,7 @@ class DDIRepositoryImplGroupTest {
         lenient().when(instanceConfiguration.defaultAgencyId()).thenReturn("fr.insee");
         lenient().when(instanceConfiguration.versionResponsibility()).thenReturn("bauhaus");
         lenient().when(instanceConfiguration.itemFormat()).thenReturn("DC337820-AF3A-4C0B-82F9-CF02535CDE83");
+        lenient().when(instanceConfiguration.itemTypes()).thenReturn(ColecticaTestItemTypes.CONFIGURED);
     }
 
     // --- ColecticaGroupRepository ---

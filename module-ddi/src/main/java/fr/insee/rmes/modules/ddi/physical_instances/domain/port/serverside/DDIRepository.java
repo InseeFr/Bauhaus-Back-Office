@@ -32,9 +32,11 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanc
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.ReuseVariablesRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UpdatePhysicalInstanceRequest;
+import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import org.jspecify.annotations.Nullable;
 
 public interface DDIRepository {
     List<PartialPhysicalInstance> getPhysicalInstances();
@@ -157,6 +159,12 @@ public interface DDIRepository {
     List<PartialCodeListScheme> getCodeListSchemesByLogicalProduct(String agencyId, String logicalProductId);
 
     List<PartialCodesList> getCodeListsByCodeListScheme(String agencyId, String codeListSchemeId);
+
+    /**
+     * Les CodeLists du groupe : celles des CodeListSchemes de ses LogicalProducts, dédupliquées par
+     * agence/identifiant, hors CodeLists de valeurs sentinelles (cf. #1566).
+     */
+    List<PartialCodesList> getCodeListsByGroup(String agencyId, String groupId);
     /**
      * Les CodeLists de valeurs sentinelles du groupe (cf. #1566) : celles référencées par une
      * {@code ManagedMissingValuesRepresentation} rangée dans un {@code ManagedRepresentationScheme}
@@ -218,10 +226,13 @@ public interface DDIRepository {
      * Le DDI 3.3 de la StudyUnit d'une opération, dans une {@code <FragmentInstance>} qui porte aussi
      * les fragments des PhysicalInstances qu'elle référence (#1145).
      */
-    Optional<String> findStudyUnitXmlByOperationIri(String operationIri);
+    /** Calcule le cache opération → StudyUnits et rend le nombre d'études indexées. */
+    int refreshStudyUnitsByOperationCache();
+
+    Optional<String> findStudyUnitXmlByOperationIri(String operationIri, @Nullable Instant modifiedSince);
 
     /** Les mêmes objets — StudyUnit et PhysicalInstances déréférencées — en DDI 4 (#1145). */
-    Optional<Ddi4StudyUnitResponse> findStudyUnitByOperationIri(String operationIri);
+    Optional<Ddi4StudyUnitResponse> findStudyUnitByOperationIri(String operationIri, @Nullable Instant modifiedSince);
 
     /**
      * Les PhysicalInstances de toutes les StudyUnits dont un {@code r:UserID} vaut l'une des

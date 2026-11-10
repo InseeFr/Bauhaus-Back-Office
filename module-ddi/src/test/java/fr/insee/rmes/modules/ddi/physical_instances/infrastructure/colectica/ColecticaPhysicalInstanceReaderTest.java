@@ -14,13 +14,15 @@ import fr.insee.rmes.colectica.client.ColecticaClient;
 import fr.insee.rmes.colectica.client.ItemReference;
 import fr.insee.rmes.colectica.client.dto.ColecticaItemResponse;
 import fr.insee.rmes.colectica.client.dto.ColecticaSetItem;
-import fr.insee.rmes.colectica.client.dto.ColecticaTypedSetItem;
-import fr.insee.rmes.colectica.client.dto.GetDescriptionsRequest.IdentifierRef;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi3Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeList;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4DataRelationship;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedMissingValuesRepresentation;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4PhysicalInstance;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Variable;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3toDDI4ConverterService;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.services.DDI3toDDI4ConverterServiceImpl;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
@@ -61,29 +63,63 @@ class ColecticaPhysicalInstanceReaderTest {
                 colecticaClient);
     }
 
+    /**
+     * Le set d'une PI qui référence une nomenclature compte des dizaines de milliers d'items :
+     * {@code _query/set} y coûte ~25 s même filtré. La PI est lue en descendant ses références, un
+     * {@code _getListLatest} par niveau (dernière version, comme {@code set/}).
+     */
     @Test
-    void getPhysicalInstance_downloadsOnlyItsOwnItemTypesFromTheLatestVersion() {
-        when(colecticaClient.getItem(AGENCY, PI_ID, null)).thenReturn(item(PHYSICAL_INSTANCE, PI_ID, 3));
-        when(colecticaClient.querySet(
-                        eq(new ColecticaSetItem(PI_ID, 3, AGENCY)),
-                        argThat(types -> types.size() == 4
-                                && types.containsAll(List.of(PHYSICAL_INSTANCE, DATA_RELATIONSHIP, VARIABLE, MMVR)))))
-                .thenReturn(new ColecticaTypedSetItem[] {
-                    new ColecticaTypedSetItem(new ColecticaSetItem(PI_ID, 3, AGENCY), PHYSICAL_INSTANCE),
-                    new ColecticaTypedSetItem(new ColecticaSetItem("var-1", 2, AGENCY), VARIABLE)
+    void getPhysicalInstance_followsTheReferencesDownToTheMissingValuesWithoutQueryingTheSet() {
+        ColecticaPhysicalInstanceReader descendingReader = readerWithRealConverter();
+        when(colecticaClient.getItem(AGENCY, PI_ID, null))
+                .thenReturn(item(PHYSICAL_INSTANCE, PI_ID, 3, physicalInstanceXml(PI_ID, "dr-1")));
+        when(colecticaClient.getLatestItems(List.of(new ItemReference(AGENCY, "dr-1"))))
+                .thenReturn(new ColecticaItemResponse[] {
+                    item(DATA_RELATIONSHIP, "dr-1", 2, dataRelationshipXml("dr-1", "var-1"))
                 });
-        ColecticaItemResponse[] items = {item(PHYSICAL_INSTANCE, PI_ID, 3), item(VARIABLE, "var-1", 2)};
-        when(colecticaClient.getDescriptions(
-                        List.of(new IdentifierRef(AGENCY, PI_ID, 3), new IdentifierRef(AGENCY, "var-1", 2))))
-                .thenReturn(items);
-        Ddi4Response converted = new Ddi4Response(Ddi4Response.SCHEMA, null, null, null, null, null, null, null);
-        when(converter.convertDdi3ToDdi4(any(Ddi3Response.class), eq(Ddi4Response.SCHEMA)))
-                .thenReturn(converted);
+        when(colecticaClient.getLatestItems(List.of(new ItemReference(AGENCY, "var-1"))))
+                .thenReturn(new ColecticaItemResponse[] {item(VARIABLE, "var-1", 4, variableXml("var-1", "mmvr-1"))});
+        when(colecticaClient.getLatestItems(List.of(new ItemReference(AGENCY, "mmvr-1"))))
+                .thenReturn(new ColecticaItemResponse[] {item(MMVR, "mmvr-1", 1, missingValuesXml("mmvr-1"))});
 
-        Ddi4Response result = reader.getPhysicalInstance(AGENCY, PI_ID);
+        Ddi4Response result = descendingReader.getPhysicalInstance(AGENCY, PI_ID);
 
-        assertThat(result).isSameAs(converted);
+        assertThat(result.topLevelReference()).containsExactly(Reference.of(AGENCY, PI_ID, "3", "PhysicalInstance"));
+        assertThat(result.physicalInstance())
+                .extracting(Ddi4PhysicalInstance::id)
+                .containsExactly(PI_ID);
+        assertThat(result.dataRelationship())
+                .extracting(Ddi4DataRelationship::id)
+                .containsExactly("dr-1");
+        assertThat(result.variable()).extracting(Ddi4Variable::id).containsExactly("var-1");
+        assertThat(result.managedMissingValuesRepresentation())
+                .extracting(Ddi4ManagedMissingValuesRepresentation::id)
+                .containsExactly("mmvr-1");
+        verify(colecticaClient, never()).querySet(any(), any());
         verify(colecticaClient, never()).getSet(anyString(), anyString(), any());
+    }
+
+    @Test
+    void getPhysicalInstance_withoutDataRelationshipReadsNothingButItsRoot() {
+        ColecticaPhysicalInstanceReader descendingReader = readerWithRealConverter();
+        when(colecticaClient.getItem(AGENCY, PI_ID, null))
+                .thenReturn(item(PHYSICAL_INSTANCE, PI_ID, 1, physicalInstanceXml(PI_ID, null)));
+
+        Ddi4Response result = descendingReader.getPhysicalInstance(AGENCY, PI_ID);
+
+        assertThat(result.physicalInstance())
+                .extracting(Ddi4PhysicalInstance::id)
+                .containsExactly(PI_ID);
+        assertThat(result.variable()).isNull();
+        verify(colecticaClient, never()).getLatestItems(any());
+    }
+
+    private ColecticaPhysicalInstanceReader readerWithRealConverter() {
+        return new ColecticaPhysicalInstanceReader(
+                instanceConfiguration,
+                new DDI3toDDI4ConverterServiceImpl(instanceConfiguration.itemTypes()),
+                new ColecticaSetReader(instanceConfiguration, colecticaClient),
+                colecticaClient);
     }
 
     @Test
@@ -140,7 +176,53 @@ class ColecticaPhysicalInstanceReaderTest {
     }
 
     private static ColecticaItemResponse item(String type, String id, int version) {
-        return new ColecticaItemResponse(
-                type, AGENCY, version, id, "<Fragment/>", null, null, false, false, false, null);
+        return item(type, id, version, "<Fragment/>");
+    }
+
+    private static ColecticaItemResponse item(String type, String id, int version, String xml) {
+        return new ColecticaItemResponse(type, AGENCY, version, id, xml, null, null, false, false, false, null);
+    }
+
+    private static String fragment(String content) {
+        return "<Fragment xmlns=\"ddi:instance:3_3\" xmlns:r=\"ddi:reusable:3_3\">" + content + "</Fragment>";
+    }
+
+    private static String identity(String id) {
+        return "<r:URN>urn:ddi:fr.insee:" + id + ":1</r:URN><r:Agency>fr.insee</r:Agency><r:ID>" + id
+                + "</r:ID><r:Version>1</r:Version>";
+    }
+
+    private static String reference(String element, String id, String typeOfObject) {
+        return "<" + element + "><r:Agency>fr.insee</r:Agency><r:ID>" + id + "</r:ID><r:Version>1</r:Version>"
+                + "<r:TypeOfObject>" + typeOfObject + "</r:TypeOfObject></" + element + ">";
+    }
+
+    private static final String VERSIONED = " isUniversallyUnique=\"true\" versionDate=\"2026-01-01T00:00:00Z\"";
+
+    private static String physicalInstanceXml(String id, String dataRelationshipId) {
+        return fragment("<PhysicalInstance xmlns=\"ddi:physicalinstance:3_3\"" + VERSIONED + ">" + identity(id)
+                + (dataRelationshipId == null
+                        ? ""
+                        : reference("r:DataRelationshipReference", dataRelationshipId, "DataRelationship"))
+                + "</PhysicalInstance>");
+    }
+
+    private static String dataRelationshipXml(String id, String variableId) {
+        return fragment("<DataRelationship xmlns=\"ddi:logicalproduct:3_3\"" + VERSIONED + ">" + identity(id)
+                + "<LogicalRecord isUniversallyUnique=\"true\">" + identity("lr-" + id) + "<VariablesInRecord>"
+                + reference("VariableUsedReference", variableId, "Variable")
+                + "</VariablesInRecord></LogicalRecord></DataRelationship>");
+    }
+
+    private static String variableXml(String id, String missingValuesId) {
+        return fragment("<Variable xmlns=\"ddi:logicalproduct:3_3\"" + VERSIONED + ">" + identity(id)
+                + "<VariableRepresentation>"
+                + reference("MissingValuesReference", missingValuesId, "ManagedMissingValuesRepresentation")
+                + "</VariableRepresentation></Variable>");
+    }
+
+    private static String missingValuesXml(String id) {
+        return fragment("<r:ManagedMissingValuesRepresentation" + VERSIONED + ">" + identity(id)
+                + "</r:ManagedMissingValuesRepresentation>");
     }
 }

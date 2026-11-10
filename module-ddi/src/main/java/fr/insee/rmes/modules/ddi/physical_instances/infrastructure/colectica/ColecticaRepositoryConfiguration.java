@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.CacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.web.client.RestClient;
 
 @Configuration
@@ -81,7 +82,8 @@ public class ColecticaRepositoryConfiguration {
             DDI4toDDI3ConverterService ddi4ToDdi3Converter,
             ColecticaClient colecticaClient,
             MutualizedCodeListRefsStrategy mutualizedCodeListRefsProvider,
-            CacheManager cacheManager) {
+            CacheManager cacheManager,
+            @Qualifier("applicationTaskExecutor") TaskExecutor cacheRefreshExecutor) {
         return new DDIRepositoryImpl(
                 colecticaConfiguration.server(),
                 ddi3ToDdi4Converter,
@@ -90,7 +92,8 @@ public class ColecticaRepositoryConfiguration {
                 colecticaClient,
                 mutualizedCodeListRefsProvider,
                 cacheManager.getCache(ColecticaCacheNames.PHYSICAL_INSTANCE_SEARCH_ROWS),
-                cacheManager.getCache(ColecticaCacheNames.MUTUALIZED_CODE_LIST_CONTENTS));
+                cacheManager.getCache(ColecticaCacheNames.MUTUALIZED_CODE_LIST_CONTENTS),
+                cacheRefreshExecutor);
     }
 
     @Bean

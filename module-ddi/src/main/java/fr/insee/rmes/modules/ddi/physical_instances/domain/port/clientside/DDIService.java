@@ -28,9 +28,11 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanc
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceSearchRow;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.ReuseVariablesRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UpdatePhysicalInstanceRequest;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import org.jspecify.annotations.Nullable;
 
 public interface DDIService {
     List<PartialPhysicalInstance> getPhysicalInstances();
@@ -164,13 +166,13 @@ public interface DDIService {
 
     PhysicalInstanceParents getPhysicalInstanceParents(String agencyId, String id);
 
-    Optional<String> getStudyUnitXmlByOperationIri(String operationIri);
+    Optional<String> getStudyUnitXmlByOperationIri(String operationIri, @Nullable LocalDate modifiedSince);
 
     /**
      * La StudyUnit d'une opération et les PhysicalInstances qu'elle référence, en DDI 4 (#1145) —
-     * pendant JSON de {@link #getStudyUnitXmlByOperationIri(String)}.
+     * pendant JSON de {@link #getStudyUnitXmlByOperationIri(String, LocalDate)}.
      */
-    Optional<Ddi4StudyUnitResponse> getStudyUnitByOperationIri(String operationIri);
+    Optional<Ddi4StudyUnitResponse> getStudyUnitByOperationIri(String operationIri, @Nullable LocalDate modifiedSince);
 
     /**
      * Les PhysicalInstances de toutes les StudyUnits miroirs de l'opération d'identifiant

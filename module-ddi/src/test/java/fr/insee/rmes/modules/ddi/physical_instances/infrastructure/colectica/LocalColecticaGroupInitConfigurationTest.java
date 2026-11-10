@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
+import fr.insee.ddi.lifecycle33.instance.FragmentDocument;
 import fr.insee.rmes.colectica.client.ColecticaClient;
 import fr.insee.rmes.colectica.client.dto.ColecticaCreateItemRequest;
 import fr.insee.rmes.colectica.client.dto.ColecticaItemResponse;
@@ -23,6 +24,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedRepr
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4PhysicalInstance;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Variable;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4VariableScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LogicalRecord;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceIds;
@@ -103,7 +105,7 @@ class LocalColecticaGroupInitConfigurationTest {
         var instanceConfig = new ColecticaConfiguration.ColecticaInstanceConfiguration(
                 "http://localhost:8082",
                 "/api/v1/",
-                null,
+                ColecticaTestItemTypes.CONFIGURED,
                 "bauhaus",
                 "DC337820-AF3A-4C0B-82F9-CF02535CDE83",
                 "token",
@@ -1010,7 +1012,7 @@ class LocalColecticaGroupInitConfigurationTest {
         var instanceConfig = new ColecticaConfiguration.ColecticaInstanceConfiguration(
                 "http://localhost:8082",
                 "/api/v1/",
-                Map.of("CodeListGroup", CODE_LIST_GROUP_ITEM_TYPE),
+                ColecticaTestItemTypes.configuredWith(Map.of("CodeListGroup", CODE_LIST_GROUP_ITEM_TYPE)),
                 "bauhaus",
                 "DC337820-AF3A-4C0B-82F9-CF02535CDE83",
                 "token",
@@ -1281,5 +1283,147 @@ class LocalColecticaGroupInitConfigurationTest {
                 .run();
 
         verifyNoInteractions(colecticaClient, ddi4ToDdi3Converter);
+    }
+
+    private static final String VARIABLE_GROUP_ITEM_TYPE = "91da6c62-c2c2-4173-8958-22c518d1d40d";
+
+    private static final String VARIABLE_SCHEME_ITEM_TYPE = "50907716-b67a-4dcd-8f9f-8a283cb5fee0";
+
+    private void runVariableGroupExample() throws Exception {
+        when(ddiService.createPhysicalInstance(any(), any())).thenReturn(piResponse("fr.insee", "pi-variable-group"));
+        when(ddi4ToDdi3Converter.convertDdi4ToDdi3(any()))
+                .thenReturn(new Ddi3Response(null, List.of(ddi3Item("variable"))));
+        new LocalColecticaGroupInitConfiguration()
+                .initColecticaVariableGroupExample(
+                        groupService,
+                        studyUnitService,
+                        ddiService,
+                        colecticaClient,
+                        ddi4ToDdi3Converter,
+                        createColecticaConfig())
+                .run();
+    }
+
+    private List<ColecticaItemResponse> registeredItemsOfType(String itemType) {
+        return registeredItems().stream()
+                .filter(item -> itemType.equals(item.itemType()))
+                .toList();
+    }
+
+    private static String variableGroupId(String code) {
+        return generateDeterministicUuid(
+                LocalColecticaGroupInitConfiguration.VARIABLE_GROUP_EXAMPLE_SEED + "#variablegroup-" + code);
+    }
+
+    @Test
+    void variableGroupExample_filesNoVariableDirectlyUnderTheVariableSchemeButOnlyVariableGroups() throws Exception {
+        runVariableGroupExample();
+
+        // #1387 : le VariableScheme ne référence que des VariableGroup, jamais de variable en direct.
+        List<ColecticaItemResponse> schemes = registeredItemsOfType(VARIABLE_SCHEME_ITEM_TYPE);
+        assertThat(schemes).hasSize(1);
+        String schemeXml = schemes.getFirst().item();
+        assertThat(schemeXml).doesNotContain("VariableReference>");
+        assertThat(schemeXml).contains(variableGroupId("LOGEMENT"), variableGroupId("INDIVIDU"));
+        assertThat(schemeXml).doesNotContain(variableGroupId("CHAUFFAGE"));
+        verify(ddiService, never()).createVariableScheme(any());
+    }
+
+    @Test
+    void variableGroupExample_nestsAVariableGroupInsideAnotherOne() throws Exception {
+        runVariableGroupExample();
+
+        List<ColecticaItemResponse> groups = registeredItemsOfType(VARIABLE_GROUP_ITEM_TYPE);
+        assertThat(groups)
+                .extracting(ColecticaItemResponse::identifier)
+                .containsExactlyInAnyOrder(
+                        variableGroupId("LOGEMENT"), variableGroupId("CHAUFFAGE"), variableGroupId("INDIVIDU"));
+        String logementXml = groups.stream()
+                .filter(group -> group.identifier().equals(variableGroupId("LOGEMENT")))
+                .findFirst()
+                .orElseThrow()
+                .item();
+        assertThat(logementXml).contains("VariableGroupReference", variableGroupId("CHAUFFAGE"));
+    }
+
+    @Test
+    void variableGroupExample_registersEveryVariableOfTheGroupsBeforeTheGroupsAndTheGroupsBeforeTheScheme()
+            throws Exception {
+        runVariableGroupExample();
+
+        ArgumentCaptor<Ddi4Response> variablesCaptor = ArgumentCaptor.forClass(Ddi4Response.class);
+        verify(ddi4ToDdi3Converter).convertDdi4ToDdi3(variablesCaptor.capture());
+        List<Ddi4Variable> variables = variablesCaptor.getValue().variable();
+        assertThat(variables).hasSize(5);
+        List<String> groupXmls = registeredItemsOfType(VARIABLE_GROUP_ITEM_TYPE).stream()
+                .map(ColecticaItemResponse::item)
+                .toList();
+        assertThat(variables)
+                .allSatisfy(variable ->
+                        assertThat(groupXmls).anySatisfy(xml -> assertThat(xml).contains(variable.id())));
+
+        // Variables, puis groupe imbriqué, puis groupes de tête, puis scheme : Colectica ne fabrique
+        // aucun stub vide d'un item référencé.
+        List<String> registrationOrder = registeredItems().stream()
+                .map(ColecticaItemResponse::identifier)
+                .toList();
+        String schemeId =
+                registeredItemsOfType(VARIABLE_SCHEME_ITEM_TYPE).getFirst().identifier();
+        assertThat(registrationOrder.indexOf("variable"))
+                .isLessThan(registrationOrder.indexOf(variableGroupId("CHAUFFAGE")));
+        assertThat(registrationOrder.indexOf(variableGroupId("CHAUFFAGE")))
+                .isLessThan(registrationOrder.indexOf(variableGroupId("LOGEMENT")));
+        assertThat(registrationOrder.indexOf(variableGroupId("LOGEMENT")))
+                .isLessThan(registrationOrder.indexOf(schemeId));
+    }
+
+    @Test
+    void variableGroupExample_givesTheStudyUnitALogicalProductFilingTheSchemeAndAnEmptyPhysicalInstance()
+            throws Exception {
+        runVariableGroupExample();
+
+        String schemeId =
+                registeredItemsOfType(VARIABLE_SCHEME_ITEM_TYPE).getFirst().identifier();
+        ArgumentCaptor<Ddi4LogicalProduct> lpCaptor = ArgumentCaptor.forClass(Ddi4LogicalProduct.class);
+        verify(ddiService).createLogicalProduct(lpCaptor.capture());
+        assertThat(lpCaptor.getValue().variableSchemeReference())
+                .extracting(Reference::id)
+                .containsExactly(schemeId);
+
+        ArgumentCaptor<PhysicalInstanceIds> idsCaptor = ArgumentCaptor.forClass(PhysicalInstanceIds.class);
+        verify(ddiService).createPhysicalInstance(any(), idsCaptor.capture());
+        assertThat(idsCaptor.getValue().physicalInstance())
+                .isEqualTo(generateDeterministicUuid(LocalColecticaGroupInitConfiguration.VARIABLE_GROUP_EXAMPLE_SEED
+                        + "#studyunit#physicalinstance"));
+
+        ArgumentCaptor<Ddi4StudyUnit> suCaptor = ArgumentCaptor.forClass(Ddi4StudyUnit.class);
+        verify(studyUnitService).createOrUpdate(suCaptor.capture());
+        Ddi4StudyUnit studyUnit = suCaptor.getValue();
+        assertThat(studyUnit.physicalInstanceReferences())
+                .extracting(Reference::id)
+                .containsExactly("pi-variable-group");
+        assertThat(studyUnit.logicalProductReferences())
+                .extracting(Reference::id)
+                .containsExactly(lpCaptor.getValue().id());
+
+        ArgumentCaptor<Ddi4Group> groupCaptor = ArgumentCaptor.forClass(Ddi4Group.class);
+        verify(groupService).createOrUpdate(groupCaptor.capture());
+        assertThat(groupCaptor.getValue().studyUnitReference())
+                .extracting(Reference::id)
+                .containsExactly(studyUnit.id());
+    }
+
+    @Test
+    void variableGroupExample_writesSchemaValidDdi33Fragments() throws Exception {
+        runVariableGroupExample();
+
+        assertThat(registeredItems().stream()
+                        .filter(item -> !item.identifier().equals("variable"))
+                        .map(ColecticaItemResponse::item))
+                .hasSize(4)
+                .allSatisfy(
+                        xml -> assertThat(FragmentDocument.Factory.parse(xml).validate())
+                                .as(xml)
+                                .isTrue());
     }
 }

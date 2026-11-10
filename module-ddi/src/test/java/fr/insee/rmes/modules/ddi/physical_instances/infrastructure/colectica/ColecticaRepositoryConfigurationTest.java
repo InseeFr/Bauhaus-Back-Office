@@ -50,7 +50,8 @@ class ColecticaRepositoryConfigurationTest {
                         mock(DDI4toDDI3ConverterService.class),
                         mock(ColecticaClient.class),
                         mock(MutualizedCodeListRefsStrategy.class),
-                        cacheManager);
+                        cacheManager,
+                        Runnable::run);
 
         assertThat(repository).isInstanceOf(DDIRepositoryImpl.class);
         assertThat(cacheManager.getCacheNames())

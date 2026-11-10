@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.ResourceAccessException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 /**
  * Erreurs des contrôleurs DDI, au format de l'ADR-1264 : {@code message} (anglais, repli) et, pour
@@ -54,6 +55,17 @@ public class DdiExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(new ApiError(ex.getMessage(), ex.code().name(), ex.params()));
+    }
+
+    /**
+     * Paramètre de requête illisible ({@code dateMiseAJour} hors {@code AAAA-MM-JJ}, #1176) : erreur
+     * du client, pas une panne. La valeur reçue n'est pas recopiée dans la réponse.
+     */
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ApiError> handleArgumentTypeMismatch(MethodArgumentTypeMismatchException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(ApiError.of(HttpStatus.BAD_REQUEST, "Invalid value for parameter '" + ex.getName() + "'"));
     }
 
     /**

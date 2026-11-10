@@ -1,5 +1,7 @@
 package fr.insee.rmes.bauhaus_services.operations.documentations;
 
+import static fr.insee.rmes.domain.logging.LogSanitizer.forLog;
+
 import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.DocumentationsProperties;
@@ -190,7 +192,7 @@ public class DocumentationsUtils {
             }
         }
 
-        logger.info("Create or update sims : {} - {}", sims.getId(), sims.getLabelLg1());
+        logger.info("Create or update sims : {} - {}", forLog(sims.getId()), forLog(sims.getLabelLg1()));
         return sims.getId();
     }
 

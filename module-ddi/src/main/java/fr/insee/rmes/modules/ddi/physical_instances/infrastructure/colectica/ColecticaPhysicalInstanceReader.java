@@ -16,18 +16,23 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi3Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedMissingValuesRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LogicalRecord;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.VariableRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3toDDI4ConverterService;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.client.HttpClientErrorException;
 
 /** Lectures DDI4 d'une PhysicalInstance et de ses DataRelationships. */
 class ColecticaPhysicalInstanceReader {
@@ -50,31 +55,88 @@ class ColecticaPhysicalInstanceReader {
         this.colecticaClient = colecticaClient;
     }
 
+    private static final Ddi4Response EMPTY =
+            new Ddi4Response(Ddi4Response.SCHEMA, null, null, null, null, null, null, null);
+
+    /**
+     * La PhysicalInstance, ses DataRelationships, leurs Variables et les MMVR de ces variables, en
+     * dernière version. Les CodeList et Category sont volontairement écartées : le front les charge
+     * paresseusement (endpoint dédié /codeslists).
+     *
+     * <p>Lecture par descente des références, un {@code item/_getListLatest} par niveau. Le set d'une PI
+     * qui référence une nomenclature compte des dizaines de milliers d'items, que Colectica parcourt en
+     * entier même pour un {@code _query/set} filtré par type (~25 s mesurées pour 5 items rendus, ~45 s
+     * par {@code set/}). {@code _getListLatest} rend, comme {@code set/}, la dernière version de chaque
+     * item.
+     */
     Ddi4Response getPhysicalInstance(String agencyId, String id) {
+        ColecticaItemResponse root;
         try {
-            // Les CodeList et Category sont volontairement écartées du GET PI : payload réduit + on
-            // évite la conversion DDI3 -> DDI4 sur ces items, souvent les plus gros. Le front les
-            // charge paresseusement (clic sur une variable + endpoint dédié /codeslists). Le filtre
-            // est fait par Colectica : télécharger le set complet pour l'appliquer ici coûtait ~40 s
-            // sur une PI qui référence une nomenclature (26 000 Category).
-            ColecticaItemResponse[] itemResponses = setReader.fetchSetItemsOfTypes(
-                    agencyId,
-                    id,
-                    List.of(PHYSICAL_INSTANCE, DATA_RELATIONSHIP, VARIABLE, MANAGED_MISSING_VALUES_REPRESENTATION));
-            if (itemResponses == null || itemResponses.length == 0) {
-                return null;
-            }
-            List<Ddi3Response.Ddi3Item> ddi3Items = ColecticaItems.toDdi3Items(itemResponses);
-
-            logger.info("Converting DDI3 to DDI4 using converter service");
-            Ddi4Response response =
-                    ddi3ToDdi4Converter.convertDdi3ToDdi4(new Ddi3Response(null, ddi3Items), Ddi4Response.SCHEMA);
-
-            logger.info("Successfully converted Physical Instance to DDI4 format");
-            return response;
+            root = colecticaClient.getItem(agencyId, id, null);
+        } catch (HttpClientErrorException.NotFound _) {
+            return null;
+        }
+        if (root == null) {
+            return null;
+        }
+        try {
+            List<ColecticaItemResponse> items = new ArrayList<>(List.of(root));
+            List<ColecticaItemResponse> dataRelationships = latest(references(
+                    convert(List.of(root)).physicalInstance(), pi -> nonNull(pi.dataRelationshipReference())));
+            items.addAll(dataRelationships);
+            List<ColecticaItemResponse> variables = latest(references(
+                    convert(dataRelationships).dataRelationship(),
+                    dr -> nonNull(dr.logicalRecord()).stream()
+                            .map(LogicalRecord::variablesInRecord)
+                            .filter(Objects::nonNull)
+                            .flatMap(vir -> nonNull(vir.variableUsedReference()).stream())
+                            .toList()));
+            items.addAll(variables);
+            items.addAll(latest(references(
+                    convert(variables).variable(),
+                    variable -> Stream.ofNullable(variable.variableRepresentation())
+                            .map(VariableRepresentation::missingValuesReference)
+                            .filter(Objects::nonNull)
+                            .toList())));
+            return convert(items);
         } catch (Exception e) {
             throw new RuntimeException("Failed to process DDI response", e);
         }
+    }
+
+    /** Les références distinctes que {@code extractor} trouve sur ces items (aucune quand la liste est nulle). */
+    private static <T> List<ItemReference> references(List<T> items, Function<T, List<Reference>> extractor) {
+        return nonNull(items).stream()
+                .flatMap(item -> extractor.apply(item).stream())
+                .filter(reference -> reference.id() != null)
+                .map(reference -> new ItemReference(reference.agency(), reference.id()))
+                .distinct()
+                .toList();
+    }
+
+    /** La dernière version des items référencés ({@code item/_getListLatest}), aucun appel quand il n'y en a pas. */
+    private List<ColecticaItemResponse> latest(List<ItemReference> references) {
+        if (references.isEmpty()) {
+            return List.of();
+        }
+        ColecticaItemResponse[] items = colecticaClient.getLatestItems(references);
+        return items == null ? List.of() : Arrays.asList(items);
+    }
+
+    /** Ces items convertis en DDI4 ; réponse vide pour une liste vide. */
+    private Ddi4Response convert(List<ColecticaItemResponse> items) {
+        if (items.isEmpty()) {
+            return EMPTY;
+        }
+        Ddi4Response response = ddi3ToDdi4Converter.convertDdi3ToDdi4(
+                new Ddi3Response(
+                        null, items.stream().map(ColecticaItems::toDdi3Item).toList()),
+                Ddi4Response.SCHEMA);
+        return response == null ? EMPTY : response;
+    }
+
+    private static <T> List<T> nonNull(List<T> list) {
+        return list == null ? List.of() : list;
     }
 
     /**

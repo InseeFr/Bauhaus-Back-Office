@@ -41,10 +41,21 @@ class MutualizedCodesCacheWarmerTest {
     }
 
     @Test
+    void warmUpOnStartup_computesTheStudyUnitsByOperationCacheOnce() {
+        DDIRepository ddiRepository = mock(DDIRepository.class);
+        MutualizedCodesCacheWarmer warmer = new MutualizedCodesCacheWarmer(ddiRepository, SYNCHRONOUS);
+
+        warmer.warmUpOnStartup();
+
+        verify(ddiRepository, times(1)).refreshStudyUnitsByOperationCache();
+    }
+
+    @Test
     void warmUpOnStartup_doesNotPropagateFailures() {
         DDIRepository ddiRepository = mock(DDIRepository.class);
         when(ddiRepository.getMutualizedCodesLists()).thenThrow(new RuntimeException("Colectica down"));
         when(ddiRepository.getPhysicalInstanceSearchRows()).thenThrow(new RuntimeException("Colectica down"));
+        when(ddiRepository.refreshStudyUnitsByOperationCache()).thenThrow(new RuntimeException("Colectica down"));
         MutualizedCodesCacheWarmer warmer = new MutualizedCodesCacheWarmer(ddiRepository, SYNCHRONOUS);
 
         assertThatCode(warmer::warmUpOnStartup).doesNotThrowAnyException();

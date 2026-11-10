@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
@@ -109,25 +111,85 @@ final class ColecticaXml {
             List<GetDescriptionsRequest.IdentifierRef> identifiers = new ArrayList<>();
             for (int i = 0; i < references.getLength(); i++) {
                 Element reference = (Element) references.item(i);
-                String agency = trimmed(textContent(reference, REUSABLE_NS, "Agency"));
-                String id = trimmed(textContent(reference, REUSABLE_NS, "ID"));
-                String version = trimmed(textContent(reference, REUSABLE_NS, "Version"));
-                if (agency == null || id == null || version == null || !version.matches("\\d+")) {
+                Optional<GetDescriptionsRequest.IdentifierRef> identifier = identifierOf(reference);
+                if (identifier.isEmpty()) {
                     logger.warn(
                             "Ignoring unusable {}: agency={}, id={}, version={}",
                             referenceLocalName,
-                            agency,
-                            id,
-                            version);
+                            textContent(reference, REUSABLE_NS, "Agency"),
+                            textContent(reference, REUSABLE_NS, "ID"),
+                            textContent(reference, REUSABLE_NS, "Version"));
                     continue;
                 }
-                identifiers.add(new GetDescriptionsRequest.IdentifierRef(agency, id, Integer.parseInt(version)));
+                identifiers.add(identifier.get());
             }
             return identifiers.stream().distinct().toList();
         } catch (Exception e) {
             logger.warn("Failed to parse XML to extract {} identifiers", referenceLocalName, e);
             return List.of();
         }
+    }
+
+    /**
+     * Le même XML sans les {@code r:<referenceLocalName>} dont l'item désigné (agence, identifiant,
+     * version) n'est pas dans {@code kept}. Rendu tel quel s'il n'y a rien à retirer ou s'il est
+     * illisible.
+     */
+    static String retainReferences(
+            String xml, String referenceLocalName, Set<GetDescriptionsRequest.IdentifierRef> kept) {
+        try {
+            Document document = parse(xml);
+            NodeList references = document.getElementsByTagNameNS(REUSABLE_NS, referenceLocalName);
+            List<Node> dropped = new ArrayList<>();
+            for (int i = 0; i < references.getLength(); i++) {
+                Element reference = (Element) references.item(i);
+                if (identifierOf(reference).filter(kept::contains).isEmpty()) {
+                    dropped.add(reference);
+                }
+            }
+            if (dropped.isEmpty()) {
+                return xml;
+            }
+            dropped.forEach(reference -> reference.getParentNode().removeChild(reference));
+            return toXmlString(document);
+        } catch (Exception e) {
+            logger.warn("Failed to remove {} from XML, returning it unchanged", referenceLocalName, e);
+            return xml;
+        }
+    }
+
+    /**
+     * L'attribut {@code versionDate} de l'item porté par un {@code <Fragment>} DDI 3.3 (premier élément
+     * enfant), {@code null} s'il est absent, vide ou si le XML est illisible.
+     */
+    static String itemVersionDate(String fragmentXml) {
+        if (fragmentXml == null || fragmentXml.isBlank()) {
+            return null;
+        }
+        try {
+            for (Node child = parse(fragmentXml).getDocumentElement().getFirstChild();
+                    child != null;
+                    child = child.getNextSibling()) {
+                if (child instanceof Element item) {
+                    return trimmed(item.getAttribute("versionDate"));
+                }
+            }
+            return null;
+        } catch (Exception e) {
+            logger.warn("Failed to parse XML to read the item versionDate", e);
+            return null;
+        }
+    }
+
+    /** L'item désigné par une référence (agence, identifiant, version numérique), vide si incomplète. */
+    private static Optional<GetDescriptionsRequest.IdentifierRef> identifierOf(Element reference) {
+        String agency = trimmed(textContent(reference, REUSABLE_NS, "Agency"));
+        String id = trimmed(textContent(reference, REUSABLE_NS, "ID"));
+        String version = trimmed(textContent(reference, REUSABLE_NS, "Version"));
+        if (agency == null || id == null || version == null || !version.matches("\\d+")) {
+            return Optional.empty();
+        }
+        return Optional.of(new GetDescriptionsRequest.IdentifierRef(agency, id, Integer.parseInt(version)));
     }
 
     private static String trimmed(String text) {

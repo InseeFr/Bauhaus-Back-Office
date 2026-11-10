@@ -11,6 +11,7 @@ import fr.insee.rmes.colectica.client.ItemReference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodesList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialLogicalProduct;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -29,6 +30,10 @@ import org.slf4j.LoggerFactory;
 class ColecticaHierarchyBrowser {
 
     private static final Logger logger = LoggerFactory.getLogger(ColecticaHierarchyBrowser.class);
+
+    /** Group → LogicalProduct → ManagedRepresentationScheme → MMVR → CodeList de valeurs sentinelles. */
+    private static final List<String> MISSING_CODE_LISTS_PATH =
+            List.of(LOGICAL_PRODUCT, MANAGED_REPRESENTATION_SCHEME, MANAGED_MISSING_VALUES_REPRESENTATION, CODE_LIST);
 
     private final ColecticaConfiguration.ColecticaInstanceConfiguration instanceConfiguration;
     private final ColecticaClient colecticaClient;
@@ -78,20 +83,34 @@ class ColecticaHierarchyBrowser {
     }
 
     /**
+     * Les CodeLists du groupe (Group → LogicalProduct → CodeListScheme → CodeList), hors valeurs
+     * sentinelles (#1566). Les identifiants sont collectés par descente {@code bysubject}, puis leurs
+     * métadonnées résolues en une seule passe : {@link ColecticaCodeListRepository#resolveCodeListsMetadata}
+     * interroge toutes les CodeLists de Colectica (~3,5 s sur la démo), à ne pas répéter par scheme.
+     */
+    List<PartialCodesList> getCodeListsByGroup(String agencyId, String groupId) {
+        logger.info("Fetching code lists for group {}/{}", agencyId, groupId);
+        Set<String> codeListIds =
+                identifiers(descendFromGroup(agencyId, groupId, List.of(LOGICAL_PRODUCT, CODE_LIST_SCHEME, CODE_LIST)));
+        codeListIds.removeAll(identifiers(descendFromGroup(agencyId, groupId, MISSING_CODE_LISTS_PATH)));
+        if (codeListIds.isEmpty()) {
+            return List.of();
+        }
+        return codeLists.resolveCodeListsMetadata(codeListIds);
+    }
+
+    private static Set<String> identifiers(List<ItemReference> refs) {
+        return refs.stream().map(ItemReference::identifier).collect(Collectors.toCollection(HashSet::new));
+    }
+
+    /**
      * Les CodeLists servant de valeurs sentinelles dans un groupe (#1566) : celles référencées par les
      * ManagedMissingValuesRepresentations rangées dans les ManagedRepresentationSchemes des
      * LogicalProducts du groupe.
      */
     List<PartialCodesList> getMissingCodesListsByGroup(String agencyId, String groupId) {
         logger.info("Fetching missing (sentinel) code lists for group {}/{}", agencyId, groupId);
-        List<ItemReference> refs = descendFromGroup(
-                agencyId,
-                groupId,
-                List.of(
-                        LOGICAL_PRODUCT,
-                        MANAGED_REPRESENTATION_SCHEME,
-                        MANAGED_MISSING_VALUES_REPRESENTATION,
-                        CODE_LIST));
+        List<ItemReference> refs = descendFromGroup(agencyId, groupId, MISSING_CODE_LISTS_PATH);
         if (refs.isEmpty()) {
             return List.of();
         }
