@@ -45,7 +45,7 @@ class ConceptLinksPublicationFusekiIntegrationTest extends WithFusekiContainer {
         Model parent = new LinkedHashModel();
         parent.add(PARENT, SKOS.PREF_LABEL, Values.literal("Parent sans enfant", "fr"), GRAPH);
 
-        repositoryPublication.publishConcept(PARENT, parent, List.of(), List.of());
+        repositoryPublication.publishConcept(PARENT, parent, List.of(), List.of(), GRAPH);
 
         assertThat(repositoryPublication
                         .getResponseAsArray("SELECT ?g WHERE { GRAPH ?g { <%s> <%s> <%s> } }"

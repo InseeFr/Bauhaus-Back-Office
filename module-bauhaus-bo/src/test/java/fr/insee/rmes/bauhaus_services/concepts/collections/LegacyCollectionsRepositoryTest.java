@@ -61,7 +61,7 @@ class LegacyCollectionsRepositoryTest {
         assertDoesNotThrow(() -> legacyCollectionsRepository.collectionsValidation(body));
 
         // Verify that publication was called
-        verify(conceptsPublication, times(1)).publishCollection(any(JSONArray.class));
+        verify(conceptsPublication, times(1)).publishCollection(any(JSONArray.class), eq(RdfUtils.conceptGraph()));
         verify(repositoryGestion, times(1)).objectsValidation(anyList(), any());
     }
 
@@ -74,7 +74,7 @@ class LegacyCollectionsRepositoryTest {
         legacyCollectionsRepository.collectionsValidation(collectionsToValidate);
 
         // Then
-        verify(conceptsPublication, times(1)).publishCollection(collectionsToValidate);
+        verify(conceptsPublication, times(1)).publishCollection(collectionsToValidate, RdfUtils.conceptGraph());
         verify(repositoryGestion, times(1)).objectsValidation(anyList(), any());
     }
 
@@ -87,7 +87,7 @@ class LegacyCollectionsRepositoryTest {
         legacyCollectionsRepository.collectionsValidation(body);
 
         // Then
-        verify(conceptsPublication, times(1)).publishCollection(any(JSONArray.class));
+        verify(conceptsPublication, times(1)).publishCollection(any(JSONArray.class), eq(RdfUtils.conceptGraph()));
         verify(repositoryGestion, times(1)).objectsValidation(argThat(list -> list.size() == 1), any());
     }
 
@@ -115,7 +115,7 @@ class LegacyCollectionsRepositoryTest {
         legacyCollectionsRepository.collectionsValidation(collectionsToValidate);
 
         // Then
-        verify(conceptsPublication, times(1)).publishCollection(collectionsToValidate);
+        verify(conceptsPublication, times(1)).publishCollection(collectionsToValidate, RdfUtils.conceptGraph());
         verify(repositoryGestion, times(1)).objectsValidation(argThat(list -> list.size() == 4), any());
     }
 
@@ -128,7 +128,7 @@ class LegacyCollectionsRepositoryTest {
         legacyCollectionsRepository.collectionsValidation(body);
 
         // Then
-        verify(conceptsPublication, times(1)).publishCollection(any(JSONArray.class));
+        verify(conceptsPublication, times(1)).publishCollection(any(JSONArray.class), eq(RdfUtils.conceptGraph()));
         verify(repositoryGestion, times(1)).objectsValidation(anyList(), any());
     }
 
@@ -141,7 +141,7 @@ class LegacyCollectionsRepositoryTest {
         legacyCollectionsRepository.collectionsValidation(emptyArray);
 
         // Then
-        verify(conceptsPublication, times(1)).publishCollection(emptyArray);
+        verify(conceptsPublication, times(1)).publishCollection(emptyArray, RdfUtils.conceptGraph());
         verify(repositoryGestion, times(1)).objectsValidation(argThat(Collection::isEmpty), any());
     }
 }

@@ -101,25 +101,19 @@ public class RepositoryPublication {
                 updateQuery, repositoryUtils.initRepository(rdfServerPublicationExt, idRepositoryPublicationExt));
     }
 
+    /**
+     * Remplace le concept publié dans le graphe donné : ses notes, le {@code skos:topConceptOf} de ses
+     * enfants et ses propres triplets n'y sont effacés que dans ce graphe, une suppression sans graphe
+     * nommé ne retirant rien hors de GraphDB.
+     */
     public void publishConcept(
-            Resource concept, Model model, List<Resource> noteToClear, List<Resource> topConceptOfToDelete)
-            throws RmesException {
-        publishConcept(
-                concept,
-                model,
-                noteToClear,
-                topConceptOfToDelete,
-                repositoryUtils.initRepository(rdfServerPublicationExt, idRepositoryPublicationExt));
-    }
-
-    private void publishConcept(
             Resource concept,
             Model model,
             List<Resource> noteToClear,
             List<Resource> topConceptOfToDelete,
-            Repository repo)
+            Resource graph)
             throws RmesException {
-
+        Repository repo = repositoryUtils.initRepository(rdfServerPublicationExt, idRepositoryPublicationExt);
         if (repo == null) {
             return;
         }
@@ -127,18 +121,18 @@ public class RepositoryPublication {
         try (RepositoryConnection conn = repo.getConnection()) {
             // notes to delete
             for (Resource note : noteToClear) {
-                conn.remove(note, null, null);
+                conn.remove(note, null, null, graph);
             }
             // top concepts of to delete
             for (Resource c : topConceptOfToDelete) {
-                conn.remove(c, SKOS.TOP_CONCEPT_OF, null);
+                conn.remove(c, SKOS.TOP_CONCEPT_OF, null, graph);
             }
             // links to delete
             clearConceptLinks(concept, conn);
 
-            conn.remove(concept, null, null);
+            conn.remove(concept, null, null, graph);
             conn.add(model);
-            logger.info("Publication of concept : {}", concept);
+            logger.info("Publication of concept : {} in {}", concept, graph);
         } catch (RepositoryException e) {
             throwIfUnauthorized(e, "Publication of concept : " + concept);
             logger.error("Publication of concept : {} {} {}", concept, FAILED, e.getMessage());

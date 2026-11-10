@@ -39,6 +39,7 @@ class RepositoryPublicationFailureTest {
 
     private final SimpleValueFactory factory = SimpleValueFactory.getInstance();
     private final IRI subject = factory.createIRI("http://example.org/subject");
+    private final IRI graph = factory.createIRI("http://example.org/graph");
     private final Model model = new LinkedHashModel();
 
     private RepositoryConnection connection;
@@ -62,7 +63,8 @@ class RepositoryPublicationFailureTest {
     void shouldReportAnUnavailableRepositoryWhenPublishingAConcept() {
         doThrow(new RepositoryException(RDF4J_MESSAGE)).when(connection).add(any(Model.class));
 
-        assertUnavailableRepository(() -> repositoryPublication.publishConcept(subject, model, List.of(), List.of()));
+        assertUnavailableRepository(
+                () -> repositoryPublication.publishConcept(subject, model, List.of(), List.of(), graph));
     }
 
     @Test
@@ -71,7 +73,8 @@ class RepositoryPublicationFailureTest {
                 .when(connection)
                 .prepareUpdate(any(QueryLanguage.class), anyString());
 
-        assertUnavailableRepository(() -> repositoryPublication.publishConcept(subject, model, List.of(), List.of()));
+        assertUnavailableRepository(
+                () -> repositoryPublication.publishConcept(subject, model, List.of(), List.of(), graph));
     }
 
     @Test

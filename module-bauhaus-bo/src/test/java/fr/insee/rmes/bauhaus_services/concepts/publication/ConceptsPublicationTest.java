@@ -7,6 +7,7 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
@@ -22,6 +23,7 @@ class ConceptsPublicationTest {
 
     private static final SimpleValueFactory VF = SimpleValueFactory.getInstance();
     private static final String BASE_URI = "http://baseUri/";
+    private static final IRI GRAPH = VF.createIRI("http://rdf.insee.fr/graphes/concepts/definitions");
 
     private ConceptsPublication conceptsPublication;
 
@@ -41,7 +43,7 @@ class ConceptsPublicationTest {
         Model model = new LinkedHashModel();
 
         conceptsPublication.prepareOneTripleToPublicationAndCheckIfHasBroader(
-                model, new ArrayList<>(), new ArrayList<>(), null, statement, false);
+                model, new ArrayList<>(), new ArrayList<>(), null, statement, false, GRAPH);
 
         assertTrue(
                 model.contains(a, DCTERMS.REPLACES, b),
@@ -59,7 +61,7 @@ class ConceptsPublicationTest {
         Model model = new LinkedHashModel();
 
         conceptsPublication.prepareOneTripleToPublicationAndCheckIfHasBroader(
-                model, new ArrayList<>(), new ArrayList<>(), null, statement, false);
+                model, new ArrayList<>(), new ArrayList<>(), null, statement, false, GRAPH);
 
         assertTrue(
                 model.contains(a, DCTERMS.IS_REPLACED_BY, b),
@@ -77,7 +79,7 @@ class ConceptsPublicationTest {
         Model model = new LinkedHashModel();
 
         conceptsPublication.prepareOneTripleToPublicationAndCheckIfHasBroader(
-                model, new ArrayList<>(), new ArrayList<>(), null, statement, false);
+                model, new ArrayList<>(), new ArrayList<>(), null, statement, false, GRAPH);
 
         assertTrue(model.contains(a, SKOS.RELATED, b));
         assertTrue(model.contains(b, SKOS.RELATED, a), "skos:related is symmetric");
@@ -92,7 +94,7 @@ class ConceptsPublicationTest {
         Model model = new LinkedHashModel();
 
         Boolean hasBroader = conceptsPublication.prepareOneTripleToPublicationAndCheckIfHasBroader(
-                model, new ArrayList<>(), new ArrayList<>(), null, statement, false);
+                model, new ArrayList<>(), new ArrayList<>(), null, statement, false, GRAPH);
 
         assertTrue(hasBroader);
         assertTrue(model.contains(a, SKOS.BROADER, b));
@@ -109,7 +111,7 @@ class ConceptsPublicationTest {
         List<Resource> topConceptOfToDelete = new ArrayList<>();
 
         conceptsPublication.prepareOneTripleToPublicationAndCheckIfHasBroader(
-                model, new ArrayList<>(), topConceptOfToDelete, null, statement, false);
+                model, new ArrayList<>(), topConceptOfToDelete, null, statement, false, GRAPH);
 
         assertTrue(model.contains(a, SKOS.NARROWER, b));
         assertTrue(model.contains(b, SKOS.BROADER, a));
@@ -124,7 +126,7 @@ class ConceptsPublicationTest {
         Model model = new LinkedHashModel();
 
         conceptsPublication.prepareOneTripleToPublicationAndCheckIfHasBroader(
-                model, new ArrayList<>(), new ArrayList<>(), null, statement, false);
+                model, new ArrayList<>(), new ArrayList<>(), null, statement, false, GRAPH);
 
         assertEquals(1, model.size());
         assertTrue(model.contains(a, SKOS.IN_SCHEME, scheme));
@@ -139,7 +141,7 @@ class ConceptsPublicationTest {
         Model model = new LinkedHashModel();
 
         conceptsPublication.prepareOneTripleToPublicationAndCheckIfHasBroader(
-                model, new ArrayList<>(), new ArrayList<>(), null, statement, false);
+                model, new ArrayList<>(), new ArrayList<>(), null, statement, false, GRAPH);
 
         assertTrue(model.isEmpty());
     }
@@ -151,8 +153,22 @@ class ConceptsPublicationTest {
         Model model = new LinkedHashModel();
 
         conceptsPublication.prepareOneTripleToPublicationAndCheckIfHasBroader(
-                model, new ArrayList<>(), new ArrayList<>(), null, statement, false);
+                model, new ArrayList<>(), new ArrayList<>(), null, statement, false, GRAPH);
 
         assertTrue(model.contains(a, SKOS.PREF_LABEL, VF.createLiteral("label fr", "fr")));
+    }
+
+    /** Le graphe vient de l'appelant : un triplet relu sous Fuseki ne porte pas le sien. */
+    @Test
+    void publishes_the_triple_and_its_counterpart_into_the_graph_given_by_the_caller() throws RmesException {
+        IRI a = VF.createIRI(BASE_URI + "concepts/c1");
+        IRI b = VF.createIRI(BASE_URI + "concepts/c2");
+        Statement statementWithoutGraph = VF.createStatement(a, SKOS.BROADER, b);
+        Model model = new LinkedHashModel();
+
+        conceptsPublication.prepareOneTripleToPublicationAndCheckIfHasBroader(
+                model, new ArrayList<>(), new ArrayList<>(), null, statementWithoutGraph, false, GRAPH);
+
+        assertEquals(Set.of(GRAPH), model.contexts());
     }
 }

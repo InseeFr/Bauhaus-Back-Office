@@ -237,11 +237,13 @@ class LegacyConceptsRepositoryTest {
         RepositoryResult mockStatements = mock(RepositoryResult.class);
 
         when(repoGestion.getConnection()).thenReturn(mockConnection);
-        when(repoGestion.getStatements(any(), any())).thenReturn(mockStatements);
+        when(repoGestion.getStatements(any(), any(), eq(RdfUtils.conceptGraph())))
+                .thenReturn(mockStatements);
         when(mockStatements.hasNext()).thenReturn(false);
 
-        // Mock getStatements on the connection itself (for publishMemberLinks)
-        when(mockConnection.getStatements(any(), any(), any(), anyBoolean())).thenReturn(mockStatements);
+        // Mock the incoming skos:member links (for publishMemberLinks)
+        when(repoGestion.getStatementsPredicateObject(any(), any(), any(), eq(RdfUtils.conceptGraph())))
+                .thenReturn(mockStatements);
 
         // Mock publicationUtils to return valid IRI/Resource objects
         Resource mockResource = factory.createIRI("http://example.com/concept");

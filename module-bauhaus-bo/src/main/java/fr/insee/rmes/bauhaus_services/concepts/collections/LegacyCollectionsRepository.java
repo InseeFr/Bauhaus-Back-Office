@@ -56,6 +56,6 @@ public class LegacyCollectionsRepository {
         });
 
         repositoryGestion.objectsValidation(collectionsToValidateList, model);
-        conceptsPublication.publishCollection(collectionsToValidate);
+        conceptsPublication.publishCollection(collectionsToValidate, RdfUtils.conceptGraph());
     }
 }

@@ -285,7 +285,7 @@ public class LegacyConceptsRepository extends RdfService {
             logger.info("Validate concept : {}", conceptURI);
         });
         repoGestion.objectsValidation(conceptsToValidateList, model);
-        conceptsPublication.publishConcepts(conceptsToValidate);
+        conceptsPublication.publishConcepts(conceptsToValidate, RdfUtils.conceptGraph());
     }
 
     private ValidationStatus validationStateForWrite(Concept concept) throws RmesException {
