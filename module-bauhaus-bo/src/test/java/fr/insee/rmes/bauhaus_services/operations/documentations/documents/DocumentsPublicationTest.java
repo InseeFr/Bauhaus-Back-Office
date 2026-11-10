@@ -45,6 +45,7 @@ class DocumentsPublicationTest {
     private static final SimpleValueFactory VF = SimpleValueFactory.getInstance();
     private static final String GESTION = "http://gestion/";
     private static final String PUBLICATION = "http://publication/";
+    private static final Resource DOCUMENTS_GRAPH = VF.createIRI("http://rdf.insee.fr/graphes/qualite/documents");
 
     @Mock
     private DocumentsUtils docUtils;
@@ -118,7 +119,7 @@ class DocumentsPublicationTest {
         when(docUtils.getListLinksSims("sims1")).thenReturn(new JSONArray());
         IRI document = (IRI) RdfUtils.documentIRI("1");
         when(repoGestion.getConnection()).thenReturn(null);
-        when(repoGestion.getStatements(any(), eq(document)))
+        when(repoGestion.getStatements(any(), eq(document), eq(DOCUMENTS_GRAPH)))
                 .thenReturn(statements(
                         VF.createStatement(
                                 document,
@@ -126,14 +127,16 @@ class DocumentsPublicationTest {
                                 VF.createLiteral("file:///gestion/doc1.pdf")),
                         VF.createStatement(document, VF.createIRI(GESTION + "def/label"), VF.createLiteral("doc 1"))));
 
-        documentsPublication.publishAllDocumentsInSims("sims1");
+        documentsPublication.publishAllDocumentsInSims("sims1", DOCUMENTS_GRAPH);
 
         verify(filesOperations).copy(new Document("/gestion", "doc1.pdf"), new Document("/publication", "doc1.pdf"));
         ArgumentCaptor<Model> modelCaptor = ArgumentCaptor.forClass(Model.class);
-        verify(repositoryPublication).publishResource(any(Resource.class), modelCaptor.capture(), anyString());
+        verify(repositoryPublication)
+                .publishResource(any(Resource.class), modelCaptor.capture(), anyString(), eq(DOCUMENTS_GRAPH));
         Model model = modelCaptor.getValue();
         assertThat(model.stream().map(statement -> statement.getObject().stringValue()))
                 .contains("http://web4g/doc1.pdf", "doc 1");
+        assertThat(model.contexts()).containsExactly(DOCUMENTS_GRAPH);
     }
 
     @Test
@@ -144,14 +147,15 @@ class DocumentsPublicationTest {
         when(docUtils.getIdFromJson(any(JSONObject.class))).thenReturn(2);
         IRI link = (IRI) RdfUtils.linkIRI("2");
         when(repoGestion.getConnection()).thenReturn(null);
-        when(repoGestion.getStatements(any(), eq(link)))
+        when(repoGestion.getStatements(any(), eq(link), eq(DOCUMENTS_GRAPH)))
                 .thenReturn(statements(
                         VF.createStatement(link, VF.createIRI(GESTION + "def/label"), VF.createLiteral("lien"))));
 
-        documentsPublication.publishAllDocumentsInSims("sims1");
+        documentsPublication.publishAllDocumentsInSims("sims1", DOCUMENTS_GRAPH);
 
         ArgumentCaptor<Model> modelCaptor = ArgumentCaptor.forClass(Model.class);
-        verify(repositoryPublication).publishResource(any(Resource.class), modelCaptor.capture(), anyString());
+        verify(repositoryPublication)
+                .publishResource(any(Resource.class), modelCaptor.capture(), anyString(), eq(DOCUMENTS_GRAPH));
         assertThat(modelCaptor.getValue().stream()
                         .map(statement -> statement.getSubject().stringValue()))
                 .allMatch(subject -> subject.startsWith(PUBLICATION));

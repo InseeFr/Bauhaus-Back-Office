@@ -98,6 +98,7 @@ public class DocumentationPublication {
             while (metadataReportStatements.hasNext()) {
                 processStatement(
                         metadataReportStatements.next(),
+                        graph,
                         model,
                         richTextResources,
                         markdownValues,
@@ -108,7 +109,7 @@ public class DocumentationPublication {
             // Add HTML version for RICHTEXT rubrics (single pass)
             addHtmlVersionForRichText(model, richTextResources, markdownValues, simsId);
 
-            documentsPublication.publishAllDocumentsInSims(simsId);
+            documentsPublication.publishAllDocumentsInSims(simsId, RdfUtils.documentsGraph());
         } catch (RepositoryException e) {
             throw new RmesException(
                     HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), Constants.REPOSITORY_EXCEPTION);
@@ -141,7 +142,11 @@ public class DocumentationPublication {
                         documentationConfiguration.geographie().baseUri());
     }
 
-    private void transformTripleToPublish(Model model, Statement st) {
+    /**
+     * Le triplet est publié dans le graphe du rapport, reçu de l'appelant : le contexte d'un triplet
+     * relu est {@code null} hors de GraphDB.
+     */
+    private void transformTripleToPublish(Model model, Statement st, Resource graph) {
         Resource subject = publicationUtils.tranformBaseURIToPublish(st.getSubject());
         IRI predicateIRI = RdfUtils.createIRI(
                 publicationUtils.tranformBaseURIToPublish(st.getPredicate()).stringValue());
@@ -150,11 +155,12 @@ public class DocumentationPublication {
             object = publicationUtils.tranformBaseURIToPublish(resource);
         }
 
-        model.add(subject, predicateIRI, object, st.getContext());
+        model.add(subject, predicateIRI, object, graph);
     }
 
     private void processStatement(
             Statement st,
+            Resource graph,
             Model model,
             Set<Resource> richTextResources,
             Map<Resource, String> markdownValues,
@@ -165,7 +171,7 @@ public class DocumentationPublication {
             return;
         }
 
-        transformTripleToPublish(model, st);
+        transformTripleToPublish(model, st, graph);
         trackTextResources(st, richTextResources, markdownValues);
         trackReferencedResources(st, organizations, geographies);
     }

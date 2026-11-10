@@ -90,7 +90,12 @@ public class DocumentsPublication extends RdfService {
         return missingDocuments;
     }
 
-    public void publishAllDocumentsInSims(String idSims) throws RmesException {
+    /**
+     * Publie les documents et les liens cités par le rapport : chacun est relu et remplacé dans le
+     * graphe donné, celui des documents, un triplet relu sans graphe nommé n'en portant aucun hors de
+     * GraphDB.
+     */
+    public void publishAllDocumentsInSims(String idSims, Resource graph) throws RmesException {
 
         // Get all documents
         JSONArray listDoc = docUtils.getListDocumentSims(idSims);
@@ -112,7 +117,7 @@ public class DocumentsPublication extends RdfService {
             // Change url in document (getModelToPublish) and publish the RDF
             Resource document = RdfUtils.objectIRIPublication(ObjectType.DOCUMENT, docId);
             repositoryPublication.publishResource(
-                    document, getModelToPublish(docId, filename), ObjectType.DOCUMENT.labelType());
+                    document, getModelToPublish(docId, filename, graph), ObjectType.DOCUMENT.labelType(), graph);
         }
 
         // Get all links
@@ -120,18 +125,19 @@ public class DocumentsPublication extends RdfService {
         for (Object link : listLinks) {
             String id = docUtils.getIdFromJson((JSONObject) link).toString();
             Resource linkResource = RdfUtils.objectIRIPublication(ObjectType.LINK, id);
-            repositoryPublication.publishResource(linkResource, getLinkModelToPublish(id), ObjectType.LINK.labelType());
+            repositoryPublication.publishResource(
+                    linkResource, getLinkModelToPublish(id, graph), ObjectType.LINK.labelType(), graph);
         }
     }
 
-    private Model getModelToPublish(String documentId, String filename) throws RmesException {
+    private Model getModelToPublish(String documentId, String filename, Resource graph) throws RmesException {
         Model model = new LinkedHashModel();
         Resource document = RdfUtils.documentIRI(documentId);
 
         RepositoryResult<Statement> documentStatements = null;
 
         try (RepositoryConnection con = repoGestion.getConnection()) {
-            documentStatements = repoGestion.getStatements(con, document);
+            documentStatements = repoGestion.getStatements(con, document, graph);
 
             if (!documentStatements.hasNext()) {
                 throw new RmesNotFoundException(ErrorCodes.DOCUMENT_UNKNOWN_ID, "Document not found", documentId);
@@ -146,14 +152,14 @@ public class DocumentsPublication extends RdfService {
                     String newUrl = documentsStorage.baseUrl() + "/" + filename;
                     logger.info("Publishing document : {}", newUrl);
                     Value object = RdfUtils.toURI(newUrl);
-                    model.add(subject, predicate, object, st.getContext());
+                    model.add(subject, predicate, object, graph);
                 } else {
                     Resource subject = publicationUtils.tranformBaseURIToPublish(st.getSubject());
-                    renameAndAddTripleToModel(model, st, subject);
+                    renameAndAddTripleToModel(model, st, subject, graph);
                 }
             }
         } catch (RepositoryException | RmesException _) {
-            model = getModelWithErrorToPublish(documentId, filename);
+            model = getModelWithErrorToPublish(documentId, filename, graph);
         } finally {
             if (documentStatements != null) {
                 repoGestion.closeStatements(documentStatements);
@@ -162,7 +168,7 @@ public class DocumentsPublication extends RdfService {
         return model;
     }
 
-    private Model getModelWithErrorToPublish(String documentId, String filename) throws RmesException {
+    private Model getModelWithErrorToPublish(String documentId, String filename, Resource graph) throws RmesException {
         logger.error("PUBLISHING A DOCUMENT WITH RDF ERROR (URL)");
         Model model = new LinkedHashModel();
         Resource document = RdfUtils.documentIRI(documentId);
@@ -175,7 +181,7 @@ public class DocumentsPublication extends RdfService {
                 throw new RmesNotFoundException(ErrorCodes.DOCUMENT_UNKNOWN_ID, "Document not found", documentId);
             }
 
-            transformTuplesToPublish(filename, model, document, tuples);
+            transformTuplesToPublish(filename, model, document, tuples, graph);
         } catch (RepositoryException e) {
             throw new RmesException(
                     HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), Constants.REPOSITORY_EXCEPTION);
@@ -183,7 +189,8 @@ public class DocumentsPublication extends RdfService {
         return model;
     }
 
-    private void transformTuplesToPublish(String filename, Model model, Resource document, JSONArray tuples) {
+    private void transformTuplesToPublish(
+            String filename, Model model, Resource document, JSONArray tuples, Resource graph) {
         Resource newSubject = publicationUtils.tranformBaseURIToPublish(document);
 
         JSONUtils.stream(tuples).forEach(tuple -> {
@@ -204,11 +211,11 @@ public class DocumentsPublication extends RdfService {
                     object = RdfUtils.setLiteralString(objectString);
                 }
             }
-            model.add(newSubject, predicate, object, RdfUtils.documentsGraph());
+            model.add(newSubject, predicate, object, graph);
         });
     }
 
-    private Model getLinkModelToPublish(String linkId) throws RmesException {
+    private Model getLinkModelToPublish(String linkId, Resource graph) throws RmesException {
         Model model = new LinkedHashModel();
         Resource link = RdfUtils.linkIRI(linkId);
 
@@ -216,14 +223,14 @@ public class DocumentsPublication extends RdfService {
         RepositoryResult<Statement> linkStatements = null;
 
         try (con) {
-            linkStatements = repoGestion.getStatements(con, link);
+            linkStatements = repoGestion.getStatements(con, link, graph);
             if (!linkStatements.hasNext()) {
                 throw new RmesNotFoundException(ErrorCodes.LINK_UNKNOWN_ID, "Link not found", linkId);
             }
             while (linkStatements.hasNext()) {
                 Statement st = linkStatements.next();
                 Resource subject = publicationUtils.tranformBaseURIToPublish(st.getSubject());
-                renameAndAddTripleToModel(model, st, subject);
+                renameAndAddTripleToModel(model, st, subject, graph);
             }
         } catch (RepositoryException e) {
             throw new RmesException(
@@ -236,13 +243,13 @@ public class DocumentsPublication extends RdfService {
         return model;
     }
 
-    public void renameAndAddTripleToModel(Model model, Statement st, Resource subject) {
+    private void renameAndAddTripleToModel(Model model, Statement st, Resource subject, Resource graph) {
         IRI predicate = RdfUtils.createIRI(
                 publicationUtils.tranformBaseURIToPublish(st.getPredicate()).stringValue());
         Value object = st.getObject();
         if (st.getObject() instanceof Resource resource) {
             object = publicationUtils.tranformBaseURIToPublish(resource);
         }
-        model.add(subject, predicate, object, st.getContext());
+        model.add(subject, predicate, object, graph);
     }
 }

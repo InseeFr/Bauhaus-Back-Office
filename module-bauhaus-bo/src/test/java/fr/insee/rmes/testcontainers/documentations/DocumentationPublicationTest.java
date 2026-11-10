@@ -119,7 +119,8 @@ class DocumentationPublicationTest extends WithGraphDBContainer {
                 .contains("3");
 
         // Atomicity : nothing must be published when a document is missing
-        Mockito.verify(documentsPublication, Mockito.never()).publishAllDocumentsInSims(Mockito.anyString());
+        Mockito.verify(documentsPublication, Mockito.never())
+                .publishAllDocumentsInSims(Mockito.anyString(), Mockito.any());
     }
 
     /**
@@ -138,7 +139,8 @@ class DocumentationPublicationTest extends WithGraphDBContainer {
                     .isSameAs(conversionFailure);
         }
 
-        Mockito.verify(documentsPublication, Mockito.never()).publishAllDocumentsInSims(Mockito.anyString());
+        Mockito.verify(documentsPublication, Mockito.never())
+                .publishAllDocumentsInSims(Mockito.anyString(), Mockito.any());
     }
 
     @Test
