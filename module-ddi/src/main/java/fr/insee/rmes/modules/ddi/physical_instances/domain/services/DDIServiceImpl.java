@@ -42,6 +42,9 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.DDIRe
 import fr.insee.rmes.modules.operation.operations.domain.port.serverside.OperationIrisPort;
 import fr.insee.rmes.modules.operation.series.domain.port.serverside.SeriesCreatorsPort;
 import java.time.Clock;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;
@@ -51,10 +54,15 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class DDIServiceImpl implements DDIService {
+
+    /** Fuseau des dates métier saisies sans heure (#1176). */
+    private static final ZoneId PARIS = ZoneId.of("Europe/Paris");
+
     static final Logger logger = LoggerFactory.getLogger(DDIServiceImpl.class);
 
     private final DDIRepository ddiRepository;
@@ -626,19 +634,25 @@ public class DDIServiceImpl implements DDIService {
     }
 
     @Override
-    public Optional<String> getStudyUnitXmlByOperationIri(String operationIri) {
+    public Optional<String> getStudyUnitXmlByOperationIri(String operationIri, @Nullable LocalDate modifiedSince) {
         if (logger.isInfoEnabled()) {
             logger.info("Getting StudyUnit XML by operationIri: {}", forLog(operationIri));
         }
-        return ddiRepository.findStudyUnitXmlByOperationIri(operationIri);
+        return ddiRepository.findStudyUnitXmlByOperationIri(operationIri, startOfDayInParis(modifiedSince));
     }
 
     @Override
-    public Optional<Ddi4StudyUnitResponse> getStudyUnitByOperationIri(String operationIri) {
+    public Optional<Ddi4StudyUnitResponse> getStudyUnitByOperationIri(
+            String operationIri, @Nullable LocalDate modifiedSince) {
         if (logger.isInfoEnabled()) {
             logger.info("Getting StudyUnit DDI4 by operationIri: {}", forLog(operationIri));
         }
-        return ddiRepository.findStudyUnitByOperationIri(operationIri);
+        return ddiRepository.findStudyUnitByOperationIri(operationIri, startOfDayInParis(modifiedSince));
+    }
+
+    /** Une date de mise à jour {@code AAAA-MM-JJ} s'entend à 0:00:00, heure de Paris (#1176). */
+    private static @Nullable Instant startOfDayInParis(@Nullable LocalDate date) {
+        return date == null ? null : date.atStartOfDay(PARIS).toInstant();
     }
 
     @Override

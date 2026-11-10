@@ -30,9 +30,11 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanc
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceSearchRow;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UpdatePhysicalInstanceRequest;
+import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import org.jspecify.annotations.Nullable;
 
 public interface DDIRepository {
     List<PartialPhysicalInstance> getPhysicalInstances();
@@ -217,10 +219,10 @@ public interface DDIRepository {
     /** Calcule le cache opération → StudyUnits et rend le nombre d'études indexées. */
     int refreshStudyUnitsByOperationCache();
 
-    Optional<String> findStudyUnitXmlByOperationIri(String operationIri);
+    Optional<String> findStudyUnitXmlByOperationIri(String operationIri, @Nullable Instant modifiedSince);
 
     /** Les mêmes objets — StudyUnit et PhysicalInstances déréférencées — en DDI 4 (#1145). */
-    Optional<Ddi4StudyUnitResponse> findStudyUnitByOperationIri(String operationIri);
+    Optional<Ddi4StudyUnitResponse> findStudyUnitByOperationIri(String operationIri, @Nullable Instant modifiedSince);
 
     /**
      * Les PhysicalInstances de toutes les StudyUnits dont un {@code r:UserID} vaut l'une des

@@ -18,6 +18,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -25,6 +26,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
 import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.modules.commons.webservice.UnexpectedErrorHandler;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.*;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3toDDI4ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI4toDDI3ConverterService;
@@ -40,6 +42,7 @@ import fr.insee.rmes.modules.users.domain.model.RBAC;
 import fr.insee.rmes.modules.users.domain.model.User;
 import fr.insee.rmes.modules.users.domain.port.clientside.UserService;
 import fr.insee.rmes.modules.users.infrastructure.UserProvider;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -53,6 +56,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.function.Executable;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -965,9 +969,9 @@ class DdiResourcesTest {
         String id = "op1";
         String operationIri = givenOperationIri(id);
         Ddi4StudyUnitResponse expected = aStudyUnitResponse(operationIri);
-        when(ddiService.getStudyUnitByOperationIri(operationIri)).thenReturn(Optional.of(expected));
+        when(ddiService.getStudyUnitByOperationIri(operationIri, null)).thenReturn(Optional.of(expected));
 
-        ResponseEntity<Ddi4StudyUnitResponse> response = ddiResources.getOperationStudyUnitJson(id);
+        ResponseEntity<Ddi4StudyUnitResponse> response = ddiResources.getOperationStudyUnitJson(id, null);
 
         assertOkWith(response, MediaType.APPLICATION_JSON, expected);
         verify(ddiItemConvertService, never()).convert(any());
@@ -977,9 +981,9 @@ class DdiResourcesTest {
     void getOperationStudyUnitJson_returns404_whenStudyUnitNotFound() throws RmesException {
         String id = "unknown";
         String operationIri = givenOperationIri(id);
-        when(ddiService.getStudyUnitByOperationIri(operationIri)).thenReturn(Optional.empty());
+        when(ddiService.getStudyUnitByOperationIri(operationIri, null)).thenReturn(Optional.empty());
 
-        assertNotFound(() -> ddiResources.getOperationStudyUnitJson(id));
+        assertNotFound(() -> ddiResources.getOperationStudyUnitJson(id, null));
     }
 
     /** #1145 : la sortie JSON porte la StudyUnit et les PhysicalInstances qu'elle référence. */
@@ -987,11 +991,11 @@ class DdiResourcesTest {
     void getOperationStudyUnitJson_carriesTheStudyUnitAndItsPhysicalInstances() throws Exception {
         String id = "op1";
         String operationIri = givenOperationIri(id);
-        when(ddiService.getStudyUnitByOperationIri(operationIri))
+        when(ddiService.getStudyUnitByOperationIri(operationIri, null))
                 .thenReturn(Optional.of(aStudyUnitResponse(operationIri)));
 
         JsonNode body = new ObjectMapper()
-                .valueToTree(ddiResources.getOperationStudyUnitJson(id).getBody());
+                .valueToTree(ddiResources.getOperationStudyUnitJson(id, null).getBody());
 
         assertEquals(List.of("StudyUnit", "PhysicalInstance"), body.get("items").findValuesAsText("$type"));
     }
@@ -1029,9 +1033,9 @@ class DdiResourcesTest {
         String id = "op1";
         String operationIri = givenOperationIri(id);
         String xml = "<Fragment><StudyUnit/></Fragment>";
-        when(ddiService.getStudyUnitXmlByOperationIri(operationIri)).thenReturn(Optional.of(xml));
+        when(ddiService.getStudyUnitXmlByOperationIri(operationIri, null)).thenReturn(Optional.of(xml));
 
-        ResponseEntity<String> response = ddiResources.getOperationStudyUnitXml(id);
+        ResponseEntity<String> response = ddiResources.getOperationStudyUnitXml(id, null);
 
         assertOkWith(response, MediaType.APPLICATION_XML, xml);
         verify(ddiItemConvertService, never()).convert(any());
@@ -1041,9 +1045,9 @@ class DdiResourcesTest {
     void getOperationStudyUnitXml_returns404_whenStudyUnitNotFound() throws RmesException {
         String id = "unknown";
         String operationIri = givenOperationIri(id);
-        when(ddiService.getStudyUnitXmlByOperationIri(operationIri)).thenReturn(Optional.empty());
+        when(ddiService.getStudyUnitXmlByOperationIri(operationIri, null)).thenReturn(Optional.empty());
 
-        assertNotFound(() -> ddiResources.getOperationStudyUnitXml(id));
+        assertNotFound(() -> ddiResources.getOperationStudyUnitXml(id, null));
     }
 
     // #1143 : le endpoint est exposé sous /ddi/public/operation/{id}/fichiers (et plus sous /studyUnit).
@@ -1053,7 +1057,7 @@ class DdiResourcesTest {
         MockMvc mockMvc = MockMvcBuilders.standaloneSetup(ddiResources).build();
         String id = "op1";
         String operationIri = givenOperationIri(id);
-        when(ddiService.getStudyUnitByOperationIri(operationIri))
+        when(ddiService.getStudyUnitByOperationIri(operationIri, null))
                 .thenReturn(Optional.of(aStudyUnitResponse(operationIri)));
 
         mockMvc.perform(get("/ddi/public/operation/{id}/fichiers", id).accept(MediaType.APPLICATION_JSON))
@@ -1066,10 +1070,55 @@ class DdiResourcesTest {
         String id = "op1";
         String operationIri = givenOperationIri(id);
         String xml = "<Fragment><StudyUnit/></Fragment>";
-        when(ddiService.getStudyUnitXmlByOperationIri(operationIri)).thenReturn(Optional.of(xml));
+        when(ddiService.getStudyUnitXmlByOperationIri(operationIri, null)).thenReturn(Optional.of(xml));
 
         mockMvc.perform(get("/ddi/public/operation/{id}/fichiers", id).accept(MediaType.APPLICATION_XML))
                 .andExpect(status().isOk());
+    }
+
+    // #1176 : ?dateMiseAJour=AAAA-MM-JJ ne garde que les PhysicalInstances modifiées depuis cette date.
+
+    @Test
+    void operationFichiers_passesTheUpdateDateToTheService_json() throws Exception {
+        MockMvc mockMvc = MockMvcBuilders.standaloneSetup(ddiResources).build();
+        String id = "op1";
+        String operationIri = givenOperationIri(id);
+        when(ddiService.getStudyUnitByOperationIri(operationIri, LocalDate.of(2026, 4, 1)))
+                .thenReturn(Optional.of(aStudyUnitResponse(operationIri)));
+
+        mockMvc.perform(get("/ddi/public/operation/{id}/fichiers", id)
+                        .param("dateMiseAJour", "2026-04-01")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void operationFichiers_passesTheUpdateDateToTheService_xml() throws Exception {
+        MockMvc mockMvc = MockMvcBuilders.standaloneSetup(ddiResources).build();
+        String id = "op1";
+        String operationIri = givenOperationIri(id);
+        when(ddiService.getStudyUnitXmlByOperationIri(operationIri, LocalDate.of(2026, 4, 1)))
+                .thenReturn(Optional.of("<Fragment><StudyUnit/></Fragment>"));
+
+        mockMvc.perform(get("/ddi/public/operation/{id}/fichiers", id)
+                        .param("dateMiseAJour", "2026-04-01")
+                        .accept(MediaType.APPLICATION_XML))
+                .andExpect(status().isOk());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"01/04/2026", "2026-04-01T10:00:00", "2026-13-01", "hier"})
+    void operationFichiers_rejectsAMalformedUpdateDateWith400(String dateMiseAJour) throws Exception {
+        MockMvc mockMvc = MockMvcBuilders.standaloneSetup(ddiResources)
+                .setControllerAdvice(new DdiExceptionHandler(), new UnexpectedErrorHandler())
+                .build();
+
+        mockMvc.perform(get("/ddi/public/operation/{id}/fichiers", "op1")
+                        .param("dateMiseAJour", dateMiseAJour)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Invalid value for parameter 'dateMiseAJour'"));
+        verify(ddiService, never()).getStudyUnitByOperationIri(any(), any());
     }
 
     @Test
@@ -1082,7 +1131,7 @@ class DdiResourcesTest {
                 .when(bauhausUriBuilder.getCompleteUriPublication("operation", id))
                 .thenReturn(operationIri);
         lenient()
-                .when(ddiService.getStudyUnitXmlByOperationIri(operationIri))
+                .when(ddiService.getStudyUnitXmlByOperationIri(operationIri, null))
                 .thenReturn(Optional.of("<Fragment><StudyUnit/></Fragment>"));
 
         mockMvc.perform(get("/ddi/public/operation/{id}/studyUnit", id).accept(MediaType.APPLICATION_XML))

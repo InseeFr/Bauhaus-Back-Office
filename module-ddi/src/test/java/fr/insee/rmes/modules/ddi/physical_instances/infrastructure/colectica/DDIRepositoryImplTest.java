@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.*;
@@ -26,6 +27,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3t
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI4toDDI3ConverterService;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -2051,7 +2053,7 @@ class DDIRepositoryImplTest {
         when(colecticaClient.getDescriptions(List.of(new GetDescriptionsRequest.IdentifierRef(suAgency, suId, 1))))
                 .thenReturn(new ColecticaItemResponse[] {studyUnitItemResponse(suAgency, suId, studyUnitXml)});
 
-        Optional<String> result = ddiRepository.findStudyUnitXmlByOperationIri(operationIri);
+        Optional<String> result = ddiRepository.findStudyUnitXmlByOperationIri(operationIri, null);
 
         assertTrue(result.isPresent());
         assertThat(result.get())
@@ -2088,7 +2090,7 @@ class DDIRepositoryImplTest {
                     physicalInstanceItemResponse(suAgency, "pi-2", 3, secondPiXml)
                 });
 
-        Optional<String> result = ddiRepository.findStudyUnitXmlByOperationIri(operationIri);
+        Optional<String> result = ddiRepository.findStudyUnitXmlByOperationIri(operationIri, null);
 
         assertTrue(result.isPresent());
         assertThat(result.get()).contains("<r:ID>pi-1</r:ID>").contains("<r:ID>pi-2</r:ID>");
@@ -2137,13 +2139,182 @@ class DDIRepositoryImplTest {
                 .thenReturn(new Ddi4Response(
                         Ddi4Response.SCHEMA, null, List.of(physicalInstance), null, null, null, null, null));
 
-        Optional<Ddi4StudyUnitResponse> result = ddiRepository.findStudyUnitByOperationIri(operationIri);
+        Optional<Ddi4StudyUnitResponse> result = ddiRepository.findStudyUnitByOperationIri(operationIri, null);
 
         assertTrue(result.isPresent());
         assertThat(result.get().studyUnit()).containsExactly(studyUnit);
         assertThat(result.get().physicalInstance()).containsExactly(physicalInstance);
         assertThat(result.get().topLevelReference())
                 .containsExactly(Reference.of(suAgency, suId, "1", Ddi4StudyUnit.TYPE));
+    }
+
+    /**
+     * #1176 : avec une date de mise à jour, seules les PhysicalInstances dont la versionDate lui est
+     * supérieure ou égale accompagnent la StudyUnit.
+     */
+    @Test
+    void findStudyUnitXmlByOperationIri_keepsOnlyPhysicalInstancesModifiedSinceTheGivenInstant() {
+        String operationIri = "http://id.insee.fr/operations/operation/op1";
+        String suAgency = "fr.insee";
+        givenStudyUnitWithPhysicalInstances(
+                operationIri,
+                physicalInstanceItemResponse(
+                        suAgency, "pi-old", 1, "2026-03-31T23:59:59", physicalInstanceFragment("pi-old")),
+                physicalInstanceItemResponse(
+                        suAgency, "pi-edge", 1, "2026-04-01T00:00:00", physicalInstanceFragment("pi-edge")),
+                physicalInstanceItemResponse(
+                        suAgency, "pi-new", 1, "2026-04-02T10:00:00+02:00", physicalInstanceFragment("pi-new")));
+
+        Optional<String> result =
+                ddiRepository.findStudyUnitXmlByOperationIri(operationIri, Instant.parse("2026-04-01T00:00:00Z"));
+
+        assertThat(result)
+                .get(InstanceOfAssertFactories.STRING)
+                .contains("<StudyUnit")
+                .doesNotContain(physicalInstanceFragment("pi-old"))
+                .contains(physicalInstanceFragment("pi-edge"))
+                .contains(physicalInstanceFragment("pi-new"));
+    }
+
+    /**
+     * #1176 : la StudyUnit ne référence plus les PhysicalInstances écartées — chaque référence qui
+     * reste désigne un fragment présent dans la réponse.
+     */
+    @Test
+    void findStudyUnitXmlByOperationIri_dropsTheStudyUnitReferencesToFilteredOutPhysicalInstances() {
+        String operationIri = "http://id.insee.fr/operations/operation/op1";
+        givenStudyUnitWithPhysicalInstances(
+                operationIri,
+                physicalInstanceItemResponse(
+                        "fr.insee", "pi-old", 1, "2026-03-31T23:59:59", physicalInstanceFragment("pi-old")),
+                physicalInstanceItemResponse(
+                        "fr.insee", "pi-new", 1, "2026-04-02T00:00:00", physicalInstanceFragment("pi-new")));
+
+        Optional<String> result =
+                ddiRepository.findStudyUnitXmlByOperationIri(operationIri, Instant.parse("2026-04-01T00:00:00Z"));
+
+        assertThat(result)
+                .get(InstanceOfAssertFactories.STRING)
+                .contains("<r:UserID>" + operationIri + "</r:UserID>")
+                .doesNotContain("<r:ID>pi-old</r:ID>")
+                .contains(physicalInstanceReference("fr.insee", "pi-new", "1"));
+    }
+
+    /** Sans date de mise à jour, la StudyUnit sort telle que Colectica la stocke, octet pour octet. */
+    @Test
+    void findStudyUnitXmlByOperationIri_leavesTheStudyUnitUntouched_withoutUpdateDate() {
+        String operationIri = "http://id.insee.fr/operations/operation/op1";
+        givenStudyUnitWithPhysicalInstances(
+                operationIri,
+                physicalInstanceItemResponse(
+                        "fr.insee", "pi-old", 1, "2020-01-01T00:00:00", physicalInstanceFragment("pi-old")));
+
+        Optional<String> result = ddiRepository.findStudyUnitXmlByOperationIri(operationIri, null);
+
+        assertThat(result)
+                .get(InstanceOfAssertFactories.STRING)
+                .contains(studyUnitFragment(operationIri, physicalInstanceReference("fr.insee", "pi-old", "1")));
+    }
+
+    /**
+     * #1176 : le filtre porte sur l'attribut {@code versionDate} du DDI de la PhysicalInstance — celui
+     * que le consommateur lit — et non sur la date que Colectica tient dans l'enveloppe, qui peut
+     * n'être que la date d'un rechargement.
+     */
+    @Test
+    void findStudyUnitXmlByOperationIri_filtersOnTheVersionDateOfTheDdi_notOnTheEnvelope() {
+        String operationIri = "http://id.insee.fr/operations/operation/op1";
+        String reloadedLongAfter = "2026-11-09T09:34:49";
+        givenStudyUnitWithPhysicalInstances(
+                operationIri,
+                physicalInstanceItemResponse(
+                        "fr.insee",
+                        "pi-2020",
+                        1,
+                        reloadedLongAfter,
+                        physicalInstanceFragment("pi-2020", "2020-12-03T13:48:32.4199575Z")),
+                physicalInstanceItemResponse(
+                        "fr.insee",
+                        "pi-2024",
+                        1,
+                        reloadedLongAfter,
+                        physicalInstanceFragment("pi-2024", "2024-06-28T10:19:28.2007783Z")));
+
+        Optional<String> result =
+                ddiRepository.findStudyUnitXmlByOperationIri(operationIri, Instant.parse("2024-01-01T00:00:00Z"));
+
+        assertThat(result)
+                .get(InstanceOfAssertFactories.STRING)
+                .doesNotContain("<r:ID>pi-2020</r:ID>")
+                .contains("<r:ID>pi-2024</r:ID>");
+    }
+
+    /** #1176 : une PhysicalInstance sans versionDate exploitable ne peut pas être dite modifiée depuis la date. */
+    @Test
+    void findStudyUnitXmlByOperationIri_dropsPhysicalInstancesWithoutUsableVersionDate_whenFiltering() {
+        String operationIri = "http://id.insee.fr/operations/operation/op1";
+        givenStudyUnitWithPhysicalInstances(
+                operationIri,
+                physicalInstanceItemResponse(
+                        "fr.insee", "pi-min", 1, "0001-01-01T00:00:00", physicalInstanceFragment("pi-min")),
+                physicalInstanceItemResponse("fr.insee", "pi-null", 1, null, physicalInstanceFragment("pi-null")));
+
+        Optional<String> result =
+                ddiRepository.findStudyUnitXmlByOperationIri(operationIri, Instant.parse("2026-04-01T00:00:00Z"));
+
+        assertThat(result)
+                .get(InstanceOfAssertFactories.STRING)
+                .contains("<StudyUnit")
+                .doesNotContain(physicalInstanceFragment("pi-min"))
+                .doesNotContain(physicalInstanceFragment("pi-null"));
+    }
+
+    /** #1176 : le filtre s'applique aussi à la sortie DDI 4 ; aucune PI retenue, aucune conversion. */
+    @Test
+    void findStudyUnitByOperationIri_convertsOnlyPhysicalInstancesModifiedSinceTheGivenInstant() {
+        String operationIri = "http://id.insee.fr/operations/operation/op1";
+        givenStudyUnitWithPhysicalInstances(
+                operationIri,
+                physicalInstanceItemResponse(
+                        "fr.insee", "pi-old", 1, "2025-01-01T00:00:00", physicalInstanceFragment("pi-old")));
+
+        when(ddi3ToDdi4Converter.toStudyUnit(anyString()))
+                .thenReturn(new Ddi4StudyUnit(
+                        Ddi4StudyUnit.TYPE,
+                        null,
+                        "urn:ddi:fr.insee:su-abc:1",
+                        "fr.insee",
+                        "su-abc",
+                        "1",
+                        null,
+                        operationIri,
+                        null));
+
+        Optional<Ddi4StudyUnitResponse> result =
+                ddiRepository.findStudyUnitByOperationIri(operationIri, Instant.parse("2026-04-01T00:00:00Z"));
+
+        assertTrue(result.isPresent());
+        assertNull(result.get().physicalInstance());
+        verify(ddi3ToDdi4Converter, never()).convertDdi3ToDdi4(any(), any());
+        verify(ddi3ToDdi4Converter).toStudyUnit(argThat(xml -> !xml.contains("<r:ID>pi-old</r:ID>")));
+    }
+
+    private void givenStudyUnitWithPhysicalInstances(String operationIri, ColecticaItemResponse... physicalInstances) {
+        String suAgency = "fr.insee";
+        String suId = "su-abc";
+        when(colecticaClient.query(anyList())).thenReturn(studyUnitQueryResponse(suAgency, suId));
+        String references = Arrays.stream(physicalInstances)
+                .map(pi -> physicalInstanceReference(pi.agencyId(), pi.identifier(), String.valueOf(pi.version())))
+                .collect(Collectors.joining());
+        when(colecticaClient.getDescriptions(List.of(new GetDescriptionsRequest.IdentifierRef(suAgency, suId, 1))))
+                .thenReturn(new ColecticaItemResponse[] {
+                    studyUnitItemResponse(suAgency, suId, studyUnitFragment(operationIri, references))
+                });
+        when(colecticaClient.getDescriptions(Arrays.stream(physicalInstances)
+                        .map(pi ->
+                                new GetDescriptionsRequest.IdentifierRef(pi.agencyId(), pi.identifier(), pi.version()))
+                        .toList()))
+                .thenReturn(physicalInstances);
     }
 
     /** Les StudyUnits ne sont lues dans Colectica qu'une fois : les recherches suivantes passent par le cache. */
@@ -2155,8 +2326,8 @@ class DDIRepositoryImplTest {
             studyUnitItemResponse("fr.insee", "su-abc", studyUnitFragment(operationIri, ""))
         });
 
-        ddiRepository.findStudyUnitXmlByOperationIri(operationIri);
-        Optional<String> second = ddiRepository.findStudyUnitXmlByOperationIri(operationIri);
+        ddiRepository.findStudyUnitXmlByOperationIri(operationIri, null);
+        Optional<String> second = ddiRepository.findStudyUnitXmlByOperationIri(operationIri, null);
 
         assertTrue(second.isPresent());
         verify(colecticaClient, times(1)).query(anyList());
@@ -2193,7 +2364,7 @@ class DDIRepositoryImplTest {
 
         assertThat(scheduledRefreshes).hasSize(1);
         scheduledRefreshes.forEach(Runnable::run);
-        assertThat(ddiRepository.findStudyUnitXmlByOperationIri(operationIri))
+        assertThat(ddiRepository.findStudyUnitXmlByOperationIri(operationIri, null))
                 .get(InstanceOfAssertFactories.STRING)
                 .contains("<r:ID>pi-new</r:ID>");
     }
@@ -2236,7 +2407,8 @@ class DDIRepositoryImplTest {
                     suAgency, suId, studyUnitFragment("http://id.insee.fr/operations/operation/other", ""))
         });
 
-        assertFalse(ddiRepository.findStudyUnitByOperationIri(operationIri).isPresent());
+        assertFalse(
+                ddiRepository.findStudyUnitByOperationIri(operationIri, null).isPresent());
     }
 
     /**
@@ -2358,13 +2530,18 @@ class DDIRepositoryImplTest {
 
     private static ColecticaItemResponse physicalInstanceItemResponse(
             String agency, String id, int version, String xml) {
+        return physicalInstanceItemResponse(agency, id, version, "2025-01-01T00:00:00", xml);
+    }
+
+    private static ColecticaItemResponse physicalInstanceItemResponse(
+            String agency, String id, int version, String versionDate, String xml) {
         return new ColecticaItemResponse(
                 "a51e85bb-6259-4488-8df2-f08cb43485f8",
                 agency,
                 version,
                 id,
                 xml,
-                "2025-01-01T00:00:00",
+                versionDate,
                 null,
                 false,
                 false,
@@ -2396,6 +2573,13 @@ class DDIRepositoryImplTest {
                 + "</PhysicalInstance></Fragment>";
     }
 
+    private static String physicalInstanceFragment(String id, String versionDate) {
+        return "<Fragment xmlns:r=\"ddi:reusable:3_3\" xmlns=\"ddi:instance:3_3\">"
+                + "<PhysicalInstance versionDate=\"" + versionDate + "\" xmlns=\"ddi:physicalinstance:3_3\">"
+                + "<r:ID>" + id + "</r:ID>"
+                + "</PhysicalInstance></Fragment>";
+    }
+
     @Test
     void shouldFindStudyUnitXmlByOperationIri_returnsEmptyWhenNoMatch() {
         String operationIri = "http://id.insee.fr/operations/operation/unknown";
@@ -2408,7 +2592,7 @@ class DDIRepositoryImplTest {
                     suAgency, suId, studyUnitFragment("http://id.insee.fr/operations/operation/other", ""))
         });
 
-        Optional<String> result = ddiRepository.findStudyUnitXmlByOperationIri(operationIri);
+        Optional<String> result = ddiRepository.findStudyUnitXmlByOperationIri(operationIri, null);
 
         assertFalse(result.isPresent());
     }

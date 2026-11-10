@@ -31,6 +31,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanc
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceSearchRow;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3toDDI4ConverterService;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -45,6 +46,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -326,10 +328,12 @@ class ColecticaCatalogRepository {
 
     /**
      * Le DDI 3.3 de la StudyUnit dont un {@code r:UserID} vaut {@code operationIri}, dans une unique
-     * {@code <FragmentInstance>} : son fragment, suivi de ceux de ses PhysicalInstances (#1145).
+     * {@code <FragmentInstance>} : son fragment, suivi de ceux de ses PhysicalInstances (#1145). Avec
+     * {@code modifiedSince}, seules les PhysicalInstances dont la {@code versionDate} lui est
+     * supérieure ou égale sont gardées (#1176) ; la StudyUnit, elle, sort toujours.
      */
-    Optional<String> findStudyUnitXmlByOperationIri(String operationIri) {
-        return findStudyUnitFragmentsByOperationIri(operationIri)
+    Optional<String> findStudyUnitXmlByOperationIri(String operationIri, @Nullable Instant modifiedSince) {
+        return findStudyUnitFragmentsByOperationIri(operationIri, modifiedSince)
                 .map(fragments -> ColecticaXml.assembleFragmentInstance(fragments.fragmentXmls()));
     }
 
@@ -352,8 +356,8 @@ class ColecticaCatalogRepository {
     }
 
     /** Les mêmes fragments, projetés en DDI 4 pour la négociation JSON (#1145). */
-    Optional<Ddi4StudyUnitResponse> findStudyUnitByOperationIri(String operationIri) {
-        return findStudyUnitFragmentsByOperationIri(operationIri).map(this::toDdi4);
+    Optional<Ddi4StudyUnitResponse> findStudyUnitByOperationIri(String operationIri, @Nullable Instant modifiedSince) {
+        return findStudyUnitFragmentsByOperationIri(operationIri, modifiedSince).map(this::toDdi4);
     }
 
     private Ddi4StudyUnitResponse toDdi4(StudyUnitFragments fragments) {
@@ -378,10 +382,56 @@ class ColecticaCatalogRepository {
         return converted == null ? null : converted.physicalInstance();
     }
 
-    private Optional<StudyUnitFragments> findStudyUnitFragmentsByOperationIri(String operationIri) {
-        return studyUnitsMirroring(List.of(operationIri)).stream()
-                .findFirst()
-                .map(item -> new StudyUnitFragments(item, dereferencePhysicalInstances(item.item())));
+    private Optional<StudyUnitFragments> findStudyUnitFragmentsByOperationIri(
+            String operationIri, @Nullable Instant modifiedSince) {
+        return studyUnitsMirroring(List.of(operationIri)).stream().findFirst().map(studyUnit -> {
+            List<ColecticaItemResponse> physicalInstances = dereferencePhysicalInstances(studyUnit.item());
+            if (modifiedSince == null) {
+                return new StudyUnitFragments(studyUnit, physicalInstances);
+            }
+            List<ColecticaItemResponse> modified = physicalInstances.stream()
+                    .filter(pi -> isModifiedSince(pi, modifiedSince))
+                    .toList();
+            return new StudyUnitFragments(withPhysicalInstanceReferencesTo(studyUnit, modified), modified);
+        });
+    }
+
+    /**
+     * La StudyUnit ne référence plus que les PhysicalInstances retenues (#1176) : chaque référence de
+     * la réponse filtrée désigne un fragment présent.
+     */
+    private static ColecticaItemResponse withPhysicalInstanceReferencesTo(
+            ColecticaItemResponse studyUnit, List<ColecticaItemResponse> physicalInstances) {
+        Set<GetDescriptionsRequest.IdentifierRef> kept = physicalInstances.stream()
+                .map(pi -> new GetDescriptionsRequest.IdentifierRef(pi.agencyId(), pi.identifier(), pi.version()))
+                .collect(Collectors.toSet());
+        String xml = ColecticaXml.retainReferences(studyUnit.item(), "PhysicalInstanceReference", kept);
+        return new ColecticaItemResponse(
+                studyUnit.itemType(),
+                studyUnit.agencyId(),
+                studyUnit.version(),
+                studyUnit.identifier(),
+                xml,
+                studyUnit.versionDate(),
+                studyUnit.versionResponsibility(),
+                studyUnit.isPublished(),
+                studyUnit.isDeprecated(),
+                studyUnit.isProvisional(),
+                studyUnit.itemFormat());
+    }
+
+    /**
+     * La date comparée est l'attribut {@code versionDate} du DDI de la PhysicalInstance, celle que lit
+     * le consommateur (#1176) : la {@code versionDate} de l'enveloppe Colectica peut n'être que la date
+     * d'un rechargement. L'enveloppe ne sert qu'à défaut d'attribut. Sans date lisible, rien ne prouve
+     * une modification : la PhysicalInstance est écartée (la date min {@code 0001-01-01} que Colectica
+     * stocke à défaut l'est aussi, étant antérieure à toute date).
+     */
+    private static boolean isModifiedSince(ColecticaItemResponse physicalInstance, Instant modifiedSince) {
+        String ddiVersionDate = ColecticaXml.itemVersionDate(physicalInstance.item());
+        Date versionDate =
+                ColecticaDates.parseInstant(ddiVersionDate != null ? ddiVersionDate : physicalInstance.versionDate());
+        return versionDate != null && !versionDate.toInstant().isBefore(modifiedSince);
     }
 
     /** Les StudyUnits dont un {@code r:UserID} vaut l'une des {@code operationIris}, dans l'ordre de Colectica. */

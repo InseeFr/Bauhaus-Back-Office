@@ -56,6 +56,7 @@ import fr.insee.rmes.modules.operation.operations.domain.port.serverside.Operati
 import fr.insee.rmes.modules.operation.series.domain.port.serverside.SeriesCreatorsPort;
 import java.time.Clock;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.Date;
 import java.util.List;
@@ -1205,24 +1206,24 @@ class DDIServiceImplTest {
     void shouldGetStudyUnitXmlByOperationIri_returnsXmlWhenFound() {
         String operationIri = "http://id.insee.fr/operations/operation/op1";
         String expectedXml = "<StudyUnit><r:UserID>http://id.insee.fr/operations/operation/op1</r:UserID></StudyUnit>";
-        when(ddiRepository.findStudyUnitXmlByOperationIri(operationIri)).thenReturn(Optional.of(expectedXml));
+        when(ddiRepository.findStudyUnitXmlByOperationIri(operationIri, null)).thenReturn(Optional.of(expectedXml));
 
-        Optional<String> result = ddiService.getStudyUnitXmlByOperationIri(operationIri);
+        Optional<String> result = ddiService.getStudyUnitXmlByOperationIri(operationIri, null);
 
         assertTrue(result.isPresent());
         assertEquals(expectedXml, result.get());
-        verify(ddiRepository).findStudyUnitXmlByOperationIri(operationIri);
+        verify(ddiRepository).findStudyUnitXmlByOperationIri(operationIri, null);
     }
 
     @Test
     void shouldGetStudyUnitXmlByOperationIri_returnsEmptyWhenNotFound() {
         String operationIri = "http://id.insee.fr/operations/operation/unknown";
-        when(ddiRepository.findStudyUnitXmlByOperationIri(operationIri)).thenReturn(Optional.empty());
+        when(ddiRepository.findStudyUnitXmlByOperationIri(operationIri, null)).thenReturn(Optional.empty());
 
-        Optional<String> result = ddiService.getStudyUnitXmlByOperationIri(operationIri);
+        Optional<String> result = ddiService.getStudyUnitXmlByOperationIri(operationIri, null);
 
         assertFalse(result.isPresent());
-        verify(ddiRepository).findStudyUnitXmlByOperationIri(operationIri);
+        verify(ddiRepository).findStudyUnitXmlByOperationIri(operationIri, null);
     }
 
     @Test
@@ -1230,22 +1231,48 @@ class DDIServiceImplTest {
         String operationIri = "http://id.insee.fr/operations/operation/op1";
         Ddi4StudyUnitResponse expected =
                 new Ddi4StudyUnitResponse(Ddi4Response.SCHEMA, List.of(), List.of(), List.of());
-        when(ddiRepository.findStudyUnitByOperationIri(operationIri)).thenReturn(Optional.of(expected));
+        when(ddiRepository.findStudyUnitByOperationIri(operationIri, null)).thenReturn(Optional.of(expected));
 
-        Optional<Ddi4StudyUnitResponse> result = ddiService.getStudyUnitByOperationIri(operationIri);
+        Optional<Ddi4StudyUnitResponse> result = ddiService.getStudyUnitByOperationIri(operationIri, null);
 
         assertTrue(result.isPresent());
         assertEquals(expected, result.get());
-        verify(ddiRepository).findStudyUnitByOperationIri(operationIri);
+        verify(ddiRepository).findStudyUnitByOperationIri(operationIri, null);
     }
 
     @Test
     void shouldGetStudyUnitByOperationIri_returnsEmptyWhenNotFound() {
         String operationIri = "http://id.insee.fr/operations/operation/unknown";
-        when(ddiRepository.findStudyUnitByOperationIri(operationIri)).thenReturn(Optional.empty());
+        when(ddiRepository.findStudyUnitByOperationIri(operationIri, null)).thenReturn(Optional.empty());
 
-        assertFalse(ddiService.getStudyUnitByOperationIri(operationIri).isPresent());
-        verify(ddiRepository).findStudyUnitByOperationIri(operationIri);
+        assertFalse(ddiService.getStudyUnitByOperationIri(operationIri, null).isPresent());
+        verify(ddiRepository).findStudyUnitByOperationIri(operationIri, null);
+    }
+
+    /** #1176 : la date de mise à jour s'entend à 0:00:00, heure de Paris. */
+    @Test
+    void getStudyUnitXmlByOperationIri_filtersFromMidnightParisTimeOfTheGivenDate() {
+        String operationIri = "http://id.insee.fr/operations/operation/op1";
+        Instant midnightInParis = Instant.parse("2026-03-31T22:00:00Z");
+        when(ddiRepository.findStudyUnitXmlByOperationIri(operationIri, midnightInParis))
+                .thenReturn(Optional.of("<StudyUnit/>"));
+
+        assertEquals(
+                Optional.of("<StudyUnit/>"),
+                ddiService.getStudyUnitXmlByOperationIri(operationIri, LocalDate.of(2026, 4, 1)));
+    }
+
+    @Test
+    void getStudyUnitByOperationIri_filtersFromMidnightParisTimeOfTheGivenDate() {
+        String operationIri = "http://id.insee.fr/operations/operation/op1";
+        Instant midnightInParis = Instant.parse("2026-01-14T23:00:00Z");
+        Ddi4StudyUnitResponse expected =
+                new Ddi4StudyUnitResponse(Ddi4Response.SCHEMA, List.of(), List.of(), List.of());
+        when(ddiRepository.findStudyUnitByOperationIri(operationIri, midnightInParis))
+                .thenReturn(Optional.of(expected));
+
+        assertEquals(
+                Optional.of(expected), ddiService.getStudyUnitByOperationIri(operationIri, LocalDate.of(2026, 1, 15)));
     }
 
     /** Une StudyUnit peut désigner son opération par l'une ou l'autre de ses IRI. */

@@ -35,10 +35,12 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UpdatePhysicalI
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3toDDI4ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI4toDDI3ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.DDIRepository;
+import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Executor;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.Cache;
@@ -221,13 +223,14 @@ public class DDIRepositoryImpl implements DDIRepository {
     }
 
     @Override
-    public Optional<String> findStudyUnitXmlByOperationIri(String operationIri) {
-        return catalog.findStudyUnitXmlByOperationIri(operationIri);
+    public Optional<String> findStudyUnitXmlByOperationIri(String operationIri, @Nullable Instant modifiedSince) {
+        return catalog.findStudyUnitXmlByOperationIri(operationIri, modifiedSince);
     }
 
     @Override
-    public Optional<Ddi4StudyUnitResponse> findStudyUnitByOperationIri(String operationIri) {
-        return catalog.findStudyUnitByOperationIri(operationIri);
+    public Optional<Ddi4StudyUnitResponse> findStudyUnitByOperationIri(
+            String operationIri, @Nullable Instant modifiedSince) {
+        return catalog.findStudyUnitByOperationIri(operationIri, modifiedSince);
     }
 
     @Override
