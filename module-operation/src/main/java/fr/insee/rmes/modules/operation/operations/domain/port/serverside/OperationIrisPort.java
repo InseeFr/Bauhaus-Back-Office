@@ -1,7 +1,9 @@
 package fr.insee.rmes.modules.operation.operations.domain.port.serverside;
 
+import fr.insee.rmes.modules.commons.hexagonal.ServerSidePort;
 import java.util.List;
 
+@ServerSidePort
 public interface OperationIrisPort {
 
     /**

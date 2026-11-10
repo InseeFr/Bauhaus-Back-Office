@@ -1,5 +1,6 @@
 package fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside;
 
+import fr.insee.rmes.modules.commons.hexagonal.ServerSidePort;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialGroup;
 import java.util.Collection;
@@ -12,6 +13,7 @@ import java.util.Optional;
  * Extends the generic {@link DdiItemRepository} with Group-specific operations
  * such as deprecating a targeted set of groups.
  */
+@ServerSidePort
 public interface GroupRepository extends DdiItemRepository<Ddi4Group> {
 
     List<PartialGroup> getAll();

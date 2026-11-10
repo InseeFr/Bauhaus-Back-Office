@@ -1,9 +1,11 @@
 package fr.insee.rmes.modules.operation.series.domain.port.serverside;
 
+import fr.insee.rmes.modules.commons.hexagonal.ServerSidePort;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+@ServerSidePort
 public interface SeriesCreatorsPort {
 
     /**
