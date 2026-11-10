@@ -43,6 +43,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,16 +60,29 @@ class ColecticaCatalogRepository {
     private final ColecticaClient colecticaClient;
     private final ColecticaLabels labels;
     private final DDI3toDDI4ConverterService ddi3ToDdi4Converter;
+    private final StudyUnitsByOperationIndex studyUnitsByOperation;
 
     ColecticaCatalogRepository(
             ColecticaConfiguration.ColecticaInstanceConfiguration instanceConfiguration,
             ColecticaClient colecticaClient,
             ColecticaLabels labels,
-            DDI3toDDI4ConverterService ddi3ToDdi4Converter) {
+            DDI3toDDI4ConverterService ddi3ToDdi4Converter,
+            Executor refreshExecutor) {
         this.instanceConfiguration = instanceConfiguration;
         this.colecticaClient = colecticaClient;
         this.labels = labels;
         this.ddi3ToDdi4Converter = ddi3ToDdi4Converter;
+        this.studyUnitsByOperation = new StudyUnitsByOperationIndex(this::loadStudyUnits, refreshExecutor);
+    }
+
+    /** Calcule le cache opération → StudyUnits (au démarrage) ; les erreurs de Colectica remontent. */
+    int refreshStudyUnitsByOperation() {
+        return studyUnitsByOperation.refresh().size();
+    }
+
+    /** Recalcule le cache opération → StudyUnits en tâche de fond (après une écriture de PhysicalInstance). */
+    void refreshStudyUnitsByOperationAsync() {
+        studyUnitsByOperation.refreshAsync();
     }
 
     /** Une StudyUnit et les PhysicalInstances qu'elle référence, telles que Colectica les renvoie. */
@@ -375,34 +389,32 @@ class ColecticaCatalogRepository {
         if (logger.isInfoEnabled()) {
             logger.info("Searching StudyUnits by operationIris: {}", forLog(String.valueOf(operationIris)));
         }
+        List<ColecticaItemResponse> mirroring = studyUnitsByOperation.studyUnitsMirroring(operationIris);
+        if (mirroring.isEmpty() && logger.isWarnEnabled()) {
+            logger.warn("No StudyUnit matched operationIris {}", forLog(String.valueOf(operationIris)));
+        }
+        return mirroring;
+    }
+
+    /**
+     * Toutes les StudyUnits de Colectica avec leurs {@code r:UserID}, en un {@code _query} et un seul
+     * {@code item/_getList} pour tous leurs XML.
+     */
+    private List<StudyUnitsByOperationIndex.IndexedStudyUnit> loadStudyUnits() {
         ColecticaResponse studyUnits = colecticaClient.query(List.of(itemType(STUDY_UNIT)));
         List<GetDescriptionsRequest.IdentifierRef> identifiers = ColecticaItems.identifiersOf(studyUnits.results());
         if (identifiers.isEmpty()) {
             return List.of();
         }
-        // Un seul item/_getList pour tous les XML de StudyUnit, au lieu d'un appel HTTP par
-        // StudyUnit — c'était la principale source de latence ici.
         ColecticaItemResponse[] items = colecticaClient.getDescriptions(identifiers);
-        List<String> candidateUserIds = new ArrayList<>();
-        List<ColecticaItemResponse> mirroring = new ArrayList<>();
-        for (ColecticaItemResponse item : items) {
-            if (item == null) {
-                continue;
-            }
-            List<String> userIds = ColecticaXml.userIds(item.item());
-            candidateUserIds.addAll(userIds);
-            if (userIds.stream().anyMatch(operationIris::contains)) {
-                mirroring.add(item);
-            }
+        if (items == null) {
+            return List.of();
         }
-        if (mirroring.isEmpty() && logger.isWarnEnabled()) {
-            logger.warn(
-                    "No StudyUnit matched operationIris {} among {} study unit(s). Candidate UserIDs found: {}",
-                    forLog(String.valueOf(operationIris)),
-                    identifiers.size(),
-                    candidateUserIds);
-        }
-        return mirroring;
+        return Arrays.stream(items)
+                .filter(Objects::nonNull)
+                .map(item -> new StudyUnitsByOperationIndex.IndexedStudyUnit(
+                        item, Set.copyOf(ColecticaXml.userIds(item.item()))))
+                .toList();
     }
 
     /**

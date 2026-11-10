@@ -38,6 +38,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.DDIRe
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.Executor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.Cache;
@@ -94,15 +95,16 @@ public class DDIRepositoryImpl implements DDIRepository {
             ColecticaClient colecticaClient,
             MutualizedCodeListRefsStrategy mutualizedCodeListRefsProvider,
             Cache physicalInstanceSearchRowsCache,
-            Cache mutualizedCodeListContentsCache) {
+            Cache mutualizedCodeListContentsCache,
+            Executor cacheRefreshExecutor) {
         String defaultLang = colecticaConfiguration.langs().getFirst();
         this.defaultLang = defaultLang;
         ColecticaLabels labels = new ColecticaLabels(defaultLang);
         ColecticaSetReader setReader = new ColecticaSetReader(instanceConfiguration, colecticaClient);
         ColecticaVersionDates versionDates = new ColecticaVersionDates(colecticaClient, instanceConfiguration);
 
-        this.catalog =
-                new ColecticaCatalogRepository(instanceConfiguration, colecticaClient, labels, ddi3ToDdi4Converter);
+        this.catalog = new ColecticaCatalogRepository(
+                instanceConfiguration, colecticaClient, labels, ddi3ToDdi4Converter, cacheRefreshExecutor);
         this.searchRowsCache = new PhysicalInstanceSearchRowsCache(physicalInstanceSearchRowsCache, defaultLang);
         this.mutualizedCodeListContents = mutualizedCodeListContentsCache;
         this.physicalInstanceReader = new ColecticaPhysicalInstanceReader(
@@ -209,6 +211,15 @@ public class DDIRepositoryImpl implements DDIRepository {
         return itemByIdReader.studyUnitOperationIri(agencyId, studyUnitId);
     }
 
+    /**
+     * Calcule le cache opération → StudyUnits, recalculé ensuite en tâche de fond à chaque création,
+     * modification (PATCH, PUT) ou duplication de PhysicalInstance.
+     */
+    @Override
+    public int refreshStudyUnitsByOperationCache() {
+        return catalog.refreshStudyUnitsByOperation();
+    }
+
     @Override
     public Optional<String> findStudyUnitXmlByOperationIri(String operationIri) {
         return catalog.findStudyUnitXmlByOperationIri(operationIri);
@@ -272,13 +283,17 @@ public class DDIRepositoryImpl implements DDIRepository {
     @Override
     @CacheEvict(cacheNames = ColecticaCacheNames.PHYSICAL_INSTANCE_SEARCH_ROWS, allEntries = true)
     public Ddi4Response createPhysicalInstance(CreatePhysicalInstanceRequest request) {
-        return physicalInstanceWriter.createPhysicalInstance(request);
+        Ddi4Response created = physicalInstanceWriter.createPhysicalInstance(request);
+        catalog.refreshStudyUnitsByOperationAsync();
+        return created;
     }
 
     @Override
     @CacheEvict(cacheNames = ColecticaCacheNames.PHYSICAL_INSTANCE_SEARCH_ROWS, allEntries = true)
     public Ddi4Response createPhysicalInstance(CreatePhysicalInstanceRequest request, PhysicalInstanceIds ids) {
-        return physicalInstanceWriter.createPhysicalInstance(request, ids);
+        Ddi4Response created = physicalInstanceWriter.createPhysicalInstance(request, ids);
+        catalog.refreshStudyUnitsByOperationAsync();
+        return created;
     }
 
     /**
@@ -293,12 +308,15 @@ public class DDIRepositoryImpl implements DDIRepository {
         } else {
             searchRowsCache.refresh(agencyId, id, saved);
         }
+        catalog.refreshStudyUnitsByOperationAsync();
     }
 
     @Override
     @CacheEvict(cacheNames = ColecticaCacheNames.PHYSICAL_INSTANCE_SEARCH_ROWS, allEntries = true)
     public Reference duplicatePhysicalInstance(String agencyId, String id, DuplicatePhysicalInstanceRequest request) {
-        return physicalInstanceWriter.duplicatePhysicalInstance(agencyId, id, request);
+        Reference copy = physicalInstanceWriter.duplicatePhysicalInstance(agencyId, id, request);
+        catalog.refreshStudyUnitsByOperationAsync();
+        return copy;
     }
 
     /** Les parents ne changent pas : la ligne de recherche est mise à jour en place. */
@@ -306,6 +324,7 @@ public class DDIRepositoryImpl implements DDIRepository {
     public void updateFullPhysicalInstance(String agencyId, String id, Ddi4Response ddi4Response) {
         physicalInstanceWriter.updateFullPhysicalInstance(agencyId, id, ddi4Response);
         searchRowsCache.refresh(agencyId, id, savedPhysicalInstance(ddi4Response, id));
+        catalog.refreshStudyUnitsByOperationAsync();
     }
 
     private static Ddi4PhysicalInstance savedPhysicalInstance(Ddi4Response ddi4Response, String id) {

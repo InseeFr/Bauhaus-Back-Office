@@ -55,7 +55,8 @@ class MutualizedCacheEvictionIntegrationTest {
                     mock(ColecticaClient.class),
                     provider,
                     cacheManager.getCache(ColecticaCacheNames.PHYSICAL_INSTANCE_SEARCH_ROWS),
-                    cacheManager.getCache(ColecticaCacheNames.MUTUALIZED_CODE_LIST_CONTENTS));
+                    cacheManager.getCache(ColecticaCacheNames.MUTUALIZED_CODE_LIST_CONTENTS),
+                    Runnable::run);
         }
     }
 

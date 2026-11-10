@@ -35,6 +35,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.stream.Collectors;
+import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -71,6 +72,9 @@ class DDIRepositoryImplTest {
     private final Cache mutualizedCodeListContents =
             new ConcurrentMapCache(ColecticaCacheNames.MUTUALIZED_CODE_LIST_CONTENTS);
 
+    /** Recalculs du cache opération → StudyUnits mis en file par les écritures, joués à la main. */
+    private final List<Runnable> scheduledRefreshes = new ArrayList<>();
+
     @BeforeEach
     void setUp() {
         lenient().when(colecticaConfiguration.langs()).thenReturn(List.of("fr-FR"));
@@ -89,7 +93,8 @@ class DDIRepositoryImplTest {
                 colecticaClient,
                 refsProvider,
                 searchRowsCache,
-                mutualizedCodeListContents);
+                mutualizedCodeListContents,
+                scheduledRefreshes::add);
     }
 
     @Test
@@ -2139,6 +2144,84 @@ class DDIRepositoryImplTest {
         assertThat(result.get().physicalInstance()).containsExactly(physicalInstance);
         assertThat(result.get().topLevelReference())
                 .containsExactly(Reference.of(suAgency, suId, "1", Ddi4StudyUnit.TYPE));
+    }
+
+    /** Les StudyUnits ne sont lues dans Colectica qu'une fois : les recherches suivantes passent par le cache. */
+    @Test
+    void findStudyUnitByOperationIri_readsTheStudyUnitsFromColecticaOnlyOnce() {
+        String operationIri = "http://id.insee.fr/operations/operation/op1";
+        when(colecticaClient.query(anyList())).thenReturn(studyUnitQueryResponse("fr.insee", "su-abc"));
+        when(colecticaClient.getDescriptions(anyList())).thenReturn(new ColecticaItemResponse[] {
+            studyUnitItemResponse("fr.insee", "su-abc", studyUnitFragment(operationIri, ""))
+        });
+
+        ddiRepository.findStudyUnitXmlByOperationIri(operationIri);
+        Optional<String> second = ddiRepository.findStudyUnitXmlByOperationIri(operationIri);
+
+        assertTrue(second.isPresent());
+        verify(colecticaClient, times(1)).query(anyList());
+        verify(colecticaClient, times(1)).getDescriptions(anyList());
+    }
+
+    /**
+     * Une PhysicalInstance créée est rattachée à sa StudyUnit : le cache opération → StudyUnits est
+     * recalculé en tâche de fond, et la recherche suivante voit la StudyUnit à jour.
+     */
+    @Test
+    void createPhysicalInstance_refreshesTheStudyUnitsByOperationCacheInTheBackground() {
+        String operationIri = "http://id.insee.fr/operations/operation/op1";
+        when(colecticaClient.query(anyList())).thenReturn(studyUnitQueryResponse("fr.insee", "su-abc"));
+        when(colecticaClient.getDescriptions(anyList()))
+                .thenReturn(new ColecticaItemResponse[] {
+                    studyUnitItemResponse("fr.insee", "su-abc", studyUnitFragment(operationIri, ""))
+                })
+                .thenReturn(new ColecticaItemResponse[] {
+                    studyUnitItemResponse(
+                            "fr.insee",
+                            "su-abc",
+                            studyUnitFragment(operationIri, physicalInstanceReference("fr.insee", "pi-new", "1")))
+                })
+                .thenReturn(new ColecticaItemResponse[] {
+                    physicalInstanceItemResponse("fr.insee", "pi-new", 1, physicalInstanceFragment("pi-new"))
+                });
+        ddiRepository.refreshStudyUnitsByOperationCache();
+        stubPhysicalInstanceCreation();
+
+        ddiRepository.createPhysicalInstance(
+                new CreatePhysicalInstanceRequest("New PI", "New DR", "New LR", null, null, null, null),
+                new PhysicalInstanceIds("pi-new", "dr-new", "lr-new"));
+
+        assertThat(scheduledRefreshes).hasSize(1);
+        scheduledRefreshes.forEach(Runnable::run);
+        assertThat(ddiRepository.findStudyUnitXmlByOperationIri(operationIri))
+                .get(InstanceOfAssertFactories.STRING)
+                .contains("<r:ID>pi-new</r:ID>");
+    }
+
+    @Test
+    void updatePhysicalInstance_refreshesTheStudyUnitsByOperationCacheInTheBackground() {
+        stubPhysicalInstancePatch("fr.insee", "pi-1");
+
+        ddiRepository.updatePhysicalInstance(
+                "fr.insee", "pi-1", new UpdatePhysicalInstanceRequest("New PI", "New DR", "New LR"));
+
+        assertThat(scheduledRefreshes).hasSize(1);
+    }
+
+    @Test
+    void refreshStudyUnitsByOperationCache_returnsTheNumberOfIndexedStudyUnits() {
+        when(colecticaClient.query(anyList())).thenReturn(studyUnitQueryResponse("fr.insee", "su-abc"));
+        when(colecticaClient.getDescriptions(anyList())).thenReturn(new ColecticaItemResponse[] {
+            studyUnitItemResponse("fr.insee", "su-abc", studyUnitFragment("http://id.insee.fr/op", ""))
+        });
+
+        assertThat(ddiRepository.refreshStudyUnitsByOperationCache()).isEqualTo(1);
+    }
+
+    private void stubPhysicalInstanceCreation() {
+        when(instanceConfiguration.defaultAgencyId()).thenReturn("fr.insee");
+        when(instanceConfiguration.itemFormat()).thenReturn("dc337820-af3a-4c0b-82f9-cf02535cde83");
+        when(colecticaClient.createOrUpdateItems(any())).thenReturn("{}");
     }
 
     @Test

@@ -214,6 +214,9 @@ public interface DDIRepository {
      * Le DDI 3.3 de la StudyUnit d'une opération, dans une {@code <FragmentInstance>} qui porte aussi
      * les fragments des PhysicalInstances qu'elle référence (#1145).
      */
+    /** Calcule le cache opération → StudyUnits et rend le nombre d'études indexées. */
+    int refreshStudyUnitsByOperationCache();
+
     Optional<String> findStudyUnitXmlByOperationIri(String operationIri);
 
     /** Les mêmes objets — StudyUnit et PhysicalInstances déréférencées — en DDI 4 (#1145). */
