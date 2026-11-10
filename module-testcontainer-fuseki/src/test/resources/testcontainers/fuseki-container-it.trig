@@ -1,0 +1,7 @@
+# Fixture de FusekiContainerTest : un triplet dans un graphe nommé, pour vérifier à la fois
+# le chargement par Graph Store Protocol et l'union des graphes nommés dans le graphe par défaut.
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+
+<http://rdf.insee.fr/graphes/codes> {
+  <http://codelist/CL_FUSEKI_CONTAINER> a skos:ConceptScheme .
+}

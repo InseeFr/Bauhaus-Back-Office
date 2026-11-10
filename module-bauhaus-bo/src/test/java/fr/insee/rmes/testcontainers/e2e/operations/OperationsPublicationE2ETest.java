@@ -63,6 +63,7 @@ class OperationsPublicationE2ETest extends BaseE2ETest {
     private static final String IS_PART_OF = "http://purl.org/dc/terms/isPartOf";
     private static final String HAS_PART = "http://purl.org/dc/terms/hasPart";
     private static final String PUBLISHER = "http://purl.org/dc/terms/publisher";
+    private static final String SUBJECT = "http://purl.org/dc/terms/subject";
     private static final String VALIDATION_STATE = "http://rdf.insee.fr/def/base#validationState";
     private static final String PREF_LABEL = "http://www.w3.org/2004/02/skos/core#prefLabel";
     private static final String ALT_LABEL = "http://www.w3.org/2004/02/skos/core#altLabel";
@@ -146,6 +147,15 @@ class OperationsPublicationE2ETest extends BaseE2ETest {
             assertThat(publishedObjectsOf(PUBLISHED_FAMILY + "s9100", HAS_PART))
                     .as("the family points at the published series in the publication base")
                     .contains(PUBLISHED_SERIES + "s9101");
+        }
+
+        @Test
+        void publishesTheThemesOfTheSeriesInThePublicationNamespace() throws RmesException {
+            publishOnce("/operations/series/s9101/validate");
+
+            assertThat(publishedObjectsOf(PUBLISHED_SERIES + "s9101", SUBJECT))
+                    .as("like dcat:theme for datasets, the theme points at the published concept")
+                    .containsExactly("http://publication/concepts/theme/th9101");
         }
 
         @Test

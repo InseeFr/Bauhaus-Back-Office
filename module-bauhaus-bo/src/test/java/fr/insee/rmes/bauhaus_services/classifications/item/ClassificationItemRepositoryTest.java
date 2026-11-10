@@ -60,10 +60,7 @@ class ClassificationItemRepositoryTest {
         item.setDefinitionLg1("<p>Definition Lg1</p>");
         item.setDefinitionLg1Uri("http://definition-lg1");
 
-        RmesException exception = assertThrows(
-                RmesBadRequestException.class,
-                () -> classificationItemRepository.updateClassificationItem(item, "http://uri", "1"));
-        assertThat(exception.getDetails()).contains("The property prefLabelLg1 is required");
+        assertUpdateRejectedBecauseMissing(item, "prefLabelLg1");
     }
 
     @Test
@@ -75,19 +72,13 @@ class ClassificationItemRepositoryTest {
         item.setDefinitionLg1("<p>Definition Lg1</p>");
         item.setDefinitionLg1Uri("http://definition-lg1");
 
-        RmesException exception = assertThrows(
-                RmesBadRequestException.class,
-                () -> classificationItemRepository.updateClassificationItem(item, "http://uri", "1"));
-        assertThat(exception.getDetails()).contains("The property prefLabelLg2 is required");
+        assertUpdateRejectedBecauseMissing(item, "prefLabelLg2");
     }
 
     @Test
     void shouldAddNotes() throws RmesException {
 
-        ClassificationItem item = new ClassificationItem();
-        item.setId("1");
-        item.setPrefLabelLg1("label1");
-        item.setPrefLabelLg2("label2");
+        ClassificationItem item = labelledItem();
         item.setDefinitionLg1("Definition Lg1");
         item.setDefinitionLg1Uri("http://definition-lg1");
 
@@ -97,12 +88,8 @@ class ClassificationItemRepositoryTest {
 
     @Test
     void shouldMarkItemAsModifiedWhenUpdatingAlreadyPublishedItem() throws RmesException {
-        ClassificationItem item = new ClassificationItem();
-        item.setId("1");
-        item.setPrefLabelLg1("label1");
-        item.setPrefLabelLg2("label2");
-        when(repositoryGestion.getResponseAsObject(any()))
-                .thenReturn(new JSONObject().put("validationState", ValidationStatus.VALIDATED.getValue()));
+        ClassificationItem item = labelledItem();
+        givenCurrentValidationState(ValidationStatus.VALIDATED);
 
         classificationItemRepository.updateClassificationItem(item, "http://uri", "1");
 
@@ -111,16 +98,32 @@ class ClassificationItemRepositoryTest {
 
     @Test
     void shouldMarkItemAsUnpublishedWhenUpdatingNeverPublishedItem() throws RmesException {
-        ClassificationItem item = new ClassificationItem();
-        item.setId("1");
-        item.setPrefLabelLg1("label1");
-        item.setPrefLabelLg2("label2");
-        when(repositoryGestion.getResponseAsObject(any()))
-                .thenReturn(new JSONObject().put("validationState", ValidationStatus.UNPUBLISHED.getValue()));
+        ClassificationItem item = labelledItem();
+        givenCurrentValidationState(ValidationStatus.UNPUBLISHED);
 
         classificationItemRepository.updateClassificationItem(item, "http://uri", "1");
 
         assertThat(validationStateOfCapturedModel()).isEqualTo(ValidationStatus.UNPUBLISHED.getValue());
+    }
+
+    private void assertUpdateRejectedBecauseMissing(ClassificationItem item, String property) {
+        RmesException exception = assertThrows(
+                RmesBadRequestException.class,
+                () -> classificationItemRepository.updateClassificationItem(item, "http://uri", "1"));
+        assertThat(exception.getDetails()).contains("The property " + property + " is required");
+    }
+
+    private static ClassificationItem labelledItem() {
+        ClassificationItem item = new ClassificationItem();
+        item.setId("1");
+        item.setPrefLabelLg1("label1");
+        item.setPrefLabelLg2("label2");
+        return item;
+    }
+
+    private void givenCurrentValidationState(ValidationStatus state) throws RmesException {
+        when(repositoryGestion.getResponseAsObject(any()))
+                .thenReturn(new JSONObject().put("validationState", state.getValue()));
     }
 
     private String validationStateOfCapturedModel() throws RmesException {

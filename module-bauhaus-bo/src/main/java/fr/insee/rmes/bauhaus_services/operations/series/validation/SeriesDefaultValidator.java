@@ -39,13 +39,13 @@ public class SeriesDefaultValidator implements SeriesValidator {
     public void validate(Series series) throws RmesException {
         if (repositoryGestion.getResponseAsBoolean(operationSeriesQueries.checkPrefLabelUnicity(
                 series.getId(), series.getPrefLabelLg1(), languages.lg1()))) {
-            throw new RmesBadRequestException(
+            throw RmesBadRequestException.coded(
                     ErrorCodes.OPERATION_SERIES_EXISTING_PREF_LABEL_LG1,
                     "This prefLabelLg1 is already used by another series.");
         }
         if (repositoryGestion.getResponseAsBoolean(operationSeriesQueries.checkPrefLabelUnicity(
                 series.getId(), series.getPrefLabelLg2(), languages.lg2()))) {
-            throw new RmesBadRequestException(
+            throw RmesBadRequestException.coded(
                     ErrorCodes.OPERATION_SERIES_EXISTING_PREF_LABEL_LG2,
                     "This prefLabelLg2 is already used by another series.");
         }

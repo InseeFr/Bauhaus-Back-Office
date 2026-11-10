@@ -2,13 +2,7 @@ package fr.insee.rmes.testcontainers.queries.sparql_queries.code_list;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import fr.insee.rmes.BauhausLanguagesProperties;
-import fr.insee.rmes.PaginationProperties;
-import fr.insee.rmes.config.BauhausUriPropertiesStub;
-import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.graphdb.RepositoryInitiator;
-import fr.insee.rmes.graphdb.RepositoryUtils;
 import fr.insee.rmes.modules.codeslists.codeslists.infrastructure.graphdb.CodeListsQueries;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.testcontainers.WithGraphDBContainer;
@@ -28,14 +22,10 @@ import org.junit.jupiter.api.Test;
 @Tag("integration")
 class CodeListsQueriesIntegrationTest extends WithGraphDBContainer {
 
-    private final RepositoryGestion repositoryGestion = new RepositoryGestion(
-            getRdfGestionConnectionDetails(), new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED));
+    private final RepositoryGestion repositoryGestion =
+            CodeListsQueriesIntegrationFixtures.repositoryGestion(getRdfGestionConnectionDetails());
 
-    private final CodeListsQueries queries = new CodeListsQueries(
-            BauhausUriPropertiesStub.stub(),
-            new BauhausLanguagesProperties("fr", "en"),
-            GraphsPropertiesStub.stub(),
-            new PaginationProperties(5));
+    private final CodeListsQueries queries = CodeListsQueriesIntegrationFixtures.codeListsQueries();
 
     @BeforeAll
     static void initData() {

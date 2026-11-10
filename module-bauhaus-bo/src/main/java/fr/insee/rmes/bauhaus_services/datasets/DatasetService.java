@@ -20,6 +20,10 @@ public interface DatasetService {
 
     String create(String body) throws RmesException;
 
+    String update(String datasetId, Dataset dataset) throws RmesException;
+
+    String create(Dataset dataset) throws RmesException;
+
     String getDistributions(String id) throws RmesException;
 
     String getArchivageUnits() throws RmesException;

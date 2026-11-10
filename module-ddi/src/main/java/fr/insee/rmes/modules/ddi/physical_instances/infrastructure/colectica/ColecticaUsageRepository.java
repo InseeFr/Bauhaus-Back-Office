@@ -2,7 +2,7 @@ package fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica;
 
 import static fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.ColecticaItemTypes.CODE_LIST;
 import static fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.ColecticaItemTypes.DATA_RELATIONSHIP;
-import static fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.ColecticaItemTypes.GROUP_UUID;
+import static fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.ColecticaItemTypes.GROUP;
 import static fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.ColecticaItemTypes.PHYSICAL_INSTANCE;
 import static fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.ColecticaItemTypes.STUDY_UNIT;
 import static fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.ColecticaItemTypes.VARIABLE;
@@ -95,7 +95,7 @@ class ColecticaUsageRepository {
                         : resolveOnce(
                                 groupBySuKey,
                                 new ItemReference(usage.studyUnitAgencyId(), usage.studyUnitId()),
-                                GROUP_UUID);
+                                itemType(GROUP));
                 result.add(new CategoryCodeListUsage(
                         usageItem(group),
                         usageItem(usage.studyUnitAgencyId(), usage.studyUnitId(), usage.studyUnitLabel()),

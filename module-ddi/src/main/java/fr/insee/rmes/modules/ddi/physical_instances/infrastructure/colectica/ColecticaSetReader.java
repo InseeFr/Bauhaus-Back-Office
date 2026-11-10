@@ -3,7 +3,6 @@ package fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica;
 import fr.insee.rmes.colectica.client.ColecticaClient;
 import fr.insee.rmes.colectica.client.dto.ColecticaItemResponse;
 import fr.insee.rmes.colectica.client.dto.ColecticaSetItem;
-import fr.insee.rmes.colectica.client.dto.ColecticaTypedSetItem;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import java.util.Arrays;
@@ -30,42 +29,20 @@ class ColecticaSetReader {
 
     /**
      * Les items d'un set Colectica pour une {@code version} optionnelle (la dernière quand elle est
-     * {@code null}). {@code null} quand le set est vide.
+     * {@code null}). {@code null} quand le set est vide ou que Colectica ne connaît pas l'item racine
+     * (404) ; toute autre défaillance remonte.
      */
     ColecticaItemResponse[] fetchSetItems(String agencyId, String id, String version) {
-        ColecticaSetItem[] setItems = colecticaClient.getSet(agencyId, id, version);
+        ColecticaSetItem[] setItems;
+        try {
+            setItems = colecticaClient.getSet(agencyId, id, version);
+        } catch (HttpClientErrorException.NotFound _) {
+            return null;
+        }
         if (setItems == null || setItems.length == 0) {
             return null;
         }
         return colecticaClient.getDescriptions(ColecticaItems.identifiersOfSet(setItems));
-    }
-
-    /**
-     * Les items de la dernière version du set dont le type figure parmi {@code typeKeys}, filtrés côté
-     * Colectica ({@code _query/set}) : seuls ces items sont téléchargés, là où {@link #fetchSetItems}
-     * rapatrie tout le set — dont les dizaines de milliers de Category d'une nomenclature référencée.
-     * Mêmes versions que {@code set/}. {@code null} quand la racine est inconnue ou le set vide.
-     */
-    ColecticaItemResponse[] fetchSetItemsOfTypes(String agencyId, String id, List<String> typeKeys) {
-        ColecticaItemResponse root;
-        try {
-            root = colecticaClient.getItem(agencyId, id, null);
-        } catch (HttpClientErrorException.NotFound _) {
-            return null;
-        }
-        if (root == null) {
-            return null;
-        }
-        Map<String, String> types = instanceConfiguration.itemTypes();
-        List<String> itemTypes =
-                typeKeys.stream().map(types::get).filter(Objects::nonNull).toList();
-        ColecticaTypedSetItem[] setItems =
-                colecticaClient.querySet(new ColecticaSetItem(id, root.version(), agencyId), itemTypes);
-        if (setItems == null || setItems.length == 0) {
-            return null;
-        }
-        return colecticaClient.getDescriptions(ColecticaItems.identifiersOfSet(
-                Arrays.stream(setItems).map(ColecticaTypedSetItem::reference).toArray(ColecticaSetItem[]::new)));
     }
 
     /**

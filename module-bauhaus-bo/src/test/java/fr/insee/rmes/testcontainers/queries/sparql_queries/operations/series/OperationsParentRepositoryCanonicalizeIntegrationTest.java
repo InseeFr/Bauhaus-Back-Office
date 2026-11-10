@@ -6,6 +6,7 @@ import fr.insee.rmes.AppSpringBootTest;
 import fr.insee.rmes.bauhaus_services.operations.OperationsParentRepository;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.json.JSONUtils;
+import fr.insee.rmes.testcontainers.GraphDbTestProperties;
 import fr.insee.rmes.testcontainers.WithGraphDBContainer;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,12 +43,7 @@ class OperationsParentRepositoryCanonicalizeIntegrationTest extends WithGraphDBC
 
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
-        registry.add(
-                "fr.insee.rmes.bauhaus.sesame.gestion.sesameServer",
-                () -> getRdfGestionConnectionDetails().getUrlServer());
-        registry.add(
-                "fr.insee.rmes.bauhaus.sesame.gestion.repository",
-                () -> getRdfGestionConnectionDetails().repositoryId());
+        GraphDbTestProperties.registerGestion(registry);
     }
 
     @BeforeAll

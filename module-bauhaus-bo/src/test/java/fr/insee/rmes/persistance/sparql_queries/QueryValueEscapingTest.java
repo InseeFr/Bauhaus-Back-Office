@@ -14,7 +14,6 @@ import fr.insee.rmes.modules.shared_kernel.domain.model.Language;
 import fr.insee.rmes.modules.structures.infrastructure.graphdb.StructureQueries;
 import fr.insee.rmes.persistance.sparql_queries.datasets.DatasetDistributionQueries;
 import fr.insee.rmes.persistance.sparql_queries.datasets.DatasetQueries;
-import fr.insee.rmes.persistance.sparql_queries.operations.OperationDocumentsQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationIndicatorsQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationSeriesQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationsOperationQueries;
@@ -61,8 +60,6 @@ class QueryValueEscapingTest {
     private static final OperationSeriesQueries SERIES = new OperationSeriesQueries(LANGUAGES, GRAPHS);
     private static final OperationIndicatorsQueries INDICATORS =
             new OperationIndicatorsQueries(BauhausUriPropertiesStub.stub(), LANGUAGES, GRAPHS);
-    private static final OperationDocumentsQueries DOCUMENTS =
-            new OperationDocumentsQueries(BauhausUriPropertiesStub.stub(), LANGUAGES, GRAPHS);
     private static final StructureQueries STRUCTURES = new StructureQueries(LANGUAGES, GRAPHS);
     private static final DatasetQueries DATASETS = new DatasetQueries(LANGUAGES);
     private static final DatasetDistributionQueries DISTRIBUTIONS = new DatasetDistributionQueries(LANGUAGES);
@@ -82,8 +79,7 @@ class QueryValueEscapingTest {
                 Arguments.of(Named.<UnicityQuery>of("operation", OPERATIONS::checkPrefLabelUnicity)),
                 Arguments.of(Named.<UnicityQuery>of("family", FAMILIES)),
                 Arguments.of(Named.<UnicityQuery>of("series", SERIES::checkPrefLabelUnicity)),
-                Arguments.of(Named.<UnicityQuery>of("indicator", INDICATORS::checkPrefLabelUnicity)),
-                Arguments.of(Named.<UnicityQuery>of("document", DOCUMENTS::checkLabelUnicity)));
+                Arguments.of(Named.<UnicityQuery>of("indicator", INDICATORS::checkPrefLabelUnicity)));
     }
 
     static Stream<Arguments> uriQueries() {

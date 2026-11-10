@@ -11,9 +11,12 @@ import fr.insee.rmes.modules.commons.domain.model.Document;
 import io.minio.*;
 import io.minio.errors.ErrorResponseException;
 import io.minio.errors.MinioException;
+import io.minio.messages.ErrorResponse;
+import io.minio.messages.Item;
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
+import java.net.ConnectException;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -133,7 +136,7 @@ class MinioFilesOperationTest {
     void test_exists_should_return_false_when_document_does_not_exist() throws Exception {
         Document document = new Document("test/path", "file.txt");
 
-        doThrow(mock(ErrorResponseException.class)).when(minioClient).statObject(any(StatObjectArgs.class));
+        doThrow(errorResponse("NoSuchKey")).when(minioClient).statObject(any(StatObjectArgs.class));
 
         boolean result = minioFilesOperation.exists(document);
 
@@ -141,24 +144,61 @@ class MinioFilesOperationTest {
     }
 
     @Test
-    void test_exists_should_return_false_when_minio_throws_io_exception() throws Exception {
+    void test_exists_should_throw_rmes_file_exception_when_minio_is_unreachable() throws Exception {
         Document document = new Document("test/path", "file.txt");
 
-        doThrow(new MinioException("Connection error", new IOException("Connection error")))
+        // MinioClient enveloppe toute cause autre qu'une MinioException dans une IllegalStateException
+        doThrow(new IllegalStateException(new ConnectException("Connection refused")))
                 .when(minioClient)
                 .statObject(any(StatObjectArgs.class));
 
-        boolean result = minioFilesOperation.exists(document);
+        assertThatThrownBy(() -> minioFilesOperation.exists(document))
+                .isInstanceOf(RmesFileException.class)
+                .hasMessageContaining("test/path/file.txt")
+                .hasMessageContaining(BUCKET_NAME);
+    }
+
+    @Test
+    void test_exists_should_throw_rmes_file_exception_when_minio_answers_another_error() throws Exception {
+        Document document = new Document("test/path", "file.txt");
+
+        doThrow(errorResponse("NoSuchBucket")).when(minioClient).statObject(any(StatObjectArgs.class));
+
+        assertThatThrownBy(() -> minioFilesOperation.exists(document)).isInstanceOf(RmesFileException.class);
+    }
+
+    @Test
+    void test_exists_with_string_should_return_true_when_an_object_lives_under_the_prefix() {
+        doReturn(List.of(new Result<>(mock(Item.class)))).when(minioClient).listObjects(any(ListObjectsArgs.class));
+
+        boolean result = minioFilesOperation.exists("gestion/documents");
+
+        assertThat(result).isTrue();
+        ArgumentCaptor<ListObjectsArgs> captor = ArgumentCaptor.forClass(ListObjectsArgs.class);
+        verify(minioClient).listObjects(captor.capture());
+        assertThat(captor.getValue().bucket()).isEqualTo(BUCKET_NAME);
+        assertThat(captor.getValue().prefix()).isEqualTo("gestion/documents/");
+    }
+
+    @Test
+    void test_exists_with_string_should_return_false_when_no_object_lives_under_the_prefix() {
+        doReturn(List.of()).when(minioClient).listObjects(any(ListObjectsArgs.class));
+
+        boolean result = minioFilesOperation.exists("gestion/documents");
 
         assertThat(result).isFalse();
     }
 
     @Test
-    void test_exists_with_string_should_always_return_true() {
-        boolean result = minioFilesOperation.exists("/any/path");
+    void test_exists_with_string_should_throw_rmes_file_exception_when_minio_is_unreachable() {
+        doThrow(new IllegalStateException(new ConnectException("Connection refused")))
+                .when(minioClient)
+                .listObjects(any(ListObjectsArgs.class));
 
-        assertThat(result).isTrue();
-        verifyNoInteractions(minioClient);
+        assertThatThrownBy(() -> minioFilesOperation.exists("gestion/documents"))
+                .isInstanceOf(RmesFileException.class)
+                .hasMessageContaining("gestion/documents")
+                .hasMessageContaining(BUCKET_NAME);
     }
 
     @Test
@@ -182,5 +222,10 @@ class MinioFilesOperationTest {
                 .hasMessageContaining("Error deleting file")
                 .hasMessageContaining("test/path/file.txt")
                 .hasMessageContaining(BUCKET_NAME);
+    }
+
+    private static ErrorResponseException errorResponse(String code) {
+        return new ErrorResponseException(
+                new ErrorResponse(code, code, BUCKET_NAME, "test/path/file.txt", null, null, null), null, null);
     }
 }

@@ -37,6 +37,13 @@ class OrganizationQueriesTest extends WithGraphDBContainer {
                 new OrganizationQueries(new BauhausLanguagesProperties("fr", "en"), GraphsPropertiesStub.stub());
     }
 
+    private static JSONObject findById(JSONArray result, String id) {
+        return JSONUtils.stream(result)
+                .filter(obj -> id.equals(obj.getString("id")))
+                .findFirst()
+                .orElse(null);
+    }
+
     @Test
     void should_return_organization() throws Exception {
         JSONObject result = repositoryGestion.getResponseAsObject(organizationQueries.organizationQuery("HIE2000069"));
@@ -51,10 +58,7 @@ class OrganizationQueriesTest extends WithGraphDBContainer {
         JSONArray result = repositoryGestion.getResponseAsArray(organizationQueries.organizationsQuery());
         assertEquals(220, result.length());
 
-        JSONObject hieOrg = JSONUtils.stream(result)
-                .filter(obj -> "HIE2000069".equals(obj.getString("id")))
-                .findFirst()
-                .orElse(null);
+        JSONObject hieOrg = findById(result, "HIE2000069");
 
         assertNotNull(hieOrg);
         assertNotNull(hieOrg.getString("iri"));
@@ -66,10 +70,7 @@ class OrganizationQueriesTest extends WithGraphDBContainer {
     void should_return_stamp_of_organizations() throws Exception {
         JSONArray result = repositoryGestion.getResponseAsArray(organizationQueries.organizationsQuery());
 
-        JSONObject hieOrg = JSONUtils.stream(result)
-                .filter(obj -> "HIE2000069".equals(obj.getString("id")))
-                .findFirst()
-                .orElse(null);
+        JSONObject hieOrg = findById(result, "HIE2000069");
 
         assertNotNull(hieOrg);
         assertEquals("DR86-DIR", hieOrg.optString("stamp"));
@@ -80,10 +81,7 @@ class OrganizationQueriesTest extends WithGraphDBContainer {
         JSONArray result = repositoryGestion.getResponseAsArray(organizationQueries.organizationsTwoLangsQuery());
         assertEquals(219, result.length());
 
-        JSONObject hieOrg = JSONUtils.stream(result)
-                .filter(obj -> "HIE2000069".equals(obj.getString("id")))
-                .findFirst()
-                .orElse(null);
+        JSONObject hieOrg = findById(result, "HIE2000069");
 
         assertNotNull(hieOrg);
         assertEquals("HIE2000069", hieOrg.getString("id"));

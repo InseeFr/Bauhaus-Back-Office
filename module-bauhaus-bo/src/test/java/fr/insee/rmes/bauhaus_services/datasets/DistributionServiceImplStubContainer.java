@@ -22,6 +22,7 @@ public class DistributionServiceImplStubContainer extends DistributionServiceImp
                 null,
                 null,
                 null,
+                null,
                 null);
     }
 }

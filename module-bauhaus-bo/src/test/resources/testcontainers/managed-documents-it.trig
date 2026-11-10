@@ -1,0 +1,52 @@
+@prefix rdf:      <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:     <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:      <http://www.w3.org/2001/XMLSchema#> .
+@prefix foaf:     <http://xmlns.com/foaf/0.1/> .
+@prefix schema:   <http://schema.org/> .
+@prefix dc:       <http://purl.org/dc/elements/1.1/> .
+@prefix dcterms:  <http://purl.org/dc/terms/> .
+@prefix dctype:   <http://purl.org/dc/dcmitype/> .
+@prefix pav:      <http://purl.org/pav/> .
+@prefix sdmx-mm:  <http://www.w3.org/ns/sdmx-mm#> .
+@prefix insee:    <http://rdf.insee.fr/def/base#> .
+@prefix simsv2fr: <http://bauhaus/qualite/simsv2fr/attribut/> .
+
+# 12  : document complet, cité par aucun rapport.
+# 13  : lien.
+# 112 : document cité par le rapport 9902 : 12 n'en est pas cité pour autant.
+
+<http://rdf.insee.fr/graphes/qualite/documents> {
+    <http://bauhaus/documents/document/12>
+        a                    foaf:Document ;
+        rdfs:label           "Note technique"@fr , "Technical note"@en ;
+        rdfs:comment         "Une note"@fr , "A note"@en ;
+        pav:lastRefreshedOn  "2026-04-09"^^xsd:date ;
+        dc:language          "fr" ;
+        dcterms:extent       "130048"^^xsd:integer ;
+        schema:url           <file:///storage/gestion/Note_technique.pdf> .
+
+    <http://bauhaus/documents/page/13>
+        a                    foaf:Document ;
+        rdfs:label           "Page Insee"@fr ;
+        schema:url           <https://www.insee.fr/fr/statistiques/13> .
+
+    <http://bauhaus/documents/document/112>
+        a                    foaf:Document ;
+        rdfs:label           "Document cité"@fr ;
+        schema:url           <file:///storage/gestion/Cite.pdf> .
+}
+
+<http://rdf.insee.fr/graphes/qualite/rapport/9902> {
+    <http://bauhaus/qualite/rapport/9902>
+        a                       sdmx-mm:MetadataReport ;
+        rdfs:label              "Rapport citant"@fr , "Citing report"@en .
+
+    <http://bauhaus/qualite/attribut/9902/S.3.1>
+        a                        sdmx-mm:ReportedAttribute ;
+        simsv2fr:S.3.1           <http://bauhaus/qualite/attribut/9902/S.3.1/texte> ;
+        sdmx-mm:metadataReport   <http://bauhaus/qualite/rapport/9902> .
+
+    <http://bauhaus/qualite/attribut/9902/S.3.1/texte>
+        a                          dctype:Text ;
+        insee:additionalMaterial   ( <http://bauhaus/documents/document/112> ) .
+}

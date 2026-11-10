@@ -1,5 +1,7 @@
 package fr.insee.rmes.modules.concepts.collections;
 
+import static fr.insee.rmes.modules.concepts.DocumentExportAssertions.assertDownloadableOpenDocument;
+import static fr.insee.rmes.testcontainers.GraphDbTestProperties.registerGestionAndDedicatedPublication;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import fr.insee.rmes.testcontainers.WithGraphDBContainer;
@@ -26,7 +28,6 @@ class CollectionsEndToEndTest extends WithGraphDBContainer {
 
     public static final String ISO_8601_DATE_TIME_PATTERN =
             "^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(\\.[0-9]+)?(Z|[+-](?:2[0-3]|[01][0-9]):[0-5][0-9])?$";
-    private static final String BAUHAUS_TEST_PUBLICATION_REPOSITORY = "bauhaus-test-pub";
     static final String CREATE_COLLECTION_REQUEST_JSON = """
             {
                  "id": "%s",
@@ -54,13 +55,7 @@ class CollectionsEndToEndTest extends WithGraphDBContainer {
 
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
-        String sesameServer = "http://" + container.getHost() + ":" + container.getMappedPort(7200);
-        registry.add("fr.insee.rmes.bauhaus.sesame.gestion.sesameServer", () -> sesameServer);
-        registry.add("fr.insee.rmes.bauhaus.sesame.gestion.repository", () -> BAUHAUS_TEST_REPOSITORY);
-        container.withInitFolder("/testcontainers").withRepository("config-pub.ttl");
-        registry.add("fr.insee.rmes.bauhaus.sesame.publication.sesameServer", () -> sesameServer);
-        registry.add("fr.insee.rmes.bauhaus.sesame.publication.repository", () -> BAUHAUS_TEST_PUBLICATION_REPOSITORY);
-        registry.add("fr.insee.rmes.bauhaus.sesame.publication.baseURI", () -> "http://id.insee.fr/");
+        registerGestionAndDedicatedPublication(registry);
         container
                 .withInitFolder("fr/insee/rmes/modules/concepts/collections")
                 .withTrigFiles("collections-end-to-end-test.trig");
@@ -71,26 +66,14 @@ class CollectionsEndToEndTest extends WithGraphDBContainer {
     @DisplayName("Fetch all collections then add another one then check it is well added")
     void ok_when_collection_added_test() {
 
-        String collectionsEndpoint = "http://localhost:" + serverPort + "/api/concepts/collections";
+        String collectionsEndpoint = collectionsEndpoint();
         RestClient restClient = RestClient.create();
 
-        var fetchedCollections = restClient
-                .get()
-                .uri(collectionsEndpoint)
-                .accept(MediaType.APPLICATION_JSON)
-                .retrieve()
-                .body(String.class);
+        var fetchedCollections = getJson(restClient, collectionsEndpoint);
         JSONAssert.assertEquals("[]", fetchedCollections, true);
 
         String requestedId = "Collection-e2e-001";
-        var entityResponse = restClient
-                .post()
-                .uri(collectionsEndpoint)
-                .body(CREATE_COLLECTION_REQUEST_JSON.formatted(requestedId))
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.TEXT_PLAIN)
-                .retrieve()
-                .toEntity(String.class);
+        var entityResponse = postCollection(restClient, requestedId).toEntity(String.class);
 
         assertThat(entityResponse.getStatusCode()).isEqualTo(HttpStatus.CREATED);
 
@@ -100,12 +83,7 @@ class CollectionsEndToEndTest extends WithGraphDBContainer {
         assertThat(entityResponse.getHeaders().get(HttpHeaders.LOCATION))
                 .containsExactly(collectionsEndpoint + "/" + uuid);
 
-        fetchedCollections = restClient
-                .get()
-                .uri(collectionsEndpoint)
-                .accept(MediaType.APPLICATION_JSON)
-                .retrieve()
-                .body(String.class);
+        fetchedCollections = getJson(restClient, collectionsEndpoint);
         JSONAssert.assertEquals("""
                 [
                   {
@@ -115,12 +93,7 @@ class CollectionsEndToEndTest extends WithGraphDBContainer {
                 ]
                 """.formatted(uuid), fetchedCollections, true);
 
-        fetchedCollections = restClient
-                .get()
-                .uri(collectionsEndpoint + "/" + uuid)
-                .accept(MediaType.APPLICATION_JSON)
-                .retrieve()
-                .body(String.class);
+        fetchedCollections = getJson(restClient, collectionsEndpoint + "/" + uuid);
         JSONAssert.assertEquals("""
                 {
                   "id" : "%s",
@@ -135,35 +108,17 @@ class CollectionsEndToEndTest extends WithGraphDBContainer {
         assertThat((new JSONObject(fetchedCollections)).has("modified")).isTrue();
         assertThat((new JSONObject(fetchedCollections)).isNull("modified")).isTrue();
 
-        var updateResponseKo = restClient
-                .put()
-                .uri(collectionsEndpoint + "/" + uuid)
-                .body(UPDATE_COLLECTION_REQUEST_JSON.formatted("1"))
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.TEXT_PLAIN)
-                .retrieve()
+        var updateResponseKo = putCollection(restClient, uuid, "1")
                 .onStatus(HttpStatusCode::isError, (req, res) -> {})
                 .toBodilessEntity();
 
         assertThat(updateResponseKo.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
 
-        var updateResponseOk = restClient
-                .put()
-                .uri(collectionsEndpoint + "/" + uuid)
-                .body(UPDATE_COLLECTION_REQUEST_JSON.formatted(uuid))
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.TEXT_PLAIN)
-                .retrieve()
-                .toEntity(Void.class);
+        var updateResponseOk = putCollection(restClient, uuid, uuid).toEntity(Void.class);
 
         assertThat(updateResponseOk.getStatusCode()).isEqualTo(HttpStatus.OK);
 
-        fetchedCollections = restClient
-                .get()
-                .uri(collectionsEndpoint + "/" + uuid)
-                .accept(MediaType.APPLICATION_JSON)
-                .retrieve()
-                .body(String.class);
+        fetchedCollections = getJson(restClient, collectionsEndpoint + "/" + uuid);
 
         JSONAssert.assertEquals("""
                 {
@@ -176,12 +131,7 @@ class CollectionsEndToEndTest extends WithGraphDBContainer {
                 }
                 """.formatted(uuid), fetchedCollections, false);
 
-        var dashboardResponse = restClient
-                .get()
-                .uri(collectionsEndpoint + "/dashboard")
-                .accept(MediaType.APPLICATION_JSON)
-                .retrieve()
-                .body(String.class);
+        var dashboardResponse = getJson(restClient, collectionsEndpoint + "/dashboard");
         JSONAssert.assertEquals("""
                 [
                   {
@@ -193,12 +143,7 @@ class CollectionsEndToEndTest extends WithGraphDBContainer {
                 ]
                 """.formatted(uuid), dashboardResponse, false);
 
-        var toValidateResponse = restClient
-                .get()
-                .uri(collectionsEndpoint + "/toValidate")
-                .accept(MediaType.APPLICATION_JSON)
-                .retrieve()
-                .body(String.class);
+        var toValidateResponse = getJson(restClient, collectionsEndpoint + "/toValidate");
         JSONAssert.assertEquals("""
                 [
                   {
@@ -208,12 +153,7 @@ class CollectionsEndToEndTest extends WithGraphDBContainer {
                 ]
                 """.formatted(uuid), toValidateResponse, false);
 
-        var membersResponse = restClient
-                .get()
-                .uri(collectionsEndpoint + "/" + uuid + "/members")
-                .accept(MediaType.APPLICATION_JSON)
-                .retrieve()
-                .body(String.class);
+        var membersResponse = getJson(restClient, collectionsEndpoint + "/" + uuid + "/members");
         JSONAssert.assertEquals("""
                 [
                   {
@@ -228,16 +168,9 @@ class CollectionsEndToEndTest extends WithGraphDBContainer {
     @Order(2)
     @DisplayName("POST collection with invalid id returns 400")
     void bad_request_when_id_is_invalid() {
-        String collectionsEndpoint = "http://localhost:" + serverPort + "/api/concepts/collections";
         RestClient restClient = RestClient.create();
 
-        restClient
-                .post()
-                .uri(collectionsEndpoint)
-                .body(CREATE_COLLECTION_REQUEST_JSON.formatted("invalid id with spaces"))
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.TEXT_PLAIN)
-                .retrieve()
+        postCollection(restClient, "invalid id with spaces")
                 .onStatus(
                         status -> true,
                         (req, res) -> assertThat(res.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST))
@@ -248,27 +181,13 @@ class CollectionsEndToEndTest extends WithGraphDBContainer {
     @Order(3)
     @DisplayName("POST collection with already-existing id returns 409")
     void conflict_when_id_already_exists() {
-        String collectionsEndpoint = "http://localhost:" + serverPort + "/api/concepts/collections";
         RestClient restClient = RestClient.create();
         String existingId = "Collection-conflict-001";
 
-        var firstCreate = restClient
-                .post()
-                .uri(collectionsEndpoint)
-                .body(CREATE_COLLECTION_REQUEST_JSON.formatted(existingId))
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.TEXT_PLAIN)
-                .retrieve()
-                .toEntity(String.class);
+        var firstCreate = postCollection(restClient, existingId).toEntity(String.class);
         assertThat(firstCreate.getStatusCode()).isEqualTo(HttpStatus.CREATED);
 
-        restClient
-                .post()
-                .uri(collectionsEndpoint)
-                .body(CREATE_COLLECTION_REQUEST_JSON.formatted(existingId))
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.TEXT_PLAIN)
-                .retrieve()
+        postCollection(restClient, existingId)
                 .onStatus(
                         status -> true,
                         (req, res) -> assertThat(res.getStatusCode()).isEqualTo(HttpStatus.CONFLICT))
@@ -279,18 +198,11 @@ class CollectionsEndToEndTest extends WithGraphDBContainer {
     @Order(4)
     @DisplayName("PUT /{id}/validate sets validationState=Validated on the collection")
     void ok_when_collection_validated() {
-        String collectionsEndpoint = "http://localhost:" + serverPort + "/api/concepts/collections";
+        String collectionsEndpoint = collectionsEndpoint();
         RestClient restClient = RestClient.create();
         String validatedId = "Collection-validate-001";
 
-        restClient
-                .post()
-                .uri(collectionsEndpoint)
-                .body(CREATE_COLLECTION_REQUEST_JSON.formatted(validatedId))
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.TEXT_PLAIN)
-                .retrieve()
-                .toBodilessEntity();
+        postCollection(restClient, validatedId).toBodilessEntity();
 
         var validateResponse = restClient
                 .put()
@@ -301,12 +213,7 @@ class CollectionsEndToEndTest extends WithGraphDBContainer {
                 .toBodilessEntity();
         assertThat(validateResponse.getStatusCode().is2xxSuccessful()).isTrue();
 
-        var fetched = restClient
-                .get()
-                .uri(collectionsEndpoint + "/" + validatedId)
-                .accept(MediaType.APPLICATION_JSON)
-                .retrieve()
-                .body(String.class);
+        var fetched = getJson(restClient, collectionsEndpoint + "/" + validatedId);
         assertThat(new JSONObject(fetched).getString("validationState")).isEqualTo("Validated");
     }
 
@@ -314,18 +221,11 @@ class CollectionsEndToEndTest extends WithGraphDBContainer {
     @Order(5)
     @DisplayName("GET /{id}/export returns an ODT document")
     void ok_when_collection_exported() {
-        String collectionsEndpoint = "http://localhost:" + serverPort + "/api/concepts/collections";
+        String collectionsEndpoint = collectionsEndpoint();
         RestClient restClient = RestClient.create();
         String exportedId = "Collection-export-001";
 
-        restClient
-                .post()
-                .uri(collectionsEndpoint)
-                .body(CREATE_COLLECTION_REQUEST_JSON.formatted(exportedId))
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.TEXT_PLAIN)
-                .retrieve()
-                .toBodilessEntity();
+        postCollection(restClient, exportedId).toBodilessEntity();
 
         var exportResponse = restClient
                 .get()
@@ -334,16 +234,42 @@ class CollectionsEndToEndTest extends WithGraphDBContainer {
                 .retrieve()
                 .toEntity(byte[].class);
 
-        assertThat(exportResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
-        byte[] body = exportResponse.getBody();
-        assertThat(body).isNotNull().isNotEmpty();
-        assertThat(body[0]).isEqualTo((byte) 'P');
-        assertThat(body[1]).isEqualTo((byte) 'K');
-        assertThat(exportResponse.getHeaders().getFirst(HttpHeaders.CONTENT_DISPOSITION))
-                .as("Content-Disposition must carry an attachment filename so the browser triggers a download")
-                .startsWith("attachment; filename=\"");
+        assertDownloadableOpenDocument(exportResponse, "attachment; filename=\"");
         assertThat(exportResponse.getHeaders().getFirst("Access-Control-Expose-Headers"))
                 .as("Access-Control-Expose-Headers must expose Content-Disposition so the browser fetch can read it")
                 .contains("Content-Disposition");
+    }
+
+    private String collectionsEndpoint() {
+        return "http://localhost:" + serverPort + "/api/concepts/collections";
+    }
+
+    private RestClient.ResponseSpec postCollection(RestClient restClient, String collectionId) {
+        return restClient
+                .post()
+                .uri(collectionsEndpoint())
+                .body(CREATE_COLLECTION_REQUEST_JSON.formatted(collectionId))
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.TEXT_PLAIN)
+                .retrieve();
+    }
+
+    private RestClient.ResponseSpec putCollection(RestClient restClient, String collectionId, String bodyId) {
+        return restClient
+                .put()
+                .uri(collectionsEndpoint() + "/" + collectionId)
+                .body(UPDATE_COLLECTION_REQUEST_JSON.formatted(bodyId))
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.TEXT_PLAIN)
+                .retrieve();
+    }
+
+    private static String getJson(RestClient restClient, String uri) {
+        return restClient
+                .get()
+                .uri(uri)
+                .accept(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .body(String.class);
     }
 }

@@ -17,6 +17,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.DdiItemNotFoundException;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.InvalidSentinelValuesException;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CategoryCodeListUsage;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Citation;
@@ -51,9 +52,11 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UpdatePhysicalI
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UsageItem;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.VariableRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.DDIRepository;
+import fr.insee.rmes.modules.operation.operations.domain.port.serverside.OperationIrisPort;
 import fr.insee.rmes.modules.operation.series.domain.port.serverside.SeriesCreatorsPort;
 import java.time.Clock;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.Date;
 import java.util.List;
@@ -79,11 +82,14 @@ class DDIServiceImplTest {
     @Mock
     private SeriesCreatorsPort seriesCreatorsPort;
 
+    @Mock
+    private OperationIrisPort operationIrisPort;
+
     private DDIServiceImpl ddiService;
 
     @BeforeEach
     void setUp() {
-        ddiService = new DDIServiceImpl(ddiRepository, seriesCreatorsPort, FIXED_CLOCK);
+        ddiService = new DDIServiceImpl(ddiRepository, seriesCreatorsPort, operationIrisPort, FIXED_CLOCK);
     }
 
     @Test
@@ -322,41 +328,11 @@ class DDIServiceImplTest {
     }
 
     @Test
-    void shouldAggregateCodeListsAcrossAllLogicalProductsAndSchemesOfGroup() {
-        // Given : group -> 2 LP, chaque LP -> 1 CLS, chaque CLS -> des listes de codes,
-        // avec une liste partagée (cl-shared) entre les deux schémas.
-        when(ddiRepository.getLogicalProductsByGroup("fr.insee", "group-1"))
-                .thenReturn(List.of(
-                        new PartialLogicalProduct("lp-1", "Produit Logique 1", new Date(), "fr.insee"),
-                        new PartialLogicalProduct("lp-2", "Produit Logique 2", new Date(), "fr.insee")));
-        when(ddiRepository.getCodeListSchemesByLogicalProduct("fr.insee", "lp-1"))
-                .thenReturn(List.of(new PartialCodeListScheme("cls-1", "Schéma 1", new Date(), "fr.insee")));
-        when(ddiRepository.getCodeListSchemesByLogicalProduct("fr.insee", "lp-2"))
-                .thenReturn(List.of(new PartialCodeListScheme("cls-2", "Schéma 2", new Date(), "fr.insee")));
-        when(ddiRepository.getCodeListsByCodeListScheme("fr.insee", "cls-1"))
-                .thenReturn(List.of(
-                        new PartialCodesList("cl-1", "Liste 1", new Date(), "fr.insee"),
-                        new PartialCodesList("cl-shared", "Liste partagée", new Date(), "fr.insee")));
-        when(ddiRepository.getCodeListsByCodeListScheme("fr.insee", "cls-2"))
-                .thenReturn(List.of(
-                        new PartialCodesList("cl-2", "Liste 2", new Date(), "fr.insee"),
-                        new PartialCodesList("cl-shared", "Liste partagée", new Date(), "fr.insee")));
+    void shouldDelegateGroupCodeListsToTheRepository() {
+        List<PartialCodesList> expected = List.of(new PartialCodesList("cl-1", "Liste 1", new Date(), "fr.insee"));
+        when(ddiRepository.getCodeListsByGroup("fr.insee", "group-1")).thenReturn(expected);
 
-        // When
-        List<PartialCodesList> result = ddiService.getCodeListsByGroup("fr.insee", "group-1");
-
-        // Then : toutes les listes de tous les CLS de tous les LP, dédupliquées par agency/id.
-        assertNotNull(result);
-        assertEquals(3, result.size());
-        assertEquals(
-                Set.of("cl-1", "cl-2", "cl-shared"),
-                result.stream().map(PartialCodesList::id).collect(java.util.stream.Collectors.toSet()));
-
-        verify(ddiRepository).getLogicalProductsByGroup("fr.insee", "group-1");
-        verify(ddiRepository).getCodeListSchemesByLogicalProduct("fr.insee", "lp-1");
-        verify(ddiRepository).getCodeListSchemesByLogicalProduct("fr.insee", "lp-2");
-        verify(ddiRepository).getCodeListsByCodeListScheme("fr.insee", "cls-1");
-        verify(ddiRepository).getCodeListsByCodeListScheme("fr.insee", "cls-2");
+        assertEquals(expected, ddiService.getCodeListsByGroup("fr.insee", "group-1"));
     }
 
     /** Valeurs sentinelles (#1566) : le service délègue la liste des MMVR réutilisables au repository. */
@@ -371,41 +347,6 @@ class DDIServiceImplTest {
                 ddiService.getMissingValuesRepresentationsByGroup("fr.insee", "group-1");
 
         assertEquals(expected, result);
-    }
-
-    @Test
-    void shouldExcludeSentinelCodeListsFromGroupCodeLists() {
-        // Given : le CLS du groupe contient une liste « classique » et la liste de valeurs
-        // sentinelles (cf. #1566), cette dernière étant aussi référencée par une MMVR du groupe.
-        when(ddiRepository.getLogicalProductsByGroup("fr.insee", "group-1"))
-                .thenReturn(List.of(new PartialLogicalProduct("lp-1", "Produit Logique 1", new Date(), "fr.insee")));
-        when(ddiRepository.getCodeListSchemesByLogicalProduct("fr.insee", "lp-1"))
-                .thenReturn(List.of(new PartialCodeListScheme("cls-1", "Schéma 1", new Date(), "fr.insee")));
-        when(ddiRepository.getCodeListsByCodeListScheme("fr.insee", "cls-1"))
-                .thenReturn(List.of(
-                        new PartialCodesList("cl-1", "Liste 1", new Date(), "fr.insee"),
-                        new PartialCodesList("cl-sentinel", "Valeurs sentinelles", new Date(), "fr.insee")));
-        when(ddiRepository.getMissingCodesListsByGroup("fr.insee", "group-1"))
-                .thenReturn(
-                        List.of(new PartialCodesList("cl-sentinel", "Valeurs sentinelles", new Date(), "fr.insee")));
-
-        // When
-        List<PartialCodesList> result = ddiService.getCodeListsByGroup("fr.insee", "group-1");
-
-        // Then : la liste sentinelle est exclue des listes de codes du groupe.
-        assertEquals(1, result.size());
-        assertEquals("cl-1", result.get(0).id());
-    }
-
-    @Test
-    void shouldReturnEmptyListWhenGroupHasNoLogicalProduct() {
-        when(ddiRepository.getLogicalProductsByGroup("fr.insee", "group-empty")).thenReturn(List.of());
-
-        List<PartialCodesList> result = ddiService.getCodeListsByGroup("fr.insee", "group-empty");
-
-        assertNotNull(result);
-        assertTrue(result.isEmpty());
-        verify(ddiRepository).getLogicalProductsByGroup("fr.insee", "group-empty");
     }
 
     @Test
@@ -691,6 +632,8 @@ class DDIServiceImplTest {
                 () -> ddiService.updateFullPhysicalInstance("fr.insee", "pi-1", incoming));
 
         assertTrue(exception.getMessage().contains("mmvr-1"));
+        assertEquals(InvalidSentinelValuesException.Code.DDI_SENTINEL_REPRESENTATION_LABEL_REQUIRED, exception.code());
+        assertEquals("mmvr-1", exception.params().get("id"));
         verify(ddiRepository, never()).updateFullPhysicalInstance(anyString(), anyString(), any());
     }
 
@@ -725,6 +668,8 @@ class DDIServiceImplTest {
                 () -> ddiService.updateFullPhysicalInstance("fr.insee", "pi-1", incoming));
 
         assertTrue(exception.getMessage().contains("cl-sent"));
+        assertEquals(InvalidSentinelValuesException.Code.DDI_SENTINEL_CODE_LIST_LABEL_REQUIRED, exception.code());
+        assertEquals("cl-sent", exception.params().get("id"));
         verify(ddiRepository, never()).updateFullPhysicalInstance(anyString(), anyString(), any());
     }
 
@@ -946,6 +891,27 @@ class DDIServiceImplTest {
                         .toList());
     }
 
+    @Test
+    void getDdi4Group_shouldThrowGroupNotFoundWhenColecticaDoesNotKnowTheGroup() {
+        when(ddiRepository.getGroup("fr.insee", "unknown")).thenReturn(null);
+
+        DdiItemNotFoundException exception =
+                assertThrows(DdiItemNotFoundException.class, () -> ddiService.getDdi4Group("fr.insee", "unknown"));
+
+        assertEquals(DdiItemNotFoundException.Code.DDI_GROUP_NOT_FOUND, exception.code());
+        assertEquals(Map.of("agencyId", "fr.insee", "id", "unknown"), exception.params());
+    }
+
+    @Test
+    void getDdi4PhysicalInstance_shouldThrowPhysicalInstanceNotFoundWhenColecticaDoesNotKnowIt() {
+        when(ddiRepository.getPhysicalInstance("fr.insee", "unknown")).thenReturn(null);
+
+        DdiItemNotFoundException exception = assertThrows(
+                DdiItemNotFoundException.class, () -> ddiService.getDdi4PhysicalInstance("fr.insee", "unknown"));
+
+        assertEquals(DdiItemNotFoundException.Code.DDI_PHYSICAL_INSTANCE_NOT_FOUND, exception.code());
+    }
+
     private Ddi4StudyUnit studyUnitWithTitle(String id, String title) {
         return new Ddi4StudyUnit(
                 Ddi4StudyUnit.TYPE,
@@ -1116,6 +1082,35 @@ class DDIServiceImplTest {
     }
 
     @Test
+    void shouldGetPhysicalInstanceParents_exposesTheSeriesAndOperationMirroredByTheParents() {
+        String seriesIri = "http://id.insee.fr/operations/serie/s1001";
+        String operationIri = "http://id.insee.fr/operations/operation/s2001";
+
+        when(ddiRepository.getPhysicalInstanceParents("fr.insee", "pi-123"))
+                .thenReturn(new PhysicalInstanceParents("fr.insee", "su-456", "fr.insee", "grp-789"));
+        when(ddiRepository.getGroupSeriesIris("fr.insee", "grp-789")).thenReturn(List.of(seriesIri));
+        when(ddiRepository.getStudyUnitOperationIri("fr.insee", "su-456")).thenReturn(Optional.of(operationIri));
+
+        PhysicalInstanceParents result = ddiService.getPhysicalInstanceParents("fr.insee", "pi-123");
+
+        assertEquals(seriesIri, result.seriesIri());
+        assertEquals(operationIri, result.operationIri());
+    }
+
+    @Test
+    void shouldGetPhysicalInstanceParents_leavesTheMirroredIrisEmptyForParentsOutsideTheOperationsModule() {
+        when(ddiRepository.getPhysicalInstanceParents("fr.insee", "pi-123"))
+                .thenReturn(new PhysicalInstanceParents("fr.insee", "su-456", "fr.insee", "grp-789"));
+        when(ddiRepository.getGroupSeriesIris("fr.insee", "grp-789")).thenReturn(List.of());
+        when(ddiRepository.getStudyUnitOperationIri("fr.insee", "su-456")).thenReturn(Optional.empty());
+
+        PhysicalInstanceParents result = ddiService.getPhysicalInstanceParents("fr.insee", "pi-123");
+
+        assertNull(result.seriesIri());
+        assertNull(result.operationIri());
+    }
+
+    @Test
     void shouldGetPhysicalInstancesFilteredByStamp_keepsOnlyInstancesOfUserGroups() {
         String iri1 = "http://id.insee.fr/operations/serie/s1";
         String iri2 = "http://id.insee.fr/operations/serie/s2";
@@ -1211,24 +1206,24 @@ class DDIServiceImplTest {
     void shouldGetStudyUnitXmlByOperationIri_returnsXmlWhenFound() {
         String operationIri = "http://id.insee.fr/operations/operation/op1";
         String expectedXml = "<StudyUnit><r:UserID>http://id.insee.fr/operations/operation/op1</r:UserID></StudyUnit>";
-        when(ddiRepository.findStudyUnitXmlByOperationIri(operationIri)).thenReturn(Optional.of(expectedXml));
+        when(ddiRepository.findStudyUnitXmlByOperationIri(operationIri, null)).thenReturn(Optional.of(expectedXml));
 
-        Optional<String> result = ddiService.getStudyUnitXmlByOperationIri(operationIri);
+        Optional<String> result = ddiService.getStudyUnitXmlByOperationIri(operationIri, null);
 
         assertTrue(result.isPresent());
         assertEquals(expectedXml, result.get());
-        verify(ddiRepository).findStudyUnitXmlByOperationIri(operationIri);
+        verify(ddiRepository).findStudyUnitXmlByOperationIri(operationIri, null);
     }
 
     @Test
     void shouldGetStudyUnitXmlByOperationIri_returnsEmptyWhenNotFound() {
         String operationIri = "http://id.insee.fr/operations/operation/unknown";
-        when(ddiRepository.findStudyUnitXmlByOperationIri(operationIri)).thenReturn(Optional.empty());
+        when(ddiRepository.findStudyUnitXmlByOperationIri(operationIri, null)).thenReturn(Optional.empty());
 
-        Optional<String> result = ddiService.getStudyUnitXmlByOperationIri(operationIri);
+        Optional<String> result = ddiService.getStudyUnitXmlByOperationIri(operationIri, null);
 
         assertFalse(result.isPresent());
-        verify(ddiRepository).findStudyUnitXmlByOperationIri(operationIri);
+        verify(ddiRepository).findStudyUnitXmlByOperationIri(operationIri, null);
     }
 
     @Test
@@ -1236,22 +1231,61 @@ class DDIServiceImplTest {
         String operationIri = "http://id.insee.fr/operations/operation/op1";
         Ddi4StudyUnitResponse expected =
                 new Ddi4StudyUnitResponse(Ddi4Response.SCHEMA, List.of(), List.of(), List.of());
-        when(ddiRepository.findStudyUnitByOperationIri(operationIri)).thenReturn(Optional.of(expected));
+        when(ddiRepository.findStudyUnitByOperationIri(operationIri, null)).thenReturn(Optional.of(expected));
 
-        Optional<Ddi4StudyUnitResponse> result = ddiService.getStudyUnitByOperationIri(operationIri);
+        Optional<Ddi4StudyUnitResponse> result = ddiService.getStudyUnitByOperationIri(operationIri, null);
 
         assertTrue(result.isPresent());
         assertEquals(expected, result.get());
-        verify(ddiRepository).findStudyUnitByOperationIri(operationIri);
+        verify(ddiRepository).findStudyUnitByOperationIri(operationIri, null);
     }
 
     @Test
     void shouldGetStudyUnitByOperationIri_returnsEmptyWhenNotFound() {
         String operationIri = "http://id.insee.fr/operations/operation/unknown";
-        when(ddiRepository.findStudyUnitByOperationIri(operationIri)).thenReturn(Optional.empty());
+        when(ddiRepository.findStudyUnitByOperationIri(operationIri, null)).thenReturn(Optional.empty());
 
-        assertFalse(ddiService.getStudyUnitByOperationIri(operationIri).isPresent());
-        verify(ddiRepository).findStudyUnitByOperationIri(operationIri);
+        assertFalse(ddiService.getStudyUnitByOperationIri(operationIri, null).isPresent());
+        verify(ddiRepository).findStudyUnitByOperationIri(operationIri, null);
+    }
+
+    /** #1176 : la date de mise à jour s'entend à 0:00:00, heure de Paris. */
+    @Test
+    void getStudyUnitXmlByOperationIri_filtersFromMidnightParisTimeOfTheGivenDate() {
+        String operationIri = "http://id.insee.fr/operations/operation/op1";
+        Instant midnightInParis = Instant.parse("2026-03-31T22:00:00Z");
+        when(ddiRepository.findStudyUnitXmlByOperationIri(operationIri, midnightInParis))
+                .thenReturn(Optional.of("<StudyUnit/>"));
+
+        assertEquals(
+                Optional.of("<StudyUnit/>"),
+                ddiService.getStudyUnitXmlByOperationIri(operationIri, LocalDate.of(2026, 4, 1)));
+    }
+
+    @Test
+    void getStudyUnitByOperationIri_filtersFromMidnightParisTimeOfTheGivenDate() {
+        String operationIri = "http://id.insee.fr/operations/operation/op1";
+        Instant midnightInParis = Instant.parse("2026-01-14T23:00:00Z");
+        Ddi4StudyUnitResponse expected =
+                new Ddi4StudyUnitResponse(Ddi4Response.SCHEMA, List.of(), List.of(), List.of());
+        when(ddiRepository.findStudyUnitByOperationIri(operationIri, midnightInParis))
+                .thenReturn(Optional.of(expected));
+
+        assertEquals(
+                Optional.of(expected), ddiService.getStudyUnitByOperationIri(operationIri, LocalDate.of(2026, 1, 15)));
+    }
+
+    /** Une StudyUnit peut désigner son opération par l'une ou l'autre de ses IRI. */
+    @Test
+    void shouldGetPhysicalInstancesByOperation_looksUpEveryIriOfTheOperation() {
+        List<String> iris =
+                List.of("http://id.insee.fr/operations/operation/s1268", "http://bauhaus/operations/operation/s1268");
+        when(operationIrisPort.irisOf("s1268")).thenReturn(iris);
+        List<PartialPhysicalInstance> expected =
+                List.of(new PartialPhysicalInstance("pi-1", "Individus", null, "fr.insee"));
+        when(ddiRepository.findPhysicalInstancesByOperationIris(iris)).thenReturn(expected);
+
+        assertEquals(expected, ddiService.getPhysicalInstancesByOperation("s1268"));
     }
 
     @Test

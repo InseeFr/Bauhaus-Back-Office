@@ -1,12 +1,14 @@
 package fr.insee.rmes.exceptions;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import fr.insee.rmes.domain.exceptions.CodedRmesException;
 import fr.insee.rmes.domain.exceptions.RmesException;
-import java.nio.file.NoSuchFileException;
+import fr.insee.rmes.modules.commons.webservice.ApiError;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 class RmesExceptionHandlerTest {
@@ -14,77 +16,33 @@ class RmesExceptionHandlerTest {
     RmesExceptionHandler rmesExceptionHandler = new RmesExceptionHandler();
 
     @ParameterizedTest
-    @ValueSource(
-            ints = {
-                100, 200, 201, 202, 203, 204, 205, 206, 300, 301, 302, 303, 304, 400, 401, 402, 403, 404, 405, 406, 407,
-                408, 409, 410, 411, 412, 413, 414, 415, 500, 501, 502, 503, 504, 505
-            })
-    void shouldReturnHandleSubclassesOfRmesExceptionDetails(int codeError) {
-        RmesException rmesException = new RmesException(codeError, "RmesException message", "RmesExceptionDetails");
-        ResponseEntity<String> actual = rmesExceptionHandler.handleSubclassesOfRmesException(rmesException);
+    @ValueSource(ints = {0, 100, 200, 204, 302, 999})
+    void a_status_which_is_not_an_error_answers_500(int status) {
+        RmesException rmesException = new RmesException(status, "RmesException message", "RmesExceptionDetails");
 
-        String[] handleSubclassesBegin = actual.toString().split(",");
-        String[] handleSubclassesBeginWithoutSpace = handleSubclassesBegin[0].split(" ");
+        ResponseEntity<ApiError> actual = rmesExceptionHandler.handleRmesException(rmesException);
 
-        String beginningOfRmesException = "<" + codeError;
-        boolean isCorrectBeginMessage = beginningOfRmesException.equals(handleSubclassesBeginWithoutSpace[0]);
-
-        String second =
-                switch (handleSubclassesBeginWithoutSpace.length) {
-                    case 3 -> handleSubclassesBeginWithoutSpace[2].toUpperCase();
-                    case 4 ->
-                        handleSubclassesBeginWithoutSpace[2].toUpperCase() + "_"
-                                + handleSubclassesBeginWithoutSpace[3].toUpperCase();
-                    case 5 ->
-                        handleSubclassesBeginWithoutSpace[2].toUpperCase() + "_"
-                                + handleSubclassesBeginWithoutSpace[3].toUpperCase() + "_"
-                                + handleSubclassesBeginWithoutSpace[4].toUpperCase();
-                    case 6 ->
-                        handleSubclassesBeginWithoutSpace[2].toUpperCase() + "_"
-                                + handleSubclassesBeginWithoutSpace[3].toUpperCase() + "_"
-                                + handleSubclassesBeginWithoutSpace[4].toUpperCase() + "_"
-                                + handleSubclassesBeginWithoutSpace[5].toUpperCase();
-                    default -> "";
-                };
-
-        if (codeError == 203) {
-            second = "NON_AUTHORITATIVE_INFORMATION";
-        }
-
-        boolean isCorrectMiddleMessage = second.equals(handleSubclassesBeginWithoutSpace[1]);
-        assertTrue(isCorrectBeginMessage && isCorrectMiddleMessage);
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, actual.getStatusCode());
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"Bauhaus-Back-Office", "FileName-Message-Throwable"})
-    void shouldReturnHandleRmesFileExceptionDetails(String infos) {
-        String[] details = infos.split("-");
-        RmesFileException rmesFileException = new RmesFileException(details[0], details[1], new Throwable(details[2]));
-        ResponseEntity<String> actual = rmesExceptionHandler.handleRmesFileException(rmesFileException);
-        String expected =
-                "<500 INTERNAL_SERVER_ERROR Internal Server Error,RmesFileException{fileName='" + details[0] + "'},[]>";
-        assertEquals(expected, actual.toString());
+    @ValueSource(ints = {400, 403, 404, 409, 500, 503})
+    void an_error_status_is_kept(int status) {
+        RmesException rmesException = new RmesException(status, "RmesException message", "RmesExceptionDetails");
+
+        ResponseEntity<ApiError> actual = rmesExceptionHandler.handleRmesException(rmesException);
+
+        assertEquals(status, actual.getStatusCode().value());
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = {"message-detail", "myMessage-myDetail"})
-    void shouldReturnHandleRmesExceptionDetails(String rmesExceptionInformation) {
-        String[] infos = rmesExceptionInformation.split("-");
-        RmesException rmesException = new RmesException(401, infos[0], infos[1]);
-        ResponseEntity<String> actual = rmesExceptionHandler.handleRmesException(rmesException);
-        String expected = "<500 INTERNAL_SERVER_ERROR Internal Server Error,{\"details\":\"" + infos[1]
-                + "\",\"message\":\"" + infos[0] + "\"},[]>";
-        assertEquals(expected, actual.toString());
-    }
+    @Test
+    void a_coded_exception_answers_its_status_and_its_code_without_the_technical_cause() {
+        CodedRmesException exception = new CodedRmesException(
+                503, "PUBLICATION_REPOSITORY_UNAVAILABLE", "Publication failed", new IllegalStateException("rdf4j"));
 
-    @ParameterizedTest
-    @ValueSource(strings = {"fileOne-otherOne-reasonOne", "fileTwo-otherTwo-reasonTwo"})
-    void shouldReturnHandleRmesExceptionFromNoSuchFileException(String details) {
-        String[] infos = details.split("-");
-        NoSuchFileException noSuchFileException = new NoSuchFileException(infos[0], infos[1], infos[2]);
-        ResponseEntity<String> actual = rmesExceptionHandler.handleRmesException(noSuchFileException);
-        String expected =
-                "<404 NOT_FOUND Not Found," + infos[0] + " -> " + infos[1] + ": " + infos[2] + " does not exist,[]>";
-        assertEquals(expected, actual.toString());
+        ResponseEntity<ApiError> actual = rmesExceptionHandler.handleRmesException(exception);
+
+        assertEquals(HttpStatus.SERVICE_UNAVAILABLE, actual.getStatusCode());
+        assertEquals(new ApiError("Publication failed", "PUBLICATION_REPOSITORY_UNAVAILABLE"), actual.getBody());
     }
 }

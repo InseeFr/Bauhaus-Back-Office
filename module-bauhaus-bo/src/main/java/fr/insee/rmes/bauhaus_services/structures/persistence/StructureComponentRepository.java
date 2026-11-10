@@ -479,11 +479,20 @@ public class StructureComponentRepository extends RdfService {
         String id = component.getString(Constants.ID);
 
         if (type.equals(QB.ATTRIBUTE_PROPERTY.stringValue())) {
-            componentPublication.publishComponent(iriFactory.structureComponentAttribute(id), QB.ATTRIBUTE_PROPERTY);
+            componentPublication.publishComponent(
+                    iriFactory.structureComponentAttribute(id),
+                    QB.ATTRIBUTE_PROPERTY,
+                    iriFactory.structureComponentGraph());
         } else if (type.equals(QB.MEASURE_PROPERTY.stringValue())) {
-            componentPublication.publishComponent(iriFactory.structureComponentMeasure(id), QB.MEASURE_PROPERTY);
+            componentPublication.publishComponent(
+                    iriFactory.structureComponentMeasure(id),
+                    QB.MEASURE_PROPERTY,
+                    iriFactory.structureComponentGraph());
         } else if (type.equals(QB.DIMENSION_PROPERTY.stringValue())) {
-            componentPublication.publishComponent(iriFactory.structureComponentDimension(id), QB.DIMENSION_PROPERTY);
+            componentPublication.publishComponent(
+                    iriFactory.structureComponentDimension(id),
+                    QB.DIMENSION_PROPERTY,
+                    iriFactory.structureComponentGraph());
         }
 
         createRDFForComponent(mutualizedComponent, ValidationStatus.VALIDATED, component);

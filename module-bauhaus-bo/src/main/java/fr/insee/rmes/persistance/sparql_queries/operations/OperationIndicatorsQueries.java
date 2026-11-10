@@ -10,6 +10,7 @@ import fr.insee.rmes.graphdb.SparqlLiterals;
 import java.util.HashMap;
 import java.util.Map;
 import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -102,6 +103,8 @@ public class OperationIndicatorsQueries {
         params.put("LG1", SparqlLiterals.literal(languages.lg1()));
         params.put("LG2", SparqlLiterals.literal(languages.lg2()));
         params.put("LINKPREDICATE", SparqlLiterals.iri(linkPredicate.stringValue()));
+        // Un lien « voir aussi » se lit depuis ses deux extrémités.
+        params.put("SYMMETRIC", RDFS.SEEALSO.equals(linkPredicate));
         params.put(OPERATIONS_GRAPH, SparqlLiterals.iri(graphs.operationsGraph()));
         params.put(PRODUCTS_GRAPH, SparqlLiterals.iri(graphs.productsGraph()));
         return buildIndicatorRequest("getIndicatorLinks.ftlh", params);

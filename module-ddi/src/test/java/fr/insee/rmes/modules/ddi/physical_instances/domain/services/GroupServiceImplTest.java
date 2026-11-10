@@ -1,5 +1,6 @@
 package fr.insee.rmes.modules.ddi.physical_instances.domain.services;
 
+import static fr.insee.rmes.modules.ddi.physical_instances.domain.services.PartialGroupFixtures.groupsInUnsortedOrder;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -66,11 +67,7 @@ class GroupServiceImplTest {
 
     @Test
     void getAll_shouldBeSortedByLabelDescending() {
-        when(groupRepository.getAll())
-                .thenReturn(List.of(
-                        new PartialGroup("g-a", "alpha", new Date(), "fr.insee", List.of()),
-                        new PartialGroup("g-c", "Charlie", new Date(), "fr.insee", List.of()),
-                        new PartialGroup("g-b", "Bravo", new Date(), "fr.insee", List.of())));
+        when(groupRepository.getAll()).thenReturn(groupsInUnsortedOrder());
 
         List<PartialGroup> result = groupService.getAll();
 

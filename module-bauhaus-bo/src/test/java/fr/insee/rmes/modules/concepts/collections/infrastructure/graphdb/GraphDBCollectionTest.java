@@ -14,28 +14,15 @@ import org.junit.jupiter.api.Test;
 
 class GraphDBCollectionTest {
 
+    private static final LocalDateTime CREATED = LocalDateTime.of(2024, 1, 1, 10, 0);
+    private static final LocalDateTime MODIFIED = LocalDateTime.of(2024, 6, 1, 15, 30);
+
     @Test
     void should_convert_from_domain_with_all_fields() {
         // Given
-        var collectionId = new CollectionId("c1000");
-        var labels = List.of(
-                new LocalisedLabel("Collection Label FR", Lang.FR), new LocalisedLabel("Collection Label EN", Lang.EN));
-        var descriptions =
-                List.of(new LocalisedLabel("Description FR", Lang.FR), new LocalisedLabel("Description EN", Lang.EN));
-        var created = LocalDateTime.of(2024, 1, 1, 10, 0);
-        var modified = LocalDateTime.of(2024, 6, 1, 15, 30);
-        var conceptIds = List.of(new ConceptId("concept1"), new ConceptId("concept2"));
-
-        var collection = new Collection(
-                collectionId,
-                labels,
-                "creator1",
-                "contributor1",
-                descriptions,
-                created,
-                modified,
-                ValidationStatus.VALIDATED,
-                conceptIds);
+        var created = CREATED;
+        var modified = MODIFIED;
+        var collection = fullDomainCollection();
 
         // When
         var graphDBCollection = GraphDBCollection.fromDomain(collection);
@@ -64,20 +51,7 @@ class GraphDBCollectionTest {
     @Test
     void should_convert_from_domain_with_null_optional_fields() {
         // Given
-        var collectionId = new CollectionId("c2000");
-        var labels = List.of(new LocalisedLabel("Collection Label", Lang.FR));
-        var created = LocalDateTime.of(2024, 1, 1, 10, 0);
-
-        var collection = new Collection(
-                collectionId,
-                labels,
-                "creator1",
-                null,
-                List.of(),
-                created,
-                null,
-                ValidationStatus.UNPUBLISHED,
-                List.of());
+        var collection = minimalDomainCollection();
 
         // When
         var graphDBCollection = GraphDBCollection.fromDomain(collection);
@@ -321,35 +295,14 @@ class GraphDBCollectionTest {
     @Test
     void should_perform_round_trip_conversion() {
         // Given - Create a domain object
-        var collectionId = new CollectionId("c1000");
-        var labels = List.of(
-                new LocalisedLabel("Collection Label FR", Lang.FR), new LocalisedLabel("Collection Label EN", Lang.EN));
-        var descriptions =
-                List.of(new LocalisedLabel("Description FR", Lang.FR), new LocalisedLabel("Description EN", Lang.EN));
-        var created = LocalDateTime.of(2024, 1, 1, 10, 0);
-        var modified = LocalDateTime.of(2024, 6, 1, 15, 30);
-        var conceptIds = List.of(new ConceptId("concept1"), new ConceptId("concept2"));
-
-        var originalCollection = new Collection(
-                collectionId,
-                labels,
-                "creator1",
-                "contributor1",
-                descriptions,
-                created,
-                modified,
-                ValidationStatus.VALIDATED,
-                conceptIds);
+        var originalCollection = fullDomainCollection();
 
         // When - Convert to GraphDB and back to domain
         var graphDBCollection = GraphDBCollection.fromDomain(originalCollection);
         var convertedCollection = graphDBCollection.toDomain();
 
         // Then - Verify the round trip preserves all data
-        assertEquals(originalCollection.id().value(), convertedCollection.id().value());
-        assertEquals(
-                originalCollection.prefLabel().value(),
-                convertedCollection.prefLabel().value());
+        assertSameIdAndPrefLabel(originalCollection, convertedCollection);
         assertEquals(
                 originalCollection.prefLabel().lang(),
                 convertedCollection.prefLabel().lang());
@@ -376,30 +329,14 @@ class GraphDBCollectionTest {
     @Test
     void should_perform_round_trip_conversion_with_minimal_fields() {
         // Given
-        var collectionId = new CollectionId("c2000");
-        var labels = List.of(new LocalisedLabel("Collection Label", Lang.FR));
-        var created = LocalDateTime.of(2024, 1, 1, 10, 0);
-
-        var originalCollection = new Collection(
-                collectionId,
-                labels,
-                "creator1",
-                null,
-                List.of(),
-                created,
-                null,
-                ValidationStatus.UNPUBLISHED,
-                List.of());
+        var originalCollection = minimalDomainCollection();
 
         // When
         var graphDBCollection = GraphDBCollection.fromDomain(originalCollection);
         var convertedCollection = graphDBCollection.toDomain();
 
         // Then
-        assertEquals(originalCollection.id().value(), convertedCollection.id().value());
-        assertEquals(
-                originalCollection.prefLabel().value(),
-                convertedCollection.prefLabel().value());
+        assertSameIdAndPrefLabel(originalCollection, convertedCollection);
         assertEquals(originalCollection.created(), convertedCollection.created());
         assertNull(convertedCollection.modified().orElse(null));
         assertNull(convertedCollection.contributor().orElse(null));
@@ -467,5 +404,40 @@ class GraphDBCollectionTest {
         assertEquals(LocalDateTime.of(2024, 1, 1, 10, 0, 0), collection.created());
         assertEquals(
                 LocalDateTime.of(2024, 6, 1, 15, 30, 0), collection.modified().orElse(null));
+    }
+
+    /** Collection c1000 dont tous les champs, facultatifs compris, sont renseignés. */
+    private static Collection fullDomainCollection() {
+        return new Collection(
+                new CollectionId("c1000"),
+                List.of(
+                        new LocalisedLabel("Collection Label FR", Lang.FR),
+                        new LocalisedLabel("Collection Label EN", Lang.EN)),
+                "creator1",
+                "contributor1",
+                List.of(new LocalisedLabel("Description FR", Lang.FR), new LocalisedLabel("Description EN", Lang.EN)),
+                CREATED,
+                MODIFIED,
+                ValidationStatus.VALIDATED,
+                List.of(new ConceptId("concept1"), new ConceptId("concept2")));
+    }
+
+    /** Collection c2000 réduite aux champs obligatoires. */
+    private static Collection minimalDomainCollection() {
+        return new Collection(
+                new CollectionId("c2000"),
+                List.of(new LocalisedLabel("Collection Label", Lang.FR)),
+                "creator1",
+                null,
+                List.of(),
+                CREATED,
+                null,
+                ValidationStatus.UNPUBLISHED,
+                List.of());
+    }
+
+    private static void assertSameIdAndPrefLabel(Collection original, Collection converted) {
+        assertEquals(original.id().value(), converted.id().value());
+        assertEquals(original.prefLabel().value(), converted.prefLabel().value());
     }
 }

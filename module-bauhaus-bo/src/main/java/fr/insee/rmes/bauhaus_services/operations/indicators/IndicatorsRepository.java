@@ -1,7 +1,5 @@
 package fr.insee.rmes.bauhaus_services.operations.indicators;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.CodeListService;
@@ -13,6 +11,7 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.utils.OrganisationLookup;
 import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.domain.logging.LogSanitizer;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
@@ -23,6 +22,8 @@ import fr.insee.rmes.graphdb.ontologies.ADMS;
 import fr.insee.rmes.graphdb.ontologies.INSEE;
 import fr.insee.rmes.model.links.OperationsLink;
 import fr.insee.rmes.model.operations.Indicator;
+import fr.insee.rmes.modules.operations.indicators.domain.model.IndicatorLink;
+import fr.insee.rmes.modules.operations.indicators.domain.model.commands.IndicatorCommand;
 import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationIndicatorsQueries;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
@@ -30,7 +31,6 @@ import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.Deserializer;
 import fr.insee.rmes.utils.XMLUtils;
 import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -95,18 +95,18 @@ public class IndicatorsRepository {
 
     void validate(Indicator indicator) throws RmesException {
         if (indicator.isWasGeneratedByEmpty()) {
-            throw new RmesBadRequestException(
+            throw RmesBadRequestException.coded(
                     IndicatorErrorCode.EMPTY_WAS_GENERATED_BY, "An indicator should be linked to a series.");
         }
         if (repositoryGestion.getResponseAsBoolean(operationIndicatorsQueries.checkPrefLabelUnicity(
                 indicator.getId(), indicator.getPrefLabelLg1(), languages.lg1()))) {
-            throw new RmesBadRequestException(
+            throw RmesBadRequestException.coded(
                     IndicatorErrorCode.EXISTING_PREF_LABEL_LG1,
                     "This prefLabelLg1 is already used by another indicator.");
         }
         if (repositoryGestion.getResponseAsBoolean(operationIndicatorsQueries.checkPrefLabelUnicity(
                 indicator.getId(), indicator.getPrefLabelLg2(), languages.lg2()))) {
-            throw new RmesBadRequestException(
+            throw RmesBadRequestException.coded(
                     IndicatorErrorCode.EXISTING_PREF_LABEL_LG2,
                     "This prefLabelLg2 is already used by another indicator.");
         }
@@ -255,51 +255,27 @@ public class IndicatorsRepository {
         }
     }
 
-    /**
-     * Create
-     * @param body
-     * @return
-     * @throws RmesException
-     */
-    public String setIndicator(String body) throws RmesException {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        Indicator indicator = new Indicator();
+    /** Création : l'identifiant est généré, le reste vient de la commande. */
+    public String setIndicator(IndicatorCommand command) throws RmesException {
         String id = createID();
         if (id == null) {
             logger.error("Create indicator cancelled - no id");
             return null;
         }
-        try {
-            indicator = mapper.readValue(body, Indicator.class);
-            indicator.setId(id);
-        } catch (IOException e) {
-            logger.error(e.getMessage());
-        }
+        Indicator indicator = toIndicator(id, command);
         indicator.setCreated(DateUtils.getCurrentDate());
         indicator.setUpdated(DateUtils.getCurrentDate());
         createRdfIndicator(indicator, ValidationStatus.UNPUBLISHED);
-        logger.info("Create indicator : {} - {}", indicator.getId(), indicator.getPrefLabelLg1());
+        if (logger.isInfoEnabled()) {
+            logger.info(
+                    "Create indicator : {} - {}", indicator.getId(), LogSanitizer.forLog(indicator.getPrefLabelLg1()));
+        }
         return indicator.getId();
     }
 
-    /**
-     * Update
-     * @param id
-     * @param body
-     * @throws RmesException
-     */
-    public void setIndicator(String id, String body) throws RmesException {
-
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        Indicator indicator = Indicator.of(id);
-        try {
-            indicator = mapper.readerForUpdating(indicator).readValue(body);
-        } catch (IOException e) {
-            logger.error(e.getMessage());
-        }
-
+    /** Mise à jour : l'identifiant vient de l'appelant, la commande réécrit l'indicateur entier. */
+    public void setIndicator(String id, IndicatorCommand command) throws RmesException {
+        Indicator indicator = toIndicator(id, command);
         indicator.setUpdated(DateUtils.getCurrentDate());
 
         String status = operationsParentRepository.getIndicatorsValidationStatus(id);
@@ -312,7 +288,49 @@ public class IndicatorsRepository {
             createRdfIndicator(indicator, ValidationStatus.MODIFIED);
         }
 
-        logger.info("Update indicator : {} - {}", indicator.getId(), indicator.getPrefLabelLg1());
+        if (logger.isInfoEnabled()) {
+            logger.info(
+                    "Update indicator : {} - {}",
+                    LogSanitizer.forLog(indicator.getId()),
+                    LogSanitizer.forLog(indicator.getPrefLabelLg1()));
+        }
+    }
+
+    /**
+     * Projette la commande sur le modèle du dépôt. {@code created} et {@code updated} sont posés par
+     * les appelants ci-dessus ; {@code validationState} est décidé par {@code createRdfIndicator}.
+     */
+    private static Indicator toIndicator(String id, IndicatorCommand command) {
+        Indicator indicator = Indicator.of(id);
+        indicator.setPrefLabelLg1(command.prefLabelLg1());
+        indicator.setPrefLabelLg2(command.prefLabelLg2());
+        indicator.setAltLabelLg1(command.altLabelLg1());
+        indicator.setAltLabelLg2(command.altLabelLg2());
+        indicator.setAbstractLg1(command.abstractLg1());
+        indicator.setAbstractLg2(command.abstractLg2());
+        indicator.setHistoryNoteLg1(command.historyNoteLg1());
+        indicator.setHistoryNoteLg2(command.historyNoteLg2());
+        indicator.setAccrualPeriodicityCode(command.accrualPeriodicityCode());
+        indicator.setAccrualPeriodicityList(command.accrualPeriodicityList());
+        indicator.setPublishers(command.publishers());
+        indicator.setContributors(command.contributors());
+        indicator.setCreators(command.creators());
+        indicator.setSeeAlso(toOperationsLinks(command.seeAlso()));
+        indicator.setReplaces(toOperationsLinks(command.replaces()));
+        indicator.setIsReplacedBy(toOperationsLinks(command.isReplacedBy()));
+        indicator.setWasGeneratedBy(toOperationsLinks(command.wasGeneratedBy()));
+        indicator.setIdSims(command.idSims());
+        indicator.setCreated(command.created());
+        return indicator;
+    }
+
+    private static List<OperationsLink> toOperationsLinks(List<IndicatorLink> links) {
+        if (links == null) {
+            return List.of();
+        }
+        return links.stream()
+                .map(link -> OperationsLink.of(link.id(), link.type(), null, null))
+                .toList();
     }
 
     public void addMulltiLangValues(
@@ -382,7 +400,7 @@ public class IndicatorsRepository {
         RdfUtils.addTripleUri(
                 indicURI, DCTERMS.ACCRUAL_PERIODICITY, accPeriodicityUri, model, RdfUtils.productsGraph());
 
-        addOneWayLink(model, indicURI, indicator.getSeeAlso(), RDFS.SEEALSO);
+        addSeeAlsoLinks(model, indicURI, indicator.getSeeAlso());
         addOneWayLink(model, indicURI, indicator.getWasGeneratedBy(), PROV.WAS_GENERATED_BY);
 
         List<OperationsLink> replaces = indicator.getReplaces();
@@ -442,6 +460,29 @@ public class IndicatorsRepository {
                 RdfUtils.addTripleUri(indicURI, linkPredicate, linkedObjectUri, model, RdfUtils.productsGraph());
             }
         }
+    }
+
+    /**
+     * Le lien « voir aussi » est symétrique : il est aussi écrit depuis l'objet lié, dans le graphe de
+     * celui-ci, pour que la fiche de l'un affiche l'autre (Bauhaus#1657).
+     */
+    private void addSeeAlsoLinks(Model model, IRI indicURI, List<OperationsLink> links) {
+        if (links != null) {
+            for (OperationsLink oneLink : links) {
+                IRI linkedObjectUri = RdfUtils.toURI(
+                        this.bauhausUriBuilder.getCompleteUriGestion(oneLink.getType(), oneLink.getId()));
+                RdfUtils.addTripleUri(indicURI, RDFS.SEEALSO, linkedObjectUri, model, RdfUtils.productsGraph());
+                RdfUtils.addTripleUri(linkedObjectUri, RDFS.SEEALSO, indicURI, model, graphOf(oneLink));
+            }
+        }
+    }
+
+    private static Resource graphOf(OperationsLink link) {
+        return ObjectType.getEnumByLabel(link.getType())
+                        .filter(ObjectType.INDICATOR::equals)
+                        .isPresent()
+                ? RdfUtils.productsGraph()
+                : RdfUtils.operationsGraph();
     }
 
     private void addReplacesAndReplacedBy(Model model, IRI previous, IRI next) {

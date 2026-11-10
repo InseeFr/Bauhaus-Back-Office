@@ -42,6 +42,7 @@
             skos:altLabel         "SAP"@fr , "STP"@en ;
             dcterms:isPartOf      <http://bauhaus/operations/famille/s9100> ;
             dcterms:publisher     <http://bauhaus/organisations/insee/DG75-E001> ;
+            dcterms:subject       <http://bauhaus/concepts/theme/th9101> ;
             dcterms:hasPart       <http://bauhaus/operations/operation/s9102> , <http://bauhaus/operations/operation/s9105> ;
             insee:validationState "Unpublished" .
 

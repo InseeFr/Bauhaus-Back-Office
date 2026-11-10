@@ -2,7 +2,7 @@ SELECT DISTINCT ?id ?labelLg1 ?labelLg2 ?typeOfObject
 		FROM ${OPERATIONS_GRAPH} 
 		FROM ${PRODUCTS_GRAPH} 
 	WHERE {   
-				?series ${LINK_PREDICATE} ?uriLinked .   
+				?series ${LINK_PREDICATE}<#if SYMMETRIC>|^${LINK_PREDICATE}</#if> ?uriLinked .   
 
 				?uriLinked skos:prefLabel ?labelLg1 .  
 				FILTER (lang(?labelLg1) = ${LG1}) .  

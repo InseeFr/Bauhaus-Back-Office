@@ -35,16 +35,12 @@ class ClassificationNoteServiceImplTest {
         String iri = "http://example.org/note";
         String value = "This is **markdown** content.";
         Model model = new LinkedHashModel();
-        Resource graph = new InternedIRI("namespaceGraph", "localNameGraph");
+        Resource graph = graph();
         // When
         service.addNotes(graph, iri, value, model);
 
         // Then
-        IRI noteIri = RdfUtils.createIRI(iri);
-
-        verify(repositoryGestion).deleteTripletByPredicate(noteIri, EVOC.NOTE_LITERAL, graph, null);
-        verify(repositoryGestion).deleteTripletByPredicate(noteIri, XKOS.PLAIN_TEXT, graph, null);
-        verify(repositoryGestion).deleteTripletByPredicate(noteIri, RDF.VALUE, graph, null);
+        verifyPreviousNoteTripletsDeleted(RdfUtils.createIRI(iri), graph);
 
         assertEquals(
                 "[(http://example.org/note, http://eurovoc.europa.eu/schema#noteLiteral, \"<div xmlns=\"http://www.w3.org/1999/xhtml\"><p>This is <strong>markdown</strong> content.</p></div>\") [namespaceGraphlocalNameGraph], (http://example.org/note, http://rdf-vocabulary.ddialliance.org/xkos#plainText, \"This is markdown content.\") [namespaceGraphlocalNameGraph], (http://example.org/note, http://www.w3.org/1999/02/22-rdf-syntax-ns#value, \"This is **markdown** content.\") [namespaceGraphlocalNameGraph]]",
@@ -56,15 +52,11 @@ class ClassificationNoteServiceImplTest {
         String iri = "http://example.org/note";
         String value = ""; // empty
         Model model = new LinkedHashModel();
-        Resource graph = new InternedIRI("namespaceGraph", "localNameGraph");
+        Resource graph = graph();
 
         service.addNotes(graph, iri, value, model);
 
-        IRI noteIri = RdfUtils.createIRI(iri);
-
-        verify(repositoryGestion).deleteTripletByPredicate(noteIri, EVOC.NOTE_LITERAL, graph, null);
-        verify(repositoryGestion).deleteTripletByPredicate(noteIri, XKOS.PLAIN_TEXT, graph, null);
-        verify(repositoryGestion).deleteTripletByPredicate(noteIri, RDF.VALUE, graph, null);
+        verifyPreviousNoteTripletsDeleted(RdfUtils.createIRI(iri), graph);
 
         assertEquals("[]", model.toString());
     }
@@ -73,11 +65,21 @@ class ClassificationNoteServiceImplTest {
     void testAddNotes_shouldDoNothing_whenIriIsEmpty() throws RmesException {
         String value = "some value";
         Model model = new LinkedHashModel();
-        Resource graph = new InternedIRI("namespaceGraph", "localNameGraph");
+        Resource graph = graph();
 
         service.addNotes(graph, null, value, model);
 
         verifyNoInteractions(repositoryGestion);
         assertEquals("[]", model.toString());
+    }
+
+    private static Resource graph() {
+        return new InternedIRI("namespaceGraph", "localNameGraph");
+    }
+
+    private void verifyPreviousNoteTripletsDeleted(IRI noteIri, Resource graph) throws RmesException {
+        verify(repositoryGestion).deleteTripletByPredicate(noteIri, EVOC.NOTE_LITERAL, graph, null);
+        verify(repositoryGestion).deleteTripletByPredicate(noteIri, XKOS.PLAIN_TEXT, graph, null);
+        verify(repositoryGestion).deleteTripletByPredicate(noteIri, RDF.VALUE, graph, null);
     }
 }

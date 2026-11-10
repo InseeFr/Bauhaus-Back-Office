@@ -26,9 +26,11 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanc
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceParents;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceSearchRow;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UpdatePhysicalInstanceRequest;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import org.jspecify.annotations.Nullable;
 
 public interface DDIService {
     List<PartialPhysicalInstance> getPhysicalInstances();
@@ -138,17 +140,35 @@ public interface DDIService {
      */
     List<CodeListVariableUsage> getVariablesUsingMissingValuesRepresentation(String agencyId, String mmvrId);
 
+    /**
+     * Les variables du VariableScheme de la StudyUnit, réutilisables par ses PhysicalInstances
+     * (#1387).
+     */
+    Ddi4Response getStudyUnitVariables(String agencyId, String studyUnitId);
+
+    /**
+     * Les variables utilisées par chaque PhysicalInstance de la StudyUnit : une variable présente
+     * dans plusieurs fichiers est partagée (#1387).
+     */
+    List<CodeListVariableUsage> getStudyUnitVariableUsages(String agencyId, String studyUnitId);
+
     String getItemXml(String agency, String id, String version);
 
     String getItemXml(String agency, String id);
 
     PhysicalInstanceParents getPhysicalInstanceParents(String agencyId, String id);
 
-    Optional<String> getStudyUnitXmlByOperationIri(String operationIri);
+    Optional<String> getStudyUnitXmlByOperationIri(String operationIri, @Nullable LocalDate modifiedSince);
 
     /**
      * La StudyUnit d'une opération et les PhysicalInstances qu'elle référence, en DDI 4 (#1145) —
-     * pendant JSON de {@link #getStudyUnitXmlByOperationIri(String)}.
+     * pendant JSON de {@link #getStudyUnitXmlByOperationIri(String, LocalDate)}.
      */
-    Optional<Ddi4StudyUnitResponse> getStudyUnitByOperationIri(String operationIri);
+    Optional<Ddi4StudyUnitResponse> getStudyUnitByOperationIri(String operationIri, @Nullable LocalDate modifiedSince);
+
+    /**
+     * Les PhysicalInstances de toutes les StudyUnits miroirs de l'opération d'identifiant
+     * {@code operationId}, quelle que soit l'IRI sous laquelle elles la désignent ; vide sans miroir.
+     */
+    List<PartialPhysicalInstance> getPhysicalInstancesByOperation(String operationId);
 }
