@@ -80,10 +80,18 @@ public record PublicationUtils(
         }
     }
 
-    public void publishResource(Resource resource, Set<String> denyList) throws RmesException {
+    /**
+     * Republie la ressource, et les nœuds anonymes qu'elle cite, dans le graphe donné : la ressource
+     * y est lue, ses anciens triplets publiés n'y sont effacés que là, et le modèle publié porte ce
+     * graphe. Le contexte d'un triplet relu est {@code null} hors de GraphDB, le graphe vient donc de
+     * l'appelant.
+     *
+     * @param denyList les fins de prédicats qui restent en gestion
+     */
+    public void publishResource(Resource resource, Set<String> denyList, Resource graph) throws RmesException {
         Model model = new LinkedHashModel();
         try (RepositoryConnection connection = repositoryGestion.getConnection();
-                RepositoryResult<Statement> statements = repositoryGestion.getStatements(connection, resource)) {
+                RepositoryResult<Statement> statements = repositoryGestion.getStatements(connection, resource, graph)) {
             while (statements.hasNext()) {
                 Statement statement = statements.next();
                 String predicate = RdfUtils.toString(statement.getPredicate());
@@ -97,17 +105,17 @@ public record PublicationUtils(
                                 tranformBaseURIToPublish(statement.getSubject()),
                                 statement.getPredicate(),
                                 tranformBaseURIToPublish((Resource) statement.getObject()),
-                                statement.getContext());
+                                graph);
 
                         if (statement.getObject().isBNode()) {
-                            publishResource((Resource) statement.getObject(), Set.of());
+                            publishResource((Resource) statement.getObject(), Set.of(), graph);
                         }
                     } catch (ClassCastException _) {
                         model.add(
                                 tranformBaseURIToPublish(statement.getSubject()),
                                 statement.getPredicate(),
                                 statement.getObject(),
-                                statement.getContext());
+                                graph);
                     }
                 }
             }
@@ -116,6 +124,6 @@ public record PublicationUtils(
                     HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), Constants.REPOSITORY_EXCEPTION);
         }
         Resource resourceToPublish = tranformBaseURIToPublish(resource);
-        repositoryPublication.publishResource(resourceToPublish, model, null);
+        repositoryPublication.publishResource(resourceToPublish, model, null, graph);
     }
 }

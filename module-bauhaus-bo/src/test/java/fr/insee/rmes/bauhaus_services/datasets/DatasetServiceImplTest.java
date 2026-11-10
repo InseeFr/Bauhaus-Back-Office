@@ -61,6 +61,9 @@ class DatasetServiceImplTest {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
+    private static final IRI DATASETS_GRAPH =
+            SimpleValueFactory.getInstance().createIRI("http://rdf.insee.fr/graphes/datasetGraph/");
+
     private static final String EMPTY_ARRAY = "[]";
     private static final String QUASI_EMPTY_OBJECT = "{\"uri\":\"\"}";
 
@@ -475,9 +478,6 @@ class DatasetServiceImplTest {
         IRI catalogRecordIri = SimpleValueFactory.getInstance().createIRI("http://catalogRecordIRI/1");
         givenDatasetWithValidationState("Modified");
 
-        doNothing().when(publicationUtils).publishResource(iri, Set.of());
-        doNothing().when(publicationUtils).publishResource(catalogRecordIri, Set.of("creator", "contributor"));
-
         Assertions.assertEquals("1", datasetService.publishDataset("1"));
     }
 
@@ -495,8 +495,9 @@ class DatasetServiceImplTest {
 
         String id = datasetService.publishDataset("1");
 
-        verify(publicationUtils).publishResource(iri, Set.of("processStep", "archiveUnit", "validationState"));
-        verify(publicationUtils).publishResource(catalogRecordIri, Set.of("creator", "contributor"));
+        verify(publicationUtils)
+                .publishResource(iri, Set.of("processStep", "archiveUnit", "validationState"), DATASETS_GRAPH);
+        verify(publicationUtils).publishResource(catalogRecordIri, Set.of("creator", "contributor"), DATASETS_GRAPH);
         Assertions.assertEquals("1", id);
     }
 

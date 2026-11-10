@@ -5982,7 +5982,9 @@ class DDIRepositoryImplTest {
 
     /** Source de la réutilisation : pi-src (v3), rangée sous su-1 / group-1, avec VAR_1 (v1) et VAR_2 (v4). */
     private void stubReuseSource(String agencyId) {
-        lenient().when(instanceConfiguration.itemTypes()).thenReturn(Map.of("StudyUnit", STUDY_UNIT_ITEM_TYPE));
+        lenient()
+                .when(instanceConfiguration.itemTypes())
+                .thenReturn(ColecticaTestItemTypes.configuredWith(Map.of("StudyUnit", STUDY_UNIT_ITEM_TYPE)));
         lenient().when(instanceConfiguration.itemFormat()).thenReturn("fmt");
         Ddi4PhysicalInstance sourcePhysicalInstance = new Ddi4PhysicalInstance(
                 Ddi4PhysicalInstance.TYPE,

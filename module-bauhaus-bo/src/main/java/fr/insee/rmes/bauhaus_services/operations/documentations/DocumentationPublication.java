@@ -200,15 +200,19 @@ public class DocumentationPublication {
         }
     }
 
+    /**
+     * Une organisation vit dans deux graphes (organisations, et organisations de l'Insee pour son
+     * rattachement), un territoire dans celui des territoires du SIMS : chacun est republié dans
+     * chacun de ses graphes.
+     */
     private void publishReferencedResources(Set<Resource> organizations, Set<Resource> geographies)
             throws RmesException {
-        // Combine both sets and publish in one loop
-        Set<Resource> allResources = new HashSet<>();
-        allResources.addAll(organizations);
-        allResources.addAll(geographies);
-
-        for (Resource resource : allResources) {
-            publicationUtils.publishResource(resource, Set.of());
+        for (Resource organization : organizations) {
+            publicationUtils.publishResource(organization, Set.of(), RdfUtils.organizationsGraph());
+            publicationUtils.publishResource(organization, Set.of(), RdfUtils.orgInseeGraph());
+        }
+        for (Resource geography : geographies) {
+            publicationUtils.publishResource(geography, Set.of(), RdfUtils.simsGeographyGraph());
         }
     }
 

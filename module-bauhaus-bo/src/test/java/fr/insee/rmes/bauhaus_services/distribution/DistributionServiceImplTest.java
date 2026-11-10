@@ -280,8 +280,6 @@ class DistributionServiceImplTest {
         IRI iri = SimpleValueFactory.getInstance().createIRI("http://distributionIRI/1");
         givenDistributionWithValidationState("Modified");
 
-        doNothing().when(publicationUtils).publishResource(iri, Set.of());
-
         Assertions.assertEquals("1", distributionService.publishDistribution("1"));
     }
 
@@ -296,8 +294,12 @@ class DistributionServiceImplTest {
         IRI iri = SimpleValueFactory.getInstance().createIRI("http://distributionIRI/1");
         givenDistributionWithValidationState("Unpublished");
 
-        doNothing().when(publicationUtils).publishResource(iri, Set.of());
         String id = distributionService.publishDistribution("1");
+        verify(publicationUtils)
+                .publishResource(
+                        iri,
+                        Set.of(),
+                        SimpleValueFactory.getInstance().createIRI("http://rdf.insee.fr/graphes/datasetGraph/"));
         ArgumentCaptor<Model> model = ArgumentCaptor.forClass(Model.class);
 
         verify(repositoryGestion).loadSimpleObjectWithoutDeletion(eq(iri), model.capture(), any());

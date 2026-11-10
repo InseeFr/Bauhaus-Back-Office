@@ -51,6 +51,10 @@ interface DocumentationPublicationScenario {
 
     String DOCUMENTS_GRAPH = "http://rdf.insee.fr/graphes/qualite/documents";
 
+    String ORGANISATIONS_GRAPH = "http://rdf.insee.fr/graphes/organisations";
+    String ORGANISATIONS_INSEE_GRAPH = "http://rdf.insee.fr/graphes/organisations/insee";
+    String TERRITORIES_GRAPH = "http://rdf.insee.fr/graphes/qualite/territoires";
+
     String GESTION_BASE = "http://bauhaus/";
     String PUBLICATION_BASE = "http://id.insee.fr/";
     String WEB4G = "http://web4g";
@@ -62,6 +66,10 @@ interface DocumentationPublicationScenario {
     String PUBLISHED_TEXT = PUBLISHED_SIMS + "/S.12.1/fr";
     String PUBLISHED_DOCUMENT = PUBLICATION_BASE + "documents/document/9601";
     String PUBLISHED_LINK = PUBLICATION_BASE + "documents/page/9602";
+    String ORGANISATION = GESTION_BASE + "organisations/insee/DG75-F9601";
+    String TERRITORY = GESTION_BASE + "qualite/territoire/t9601";
+    String PUBLISHED_ORGANISATION = PUBLICATION_BASE + "organisations/insee/DG75-F9601";
+    String PUBLISHED_TERRITORY = PUBLICATION_BASE + "qualite/territoire/t9601";
 
     RdfConnectionDetails connectionDetails();
 
@@ -83,6 +91,9 @@ interface DocumentationPublicationScenario {
         StringBuilder update = new StringBuilder("DROP SILENT GRAPH <%s>".formatted(SIMS_GRAPH));
         for (String subject : new String[] {DOCUMENT, LINK, PUBLISHED_DOCUMENT, PUBLISHED_LINK}) {
             update.append(" ; DELETE WHERE { GRAPH <%s> { <%s> ?p ?o } }".formatted(DOCUMENTS_GRAPH, subject));
+        }
+        for (String subject : new String[] {ORGANISATION, TERRITORY, PUBLISHED_ORGANISATION, PUBLISHED_TERRITORY}) {
+            update.append(" ; DELETE WHERE { GRAPH ?graph { <%s> ?p ?o } }".formatted(subject));
         }
         gestion().executeUpdate(update.toString());
     }
@@ -133,6 +144,51 @@ interface DocumentationPublicationScenario {
         assertThat(publishedLabels(gestion, DOCUMENTS_GRAPH, PUBLISHED_DOCUMENT))
                 .isEqualTo("Note méthodologique 2026");
         assertThat(publishedLabels(gestion, DOCUMENTS_GRAPH, PUBLISHED_LINK)).isEqualTo("Page de l'enquête 2026");
+    }
+
+    /**
+     * L'organisation citée vit dans deux graphes (organisations et organisations de l'Insee), le
+     * territoire dans celui des territoires du SIMS : chaque triplet publié reste dans son graphe.
+     */
+    @Test
+    default void publishes_the_cited_organisation_and_territory_into_their_own_graphs() throws RmesException {
+        RepositoryGestion gestion = gestion();
+        insertTheSimsWithItsDocumentAndLink(gestion);
+        gestion.executeUpdate(organisationAndTerritoryCitedByTheSims());
+
+        documentationPublication(gestion).publishSims("9601");
+
+        assertThat(gestion.getResponseAsBoolean("""
+                        ASK {
+                          GRAPH <%s> { <%s> <http://www.w3.org/2000/01/rdf-schema#label> "Direction des statistiques d'entreprises"@fr }
+                          GRAPH <%s> { <%2$s> <http://rdf.insee.fr/def/base#identifiant> "DG75-F9601" }
+                          GRAPH <%s> { <%s> <http://www.w3.org/2004/02/skos/core#prefLabel> "France hors Mayotte"@fr }
+                        }
+                        """.formatted(
+                                ORGANISATIONS_GRAPH,
+                                PUBLISHED_ORGANISATION,
+                                ORGANISATIONS_INSEE_GRAPH,
+                                TERRITORIES_GRAPH,
+                                PUBLISHED_TERRITORY)))
+                .isTrue();
+    }
+
+    private static String organisationAndTerritoryCitedByTheSims() {
+        return """
+                INSERT DATA {
+                  GRAPH <%s> { <%s/S.3.7> <http://bauhaus/qualite/simsv2fr/attribut/S.3.7> <%s>, <%s> . }
+                  GRAPH <%s> { <%3$s> <http://www.w3.org/2000/01/rdf-schema#label> "Direction des statistiques d'entreprises"@fr . }
+                  GRAPH <%s> { <%3$s> <http://rdf.insee.fr/def/base#identifiant> "DG75-F9601" . }
+                  GRAPH <%s> { <%4$s> <http://www.w3.org/2004/02/skos/core#prefLabel> "France hors Mayotte"@fr . }
+                }
+                """.formatted(
+                        SIMS_GRAPH,
+                        SIMS,
+                        ORGANISATION,
+                        TERRITORY,
+                        ORGANISATIONS_GRAPH,
+                        ORGANISATIONS_INSEE_GRAPH,
+                        TERRITORIES_GRAPH);
     }
 
     private RepositoryGestion gestion() {

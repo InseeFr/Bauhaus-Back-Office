@@ -48,7 +48,7 @@ public class ClassificationPublication extends RdfService {
                 throw new RmesNotFoundException(
                         ErrorCodes.CLASSIFICATION_UNKNOWN_ID, "Classification not found", graphIri.stringValue());
             }
-            transformStatementToPublish(model, classifStatements);
+            transformStatementToPublish(model, classifStatements, graphIri);
         } catch (RepositoryException e) {
             logger.debug("publishClassification - failed to read graph [{}]: {}", graphIri, e.getMessage());
             throw new RmesException(
@@ -63,7 +63,8 @@ public class ClassificationPublication extends RdfService {
         logger.debug("publishClassification - publishContext completed for graph [{}]", graphIri);
     }
 
-    public void transformStatementToPublish(Model model, RepositoryResult<Statement> classifStatements) {
+    public void transformStatementToPublish(
+            Model model, RepositoryResult<Statement> classifStatements, Resource graph) {
         int read = 0;
         int ignored = 0;
         while (classifStatements.hasNext()) {
@@ -76,7 +77,7 @@ public class ClassificationPublication extends RdfService {
                 ignored++;
                 logger.debug("transformStatementToPublish - triple skipped (predicate not published): {}", predicate);
             } else {
-                transformTripleToPublish(model, st);
+                transformTripleToPublish(model, st, graph);
             }
         }
         logger.debug(

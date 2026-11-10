@@ -62,6 +62,14 @@ public class RdfUtils {
         return factory.createIRI(graphs.documentationsGraph() + "/" + id);
     }
 
+    public static Resource organizationsGraph() {
+        return factory.createIRI(graphs.organizationsGraph());
+    }
+
+    public static Resource orgInseeGraph() {
+        return factory.createIRI(graphs.orgInseeGraph());
+    }
+
     public static Resource simsGeographyGraph() {
         return factory.createIRI(graphs.documentationsGeoGraph());
     }

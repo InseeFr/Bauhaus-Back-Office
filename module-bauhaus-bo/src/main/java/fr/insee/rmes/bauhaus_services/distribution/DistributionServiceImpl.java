@@ -181,8 +181,9 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
 
         IRI iri = getDistributionIri(id);
 
-        publicationUtils.publishResource(iri, Set.of());
-        events.publishEvent(new ObjectPublished(iri, RdfUtils.createIRI(getDistributionGraph())));
+        Resource graph = RdfUtils.createIRI(getDistributionGraph());
+        publicationUtils.publishResource(iri, Set.of(), graph);
+        events.publishEvent(new ObjectPublished(iri, graph));
 
         return id;
     }

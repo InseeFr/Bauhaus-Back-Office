@@ -169,9 +169,10 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         IRI iri = RdfUtils.createIRI(getDatasetsBaseUri() + "/" + id);
         IRI catalogRecordIri = RdfUtils.createIRI(getCatalogRecordBaseUri() + "/" + id);
 
-        publicationUtils.publishResource(iri, Set.of("processStep", "archiveUnit", "validationState"));
-        publicationUtils.publishResource(catalogRecordIri, Set.of(CREATOR, CONTRIBUTOR));
-        events.publishEvent(new ObjectPublished(iri, RdfUtils.createIRI(getDatasetsGraph())));
+        Resource graph = RdfUtils.createIRI(getDatasetsGraph());
+        publicationUtils.publishResource(iri, Set.of("processStep", "archiveUnit", "validationState"), graph);
+        publicationUtils.publishResource(catalogRecordIri, Set.of(CREATOR, CONTRIBUTOR), graph);
+        events.publishEvent(new ObjectPublished(iri, graph));
 
         return id;
     }

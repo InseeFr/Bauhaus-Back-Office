@@ -25,7 +25,11 @@ public abstract class RdfService {
         this.publicationUtils = publicationUtils;
     }
 
-    public void transformTripleToPublish(Model model, Statement st) {
+    /**
+     * Recopie le triplet vers la base de publication, dans le graphe donné : le contexte d'un triplet
+     * relu est {@code null} hors de GraphDB, le graphe vient donc de l'appelant.
+     */
+    public void transformTripleToPublish(Model model, Statement st, Resource graph) {
         Resource subject = publicationUtils.tranformBaseURIToPublish(st.getSubject());
         IRI predicateIRI = RdfUtils.createIRI(
                 publicationUtils.tranformBaseURIToPublish(st.getPredicate()).stringValue());
@@ -34,6 +38,6 @@ public abstract class RdfService {
             object = publicationUtils.tranformBaseURIToPublish(resource);
         }
 
-        model.add(subject, predicateIRI, object, st.getContext());
+        model.add(subject, predicateIRI, object, graph);
     }
 }
