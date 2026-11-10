@@ -430,19 +430,21 @@ class RepositoryGestionTest {
     }
 
     @Test
-    void shouldKeepHierarchicalOperationLinks() throws RmesException {
+    void shouldKeepHierarchicalOperationLinksInTheGivenGraph() throws RmesException {
         IRI object = valueFactory.createIRI("http://example.org/object");
+        IRI graph = valueFactory.createIRI("http://example.org/graph");
         Model model = new TreeModel();
 
-        when(connection.getStatements(null, DCTERMS.HAS_PART, object, false)).thenReturn(repositoryResult);
-        when(connection.getStatements(object, DCTERMS.HAS_PART, null, false)).thenReturn(repositoryResult);
-        when(connection.getStatements(null, DCTERMS.IS_PART_OF, object, false)).thenReturn(repositoryResult);
-        when(connection.getStatements(object, DCTERMS.IS_PART_OF, null, false)).thenReturn(repositoryResult);
+        when(connection.getStatements(any(), any(), any(), eq(false), eq(graph)))
+                .thenReturn(repositoryResult);
         when(repositoryResult.hasNext()).thenReturn(false);
 
-        repositoryGestion.keepHierarchicalOperationLinks(object, model);
+        repositoryGestion.keepHierarchicalOperationLinks(object, model, graph);
 
-        verify(connection, times(4)).getStatements(any(), any(), any(), eq(false));
-        verify(connection, times(4)).remove(repositoryResult);
+        verify(connection, times(4)).getStatements(any(), any(), any(), eq(false), eq(graph));
+        verify(connection).remove((Resource) null, DCTERMS.HAS_PART, object, graph);
+        verify(connection).remove(object, DCTERMS.HAS_PART, null, graph);
+        verify(connection).remove((Resource) null, DCTERMS.IS_PART_OF, object, graph);
+        verify(connection).remove(object, DCTERMS.IS_PART_OF, null, graph);
     }
 }

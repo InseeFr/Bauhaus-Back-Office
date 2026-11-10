@@ -206,27 +206,33 @@ public class GraphDBOperationFamilyRepository implements OperationFamilyReposito
                             contributor -> RdfUtils.addTripleUri(familyURI, DC.CONTRIBUTOR, contributor, model, graph));
         }
 
-        repositoryGestion.keepHierarchicalOperationLinks(familyURI, model);
+        repositoryGestion.keepHierarchicalOperationLinks(familyURI, model, RdfUtils.operationsGraph());
         repositoryGestion.loadSimpleObject(familyURI, model);
     }
 
     @Override
     public void publish(String id) throws RmesException {
         IRI familyURI = familyIRI(id);
+        Resource graph = RdfUtils.operationsGraph();
         repositoryPublication.publishResource(
-                publicationUtils.tranformBaseURIToPublish(familyURI), triplesToPublish(familyURI), Constants.FAMILY);
-        events.publishEvent(new ObjectPublished(familyURI, RdfUtils.operationsGraph()));
+                publicationUtils.tranformBaseURIToPublish(familyURI),
+                triplesToPublish(familyURI, graph),
+                Constants.FAMILY,
+                graph);
+        events.publishEvent(new ObjectPublished(familyURI, graph));
     }
 
     /**
      * Recopie des triplets de gestion vers la publication. L'état de validation et les liens
      * hiérarchiques restent dans le graphe de gestion : le graphe de publication ne porte que
-     * la famille telle que le public la voit.
+     * la famille telle que le public la voit. La famille est lue et recopiée dans le graphe donné :
+     * le contexte d'un triplet relu est {@code null} hors de GraphDB.
      */
-    private Model triplesToPublish(IRI familyURI) throws RmesException {
+    private Model triplesToPublish(IRI familyURI, Resource graph) throws RmesException {
         Model model = new LinkedHashModel();
         try (RepositoryConnection connection = repositoryGestion.getConnection();
-                RepositoryResult<Statement> statements = repositoryGestion.getStatements(connection, familyURI)) {
+                RepositoryResult<Statement> statements =
+                        repositoryGestion.getStatements(connection, familyURI, graph)) {
             if (!statements.hasNext()) {
                 throw new RmesNotFoundException(
                         ErrorCodes.FAMILY_UNKNOWN_ID, "Family not found", familyURI.getLocalName());
@@ -239,7 +245,7 @@ public class GraphDBOperationFamilyRepository implements OperationFamilyReposito
                             publicationUtils.tranformBaseURIToPublish(statement.getSubject()),
                             statement.getPredicate(),
                             statement.getObject(),
-                            statement.getContext());
+                            graph);
                 }
             }
         } catch (RepositoryException e) {

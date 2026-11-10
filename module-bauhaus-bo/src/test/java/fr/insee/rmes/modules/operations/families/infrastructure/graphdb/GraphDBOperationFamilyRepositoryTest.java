@@ -412,7 +412,7 @@ class GraphDBOperationFamilyRepositoryTest {
         RepositoryResult<Statement> statements = mock(RepositoryResult.class);
         when(statements.hasNext()).thenReturn(true, true, false);
         when(statements.next()).thenReturn(statement);
-        when(repositoryGestion.getStatements(any(), any())).thenReturn(statements);
+        when(repositoryGestion.getStatements(any(), any(), any())).thenReturn(statements);
         when(publicationUtils.tranformBaseURIToPublish(any())).thenAnswer(invocation -> invocation.getArgument(0));
     }
 }

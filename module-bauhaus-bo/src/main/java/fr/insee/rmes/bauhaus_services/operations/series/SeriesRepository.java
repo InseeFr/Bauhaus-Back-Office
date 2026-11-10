@@ -414,7 +414,7 @@ public class SeriesRepository {
             RdfUtils.addTripleUri(familyURI, DCTERMS.HAS_PART, seriesURI, model, RdfUtils.operationsGraph());
         }
 
-        repositoryGestion.keepHierarchicalOperationLinks(seriesURI, model);
+        repositoryGestion.keepHierarchicalOperationLinks(seriesURI, model, RdfUtils.operationsGraph());
 
         repositoryGestion.loadObjectWithReplaceLinks(seriesURI, model);
     }

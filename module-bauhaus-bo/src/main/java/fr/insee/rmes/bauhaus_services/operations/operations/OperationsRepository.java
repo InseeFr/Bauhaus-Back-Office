@@ -271,7 +271,7 @@ public class OperationsRepository extends RdfService {
             RdfUtils.addTripleUri(serieUri, DCTERMS.HAS_PART, operationURI, model, RdfUtils.operationsGraph());
         }
 
-        repoGestion.keepHierarchicalOperationLinks(operationURI, model);
+        repoGestion.keepHierarchicalOperationLinks(operationURI, model, RdfUtils.operationsGraph());
         repoGestion.loadSimpleObject(operationURI, model);
     }
 

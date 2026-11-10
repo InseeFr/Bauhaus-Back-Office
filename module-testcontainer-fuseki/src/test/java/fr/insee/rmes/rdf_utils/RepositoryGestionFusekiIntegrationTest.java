@@ -77,6 +77,26 @@ class RepositoryGestionFusekiIntegrationTest extends WithFusekiContainer {
         assertThat(prefLabelsOf(family)).containsExactly("Deuxième version");
     }
 
+    /**
+     * Le lien hiérarchique d'une série vers sa famille est conservé à chaque modification : il doit
+     * rester dans le graphe des opérations, pas glisser dans le graphe par défaut.
+     */
+    @Test
+    void keepHierarchicalOperationLinks_keeps_the_links_in_their_graph() throws RmesException {
+        IRI series = Values.iri("http://bauhaus/operations/serie/s9101");
+        IRI family = Values.iri("http://bauhaus/operations/famille/s9102");
+        repositoryGestion.executeUpdate("INSERT DATA { GRAPH <%s> { <%s> <%s> <%s> . <%4$s> <%s> <%2$s> . } }"
+                .formatted(OPERATIONS_GRAPH, series, DCTERMS.IS_PART_OF, family, DCTERMS.HAS_PART));
+
+        Model model = labelled(series, "Série");
+        repositoryGestion.keepHierarchicalOperationLinks(series, model, OPERATIONS_GRAPH);
+        repositoryGestion.loadSimpleObject(series, model, null);
+
+        assertThat(repositoryGestion.getResponseAsBoolean("ASK { GRAPH <%s> { <%s> <%s> <%s> . <%4$s> <%s> <%2$s> . } }"
+                        .formatted(OPERATIONS_GRAPH, series, DCTERMS.IS_PART_OF, family, DCTERMS.HAS_PART)))
+                .isTrue();
+    }
+
     @Test
     void deleteObject_removes_every_triple_of_the_object() throws RmesException {
         IRI family = Values.iri("http://bauhaus/operations/famille/s9002");

@@ -365,34 +365,37 @@ public class RepositoryGestion {
                 structure, graph, repositoryUtils.initRepository(rdfGestion.getUrlServer(), rdfGestion.repositoryId()));
     }
 
-    public void keepHierarchicalOperationLinks(Resource object, Model model) throws RmesException {
-        getHierarchicalOperationLinksModel(object, model, List.of(DCTERMS.HAS_PART, DCTERMS.IS_PART_OF));
-    }
-
-    private void getHierarchicalOperationLinksModel(Resource object, Model model, List<IRI> typeOfLink)
-            throws RmesException {
-        try (RepositoryConnection conn = gestionConnection()) {
-            for (IRI predicat : typeOfLink) {
+    /**
+     * Reporte dans le modèle les liens {@code dcterms:hasPart} / {@code dcterms:isPartOf} de l'objet,
+     * entrants et sortants, lus dans le graphe donné, puis les y efface : le modèle les réécrit avec
+     * ce graphe. Le contexte d'un triplet relu est {@code null} hors de GraphDB, le graphe vient donc
+     * de l'appelant.
+     */
+    public void keepHierarchicalOperationLinks(Resource object, Model model, Resource graph) throws RmesException {
+        try (RepositoryConnection conn = getConnection()) {
+            for (IRI predicate : List.of(DCTERMS.HAS_PART, DCTERMS.IS_PART_OF)) {
                 try {
-                    try (RepositoryResult<Statement> statements = conn.getStatements(null, predicat, object, false)) {
-                        addStatementToModel(model, statements);
-                        conn.remove(statements);
+                    try (RepositoryResult<Statement> statements =
+                            conn.getStatements(null, predicate, object, false, graph)) {
+                        addStatementsToModel(model, statements, graph);
                     }
-                    try (RepositoryResult<Statement> statements = conn.getStatements(object, predicat, null, false)) {
-                        addStatementToModel(model, statements);
-                        conn.remove(statements);
+                    try (RepositoryResult<Statement> statements =
+                            conn.getStatements(object, predicate, null, false, graph)) {
+                        addStatementsToModel(model, statements, graph);
                     }
+                    conn.remove((Resource) null, predicate, object, graph);
+                    conn.remove(object, predicate, null, graph);
                 } catch (RepositoryException e) {
-                    throwsRmesException(e, "Failure getHierarchicalOperationLinksModel : " + object);
+                    throwsRmesException(e, "Failure keepHierarchicalOperationLinks : " + object);
                 }
             }
         }
     }
 
-    private void addStatementToModel(Model model, RepositoryResult<Statement> statements) {
+    private static void addStatementsToModel(Model model, RepositoryResult<Statement> statements, Resource graph) {
         while (statements.hasNext()) {
             Statement st = statements.next();
-            model.add(st.getSubject(), st.getPredicate(), st.getObject(), st.getContext());
+            model.add(st.getSubject(), st.getPredicate(), st.getObject(), graph);
         }
     }
 
