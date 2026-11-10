@@ -24,6 +24,10 @@ import java.util.Deque;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -93,28 +97,54 @@ class ColecticaStudyUnitVariablesReader {
                     forLog(agencyId),
                     forLog(studyUnitId));
         }
-        List<CodeListVariableUsage> usages = new ArrayList<>();
         List<ColecticaItem> physicalInstances =
                 ColecticaItems.latestVersions(children(new ItemReference(agencyId, studyUnitId), PHYSICAL_INSTANCE));
-        for (ColecticaItem physicalInstance : physicalInstances) {
-            List<ItemReference> dataRelationships = ColecticaRelationships.childrenOfType(
-                    colecticaClient, ColecticaItems.itemRef(physicalInstance), itemType(DATA_RELATIONSHIP));
-            for (ItemReference dataRelationship : dataRelationships) {
-                for (ColecticaItem variable : ColecticaItems.latestVersions(children(dataRelationship, VARIABLE))) {
-                    usages.add(new CodeListVariableUsage(
-                            agencyId,
-                            studyUnitId,
-                            null,
-                            physicalInstance.agencyId(),
-                            physicalInstance.identifier(),
-                            labels.of(physicalInstance),
-                            variable.agencyId(),
-                            variable.identifier(),
-                            labels.of(variable)));
-                }
+        // Une descente PI → DataRelationship → Variable par PI, indépendantes les unes des autres :
+        // lancées en parallèle, la réponse coûte la PI la plus lente plutôt que la somme (deux appels
+        // bysubject ou plus par PI, ~6 s en série contre ~1 s mesurés sur 16 PI de la démo).
+        try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
+            List<Future<List<CodeListVariableUsage>>> perPhysicalInstance = physicalInstances.stream()
+                    .map(physicalInstance -> executor.submit(() -> usagesOf(agencyId, studyUnitId, physicalInstance)))
+                    .toList();
+            List<CodeListVariableUsage> usages = new ArrayList<>();
+            for (Future<List<CodeListVariableUsage>> future : perPhysicalInstance) {
+                usages.addAll(future.get());
+            }
+            return usages.stream().distinct().toList();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException(
+                    "Interrupted while fetching variable usages of study unit " + agencyId + "/" + studyUnitId, e);
+        } catch (ExecutionException e) {
+            // Remonte l'exception d'origine (404 Colectica, etc.) telle que le code séquentiel la levait.
+            if (e.getCause() instanceof RuntimeException runtime) {
+                throw runtime;
+            }
+            throw new IllegalStateException(
+                    "Failed to fetch variable usages of study unit " + agencyId + "/" + studyUnitId, e.getCause());
+        }
+    }
+
+    /** Les variables de chaque DataRelationship de {@code physicalInstance}, une ligne par variable. */
+    private List<CodeListVariableUsage> usagesOf(String agencyId, String studyUnitId, ColecticaItem physicalInstance) {
+        List<CodeListVariableUsage> usages = new ArrayList<>();
+        List<ItemReference> dataRelationships = ColecticaRelationships.childrenOfType(
+                colecticaClient, ColecticaItems.itemRef(physicalInstance), itemType(DATA_RELATIONSHIP));
+        for (ItemReference dataRelationship : dataRelationships) {
+            for (ColecticaItem variable : ColecticaItems.latestVersions(children(dataRelationship, VARIABLE))) {
+                usages.add(new CodeListVariableUsage(
+                        agencyId,
+                        studyUnitId,
+                        null,
+                        physicalInstance.agencyId(),
+                        physicalInstance.identifier(),
+                        labels.of(physicalInstance),
+                        variable.agencyId(),
+                        variable.identifier(),
+                        labels.of(variable)));
             }
         }
-        return usages.stream().distinct().toList();
+        return usages;
     }
 
     /**

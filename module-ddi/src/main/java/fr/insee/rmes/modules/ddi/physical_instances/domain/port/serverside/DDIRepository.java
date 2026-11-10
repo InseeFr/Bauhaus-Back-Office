@@ -147,6 +147,12 @@ public interface DDIRepository {
     List<PartialCodeListScheme> getCodeListSchemesByLogicalProduct(String agencyId, String logicalProductId);
 
     List<PartialCodesList> getCodeListsByCodeListScheme(String agencyId, String codeListSchemeId);
+
+    /**
+     * Les CodeLists du groupe : celles des CodeListSchemes de ses LogicalProducts, dédupliquées par
+     * agence/identifiant, hors CodeLists de valeurs sentinelles (cf. #1566).
+     */
+    List<PartialCodesList> getCodeListsByGroup(String agencyId, String groupId);
     /**
      * Les CodeLists de valeurs sentinelles du groupe (cf. #1566) : celles référencées par une
      * {@code ManagedMissingValuesRepresentation} rangée dans un {@code ManagedRepresentationScheme}

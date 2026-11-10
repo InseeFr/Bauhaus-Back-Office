@@ -447,6 +447,11 @@ public class DDIRepositoryImpl implements DDIRepository {
     }
 
     @Override
+    public List<PartialCodesList> getCodeListsByGroup(String agencyId, String groupId) {
+        return hierarchy.getCodeListsByGroup(agencyId, groupId);
+    }
+
+    @Override
     public List<PartialCodesList> getMissingCodesListsByGroup(String agencyId, String groupId) {
         return hierarchy.getMissingCodesListsByGroup(agencyId, groupId);
     }
