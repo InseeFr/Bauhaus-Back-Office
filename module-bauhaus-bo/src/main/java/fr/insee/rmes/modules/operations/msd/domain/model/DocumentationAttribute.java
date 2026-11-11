@@ -11,7 +11,9 @@ public record DocumentationAttribute(
         Boolean isPresentational,
         Boolean sansObject,
         String codeList,
-        String subPropertyOf) {
+        String subPropertyOf,
+        String instructionLg1,
+        String instructionLg2) {
 
     public static DocumentationAttribute fromJson(JSONObject obj) {
         String rt = obj.optString("rangeType", null);
@@ -23,7 +25,20 @@ public record DocumentationAttribute(
         Boolean sansObject = obj.optBooleanObject("sansObject");
         String codeList = obj.optString("codeList", null);
         String subPropertyOf = obj.optString("subPropertyOf", null);
-        return new DocumentationAttribute(rt, lg1, lg2, id, max, presentational, sansObject, codeList, subPropertyOf);
+        String instructionLg1 = obj.optString("instructionLg1", null);
+        String instructionLg2 = obj.optString("instructionLg2", null);
+        return new DocumentationAttribute(
+                rt,
+                lg1,
+                lg2,
+                id,
+                max,
+                presentational,
+                sansObject,
+                codeList,
+                subPropertyOf,
+                instructionLg1,
+                instructionLg2);
     }
 
     private static Boolean toNullableBoolean(Object v) {

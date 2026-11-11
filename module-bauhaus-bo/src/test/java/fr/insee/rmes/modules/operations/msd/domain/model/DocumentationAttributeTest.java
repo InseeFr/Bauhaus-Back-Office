@@ -167,12 +167,12 @@ class DocumentationAttributeTest {
     @Test
     void testRecordEquality() {
         // Given
-        DocumentationAttribute attr1 =
-                new DocumentationAttribute("STRING", "Label FR", "Label EN", "attr-123", "1", true, false, "", null);
-        DocumentationAttribute attr2 =
-                new DocumentationAttribute("STRING", "Label FR", "Label EN", "attr-123", "1", true, false, "", null);
-        DocumentationAttribute attr3 =
-                new DocumentationAttribute("INTEGER", "Label FR", "Label EN", "attr-123", "1", true, false, "", null);
+        DocumentationAttribute attr1 = new DocumentationAttribute(
+                "STRING", "Label FR", "Label EN", "attr-123", "1", true, false, "", null, null, null);
+        DocumentationAttribute attr2 = new DocumentationAttribute(
+                "STRING", "Label FR", "Label EN", "attr-123", "1", true, false, "", null, null, null);
+        DocumentationAttribute attr3 = new DocumentationAttribute(
+                "INTEGER", "Label FR", "Label EN", "attr-123", "1", true, false, "", null, null, null);
 
         // Then
         assertEquals(attr1, attr2);
@@ -184,8 +184,8 @@ class DocumentationAttributeTest {
     @Test
     void testRecordToString() {
         // Given
-        DocumentationAttribute attr =
-                new DocumentationAttribute("STRING", "Label FR", "Label EN", "attr-123", "1", true, false, "", null);
+        DocumentationAttribute attr = new DocumentationAttribute(
+                "STRING", "Label FR", "Label EN", "attr-123", "1", true, false, "", null, null, null);
 
         // When
         String toString = attr.toString();

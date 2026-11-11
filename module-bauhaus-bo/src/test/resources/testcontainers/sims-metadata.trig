@@ -3315,4 +3315,10 @@ Capacité des statistiques à être combinées de manière fiable de différente
 
   <http://ec.europa.eu/eurostat/simsv2/concept/UNIT_MEASURE> skos:definition "Unité dans laquelle les valeurs sont mesurées."@fr,
       "The unit in which the data values are measured."@en .
+
+  <http://ec.europa.eu/eurostat/simsv2/attributeSpecification/S.3.9> dcterms:instructionalMethod <http://ec.europa.eu/eurostat/simsv2/attributeSpecification/S.3.9/instructionalMethod> .
+
+  <http://ec.europa.eu/eurostat/simsv2/attributeSpecification/S.3.9/instructionalMethod> a dcterms:MethodOfInstruction;
+    rdf:value """Indiquer la période de base, par exemple, l'année **2021**."""@fr,
+      """Indicate the base period, for example the year **2021**."""@en .
 }

@@ -1,4 +1,4 @@
-SELECT ?id ?masLabelLg1 ?masLabelLg2 ?range ?sansObject ?isPresentational ?maxOccurs ?codeList ?subPropertyOf
+SELECT ?id ?masLabelLg1 ?masLabelLg2 ?range ?sansObject ?isPresentational ?maxOccurs ?codeList ?subPropertyOf ?instructionLg1 ?instructionLg2
   FROM ${MSD_GRAPH}
   FROM ${CODELIST_GRAPH}
   FROM ${MSD_CONCEPTS_GRAPH}
@@ -6,6 +6,16 @@ SELECT ?id ?masLabelLg1 ?masLabelLg2 ?range ?sansObject ?isPresentational ?maxOc
 	  ?mas rdf:type sdmx-mm:MetadataAttributeSpecification
 	  OPTIONAL {?mas sdmx-mm:isPresentational ?isPresentational }
 	  OPTIONAL {?mas sdmx-mm:maxOccurs ?maxOccurs}
+	  OPTIONAL {
+	    ?mas dcterms:instructionalMethod ?instructionLg1Node .
+	    ?instructionLg1Node rdf:value ?instructionLg1 .
+	    FILTER(lang(?instructionLg1) = ${LG1})
+	  }
+	  OPTIONAL {
+	    ?mas dcterms:instructionalMethod ?instructionLg2Node .
+	    ?instructionLg2Node rdf:value ?instructionLg2 .
+	    FILTER(lang(?instructionLg2) = ${LG2})
+	  }
 
 	  ?mas sdmx-mm:metadataAttributeProperty ?map .
       	  {
