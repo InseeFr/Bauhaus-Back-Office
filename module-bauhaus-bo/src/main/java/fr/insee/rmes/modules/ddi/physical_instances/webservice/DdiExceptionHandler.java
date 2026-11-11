@@ -3,6 +3,7 @@ package fr.insee.rmes.modules.ddi.physical_instances.webservice;
 import fr.insee.rmes.modules.commons.webservice.ApiError;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.DdiItemNotFoundException;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.InvalidReuseVariablesException;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.InvalidRolloverException;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.InvalidSentinelValuesException;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.MissingSchemeException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -52,6 +53,14 @@ public class DdiExceptionHandler {
     /** Réutilisation de variables (#1674) : groupe ou variables étrangers à la PI source. */
     @ExceptionHandler(InvalidReuseVariablesException.class)
     public ResponseEntity<ApiError> handleInvalidReuseVariables(InvalidReuseVariablesException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(new ApiError(ex.getMessage(), ex.code().name(), ex.params()));
+    }
+
+    /** Nouvelle période (#1672) : groupe, étude cible ou variables incohérents avec la PI source. */
+    @ExceptionHandler(InvalidRolloverException.class)
+    public ResponseEntity<ApiError> handleInvalidRollover(InvalidRolloverException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(new ApiError(ex.getMessage(), ex.code().name(), ex.params()));

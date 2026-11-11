@@ -3,6 +3,7 @@ package fr.insee.rmes.modules.ddi.physical_instances.domain.services;
 import static fr.insee.rmes.domain.logging.LogSanitizer.forLog;
 
 import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.DdiItemNotFoundException;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.InvalidRolloverException;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.InvalidSentinelValuesException;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CategoryCodeListUsage;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Citation;
@@ -14,6 +15,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Category;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CategoryScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeListScheme;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4GroupResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4LogicalProduct;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedMissingValuesRepresentation;
@@ -38,6 +40,8 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanc
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceSearchRow;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.ReuseVariablesRequest;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.RolloverRequest;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.RolloverVariable;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UpdatePhysicalInstanceRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.DDIRepository;
@@ -49,6 +53,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -374,6 +379,109 @@ public class DDIServiceImpl implements DDIService {
         }
         Reference created = ddiRepository.reuseVariables(agencyId, id, request);
         return ddiRepository.getPhysicalInstance(created.agency(), created.id());
+    }
+
+    @Override
+    public Ddi4Response rollover(String agencyId, String id, RolloverRequest request) {
+        if (logger.isInfoEnabled()) {
+            logger.info(
+                    "Rolling physical instance {}/{} over to study unit {}/{} with {} variables",
+                    forLog(agencyId),
+                    forLog(id),
+                    forLog(request.studyUnitAgency()),
+                    forLog(request.studyUnitId()),
+                    request.variables().size());
+        }
+        PhysicalInstanceParents parents = ddiRepository.getPhysicalInstanceParents(agencyId, id);
+        checkRolloverTarget(parents, request);
+
+        Ddi4Response source = ddiRepository.getPhysicalInstance(agencyId, id);
+        if (source == null) {
+            throw DdiItemNotFoundException.physicalInstance(agencyId, id);
+        }
+        Set<String> sourceIds = Optional.ofNullable(source.variable()).orElse(List.of()).stream()
+                .map(Ddi4Variable::id)
+                .collect(Collectors.toSet());
+        List<String> unknownIds = request.variables().stream()
+                .map(RolloverVariable::sourceId)
+                .filter(sourceId -> !sourceIds.contains(sourceId))
+                .toList();
+        if (!unknownIds.isEmpty()) {
+            throw InvalidRolloverException.notInSource(unknownIds);
+        }
+
+        Map<String, Reference> reusedBySourceId = resolveReusedVariables(request);
+        Reference created = ddiRepository.rollover(source, request, reusedBySourceId);
+        return ddiRepository.getPhysicalInstance(created.agency(), created.id());
+    }
+
+    /**
+     * La cible d'une nouvelle période est une autre étude du groupe de la source : le groupe de la
+     * requête, qui porte le contrôle du droit CREATE, doit être le sien.
+     */
+    private void checkRolloverTarget(PhysicalInstanceParents parents, RolloverRequest request) {
+        if (!parents.groupAgency().equals(request.groupAgency())
+                || !parents.groupId().equals(request.groupId())) {
+            throw InvalidRolloverException.groupMismatch(request.groupAgency(), request.groupId());
+        }
+        if (parents.studyUnitAgency().equals(request.studyUnitAgency())
+                && parents.studyUnitId().equals(request.studyUnitId())) {
+            throw InvalidRolloverException.sameStudyUnit(request.studyUnitAgency(), request.studyUnitId());
+        }
+        boolean classifiedByGroup = ddiRepository
+                .findGroup(parents.groupAgency(), parents.groupId())
+                .map(Ddi4Group::studyUnitReference)
+                .orElse(List.of())
+                .stream()
+                .anyMatch(ref -> request.studyUnitAgency().equals(ref.agency())
+                        && request.studyUnitId().equals(ref.id()));
+        if (!classifiedByGroup) {
+            throw InvalidRolloverException.studyUnitNotInGroup(request.studyUnitAgency(), request.studyUnitId());
+        }
+    }
+
+    /**
+     * Variables de l'étude cible qui remplacent une variable source. Chacune doit être rangée dans le
+     * VariableScheme de l'étude cible et pointer directement sur la variable source par son
+     * {@code BasedOn} : l'ascendance n'est pas remontée.
+     */
+    private Map<String, Reference> resolveReusedVariables(RolloverRequest request) {
+        List<RolloverVariable> reused =
+                request.variables().stream().filter(RolloverVariable::reuses).toList();
+        if (reused.isEmpty()) {
+            return Map.of();
+        }
+        List<Ddi4Variable> targetVariables = Optional.ofNullable(ddiRepository
+                        .getStudyUnitVariables(request.studyUnitAgency(), request.studyUnitId())
+                        .variable())
+                .orElse(List.of());
+        Map<String, Reference> reusedBySourceId = new HashMap<>();
+        List<String> invalid = new ArrayList<>();
+        for (RolloverVariable variable : reused) {
+            Optional<Ddi4Variable> target = targetVariables.stream()
+                    .filter(candidate -> candidate.agency().equals(variable.reusedAgency())
+                            && candidate.id().equals(variable.reusedId()))
+                    .filter(candidate -> directlyBasedOn(candidate, variable.sourceId()))
+                    .findFirst();
+            if (target.isPresent()) {
+                Ddi4Variable found = target.get();
+                reusedBySourceId.put(
+                        variable.sourceId(),
+                        Reference.of(found.agency(), found.id(), found.version(), Ddi4Variable.TYPE));
+            } else {
+                invalid.add(variable.sourceId());
+            }
+        }
+        if (!invalid.isEmpty()) {
+            throw InvalidRolloverException.invalidReuse(invalid);
+        }
+        return reusedBySourceId;
+    }
+
+    private static boolean directlyBasedOn(Ddi4Variable variable, String sourceId) {
+        return variable.basedOnObject() != null
+                && variable.basedOnObject().basedOnReferences() != null
+                && variable.basedOnObject().basedOnReferences().stream().anyMatch(ref -> sourceId.equals(ref.id()));
     }
 
     @Override

@@ -33,6 +33,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanc
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceSearchRow;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.ReuseVariablesRequest;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.RolloverRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UpdatePhysicalInstanceRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3toDDI4ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI4toDDI3ConverterService;
@@ -40,6 +41,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.DDIRe
 import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Executor;
 import org.jspecify.annotations.Nullable;
@@ -334,6 +336,14 @@ public class DDIRepositoryImpl implements DDIRepository {
     public Reference reuseVariables(String agencyId, String id, ReuseVariablesRequest request) {
         return physicalInstanceWriter.reuseVariables(
                 agencyId, id, request, catalog.getPhysicalInstanceParents(agencyId, id));
+    }
+
+    @Override
+    @CacheEvict(cacheNames = ColecticaCacheNames.PHYSICAL_INSTANCE_SEARCH_ROWS, allEntries = true)
+    public Reference rollover(Ddi4Response source, RolloverRequest request, Map<String, Reference> reusedBySourceId) {
+        Reference created = physicalInstanceWriter.rollover(source, request, reusedBySourceId);
+        catalog.refreshStudyUnitsByOperationAsync();
+        return created;
     }
 
     /** Les parents ne changent pas : la ligne de recherche est mise à jour en place. */

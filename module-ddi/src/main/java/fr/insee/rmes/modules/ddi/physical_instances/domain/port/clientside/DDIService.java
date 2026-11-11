@@ -27,6 +27,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanc
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceParents;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceSearchRow;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.ReuseVariablesRequest;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.RolloverRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UpdatePhysicalInstanceRequest;
 import java.time.LocalDate;
 import java.util.List;
@@ -71,6 +72,13 @@ public interface DDIService {
      * les variables choisies de la source (#1674), et la renvoie.
      */
     Ddi4Response reuseVariables(String agencyId, String id, ReuseVariablesRequest request);
+
+    /**
+     * Nouvelle période (#1672) : crée une PhysicalInstance dans une autre étude du groupe de
+     * {@code agencyId/id}, qui copie les variables choisies (avec {@code BasedOn}) ou réutilise celles
+     * déjà dérivées de la source dans l'étude cible, et la renvoie.
+     */
+    Ddi4Response rollover(String agencyId, String id, RolloverRequest request);
 
     Ddi4Response createPhysicalInstance(CreatePhysicalInstanceRequest request);
 

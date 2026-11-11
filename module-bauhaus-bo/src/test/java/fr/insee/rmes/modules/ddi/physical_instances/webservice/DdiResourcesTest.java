@@ -417,6 +417,43 @@ class DdiResourcesTest {
     }
 
     @Test
+    void shouldRollPhysicalInstanceOver() {
+        PhysicalInstanceRolloverRequest request = new PhysicalInstanceRolloverRequest(
+                "PI 2025",
+                "DR",
+                "LR",
+                "su-2025",
+                "fr.insee",
+                "group-1",
+                "fr.insee",
+                List.of(
+                        new PhysicalInstanceRolloverRequest.Variable("VAR_1", null, null),
+                        new PhysicalInstanceRolloverRequest.Variable("VAR_2", "fr.insee", "VAR_2_2025")));
+        Ddi4Response created = createMockDdi4Response();
+        when(ddiService.rollover(
+                        "fr.insee",
+                        "pi-src",
+                        new RolloverRequest(
+                                "PI 2025",
+                                "DR",
+                                "LR",
+                                "su-2025",
+                                "fr.insee",
+                                "group-1",
+                                "fr.insee",
+                                List.of(
+                                        RolloverVariable.copy("VAR_1"),
+                                        RolloverVariable.reuse("VAR_2", "fr.insee", "VAR_2_2025")))))
+                .thenReturn(created);
+
+        ResponseEntity<Ddi4Response> result = ddiResources.rollover("fr.insee", "pi-src", request);
+
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertEquals(MediaType.APPLICATION_JSON, result.getHeaders().getContentType());
+        assertEquals(created, result.getBody());
+    }
+
+    @Test
     void shouldCreatePhysicalInstance() {
         // Given
         CreatePhysicalInstanceRequest request = new CreatePhysicalInstanceRequest(

@@ -327,6 +327,21 @@ public class DdiResources {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(created);
     }
 
+    /**
+     * Nouvelle période (#1672) : une PhysicalInstance dans une autre Étude du groupe de la source, qui
+     * copie les variables choisies (avec {@code BasedOn}) ou réutilise celles déjà dérivées d'elles.
+     */
+    @PostMapping("/physical-instance/{agencyId}/{id}/rollover")
+    @PreAuthorize(
+            "@propertiesAccessPrivilegesChecker.hasAccess('DDI_PHYSICALINSTANCE', 'CREATE', #request.groupAgency + '|' + #request.groupId, authentication.principal)")
+    public ResponseEntity<Ddi4Response> rollover(
+            @PathVariable String agencyId,
+            @PathVariable String id,
+            @Valid @RequestBody PhysicalInstanceRolloverRequest request) {
+        Ddi4Response created = ddiService.rollover(agencyId, id, request.toDomain());
+        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(created);
+    }
+
     @PutMapping("/physical-instance/{agencyId}/{id}")
     @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.UPDATE)
     public ResponseEntity<Void> replacePhysicalInstance(

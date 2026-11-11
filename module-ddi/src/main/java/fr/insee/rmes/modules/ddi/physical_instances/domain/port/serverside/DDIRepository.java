@@ -32,10 +32,12 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanc
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceSearchRow;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.ReuseVariablesRequest;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.RolloverRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UpdatePhysicalInstanceRequest;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import org.jspecify.annotations.Nullable;
 
@@ -109,6 +111,19 @@ public interface DDIRepository {
      * @return la référence de la PhysicalInstance créée
      */
     Reference reuseVariables(String agencyId, String id, ReuseVariablesRequest request);
+
+    /**
+     * Crée la PhysicalInstance d'une nouvelle période (#1672) dans l'étude de la requête : PI,
+     * DataRelationship et LogicalRecord neufs (pointant la source via {@code BasedOn}), variables
+     * choisies copiées avec {@code BasedOn}, sauf celles de {@code reusedBySourceId}, référencées
+     * telles quelles. Les copies sont rangées dans le VariableScheme de l'étude cible, dans le même
+     * enregistrement que la PI et l'étude.
+     *
+     * @param source la PhysicalInstance source, déjà lue (et validée) par l'appelant
+     * @param reusedBySourceId identifiant de variable source → variable de l'étude cible qui la remplace
+     * @return la référence de la PhysicalInstance créée
+     */
+    Reference rollover(Ddi4Response source, RolloverRequest request, Map<String, Reference> reusedBySourceId);
 
     Ddi4Response createPhysicalInstance(CreatePhysicalInstanceRequest request);
 

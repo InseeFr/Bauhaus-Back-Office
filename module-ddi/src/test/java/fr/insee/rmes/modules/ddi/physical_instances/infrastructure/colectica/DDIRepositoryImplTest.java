@@ -5980,6 +5980,187 @@ class DDIRepositoryImplTest {
         verify(colecticaClient, never()).createOrUpdateItems(any());
     }
 
+    @Test
+    void rollover_savesTheNewPeriodInTheTargetStudyUnitCopyingOrReusingEachVariableInOneBatch() {
+        // Option A (#1672) : PI, DataRelationship et LogicalRecord neufs pointant la source via
+        // BasedOnObject. VAR_1 est copiée (nouvel ID, BasedOn VAR_1) et rangée dans le VariableScheme
+        // de l'étude cible ; VAR_2 est remplacée par VAR_2_2025, déjà dérivée d'elle dans l'étude
+        // cible, référencée telle quelle sans être réécrite. Tout part dans un seul lot.
+        String agencyId = "fr.insee";
+        Ddi4Response source = rolloverSource(agencyId);
+        RolloverRequest request = new RolloverRequest(
+                "PI 2025",
+                null,
+                null,
+                "su-2025",
+                agencyId,
+                "group-1",
+                agencyId,
+                List.of(RolloverVariable.copy("VAR_1"), RolloverVariable.reuse("VAR_2", agencyId, "VAR_2_2025")));
+        Map<String, Reference> reused = Map.of("VAR_2", Reference.of(agencyId, "VAR_2_2025", "3", "Variable"));
+
+        when(instanceConfiguration.itemTypes())
+                .thenReturn(ColecticaTestItemTypes.configuredWith(Map.of(
+                        "StudyUnit", STUDY_UNIT_ITEM_TYPE, "LogicalProduct", "lp-type", "VariableScheme", "vs-type")));
+        when(instanceConfiguration.itemFormat()).thenReturn("fmt");
+        when(colecticaClient.getItem(agencyId, "su-2025", null))
+                .thenReturn(new ColecticaItemResponse(
+                        STUDY_UNIT_ITEM_TYPE,
+                        agencyId,
+                        2,
+                        "su-2025",
+                        "<Fragment xmlns:r=\"ddi:reusable:3_3\" xmlns=\"ddi:instance:3_3\">"
+                                + "<StudyUnit xmlns=\"ddi:studyunit:3_3\" isUniversallyUnique=\"true\"/>"
+                                + "</Fragment>",
+                        "2026-01-01T00:00:00",
+                        "resp",
+                        false,
+                        false,
+                        false,
+                        "fmt"));
+        stubChildrenOfLatestVersion(agencyId, "su-2025", "lp-type", List.of(new ItemReference(agencyId, "lp-2025")));
+        stubChildrenOfLatestVersion(agencyId, "lp-2025", "vs-type", List.of(new ItemReference(agencyId, "VS_2025")));
+        when(colecticaClient.getItem(agencyId, "VS_2025", null))
+                .thenReturn(new ColecticaItemResponse(
+                        "vs-type",
+                        agencyId,
+                        1,
+                        "VS_2025",
+                        "<vs/>",
+                        "2026-01-01T00:00:00",
+                        "resp",
+                        false,
+                        false,
+                        false,
+                        "fmt"));
+        when(ddi3ToDdi4Converter.toVariableScheme("<vs/>"))
+                .thenReturn(new Ddi4VariableScheme(
+                        Ddi4VariableScheme.TYPE,
+                        CogsDate.ofDateTime("2026-01-01T00:00:00"),
+                        "urn:ddi:fr.insee:VS_2025:1",
+                        agencyId,
+                        "VS_2025",
+                        "1",
+                        LangStrings.of("fr-FR", "VS"),
+                        new ArrayList<>(List.of(Reference.of(agencyId, "VAR_2_2025", "3", "Variable")))));
+        ArgumentCaptor<Ddi4VariableScheme> vsCaptor = ArgumentCaptor.forClass(Ddi4VariableScheme.class);
+        when(ddi4ToDdi3Converter.toVariableSchemeItem(vsCaptor.capture()))
+                .thenReturn(new Ddi3Response.Ddi3Item(
+                        "vs-type",
+                        agencyId,
+                        "1",
+                        "VS_2025",
+                        "<vs-updated/>",
+                        "2026-01-01T00:00:00",
+                        "resp",
+                        false,
+                        false,
+                        false,
+                        "fmt"));
+        ArgumentCaptor<Ddi4Response> ddi4Captor = ArgumentCaptor.forClass(Ddi4Response.class);
+        when(ddi4ToDdi3Converter.convertDdi4ToDdi3(ddi4Captor.capture()))
+                .thenReturn(new Ddi3Response(
+                        new Ddi3Response.Ddi3Options(List.of("RegisterOrReplace")),
+                        List.of(new Ddi3Response.Ddi3Item(
+                                "pi-type",
+                                agencyId,
+                                "1",
+                                "pi-2025",
+                                "<pi/>",
+                                "2026-01-01T00:00:00",
+                                "resp",
+                                false,
+                                false,
+                                false,
+                                "fmt"))));
+        when(colecticaClient.createOrUpdateItems(any())).thenReturn("{}");
+
+        Reference created = ddiRepository.rollover(source, request, reused);
+
+        assertThat(created.id()).isNotEqualTo("pi-src");
+        Ddi4Response saved = ddi4Captor.getValue();
+        Ddi4PhysicalInstance newPhysicalInstance = saved.physicalInstance().getFirst();
+        Ddi4DataRelationship newDataRelationship = saved.dataRelationship().getFirst();
+        LogicalRecord newLogicalRecord = newDataRelationship.logicalRecord().getFirst();
+
+        assertThat(newPhysicalInstance.id()).isEqualTo(created.id());
+        assertThat(newPhysicalInstance.citation().title()).containsExactly(new LangString("en-GB", "PI 2025"));
+        assertThat(newPhysicalInstance.basedOnObject().basedOnReferences())
+                .containsExactly(Reference.of(agencyId, "pi-src", "3", "PhysicalInstance"));
+        assertThat(newDataRelationship.basedOnObject().basedOnReferences())
+                .containsExactly(Reference.of(agencyId, "dr-src", "1", "DataRelationship"));
+
+        // Seule VAR_1 est copiée : VAR_2_2025 n'est pas réenregistrée.
+        assertThat(saved.variable()).hasSize(1);
+        Ddi4Variable copied = saved.variable().getFirst();
+        assertThat(copied.id()).isNotIn("VAR_1", "VAR_2", "VAR_2_2025");
+        assertThat(copied.basedOnObject().basedOnReferences())
+                .containsExactly(Reference.of(agencyId, "VAR_1", "1", "Variable"));
+        // Ordre de la source : la copie de VAR_1, puis VAR_2_2025 à la place de VAR_2.
+        assertThat(newLogicalRecord.variablesInRecord().variableUsedReference())
+                .containsExactly(
+                        Reference.of(agencyId, copied.id(), "1", "Variable"),
+                        Reference.of(agencyId, "VAR_2_2025", "3", "Variable"));
+
+        // Le VariableScheme de l'étude cible range la copie, à côté de la variable réutilisée.
+        assertThat(vsCaptor.getValue().variableReference())
+                .extracting(Reference::id)
+                .containsExactlyInAnyOrder("VAR_2_2025", copied.id());
+        // Les parents viennent de la requête : aucune résolution par les relations Colectica.
+        verify(colecticaClient, never()).findRelatedDescriptions(eq(RelationshipDirection.BY_OBJECT), any(), anyList());
+        ArgumentCaptor<ColecticaCreateItemRequest> reqCaptor =
+                ArgumentCaptor.forClass(ColecticaCreateItemRequest.class);
+        verify(colecticaClient).createOrUpdateItems(reqCaptor.capture());
+        assertThat(reqCaptor.getValue().items())
+                .extracting(ColecticaItemResponse::identifier)
+                .containsExactlyInAnyOrder("pi-2025", "VS_2025", "su-2025");
+        ColecticaItemResponse studyUnit = reqCaptor.getValue().items().stream()
+                .filter(item -> item.identifier().equals("su-2025"))
+                .findFirst()
+                .orElseThrow();
+        assertThat(studyUnit.item()).contains("<r:ID>" + created.id() + "</r:ID>");
+    }
+
+    /** Source d'une nouvelle période : pi-src (v3), sa DR dr-src, VAR_1 (v1) et VAR_2 (v4). */
+    private static Ddi4Response rolloverSource(String agencyId) {
+        return new Ddi4Response(
+                "ddi:4.0",
+                List.of(Reference.of(agencyId, "pi-src", "3", "PhysicalInstance")),
+                List.of(new Ddi4PhysicalInstance(
+                        Ddi4PhysicalInstance.TYPE,
+                        CogsDate.ofDateTime("2026-01-01T00:00:00"),
+                        "urn:ddi:fr.insee:pi-src:3",
+                        agencyId,
+                        "pi-src",
+                        "3",
+                        null,
+                        new Citation(LangStrings.of("en-GB", "Source PI")),
+                        List.of(Reference.of(agencyId, "dr-src", "1", "DataRelationship")))),
+                List.of(new Ddi4DataRelationship(
+                        Ddi4DataRelationship.TYPE,
+                        CogsDate.ofDateTime("2026-01-01T00:00:00"),
+                        "urn:ddi:fr.insee:dr-src:1",
+                        agencyId,
+                        "dr-src",
+                        "1",
+                        null,
+                        LangStrings.of("en-GB", "Source DR"),
+                        List.of(new LogicalRecord(
+                                LogicalRecord.TYPE,
+                                "urn:ddi:fr.insee:lr-src:1",
+                                agencyId,
+                                "lr-src",
+                                "1",
+                                LangStrings.of("en-GB", "Source LR"),
+                                new VariablesInRecord(List.of(
+                                        Reference.of(agencyId, "VAR_1", "1", "Variable"),
+                                        Reference.of(agencyId, "VAR_2", "4", "Variable"))))))),
+                List.of(sourceVariable(agencyId, "VAR_1", "1"), sourceVariable(agencyId, "VAR_2", "4")),
+                null,
+                null,
+                null);
+    }
+
     /** Source de la réutilisation : pi-src (v3), rangée sous su-1 / group-1, avec VAR_1 (v1) et VAR_2 (v4). */
     private void stubReuseSource(String agencyId) {
         lenient()

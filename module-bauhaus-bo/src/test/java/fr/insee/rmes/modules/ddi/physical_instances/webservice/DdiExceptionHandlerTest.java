@@ -12,6 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.InvalidReuseVariablesException;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.InvalidRolloverException;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.MissingSchemeException;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.StudyUnitNotFoundException;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3toDDI4ConverterService;
@@ -146,5 +147,21 @@ class DdiExceptionHandlerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value("REUSE_VARIABLES_NOT_IN_SOURCE"))
                 .andExpect(jsonPath("$.params.variables").value("VAR_X"));
+    }
+
+    @Test
+    void shouldReturnBadRequestWithCodeWhenTheRolloverTargetsTheSourceStudyUnit() throws Exception {
+        when(ddiService.rollover(eq("fr.insee"), eq("pi-111"), any()))
+                .thenThrow(InvalidRolloverException.sameStudyUnit("fr.insee", "su-1"));
+
+        mockMvc.perform(post("/ddi/physical-instance/fr.insee/pi-111/rollover")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"physicalInstanceLabel": "PI", "studyUnitId": "su-1", "studyUnitAgency": "fr.insee",
+                                 "groupId": "group-1", "groupAgency": "fr.insee", "variables": [{"sourceId": "VAR_1"}]}
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("ROLLOVER_SAME_STUDY_UNIT"))
+                .andExpect(jsonPath("$.params.studyUnitId").value("su-1"));
     }
 }

@@ -12,13 +12,16 @@ import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.DdiItemNotFoundException;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.InvalidRolloverException;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.InvalidSentinelValuesException;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.BasedOnObject;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CategoryCodeListUsage;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Citation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Code;
@@ -50,6 +53,8 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanc
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceSearchRow;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.ReuseVariablesRequest;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.RolloverRequest;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.RolloverVariable;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UpdatePhysicalInstanceRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UsageItem;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.VariableRepresentation;
@@ -60,6 +65,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -547,6 +553,191 @@ class DDIServiceImplTest {
         Ddi4Response result = ddiService.reuseVariables("fr.insee", "pi-src", request);
 
         assertEquals(created, result);
+    }
+
+    // --- Nouvelle période (#1672) ------------------------------------------------------------------
+
+    private static final String GROUP = "group-1";
+    private static final String TARGET_STUDY_UNIT = "su-2025";
+
+    /** pi-src, rangée sous su-2024 / group-1 qui classe aussi su-2025, utilise VAR_1 et VAR_2. */
+    private void stubRolloverSource() {
+        when(ddiRepository.getPhysicalInstanceParents("fr.insee", "pi-src"))
+                .thenReturn(new PhysicalInstanceParents("fr.insee", "su-2024", "fr.insee", GROUP));
+        lenient()
+                .when(ddiRepository.findGroup("fr.insee", GROUP))
+                .thenReturn(Optional.of(groupClassing("su-2024", TARGET_STUDY_UNIT)));
+        lenient().when(ddiRepository.getPhysicalInstance("fr.insee", "pi-src")).thenReturn(rolloverSource());
+    }
+
+    private static Ddi4Group groupClassing(String... studyUnitIds) {
+        return new Ddi4Group(
+                Ddi4Group.TYPE,
+                null,
+                "urn:ddi:fr.insee:" + GROUP + ":1",
+                "fr.insee",
+                GROUP,
+                "1",
+                null,
+                new Citation(LangStrings.of("fr-FR", "Série")),
+                Arrays.stream(studyUnitIds)
+                        .map(id -> Reference.of("fr.insee", id, "1", "StudyUnit"))
+                        .toList(),
+                null,
+                null,
+                null);
+    }
+
+    private Ddi4Response rolloverSource() {
+        return new Ddi4Response(
+                Ddi4Response.SCHEMA,
+                List.of(Reference.of("fr.insee", "pi-src", "1", "PhysicalInstance")),
+                null,
+                null,
+                List.of(variableWithName("VAR_1", "SEXE"), variableWithName("VAR_2", "AGE")),
+                null,
+                null,
+                null);
+    }
+
+    private static Ddi4Variable derivedVariable(String id, String basedOnId) {
+        return new Ddi4Variable(
+                Ddi4Variable.TYPE,
+                null,
+                "urn:ddi:fr.insee:" + id + ":1",
+                "fr.insee",
+                id,
+                "1",
+                BasedOnObject.of(List.of(Reference.of("fr.insee", basedOnId, "1", Ddi4Variable.TYPE))),
+                LangStrings.of("fr-FR", id),
+                null,
+                null,
+                null,
+                null);
+    }
+
+    private static RolloverRequest rolloverRequest(String studyUnitId, String groupId, RolloverVariable... variables) {
+        return new RolloverRequest(
+                "PI 2025", null, null, studyUnitId, "fr.insee", groupId, "fr.insee", List.of(variables));
+    }
+
+    @Test
+    void rollover_createsTheNewPeriodInTheTargetStudyUnitAndReturnsIt() {
+        stubRolloverSource();
+        when(ddiRepository.getStudyUnitVariables("fr.insee", TARGET_STUDY_UNIT))
+                .thenReturn(new Ddi4Response(
+                        Ddi4Response.SCHEMA,
+                        null,
+                        null,
+                        null,
+                        List.of(derivedVariable("VAR_1_2025", "VAR_1")),
+                        null,
+                        null,
+                        null));
+        RolloverRequest request = rolloverRequest(
+                TARGET_STUDY_UNIT,
+                GROUP,
+                RolloverVariable.reuse("VAR_1", "fr.insee", "VAR_1_2025"),
+                RolloverVariable.copy("VAR_2"));
+        when(ddiRepository.rollover(
+                        rolloverSource(),
+                        request,
+                        Map.of("VAR_1", Reference.of("fr.insee", "VAR_1_2025", "1", Ddi4Variable.TYPE))))
+                .thenReturn(Reference.of("fr.insee", "pi-2025", "1", "PhysicalInstance"));
+        Ddi4Response created = new Ddi4Response("created", null, null, null, null, null, null, null);
+        when(ddiRepository.getPhysicalInstance("fr.insee", "pi-2025")).thenReturn(created);
+
+        Ddi4Response result = ddiService.rollover("fr.insee", "pi-src", request);
+
+        assertEquals(created, result);
+    }
+
+    @Test
+    void rollover_withoutReuse_doesNotReadTheTargetStudyUnitVariables() {
+        stubRolloverSource();
+        RolloverRequest request = rolloverRequest(TARGET_STUDY_UNIT, GROUP, RolloverVariable.copy("VAR_1"));
+        when(ddiRepository.rollover(rolloverSource(), request, Map.of()))
+                .thenReturn(Reference.of("fr.insee", "pi-2025", "1", "PhysicalInstance"));
+
+        ddiService.rollover("fr.insee", "pi-src", request);
+
+        verify(ddiRepository, never()).getStudyUnitVariables(anyString(), anyString());
+    }
+
+    @Test
+    void rollover_rejectsAGroupOtherThanTheSourceOne() {
+        stubRolloverSource();
+        RolloverRequest request = rolloverRequest(TARGET_STUDY_UNIT, "group-2", RolloverVariable.copy("VAR_1"));
+
+        InvalidRolloverException e =
+                assertThrows(InvalidRolloverException.class, () -> ddiService.rollover("fr.insee", "pi-src", request));
+
+        assertEquals(InvalidRolloverException.Code.ROLLOVER_GROUP_MISMATCH, e.code());
+        verify(ddiRepository, never()).rollover(any(), any(), any());
+    }
+
+    @Test
+    void rollover_rejectsTheStudyUnitOfTheSource() {
+        stubRolloverSource();
+        RolloverRequest request = rolloverRequest("su-2024", GROUP, RolloverVariable.copy("VAR_1"));
+
+        InvalidRolloverException e =
+                assertThrows(InvalidRolloverException.class, () -> ddiService.rollover("fr.insee", "pi-src", request));
+
+        assertEquals(InvalidRolloverException.Code.ROLLOVER_SAME_STUDY_UNIT, e.code());
+        verify(ddiRepository, never()).rollover(any(), any(), any());
+    }
+
+    @Test
+    void rollover_rejectsAStudyUnitTheGroupDoesNotClassify() {
+        stubRolloverSource();
+        RolloverRequest request = rolloverRequest("su-other", GROUP, RolloverVariable.copy("VAR_1"));
+
+        InvalidRolloverException e =
+                assertThrows(InvalidRolloverException.class, () -> ddiService.rollover("fr.insee", "pi-src", request));
+
+        assertEquals(InvalidRolloverException.Code.ROLLOVER_STUDY_UNIT_NOT_IN_GROUP, e.code());
+        verify(ddiRepository, never()).rollover(any(), any(), any());
+    }
+
+    @Test
+    void rollover_rejectsAVariableTheSourceDoesNotUse() {
+        stubRolloverSource();
+        RolloverRequest request = rolloverRequest(
+                TARGET_STUDY_UNIT, GROUP, RolloverVariable.copy("VAR_1"), RolloverVariable.copy("VAR_UNKNOWN"));
+
+        InvalidRolloverException e =
+                assertThrows(InvalidRolloverException.class, () -> ddiService.rollover("fr.insee", "pi-src", request));
+
+        assertEquals(InvalidRolloverException.Code.ROLLOVER_VARIABLES_NOT_IN_SOURCE, e.code());
+        assertEquals(Map.of("variables", "VAR_UNKNOWN"), e.params());
+        verify(ddiRepository, never()).rollover(any(), any(), any());
+    }
+
+    @Test
+    void rollover_rejectsReusingAVariableNotDirectlyDerivedFromTheSourceVariable() {
+        // VAR_1_2026 dérive de VAR_1_2025, elle-même dérivée de VAR_1 : seule la référence BasedOn
+        // directe compte, l'ascendance n'est pas remontée.
+        stubRolloverSource();
+        when(ddiRepository.getStudyUnitVariables("fr.insee", TARGET_STUDY_UNIT))
+                .thenReturn(new Ddi4Response(
+                        Ddi4Response.SCHEMA,
+                        null,
+                        null,
+                        null,
+                        List.of(derivedVariable("VAR_1_2025", "VAR_1"), derivedVariable("VAR_1_2026", "VAR_1_2025")),
+                        null,
+                        null,
+                        null));
+        RolloverRequest request =
+                rolloverRequest(TARGET_STUDY_UNIT, GROUP, RolloverVariable.reuse("VAR_1", "fr.insee", "VAR_1_2026"));
+
+        InvalidRolloverException e =
+                assertThrows(InvalidRolloverException.class, () -> ddiService.rollover("fr.insee", "pi-src", request));
+
+        assertEquals(InvalidRolloverException.Code.ROLLOVER_INVALID_REUSE, e.code());
+        assertEquals(Map.of("variables", "VAR_1"), e.params());
+        verify(ddiRepository, never()).rollover(any(), any(), any());
     }
 
     @Test
