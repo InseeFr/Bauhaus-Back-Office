@@ -141,35 +141,9 @@ public class RepositoryPublication {
         }
     }
 
-    public void publishResource(Resource resource, Model model, String type) throws RmesException {
-        publishResource(
-                resource,
-                model,
-                type,
-                repositoryUtils.initRepository(rdfServerPublicationExt, idRepositoryPublicationExt));
-    }
-
-    private void publishResource(Resource resource, Model model, String type, Repository repo) throws RmesException {
-        if (repo == null) {
-            return;
-        }
-
-        try (RepositoryConnection conn = repo.getConnection()) {
-            conn.remove(resource, null, null);
-            conn.add(model);
-            logger.info("Publication of Resource {} : {}", type, resource);
-        } catch (RepositoryException e) {
-            throwIfUnauthorized(e, "Publication of Resource " + type + " : " + resource);
-            logger.error("Publication of Resource {} : {} {}", type, resource, FAILED);
-            logger.error(THREE_PARAMS_LOG, CONNECTION_TO, repo, FAILED);
-            throw unavailableRepository(e);
-        }
-    }
-
     /**
-     * Remplace les triplets de la ressource dans le graphe donné. À préférer à {@link
-     * #publishResource(Resource, Model, String)}, dont la suppression sans graphe nommé ne retire rien
-     * sur un triplestore dont le graphe par défaut n'est pas l'union des graphes nommés.
+     * Remplace les triplets de la ressource dans le graphe donné : ses anciens triplets publiés n'y
+     * sont effacés que là, une suppression sans graphe nommé ne retirant rien hors de GraphDB.
      */
     public void publishResource(Resource resource, Model model, String type, Resource graph) throws RmesException {
         Repository repo = repositoryUtils.initRepository(rdfServerPublicationExt, idRepositoryPublicationExt);

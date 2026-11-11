@@ -81,7 +81,7 @@ class RepositoryPublicationFailureTest {
     void shouldReportAnUnavailableRepositoryWhenPublishingAResource() {
         doThrow(new RepositoryException(RDF4J_MESSAGE)).when(connection).add(any(Model.class));
 
-        assertUnavailableRepository(() -> repositoryPublication.publishResource(subject, model, "operation"));
+        assertUnavailableRepository(() -> repositoryPublication.publishResource(subject, model, "operation", graph));
     }
 
     @Test

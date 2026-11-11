@@ -154,25 +154,25 @@ class RepositoryGestionTest {
     void shouldGetStatements() throws RmesException {
         IRI subject = valueFactory.createIRI("http://example.org/subject");
 
-        when(connection.getStatements(subject, null, null, false)).thenReturn(repositoryResult);
+        when(connection.getStatements(subject, null, null, false, GRAPH)).thenReturn(repositoryResult);
 
-        RepositoryResult<Statement> result = repositoryGestion.getStatements(connection, subject);
+        RepositoryResult<Statement> result = repositoryGestion.getStatements(connection, subject, GRAPH);
 
         assertEquals(repositoryResult, result);
-        verify(connection).getStatements(subject, null, null, false);
+        verify(connection).getStatements(subject, null, null, false, GRAPH);
     }
 
     @Test
     void shouldGetStatementsWithNullConnection() throws RmesException {
         IRI subject = valueFactory.createIRI("http://example.org/subject");
 
-        when(connection.getStatements(subject, null, null, false)).thenReturn(repositoryResult);
+        when(connection.getStatements(subject, null, null, false, GRAPH)).thenReturn(repositoryResult);
 
-        RepositoryResult<Statement> result = repositoryGestion.getStatements(null, subject);
+        RepositoryResult<Statement> result = repositoryGestion.getStatements(null, subject, GRAPH);
 
         assertEquals(repositoryResult, result);
         verify(repositoryUtils).initRepository("http://localhost:8080", "test-repo");
-        verify(connection).getStatements(subject, null, null, false);
+        verify(connection).getStatements(subject, null, null, false, GRAPH);
     }
 
     /* Configuration RDF incomplète : `initRepository` rend `null`. Ouvrir la connexion doit
@@ -183,7 +183,7 @@ class RepositoryGestionTest {
         IRI object = valueFactory.createIRI("http://example.org/object");
         doReturn(null).when(repositoryUtils).initRepository(anyString(), anyString());
 
-        assertThrows(RmesException.class, () -> repositoryGestion.getStatements(null, subject));
+        assertThrows(RmesException.class, () -> repositoryGestion.getStatements(null, subject, GRAPH));
         assertThrows(
                 RmesException.class,
                 () -> repositoryGestion.getStatementsPredicateObject(null, DCTERMS.HAS_PART, object, GRAPH));
@@ -194,9 +194,9 @@ class RepositoryGestionTest {
         IRI subject = valueFactory.createIRI("http://example.org/subject");
         RepositoryException repositoryException = new RepositoryException("Test exception");
 
-        when(connection.getStatements(subject, null, null, false)).thenThrow(repositoryException);
+        when(connection.getStatements(subject, null, null, false, GRAPH)).thenThrow(repositoryException);
 
-        assertThrows(RmesException.class, () -> repositoryGestion.getStatements(connection, subject));
+        assertThrows(RmesException.class, () -> repositoryGestion.getStatements(connection, subject, GRAPH));
     }
 
     @Test

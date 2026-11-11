@@ -57,9 +57,11 @@ class RepositoryPublicationUnauthorizedTest {
 
     @Test
     void shouldExplainThatRdfAuthIsDisabledWhenPublishingAResource() {
-        doThrow(new UnauthorizedException()).when(connection).remove(any(Resource.class), any(), any());
+        doThrow(new UnauthorizedException())
+                .when(connection)
+                .remove(any(Resource.class), any(), any(), any(Resource.class));
 
-        assertThatThrownBy(() -> repositoryPublication.publishResource(graph, model, "concept"))
+        assertThatThrownBy(() -> repositoryPublication.publishResource(graph, model, "concept", graph))
                 .isInstanceOf(RmesException.class)
                 .hasMessageContaining(AUTH_DISABLED);
     }

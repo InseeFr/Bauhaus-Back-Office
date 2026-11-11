@@ -15,7 +15,6 @@ import com.tngtech.archunit.lang.ArchCondition;
 import com.tngtech.archunit.lang.ArchRule;
 import com.tngtech.archunit.lang.ConditionEvents;
 import com.tngtech.archunit.lang.SimpleConditionEvent;
-import com.tngtech.archunit.library.freeze.FreezingArchRule;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
@@ -41,15 +40,12 @@ import org.springframework.asm.Type;
  * natif nomme son graphe, et le graphe ne se relit jamais depuis un {@link Statement}. Les deux
  * ne fonctionnent que sur GraphDB, dont le graphe par défaut est l'union des graphes nommés.
  * <p>
- * Les deux règles sont gelées : les appels existants sont enregistrés dans {@code archunit_store}
- * et disparaissent au fil des corrections de {@code RepositoryGestion}, {@code RepositoryUtils},
- * {@code RepositoryPublication} et des classes {@code *Publication}. Aucun nouvel appel ne peut
- * s'ajouter.
+ * Les deux règles ne sont plus gelées depuis F6l (2026-11-10) : le code de production n'a plus aucun
+ * appel de ce type, et tout nouvel appel fait échouer le build.
  * <p>
  * L'import couvre aussi {@code module-utility}, présent sur le classpath du module.
  *
  * @see RdfGraphPortabilityRulesTest
- * @see ArchUnitStoreTest
  */
 @AnalyzeClasses(packages = "fr.insee.rmes", importOptions = ImportOption.DoNotIncludeTests.class)
 public class RdfGraphPortabilityArchTest {
@@ -72,11 +68,10 @@ public class RdfGraphPortabilityArchTest {
                     + "only on GraphDB: elsewhere a read returns nothing and a remove does nothing");
 
     @ArchTest
-    public static final ArchRule statementGetContextIsForbidden = FreezingArchRule.freeze(NO_STATEMENT_GET_CONTEXT);
+    public static final ArchRule statementGetContextIsForbidden = NO_STATEMENT_GET_CONTEXT;
 
     @ArchTest
-    public static final ArchRule nativeAccessWithoutNamedGraphIsForbidden =
-            FreezingArchRule.freeze(NO_NATIVE_ACCESS_WITHOUT_NAMED_GRAPH);
+    public static final ArchRule nativeAccessWithoutNamedGraphIsForbidden = NO_NATIVE_ACCESS_WITHOUT_NAMED_GRAPH;
 
     private static ArchCondition<JavaClass> nameTheirGraphWhenCallingRepositoryConnection() {
         return new ArchCondition<>("name their graph when calling RepositoryConnection.getStatements or remove") {

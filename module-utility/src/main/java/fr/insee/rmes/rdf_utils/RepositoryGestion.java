@@ -122,20 +122,6 @@ public class RepositoryGestion {
                 query, repositoryUtils.initRepository(rdfGestion.getUrlServer(), rdfGestion.repositoryId()));
     }
 
-    public RepositoryResult<Statement> getStatements(RepositoryConnection con, Resource subject) throws RmesException {
-        RepositoryResult<Statement> statements = null;
-        if (con == null) {
-            con = gestionConnection();
-        }
-
-        try {
-            statements = con.getStatements(subject, null, null, false);
-        } catch (RepositoryException e) {
-            throwsRmesException(e, "Failure get statements : " + subject);
-        }
-        return statements;
-    }
-
     public void closeStatements(RepositoryResult<Statement> statements) throws RmesException {
         try {
             statements.close();
@@ -437,9 +423,8 @@ public class RepositoryGestion {
     }
 
     /**
-     * Triplets du sujet dans le graphe donné. À préférer à {@link #getStatements(RepositoryConnection,
-     * Resource)} : sans graphe nommé, la lecture ne rend rien sur un triplestore dont le graphe par
-     * défaut n'est pas l'union des graphes nommés, et les triplets lus n'y portent pas leur graphe.
+     * Triplets du sujet dans le graphe donné : sans graphe nommé, la lecture ne rendrait rien sur un
+     * triplestore dont le graphe par défaut n'est pas l'union des graphes nommés.
      */
     public RepositoryResult<Statement> getStatements(RepositoryConnection con, Resource subject, Resource graph)
             throws RmesException {
