@@ -5742,6 +5742,168 @@ class DDIRepositoryImplTest {
         // chacun pointant sur son original via BasedOnObject, puis part dans un seul lot avec la
         // StudyUnit de rattachement et le VariableScheme qui range les nouvelles variables.
         String agencyId = "fr.insee";
+        DuplicationStubs stubs = stubDuplicationOfSourcePhysicalInstance();
+        DuplicatePhysicalInstanceRequest request = stubs.request();
+        ArgumentCaptor<Ddi4Response> ddi4Captor = stubs.ddi4();
+        ArgumentCaptor<Ddi4VariableScheme> vsCaptor = stubs.variableScheme();
+
+        Reference duplicated = ddiRepository.duplicatePhysicalInstance(agencyId, "pi-src", request);
+
+        assertThat(duplicated).isNotNull();
+        assertThat(duplicated.agency()).isEqualTo(agencyId);
+        assertThat(duplicated.id()).isNotEqualTo("pi-src");
+
+        Ddi4Response copy = ddi4Captor.getValue();
+        Ddi4PhysicalInstance copiedPhysicalInstance = copy.physicalInstance().getFirst();
+        Ddi4DataRelationship copiedDataRelationship = copy.dataRelationship().getFirst();
+        LogicalRecord copiedLogicalRecord =
+                copiedDataRelationship.logicalRecord().getFirst();
+        Ddi4Variable copiedVariable = copy.variable().getFirst();
+
+        assertThat(copiedPhysicalInstance.id()).isEqualTo(duplicated.id());
+        assertThat(copiedPhysicalInstance.version()).isEqualTo("1");
+        assertThat(copiedPhysicalInstance.urn()).isEqualTo("urn:ddi:fr.insee:" + duplicated.id() + ":1");
+        assertThat(copiedPhysicalInstance.citation().title())
+                .containsExactly(new LangString("en-GB", "Source PI (copy)"));
+        assertThat(copiedPhysicalInstance.basedOnObject().basedOnReferences())
+                .containsExactly(Reference.of(agencyId, "pi-src", "3", "PhysicalInstance"));
+        assertThat(copiedPhysicalInstance.dataRelationshipReference())
+                .extracting(Reference::id)
+                .containsExactly(copiedDataRelationship.id());
+
+        assertThat(copiedDataRelationship.id()).isNotEqualTo("dr-src");
+        assertThat(copiedDataRelationship.label()).containsExactly(new LangString("en-GB", "Copied DR"));
+        assertThat(copiedDataRelationship.basedOnObject().basedOnReferences())
+                .containsExactly(Reference.of(agencyId, "dr-src", "1", "DataRelationship"));
+
+        assertThat(copiedLogicalRecord.id()).isNotEqualTo("lr-src");
+        assertThat(copiedLogicalRecord.label())
+                .containsExactly(new LangString("en-GB", "Enregistrement logique : Source PI (copy)"));
+        assertThat(copiedLogicalRecord.variablesInRecord().variableUsedReference())
+                .extracting(Reference::id)
+                .containsExactly(copiedVariable.id());
+
+        assertThat(copiedVariable.id()).isNotEqualTo("VAR_1");
+        assertThat(copiedVariable.basedOnObject().basedOnReferences())
+                .containsExactly(Reference.of("fr.insee", "VAR_1", "1", "Variable"));
+
+        // Les parents viennent de la requête : aucune résolution par les relations Colectica.
+        verify(colecticaClient, never()).findRelatedDescriptions(eq(RelationshipDirection.BY_OBJECT), any(), anyList());
+        assertThat(vsCaptor.getValue().variableReference())
+                .extracting(Reference::id)
+                .containsExactlyInAnyOrder("VAR_OLD", copiedVariable.id());
+        ArgumentCaptor<ColecticaCreateItemRequest> reqCaptor =
+                ArgumentCaptor.forClass(ColecticaCreateItemRequest.class);
+        verify(colecticaClient).createOrUpdateItems(reqCaptor.capture());
+        assertThat(reqCaptor.getValue().items())
+                .extracting(ColecticaItemResponse::identifier)
+                .contains("pi-copy", "VS_1", "su-1");
+    }
+
+    @Test
+    void duplicatePhysicalInstance_addsTheCopyToTheCachedSearchRowsUnderTheParentsOfItsStudyUnit() {
+        searchRowsCache.put(SimpleKey.EMPTY, List.of(siblingSearchRow("fr.insee", "su-1")));
+        stubDuplicationOfSourcePhysicalInstance();
+
+        Reference duplicated = ddiRepository.duplicatePhysicalInstance(
+                "fr.insee",
+                "pi-src",
+                new DuplicatePhysicalInstanceRequest(
+                        "Source PI (copy)", "Copied DR", null, "su-1", "fr.insee", "group-1", "fr.insee"));
+
+        @SuppressWarnings("unchecked")
+        List<PhysicalInstanceSearchRow> rows = searchRowsCache.get(SimpleKey.EMPTY, List.class);
+        assertThat(rows)
+                .extracting(
+                        PhysicalInstanceSearchRow::id,
+                        PhysicalInstanceSearchRow::label,
+                        PhysicalInstanceSearchRow::groupLabel)
+                .containsExactly(
+                        tuple("pi-sibling", "Sœur", "Groupe BPE"),
+                        tuple(duplicated.id(), "Source PI (copy)", "Groupe BPE"));
+    }
+
+    @Test
+    void createPhysicalInstance_addsTheCreatedPhysicalInstanceToTheCachedSearchRows() {
+        searchRowsCache.put(SimpleKey.EMPTY, List.of(siblingSearchRow("fr.insee", "su-1")));
+        stubPhysicalInstanceCreation();
+        when(instanceConfiguration.itemTypes())
+                .thenReturn(ColecticaTestItemTypes.configuredWith(Map.of(
+                        "PhysicalInstance", "a51e85bb-6259-4488-8df2-f08cb43485f8",
+                        "DataRelationship", "f39ff278-8500-45fe-a850-3906da2d242b",
+                        "StudyUnit", STUDY_UNIT_ITEM_TYPE)));
+        when(colecticaClient.getItem("fr.insee", "su-1", null))
+                .thenReturn(new ColecticaItemResponse(
+                        STUDY_UNIT_ITEM_TYPE,
+                        "fr.insee",
+                        2,
+                        "su-1",
+                        "<Fragment xmlns:r=\"ddi:reusable:3_3\" xmlns=\"ddi:instance:3_3\">"
+                                + "<StudyUnit xmlns=\"ddi:studyunit:3_3\" isUniversallyUnique=\"true\"/></Fragment>",
+                        "2026-01-01T00:00:00",
+                        "resp",
+                        false,
+                        false,
+                        false,
+                        "fmt"));
+        stubPhysicalInstanceSet(new ColecticaSetItem("pi-new", 1, "fr.insee"));
+        when(ddi3ToDdi4Converter.convertDdi3ToDdi4(any(Ddi3Response.class), eq("ddi:4.0")))
+                .thenReturn(new Ddi4Response(
+                        "ddi:4.0",
+                        List.of(Reference.of("fr.insee", "pi-new", "1", "PhysicalInstance")),
+                        List.of(new Ddi4PhysicalInstance(
+                                Ddi4PhysicalInstance.TYPE,
+                                CogsDate.ofDateTime("2026-10-02T10:00:00"),
+                                "urn:ddi:fr.insee:pi-new:1",
+                                "fr.insee",
+                                "pi-new",
+                                "1",
+                                null,
+                                new Citation(LangStrings.of("fr-FR", "New PI")),
+                                null)),
+                        null,
+                        null,
+                        null,
+                        null,
+                        null));
+
+        ddiRepository.createPhysicalInstance(
+                new CreatePhysicalInstanceRequest("New PI", "New DR", "New LR", "su-1", "fr.insee", "g1", "fr.insee"),
+                new PhysicalInstanceIds("pi-new", "dr-new", "lr-new"));
+
+        @SuppressWarnings("unchecked")
+        List<PhysicalInstanceSearchRow> rows = searchRowsCache.get(SimpleKey.EMPTY, List.class);
+        assertThat(rows)
+                .extracting(
+                        PhysicalInstanceSearchRow::id,
+                        PhysicalInstanceSearchRow::label,
+                        PhysicalInstanceSearchRow::studyUnitLabel)
+                .containsExactly(
+                        tuple("pi-sibling", "Sœur", "Recensement 2024"), tuple("pi-new", "New PI", "Recensement 2024"));
+    }
+
+    private static PhysicalInstanceSearchRow siblingSearchRow(String studyUnitAgency, String studyUnitId) {
+        return new PhysicalInstanceSearchRow(
+                "fr.insee",
+                "pi-sibling",
+                "Sœur",
+                null,
+                studyUnitAgency,
+                studyUnitId,
+                "Recensement 2024",
+                "fr.insee",
+                "g1",
+                "Groupe BPE");
+    }
+
+    private record DuplicationStubs(
+            DuplicatePhysicalInstanceRequest request,
+            ArgumentCaptor<Ddi4Response> ddi4,
+            ArgumentCaptor<Ddi4VariableScheme> variableScheme) {}
+
+    /** Duplication de pi-src (une DR, un LR, une variable) vers la StudyUnit su-1 du groupe group-1. */
+    private DuplicationStubs stubDuplicationOfSourcePhysicalInstance() {
+        String agencyId = "fr.insee";
         DuplicatePhysicalInstanceRequest request = new DuplicatePhysicalInstanceRequest(
                 "Source PI (copy)", "Copied DR", null, "su-1", "fr.insee", "group-1", "fr.insee");
 
@@ -5868,57 +6030,7 @@ class DDIRepositoryImplTest {
                                 "fmt"))));
         when(colecticaClient.createOrUpdateItems(any())).thenReturn("{}");
 
-        Reference duplicated = ddiRepository.duplicatePhysicalInstance(agencyId, "pi-src", request);
-
-        assertThat(duplicated).isNotNull();
-        assertThat(duplicated.agency()).isEqualTo(agencyId);
-        assertThat(duplicated.id()).isNotEqualTo("pi-src");
-
-        Ddi4Response copy = ddi4Captor.getValue();
-        Ddi4PhysicalInstance copiedPhysicalInstance = copy.physicalInstance().getFirst();
-        Ddi4DataRelationship copiedDataRelationship = copy.dataRelationship().getFirst();
-        LogicalRecord copiedLogicalRecord =
-                copiedDataRelationship.logicalRecord().getFirst();
-        Ddi4Variable copiedVariable = copy.variable().getFirst();
-
-        assertThat(copiedPhysicalInstance.id()).isEqualTo(duplicated.id());
-        assertThat(copiedPhysicalInstance.version()).isEqualTo("1");
-        assertThat(copiedPhysicalInstance.urn()).isEqualTo("urn:ddi:fr.insee:" + duplicated.id() + ":1");
-        assertThat(copiedPhysicalInstance.citation().title())
-                .containsExactly(new LangString("en-GB", "Source PI (copy)"));
-        assertThat(copiedPhysicalInstance.basedOnObject().basedOnReferences())
-                .containsExactly(Reference.of(agencyId, "pi-src", "3", "PhysicalInstance"));
-        assertThat(copiedPhysicalInstance.dataRelationshipReference())
-                .extracting(Reference::id)
-                .containsExactly(copiedDataRelationship.id());
-
-        assertThat(copiedDataRelationship.id()).isNotEqualTo("dr-src");
-        assertThat(copiedDataRelationship.label()).containsExactly(new LangString("en-GB", "Copied DR"));
-        assertThat(copiedDataRelationship.basedOnObject().basedOnReferences())
-                .containsExactly(Reference.of(agencyId, "dr-src", "1", "DataRelationship"));
-
-        assertThat(copiedLogicalRecord.id()).isNotEqualTo("lr-src");
-        assertThat(copiedLogicalRecord.label())
-                .containsExactly(new LangString("en-GB", "Enregistrement logique : Source PI (copy)"));
-        assertThat(copiedLogicalRecord.variablesInRecord().variableUsedReference())
-                .extracting(Reference::id)
-                .containsExactly(copiedVariable.id());
-
-        assertThat(copiedVariable.id()).isNotEqualTo("VAR_1");
-        assertThat(copiedVariable.basedOnObject().basedOnReferences())
-                .containsExactly(Reference.of("fr.insee", "VAR_1", "1", "Variable"));
-
-        // Les parents viennent de la requête : aucune résolution par les relations Colectica.
-        verify(colecticaClient, never()).findRelatedDescriptions(eq(RelationshipDirection.BY_OBJECT), any(), anyList());
-        assertThat(vsCaptor.getValue().variableReference())
-                .extracting(Reference::id)
-                .containsExactlyInAnyOrder("VAR_OLD", copiedVariable.id());
-        ArgumentCaptor<ColecticaCreateItemRequest> reqCaptor =
-                ArgumentCaptor.forClass(ColecticaCreateItemRequest.class);
-        verify(colecticaClient).createOrUpdateItems(reqCaptor.capture());
-        assertThat(reqCaptor.getValue().items())
-                .extracting(ColecticaItemResponse::identifier)
-                .contains("pi-copy", "VS_1", "su-1");
+        return new DuplicationStubs(request, ddi4Captor, vsCaptor);
     }
 
     // --- Plus de création à la volée : les LogicalProducts et schemes sont créés en amont (init,

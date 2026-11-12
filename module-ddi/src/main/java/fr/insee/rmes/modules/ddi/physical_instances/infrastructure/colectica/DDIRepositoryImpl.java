@@ -284,17 +284,17 @@ public class DDIRepositoryImpl implements DDIRepository {
     }
 
     @Override
-    @CacheEvict(cacheNames = ColecticaCacheNames.PHYSICAL_INSTANCE_SEARCH_ROWS, allEntries = true)
     public Ddi4Response createPhysicalInstance(CreatePhysicalInstanceRequest request) {
         Ddi4Response created = physicalInstanceWriter.createPhysicalInstance(request);
+        searchRowsCache.add(createdPhysicalInstance(created), request.studyUnitAgency(), request.studyUnitId());
         catalog.refreshStudyUnitsByOperationAsync();
         return created;
     }
 
     @Override
-    @CacheEvict(cacheNames = ColecticaCacheNames.PHYSICAL_INSTANCE_SEARCH_ROWS, allEntries = true)
     public Ddi4Response createPhysicalInstance(CreatePhysicalInstanceRequest request, PhysicalInstanceIds ids) {
         Ddi4Response created = physicalInstanceWriter.createPhysicalInstance(request, ids);
+        searchRowsCache.add(createdPhysicalInstance(created), request.studyUnitAgency(), request.studyUnitId());
         catalog.refreshStudyUnitsByOperationAsync();
         return created;
     }
@@ -314,12 +314,13 @@ public class DDIRepositoryImpl implements DDIRepository {
         catalog.refreshStudyUnitsByOperationAsync();
     }
 
+    /** La copie rejoint la recherche sous les parents déjà cachés de sa StudyUnit, sans relecture. */
     @Override
-    @CacheEvict(cacheNames = ColecticaCacheNames.PHYSICAL_INSTANCE_SEARCH_ROWS, allEntries = true)
     public Reference duplicatePhysicalInstance(String agencyId, String id, DuplicatePhysicalInstanceRequest request) {
-        Reference copy = physicalInstanceWriter.duplicatePhysicalInstance(agencyId, id, request);
+        Ddi4PhysicalInstance copy = physicalInstanceWriter.duplicatePhysicalInstance(agencyId, id, request);
+        searchRowsCache.add(copy, request.studyUnitAgency(), request.studyUnitId());
         catalog.refreshStudyUnitsByOperationAsync();
-        return copy;
+        return Reference.of(copy.agency(), copy.id(), copy.version(), Ddi4PhysicalInstance.TYPE);
     }
 
     /** Les parents ne changent pas : la ligne de recherche est mise à jour en place. */
@@ -328,6 +329,16 @@ public class DDIRepositoryImpl implements DDIRepository {
         physicalInstanceWriter.updateFullPhysicalInstance(agencyId, id, ddi4Response);
         searchRowsCache.refresh(agencyId, id, savedPhysicalInstance(ddi4Response, id));
         catalog.refreshStudyUnitsByOperationAsync();
+    }
+
+    /** La PI relue après création ; {@code null} si la relecture n'a rien rendu. */
+    private static Ddi4PhysicalInstance createdPhysicalInstance(Ddi4Response created) {
+        if (created == null
+                || created.physicalInstance() == null
+                || created.physicalInstance().isEmpty()) {
+            return null;
+        }
+        return created.physicalInstance().getFirst();
     }
 
     private static Ddi4PhysicalInstance savedPhysicalInstance(Ddi4Response ddi4Response, String id) {

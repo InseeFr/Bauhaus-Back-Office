@@ -1,6 +1,7 @@
 package fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Citation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CogsDate;
@@ -140,6 +141,96 @@ class PhysicalInstanceSearchRowsCacheTest {
                 "fr.insee", "pi-1", savedWithTitles(new LangString("fr-FR", " "), new LangString("en-GB", null)));
 
         assertThat(cache.get(SimpleKey.EMPTY)).isNull();
+    }
+
+    @Test
+    void add_leavesAnEmptyRegionEmpty() {
+        searchRowsCache.add(created("pi-new", "Nouvelle PI"), "fr.insee", "su-1");
+
+        assertThat(cache.get(SimpleKey.EMPTY)).isNull();
+    }
+
+    @Test
+    void add_appendsARowCarryingTheParentsOfACachedSiblingOfTheSameStudyUnit() {
+        cache.put(SimpleKey.EMPTY, List.of(row("fr.insee", "pi-1", "Sœur")));
+
+        searchRowsCache.add(created("pi-new", "Nouvelle PI"), "fr.insee", "su-1");
+
+        assertThat(rows())
+                .extracting(
+                        PhysicalInstanceSearchRow::id,
+                        PhysicalInstanceSearchRow::label,
+                        PhysicalInstanceSearchRow::studyUnitId,
+                        PhysicalInstanceSearchRow::studyUnitLabel,
+                        PhysicalInstanceSearchRow::groupId,
+                        PhysicalInstanceSearchRow::groupLabel)
+                .containsExactly(
+                        tuple("pi-1", "Sœur", "su-1", "Recensement 2024", "g1", "Groupe BPE"),
+                        tuple("pi-new", "Nouvelle PI", "su-1", "Recensement 2024", "g1", "Groupe BPE"));
+        assertThat(rows().getLast().versionDate()).isEqualTo(Date.from(Instant.parse("2026-10-02T10:00:00Z")));
+    }
+
+    @Test
+    void add_appendsAnOrphanRowWithoutStudyUnit() {
+        cache.put(SimpleKey.EMPTY, List.of(row("fr.insee", "pi-1", "Autre")));
+
+        searchRowsCache.add(created("pi-new", "Orpheline"), null, null);
+
+        PhysicalInstanceSearchRow added = rows().getLast();
+        assertThat(added.id()).isEqualTo("pi-new");
+        assertThat(added.label()).isEqualTo("Orpheline");
+        assertThat(added.studyUnitId()).isNull();
+        assertThat(added.groupLabel()).isNull();
+    }
+
+    @Test
+    void add_replacesTheRowOfAPhysicalInstanceRewrittenWithTheSameIdentifier() {
+        cache.put(SimpleKey.EMPTY, List.of(row("fr.insee", "pi-new", "Ancienne")));
+
+        searchRowsCache.add(created("pi-new", "Réécrite"), "fr.insee", "su-1");
+
+        assertThat(rows()).extracting(PhysicalInstanceSearchRow::label).containsExactly("Réécrite");
+    }
+
+    @Test
+    void add_clearsTheRegionWhenNoCachedRowKnowsTheStudyUnit() {
+        // Première PI de l'étude : ses libellés et son groupe ne sont pas connus du cache.
+        cache.put(SimpleKey.EMPTY, List.of(row("fr.insee", "pi-1", "Autre")));
+
+        searchRowsCache.add(created("pi-new", "Nouvelle PI"), "fr.insee", "su-unknown");
+
+        assertThat(cache.get(SimpleKey.EMPTY)).isNull();
+    }
+
+    @Test
+    void add_clearsTheRegionWhenTheCreatedPhysicalInstanceHasNoTitle() {
+        cache.put(SimpleKey.EMPTY, List.of(row("fr.insee", "pi-1", "Sœur")));
+
+        searchRowsCache.add(saved(CogsDate.ofDateTime("2026-10-02T10:00:00"), null), "fr.insee", "su-1");
+
+        assertThat(cache.get(SimpleKey.EMPTY)).isNull();
+    }
+
+    @Test
+    void add_clearsTheRegionWithoutCreatedPhysicalInstance() {
+        cache.put(SimpleKey.EMPTY, List.of(row("fr.insee", "pi-1", "Sœur")));
+
+        searchRowsCache.add(null, "fr.insee", "su-1");
+
+        assertThat(cache.get(SimpleKey.EMPTY)).isNull();
+    }
+
+    private static Ddi4PhysicalInstance created(String id, String label) {
+        return new Ddi4PhysicalInstance(
+                Ddi4PhysicalInstance.TYPE,
+                CogsDate.ofDateTime("2026-10-02T10:00:00"),
+                "urn:ddi:fr.insee:" + id + ":1",
+                "fr.insee",
+                id,
+                "1",
+                null,
+                new Citation(List.of(new LangString("fr-FR", label))),
+                List.of());
     }
 
     @SuppressWarnings("unchecked")

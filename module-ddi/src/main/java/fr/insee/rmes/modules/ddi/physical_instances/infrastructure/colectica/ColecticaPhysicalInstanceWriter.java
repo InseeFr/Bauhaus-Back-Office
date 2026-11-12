@@ -210,7 +210,9 @@ class ColecticaPhysicalInstanceWriter {
      * partent dans un seul enregistrement. Les parents étant portés par la requête, un scheme manquant
      * sous l'Étude lève une {@code MissingSchemeException} avant tout envoi.
      */
-    Reference duplicatePhysicalInstance(String agencyId, String id, DuplicatePhysicalInstanceRequest request) {
+    /** Enregistre la copie et la renvoie telle qu'envoyée à Colectica. */
+    Ddi4PhysicalInstance duplicatePhysicalInstance(
+            String agencyId, String id, DuplicatePhysicalInstanceRequest request) {
         Ddi4Response source = reader.getPhysicalInstance(agencyId, id);
         if (source == null
                 || source.physicalInstance() == null
@@ -284,7 +286,7 @@ class ColecticaPhysicalInstanceWriter {
                 request.studyUnitAgency(), request.studyUnitId(), request.groupAgency(), request.groupId());
         updateFullPhysicalInstance(agencyId, copyId, copy, studyUnit, parents);
 
-        return Reference.of(agencyId, copyId, COPY_VERSION, Ddi4PhysicalInstance.TYPE);
+        return copiedPI;
     }
 
     private Ddi4DataRelationship copiedDataRelationship(
