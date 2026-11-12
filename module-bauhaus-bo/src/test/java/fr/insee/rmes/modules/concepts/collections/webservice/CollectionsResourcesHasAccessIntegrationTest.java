@@ -95,7 +95,7 @@ class CollectionsResourcesHasAccessIntegrationTest extends AbstractResourcesEnvP
      * organisations.
      */
     @Test
-    void createCollection_checksTheCreationAccessOnThePostedContributor()
+    void create_collection_checks_the_creation_access_on_the_posted_contributor()
             throws Exception, CollectionsSaveException, CollectionsFetchException, MissingUserInformationException {
         when(checker.hasCreateAccess(eq("CONCEPT_COLLECTION"), eq(List.of("DG75-L201")), any()))
                 .thenReturn(true);

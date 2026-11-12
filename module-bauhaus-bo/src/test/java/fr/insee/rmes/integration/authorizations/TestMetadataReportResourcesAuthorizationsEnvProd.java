@@ -260,7 +260,7 @@ class TestMetadataReportResourcesAuthorizationsEnvProd extends AbstractResources
     @Test
     void postMetadataReportAdmin_OK() throws Exception, MissingUserInformationException {
         when(documentationsService.createMetadataReport(any())).thenReturn("{}");
-        when(checker.hasAccess(any(), any(), any(), any())).thenReturn(true);
+        when(checker.hasCreateAccessUnder(any(), any(), any(), any())).thenReturn(true);
 
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
         mvc.perform(post("/operations/metadataReport")
@@ -287,7 +287,7 @@ class TestMetadataReportResourcesAuthorizationsEnvProd extends AbstractResources
     @Test
     void postMetadataReportContributor_OK() throws Exception, MissingUserInformationException {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("Gestionnaire_indicateur_RMESGNCS"));
-        when(checker.hasAccess(any(), any(), any(), any())).thenReturn(true);
+        when(checker.hasCreateAccessUnder(any(), any(), any(), any())).thenReturn(true);
 
         when(documentationsService.createMetadataReport(any())).thenReturn("{}");
         mvc.perform(post("/operations/metadataReport")

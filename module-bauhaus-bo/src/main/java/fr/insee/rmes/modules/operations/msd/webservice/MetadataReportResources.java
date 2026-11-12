@@ -35,6 +35,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @Qualifier("Report")
@@ -154,7 +155,14 @@ public class MetadataReportResources {
         return ResponseEntity.status(HttpStatus.OK).body(metadataReportOwner);
     }
 
-    @HasAccess(module = RBAC.Module.OPERATION_SIMS, privilege = RBAC.Privilege.CREATE)
+    /**
+     * Un rapport hérite les propriétaires de sa cible (série, série parente d'une opération, ou
+     * indicateur) : c'est sur eux que porte le contrôle par timbre. Un rapport sans cible est refusé.
+     */
+    @PreAuthorize("#sims.idTarget != null"
+            + " and @propertiesAccessPrivilegesChecker.hasCreateAccessUnder('OPERATION_SIMS',"
+            + " T(fr.insee.rmes.modules.operations.msd.webservice.MetadataReportTarget).parentModule(#sims),"
+            + " #sims.idTarget, authentication.principal)")
     @PostMapping(value = "/metadataReport", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> setMetadataReport(@Valid @RequestBody Documentation sims) throws RmesException {
         String id = documentationsService.createMetadataReport(sims);

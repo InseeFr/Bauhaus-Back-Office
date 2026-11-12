@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -19,6 +20,7 @@ import fr.insee.rmes.modules.operations.msd.webservice.MetadataReportResources;
 import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
 import java.util.Collections;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -91,5 +93,67 @@ class TestMetadataReportResourcesEnvProd extends AbstractResourcesEnvProd {
                 .header("Authorization", "Bearer toto");
 
         mvc.perform(request).andExpect(status().is2xxSuccessful());
+    }
+
+    /**
+     * Un rapport n'a pas de créateur propre : à sa création, le contrôle par timbre porte sur les
+     * créateurs de sa cible postée — la série parente d'une opération, la série ou l'indicateur.
+     */
+    static Stream<Arguments> simsTargets() {
+        return Stream.of(
+                Arguments.of("idOperation", "s2098", "OPERATION_OPERATION"),
+                Arguments.of("idSeries", "s1001", "OPERATION_SERIES"),
+                Arguments.of("idIndicator", "p1001", "OPERATION_INDICATOR"));
+    }
+
+    @ParameterizedTest
+    @MethodSource("simsTargets")
+    void checks_the_creation_access_on_the_posted_target(String targetField, String targetId, String targetModule)
+            throws Exception, MissingUserInformationException {
+        when(checker.hasCreateAccessUnder(eq("OPERATION_SIMS"), eq(targetModule), eq(targetId), any()))
+                .thenReturn(true);
+        when(documentationsService.createMetadataReport(any())).thenReturn("1680");
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
+
+        mvc.perform(post("/operations/metadataReport")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header("Authorization", "Bearer toto")
+                        .content("""
+                                {"labelLg1": "Rapport", "%s": "%s"}""".formatted(targetField, targetId)))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void refuses_the_creation_when_the_target_is_not_owned_by_the_user()
+            throws Exception, MissingUserInformationException {
+        when(checker.hasCreateAccessUnder(any(), any(), any(), any())).thenReturn(false);
+        when(checker.hasAccess(any(), any(), any(), any())).thenReturn(true);
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
+
+        mvc.perform(post("/operations/metadataReport")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header("Authorization", "Bearer toto")
+                        .content("""
+                                {"labelLg1": "Rapport", "idSeries": "s1001"}"""))
+                .andExpect(status().isForbidden());
+    }
+
+    /** Un rapport sans cible n'a aucun propriétaire dont hériter : sa création est refusée. */
+    @Test
+    void refuses_the_creation_of_a_report_without_target() throws Exception, MissingUserInformationException {
+        when(checker.hasCreateAccessUnder(any(), any(), any(), any())).thenReturn(true);
+        when(checker.hasAccess(any(), any(), any(), any())).thenReturn(true);
+        when(documentationsService.createMetadataReport(any())).thenReturn("1680");
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
+
+        mvc.perform(post("/operations/metadataReport")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header("Authorization", "Bearer toto")
+                        .content("""
+                                {"labelLg1": "Rapport", "idOperation": "", "idSeries": "", "idIndicator": ""}"""))
+                .andExpect(status().isForbidden());
     }
 }

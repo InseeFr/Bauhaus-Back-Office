@@ -125,7 +125,7 @@ class ConceptsAuthorizationTest extends AbstractResourcesEnvProd {
      * organisations.
      */
     @Test
-    void createConcept_checksTheCreationAccessOnThePostedContributor()
+    void create_concept_checks_the_creation_access_on_the_posted_contributor()
             throws Exception, MissingUserInformationException {
         when(checker.hasCreateAccess(eq("CONCEPT_CONCEPT"), eq(List.of("DG75-L201")), any()))
                 .thenReturn(true);
