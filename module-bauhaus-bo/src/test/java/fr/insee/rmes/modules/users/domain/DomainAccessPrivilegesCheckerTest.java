@@ -611,4 +611,81 @@ class DomainAccessPrivilegesCheckerTest {
 
         assertThat(hasFamilyCreateAccess(Arrays.asList(null, "STAMP-01"))).isTrue();
     }
+    /**
+     * Création d'une opération sous la stratégie STAMP : elle n'a pas de créateur propre, ce sont
+     * ceux de la série parente, déjà en base, qui doivent porter un timbre de l'utilisateur.
+     */
+    private void givenOperationCreateWithStrategy(RBAC.Strategy strategy) throws MissingUserInformationException {
+        givenUserWithPrivilege(
+                userWithStamps("ssm", "STAMP-01", "STAMP-02"),
+                RBAC.Module.OPERATION_OPERATION,
+                RBAC.Privilege.CREATE,
+                strategy);
+    }
+
+    private OngoingStubbing<List<String>> whenParentSeriesCreatorsStampsFetched()
+            throws StampFetchException, UnsupportedModuleException {
+        return when(stampChecker.getCreatorsStamps(RBAC.Module.OPERATION_SERIES, "s42"));
+    }
+
+    private boolean hasOperationCreateAccessUnderSeries() throws MissingUserInformationException {
+        return accessChecker.hasCreateAccessUnder("OPERATION_OPERATION", "OPERATION_SERIES", "s42", PRINCIPAL);
+    }
+
+    @Test
+    void should_grant_operation_creation_when_a_parent_series_creator_is_a_user_stamp()
+            throws MissingUserInformationException, StampFetchException, UnsupportedModuleException {
+        givenOperationCreateWithStrategy(RBAC.Strategy.STAMP);
+        whenParentSeriesCreatorsStampsFetched().thenReturn(List.of("DG75-G999", "STAMP-02"));
+
+        assertThat(hasOperationCreateAccessUnderSeries()).isTrue();
+    }
+
+    @Test
+    void should_deny_operation_creation_when_no_parent_series_creator_is_a_user_stamp()
+            throws MissingUserInformationException, StampFetchException, UnsupportedModuleException {
+        givenOperationCreateWithStrategy(RBAC.Strategy.STAMP);
+        whenParentSeriesCreatorsStampsFetched().thenReturn(List.of("DG75-G999"));
+
+        assertThat(hasOperationCreateAccessUnderSeries()).isFalse();
+    }
+
+    /** Une série sans créateur ne laisse personne y rattacher d'opération sous la stratégie STAMP. */
+    @Test
+    void should_deny_operation_creation_when_the_parent_series_has_no_creator()
+            throws MissingUserInformationException, StampFetchException, UnsupportedModuleException {
+        givenOperationCreateWithStrategy(RBAC.Strategy.STAMP);
+        whenParentSeriesCreatorsStampsFetched().thenReturn(List.of());
+
+        assertThat(hasOperationCreateAccessUnderSeries()).isFalse();
+    }
+
+    @Test
+    void should_deny_operation_creation_when_the_parent_series_creators_cannot_be_fetched()
+            throws MissingUserInformationException, StampFetchException, UnsupportedModuleException {
+        givenOperationCreateWithStrategy(RBAC.Strategy.STAMP);
+        whenParentSeriesCreatorsStampsFetched().thenThrow(new StampFetchException(RBAC.Module.OPERATION_SERIES, "s42"));
+
+        assertThat(hasOperationCreateAccessUnderSeries()).isFalse();
+    }
+
+    /** La stratégie ALL laisse créer sous n'importe quelle série, sans relire ses créateurs. */
+    @Test
+    void should_grant_operation_creation_with_all_strategy_whatever_the_parent_series()
+            throws MissingUserInformationException {
+        givenOperationCreateWithStrategy(RBAC.Strategy.ALL);
+
+        assertThat(hasOperationCreateAccessUnderSeries()).isTrue();
+    }
+
+    @Test
+    void should_deny_operation_creation_without_the_create_privilege() throws MissingUserInformationException {
+        givenUserWithPrivilege(
+                userWithStamps("ssm", "STAMP-01"),
+                RBAC.Module.OPERATION_OPERATION,
+                RBAC.Privilege.UPDATE,
+                RBAC.Strategy.ALL);
+
+        assertThat(hasOperationCreateAccessUnderSeries()).isFalse();
+    }
 }

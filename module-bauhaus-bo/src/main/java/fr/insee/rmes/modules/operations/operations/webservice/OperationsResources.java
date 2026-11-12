@@ -12,6 +12,7 @@ import fr.insee.rmes.modules.commons.configuration.ConditionalOnModule;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIService;
 import fr.insee.rmes.modules.users.domain.model.RBAC;
 import fr.insee.rmes.modules.users.webservice.HasAccess;
+import fr.insee.rmes.modules.users.webservice.HasCreateAccessUnder;
 import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -79,7 +80,10 @@ public class OperationsResources {
         return ResponseEntity.noContent().build();
     }
 
-    @HasAccess(module = RBAC.Module.OPERATION_OPERATION, privilege = RBAC.Privilege.CREATE)
+    @HasCreateAccessUnder(
+            module = RBAC.Module.OPERATION_OPERATION,
+            parentModule = RBAC.Module.OPERATION_SERIES,
+            parentId = "#body.series().id()")
     @PostMapping(value = "/operation", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> createOperation(@Valid @RequestBody OperationCreationRequest body)
             throws RmesException {

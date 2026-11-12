@@ -4,6 +4,7 @@ import static fr.insee.rmes.integration.authorizations.TokenForTestsConfiguratio
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -18,6 +19,7 @@ import fr.insee.rmes.modules.operations.operations.webservice.OperationsResource
 import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
 import java.util.Collections;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -89,5 +91,38 @@ class TestOperationsResourcesEnvProd extends AbstractResourcesEnvProd {
                 .header("Authorization", "Bearer toto");
 
         mvc.perform(request).andExpect(status().is2xxSuccessful());
+    }
+
+    /**
+     * Une opération n'a pas de créateur propre : à sa création, le contrôle par timbre porte sur
+     * les créateurs de la série parente postée, que l'utilisateur doit compter parmi ses
+     * organisations.
+     */
+    @Test
+    void checks_the_creation_access_on_the_posted_parent_series() throws Exception, MissingUserInformationException {
+        when(checker.hasCreateAccessUnder(eq("OPERATION_OPERATION"), eq("OPERATION_SERIES"), eq("s42"), any()))
+                .thenReturn(true);
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
+
+        mvc.perform(post("/operations/operation")
+                        .header("Authorization", "Bearer toto")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content(OPERATION_BODY))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void refuses_the_creation_when_the_parent_series_is_not_owned_by_the_user()
+            throws Exception, MissingUserInformationException {
+        when(checker.hasCreateAccessUnder(any(), any(), any(), any())).thenReturn(false);
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
+
+        mvc.perform(post("/operations/operation")
+                        .header("Authorization", "Bearer toto")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content(OPERATION_BODY))
+                .andExpect(status().isForbidden());
     }
 }

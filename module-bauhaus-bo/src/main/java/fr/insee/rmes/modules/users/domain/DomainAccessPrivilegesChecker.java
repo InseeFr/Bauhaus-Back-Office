@@ -76,6 +76,75 @@ public class DomainAccessPrivilegesChecker implements AccessPrivilegesCheckerSer
         return granted;
     }
 
+    @Override
+    public boolean hasCreateAccessUnder(String module, String parentModule, String parentId, Object principal)
+            throws MissingUserInformationException {
+        var user = this.decoder.fromPrincipal(principal);
+        if (user.isEmpty()) {
+            logger.debug("Creation denied: no user could be decoded from the principal");
+            return false;
+        }
+        var granted = hasCreateAccessUnder(module, parentModule, parentId, user.get());
+        logger.debug(
+                "Creation {} for user {} on module={} under {} {}",
+                granted ? "granted" : "denied",
+                user.get().id(),
+                module,
+                parentModule,
+                parentId);
+        return granted;
+    }
+
+    /**
+     * La ressource créée hérite des propriétaires de son parent, qui existe déjà : ce sont eux qui
+     * sont relus en base. Un parent sans propriétaire, ou introuvable, refuse la création, pour la
+     * même raison qu'une création sans propriétaire posté.
+     */
+    private boolean hasCreateAccessUnder(
+            String moduleIdentifier, String parentModuleIdentifier, String parentId, User user) {
+        RBAC.Module module;
+        RBAC.Module parentModule;
+        try {
+            module = RBAC.Module.valueOf(moduleIdentifier);
+            parentModule = RBAC.Module.valueOf(parentModuleIdentifier);
+        } catch (IllegalArgumentException e) {
+            logger.warn("Invalid module identifier: {} or {}", moduleIdentifier, parentModuleIdentifier, e);
+            return false;
+        }
+
+        var privilegeAndStrategy =
+                findStrategyByPrivilege(RBAC.Privilege.CREATE, findModuleAccessPrivileges(user, module));
+        if (privilegeAndStrategy.isEmpty()) {
+            logger.debug("Creation denied: roles {} grant no CREATE privilege on module {}", user.roles(), module);
+            return false;
+        }
+
+        return switch (privilegeAndStrategy.get().strategy()) {
+            case ALL -> !user.getStamps().isEmpty();
+            case STAMP -> {
+                List<String> parentStamps;
+                try {
+                    parentStamps = getStamps(parentModule, parentId);
+                } catch (StampFetchException | UnsupportedModuleException e) {
+                    logger.error(
+                            "Could not fetch stamp of the parent %s %s, so creation on %s is denied"
+                                    .formatted(parentModule, parentId, module),
+                            e);
+                    yield false;
+                }
+                logger.debug(
+                        "Strategy STAMP: parent {} {} has stamps {}, user {} has stamps {}",
+                        parentModule,
+                        parentId,
+                        parentStamps,
+                        user.id(),
+                        user.getStamps());
+                yield parentStamps.stream().anyMatch(user.getStamps()::contains);
+            }
+            case NONE -> false;
+        };
+    }
+
     /**
      * Le contrôle par timbre d'une création porte sur le corps de la requête : aucune ressource
      * n'existe encore pour relire ses propriétaires en base. Contrairement à une ressource

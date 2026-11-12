@@ -16,4 +16,13 @@ public interface AccessPrivilegesCheckerService {
      */
     boolean hasCreateAccess(String module, Collection<String> owners, Object user)
             throws MissingUserInformationException;
+
+    /**
+     * Droit de créer une ressource du module rattachée à un parent existant, dont elle hérite les
+     * propriétaires (une opération n'a pas de {@code dc:creator} propre : ce sont ceux de sa série).
+     * Sous la stratégie STAMP, l'un des propriétaires du parent doit porter un timbre de
+     * l'utilisateur.
+     */
+    boolean hasCreateAccessUnder(String module, String parentModule, String parentId, Object user)
+            throws MissingUserInformationException;
 }
