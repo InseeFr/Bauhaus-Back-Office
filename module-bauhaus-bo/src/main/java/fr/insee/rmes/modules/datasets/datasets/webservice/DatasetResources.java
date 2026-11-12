@@ -12,6 +12,7 @@ import fr.insee.rmes.modules.datasets.datasets.model.PartialDataset;
 import fr.insee.rmes.modules.datasets.datasets.model.PatchDataset;
 import fr.insee.rmes.modules.users.domain.model.RBAC;
 import fr.insee.rmes.modules.users.webservice.HasAccess;
+import fr.insee.rmes.modules.users.webservice.HasCreateAccess;
 import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
@@ -56,7 +57,7 @@ public class DatasetResources {
     }
 
     @PostMapping(value = "", consumes = APPLICATION_JSON_VALUE)
-    @HasAccess(module = RBAC.Module.DATASET_DATASET, privilege = RBAC.Privilege.CREATE)
+    @HasCreateAccess(module = RBAC.Module.DATASET_DATASET, owners = "#dataset.catalogRecord?.contributor")
     public ResponseEntity<String> setDataset(@Valid @RequestBody Dataset dataset) throws RmesException {
         String id = this.datasetService.create(dataset);
 
