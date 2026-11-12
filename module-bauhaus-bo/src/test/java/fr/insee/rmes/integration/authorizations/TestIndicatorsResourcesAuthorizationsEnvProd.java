@@ -83,7 +83,7 @@ class TestIndicatorsResourcesAuthorizationsEnvProd extends AbstractResourcesEnvP
     @MethodSource("provideIndicatorData")
     @ParameterizedTest
     void postIndicator(Integer code, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
-        when(checker.hasAccess(any(), any(), any(), any())).thenReturn(hasAccessReturn);
+        when(checker.hasCreateAccess(any(), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
 
         var request = post("/operations/indicator")

@@ -4,6 +4,7 @@ import static fr.insee.rmes.integration.authorizations.TokenForTestsConfiguratio
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -14,7 +15,9 @@ import fr.insee.rmes.modules.commons.configuration.LogRequestFilter;
 import fr.insee.rmes.modules.operations.indicators.webservice.IndicatorsResources;
 import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
 import java.util.Collections;
+import java.util.List;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -77,5 +80,45 @@ class TestIndicatorsResourcesEnvProd extends AbstractResourcesEnvProd {
                 .header("Authorization", "Bearer toto");
 
         mvc.perform(request).andExpect(status().is2xxSuccessful());
+    }
+
+    /**
+     * Un indicateur n'existe pas encore à sa création : le contrôle par timbre porte sur ses
+     * créateurs postés ({@code dc:creator}), que l'utilisateur doit compter parmi ses
+     * organisations.
+     */
+    @Test
+    void checks_the_creation_access_on_the_posted_creators() throws Exception, MissingUserInformationException {
+        when(checker.hasCreateAccess(
+                        eq("OPERATION_INDICATOR"),
+                        eq(List.of("http://bauhaus/organisations/insee/DG75-L201", "DG75-G401")),
+                        any()))
+                .thenReturn(true);
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
+
+        mvc.perform(post("/operations/indicator")
+                        .header("Authorization", "Bearer toto")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"prefLabelLg1": "Indicateur",
+                                 "creators": ["http://bauhaus/organisations/insee/DG75-L201", "DG75-G401"]}
+                                """))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void refuses_the_creation_when_no_posted_creator_is_owned_by_the_user()
+            throws Exception, MissingUserInformationException {
+        when(checker.hasCreateAccess(any(), any(), any())).thenReturn(false);
+        when(checker.hasAccess(any(), any(), any(), any())).thenReturn(true);
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
+
+        mvc.perform(post("/operations/indicator")
+                        .header("Authorization", "Bearer toto")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content(INDICATOR_BODY))
+                .andExpect(status().isForbidden());
     }
 }

@@ -8,6 +8,7 @@ import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.commons.configuration.ConditionalOnModule;
 import fr.insee.rmes.modules.users.domain.model.RBAC;
 import fr.insee.rmes.modules.users.webservice.HasAccess;
+import fr.insee.rmes.modules.users.webservice.HasCreateAccess;
 import fr.insee.rmes.utils.XMLUtils;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -86,7 +87,7 @@ public class IndicatorsResources {
         return ResponseEntity.status(HttpStatus.OK).body(id);
     }
 
-    @HasAccess(module = RBAC.Module.OPERATION_INDICATOR, privilege = RBAC.Privilege.CREATE)
+    @HasCreateAccess(module = RBAC.Module.OPERATION_INDICATOR, owners = "#body.creators()")
     @PostMapping(value = "/indicator", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> setIndicator(@Valid @RequestBody IndicatorRequest body) throws RmesException {
         String id = operationsService.setIndicator(body.toCommand());
