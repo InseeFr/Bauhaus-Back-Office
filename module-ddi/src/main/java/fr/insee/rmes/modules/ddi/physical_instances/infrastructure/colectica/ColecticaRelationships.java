@@ -44,4 +44,22 @@ final class ColecticaRelationships {
                 .distinct()
                 .toList();
     }
+
+    /**
+     * Identifiants des items de {@code childType} référencés par la <em>dernière version</em> de
+     * {@code parent}. Contrairement à {@link #childrenOfType}, un enfant retiré par une version
+     * ultérieure du parent n'est pas rendu. Vide quand le parent est inconnu de Colectica.
+     */
+    static List<ItemReference> childrenOfLatestVersion(
+            ColecticaClient colecticaClient, ItemReference parent, String childType) {
+        return colecticaClient.getLatestVersionNumbers(List.of(parent)).stream()
+                .findFirst()
+                .map(latest -> colecticaClient
+                        .findRelatedDescriptions(
+                                RelationshipDirection.BY_SUBJECT, parent, latest.version(), List.of(childType))
+                        .stream()
+                        .distinct()
+                        .toList())
+                .orElse(List.of());
+    }
 }
