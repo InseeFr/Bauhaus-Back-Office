@@ -49,6 +49,7 @@ public class ConceptsPublication extends RdfService {
     String[] notes = {"scopeNote", "definition", "editorialNote"};
     String[] links = {"inScheme", "disseminationStatus", "references"};
     String[] ignoredAttrs = {"validationState", "changeNote", Constants.CREATOR, Constants.CONTRIBUTOR};
+    String[] ignoredCollectionAttrs = {"validationState", "isValidated", Constants.CREATOR, Constants.CONTRIBUTOR};
 
     public void publishConcepts(JSONArray conceptsToPublish, Resource graph) throws RmesException {
         for (int i = 0; i < conceptsToPublish.length(); ++i) {
@@ -266,10 +267,9 @@ public class ConceptsPublication extends RdfService {
                                 st.getPredicate(),
                                 publicationUtils.tranformBaseURIToPublish((Resource) st.getObject()),
                                 graph);
-                    } else if (predicate.endsWith(Constants.CREATOR) || predicate.endsWith(Constants.CONTRIBUTOR)) {
-                        // not copied: gestion-only metadata
+                    } else if (PublicationUtils.stringEndsWithItemFromList(predicate, ignoredCollectionAttrs)) {
+                        // not copied: gestion-only metadata, validation status included
                     } else {
-                        // Literals (incl. isValidated which has just been set to true upstream)
                         model.add(
                                 publicationUtils.tranformBaseURIToPublish(st.getSubject()),
                                 st.getPredicate(),

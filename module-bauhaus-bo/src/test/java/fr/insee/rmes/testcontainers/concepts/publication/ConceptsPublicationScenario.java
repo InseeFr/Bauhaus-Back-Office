@@ -125,6 +125,29 @@ interface ConceptsPublicationScenario {
         assertThat(publishedLabels(gestion, PUBLISHED_COLLECTION)).isEqualTo("Démographie et population");
     }
 
+    /**
+     * Le statut est écrit en gestion après la copie, par l'écouteur de {@code ObjectPublished} : recopié,
+     * il publierait l'ancien.
+     */
+    @Test
+    default void does_not_publish_the_validation_status_of_the_collection() throws RmesException {
+        RepositoryGestion gestion = gestion();
+        gestion.executeUpdate(collectionLabelled("Démographie"));
+        gestion.executeUpdate("""
+                INSERT DATA { GRAPH <%s> { <%s> <http://rdf.insee.fr/def/base#isValidated> true } }
+                """.formatted(CONCEPTS_GRAPH, COLLECTION));
+
+        conceptsPublication(gestion).publishCollection(new JSONArray().put("col9301"), conceptsGraph());
+
+        assertThat(publishedLabels(gestion, PUBLISHED_COLLECTION)).isEqualTo("Démographie");
+        assertThat(gestion.getResponseAsBoolean("""
+                        ASK { GRAPH <%s> { <%s> ?status ?value
+                          FILTER(?status IN (<http://rdf.insee.fr/def/base#validationState>,
+                                             <http://rdf.insee.fr/def/base#isValidated>)) } }
+                        """.formatted(CONCEPTS_GRAPH, PUBLISHED_COLLECTION)))
+                .isFalse();
+    }
+
     private RepositoryGestion gestion() {
         return new RepositoryGestion(connectionDetails(), repositoryUtils());
     }

@@ -33,7 +33,8 @@ import org.springframework.web.client.RestClient;
  *
  * Les deux scénarios couverts ici :
  *  - cycles 1 + 2 : après validation, le dashboard reflète `isValidated=true` ;
- *  - cycles 3 + 4 : le graphe publication contient bien le triplet correspondant.
+ *  - cycles 3 + 4 : le graphe publication contient la collection à son IRI non doublée, sans son statut
+ *    de gestion (écrit après la copie par l'écouteur de {@code ObjectPublished}).
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class CollectionPublicationBug1453Test extends WithGraphDBContainer {
@@ -81,33 +82,39 @@ class CollectionPublicationBug1453Test extends WithGraphDBContainer {
 
     @Test
     @DisplayName(
-            "Bug #1453 (cycle 3) : après publication, le graphe publication doit contenir isValidated=true pour la collection")
-    void publishing_a_collection_writes_is_validated_true_in_publication_graph() {
+            "Bug #1453 (cycle 3) : après publication, le graphe publication contient la collection à son IRI, sans son statut")
+    void publishing_a_collection_writes_it_at_its_publication_iri_without_its_status() {
         RestClient restClient = RestClient.create();
         String collectionId = "Collection-bug-1453-pub";
 
         createCollection(restClient, collectionId);
         validateCollection(restClient, collectionId);
 
-        boolean hasGestionIri =
+        boolean hasGestionStatus =
                 sparqlAsk(restClient, BAUHAUS_TEST_REPOSITORY, askValidatedWithPrefix(collectionId, "http://bauhaus/"));
-        boolean hasPublicationIri = sparqlAsk(
+        boolean hasPublishedCollection = sparqlAsk(
+                restClient,
+                BAUHAUS_TEST_PUBLICATION_REPOSITORY,
+                askCollectionWithPrefix(collectionId, "http://id.insee.fr/"));
+        boolean hasPublishedStatus = sparqlAsk(
                 restClient,
                 BAUHAUS_TEST_PUBLICATION_REPOSITORY,
                 askValidatedWithPrefix(collectionId, "http://id.insee.fr/"));
 
-        assertThat(hasGestionIri)
+        assertThat(hasGestionStatus)
                 .as(
                         "Le graphe gestion doit contenir <http://bauhaus/.../%s> insee:validationState 'Validated'",
                         collectionId)
                 .isTrue();
-        assertThat(hasPublicationIri)
+        assertThat(hasPublishedCollection)
                 .as(
-                        "Le graphe publication doit contenir <http://id.insee.fr/.../%s> insee:validationState 'Validated'. "
-                                + "Si absent, ConceptsPublication.publishCollection a filtré le triplet "
-                                + "ou écrit une IRI doublée par tranformBaseURIToPublish.",
+                        "Le graphe publication doit contenir <http://id.insee.fr/.../%s> a skos:Collection. "
+                                + "Si absent, tranformBaseURIToPublish a écrit une IRI doublée.",
                         collectionId)
                 .isTrue();
+        assertThat(hasPublishedStatus)
+                .as("Le statut de gestion ne doit pas être publié : l'écouteur l'écrit après la copie")
+                .isFalse();
     }
 
     private String collectionsEndpoint() {
@@ -164,6 +171,14 @@ class CollectionPublicationBug1453Test extends WithGraphDBContainer {
     private static String askValidatedWithPrefix(String collectionId, String prefix) {
         return "PREFIX insee: <http://rdf.insee.fr/def/base#> "
                 + "ASK { ?s insee:validationState 'Validated' . "
+                + "FILTER(STRSTARTS(STR(?s), \"" + prefix + "\") "
+                + "&& !STRSTARTS(STR(?s), \"" + prefix + "http://\") "
+                + "&& CONTAINS(STR(?s), \"" + collectionId + "\")) }";
+    }
+
+    private static String askCollectionWithPrefix(String collectionId, String prefix) {
+        return "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> "
+                + "ASK { ?s a skos:Collection . "
                 + "FILTER(STRSTARTS(STR(?s), \"" + prefix + "\") "
                 + "&& !STRSTARTS(STR(?s), \"" + prefix + "http://\") "
                 + "&& CONTAINS(STR(?s), \"" + collectionId + "\")) }";
