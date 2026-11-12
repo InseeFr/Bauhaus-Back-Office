@@ -44,7 +44,13 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.Semaphore;
 import java.util.stream.Collectors;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
@@ -57,6 +63,14 @@ import org.slf4j.LoggerFactory;
 class ColecticaCatalogRepository {
 
     private static final Logger logger = LoggerFactory.getLogger(ColecticaCatalogRepository.class);
+
+    /**
+     * Appels {@code bysubject} simultanés au plus pendant la construction des lignes de recherche :
+     * assez pour ne plus payer la somme des allers-retours, pas assez pour saturer Colectica.
+     */
+    private static final int MAX_CONCURRENT_DESCENTS = 8;
+
+    private final Semaphore descentPermits = new Semaphore(MAX_CONCURRENT_DESCENTS);
 
     private final ColecticaConfiguration.ColecticaInstanceConfiguration instanceConfiguration;
     private final ColecticaClient colecticaClient;
@@ -238,23 +252,45 @@ class ColecticaCatalogRepository {
             latestStudyUnitByKey.put(ColecticaItems.key(studyUnit.agencyId(), studyUnit.identifier()), studyUnit);
         }
 
-        for (ColecticaItem group : latestItemsOfType(itemType(GROUP))) {
-            String groupLabel = labels.of(group);
-            List<ColecticaItem> referencedStudyUnits = ColecticaItems.latestVersions(colecticaClient.findRelatedItems(
-                    RelationshipDirection.BY_SUBJECT,
-                    ColecticaItems.itemRef(group),
-                    group.version(),
-                    List.of(itemType(STUDY_UNIT))));
-            for (ColecticaItem referenced : referencedStudyUnits) {
-                ColecticaItem studyUnit = latestStudyUnitByKey.getOrDefault(
-                        ColecticaItems.key(referenced.agencyId(), referenced.identifier()), referenced);
+        // Deux vagues d'appels parallèles, relues dans l'ordre de soumission : les lignes sortent
+        // dans le même ordre qu'en série. Pas d'imbrication, sans quoi une tâche de groupe tiendrait
+        // un permis en attendant ses StudyUnits.
+        try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
+            List<ColecticaItem> groups = latestItemsOfType(itemType(GROUP));
+            List<Future<List<ColecticaItem>>> studyUnitsPerGroup = groups.stream()
+                    .map(group -> executor.submit(() ->
+                            throttled(() -> ColecticaItems.latestVersions(colecticaClient.findRelatedItems(
+                                    RelationshipDirection.BY_SUBJECT,
+                                    ColecticaItems.itemRef(group),
+                                    group.version(),
+                                    List.of(itemType(STUDY_UNIT)))))))
+                    .toList();
+
+            List<StudyUnitDescent> descents = new ArrayList<>();
+            for (int i = 0; i < groups.size(); i++) {
+                ColecticaItem group = groups.get(i);
+                String groupLabel = labels.of(group);
+                for (ColecticaItem referenced : awaitDescent(studyUnitsPerGroup.get(i))) {
+                    ColecticaItem studyUnit = latestStudyUnitByKey.getOrDefault(
+                            ColecticaItems.key(referenced.agencyId(), referenced.identifier()), referenced);
+                    descents.add(new StudyUnitDescent(
+                            group,
+                            groupLabel,
+                            studyUnit,
+                            executor.submit(() -> throttled(
+                                    () -> ColecticaItems.distinctReferences(colecticaClient.findRelatedDescriptions(
+                                            RelationshipDirection.BY_SUBJECT,
+                                            ColecticaItems.itemRef(studyUnit),
+                                            studyUnit.version(),
+                                            List.of(physicalInstanceType)))))));
+                }
+            }
+
+            for (StudyUnitDescent descent : descents) {
+                ColecticaItem group = descent.group();
+                ColecticaItem studyUnit = descent.studyUnit();
                 String studyUnitLabel = labels.of(studyUnit);
-                List<ItemReference> piRefs = ColecticaItems.distinctReferences(colecticaClient.findRelatedDescriptions(
-                        RelationshipDirection.BY_SUBJECT,
-                        ColecticaItems.itemRef(studyUnit),
-                        studyUnit.version(),
-                        List.of(physicalInstanceType)));
-                for (ItemReference piRef : piRefs) {
+                for (ItemReference piRef : awaitDescent(descent.physicalInstances())) {
                     String piKey = ColecticaItems.key(piRef.agencyId(), piRef.identifier());
                     PartialPhysicalInstance pi = piByKey.get(piKey);
                     // Absente de _query/advanced (dépréciée) : la relation subsiste, la PI ne s'affiche plus.
@@ -272,7 +308,7 @@ class ColecticaCatalogRepository {
                             studyUnitLabel,
                             group.agencyId(),
                             group.identifier(),
-                            groupLabel));
+                            descent.groupLabel()));
                 }
             }
         }
@@ -286,6 +322,38 @@ class ColecticaCatalogRepository {
             }
         }
         return rows;
+    }
+
+    /** Une StudyUnit rattachée à son groupe, et la descente vers ses PI en cours. */
+    private record StudyUnitDescent(
+            ColecticaItem group,
+            String groupLabel,
+            ColecticaItem studyUnit,
+            Future<List<ItemReference>> physicalInstances) {}
+
+    /** Appel Colectica sous {@link #descentPermits} : borne la charge envoyée au serveur. */
+    private <T> T throttled(Callable<T> call) throws Exception {
+        descentPermits.acquire();
+        try {
+            return call.call();
+        } finally {
+            descentPermits.release();
+        }
+    }
+
+    /** Résultat d'une descente ; l'exception d'origine (404 Colectica, etc.) remonte telle quelle. */
+    private static <T> T awaitDescent(Future<T> descent) {
+        try {
+            return descent.get();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("Interrupted while building physical instance search rows", e);
+        } catch (ExecutionException e) {
+            if (e.getCause() instanceof RuntimeException runtime) {
+                throw runtime;
+            }
+            throw new IllegalStateException("Failed to build physical instance search rows", e.getCause());
+        }
     }
 
     /**

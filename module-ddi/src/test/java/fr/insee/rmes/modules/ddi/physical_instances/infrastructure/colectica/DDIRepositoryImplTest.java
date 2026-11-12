@@ -36,6 +36,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TimeZone;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.BeforeEach;
@@ -4877,6 +4879,120 @@ class DDIRepositoryImplTest {
         assertEquals(
                 List.of("pi-1"),
                 rows.stream().map(PhysicalInstanceSearchRow::id).toList());
+    }
+
+    @Test
+    void getPhysicalInstanceSearchRows_descendsFromTheGroupsConcurrently() {
+        // Chaque descente par groupe attend l'autre : en série, la première expire.
+        String agency = "agency1";
+        String piType = "a51e85bb-6259-4488-8df2-f08cb43485f8";
+        when(instanceConfiguration.itemTypes())
+                .thenReturn(ColecticaTestItemTypes.configuredWith(Map.of("PhysicalInstance", piType)));
+        when(colecticaClient.queryAdvanced(anyList()))
+                .thenReturn(new ColecticaAdvancedResponse(
+                        List.of(
+                                advancedPhysicalInstance(agency, "pi-1", piType),
+                                advancedPhysicalInstance(agency, "pi-2", piType)),
+                        2,
+                        null));
+        when(colecticaClient.query(List.of(STUDY_UNIT_ITEM_TYPE)))
+                .thenReturn(new ColecticaResponse(List.of(), 0, 0, null, null, null));
+        when(colecticaClient.query(List.of(GROUP_ITEM_TYPE)))
+                .thenReturn(new ColecticaResponse(
+                        List.of(
+                                labelItem(GROUP_ITEM_TYPE, agency, "g1", "Groupe 1"),
+                                labelItem(GROUP_ITEM_TYPE, agency, "g2", "Groupe 2")),
+                        2,
+                        2,
+                        null,
+                        null,
+                        null));
+        CyclicBarrier groupsTogether = new CyclicBarrier(2);
+        when(colecticaClient.findRelatedItems(
+                        RelationshipDirection.BY_SUBJECT,
+                        new ItemReference(agency, "g1"),
+                        1,
+                        List.of(STUDY_UNIT_ITEM_TYPE)))
+                .thenAnswer(_ -> afterBarrier(
+                        groupsTogether, List.of(labelItem(STUDY_UNIT_ITEM_TYPE, agency, "su-1", "Étude 1"))));
+        when(colecticaClient.findRelatedItems(
+                        RelationshipDirection.BY_SUBJECT,
+                        new ItemReference(agency, "g2"),
+                        1,
+                        List.of(STUDY_UNIT_ITEM_TYPE)))
+                .thenAnswer(_ -> afterBarrier(
+                        groupsTogether, List.of(labelItem(STUDY_UNIT_ITEM_TYPE, agency, "su-2", "Étude 2"))));
+        when(colecticaClient.findRelatedDescriptions(
+                        RelationshipDirection.BY_SUBJECT, new ItemReference(agency, "su-1"), 1, List.of(piType)))
+                .thenReturn(List.of(new ItemReference(agency, "pi-1")));
+        when(colecticaClient.findRelatedDescriptions(
+                        RelationshipDirection.BY_SUBJECT, new ItemReference(agency, "su-2"), 1, List.of(piType)))
+                .thenReturn(List.of(new ItemReference(agency, "pi-2")));
+
+        List<PhysicalInstanceSearchRow> rows = ddiRepository.getPhysicalInstanceSearchRows();
+
+        assertThat(rows)
+                .extracting(PhysicalInstanceSearchRow::id, PhysicalInstanceSearchRow::groupId)
+                .containsExactly(tuple("pi-1", "g1"), tuple("pi-2", "g2"));
+    }
+
+    @Test
+    void getPhysicalInstanceSearchRows_descendsFromTheStudyUnitsConcurrently() {
+        String agency = "agency1";
+        String piType = "a51e85bb-6259-4488-8df2-f08cb43485f8";
+        when(instanceConfiguration.itemTypes())
+                .thenReturn(ColecticaTestItemTypes.configuredWith(Map.of("PhysicalInstance", piType)));
+        when(colecticaClient.queryAdvanced(anyList()))
+                .thenReturn(new ColecticaAdvancedResponse(
+                        List.of(
+                                advancedPhysicalInstance(agency, "pi-1", piType),
+                                advancedPhysicalInstance(agency, "pi-2", piType)),
+                        2,
+                        null));
+        when(colecticaClient.query(List.of(STUDY_UNIT_ITEM_TYPE)))
+                .thenReturn(new ColecticaResponse(List.of(), 0, 0, null, null, null));
+        when(colecticaClient.query(List.of(GROUP_ITEM_TYPE)))
+                .thenReturn(new ColecticaResponse(
+                        List.of(labelItem(GROUP_ITEM_TYPE, agency, "g1", "Groupe 1")), 1, 1, null, null, null));
+        when(colecticaClient.findRelatedItems(
+                        RelationshipDirection.BY_SUBJECT,
+                        new ItemReference(agency, "g1"),
+                        1,
+                        List.of(STUDY_UNIT_ITEM_TYPE)))
+                .thenReturn(List.of(
+                        labelItem(STUDY_UNIT_ITEM_TYPE, agency, "su-1", "Étude 1"),
+                        labelItem(STUDY_UNIT_ITEM_TYPE, agency, "su-2", "Étude 2")));
+        CyclicBarrier studyUnitsTogether = new CyclicBarrier(2);
+        when(colecticaClient.findRelatedDescriptions(
+                        RelationshipDirection.BY_SUBJECT, new ItemReference(agency, "su-1"), 1, List.of(piType)))
+                .thenAnswer(_ -> afterBarrier(studyUnitsTogether, List.of(new ItemReference(agency, "pi-1"))));
+        when(colecticaClient.findRelatedDescriptions(
+                        RelationshipDirection.BY_SUBJECT, new ItemReference(agency, "su-2"), 1, List.of(piType)))
+                .thenAnswer(_ -> afterBarrier(studyUnitsTogether, List.of(new ItemReference(agency, "pi-2"))));
+
+        List<PhysicalInstanceSearchRow> rows = ddiRepository.getPhysicalInstanceSearchRows();
+
+        assertThat(rows)
+                .extracting(PhysicalInstanceSearchRow::id, PhysicalInstanceSearchRow::studyUnitId)
+                .containsExactly(tuple("pi-1", "su-1"), tuple("pi-2", "su-2"));
+    }
+
+    private static ColecticaAdvancedItem advancedPhysicalInstance(String agency, String id, String piType) {
+        return new ColecticaAdvancedItem(
+                agency,
+                id,
+                1,
+                piType,
+                false,
+                Map.of("label", List.of(new LocalizedText("Fichier " + id, "fr-FR"))),
+                Map.of(),
+                Map.of("isPublished", false));
+    }
+
+    /** Rend {@code result} une fois qu'un second appel a rejoint la barrière ; expire au bout de 2 s. */
+    private static <T> T afterBarrier(CyclicBarrier barrier, T result) throws Exception {
+        barrier.await(2, TimeUnit.SECONDS);
+        return result;
     }
 
     @Test
