@@ -2,6 +2,7 @@ package fr.insee.rmes.modules.concepts.collections.webservice;
 
 import static fr.insee.rmes.integration.authorizations.TokenForTestsConfiguration.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -20,6 +21,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -76,7 +78,8 @@ class CollectionsResourcesHasAccessIntegrationTest extends AbstractResourcesEnvP
     @ParameterizedTest
     void createCollection(Integer code, boolean hasAccessReturn)
             throws Exception, CollectionsSaveException, CollectionsFetchException, MissingUserInformationException {
-        givenAccess(hasAccessReturn);
+        when(checker.hasCreateAccess(any(), any(), any())).thenReturn(hasAccessReturn);
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
         when(collectionsService.createCollection(any())).thenReturn(new CollectionId("1"));
         var request = post("/concepts/collections")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -84,6 +87,26 @@ class CollectionsResourcesHasAccessIntegrationTest extends AbstractResourcesEnvP
                 .content(
                         "{\"id\": \"Collection-1\", \"creator\": \"creator\", \"contributor\": \"contributor\", \"labels\": [{\"value\": \"value\", \"lang\": \"fr\"}], \"descriptions\": [], \"conceptsIdentifiers\": []}");
         performAuthenticated(request, code);
+    }
+
+    /**
+     * Une collection n'existe pas encore à sa création : le contrôle par timbre porte sur son
+     * gestionnaire posté ({@code dc:contributor}), que l'utilisateur doit compter parmi ses
+     * organisations.
+     */
+    @Test
+    void createCollection_checksTheCreationAccessOnThePostedContributor()
+            throws Exception, CollectionsSaveException, CollectionsFetchException, MissingUserInformationException {
+        when(checker.hasCreateAccess(eq("CONCEPT_COLLECTION"), eq(List.of("DG75-L201")), any()))
+                .thenReturn(true);
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
+        when(collectionsService.createCollection(any())).thenReturn(new CollectionId("1"));
+        var request = post("/concepts/collections")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.TEXT_PLAIN_VALUE)
+                .content(
+                        "{\"id\": \"Collection-1\", \"creator\": \"DG75-G401\", \"contributor\": \"DG75-L201\", \"labels\": [{\"value\": \"value\", \"lang\": \"fr\"}], \"descriptions\": [], \"conceptsIdentifiers\": []}");
+        performAuthenticated(request, 201);
     }
 
     @MethodSource("provideCollectionData")

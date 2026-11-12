@@ -12,6 +12,7 @@ import fr.insee.rmes.modules.concepts.collections.domain.port.clientside.Collect
 import fr.insee.rmes.modules.shared_kernel.domain.model.Language;
 import fr.insee.rmes.modules.users.domain.model.RBAC;
 import fr.insee.rmes.modules.users.webservice.HasAccess;
+import fr.insee.rmes.modules.users.webservice.HasCreateAccess;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
@@ -105,7 +106,7 @@ public class CollectionsResources {
     }
 
     @PostMapping(produces = MediaType.TEXT_PLAIN_VALUE)
-    @HasAccess(module = RBAC.Module.CONCEPT_COLLECTION, privilege = RBAC.Privilege.CREATE)
+    @HasCreateAccess(module = RBAC.Module.CONCEPT_COLLECTION, owners = "{#collection.contributor()}")
     String create(@Valid @RequestBody CreateCollectionRequest collection, HttpServletResponse response) {
         try {
             var collectionId = this.service.createCollection(collection.toCreateCommand());

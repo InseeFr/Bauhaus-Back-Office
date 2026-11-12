@@ -21,6 +21,7 @@ import fr.insee.rmes.modules.concepts.concept.webservice.response.PartialConcept
 import fr.insee.rmes.modules.shared_kernel.domain.model.Language;
 import fr.insee.rmes.modules.users.domain.model.RBAC;
 import fr.insee.rmes.modules.users.webservice.HasAccess;
+import fr.insee.rmes.modules.users.webservice.HasCreateAccess;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -153,7 +154,7 @@ public class ConceptsResources {
         return ResponseEntity.status(HttpStatus.OK).body(notes);
     }
 
-    @HasAccess(module = RBAC.Module.CONCEPT_CONCEPT, privilege = RBAC.Privilege.CREATE)
+    @HasCreateAccess(module = RBAC.Module.CONCEPT_CONCEPT, owners = "{#concept.contributor()}")
     @PostMapping(value = "/concept", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> setConcept(@Valid @RequestBody ConceptRequest concept) throws RmesException {
         String id = legacyConceptsService.setConcept(concept.toLegacyJson());

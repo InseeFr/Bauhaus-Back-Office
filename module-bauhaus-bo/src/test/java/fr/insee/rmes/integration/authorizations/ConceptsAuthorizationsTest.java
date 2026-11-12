@@ -4,6 +4,7 @@ import static fr.insee.rmes.integration.authorizations.TokenForTestsConfiguratio
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -17,6 +18,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -87,5 +89,53 @@ class ConceptsAuthorizationTest extends AbstractResourcesEnvProd {
 
     static Collection<Arguments> TestRoleCaseForPublishConcept() {
         return Arrays.asList(Arguments.of(204, true), Arguments.of(403, false));
+    }
+
+    /**
+     * Corps valide : la validation du @RequestBody passe avant le contrôle RBAC, un corps sans
+     * prefLabelLg1 ni disseminationStatus répondrait 400 sans atteindre le contrôle testé ici.
+     */
+    private static final String CONCEPT_BODY = """
+            {"prefLabelLg1": "Concept",
+             "disseminationStatus": "http://id.insee.fr/codes/base/statutDiffusion/Prive",
+             "creator": "DG75-G401",
+             "contributor": "DG75-L201"}""";
+
+    @ParameterizedTest
+    @MethodSource("TestRoleCaseForCreateConcept")
+    void createConcept(Integer code, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
+        when(checker.hasCreateAccess(any(), any(), any())).thenReturn(hasAccessReturn);
+        when(conceptsService.setConcept(anyString())).thenReturn("c1001");
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
+        var request = post("/concepts/concept")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(CONCEPT_BODY);
+        request.header("Authorization", "Bearer toto");
+        mvc.perform(request).andExpect(status().is(code));
+    }
+
+    static Collection<Arguments> TestRoleCaseForCreateConcept() {
+        return Arrays.asList(Arguments.of(201, true), Arguments.of(403, false));
+    }
+
+    /**
+     * Un concept n'existe pas encore à sa création : le contrôle par timbre porte sur son
+     * gestionnaire posté ({@code dc:contributor}), que l'utilisateur doit compter parmi ses
+     * organisations.
+     */
+    @Test
+    void createConcept_checksTheCreationAccessOnThePostedContributor()
+            throws Exception, MissingUserInformationException {
+        when(checker.hasCreateAccess(eq("CONCEPT_CONCEPT"), eq(List.of("DG75-L201")), any()))
+                .thenReturn(true);
+        when(conceptsService.setConcept(anyString())).thenReturn("c1001");
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
+        var request = post("/concepts/concept")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(CONCEPT_BODY);
+        request.header("Authorization", "Bearer toto");
+        mvc.perform(request).andExpect(status().isCreated());
     }
 }
