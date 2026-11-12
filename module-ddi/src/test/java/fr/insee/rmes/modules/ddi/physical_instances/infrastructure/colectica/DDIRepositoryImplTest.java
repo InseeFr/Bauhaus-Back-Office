@@ -6334,6 +6334,82 @@ class DDIRepositoryImplTest {
                 .isEmpty();
     }
 
+    /** #1152 : le miroir des opérations relit le LogicalProduct d'un Group avant d'en réécrire le libellé. */
+    @Test
+    void findLogicalProduct_readsTheLatestLogicalProductItem() {
+        String xml = "<Fragment xmlns=\"ddi:instance:3_3\"><LogicalProduct>lp</LogicalProduct></Fragment>";
+        when(colecticaClient.getItem("fr.insee", "lp-1", null)).thenReturn(itemResponseWith("lp-1", xml));
+        Ddi4LogicalProduct logicalProduct = new Ddi4LogicalProduct(
+                Ddi4LogicalProduct.TYPE,
+                null,
+                "urn:ddi:fr.insee:lp-1:1",
+                "fr.insee",
+                "lp-1",
+                "1",
+                null,
+                null,
+                null,
+                null,
+                null);
+        when(ddi3ToDdi4Converter.toLogicalProduct(xml)).thenReturn(logicalProduct);
+
+        assertThat(ddiRepository.findLogicalProduct("fr.insee", "lp-1")).contains(logicalProduct);
+    }
+
+    @Test
+    void findCodeListScheme_readsTheLatestCodeListSchemeItem() {
+        String xml = "<Fragment xmlns=\"ddi:instance:3_3\"><CodeListScheme>cls</CodeListScheme></Fragment>";
+        when(colecticaClient.getItem("fr.insee", "cls-1", null)).thenReturn(itemResponseWith("cls-1", xml));
+        Ddi4CodeListScheme scheme = new Ddi4CodeListScheme(
+                Ddi4CodeListScheme.TYPE, null, "urn:ddi:fr.insee:cls-1:1", "fr.insee", "cls-1", "1", null, null);
+        when(ddi3ToDdi4Converter.toCodeListScheme(xml)).thenReturn(scheme);
+
+        assertThat(ddiRepository.findCodeListScheme("fr.insee", "cls-1")).contains(scheme);
+    }
+
+    @Test
+    void findCategoryScheme_readsTheLatestCategorySchemeItem() {
+        String xml = "<Fragment xmlns=\"ddi:instance:3_3\"><CategoryScheme>cas</CategoryScheme></Fragment>";
+        when(colecticaClient.getItem("fr.insee", "cas-1", null)).thenReturn(itemResponseWith("cas-1", xml));
+        Ddi4CategoryScheme scheme = new Ddi4CategoryScheme(
+                Ddi4CategoryScheme.TYPE, null, "urn:ddi:fr.insee:cas-1:1", "fr.insee", "cas-1", "1", null, null);
+        when(ddi3ToDdi4Converter.toCategoryScheme(xml)).thenReturn(scheme);
+
+        assertThat(ddiRepository.findCategoryScheme("fr.insee", "cas-1")).contains(scheme);
+    }
+
+    @Test
+    void findManagedRepresentationScheme_readsTheLatestManagedRepresentationSchemeItem() {
+        String xml = "<Fragment xmlns=\"ddi:instance:3_3\"><ManagedRepresentationScheme/></Fragment>";
+        when(colecticaClient.getItem("fr.insee", "mrs-1", null)).thenReturn(itemResponseWith("mrs-1", xml));
+        Ddi4ManagedRepresentationScheme scheme = new Ddi4ManagedRepresentationScheme(
+                Ddi4ManagedRepresentationScheme.TYPE,
+                null,
+                "urn:ddi:fr.insee:mrs-1:1",
+                "fr.insee",
+                "mrs-1",
+                "1",
+                null,
+                null);
+        when(ddi3ToDdi4Converter.toManagedRepresentationScheme(xml)).thenReturn(scheme);
+
+        assertThat(ddiRepository.findManagedRepresentationScheme("fr.insee", "mrs-1"))
+                .contains(scheme);
+    }
+
+    @Test
+    void findLogicalProduct_isEmptyWhenColecticaDoesNotKnowIt() {
+        when(colecticaClient.getItem(anyString(), anyString(), isNull()))
+                .thenThrow(HttpClientErrorException.create(HttpStatus.NOT_FOUND, "Not Found", null, null, null));
+
+        assertThat(ddiRepository.findLogicalProduct("fr.insee", "lp-1")).isEmpty();
+    }
+
+    private static ColecticaItemResponse itemResponseWith(String id, String xml) {
+        return new ColecticaItemResponse(
+                "4bd6eef6-99df-40e6-9b11-5b8f64e5cb23", "fr.insee", 1, id, xml, null, null, false, false, false, null);
+    }
+
     @Test
     void getGroup_returnsNullWithoutCallingColecticaWhenTheIdIsNotAnIdentifier() {
         // Colectica n'accepte que des UUID : son ddiset répond 500 à un autre identifiant.

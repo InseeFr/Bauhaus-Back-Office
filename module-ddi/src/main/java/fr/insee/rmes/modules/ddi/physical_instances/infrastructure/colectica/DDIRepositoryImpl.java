@@ -360,6 +360,26 @@ public class DDIRepositoryImpl implements DDIRepository {
     }
 
     @Override
+    public Optional<Ddi4LogicalProduct> findLogicalProduct(String agencyId, String id) {
+        return itemByIdReader.findLogicalProduct(agencyId, id);
+    }
+
+    @Override
+    public Optional<Ddi4CodeListScheme> findCodeListScheme(String agencyId, String id) {
+        return itemByIdReader.findCodeListScheme(agencyId, id);
+    }
+
+    @Override
+    public Optional<Ddi4CategoryScheme> findCategoryScheme(String agencyId, String id) {
+        return itemByIdReader.findCategoryScheme(agencyId, id);
+    }
+
+    @Override
+    public Optional<Ddi4ManagedRepresentationScheme> findManagedRepresentationScheme(String agencyId, String id) {
+        return itemByIdReader.findManagedRepresentationScheme(agencyId, id);
+    }
+
+    @Override
     public Optional<Ddi4StudyUnit> findStudyUnit(String agencyId, String id) {
         return itemByIdReader.findStudyUnit(agencyId, id);
     }

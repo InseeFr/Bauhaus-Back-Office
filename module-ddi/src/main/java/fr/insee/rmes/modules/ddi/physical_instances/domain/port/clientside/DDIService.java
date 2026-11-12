@@ -69,6 +69,18 @@ public interface DDIService {
     /** Même création, mais avec les identifiants imposés par l'appelant (init local idempotent). */
     Ddi4Response createPhysicalInstance(CreatePhysicalInstanceRequest request, PhysicalInstanceIds ids);
 
+    /**
+     * Dernière version de l'item, ou {@link Optional#empty()} si le dépôt DDI ne le connaît pas : ce
+     * que le miroir des opérations relit avant d'en réécrire le libellé (#1152).
+     */
+    Optional<Ddi4LogicalProduct> findLogicalProduct(String agencyId, String id);
+
+    Optional<Ddi4CodeListScheme> findCodeListScheme(String agencyId, String id);
+
+    Optional<Ddi4CategoryScheme> findCategoryScheme(String agencyId, String id);
+
+    Optional<Ddi4ManagedRepresentationScheme> findManagedRepresentationScheme(String agencyId, String id);
+
     void createLogicalProduct(Ddi4LogicalProduct logicalProduct);
 
     void createCodeListScheme(Ddi4CodeListScheme codeListScheme);

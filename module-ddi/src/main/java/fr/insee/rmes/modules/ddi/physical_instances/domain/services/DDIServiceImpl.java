@@ -441,6 +441,26 @@ public class DDIServiceImpl implements DDIService {
     }
 
     @Override
+    public Optional<Ddi4LogicalProduct> findLogicalProduct(String agencyId, String id) {
+        return ddiRepository.findLogicalProduct(agencyId, id);
+    }
+
+    @Override
+    public Optional<Ddi4CodeListScheme> findCodeListScheme(String agencyId, String id) {
+        return ddiRepository.findCodeListScheme(agencyId, id);
+    }
+
+    @Override
+    public Optional<Ddi4CategoryScheme> findCategoryScheme(String agencyId, String id) {
+        return ddiRepository.findCategoryScheme(agencyId, id);
+    }
+
+    @Override
+    public Optional<Ddi4ManagedRepresentationScheme> findManagedRepresentationScheme(String agencyId, String id) {
+        return ddiRepository.findManagedRepresentationScheme(agencyId, id);
+    }
+
+    @Override
     public void createLogicalProduct(Ddi4LogicalProduct logicalProduct) {
         if (logger.isInfoEnabled()) {
             logger.info(

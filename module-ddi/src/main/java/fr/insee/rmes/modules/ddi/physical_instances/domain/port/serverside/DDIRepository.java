@@ -69,6 +69,15 @@ public interface DDIRepository {
     /** Le Group d'identifiant {@code id}, ou {@link Optional#empty()} s'il n'existe pas encore. */
     Optional<Ddi4Group> findGroup(String agencyId, String id);
 
+    /** Le LogicalProduct d'identifiant {@code id} (dernière version), ou vide s'il n'existe pas. */
+    Optional<Ddi4LogicalProduct> findLogicalProduct(String agencyId, String id);
+
+    Optional<Ddi4CodeListScheme> findCodeListScheme(String agencyId, String id);
+
+    Optional<Ddi4CategoryScheme> findCategoryScheme(String agencyId, String id);
+
+    Optional<Ddi4ManagedRepresentationScheme> findManagedRepresentationScheme(String agencyId, String id);
+
     /**
      * L'état stocké (dernière version) des items que ce payload réécrit, et d'eux seuls : ce qu'une
      * sauvegarde compare pour réconcilier versions et dates. Les items inconnus du stockage sont absents
