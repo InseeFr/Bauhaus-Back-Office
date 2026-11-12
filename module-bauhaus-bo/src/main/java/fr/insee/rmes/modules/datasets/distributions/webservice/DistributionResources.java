@@ -18,6 +18,7 @@ import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationExcep
 import fr.insee.rmes.modules.users.domain.model.RBAC;
 import fr.insee.rmes.modules.users.domain.port.serverside.UserDecoder;
 import fr.insee.rmes.modules.users.webservice.HasAccess;
+import fr.insee.rmes.modules.users.webservice.HasCreateAccessUnder;
 import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.hateoas.MediaTypes;
@@ -90,7 +91,10 @@ public class DistributionResources {
     }
 
     @PostMapping(value = "", consumes = APPLICATION_JSON_VALUE)
-    @HasAccess(module = RBAC.Module.DATASET_DISTRIBUTION, privilege = RBAC.Privilege.CREATE)
+    @HasCreateAccessUnder(
+            module = RBAC.Module.DATASET_DISTRIBUTION,
+            parentModule = RBAC.Module.DATASET_DATASET,
+            parentId = "#distribution.idDataset")
     @ResponseStatus(HttpStatus.CREATED)
     public String createDistribution(@Valid @RequestBody Distribution distribution) throws RmesException {
         return this.distributionService.create(distribution);
