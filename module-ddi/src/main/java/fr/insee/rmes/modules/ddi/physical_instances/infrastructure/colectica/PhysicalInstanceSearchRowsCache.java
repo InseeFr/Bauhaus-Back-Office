@@ -4,6 +4,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CogsDate;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4PhysicalInstance;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LangString;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceSearchRow;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -58,6 +59,53 @@ class PhysicalInstanceSearchRowsCache {
                 rows.stream()
                         .map(row -> isRowOf(row, agencyId, id) ? withLabelAndDate(row, label.get(), versionDate) : row)
                         .toList());
+    }
+
+    /**
+     * Ajoute la ligne d'une PI créée (ou dupliquée). Ses parents, libellés compris, sont repris d'une
+     * ligne déjà cachée de la même StudyUnit ; sans StudyUnit, la ligne est orpheline. Région vide :
+     * rien à faire. PI sans libellé, ou StudyUnit inconnue du cache (sa première PI) : la région est
+     * vidée, faute de connaître les libellés des parents. Une ligne déjà présente pour la même PI
+     * (identifiants imposés réécrits) est remplacée.
+     */
+    @SuppressWarnings("unchecked")
+    void add(Ddi4PhysicalInstance saved, String studyUnitAgency, String studyUnitId) {
+        Cache.ValueWrapper cached = cache.get(KEY);
+        if (cached == null || cached.get() == null) {
+            return;
+        }
+        List<PhysicalInstanceSearchRow> rows = (List<PhysicalInstanceSearchRow>) cached.get();
+        Optional<String> label = labelOf(saved);
+        if (label.isEmpty()) {
+            clear();
+            return;
+        }
+        Optional<PhysicalInstanceSearchRow> parents = studyUnitId == null || studyUnitAgency == null
+                ? Optional.empty()
+                : rows.stream()
+                        .filter(row ->
+                                studyUnitAgency.equals(row.studyUnitAgency()) && studyUnitId.equals(row.studyUnitId()))
+                        .findFirst();
+        if (studyUnitId != null && studyUnitAgency != null && parents.isEmpty()) {
+            clear();
+            return;
+        }
+        PhysicalInstanceSearchRow added = new PhysicalInstanceSearchRow(
+                saved.agency(),
+                saved.id(),
+                label.get(),
+                versionDateOf(saved),
+                parents.map(PhysicalInstanceSearchRow::studyUnitAgency).orElse(null),
+                parents.map(PhysicalInstanceSearchRow::studyUnitId).orElse(null),
+                parents.map(PhysicalInstanceSearchRow::studyUnitLabel).orElse(null),
+                parents.map(PhysicalInstanceSearchRow::groupAgency).orElse(null),
+                parents.map(PhysicalInstanceSearchRow::groupId).orElse(null),
+                parents.map(PhysicalInstanceSearchRow::groupLabel).orElse(null));
+        List<PhysicalInstanceSearchRow> updated = new ArrayList<>(rows.stream()
+                .filter(row -> !isRowOf(row, saved.agency(), saved.id()))
+                .toList());
+        updated.add(added);
+        cache.put(KEY, List.copyOf(updated));
     }
 
     void clear() {

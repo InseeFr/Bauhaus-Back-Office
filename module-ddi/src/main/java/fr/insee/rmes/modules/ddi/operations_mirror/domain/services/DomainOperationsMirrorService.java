@@ -25,6 +25,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -86,10 +87,17 @@ public class DomainOperationsMirrorService implements OperationsMirrorService {
         // Comme pour une opération, le LogicalProduct et ses schemes passent avant le Group qui les
         // référence. Un Group qui a déjà le sien (créé par l'init, ou à un précédent enregistrement)
         // le garde : on n'en fabrique pas un second.
-        List<Reference> logicalProducts = existing.map(Ddi4Group::logicalProductReference)
+        String shortLabel = shortLabelOf(event.prefLabel(), event.altLabel());
+        List<Reference> carried = existing.map(Ddi4Group::logicalProductReference)
                 .filter(references -> !references.isEmpty())
-                .orElseGet(() -> List.of(
-                        createGroupLogicalProduct(event.iri(), shortLabelOf(event.prefLabel(), event.altLabel()))));
+                .orElse(null);
+        List<Reference> logicalProducts;
+        if (carried == null) {
+            logicalProducts = List.of(createGroupLogicalProduct(event.iri(), shortLabel));
+        } else {
+            carried.forEach(reference -> relabelGroupLogicalProduct(reference, shortLabel));
+            logicalProducts = carried;
+        }
 
         groupService.createOrUpdate(new Ddi4Group(
                 Ddi4Group.TYPE,
@@ -271,6 +279,118 @@ public class DomainOperationsMirrorService implements OperationsMirrorService {
                 DdiShortName.prefixed(LOGICAL_PRODUCT_NAME_PREFIX, shortLabel)));
 
         return Reference.of(agencyId, logicalProductId, FIRST_VERSION, "LogicalProduct");
+    }
+
+    /**
+     * Reporte le nom court de la série sur le LogicalProduct déjà en place et sur ses schemes. Chaque
+     * objet est relu puis réécrit à l'identique, version comprise : seuls son libellé dans la langue
+     * principale et son {@code Name} changent, si bien que ce qu'il classe (listes de codes,
+     * catégories, représentations) reste en place. Un objet déjà à jour n'est pas réécrit.
+     */
+    private void relabelGroupLogicalProduct(Reference reference, String shortLabel) {
+        if (shortLabel == null || shortLabel.isBlank()) {
+            return;
+        }
+        Optional<Ddi4LogicalProduct> found = ddiService.findLogicalProduct(reference.agency(), reference.id());
+        if (found.isEmpty()) {
+            logger.warn("Logical product {} of a series group not found: its label is left as is", reference.id());
+            return;
+        }
+        Ddi4LogicalProduct logicalProduct = found.get();
+        relabelSchemes(logicalProduct, shortLabel);
+
+        List<LangString> label = relabelled(logicalProduct.label(), shortLabel);
+        String name = DdiShortName.prefixed(LOGICAL_PRODUCT_NAME_PREFIX, shortLabel);
+        if (label.equals(logicalProduct.label()) && Objects.equals(name, logicalProduct.name())) {
+            return;
+        }
+        ddiService.createLogicalProduct(new Ddi4LogicalProduct(
+                logicalProduct.type(),
+                now(),
+                logicalProduct.urn(),
+                logicalProduct.agency(),
+                logicalProduct.id(),
+                logicalProduct.version(),
+                label,
+                logicalProduct.codeListSchemeReference(),
+                logicalProduct.categorySchemeReference(),
+                logicalProduct.variableSchemeReference(),
+                logicalProduct.managedRepresentationSchemeReference(),
+                name));
+    }
+
+    private void relabelSchemes(Ddi4LogicalProduct logicalProduct, String shortLabel) {
+        for (Reference reference : orEmpty(logicalProduct.codeListSchemeReference())) {
+            ddiService.findCodeListScheme(reference.agency(), reference.id()).ifPresent(scheme -> {
+                List<LangString> label = relabelled(scheme.label(), CODE_LIST_SCHEME_LABEL_PREFIX + shortLabel);
+                if (!label.equals(scheme.label())) {
+                    ddiService.createCodeListScheme(new Ddi4CodeListScheme(
+                            scheme.type(),
+                            now(),
+                            scheme.urn(),
+                            scheme.agency(),
+                            scheme.id(),
+                            scheme.version(),
+                            label,
+                            scheme.codeListReference()));
+                }
+            });
+        }
+        for (Reference reference : orEmpty(logicalProduct.categorySchemeReference())) {
+            ddiService.findCategoryScheme(reference.agency(), reference.id()).ifPresent(scheme -> {
+                List<LangString> label = relabelled(scheme.label(), CATEGORY_SCHEME_LABEL_PREFIX + shortLabel);
+                if (!label.equals(scheme.label())) {
+                    ddiService.createCategoryScheme(new Ddi4CategoryScheme(
+                            scheme.type(),
+                            now(),
+                            scheme.urn(),
+                            scheme.agency(),
+                            scheme.id(),
+                            scheme.version(),
+                            label,
+                            scheme.categoryReference()));
+                }
+            });
+        }
+        for (Reference reference : orEmpty(logicalProduct.managedRepresentationSchemeReference())) {
+            ddiService
+                    .findManagedRepresentationScheme(reference.agency(), reference.id())
+                    .ifPresent(scheme -> {
+                        List<LangString> label =
+                                relabelled(scheme.label(), MANAGED_REPRESENTATION_SCHEME_LABEL_PREFIX + shortLabel);
+                        if (!label.equals(scheme.label())) {
+                            ddiService.createManagedRepresentationScheme(new Ddi4ManagedRepresentationScheme(
+                                    scheme.type(),
+                                    now(),
+                                    scheme.urn(),
+                                    scheme.agency(),
+                                    scheme.id(),
+                                    scheme.version(),
+                                    label,
+                                    scheme.managedRepresentationReference()));
+                        }
+                    });
+        }
+    }
+
+    /**
+     * Le libellé {@code existing} dont la valeur dans la langue principale devient {@code value} ; les
+     * autres langues sont gardées telles quelles.
+     */
+    private List<LangString> relabelled(List<LangString> existing, String value) {
+        String language = languages.get(0);
+        List<LangString> label = new ArrayList<>();
+        label.add(new LangString(language, value));
+        for (LangString other : orEmpty(existing)) {
+            if (!language.equals(other.language())) {
+                label.add(other);
+            }
+        }
+        return label;
+    }
+
+    private static <T> List<T> orEmpty(List<T> values) {
+        return values == null ? List.of() : values;
     }
 
     /**

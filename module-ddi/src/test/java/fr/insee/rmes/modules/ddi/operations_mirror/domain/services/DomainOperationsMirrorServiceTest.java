@@ -197,6 +197,140 @@ class DomainOperationsMirrorServiceTest {
         assertThat(capturedGroup().logicalProductReference()).containsExactly(logicalProduct);
     }
 
+    // --- Renommage d'une série : LogicalProduct et schemes du Group (#1152) ----------------------
+
+    private static final Reference GROUP_LOGICAL_PRODUCT = Reference.of(AGENCY, "lp-1", "2", "LogicalProduct");
+    private static final Reference CODE_LIST_SCHEME = Reference.of(AGENCY, "cls-1", "1", "CodeListScheme");
+    private static final Reference CATEGORY_SCHEME = Reference.of(AGENCY, "cas-1", "3", "CategoryScheme");
+    private static final Reference MANAGED_REPRESENTATION_SCHEME =
+            Reference.of(AGENCY, "mrs-1", "1", "ManagedRepresentationScheme");
+    private static final Reference CODE_LIST = Reference.of(AGENCY, "cl-1", "1", "CodeList");
+    private static final Reference CATEGORY = Reference.of(AGENCY, "ca-1", "1", "Category");
+    private static final Reference MANAGED_REPRESENTATION =
+            Reference.of(AGENCY, "mmvr-1", "1", "ManagedMissingValuesRepresentation");
+
+    private void givenAGroupWhoseLogicalProductIsLabelled(String shortLabel) {
+        when(groupService.find(AGENCY, expectedGroupId()))
+                .thenReturn(Optional.of(
+                        existingGroup("1", "Recensement", null, List.of(SERIES_IRI), List.of(GROUP_LOGICAL_PRODUCT))));
+        when(ddiService.findLogicalProduct(AGENCY, "lp-1"))
+                .thenReturn(Optional.of(new Ddi4LogicalProduct(
+                        Ddi4LogicalProduct.TYPE,
+                        null,
+                        "urn:ddi:fr.insee:lp-1:2",
+                        AGENCY,
+                        "lp-1",
+                        "2",
+                        List.of(new LangString("fr-FR", shortLabel), new LangString("en-GB", "Census")),
+                        List.of(CODE_LIST_SCHEME),
+                        List.of(CATEGORY_SCHEME),
+                        null,
+                        List.of(MANAGED_REPRESENTATION_SCHEME),
+                        "LP-" + shortLabel)));
+        when(ddiService.findCodeListScheme(AGENCY, "cls-1"))
+                .thenReturn(Optional.of(new Ddi4CodeListScheme(
+                        Ddi4CodeListScheme.TYPE,
+                        null,
+                        "urn:ddi:fr.insee:cls-1:1",
+                        AGENCY,
+                        "cls-1",
+                        "1",
+                        List.of(new LangString("fr-FR", "Ensemble de listes de codes " + shortLabel)),
+                        List.of(CODE_LIST))));
+        when(ddiService.findCategoryScheme(AGENCY, "cas-1"))
+                .thenReturn(Optional.of(new Ddi4CategoryScheme(
+                        Ddi4CategoryScheme.TYPE,
+                        null,
+                        "urn:ddi:fr.insee:cas-1:3",
+                        AGENCY,
+                        "cas-1",
+                        "3",
+                        List.of(new LangString("fr-FR", "Ensemble de catégories " + shortLabel)),
+                        List.of(CATEGORY))));
+        when(ddiService.findManagedRepresentationScheme(AGENCY, "mrs-1"))
+                .thenReturn(Optional.of(new Ddi4ManagedRepresentationScheme(
+                        Ddi4ManagedRepresentationScheme.TYPE,
+                        null,
+                        "urn:ddi:fr.insee:mrs-1:1",
+                        AGENCY,
+                        "mrs-1",
+                        "1",
+                        List.of(new LangString("fr-FR", "Ensemble de représentations " + shortLabel)),
+                        List.of(MANAGED_REPRESENTATION))));
+    }
+
+    private void renameCensusSeriesTo(String shortLabel) {
+        service.mirror(new SeriesSaved(
+                SERIES_IRI,
+                "s1001",
+                new BilingualLabel("Recensement", "Census"),
+                new BilingualLabel(shortLabel, null)));
+    }
+
+    @Test
+    void mirrorSeries_relabelsTheLogicalProductOfTheGroupWithoutBumpingItsVersion() {
+        givenAGroupWhoseLogicalProductIsLabelled("RP");
+
+        renameCensusSeriesTo("RPX");
+
+        ArgumentCaptor<Ddi4LogicalProduct> captor = ArgumentCaptor.forClass(Ddi4LogicalProduct.class);
+        verify(ddiService).createLogicalProduct(captor.capture());
+        Ddi4LogicalProduct logicalProduct = captor.getValue();
+        assertThat(logicalProduct.id()).isEqualTo("lp-1");
+        assertThat(logicalProduct.version()).isEqualTo("2");
+        assertThat(logicalProduct.urn()).isEqualTo("urn:ddi:fr.insee:lp-1:2");
+        assertThat(logicalProduct.name()).isEqualTo("LP-RPX");
+        assertThat(logicalProduct.label())
+                .as("seul le libellé de la langue principale suit le nom court de la série")
+                .containsExactly(new LangString("fr-FR", "RPX"), new LangString("en-GB", "Census"));
+        assertThat(logicalProduct.codeListSchemeReference()).containsExactly(CODE_LIST_SCHEME);
+        assertThat(logicalProduct.categorySchemeReference()).containsExactly(CATEGORY_SCHEME);
+        assertThat(logicalProduct.managedRepresentationSchemeReference())
+                .containsExactly(MANAGED_REPRESENTATION_SCHEME);
+        assertThat(capturedGroup().logicalProductReference()).containsExactly(GROUP_LOGICAL_PRODUCT);
+    }
+
+    @Test
+    void mirrorSeries_relabelsTheSchemesOfTheGroupAndKeepsWhatTheyClassify() {
+        givenAGroupWhoseLogicalProductIsLabelled("RP");
+
+        renameCensusSeriesTo("RPX");
+
+        ArgumentCaptor<Ddi4CodeListScheme> codeListScheme = ArgumentCaptor.forClass(Ddi4CodeListScheme.class);
+        verify(ddiService).createCodeListScheme(codeListScheme.capture());
+        assertThat(codeListScheme.getValue().version()).isEqualTo("1");
+        assertThat(codeListScheme.getValue().label())
+                .containsExactly(new LangString("fr-FR", "Ensemble de listes de codes RPX"));
+        assertThat(codeListScheme.getValue().codeListReference()).containsExactly(CODE_LIST);
+
+        ArgumentCaptor<Ddi4CategoryScheme> categoryScheme = ArgumentCaptor.forClass(Ddi4CategoryScheme.class);
+        verify(ddiService).createCategoryScheme(categoryScheme.capture());
+        assertThat(categoryScheme.getValue().version()).isEqualTo("3");
+        assertThat(categoryScheme.getValue().label())
+                .containsExactly(new LangString("fr-FR", "Ensemble de catégories RPX"));
+        assertThat(categoryScheme.getValue().categoryReference()).containsExactly(CATEGORY);
+
+        ArgumentCaptor<Ddi4ManagedRepresentationScheme> managedRepresentationScheme =
+                ArgumentCaptor.forClass(Ddi4ManagedRepresentationScheme.class);
+        verify(ddiService).createManagedRepresentationScheme(managedRepresentationScheme.capture());
+        assertThat(managedRepresentationScheme.getValue().label())
+                .containsExactly(new LangString("fr-FR", "Ensemble de représentations RPX"));
+        assertThat(managedRepresentationScheme.getValue().managedRepresentationReference())
+                .containsExactly(MANAGED_REPRESENTATION);
+    }
+
+    @Test
+    void mirrorSeries_rewritesNeitherTheLogicalProductNorItsSchemesWhenTheShortLabelIsUnchanged() {
+        givenAGroupWhoseLogicalProductIsLabelled("RP");
+
+        renameCensusSeriesTo("RP");
+
+        verify(ddiService, never()).createLogicalProduct(any());
+        verify(ddiService, never()).createCodeListScheme(any());
+        verify(ddiService, never()).createCategoryScheme(any());
+        verify(ddiService, never()).createManagedRepresentationScheme(any());
+    }
+
     private Ddi4Group capturedGroup() {
         ArgumentCaptor<Ddi4Group> captor = ArgumentCaptor.forClass(Ddi4Group.class);
         verify(groupService).createOrUpdate(captor.capture());
