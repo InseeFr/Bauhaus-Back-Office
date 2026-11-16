@@ -1,6 +1,6 @@
 package fr.insee.rmes.modules.concepts.collections.infrastructure.graphdb;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
 import fr.insee.rmes.BauhausLanguagesProperties;
@@ -107,7 +107,7 @@ class GraphDBCollectionRepositoryTest {
         assertThat(model.contains(subj, DCTERMS.DESCRIPTION, RdfTriples.string("Desc EN", LG2), GRAPH))
                 .isTrue();
         // seule la date du jour, toujours écrite : pas de dcterms:modified en xsd:dateTime
-        assertThat(model.filter(subj, DCTERMS.MODIFIED, null, GRAPH).size()).isEqualTo(1);
+        assertThat(model.filter(subj, DCTERMS.MODIFIED, null, GRAPH)).hasSize(1);
     }
 
     @Test

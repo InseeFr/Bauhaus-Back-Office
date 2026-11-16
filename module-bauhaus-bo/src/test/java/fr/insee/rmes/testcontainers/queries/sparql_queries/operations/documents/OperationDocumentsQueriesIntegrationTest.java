@@ -86,7 +86,7 @@ class OperationDocumentsQueriesIntegrationTest extends WithGraphDBContainer {
         // THEN: On ne devrait avoir aucun document
         assertThat(result.length())
                 .as("Aucun document ne devrait etre retourne pour une URL inexistante")
-                .isEqualTo(0);
+                .isZero();
     }
 
     @Test

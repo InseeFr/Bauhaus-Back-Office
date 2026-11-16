@@ -200,7 +200,7 @@ class Lifecycle33ToDdi4Test {
         Ddi4Variable variable = converter.toVariable(doc);
 
         assertThat(variable.variableRepresentation().codeRepresentation().blankIsMissingValue())
-                .isEqualTo(true);
+                .isTrue();
         assertThat(variable.variableRepresentation()
                         .codeRepresentation()
                         .codeListReference()
@@ -268,7 +268,7 @@ class Lifecycle33ToDdi4Test {
                         .numberRange()
                         .low()
                         .isInclusive())
-                .isEqualTo(false);
+                .isFalse();
         assertThat(variable.variableRepresentation()
                         .numericRepresentation()
                         .numberRange()
@@ -280,7 +280,7 @@ class Lifecycle33ToDdi4Test {
                         .numberRange()
                         .high()
                         .isInclusive())
-                .isEqualTo(true);
+                .isTrue();
         assertThat(variable.variableRepresentation()
                         .numericRepresentation()
                         .numberRange()
@@ -349,7 +349,7 @@ class Lifecycle33ToDdi4Test {
         assertThat(variable.variableRepresentation().textRepresentation().regExp())
                 .isEqualTo("[A-Z]+");
         assertThat(variable.variableRepresentation().textRepresentation().blankIsMissingValue())
-                .isEqualTo(true);
+                .isTrue();
     }
 
     @Test
@@ -457,7 +457,7 @@ class Lifecycle33ToDdi4Test {
 
         assertThat(cl.level()).hasSize(2);
         Level level0 = cl.level().get(0);
-        assertThat(level0.levelNumber()).isEqualTo(0);
+        assertThat(level0.levelNumber()).isZero();
         assertThat(level0.levelName()).extracting(LangString::value).containsExactly("NUTS 0");
         assertThat(level0.levelName()).extracting(LangString::language).containsExactly("fr-FR");
         assertThat(level0.categoryRelationship()).isEqualTo("Nominal");

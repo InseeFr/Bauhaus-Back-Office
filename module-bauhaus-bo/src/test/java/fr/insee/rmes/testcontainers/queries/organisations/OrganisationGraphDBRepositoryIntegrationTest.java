@@ -88,7 +88,6 @@ class OrganisationGraphDBRepositoryIntegrationTest extends WithGraphDBContainer 
                 // All labels should be in French (we can't verify the language tag after parsing,
                 // but we verify that we get results which implies the FILTER worked)
                 .hasSizeGreaterThan(0);
-        assertThat(organisations.size()).isGreaterThan(0);
     }
 
     @Test

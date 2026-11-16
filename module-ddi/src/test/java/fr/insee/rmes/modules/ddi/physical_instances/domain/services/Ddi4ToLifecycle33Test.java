@@ -475,10 +475,10 @@ class Ddi4ToLifecycle33Test {
                 .isEqualTo("NUTS 0");
         Assertions.assertThat(level0.getLevelNameArray(0).getStringArray(0).getLang())
                 .isEqualTo("fr-FR");
-        Assertions.assertThat(level0.getCategoryRelationship().toString()).isEqualTo("Nominal");
+        Assertions.assertThat(level0.getCategoryRelationship()).hasToString("Nominal");
         var level1 = codeList.getLevelArray(1);
         Assertions.assertThat(level1.getLevelNumber()).isEqualTo(BigInteger.ONE);
-        Assertions.assertThat(level1.getCategoryRelationship().toString()).isEqualTo("Ordinal");
+        Assertions.assertThat(level1.getCategoryRelationship()).hasToString("Ordinal");
     }
 
     @Test

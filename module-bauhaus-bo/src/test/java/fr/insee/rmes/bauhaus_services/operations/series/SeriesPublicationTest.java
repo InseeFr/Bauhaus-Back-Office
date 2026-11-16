@@ -192,7 +192,7 @@ class SeriesPublicationTest {
 
         seriesPublication.addStatementsToModel(model, hasPartStatements, GRAPH);
 
-        assertThat(model.size()).isEqualTo(1);
+        assertThat(model).hasSize(1);
     }
 
     @Test
@@ -204,7 +204,7 @@ class SeriesPublicationTest {
         seriesPublication.transformSubjectAndObject(model, statement, GRAPH);
 
         verify(publicationUtils, times(2)).tranformBaseURIToPublish(resource);
-        assertThat(model.size()).isEqualTo(1);
+        assertThat(model).hasSize(1);
     }
 
     @Test

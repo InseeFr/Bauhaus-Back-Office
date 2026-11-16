@@ -161,7 +161,7 @@ class IndicatorPublicationTest {
         verify(repositoryPublication)
                 .publishResource(any(Resource.class), modelCaptor.capture(), eq("indicator"), eq(PRODUCTS_GRAPH));
         Model model = modelCaptor.getValue();
-        assertThat(model.size()).isEqualTo(2);
+        assertThat(model).hasSize(2);
         assertThat(model.contains(
                         null,
                         VF.createIRI("http://www.w3.org/ns/prov#wasGeneratedBy"),

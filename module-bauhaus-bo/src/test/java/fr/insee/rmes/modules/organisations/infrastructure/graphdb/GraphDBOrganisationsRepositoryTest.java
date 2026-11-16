@@ -282,7 +282,7 @@ class GraphDBOrganisationsRepositoryTest {
         assertThat(result).isNotNull();
         assertThat(result.identifier()).isEqualTo("ORG-002");
         assertThat(result.label().value()).isEqualTo("Statistics Department");
-        assertThat(result.label().lang().toString()).isEqualTo("EN");
+        assertThat(result.label().lang()).hasToString("EN");
     }
 
     @Test
