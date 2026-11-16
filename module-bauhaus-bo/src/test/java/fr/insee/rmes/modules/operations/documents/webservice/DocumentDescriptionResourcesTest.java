@@ -86,7 +86,7 @@ class DocumentDescriptionResourcesTest {
                         "https://www.insee.fr/fr/metadonnees/source/fichier/Note_technique.pdf"),
                 Set.of(DOC_METHOD));
 
-        mockMvc.perform(get("/operations/documents/1070").accept(MediaType.APPLICATION_JSON))
+        mockMvc.perform(get("/operations/public/documents/1070").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().json("""
                         {
@@ -123,7 +123,7 @@ class DocumentDescriptionResourcesTest {
                         "https://www.insee.fr/minimal.pdf"),
                 Set.of());
 
-        mockMvc.perform(get("/operations/documents/2").accept(MediaType.APPLICATION_JSON))
+        mockMvc.perform(get("/operations/public/documents/2").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().json("""
                         {
@@ -151,7 +151,7 @@ class DocumentDescriptionResourcesTest {
                         "https://www.insee.fr/page"),
                 Set.of());
 
-        mockMvc.perform(get("/operations/liens/12").accept(MediaType.APPLICATION_JSON))
+        mockMvc.perform(get("/operations/public/liens/12").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.uri").value("http://id.insee.fr/documents/page/12"))
                 .andExpect(jsonPath("$.label", hasSize(1)));
@@ -159,7 +159,7 @@ class DocumentDescriptionResourcesTest {
 
     @Test
     void should_answer_404_for_an_unknown_document() throws Exception {
-        mockMvc.perform(get("/operations/documents/404").accept(MediaType.APPLICATION_JSON))
+        mockMvc.perform(get("/operations/public/documents/404").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound())
                 .andExpect(apiError())
                 .andExpect(jsonPath("$.message").value("Document 404 doesn't exist"))
