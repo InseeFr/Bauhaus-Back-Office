@@ -18,7 +18,8 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
 import fr.insee.rmes.AppSpringBootTest;
 import fr.insee.rmes.BauhausLanguagesProperties;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfTriples;
+import fr.insee.rmes.config.BauhausIriFactoryStub;
 import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
@@ -269,11 +270,11 @@ class ClassificationsImplTest {
         classificationImpl.setClassificationValidation(classificationId);
 
         ArgumentCaptor<Model> model = ArgumentCaptor.forClass(Model.class);
-        verify(repoGestion).objectValidation(eq(RdfUtils.toURI(classificationUri)), model.capture());
+        verify(repoGestion).objectValidation(eq(RdfTriples.iri(classificationUri)), model.capture());
         assertThat(model.getValue().contexts())
                 .as("le validationState doit être écrit dans le graphe nomenclatures, celui que lit getClassification")
-                .containsExactly(RdfUtils.createIRI(GraphsPropertiesStub.stub().classifFamiliesGraph()));
-        assertThat(model.getValue().objects()).containsExactly(RdfUtils.setLiteralString(ValidationStatus.VALIDATED));
+                .containsExactly(RdfTriples.iriAsIs(GraphsPropertiesStub.stub().classifFamiliesGraph()));
+        assertThat(model.getValue().objects()).containsExactly(RdfTriples.string(ValidationStatus.VALIDATED));
     }
 
     @Test
@@ -335,7 +336,8 @@ class ClassificationsImplTest {
                         null,
                         classificationNoteService,
                         classificationsQueries,
-                        GraphsPropertiesStub.stub()),
+                        GraphsPropertiesStub.stub(),
+                        BauhausIriFactoryStub.stub("")),
                 new ClassificationPublication(null, null, null, null),
                 classificationsQueries,
                 classificationLevelsQueries,

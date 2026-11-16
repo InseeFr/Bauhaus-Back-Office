@@ -14,8 +14,8 @@ import static org.mockito.Mockito.when;
 import fr.insee.rmes.bauhaus_services.concepts.collections.CollectionExportBuilder;
 import fr.insee.rmes.bauhaus_services.concepts.concepts.ConceptsExportBuilder;
 import fr.insee.rmes.bauhaus_services.concepts.concepts.LegacyConceptsRepository;
-import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausIriFactory;
+import fr.insee.rmes.config.BauhausIriFactoryStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
@@ -40,7 +40,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import org.json.JSONArray;
@@ -58,6 +57,8 @@ import org.xmlunit.diff.Diff;
 
 @ExtendWith(MockitoExtension.class)
 class ConceptsImplTest {
+
+    private static final BauhausIriFactory IRI_FACTORY = BauhausIriFactoryStub.stub("concepts");
 
     @Mock
     LegacyConceptsRepository legacyConceptsRepository;
@@ -122,7 +123,8 @@ class ConceptsImplTest {
         collection.setPrefLabelLg1("Lg1Collection");
         collection.setPrefLabelLg2("Lg2Collection");
 
-        ConceptsImpl conceptsImpl = new ConceptsImpl(null, null, null, null, null, null, null, null, 10, null, null);
+        ConceptsImpl conceptsImpl =
+                new ConceptsImpl(null, null, null, null, null, null, null, null, 10, null, null, IRI_FACTORY);
 
         assertEquals("1Lg1collec", conceptsImpl.getFileNameForExport(collection, Language.lg1));
         assertEquals("1Lg2collec", conceptsImpl.getFileNameForExport(collection, Language.lg2));
@@ -134,7 +136,18 @@ class ConceptsImplTest {
         ConceptsExportBuilder conceptsExport = mock(ConceptsExportBuilder.class);
         when(conceptsExport.getConceptData("c1000")).thenThrow(new RmesNotFoundException("Concept not found", "c1000"));
         ConceptsImpl conceptsImpl = new ConceptsImpl(
-                null, null, null, null, null, conceptsExport, null, null, 10, null, conceptConceptsQueries);
+                null,
+                null,
+                null,
+                null,
+                null,
+                conceptsExport,
+                null,
+                null,
+                10,
+                null,
+                conceptConceptsQueries,
+                IRI_FACTORY);
 
         assertThrows(
                 RmesNotFoundException.class,
@@ -156,7 +169,18 @@ class ConceptsImplTest {
                 conceptConceptsQueries);
 
         ConceptsImpl conceptsImpl = new ConceptsImpl(
-                null, null, null, null, null, conceptsExportBuilder, null, null, 10, null, conceptConceptsQueries);
+                null,
+                null,
+                null,
+                null,
+                null,
+                conceptsExportBuilder,
+                null,
+                null,
+                10,
+                null,
+                conceptConceptsQueries,
+                IRI_FACTORY);
 
         JSONObject jsonConcept = new JSONObject("""
                 {
@@ -327,17 +351,27 @@ class ConceptsImplTest {
                 null,
                 10,
                 conceptCollectionsQueries,
-                conceptConceptsQueries);
+                conceptConceptsQueries,
+                IRI_FACTORY);
     }
 
     private ConceptsImpl listingConceptsImpl() {
         return new ConceptsImpl(
-                repoGestion, null, null, null, null, null, collectionExport, null, 10, null, conceptConceptsQueries);
+                repoGestion,
+                null,
+                null,
+                null,
+                null,
+                null,
+                collectionExport,
+                null,
+                10,
+                null,
+                conceptConceptsQueries,
+                IRI_FACTORY);
     }
 
     private void givenAConceptUsedInGraphs(JSONArray graphs) throws RmesException {
-        RdfUtils.setBauhausUriBuilder(
-                new BauhausUriBuilder("http://publication/", "http://bauhaus/", name -> Optional.of("concepts")));
         when(legacyConceptsRepository.getGraphsWithConcept(anyString())).thenReturn(graphs);
     }
 }

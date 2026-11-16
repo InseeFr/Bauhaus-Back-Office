@@ -1,7 +1,7 @@
 package fr.insee.rmes.modules.operations.msd.infrastructure.graphdb;
 
 import fr.insee.rmes.Constants;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfTriples;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.model.operations.documentations.RangeType;
 import fr.insee.rmes.modules.commons.domain.GenericInternalServerException;
@@ -76,7 +76,7 @@ public class GraphDBDocumentationRepository implements DocumentationRepository {
                     (mas.has("id") ? mas.get(Constants.ID) : mas).toString());
         }
         String rangeUri = mas.getString(RANGE);
-        RangeType type = RangeType.getEnumByRdfType(RdfUtils.toURI(rangeUri));
+        RangeType type = RangeType.getEnumByRdfType(RdfTriples.iri(rangeUri));
         mas.put(Constants.RANGE_TYPE, type.getJsonType());
         mas.remove(RANGE);
 

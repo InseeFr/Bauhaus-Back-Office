@@ -2,7 +2,6 @@ package fr.insee.rmes.model.operations.documentations;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import fr.insee.rmes.Constants;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.utils.DateUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -18,18 +17,6 @@ public class Document {
     private String uri;
 
     public Document() {}
-
-    public static Document fromDocumentId(String id) {
-        Document document = new Document();
-        document.uri = RdfUtils.toString(RdfUtils.documentIRI(id));
-        return document;
-    }
-
-    public static Document fromLinkId(String id) {
-        Document document = new Document();
-        document.uri = RdfUtils.toString(RdfUtils.linkIRI(id));
-        return document;
-    }
 
     public String getLabelLg1() {
         return labelLg1;

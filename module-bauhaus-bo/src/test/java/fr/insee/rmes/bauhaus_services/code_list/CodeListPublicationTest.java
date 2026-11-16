@@ -9,7 +9,6 @@ import static org.mockito.Mockito.when;
 
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
@@ -60,7 +59,7 @@ class CodeListPublicationTest {
     void shouldExcludeTriplet() {
         InternedIRI myIRI = new InternedIRI("myIRI", "creator");
         when(statement.getPredicate()).thenReturn(myIRI);
-        String pred = RdfUtils.toString(statement.getPredicate());
+        String pred = statement.getPredicate().toString();
         assertTrue(pred.endsWith("validationState")
                 || pred.endsWith(Constants.CREATOR)
                 || pred.endsWith(Constants.CONTRIBUTOR)

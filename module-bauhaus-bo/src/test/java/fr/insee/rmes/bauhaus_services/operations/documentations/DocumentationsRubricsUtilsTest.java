@@ -13,10 +13,10 @@ import fr.insee.rmes.bauhaus_services.GeographyService;
 import fr.insee.rmes.bauhaus_services.code_list.LangService;
 import fr.insee.rmes.bauhaus_services.operations.documentations.documents.DocumentsUtils;
 import fr.insee.rmes.bauhaus_services.organizations.OrganizationRepository;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausIriFactory;
 import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.utils.OrganisationLookup;
-import fr.insee.rmes.config.BauhausUriPropertiesStub;
+import fr.insee.rmes.config.DocumentationsPropertiesStub;
 import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
@@ -71,6 +71,12 @@ class DocumentationsRubricsUtilsTest {
     @Mock
     private GeographyService geoService;
 
+    @Spy
+    private BauhausIriFactory iriFactory = new BauhausIriFactory(
+            GraphsPropertiesStub.stub(),
+            new BauhausUriBuilder("http://id.insee.fr/", "http://rdf.insee.fr/graphes/", p -> Optional.of("/rapport")),
+            DocumentationsPropertiesStub.stub());
+
     @InjectMocks
     private DocumentationsRubricsUtils documentationsRubricsUtils;
 
@@ -86,12 +92,6 @@ class DocumentationsRubricsUtilsTest {
         factory = SimpleValueFactory.getInstance();
         model = new LinkedHashModel();
         graph = factory.createIRI("http://test.insee.fr/graphes/documentations/test");
-
-        // Initialize RdfUtils static dependencies
-        RdfUtils.setGraphs(GraphsPropertiesStub.stub());
-        RdfUtils.setUris(BauhausUriPropertiesStub.stub());
-        RdfUtils.setBauhausUriBuilder(new BauhausUriBuilder(
-                "http://id.insee.fr/", "http://rdf.insee.fr/graphes/", p -> Optional.of("/rapport")));
     }
 
     /**
@@ -234,7 +234,7 @@ class DocumentationsRubricsUtilsTest {
         // Le modèle devrait contenir uniquement la relation avec le metadata report,
         // mais pas de contenu rich text
         IRI attributeUri = factory.createIRI("http://rdf.insee.fr/def/base/attribut/" + simsId + "/emptyRubric");
-        IRI simsUri = RdfUtils.objectIRI(ObjectType.DOCUMENTATION, simsId);
+        IRI simsUri = iriFactory.objectIri(ObjectType.DOCUMENTATION, simsId);
 
         assertTrue(
                 model.contains(attributeUri, SDMX_MM.METADATA_REPORT_PREDICATE, simsUri),

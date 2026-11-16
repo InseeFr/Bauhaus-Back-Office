@@ -6,10 +6,12 @@ import static org.mockito.Mockito.when;
 
 import fr.insee.rmes.bauhaus_services.operations.OperationsParentRepository;
 import fr.insee.rmes.bauhaus_services.operations.operations.OperationPublication;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausIriFactory;
 import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
+import fr.insee.rmes.config.DocumentationsPropertiesStub;
+import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.RdfConnectionDetails;
 import fr.insee.rmes.graphdb.RepositoryUtils;
@@ -50,8 +52,6 @@ interface OperationPublicationScenario {
     /** Le conteneur n'est vidé qu'entre deux classes : chaque test repart d'un graphe vide. */
     @BeforeEach
     default void dropTheOperationsGraph() throws RmesException {
-        RdfUtils.setBauhausUriBuilder(
-                new BauhausUriBuilder(PUBLICATION_BASE, GESTION_BASE, name -> Optional.of("operations/operation")));
         gestion().executeUpdate("DROP SILENT GRAPH <%s>".formatted(OPERATIONS_GRAPH));
     }
 
@@ -92,6 +92,13 @@ interface OperationPublicationScenario {
         return new RepositoryGestion(connectionDetails(), repositoryUtils());
     }
 
+    private BauhausIriFactory iriFactory() {
+        return new BauhausIriFactory(
+                GraphsPropertiesStub.stub(),
+                new BauhausUriBuilder(PUBLICATION_BASE, GESTION_BASE, name -> Optional.of("operations/operation")),
+                DocumentationsPropertiesStub.stub());
+    }
+
     private OperationPublication operationPublication(RepositoryGestion gestion) throws RmesException {
         RepositoryPublication publication = new RepositoryPublication(
                 connectionDetails().getUrlServer(), connectionDetails().repositoryId(), repositoryUtils());
@@ -99,7 +106,12 @@ interface OperationPublicationScenario {
         when(statuses.getFamOpSerValidationStatus("s1000")).thenReturn(ValidationStatus.UNPUBLISHED.getValue());
         when(statuses.getValidationStatus("s100")).thenReturn(ValidationStatus.VALIDATED.getValue());
         return new OperationPublication(
-                gestion, null, publication, new PublicationUtils(GESTION_BASE, PUBLICATION_BASE, null, null), statuses);
+                gestion,
+                null,
+                publication,
+                new PublicationUtils(GESTION_BASE, PUBLICATION_BASE, null, null),
+                statuses,
+                iriFactory());
     }
 
     private static String operationLabelled(String label) {

@@ -3,7 +3,7 @@ package fr.insee.rmes.bauhaus_services.operations.documentations;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfTriples;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.json.JSONUtils;
@@ -47,7 +47,7 @@ public class MetadataStructureDefUtils extends RdfService {
                     (mas.has("id") ? mas.get(Constants.ID) : mas).toString());
         }
         String rangeUri = mas.getString(RANGE);
-        RangeType type = RangeType.getEnumByRdfType(RdfUtils.toURI(rangeUri));
+        RangeType type = RangeType.getEnumByRdfType(RdfTriples.iri(rangeUri));
         mas.put(Constants.RANGE_TYPE, type.getJsonType());
         mas.remove(RANGE);
 

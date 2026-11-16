@@ -6,11 +6,9 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 import fr.insee.rmes.BauhausLanguagesProperties;
-import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
-import fr.insee.rmes.config.GraphsPropertiesStub;
+import fr.insee.rmes.config.BauhausIriFactoryStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.operations.families.domain.model.OperationFamily;
 import fr.insee.rmes.modules.operations.families.domain.model.OperationFamilySeries;
@@ -22,7 +20,6 @@ import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.utils.DiacriticSorter;
 import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import org.apache.http.HttpStatus;
 import org.eclipse.rdf4j.model.IRI;
@@ -78,7 +75,8 @@ class GraphDBOperationFamilyRepositoryTest {
                 repositoryPublication,
                 publicationUtils,
                 new BauhausLanguagesProperties("fr", "en"),
-                events);
+                events,
+                BauhausIriFactoryStub.stub("famille"));
     }
 
     @Test
@@ -148,9 +146,6 @@ class GraphDBOperationFamilyRepositoryTest {
 
     @Test
     void get_family_reads_its_contributors() throws RmesException {
-        RdfUtils.setGraphs(GraphsPropertiesStub.stub());
-        RdfUtils.setBauhausUriBuilder(
-                new BauhausUriBuilder("http://publication/", "http://bauhaus/", name -> Optional.of("famille")));
         JSONObject familyJson = new JSONObject().put("id", "s1001").put("prefLabelLg1", "Famille");
         when(operationFamilyQueries.familyQuery("s1001")).thenReturn("familyQuery");
         when(repositoryGestion.getResponseAsObject("familyQuery")).thenReturn(familyJson);
@@ -170,9 +165,6 @@ class GraphDBOperationFamilyRepositoryTest {
 
     @Test
     void save_writes_each_contributor_as_a_dc_contributor_of_the_family() throws RmesException {
-        RdfUtils.setGraphs(GraphsPropertiesStub.stub());
-        RdfUtils.setBauhausUriBuilder(
-                new BauhausUriBuilder("http://publication/", "http://bauhaus/", name -> Optional.of("famille")));
         IRI familyIRI = VALUES.createIRI("http://bauhaus/famille/s1001");
         OperationFamily family = new OperationFamily(
                 "s1001",
@@ -358,9 +350,6 @@ class GraphDBOperationFamilyRepositoryTest {
 
     @Test
     void publish_announces_the_publication_with_the_operations_graph() throws RmesException {
-        RdfUtils.setGraphs(GraphsPropertiesStub.stub());
-        RdfUtils.setBauhausUriBuilder(
-                new BauhausUriBuilder("http://publication/", "http://bauhaus/", name -> Optional.of("famille")));
         IRI familyIRI = VALUES.createIRI("http://bauhaus/famille/s1001");
         givenManagementTriples(VALUES.createStatement(familyIRI, SKOS.PREF_LABEL, VALUES.createLiteral("Famille")));
 

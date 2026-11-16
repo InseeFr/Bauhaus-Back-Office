@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.GraphsProperties;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfTriples;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
@@ -227,7 +227,7 @@ public class ClassificationsServiceImpl implements ClassificationsService {
 
         String graph = listGraph.getString("graph");
         String classifUriString = listGraph.getString(Constants.URI);
-        Resource graphIri = RdfUtils.createIRI(graph);
+        Resource graphIri = RdfTriples.iriAsIs(graph);
         logger.debug("setClassificationValidation - graphIri=[{}], classifUri=[{}]", graphIri, classifUriString);
 
         // PUBLISH
@@ -239,13 +239,13 @@ public class ClassificationsServiceImpl implements ClassificationsService {
         // celui que lisent getClassification et ClassificationRepository. L'écrire dans le graphe
         // par-id le rendrait invisible du GET : la nomenclature publiée apparaîtrait sans état.
         // objectValidation purge le validationState de tous les graphes avant d'appliquer ce modèle.
-        Resource validationGraph = RdfUtils.createIRI(graphs.classifFamiliesGraph());
+        Resource validationGraph = RdfTriples.iriAsIs(graphs.classifFamiliesGraph());
         Model model = new LinkedHashModel();
-        IRI classificationURI = RdfUtils.toURI(classifUriString);
+        IRI classificationURI = RdfTriples.iri(classifUriString);
         model.add(
                 classificationURI,
                 INSEE.VALIDATION_STATE,
-                RdfUtils.setLiteralString(ValidationStatus.VALIDATED),
+                RdfTriples.string(ValidationStatus.VALIDATED),
                 validationGraph);
         logger.info("Validate classification : {}", classifUriString);
         try {

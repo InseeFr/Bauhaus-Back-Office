@@ -7,9 +7,10 @@ import static org.mockito.Mockito.*;
 
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.operations.OperationsParentRepository;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausIriFactory;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
+import fr.insee.rmes.config.BauhausIriFactoryStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
@@ -18,7 +19,6 @@ import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationSeriesQueries;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.stream.Stream;
 import org.eclipse.rdf4j.common.iteration.CloseableIteratorIteration;
 import org.eclipse.rdf4j.model.IRI;
@@ -87,6 +87,9 @@ class SeriesPublicationTest {
     private static final IRI GRAPH =
             SimpleValueFactory.getInstance().createIRI("http://rdf.insee.fr/graphes/operations");
     private static final String FAMILY_ID = "family123";
+    private static final BauhausIriFactory IRI_FACTORY = BauhausIriFactoryStub.stub("operations/serie");
+    /** L'IRI de gestion de la série, telle que la vraie fabrique la construit. */
+    private static final IRI SERIES_IRI = IRI_FACTORY.series(SERIES_ID);
 
     private SeriesPublication seriesPublication;
     private JSONObject seriesJson;
@@ -98,7 +101,8 @@ class SeriesPublicationTest {
                 publicationUtils,
                 repoGestion,
                 repositoryPublication,
-                operationSeriesQueries);
+                operationSeriesQueries,
+                IRI_FACTORY);
 
         JSONObject familyJson = new JSONObject();
         familyJson.put(Constants.ID, "family123");
@@ -146,12 +150,11 @@ class SeriesPublicationTest {
     void publishSeries_shouldThrowRmesNotFoundException_whenSeriesDoesNotExist() throws RmesException {
         givenValidatedFamily();
 
-        try (MockedStatic<PublicationUtils> mockedPublicationUtils = mockStatic(PublicationUtils.class);
-                MockedStatic<RdfUtils> mockedRdfUtils = mockStatic(RdfUtils.class)) {
+        try (MockedStatic<PublicationUtils> mockedPublicationUtils = mockStatic(PublicationUtils.class)) {
 
-            givenPublishableSeries(mockedPublicationUtils, mockedRdfUtils);
+            givenPublishableSeries(mockedPublicationUtils);
 
-            when(repoGestion.getStatements(repositoryConnection, resource, GRAPH))
+            when(repoGestion.getStatements(repositoryConnection, SERIES_IRI, GRAPH))
                     .thenReturn(statements);
             when(statements.hasNext()).thenReturn(false); // This will trigger the checkIfSeriesExist exception
 
@@ -169,10 +172,7 @@ class SeriesPublicationTest {
         operation.put("operation", "http://example.org/operation1");
         operations.put(operation);
 
-        publishExistingSeries(operations, mockedRdfUtils -> {
-            mockedRdfUtils.when(() -> RdfUtils.createIRI(anyString())).thenReturn(iri);
-            mockedRdfUtils.when(() -> RdfUtils.toString(any())).thenReturn("http://example.org/predicate");
-        });
+        publishExistingSeries(operations);
 
         verify(repositoryPublication).publishResource(eq(resource), any(Model.class), eq("serie"), eq(GRAPH));
         verify(statements).close();
@@ -214,7 +214,8 @@ class SeriesPublicationTest {
                 publicationUtils,
                 repoGestion,
                 repositoryPublication,
-                operationSeriesQueries);
+                operationSeriesQueries,
+                IRI_FACTORY);
 
         assertThat(publication).isNotNull();
     }
@@ -239,10 +240,7 @@ class SeriesPublicationTest {
 
     @Test
     void publishSeries_shouldHandlePredicatesCorrectly() throws RmesException {
-        publishExistingSeries(
-                new JSONArray(),
-                mockedRdfUtils ->
-                        mockedRdfUtils.when(() -> RdfUtils.toString(any())).thenReturn("http://example.org/isPartOf"));
+        publishExistingSeries(new JSONArray());
 
         verify(publicationUtils, times(1)).tranformBaseURIToPublish(any(Resource.class));
     }
@@ -261,30 +259,27 @@ class SeriesPublicationTest {
                 realPublicationUtils,
                 repoGestion,
                 repositoryPublication,
-                operationSeriesQueries);
-        IRI seriesIri = vf.createIRI("http://bauhaus/operations/serie/s1210");
+                operationSeriesQueries,
+                IRI_FACTORY);
+        IRI seriesIri = SERIES_IRI;
         Statement creator = vf.createStatement(
                 seriesIri, DC.CREATOR, vf.createIRI("http://bauhaus/organisations/insee/HIE2001113"));
         givenValidatedFamily();
 
-        try (MockedStatic<RdfUtils> mockedRdfUtils = mockStatic(RdfUtils.class, CALLS_REAL_METHODS)) {
-            mockedRdfUtils.when(() -> RdfUtils.seriesIRI(SERIES_ID)).thenReturn(seriesIri);
-            when(operationSeriesQueries.getPublishedOperationsForSeries(anyString()))
-                    .thenReturn("SELECT * WHERE { }");
-            when(repoGestion.getResponseAsArray(anyString())).thenReturn(new JSONArray());
-            when(repoGestion.getStatements(repositoryConnection, seriesIri, GRAPH))
-                    .thenReturn(new RepositoryResult<>(
-                            new CloseableIteratorIteration<>(List.of(creator).iterator())));
-            when(repoGestion.getStatementsPredicateObject(repositoryConnection, DCTERMS.HAS_PART, seriesIri, GRAPH))
-                    .thenReturn(hasPartStatements);
-            when(repoGestion.getStatementsPredicateObject(repositoryConnection, DCTERMS.REPLACES, seriesIri, GRAPH))
-                    .thenReturn(replacesStatements);
-            when(repoGestion.getStatementsPredicateObject(
-                            repositoryConnection, DCTERMS.IS_REPLACED_BY, seriesIri, GRAPH))
-                    .thenReturn(isReplacedByStatements);
+        when(operationSeriesQueries.getPublishedOperationsForSeries(anyString()))
+                .thenReturn("SELECT * WHERE { }");
+        when(repoGestion.getResponseAsArray(anyString())).thenReturn(new JSONArray());
+        when(repoGestion.getStatements(repositoryConnection, seriesIri, GRAPH))
+                .thenReturn(new RepositoryResult<>(
+                        new CloseableIteratorIteration<>(List.of(creator).iterator())));
+        when(repoGestion.getStatementsPredicateObject(repositoryConnection, DCTERMS.HAS_PART, seriesIri, GRAPH))
+                .thenReturn(hasPartStatements);
+        when(repoGestion.getStatementsPredicateObject(repositoryConnection, DCTERMS.REPLACES, seriesIri, GRAPH))
+                .thenReturn(replacesStatements);
+        when(repoGestion.getStatementsPredicateObject(repositoryConnection, DCTERMS.IS_REPLACED_BY, seriesIri, GRAPH))
+                .thenReturn(isReplacedByStatements);
 
-            publication.publishSeries(SERIES_ID, seriesJson, GRAPH);
-        }
+        publication.publishSeries(SERIES_ID, seriesJson, GRAPH);
 
         ArgumentCaptor<Model> model = ArgumentCaptor.forClass(Model.class);
         verify(repositoryPublication).publishResource(any(Resource.class), model.capture(), eq("serie"), eq(GRAPH));
@@ -313,18 +308,15 @@ class SeriesPublicationTest {
 
     /**
      * Publie une série existante d'une famille validée, dont les opérations publiées sont
-     * {@code operations} ; {@code rdfUtilsStubs} complète le comportement de {@link RdfUtils}.
+     * {@code operations}.
      */
-    private void publishExistingSeries(JSONArray operations, Consumer<MockedStatic<RdfUtils>> rdfUtilsStubs)
-            throws RmesException {
+    private void publishExistingSeries(JSONArray operations) throws RmesException {
         givenValidatedFamily();
 
         try (MockedStatic<PublicationUtils> mockedPublicationUtils = mockStatic(PublicationUtils.class);
-                MockedStatic<RdfUtils> mockedRdfUtils = mockStatic(RdfUtils.class);
                 MockedStatic<JSONUtils> mockedJSONUtils = mockStatic(JSONUtils.class)) {
 
-            givenPublishableSeries(mockedPublicationUtils, mockedRdfUtils);
-            rdfUtilsStubs.accept(mockedRdfUtils);
+            givenPublishableSeries(mockedPublicationUtils);
             givenStatementsOfAnExistingSeries(mockedJSONUtils, operations);
 
             seriesPublication.publishSeries(SERIES_ID, seriesJson, GRAPH);
@@ -337,12 +329,10 @@ class SeriesPublicationTest {
         when(repoGestion.getConnection()).thenReturn(repositoryConnection);
     }
 
-    private void givenPublishableSeries(
-            MockedStatic<PublicationUtils> mockedPublicationUtils, MockedStatic<RdfUtils> mockedRdfUtils) {
+    private void givenPublishableSeries(MockedStatic<PublicationUtils> mockedPublicationUtils) {
         mockedPublicationUtils
                 .when(() -> PublicationUtils.isUnublished(ValidationStatus.VALIDATED.getValue()))
                 .thenReturn(false);
-        mockedRdfUtils.when(() -> RdfUtils.seriesIRI(SERIES_ID)).thenReturn(resource);
     }
 
     /** La série existe (un triplet), et ses liens hasPart / replaces / isReplacedBy sont lus. */
@@ -353,12 +343,12 @@ class SeriesPublicationTest {
 
         mockedJSONUtils.when(() -> JSONUtils.stream(any(JSONArray.class))).thenReturn(Stream.empty());
 
-        when(repoGestion.getStatements(repositoryConnection, resource, GRAPH)).thenReturn(statements);
-        when(repoGestion.getStatementsPredicateObject(repositoryConnection, DCTERMS.HAS_PART, resource, GRAPH))
+        when(repoGestion.getStatements(repositoryConnection, SERIES_IRI, GRAPH)).thenReturn(statements);
+        when(repoGestion.getStatementsPredicateObject(repositoryConnection, DCTERMS.HAS_PART, SERIES_IRI, GRAPH))
                 .thenReturn(hasPartStatements);
-        when(repoGestion.getStatementsPredicateObject(repositoryConnection, DCTERMS.REPLACES, resource, GRAPH))
+        when(repoGestion.getStatementsPredicateObject(repositoryConnection, DCTERMS.REPLACES, SERIES_IRI, GRAPH))
                 .thenReturn(replacesStatements);
-        when(repoGestion.getStatementsPredicateObject(repositoryConnection, DCTERMS.IS_REPLACED_BY, resource, GRAPH))
+        when(repoGestion.getStatementsPredicateObject(repositoryConnection, DCTERMS.IS_REPLACED_BY, SERIES_IRI, GRAPH))
                 .thenReturn(isReplacedByStatements);
         when(repoGestion.getResponseAsArray(anyString())).thenReturn(operations);
 

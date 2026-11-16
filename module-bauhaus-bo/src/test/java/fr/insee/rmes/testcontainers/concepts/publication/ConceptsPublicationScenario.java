@@ -3,12 +3,11 @@ package fr.insee.rmes.testcontainers.concepts.publication;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import fr.insee.rmes.BauhausLanguagesProperties;
-import fr.insee.rmes.BauhausUriProperties;
 import fr.insee.rmes.DocumentationsProperties;
 import fr.insee.rmes.bauhaus_services.concepts.publication.ConceptsPublication;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausIriFactory;
 import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
@@ -56,12 +55,6 @@ interface ConceptsPublicationScenario {
     /** Le conteneur n'est vidé qu'entre deux classes : chaque test repart d'un graphe vide. */
     @BeforeEach
     default void dropTheConceptsGraph() throws RmesException {
-        RdfUtils.setGraphs(GraphsPropertiesStub.stub());
-        RdfUtils.setUris(new BauhausUriProperties(
-                GESTION_BASE, "http://links/", "http://codelist/", "http://documents/", "produits/indicateur"));
-        RdfUtils.setDocumentations(new DocumentationsProperties("", "", "concepts/definitions/scheme"));
-        RdfUtils.setBauhausUriBuilder(
-                new BauhausUriBuilder(PUBLICATION_BASE, GESTION_BASE, name -> Optional.of("concepts/definition")));
         gestion().executeUpdate("DROP SILENT GRAPH <%s>".formatted(CONCEPTS_GRAPH));
     }
 
@@ -161,7 +154,15 @@ interface ConceptsPublicationScenario {
                 publication,
                 new PublicationUtils(GESTION_BASE, PUBLICATION_BASE, null, null),
                 new ConceptConceptsQueries(new BauhausLanguagesProperties("fr", "en"), GraphsPropertiesStub.stub()),
-                new GraphDBCollectionProperties(CONCEPTS_GRAPH, GESTION_BASE + "concepts/definitions"));
+                new GraphDBCollectionProperties(CONCEPTS_GRAPH, GESTION_BASE + "concepts/definitions"),
+                iriFactory());
+    }
+
+    private static BauhausIriFactory iriFactory() {
+        return new BauhausIriFactory(
+                GraphsPropertiesStub.stub(),
+                new BauhausUriBuilder(PUBLICATION_BASE, GESTION_BASE, name -> Optional.of("concepts/definition")),
+                new DocumentationsProperties("", "", "concepts/definitions/scheme"));
     }
 
     private static String conceptLabelled(String label) {

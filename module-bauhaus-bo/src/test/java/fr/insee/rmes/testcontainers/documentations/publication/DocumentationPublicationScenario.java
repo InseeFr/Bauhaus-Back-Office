@@ -12,10 +12,11 @@ import fr.insee.rmes.PropertiesKeys;
 import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationPublication;
 import fr.insee.rmes.bauhaus_services.operations.documentations.documents.DocumentsPublication;
 import fr.insee.rmes.bauhaus_services.operations.documentations.documents.DocumentsUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausIriFactory;
 import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
+import fr.insee.rmes.config.DocumentationsPropertiesStub;
 import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.RdfConnectionDetails;
@@ -81,13 +82,6 @@ interface DocumentationPublicationScenario {
      */
     @BeforeEach
     default void removeTheSimsAndItsDocuments() throws RmesException {
-        RdfUtils.setGraphs(GraphsPropertiesStub.stub());
-        Map<String, String> baseUris = Map.of(
-                PropertiesKeys.DOCUMENTATIONS_BASE_URI, "qualite/rapport",
-                PropertiesKeys.DOCUMENTS_BASE_URI, "documents/document",
-                PropertiesKeys.LINKS_BASE_URI, "documents/page");
-        RdfUtils.setBauhausUriBuilder(
-                new BauhausUriBuilder(PUBLICATION_BASE, GESTION_BASE, name -> Optional.ofNullable(baseUris.get(name))));
         StringBuilder update = new StringBuilder("DROP SILENT GRAPH <%s>".formatted(SIMS_GRAPH));
         for (String subject : new String[] {DOCUMENT, LINK, PUBLISHED_DOCUMENT, PUBLISHED_LINK}) {
             update.append(" ; DELETE WHERE { GRAPH <%s> { <%s> ?p ?o } }".formatted(DOCUMENTS_GRAPH, subject));
@@ -195,6 +189,17 @@ interface DocumentationPublicationScenario {
         return new RepositoryGestion(connectionDetails(), repositoryUtils());
     }
 
+    private BauhausIriFactory iriFactory() {
+        Map<String, String> baseUris = Map.of(
+                PropertiesKeys.DOCUMENTATIONS_BASE_URI, "qualite/rapport",
+                PropertiesKeys.DOCUMENTS_BASE_URI, "documents/document",
+                PropertiesKeys.LINKS_BASE_URI, "documents/page");
+        return new BauhausIriFactory(
+                GraphsPropertiesStub.stub(),
+                new BauhausUriBuilder(PUBLICATION_BASE, GESTION_BASE, name -> Optional.ofNullable(baseUris.get(name))),
+                DocumentationsPropertiesStub.stub());
+    }
+
     private DocumentationPublication documentationPublication(RepositoryGestion gestion) {
         RepositoryPublication publication = new RepositoryPublication(
                 connectionDetails().getUrlServer(), connectionDetails().repositoryId(), repositoryUtils());
@@ -208,7 +213,7 @@ interface DocumentationPublicationScenario {
                 new BauhausLanguagesProperties("fr", "en"),
                 GraphsPropertiesStub.stub());
         DocumentsUtils documentsUtils =
-                new DocumentsUtils(gestion, null, publication, publicationUtils, files, storage, queries);
+                new DocumentsUtils(gestion, null, publication, publicationUtils, files, storage, queries, iriFactory());
         DocumentsPublication documentsPublication = new DocumentsPublication(
                 gestion,
                 null,
@@ -218,7 +223,8 @@ interface DocumentationPublicationScenario {
                 files,
                 storage,
                 new DocumentsStorageProperties("/gestion", WEB4G),
-                queries);
+                queries,
+                iriFactory());
         return new DocumentationPublication(
                 gestion,
                 publication,
@@ -228,7 +234,8 @@ interface DocumentationPublicationScenario {
                         new DocumentationConfiguration.Geographie("territoire"),
                         "Rapport qualité :",
                         "Quality report:"),
-                new OrganisationsProperties("organisations"));
+                new OrganisationsProperties("organisations"),
+                iriFactory());
     }
 
     private static void insertTheSimsWithItsDocumentAndLink(RepositoryGestion gestion) throws RmesException {

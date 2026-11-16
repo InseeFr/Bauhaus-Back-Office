@@ -24,7 +24,7 @@ import org.springframework.web.client.RestClient;
  * Reproducteur du bug InseeFr/Bauhaus#1453 :
  * « Quand je publie une collection, l'état de la collecte n'est pas modifié ».
  *
- * Cause racine : `RdfUtils.collectionIRI` produit une IRI doublée
+ * Cause racine : la fabrique d'IRI de collection (aujourd'hui `BauhausIriFactory.collection`) produisait une IRI doublée
  * (`http://bauhaus/http://bauhaus/...`) car `BauhausUriBuilder.getBaseUriGestion(COLLECTION)`
  * concatène `baseUriGestion` avec une `baseURI` qui le contient déjà. Côté legacy,
  * `LegacyCollectionsRepository.collectionsValidation` et `ConceptsPublication.publishCollection`

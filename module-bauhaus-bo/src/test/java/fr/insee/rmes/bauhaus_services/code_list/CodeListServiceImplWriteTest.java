@@ -15,9 +15,9 @@ import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.Constants;
-import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.config.GraphsPropertiesStub;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausIriFactory;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfTriples;
+import fr.insee.rmes.config.BauhausIriFactoryStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
@@ -30,7 +30,6 @@ import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import fr.insee.rmes.modules.shared_kernel.infrastructure.publication.ObjectPublished;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import java.util.List;
-import java.util.Optional;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.vocabulary.DC;
@@ -49,7 +48,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
 
 /**
- * Écriture d'une liste de codes, avec le vrai {@link RdfUtils} : ce que ces tests vérifient, ce
+ * Écriture d'une liste de codes, avec la vraie {@link BauhausIriFactory} : ce que ces tests vérifient, ce
  * sont les triplets produits, donc les IRI et les graphes doivent être ceux de la configuration
  * et non des bouchons.
  */
@@ -68,13 +67,12 @@ class CodeListServiceImplWriteTest {
     @Mock
     ApplicationEventPublisher events;
 
+    private static final BauhausIriFactory IRI_FACTORY = BauhausIriFactoryStub.stub("codes");
+
     private CodeListServiceImpl codeListService;
 
     @BeforeEach
-    void initStaticGraphsAndService() {
-        RdfUtils.setGraphs(GraphsPropertiesStub.stub());
-        RdfUtils.setBauhausUriBuilder(
-                new BauhausUriBuilder("http://publication/", "http://bauhaus/", name -> Optional.of("codes")));
+    void initService() {
         codeListService = new CodeListServiceImpl(
                 repoGestion,
                 null,
@@ -83,7 +81,8 @@ class CodeListServiceImplWriteTest {
                 null,
                 codeListPublication,
                 codeListsQueries,
-                events);
+                events,
+                IRI_FACTORY);
     }
 
     @Test
@@ -305,8 +304,8 @@ class CodeListServiceImplWriteTest {
 
         codeListService.deleteCodeList("id", CodeListKind.FULL);
 
-        verify(repoGestion).deleteObject(RdfUtils.toURI("http://bauhaus/codes/id/A"), null);
-        verify(repoGestion).deleteObject(RdfUtils.toURI("http://bauhaus/codes/id"), null);
+        verify(repoGestion).deleteObject(RdfTriples.iri("http://bauhaus/codes/id/A"), null);
+        verify(repoGestion).deleteObject(RdfTriples.iri("http://bauhaus/codes/id"), null);
     }
 
     @Test
@@ -315,23 +314,23 @@ class CodeListServiceImplWriteTest {
 
         codeListService.publishCodeList("id", CodeListKind.FULL);
 
-        IRI codeListIri = RdfUtils.createIRI("http://bauhaus/codes/id");
+        IRI codeListIri = RdfTriples.iriAsIs("http://bauhaus/codes/id");
         InOrder order = inOrder(codeListPublication, events);
-        order.verify(codeListPublication).publishCodeListAndCodes(codeListIri, RdfUtils.codesListGraph());
+        order.verify(codeListPublication).publishCodeListAndCodes(codeListIri, IRI_FACTORY.codesListGraph());
         ArgumentCaptor<ObjectPublished> event = ArgumentCaptor.forClass(ObjectPublished.class);
         order.verify(events).publishEvent(event.capture());
         assertThat(event.getValue())
-                .isEqualTo(new ObjectPublished(codeListIri, RdfUtils.createIRI("http://rdf.insee.fr/graphes/codes")));
+                .isEqualTo(new ObjectPublished(codeListIri, RdfTriples.iriAsIs("http://rdf.insee.fr/graphes/codes")));
         verify(repoGestion, never()).objectValidation(any(), any());
     }
 
     @Test
     void shouldNotAnnounceThePublicationWhenTheCodeListCannotBePublished() throws RmesException {
         stubDetailedPartialCodeList(unpublishedCodeList(), new JSONArray());
-        IRI codeListIri = RdfUtils.createIRI("http://bauhaus/codes/id");
+        IRI codeListIri = RdfTriples.iriAsIs("http://bauhaus/codes/id");
         doThrow(new RmesNotFoundException(CodesListErrorCodes.CODE_LIST_UNKNOWN_ID, "CodeList not found", "id"))
                 .when(codeListPublication)
-                .publishCodeListAndCodes(codeListIri, RdfUtils.codesListGraph());
+                .publishCodeListAndCodes(codeListIri, IRI_FACTORY.codesListGraph());
 
         assertThrows(RmesNotFoundException.class, () -> codeListService.publishCodeList("id", CodeListKind.FULL));
 
@@ -429,9 +428,11 @@ class CodeListServiceImplWriteTest {
 
         verify(repoGestion).deleteObject(codeIri("A1"), null);
         verify(repoGestion)
-                .deleteTripletByPredicateAndValue(null, SKOS.BROADER, RdfUtils.codesListGraph(), null, codeIri("A1"));
+                .deleteTripletByPredicateAndValue(
+                        null, SKOS.BROADER, IRI_FACTORY.codesListGraph(), null, codeIri("A1"));
         verify(repoGestion)
-                .deleteTripletByPredicateAndValue(null, SKOS.NARROWER, RdfUtils.codesListGraph(), null, codeIri("A1"));
+                .deleteTripletByPredicateAndValue(
+                        null, SKOS.NARROWER, IRI_FACTORY.codesListGraph(), null, codeIri("A1"));
     }
 
     private void stubCodeListReadyForANewCode(String code) throws RmesException {
@@ -461,7 +462,7 @@ class CodeListServiceImplWriteTest {
     }
 
     private static IRI codeIri(String code) {
-        return RdfUtils.codeListIRI("code/" + code);
+        return IRI_FACTORY.codeList("code/" + code);
     }
 
     private void stubDetailedPartialCodeList(JSONObject codeList, JSONArray codes) throws RmesException {

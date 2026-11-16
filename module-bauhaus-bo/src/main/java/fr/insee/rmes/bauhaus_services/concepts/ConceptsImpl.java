@@ -4,15 +4,14 @@ import fr.insee.rmes.bauhaus_services.ConceptsService;
 import fr.insee.rmes.bauhaus_services.concepts.collections.CollectionExportBuilder;
 import fr.insee.rmes.bauhaus_services.concepts.concepts.ConceptsExportBuilder;
 import fr.insee.rmes.bauhaus_services.concepts.concepts.LegacyConceptsRepository;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausIriFactory;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
-import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.graphdb.QueryUtils;
 import fr.insee.rmes.model.concepts.*;
 import fr.insee.rmes.model.concepts.Collection;
@@ -55,6 +54,7 @@ public class ConceptsImpl extends RdfService implements ConceptsService {
 
     private final ConceptCollectionsQueries conceptCollectionsQueries;
     private final ConceptConceptsQueries conceptConceptsQueries;
+    private final BauhausIriFactory iriFactory;
 
     public ConceptsImpl(
             RepositoryGestion repoGestion,
@@ -67,7 +67,8 @@ public class ConceptsImpl extends RdfService implements ConceptsService {
             CollectionRepository collectionRepository,
             @Value("${fr.insee.rmes.bauhaus.filenames.maxlength}") int maxLength,
             ConceptCollectionsQueries conceptCollectionsQueries,
-            ConceptConceptsQueries conceptConceptsQueries) {
+            ConceptConceptsQueries conceptConceptsQueries,
+            BauhausIriFactory iriFactory) {
         super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
         this.legacyConceptsRepository = legacyConceptsRepository;
         this.conceptsExport = conceptsExport;
@@ -76,6 +77,7 @@ public class ConceptsImpl extends RdfService implements ConceptsService {
         this.maxLength = maxLength;
         this.conceptCollectionsQueries = conceptCollectionsQueries;
         this.conceptConceptsQueries = conceptConceptsQueries;
+        this.iriFactory = iriFactory;
     }
 
     @Override
@@ -113,7 +115,7 @@ public class ConceptsImpl extends RdfService implements ConceptsService {
 
     @Override
     public String getRelatedConcepts(String id) throws RmesException {
-        String uriConcept = RdfUtils.toString(RdfUtils.objectIRI(ObjectType.CONCEPT, id));
+        String uriConcept = iriFactory.concept(id).toString();
         JSONArray resQuery = legacyConceptsRepository.getRelatedConcepts(uriConcept);
         return QueryUtils.correctEmptyGroupConcat(resQuery.toString());
     }
@@ -125,7 +127,7 @@ public class ConceptsImpl extends RdfService implements ConceptsService {
      */
     @Override
     public void deleteConcept(String id) throws RmesException {
-        String uriConcept = RdfUtils.toString(RdfUtils.objectIRI(ObjectType.CONCEPT, id));
+        String uriConcept = iriFactory.concept(id).toString();
         JSONArray graphArray = legacyConceptsRepository.getGraphsWithConcept(uriConcept);
 
         /* check concept isn't used in several graphs */

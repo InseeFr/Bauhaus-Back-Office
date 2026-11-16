@@ -6,10 +6,11 @@ import static org.mockito.Mockito.mock;
 import fr.insee.rmes.PropertiesKeys;
 import fr.insee.rmes.bauhaus_services.operations.OperationsParentRepository;
 import fr.insee.rmes.bauhaus_services.operations.indicators.IndicatorPublication;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausIriFactory;
 import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
+import fr.insee.rmes.config.DocumentationsPropertiesStub;
 import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.RdfConnectionDetails;
@@ -52,10 +53,6 @@ interface IndicatorPublicationScenario {
     /** Le conteneur n'est vidé qu'entre deux classes : chaque test repart de graphes vides. */
     @BeforeEach
     default void dropTheProductsAndOperationsGraphs() throws RmesException {
-        RdfUtils.setGraphs(GraphsPropertiesStub.stub());
-        Map<String, String> baseUris = Map.of(PropertiesKeys.PRODUCTS_BASE_URI, "produits/indicateur");
-        RdfUtils.setBauhausUriBuilder(
-                new BauhausUriBuilder(PUBLICATION_BASE, GESTION_BASE, name -> Optional.ofNullable(baseUris.get(name))));
         gestion()
                 .executeUpdate(
                         "DROP SILENT GRAPH <%s> ; DROP SILENT GRAPH <%s>".formatted(PRODUCTS_GRAPH, OPERATIONS_GRAPH));
@@ -114,6 +111,14 @@ interface IndicatorPublicationScenario {
         return new RepositoryGestion(connectionDetails(), repositoryUtils());
     }
 
+    private BauhausIriFactory iriFactory() {
+        Map<String, String> baseUris = Map.of(PropertiesKeys.PRODUCTS_BASE_URI, "produits/indicateur");
+        return new BauhausIriFactory(
+                GraphsPropertiesStub.stub(),
+                new BauhausUriBuilder(PUBLICATION_BASE, GESTION_BASE, name -> Optional.ofNullable(baseUris.get(name))),
+                DocumentationsPropertiesStub.stub());
+    }
+
     private IndicatorPublication indicatorPublication(RepositoryGestion gestion) {
         RepositoryPublication publication = new RepositoryPublication(
                 connectionDetails().getUrlServer(), connectionDetails().repositoryId(), repositoryUtils());
@@ -121,7 +126,8 @@ interface IndicatorPublicationScenario {
                 mock(OperationsParentRepository.class),
                 gestion,
                 publication,
-                new PublicationUtils(GESTION_BASE, PUBLICATION_BASE, null, null));
+                new PublicationUtils(GESTION_BASE, PUBLICATION_BASE, null, null),
+                iriFactory());
     }
 
     private static void insertTheIndicator(RepositoryGestion gestion, String label) throws RmesException {

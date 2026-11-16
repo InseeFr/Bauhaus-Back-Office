@@ -8,13 +8,15 @@ import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.bauhaus_services.operations.OperationsParentRepository;
 import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationsUtils;
 import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.OperationsObjectMapper;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausIriFactory;
 import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.config.DocumentationsPropertiesStub;
 import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.graphdb.ontologies.ADMS;
+import fr.insee.rmes.graphdb.ontologies.INSEE;
 import fr.insee.rmes.model.operations.Operation;
 import fr.insee.rmes.modules.operation.domain.event.BilingualLabel;
 import fr.insee.rmes.modules.operation.domain.event.OperationSaved;
@@ -25,12 +27,16 @@ import fr.insee.rmes.persistance.sparql_queries.operations.OperationsOperationQu
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import java.util.Optional;
 import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
+import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
+import org.eclipse.rdf4j.model.vocabulary.RDF;
+import org.eclipse.rdf4j.model.vocabulary.SKOS;
 import org.eclipse.rdf4j.model.vocabulary.XSD;
 import org.json.JSONObject;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
@@ -70,12 +76,11 @@ class OperationsRepositoryTest {
     BauhausUriBuilder bauhausUriBuilder =
             new BauhausUriBuilder("http://id.insee.fr", "http://bauhaus", p -> Optional.of("/operations/operation"));
 
-    @BeforeAll
-    static void initRdfUtils() {
-        RdfUtils.setGraphs(GraphsPropertiesStub.stub());
-        RdfUtils.setBauhausUriBuilder(new BauhausUriBuilder(
-                "http://bauhaus/publication/", "http://bauhaus/", p -> Optional.of("/operations")));
-    }
+    @Spy
+    BauhausIriFactory iriFactory = new BauhausIriFactory(
+            GraphsPropertiesStub.stub(),
+            new BauhausUriBuilder("http://bauhaus/publication/", "http://bauhaus/", p -> Optional.of("/operations")),
+            DocumentationsPropertiesStub.stub());
 
     @Test
     void createRdfOperation_addsAdmsIdentifierTriple() throws RmesException {
@@ -87,7 +92,7 @@ class OperationsRepositoryTest {
 
         ArgumentCaptor<Model> captor = ArgumentCaptor.forClass(Model.class);
         verify(repositoryGestion).loadSimpleObject(any(), captor.capture());
-        IRI operationURI = RdfUtils.objectIRI(ObjectType.OPERATION, "o1500");
+        IRI operationURI = iriFactory.objectIri(ObjectType.OPERATION, "o1500");
         assertThat(captor.getValue()
                         .filter(operationURI, ADMS.HAS_IDENTIFIER, null)
                         .objects())
@@ -107,28 +112,45 @@ class OperationsRepositoryTest {
         when(operationsOperationQueries.checkPrefLabelUnicity("1", "prefLabelLg2", "en"))
                 .thenReturn("unicity-labelLg2");
 
-        try (MockedStatic<RdfUtils> mockedFactory = Mockito.mockStatic(RdfUtils.class)) {
-            SimpleValueFactory valueFactory = SimpleValueFactory.getInstance();
-            IRI operationIRI = valueFactory.createIRI("http://operation/2");
-            mockedFactory.when(() -> RdfUtils.setLiteralInt(anyString())).thenCallRealMethod();
-            mockedFactory
-                    .when(() -> RdfUtils.addTripleInt(any(), any(), any(), any(), any()))
-                    .thenCallRealMethod();
-            mockedFactory
-                    .when(() -> RdfUtils.createLiteral(anyString(), eq(XSD.GYEAR)))
-                    .thenCallRealMethod();
-            stubRdfUtilsForOperationOfSeries2(mockedFactory, operationIRI);
-            operationsRepository.createOperation(new OperationCommand(
-                    "prefLabelLg1", "prefLabelLg2", "altLabelLg1", "altLabelLg2", "2", 2024, null, null));
+        IRI operationIRI = iriFactory.operation("1");
+        operationsRepository.createOperation(new OperationCommand(
+                "prefLabelLg1", "prefLabelLg2", "altLabelLg1", "altLabelLg2", "2", 2024, null, null));
 
-            ArgumentCaptor<Model> model = ArgumentCaptor.forClass(Model.class);
+        ArgumentCaptor<Model> model = ArgumentCaptor.forClass(Model.class);
 
-            verify(repositoryGestion, times(1)).loadSimpleObject(eq(operationIRI), model.capture());
+        verify(repositoryGestion, times(1)).loadSimpleObject(eq(operationIRI), model.capture());
 
-            Assertions.assertEquals(
-                    "[(http://operation/2, http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://rdf.insee.fr/def/base#StatisticalOperation) [http://operations-graph/], (http://operation/2, http://www.w3.org/ns/adms#identifier, \"1\") [http://operations-graph/], (http://operation/2, http://www.w3.org/2004/02/skos/core#prefLabel, \"prefLabelLg1\"@fr) [http://operations-graph/], (http://operation/2, http://rdf.insee.fr/def/base#validationState, \"Unpublished\") [http://operations-graph/], (http://operation/2, http://www.w3.org/2004/02/skos/core#prefLabel, \"prefLabelLg2\"@en) [http://operations-graph/], (http://operation/2, http://www.w3.org/2004/02/skos/core#altLabel, \"altLabelLg1\"@fr) [http://operations-graph/], (http://operation/2, http://www.w3.org/2004/02/skos/core#altLabel, \"altLabelLg2\"@en) [http://operations-graph/], (http://operation/2, http://purl.org/dc/terms/temporal, \"2024\"^^<http://www.w3.org/2001/XMLSchema#gYear>) [http://operations-graph/]]",
-                    model.getValue().toString());
-        }
+        Model written = model.getValue();
+        Resource graph = iriFactory.operationsGraph();
+        IRI series = iriFactory.series("2");
+        SimpleValueFactory vf = SimpleValueFactory.getInstance();
+        assertThat(written.contexts()).containsExactly(graph);
+        assertThat(written.filter(operationIRI, DCTERMS.CREATED, null).objects())
+                .singleElement()
+                .satisfies(
+                        created -> assertThat(((Literal) created).getDatatype()).isEqualTo(XSD.DATETIME));
+        assertThat(written.filter(operationIRI, DCTERMS.MODIFIED, null).objects())
+                .singleElement()
+                .satisfies(modified ->
+                        assertThat(((Literal) modified).getDatatype()).isEqualTo(XSD.DATETIME));
+        Model withoutDates = new LinkedHashModel(written);
+        withoutDates.remove(operationIRI, DCTERMS.CREATED, null);
+        withoutDates.remove(operationIRI, DCTERMS.MODIFIED, null);
+        assertThat(withoutDates)
+                .containsExactlyInAnyOrder(
+                        vf.createStatement(operationIRI, RDF.TYPE, INSEE.OPERATION, graph),
+                        vf.createStatement(operationIRI, ADMS.HAS_IDENTIFIER, vf.createLiteral("1"), graph),
+                        vf.createStatement(
+                                operationIRI, SKOS.PREF_LABEL, vf.createLiteral("prefLabelLg1", "fr"), graph),
+                        vf.createStatement(
+                                operationIRI, INSEE.VALIDATION_STATE, vf.createLiteral("Unpublished"), graph),
+                        vf.createStatement(
+                                operationIRI, SKOS.PREF_LABEL, vf.createLiteral("prefLabelLg2", "en"), graph),
+                        vf.createStatement(operationIRI, SKOS.ALT_LABEL, vf.createLiteral("altLabelLg1", "fr"), graph),
+                        vf.createStatement(operationIRI, SKOS.ALT_LABEL, vf.createLiteral("altLabelLg2", "en"), graph),
+                        vf.createStatement(operationIRI, DCTERMS.TEMPORAL, vf.createLiteral("2024", XSD.GYEAR), graph),
+                        vf.createStatement(operationIRI, DCTERMS.IS_PART_OF, series, graph),
+                        vf.createStatement(series, DCTERMS.HAS_PART, operationIRI, graph));
     }
 
     @Test
@@ -137,44 +159,17 @@ class OperationsRepositoryTest {
         when(operationsObjectMapper.createId()).thenReturn("1");
         when(operationsObjectMapper.checkIfObjectExists(ObjectType.SERIES, "2")).thenReturn(true);
 
-        try (MockedStatic<RdfUtils> mockedFactory = Mockito.mockStatic(RdfUtils.class)) {
-            SimpleValueFactory valueFactory = SimpleValueFactory.getInstance();
-            stubRdfUtilsForOperationOfSeries2(mockedFactory, valueFactory.createIRI("http://operation/1"));
-
-            try {
-                operationsRepository.createOperation(
-                        new OperationCommand("prefLabelLg1", "prefLabelLg2", null, null, "2", null, null, null));
-            } catch (RmesBadRequestException e) {
-                if (e.getDetails().contains("A series cannot have both a Sims and Operation(s)")) {
-                    fail("La création d'une opération sur une série avec SIMS ne devrait plus lever 406 : "
-                            + e.getDetails());
-                }
-            } catch (Exception _) {
-                // d'autres exceptions sont attendues car les mocks ne couvrent pas tout le flow
+        try {
+            operationsRepository.createOperation(
+                    new OperationCommand("prefLabelLg1", "prefLabelLg2", null, null, "2", null, null, null));
+        } catch (RmesBadRequestException e) {
+            if (e.getDetails().contains("A series cannot have both a Sims and Operation(s)")) {
+                fail("La création d'une opération sur une série avec SIMS ne devrait plus lever 406 : "
+                        + e.getDetails());
             }
+        } catch (Exception _) {
+            // d'autres exceptions sont attendues car les mocks ne couvrent pas tout le flow
         }
-    }
-
-    /**
-     * L'opération d'identifiant « 1 » est rattachée à la série « 2 » : leurs IRI et le graphe des
-     * opérations sont figés, l'écriture des littéraux passe par les vraies méthodes.
-     */
-    private static void stubRdfUtilsForOperationOfSeries2(MockedStatic<RdfUtils> mockedFactory, IRI operationIRI) {
-        SimpleValueFactory valueFactory = SimpleValueFactory.getInstance();
-        mockedFactory
-                .when(() -> RdfUtils.objectIRI(eq(ObjectType.SERIES), eq("2")))
-                .thenReturn(valueFactory.createIRI("http://series/2"));
-        mockedFactory
-                .when(() -> RdfUtils.objectIRI(eq(ObjectType.OPERATION), eq("1")))
-                .thenReturn(operationIRI);
-        mockedFactory.when(RdfUtils::operationsGraph).thenReturn(valueFactory.createIRI("http://operations-graph/"));
-        mockedFactory.when(() -> RdfUtils.setLiteralString(anyString())).thenCallRealMethod();
-        mockedFactory
-                .when(() -> RdfUtils.setLiteralString(anyString(), anyString()))
-                .thenCallRealMethod();
-        mockedFactory
-                .when(() -> RdfUtils.addTripleString(any(), any(), any(), any(), any(), any()))
-                .thenCallRealMethod();
     }
 
     @Test
@@ -206,7 +201,7 @@ class OperationsRepositoryTest {
                 "o1500",
                 new OperationCommand("Enquête emploi", null, null, null, null, null, null, "2026-01-01T00:00:00"));
 
-        verify(repositoryGestion).loadSimpleObject(eq(RdfUtils.objectIRI(ObjectType.OPERATION, "o1500")), any());
+        verify(repositoryGestion).loadSimpleObject(eq(iriFactory.objectIri(ObjectType.OPERATION, "o1500")), any());
     }
 
     @Test
@@ -217,12 +212,12 @@ class OperationsRepositoryTest {
 
         repository.setOperationValidation("s1500");
 
-        verify(operationPublication).publishOperation("s1500", operationJson, RdfUtils.operationsGraph());
+        verify(operationPublication).publishOperation("s1500", operationJson, iriFactory.operationsGraph());
         ArgumentCaptor<ObjectPublished> event = ArgumentCaptor.forClass(ObjectPublished.class);
         verify(events).publishEvent(event.capture());
         assertThat(event.getValue())
                 .isEqualTo(new ObjectPublished(
-                        RdfUtils.objectIRI(ObjectType.OPERATION, "s1500"),
+                        iriFactory.objectIri(ObjectType.OPERATION, "s1500"),
                         SimpleValueFactory.getInstance().createIRI("http://rdf.insee.fr/graphes/operations")));
     }
 }

@@ -1,7 +1,7 @@
 package fr.insee.rmes.bauhaus_services.concepts.collections;
 
 import fr.insee.rmes.bauhaus_services.concepts.publication.ConceptsPublication;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausIriFactory;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.json.JSONUtils;
 import fr.insee.rmes.modules.concepts.collections.infrastructure.graphdb.GraphDBCollectionProperties;
@@ -21,14 +21,17 @@ public class LegacyCollectionsRepository {
     private final ConceptsPublication conceptsPublication;
     private final GraphDBCollectionProperties collectionProperties;
     private final ApplicationEventPublisher events;
+    private final BauhausIriFactory iriFactory;
 
     public LegacyCollectionsRepository(
             ConceptsPublication conceptsPublication,
             GraphDBCollectionProperties collectionProperties,
-            ApplicationEventPublisher events) {
+            ApplicationEventPublisher events,
+            BauhausIriFactory iriFactory) {
         this.conceptsPublication = conceptsPublication;
         this.collectionProperties = collectionProperties;
         this.events = events;
+        this.iriFactory = iriFactory;
     }
 
     /**
@@ -40,8 +43,8 @@ public class LegacyCollectionsRepository {
         for (String collectionId : JSONUtils.jsonArrayToList(collectionsToValidate)) {
             IRI collectionURI = collectionProperties.getResourceIRI(collectionId);
             logger.info("Validate collection : {}", collectionURI);
-            conceptsPublication.publishCollection(new JSONArray().put(collectionId), RdfUtils.conceptGraph());
-            events.publishEvent(new ObjectPublished(collectionURI, RdfUtils.conceptGraph()));
+            conceptsPublication.publishCollection(new JSONArray().put(collectionId), iriFactory.conceptGraph());
+            events.publishEvent(new ObjectPublished(collectionURI, iriFactory.conceptGraph()));
         }
     }
 }

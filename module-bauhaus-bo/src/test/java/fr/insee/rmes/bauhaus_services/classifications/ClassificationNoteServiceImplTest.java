@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfTriples;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.ontologies.EVOC;
 import fr.insee.rmes.graphdb.ontologies.XKOS;
@@ -40,7 +40,7 @@ class ClassificationNoteServiceImplTest {
         service.addNotes(graph, iri, value, model);
 
         // Then
-        verifyPreviousNoteTripletsDeleted(RdfUtils.createIRI(iri), graph);
+        verifyPreviousNoteTripletsDeleted(RdfTriples.iriAsIs(iri), graph);
 
         assertEquals(
                 "[(http://example.org/note, http://eurovoc.europa.eu/schema#noteLiteral, \"<div xmlns=\"http://www.w3.org/1999/xhtml\"><p>This is <strong>markdown</strong> content.</p></div>\") [namespaceGraphlocalNameGraph], (http://example.org/note, http://rdf-vocabulary.ddialliance.org/xkos#plainText, \"This is markdown content.\") [namespaceGraphlocalNameGraph], (http://example.org/note, http://www.w3.org/1999/02/22-rdf-syntax-ns#value, \"This is **markdown** content.\") [namespaceGraphlocalNameGraph]]",
@@ -56,7 +56,7 @@ class ClassificationNoteServiceImplTest {
 
         service.addNotes(graph, iri, value, model);
 
-        verifyPreviousNoteTripletsDeleted(RdfUtils.createIRI(iri), graph);
+        verifyPreviousNoteTripletsDeleted(RdfTriples.iriAsIs(iri), graph);
 
         assertEquals("[]", model.toString());
     }

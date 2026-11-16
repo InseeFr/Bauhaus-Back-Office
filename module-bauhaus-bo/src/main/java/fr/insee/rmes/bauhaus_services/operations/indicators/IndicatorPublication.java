@@ -2,8 +2,8 @@ package fr.insee.rmes.bauhaus_services.operations.indicators;
 
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.operations.OperationsParentRepository;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausIriFactory;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.ErrorCodes;
@@ -33,11 +33,15 @@ public class IndicatorPublication implements ObjectPublication<Indicator> {
     final RepositoryPublication repositoryPublication;
     final PublicationUtils publicationUtils;
 
+    private final BauhausIriFactory iriFactory;
+
     public IndicatorPublication(
             OperationsParentRepository operationsParentRepository,
             RepositoryGestion repoGestion,
             RepositoryPublication repositoryPublication,
-            PublicationUtils publicationUtils) {
+            PublicationUtils publicationUtils,
+            BauhausIriFactory iriFactory) {
+        this.iriFactory = iriFactory;
         this.operationsParentRepository = operationsParentRepository;
         this.repoGestion = repoGestion;
         this.repositoryPublication = repositoryPublication;
@@ -74,9 +78,9 @@ public class IndicatorPublication implements ObjectPublication<Indicator> {
      */
     @Override
     public void publish(String indicatorId) throws RmesException {
-        Resource indicator = RdfUtils.objectIRI(ObjectType.INDICATOR, indicatorId);
-        Resource productsGraph = RdfUtils.productsGraph();
-        Resource operationsGraph = RdfUtils.operationsGraph();
+        Resource indicator = iriFactory.objectIri(ObjectType.INDICATOR, indicatorId);
+        Resource productsGraph = iriFactory.productsGraph();
+        Resource operationsGraph = iriFactory.operationsGraph();
 
         Model description = new LinkedHashModel();
         Model dates = new LinkedHashModel();
@@ -107,7 +111,7 @@ public class IndicatorPublication implements ObjectPublication<Indicator> {
     }
 
     private void addTripleToPublish(Model model, Statement st, Resource graph) {
-        String pred = RdfUtils.toString(st.getPredicate());
+        String pred = st.getPredicate().toString();
         if (pred.endsWith("isValidated") || pred.endsWith("validationState")) {
             // nothing, wouldn't copy this attr
             return;

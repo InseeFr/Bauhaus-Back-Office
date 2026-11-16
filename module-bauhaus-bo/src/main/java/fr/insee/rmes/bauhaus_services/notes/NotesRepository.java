@@ -1,8 +1,9 @@
 package fr.insee.rmes.bauhaus_services.notes;
 
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausIriFactory;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfTriples;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.ontologies.EVOC;
@@ -31,51 +32,47 @@ import org.springframework.stereotype.Repository;
 public class NotesRepository extends RdfService {
 
     private final ConceptNotesQueries conceptNotesQueries;
+    private final BauhausIriFactory iriFactory;
 
     public NotesRepository(
             RepositoryGestion repoGestion,
             IdGenerator idGenerator,
             RepositoryPublication repositoryPublication,
             PublicationUtils publicationUtils,
-            ConceptNotesQueries conceptNotesQueries) {
+            ConceptNotesQueries conceptNotesQueries,
+            BauhausIriFactory iriFactory) {
         super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
         this.conceptNotesQueries = conceptNotesQueries;
+        this.iriFactory = iriFactory;
     }
 
     private static final String ONE = "1";
     private static final String ZERO = "0";
 
     public void createRdfVersionableNote(String conceptId, VersionableNote versionableNote, Model model) {
-        IRI note = RdfUtils.versionableNoteIRI(conceptId, versionableNote);
-        model.add(RdfUtils.conceptIRI(conceptId), versionableNote.getPredicat(), note, RdfUtils.conceptGraph());
-        model.add(note, RDF.TYPE, XKOS.EXPLANATORY_NOTE, RdfUtils.conceptGraph());
-        model.add(
-                note,
-                DCTERMS.LANGUAGE,
-                RdfUtils.setLiteralLanguage(versionableNote.getLang()),
-                RdfUtils.conceptGraph());
-        model.add(note, PAV.VERSION, RdfUtils.setLiteralInt(versionableNote.getVersion()), RdfUtils.conceptGraph());
+        IRI note = iriFactory.versionableNote(conceptId, versionableNote);
+        model.add(iriFactory.concept(conceptId), versionableNote.getPredicat(), note, iriFactory.conceptGraph());
+        model.add(note, RDF.TYPE, XKOS.EXPLANATORY_NOTE, iriFactory.conceptGraph());
+        model.add(note, DCTERMS.LANGUAGE, RdfTriples.language(versionableNote.getLang()), iriFactory.conceptGraph());
+        model.add(note, PAV.VERSION, RdfTriples.integer(versionableNote.getVersion()), iriFactory.conceptGraph());
         model.add(
                 note,
                 INSEE.CONCEPT_VERSION,
-                RdfUtils.setLiteralInt(versionableNote.getConceptVersion()),
-                RdfUtils.conceptGraph());
+                RdfTriples.integer(versionableNote.getConceptVersion()),
+                iriFactory.conceptGraph());
         model.add(
-                note,
-                INSEE.VALIDFROM,
-                RdfUtils.setLiteralDateTime(versionableNote.getValidFrom()),
-                RdfUtils.conceptGraph());
+                note, INSEE.VALIDFROM, RdfTriples.dateTime(versionableNote.getValidFrom()), iriFactory.conceptGraph());
         model.add(
                 note,
                 EVOC.NOTE_LITERAL,
-                RdfUtils.setLiteralXML(XhtmlToMarkdownUtils.markdownToXhtml(versionableNote.getContent())),
-                RdfUtils.conceptGraph());
-        model.add(note, RDF.VALUE, RdfUtils.setLiteralString(versionableNote.getContent()), RdfUtils.conceptGraph());
+                RdfTriples.xmlLiteral(XhtmlToMarkdownUtils.markdownToXhtml(versionableNote.getContent())),
+                iriFactory.conceptGraph());
+        model.add(note, RDF.VALUE, RdfTriples.string(versionableNote.getContent()), iriFactory.conceptGraph());
     }
 
     public void closeRdfVersionableNote(String conceptId, VersionableNote versionableNote, Model model)
             throws RmesException {
-        IRI noteURIPreviousVersion = RdfUtils.previousVersionableNoteIRI(conceptId, versionableNote);
+        IRI noteURIPreviousVersion = iriFactory.previousVersionableNote(conceptId, versionableNote);
         Boolean isNoteExist = repoGestion.getResponseAsBoolean(conceptNotesQueries.isExist(noteURIPreviousVersion));
         if (Boolean.TRUE.equals(isNoteExist)) {
             Boolean isNoteClosed =
@@ -84,18 +81,18 @@ public class NotesRepository extends RdfService {
                 model.add(
                         noteURIPreviousVersion,
                         INSEE.VALIDUNTIL,
-                        RdfUtils.setLiteralDateTime(LocalDateTime.now().toString()),
-                        RdfUtils.conceptGraph());
+                        RdfTriples.dateTime(LocalDateTime.now().toString()),
+                        iriFactory.conceptGraph());
             }
         }
     }
 
     public void keepNote(String conceptId, VersionableNote versionableNote, Model model) throws RmesException {
-        IRI conceptURI = RdfUtils.conceptIRI(conceptId);
-        IRI noteURI = RdfUtils.versionableNoteIRI(conceptId, versionableNote);
+        IRI conceptURI = iriFactory.concept(conceptId);
+        IRI noteURI = iriFactory.versionableNote(conceptId, versionableNote);
         Boolean isNoteExist = repoGestion.getResponseAsBoolean(conceptNotesQueries.isExist(noteURI));
         if (Boolean.TRUE.equals(isNoteExist)) {
-            model.add(conceptURI, versionableNote.getPredicat(), noteURI, RdfUtils.conceptGraph());
+            model.add(conceptURI, versionableNote.getPredicat(), noteURI, iriFactory.conceptGraph());
         }
     }
 
@@ -103,15 +100,15 @@ public class NotesRepository extends RdfService {
         JSONArray notes =
                 repoGestion.getResponseAsArray(conceptNotesQueries.getHistoricalNotes(conceptId, conceptVersion));
         JSONUtils.stream(notes).forEach(note -> {
-            IRI predicat = RdfUtils.toURI(note.getString("predicat"));
-            IRI noteURI = RdfUtils.toURI(note.getString("note"));
-            model.add(RdfUtils.conceptIRI(conceptId), predicat, noteURI, RdfUtils.conceptGraph());
+            IRI predicat = RdfTriples.iri(note.getString("predicat"));
+            IRI noteURI = RdfTriples.iri(note.getString("note"));
+            model.add(iriFactory.concept(conceptId), predicat, noteURI, iriFactory.conceptGraph());
         });
     }
 
     public void updateNoteConceptVersion(String conceptId, VersionableNote versionableNote, Model model)
             throws RmesException {
-        IRI noteURI = RdfUtils.versionableNoteIRI(conceptId, versionableNote);
+        IRI noteURI = iriFactory.versionableNote(conceptId, versionableNote);
         Boolean isNoteExist = repoGestion.getResponseAsBoolean(conceptNotesQueries.isExist(noteURI));
         if (Boolean.TRUE.equals(isNoteExist)) {
             Boolean isNoteClosed = repoGestion.getResponseAsBoolean(conceptNotesQueries.isClosed(noteURI));
@@ -120,25 +117,25 @@ public class NotesRepository extends RdfService {
                 model.add(
                         noteURI,
                         INSEE.CONCEPT_VERSION,
-                        RdfUtils.setLiteralInt(newConceptVersion),
-                        RdfUtils.conceptGraph());
+                        RdfTriples.integer(newConceptVersion),
+                        iriFactory.conceptGraph());
             }
         }
     }
 
     public void createRdfDatableNote(String conceptId, DatableNote datableNote, Model model) {
-        IRI note = RdfUtils.datableNoteIRI(conceptId, datableNote);
-        model.add(RdfUtils.conceptIRI(conceptId), datableNote.getPredicat(), note, RdfUtils.conceptGraph());
-        model.add(note, RDF.TYPE, XKOS.EXPLANATORY_NOTE, RdfUtils.conceptGraph());
-        model.add(note, DCTERMS.LANGUAGE, RdfUtils.setLiteralLanguage(datableNote.getLang()), RdfUtils.conceptGraph());
+        IRI note = iriFactory.datableNote(conceptId, datableNote);
+        model.add(iriFactory.concept(conceptId), datableNote.getPredicat(), note, iriFactory.conceptGraph());
+        model.add(note, RDF.TYPE, XKOS.EXPLANATORY_NOTE, iriFactory.conceptGraph());
+        model.add(note, DCTERMS.LANGUAGE, RdfTriples.language(datableNote.getLang()), iriFactory.conceptGraph());
         model.add(
                 note,
                 INSEE.CONCEPT_VERSION,
-                RdfUtils.setLiteralInt(datableNote.getConceptVersion()),
-                RdfUtils.conceptGraph());
-        model.add(note, DCTERMS.ISSUED, RdfUtils.setLiteralDateTime(datableNote.getIssued()), RdfUtils.conceptGraph());
-        model.add(note, EVOC.NOTE_LITERAL, RdfUtils.setLiteralXML(datableNote.getContent()), RdfUtils.conceptGraph());
-        model.add(note, RDF.VALUE, RdfUtils.setLiteralString(datableNote.getContent()), RdfUtils.conceptGraph());
+                RdfTriples.integer(datableNote.getConceptVersion()),
+                iriFactory.conceptGraph());
+        model.add(note, DCTERMS.ISSUED, RdfTriples.dateTime(datableNote.getIssued()), iriFactory.conceptGraph());
+        model.add(note, EVOC.NOTE_LITERAL, RdfTriples.xmlLiteral(datableNote.getContent()), iriFactory.conceptGraph());
+        model.add(note, RDF.VALUE, RdfTriples.string(datableNote.getContent()), iriFactory.conceptGraph());
     }
 
     public void deleteDatableNote(String conceptId, DatableNote datableNote, List<IRI> notesToDelete)
@@ -146,7 +143,7 @@ public class NotesRepository extends RdfService {
         JSONObject noteToDelete =
                 repoGestion.getResponseAsObject(conceptNotesQueries.getChangeNoteToDelete(conceptId, datableNote));
         if (!noteToDelete.isEmpty()) {
-            notesToDelete.add(RdfUtils.toURI(noteToDelete.getString("changeNoteURI")));
+            notesToDelete.add(RdfTriples.iri(noteToDelete.getString("changeNoteURI")));
         }
     }
 

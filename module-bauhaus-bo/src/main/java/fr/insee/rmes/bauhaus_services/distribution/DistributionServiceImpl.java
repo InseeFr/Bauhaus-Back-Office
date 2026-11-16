@@ -5,7 +5,7 @@ import static fr.insee.rmes.exceptions.ErrorCodes.DISTRIUBTION_PATCH_INCORRECT_B
 import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfTriples;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.ErrorCodes;
@@ -101,11 +101,11 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
     }
 
     protected IRI getDatasetIri(String datasetId) {
-        return RdfUtils.createIRI(getDatasetsBaseUri() + "/" + datasetId);
+        return RdfTriples.iriAsIs(getDatasetsBaseUri() + "/" + datasetId);
     }
 
     protected IRI getDistributionIri(String distributionId) {
-        return RdfUtils.createIRI(getDistributionBaseUri() + "/" + distributionId);
+        return RdfTriples.iriAsIs(getDistributionBaseUri() + "/" + distributionId);
     }
 
     @Override
@@ -181,7 +181,7 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
 
         IRI iri = getDistributionIri(id);
 
-        Resource graph = RdfUtils.createIRI(getDistributionGraph());
+        Resource graph = RdfTriples.iriAsIs(getDistributionGraph());
         publicationUtils.publishResource(iri, Set.of(), graph);
         events.publishEvent(new ObjectPublished(iri, graph));
 
@@ -195,7 +195,7 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
             throw new RmesBadRequestException(
                     ErrorCodes.DISTRIBUTION_DELETE_ONLY_UNPUBLISHED, "Only unpublished distributions can be deleted");
         }
-        IRI distributionIRI = RdfUtils.createIRI(getDistributionBaseUri());
+        IRI distributionIRI = RdfTriples.iriAsIs(getDistributionBaseUri());
         Resource graph = getDatasetIri(distributionId);
         IRI distributionURI = getDistributionIri(distributionId);
         repoGestion.deleteObject(distributionURI);
@@ -207,7 +207,7 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
     }
 
     private String persist(Distribution distribution, boolean creation) throws RmesException {
-        Resource graph = RdfUtils.createIRI(getDistributionGraph());
+        Resource graph = RdfTriples.iriAsIs(getDistributionGraph());
 
         IRI distributionIRI = getDistributionIri(distribution.getId());
 
@@ -222,44 +222,34 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
             }
         }
 
-        RdfUtils.addTripleUri(
+        RdfTriples.addUri(
                 getDatasetIri(distribution.getIdDataset()), DCAT.HAS_DISTRIBUTION, distributionIRI, model, graph);
 
-        model.add(
-                distributionIRI,
-                INSEE.VALIDATION_STATE,
-                RdfUtils.setLiteralString(distribution.getValidationState()),
-                graph);
-        model.add(distributionIRI, DCTERMS.IDENTIFIER, RdfUtils.setLiteralString(distribution.getId()), graph);
+        model.add(distributionIRI, INSEE.VALIDATION_STATE, RdfTriples.string(distribution.getValidationState()), graph);
+        model.add(distributionIRI, DCTERMS.IDENTIFIER, RdfTriples.string(distribution.getId()), graph);
         model.add(distributionIRI, RDF.TYPE, DCAT.DISTRIBUTION, graph);
         model.add(
-                distributionIRI,
-                DCTERMS.TITLE,
-                RdfUtils.setLiteralString(distribution.getLabelLg1(), languages.lg1()),
-                graph);
+                distributionIRI, DCTERMS.TITLE, RdfTriples.string(distribution.getLabelLg1(), languages.lg1()), graph);
         model.add(
-                distributionIRI,
-                DCTERMS.TITLE,
-                RdfUtils.setLiteralString(distribution.getLabelLg2(), languages.lg2()),
-                graph);
+                distributionIRI, DCTERMS.TITLE, RdfTriples.string(distribution.getLabelLg2(), languages.lg2()), graph);
 
-        RdfUtils.addTripleString(
+        RdfTriples.addString(
                 distributionIRI, DCTERMS.DESCRIPTION, distribution.getDescriptionLg1(), languages.lg1(), model, graph);
-        RdfUtils.addTripleString(
+        RdfTriples.addString(
                 distributionIRI, DCTERMS.DESCRIPTION, distribution.getDescriptionLg2(), languages.lg2(), model, graph);
-        RdfUtils.addTripleString(distributionIRI, DCTERMS.LANGUAGE, distribution.getLanguage(), model, graph);
+        RdfTriples.addString(distributionIRI, DCTERMS.LANGUAGE, distribution.getLanguage(), model, graph);
 
-        RdfUtils.addTripleDateTime(distributionIRI, DCTERMS.CREATED, distribution.getCreated(), model, graph);
-        RdfUtils.addTripleDateTime(distributionIRI, DCTERMS.MODIFIED, distribution.getUpdated(), model, graph);
+        RdfTriples.addDateTime(distributionIRI, DCTERMS.CREATED, distribution.getCreated(), model, graph);
+        RdfTriples.addDateTime(distributionIRI, DCTERMS.MODIFIED, distribution.getUpdated(), model, graph);
 
-        RdfUtils.addTripleString(distributionIRI, DCTERMS.FORMAT, distribution.getFormat(), model, graph);
-        RdfUtils.addTripleString(distributionIRI, DCAT.MEDIA_TYPE, distribution.getMediaType(), model, graph);
-        RdfUtils.addTripleString(distributionIRI, DCAT.COMPRESS_FORMAT, distribution.getCompressFormat(), model, graph);
+        RdfTriples.addString(distributionIRI, DCTERMS.FORMAT, distribution.getFormat(), model, graph);
+        RdfTriples.addString(distributionIRI, DCAT.MEDIA_TYPE, distribution.getMediaType(), model, graph);
+        RdfTriples.addString(distributionIRI, DCAT.COMPRESS_FORMAT, distribution.getCompressFormat(), model, graph);
 
-        RdfUtils.addTripleString(distributionIRI, DCAT.BYTE_SIZE, distribution.getByteSize(), model, graph);
+        RdfTriples.addString(distributionIRI, DCAT.BYTE_SIZE, distribution.getByteSize(), model, graph);
 
-        RdfUtils.addTripleString(distributionIRI, DCAT.ACCESS_URL, distribution.getAccessUrl(), model, graph);
-        RdfUtils.addTripleString(distributionIRI, DCAT.DOWNLOAD_URL, distribution.getUrl(), model, graph);
+        RdfTriples.addString(distributionIRI, DCAT.ACCESS_URL, distribution.getAccessUrl(), model, graph);
+        RdfTriples.addString(distributionIRI, DCAT.DOWNLOAD_URL, distribution.getUrl(), model, graph);
 
         repoGestion.loadSimpleObject(distributionIRI, model, null);
 

@@ -2,8 +2,9 @@ package fr.insee.rmes.bauhaus_services.operations.documentations;
 
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.operations.documentations.documents.DocumentsPublication;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausIriFactory;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfTriples;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.ErrorCodes;
@@ -45,13 +46,17 @@ public class DocumentationPublication {
             Set.of("S.1.3", "S.1.4", "S.1.5", "S.1.6", "S.1.7", "S.1.8", "validationState");
     private static final String SIMS_CONTEXT_TYPE = "sims";
 
+    private final BauhausIriFactory iriFactory;
+
     public DocumentationPublication(
             RepositoryGestion repoGestion,
             RepositoryPublication repositoryPublication,
             PublicationUtils publicationUtils,
             DocumentsPublication documentsPublication,
             DocumentationConfiguration documentationConfiguration,
-            OrganisationsProperties organisationsProperties) {
+            OrganisationsProperties organisationsProperties,
+            BauhausIriFactory iriFactory) {
+        this.iriFactory = iriFactory;
         this.repoGestion = repoGestion;
         this.repositoryPublication = repositoryPublication;
         this.publicationUtils = publicationUtils;
@@ -83,7 +88,7 @@ public class DocumentationPublication {
         }
 
         Model model = new LinkedHashModel();
-        Resource graph = RdfUtils.simsGraph(simsId);
+        Resource graph = iriFactory.simsGraph(simsId);
         Set<Resource> organizations = new HashSet<>();
         Set<Resource> geographies = new HashSet<>();
         Set<Resource> richTextResources = new HashSet<>();
@@ -109,7 +114,7 @@ public class DocumentationPublication {
             // Add HTML version for RICHTEXT rubrics (single pass)
             addHtmlVersionForRichText(model, richTextResources, markdownValues, simsId);
 
-            documentsPublication.publishAllDocumentsInSims(simsId, RdfUtils.documentsGraph());
+            documentsPublication.publishAllDocumentsInSims(simsId, iriFactory.documentsGraph());
         } catch (RepositoryException e) {
             throw new RmesException(
                     HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), Constants.REPOSITORY_EXCEPTION);
@@ -148,7 +153,7 @@ public class DocumentationPublication {
      */
     private void transformTripleToPublish(Model model, Statement st, Resource graph) {
         Resource subject = publicationUtils.tranformBaseURIToPublish(st.getSubject());
-        IRI predicateIRI = RdfUtils.createIRI(
+        IRI predicateIRI = RdfTriples.iriAsIs(
                 publicationUtils.tranformBaseURIToPublish(st.getPredicate()).stringValue());
         org.eclipse.rdf4j.model.Value object = st.getObject();
         if (st.getObject() instanceof Resource resource) {
@@ -166,7 +171,7 @@ public class DocumentationPublication {
             Map<Resource, String> markdownValues,
             Set<Resource> organizations,
             Set<Resource> geographies) {
-        String predicate = RdfUtils.toString(st.getPredicate());
+        String predicate = st.getPredicate().toString();
         if (!isTripletForPublication(predicate)) {
             return;
         }
@@ -208,11 +213,11 @@ public class DocumentationPublication {
     private void publishReferencedResources(Set<Resource> organizations, Set<Resource> geographies)
             throws RmesException {
         for (Resource organization : organizations) {
-            publicationUtils.publishResource(organization, Set.of(), RdfUtils.organizationsGraph());
-            publicationUtils.publishResource(organization, Set.of(), RdfUtils.orgInseeGraph());
+            publicationUtils.publishResource(organization, Set.of(), iriFactory.organizationsGraph());
+            publicationUtils.publishResource(organization, Set.of(), iriFactory.orgInseeGraph());
         }
         for (Resource geography : geographies) {
-            publicationUtils.publishResource(geography, Set.of(), RdfUtils.simsGeographyGraph());
+            publicationUtils.publishResource(geography, Set.of(), iriFactory.simsGeographyGraph());
         }
     }
 
@@ -236,8 +241,8 @@ public class DocumentationPublication {
                 model.add(
                         publishedSubject,
                         INSEE.HTML,
-                        RdfUtils.setLiteralString(htmlContent),
-                        publicationUtils.tranformBaseURIToPublish(RdfUtils.simsGraph(simsId)));
+                        RdfTriples.string(htmlContent),
+                        publicationUtils.tranformBaseURIToPublish(iriFactory.simsGraph(simsId)));
             }
         }
     }

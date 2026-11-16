@@ -2,7 +2,8 @@ package fr.insee.rmes.bauhaus_services.classifications.item;
 
 import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.bauhaus_services.classifications.ClassificationNoteService;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausIriFactory;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfTriples;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.graphdb.ontologies.INSEE;
@@ -23,6 +24,8 @@ import org.springframework.stereotype.Repository;
 
 @Repository()
 public class ClassificationItemRepository {
+    private final BauhausIriFactory iriFactory;
+
     static final Logger logger = LoggerFactory.getLogger(ClassificationItemRepository.class);
 
     ClassificationNoteService classificationNoteService;
@@ -34,11 +37,13 @@ public class ClassificationItemRepository {
             ClassificationNoteService classificationNoteService,
             RepositoryGestion repoGestion,
             BauhausLanguagesProperties languages,
-            ClassificationItemsQueries classificationItemsQueries) {
+            ClassificationItemsQueries classificationItemsQueries,
+            BauhausIriFactory iriFactory) {
         this.classificationNoteService = classificationNoteService;
         this.repoGestion = repoGestion;
         this.languages = languages;
         this.classificationItemsQueries = classificationItemsQueries;
+        this.iriFactory = iriFactory;
     }
 
     public void updateClassificationItem(ClassificationItem item, String itemUri, String classificationId)
@@ -50,21 +55,21 @@ public class ClassificationItemRepository {
 
         Model model = new LinkedHashModel();
 
-        Resource graph = RdfUtils.codesListGraph(classificationId);
+        Resource graph = iriFactory.codesListGraph(classificationId);
 
-        IRI classificationItemIri = RdfUtils.createIRI(itemUri);
+        IRI classificationItemIri = RdfTriples.iriAsIs(itemUri);
 
         repoGestion.deleteTripletByPredicate(classificationItemIri, SKOS.PREF_LABEL, graph, null);
 
         model.add(
                 classificationItemIri,
                 SKOS.PREF_LABEL,
-                RdfUtils.setLiteralString(item.getPrefLabelLg1(), languages.lg1()),
+                RdfTriples.string(item.getPrefLabelLg1(), languages.lg1()),
                 graph);
         model.add(
                 classificationItemIri,
                 SKOS.PREF_LABEL,
-                RdfUtils.setLiteralString(item.getPrefLabelLg2(), languages.lg2()),
+                RdfTriples.string(item.getPrefLabelLg2(), languages.lg2()),
                 graph);
 
         repoGestion.deleteTripletByPredicate(classificationItemIri, SKOS.ALT_LABEL, graph, null);
@@ -73,7 +78,7 @@ public class ClassificationItemRepository {
             model.add(
                     classificationItemIri,
                     SKOS.ALT_LABEL,
-                    RdfUtils.setLiteralString(item.getAltLabelLg1(), languages.lg1()),
+                    RdfTriples.string(item.getAltLabelLg1(), languages.lg1()),
                     graph);
         }
 
@@ -81,7 +86,7 @@ public class ClassificationItemRepository {
             model.add(
                     classificationItemIri,
                     SKOS.ALT_LABEL,
-                    RdfUtils.setLiteralString(item.getAltLabelLg2(), languages.lg2()),
+                    RdfTriples.string(item.getAltLabelLg2(), languages.lg2()),
                     graph);
         }
 
@@ -90,13 +95,13 @@ public class ClassificationItemRepository {
 
             if (previousItem.has("broaderURI")) {
                 repoGestion.deleteTripletByPredicateAndValue(
-                        RdfUtils.createIRI(previousItem.getString("broaderURI")),
+                        RdfTriples.iriAsIs(previousItem.getString("broaderURI")),
                         SKOS.NARROWER,
                         graph,
                         null,
                         classificationItemIri);
             }
-            IRI broaderIri = RdfUtils.createIRI(item.getBroaderURI());
+            IRI broaderIri = RdfTriples.iriAsIs(item.getBroaderURI());
             model.add(broaderIri, SKOS.NARROWER, classificationItemIri, graph);
             model.add(classificationItemIri, SKOS.BROADER, broaderIri, graph);
         }
@@ -105,20 +110,20 @@ public class ClassificationItemRepository {
             item.getAltLabels().forEach(altLabel -> {
                 IRI altLabelIri = null;
                 try {
-                    altLabelIri = RdfUtils.createIRI(altLabel.getShortLabelUri());
+                    altLabelIri = RdfTriples.iriAsIs(altLabel.getShortLabelUri());
                     repoGestion.deleteTripletByPredicate(altLabelIri, SKOSXL.LITERAL_FORM, graph, null);
                     if (altLabel.getShortLabelLg1() != null) {
                         model.add(
                                 altLabelIri,
                                 SKOSXL.LITERAL_FORM,
-                                RdfUtils.setLiteralString(altLabel.getShortLabelLg1(), languages.lg1()),
+                                RdfTriples.string(altLabel.getShortLabelLg1(), languages.lg1()),
                                 graph);
                     }
                     if (altLabel.getShortLabelLg2() != null) {
                         model.add(
                                 altLabelIri,
                                 SKOSXL.LITERAL_FORM,
-                                RdfUtils.setLiteralString(altLabel.getShortLabelLg2(), languages.lg2()),
+                                RdfTriples.string(altLabel.getShortLabelLg2(), languages.lg2()),
                                 graph);
                     }
                 } catch (RmesException _) {
@@ -168,7 +173,7 @@ public class ClassificationItemRepository {
 
         ValidationStatus newState =
                 wasPublished(previousItem) ? ValidationStatus.MODIFIED : ValidationStatus.UNPUBLISHED;
-        model.add(itemIri, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(newState), graph);
+        model.add(itemIri, INSEE.VALIDATION_STATE, RdfTriples.string(newState), graph);
     }
 
     private boolean wasPublished(JSONObject previousItem) {

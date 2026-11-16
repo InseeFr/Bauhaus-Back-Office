@@ -5,10 +5,11 @@ import static org.mockito.Mockito.mock;
 
 import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.PropertiesKeys;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausIriFactory;
 import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
+import fr.insee.rmes.config.DocumentationsPropertiesStub;
 import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.RdfConnectionDetails;
@@ -48,10 +49,6 @@ interface FamilyPublicationScenario {
     /** Le conteneur n'est vidé qu'entre deux classes : chaque test repart d'un graphe vide. */
     @BeforeEach
     default void dropTheOperationsGraph() throws RmesException {
-        RdfUtils.setGraphs(GraphsPropertiesStub.stub());
-        Map<String, String> baseUris = Map.of(PropertiesKeys.OP_FAMILIES_BASE_URI, "operations/famille");
-        RdfUtils.setBauhausUriBuilder(
-                new BauhausUriBuilder(PUBLICATION_BASE, GESTION_BASE, name -> Optional.ofNullable(baseUris.get(name))));
         gestion().executeUpdate("DROP SILENT GRAPH <%s>".formatted(OPERATIONS_GRAPH));
     }
 
@@ -101,6 +98,14 @@ interface FamilyPublicationScenario {
         return new RepositoryGestion(connectionDetails(), repositoryUtils());
     }
 
+    private BauhausIriFactory iriFactory() {
+        Map<String, String> baseUris = Map.of(PropertiesKeys.OP_FAMILIES_BASE_URI, "operations/famille");
+        return new BauhausIriFactory(
+                GraphsPropertiesStub.stub(),
+                new BauhausUriBuilder(PUBLICATION_BASE, GESTION_BASE, name -> Optional.ofNullable(baseUris.get(name))),
+                DocumentationsPropertiesStub.stub());
+    }
+
     private GraphDBOperationFamilyRepository familyRepository(RepositoryGestion gestion) {
         RepositoryPublication publication = new RepositoryPublication(
                 connectionDetails().getUrlServer(), connectionDetails().repositoryId(), repositoryUtils());
@@ -111,7 +116,8 @@ interface FamilyPublicationScenario {
                 publication,
                 new PublicationUtils(GESTION_BASE, PUBLICATION_BASE, null, null),
                 new BauhausLanguagesProperties("fr", "en"),
-                mock(ApplicationEventPublisher.class));
+                mock(ApplicationEventPublisher.class),
+                iriFactory());
     }
 
     private static String familyLabelled(String label) {

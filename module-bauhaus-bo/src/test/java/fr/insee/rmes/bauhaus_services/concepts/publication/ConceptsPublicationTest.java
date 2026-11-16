@@ -32,7 +32,7 @@ class ConceptsPublicationTest {
         // Same gestion and publication base URI keeps `tranformBaseURIToPublish` as identity
         // so we can focus on which triples the publication step adds to the model.
         PublicationUtils publicationUtils = new PublicationUtils(BASE_URI, BASE_URI, null, null);
-        conceptsPublication = new ConceptsPublication(null, null, null, publicationUtils, null, null);
+        conceptsPublication = new ConceptsPublication(null, null, null, publicationUtils, null, null, null);
     }
 
     @Test

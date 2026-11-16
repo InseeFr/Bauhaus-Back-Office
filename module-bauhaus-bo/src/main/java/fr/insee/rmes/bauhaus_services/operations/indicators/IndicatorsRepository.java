@@ -7,8 +7,9 @@ import fr.insee.rmes.bauhaus_services.OrganizationsService;
 import fr.insee.rmes.bauhaus_services.operations.OperationsParentRepository;
 import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationsUtils;
 import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.OperationsObjectMapper;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausIriFactory;
 import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfTriples;
 import fr.insee.rmes.bauhaus_services.utils.OrganisationLookup;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.domain.logging.LogSanitizer;
@@ -71,6 +72,8 @@ public class IndicatorsRepository {
     private final OrganisationLookup organisationLookup;
     private final ApplicationEventPublisher events;
 
+    private final BauhausIriFactory iriFactory;
+
     public IndicatorsRepository(
             RepositoryGestion repositoryGestion,
             CodeListService codeListService,
@@ -83,7 +86,9 @@ public class IndicatorsRepository {
             BauhausLanguagesProperties languages,
             OperationIndicatorsQueries operationIndicatorsQueries,
             OrganisationLookup organisationLookup,
-            ApplicationEventPublisher events) {
+            ApplicationEventPublisher events,
+            BauhausIriFactory iriFactory) {
+        this.iriFactory = iriFactory;
         this.repositoryGestion = repositoryGestion;
         this.codeListService = codeListService;
         this.organizationsService = organizationsService;
@@ -340,58 +345,62 @@ public class IndicatorsRepository {
 
     public void addMulltiLangValues(
             Model model, IRI indicatorIRI, Resource graph, String valueLg1, String valueLg2, IRI predicate) {
-        RdfUtils.addTripleStringMdToXhtml(indicatorIRI, predicate, valueLg1, languages.lg1(), model, graph);
-        RdfUtils.addTripleStringMdToXhtml(indicatorIRI, predicate, valueLg2, languages.lg2(), model, graph);
+        RdfTriples.addStringMdToXhtml(indicatorIRI, predicate, valueLg1, languages.lg1(), model, graph);
+        RdfTriples.addStringMdToXhtml(indicatorIRI, predicate, valueLg2, languages.lg2(), model, graph);
     }
 
     void createRdfIndicator(Indicator indicator, ValidationStatus newStatus) throws RmesException {
         validate(indicator);
 
         Model model = new LinkedHashModel();
-        IRI indicURI = RdfUtils.objectIRI(ObjectType.INDICATOR, indicator.getId());
+        IRI indicURI = iriFactory.objectIri(ObjectType.INDICATOR, indicator.getId());
         /*Const*/
-        model.add(indicURI, RDF.TYPE, INSEE.INDICATOR, RdfUtils.productsGraph());
-        model.add(
-                indicURI, ADMS.HAS_IDENTIFIER, RdfUtils.setLiteralString(indicator.getId()), RdfUtils.productsGraph());
+        model.add(indicURI, RDF.TYPE, INSEE.INDICATOR, iriFactory.productsGraph());
+        model.add(indicURI, ADMS.HAS_IDENTIFIER, RdfTriples.string(indicator.getId()), iriFactory.productsGraph());
         /*Required*/
         model.add(
                 indicURI,
                 SKOS.PREF_LABEL,
-                RdfUtils.setLiteralString(indicator.getPrefLabelLg1(), languages.lg1()),
-                RdfUtils.productsGraph());
+                RdfTriples.string(indicator.getPrefLabelLg1(), languages.lg1()),
+                iriFactory.productsGraph());
         model.add(
-                indicURI,
-                INSEE.VALIDATION_STATE,
-                RdfUtils.setLiteralString(newStatus.toString()),
-                RdfUtils.productsGraph());
+                indicURI, INSEE.VALIDATION_STATE, RdfTriples.string(newStatus.toString()), iriFactory.productsGraph());
         /*Optional*/
-        RdfUtils.addTripleString(
+        RdfTriples.addString(
                 indicURI,
                 SKOS.PREF_LABEL,
                 indicator.getPrefLabelLg2(),
                 languages.lg2(),
                 model,
-                RdfUtils.productsGraph());
-        RdfUtils.addTripleString(
-                indicURI, SKOS.ALT_LABEL, indicator.getAltLabelLg1(), languages.lg1(), model, RdfUtils.productsGraph());
-        RdfUtils.addTripleString(
-                indicURI, SKOS.ALT_LABEL, indicator.getAltLabelLg2(), languages.lg2(), model, RdfUtils.productsGraph());
-        RdfUtils.addTripleDateTime(
-                indicURI, DCTERMS.CREATED, indicator.getCreated(), model, RdfUtils.operationsGraph());
-        RdfUtils.addTripleDateTime(
-                indicURI, DCTERMS.MODIFIED, indicator.getUpdated(), model, RdfUtils.operationsGraph());
+                iriFactory.productsGraph());
+        RdfTriples.addString(
+                indicURI,
+                SKOS.ALT_LABEL,
+                indicator.getAltLabelLg1(),
+                languages.lg1(),
+                model,
+                iriFactory.productsGraph());
+        RdfTriples.addString(
+                indicURI,
+                SKOS.ALT_LABEL,
+                indicator.getAltLabelLg2(),
+                languages.lg2(),
+                model,
+                iriFactory.productsGraph());
+        RdfTriples.addDateTime(indicURI, DCTERMS.CREATED, indicator.getCreated(), model, iriFactory.operationsGraph());
+        RdfTriples.addDateTime(indicURI, DCTERMS.MODIFIED, indicator.getUpdated(), model, iriFactory.operationsGraph());
 
         addMulltiLangValues(
                 model,
                 indicURI,
-                RdfUtils.productsGraph(),
+                iriFactory.productsGraph(),
                 indicator.getAbstractLg1(),
                 indicator.getAbstractLg2(),
                 DCTERMS.ABSTRACT);
         addMulltiLangValues(
                 model,
                 indicURI,
-                RdfUtils.productsGraph(),
+                iriFactory.productsGraph(),
                 indicator.getHistoryNoteLg1(),
                 indicator.getHistoryNoteLg2(),
                 SKOS.HISTORY_NOTE);
@@ -402,8 +411,7 @@ public class IndicatorsRepository {
 
         String accPeriodicityUri = codeListService.getCodeUri(
                 indicator.getAccrualPeriodicityList(), indicator.getAccrualPeriodicityCode());
-        RdfUtils.addTripleUri(
-                indicURI, DCTERMS.ACCRUAL_PERIODICITY, accPeriodicityUri, model, RdfUtils.productsGraph());
+        RdfTriples.addUri(indicURI, DCTERMS.ACCRUAL_PERIODICITY, accPeriodicityUri, model, iriFactory.productsGraph());
 
         addSeeAlsoLinks(model, indicURI, indicator.getSeeAlso());
         addOneWayLink(model, indicURI, indicator.getWasGeneratedBy(), PROV.WAS_GENERATED_BY);
@@ -412,7 +420,7 @@ public class IndicatorsRepository {
         if (replaces != null) {
             for (OperationsLink replace : replaces) {
                 String replaceUri = this.bauhausUriBuilder.getCompleteUriGestion(replace.getType(), replace.getId());
-                addReplacesAndReplacedBy(model, RdfUtils.toURI(replaceUri), indicURI);
+                addReplacesAndReplacedBy(model, RdfTriples.iri(replaceUri), indicURI);
             }
         }
 
@@ -420,7 +428,7 @@ public class IndicatorsRepository {
         if (isReplacedBys != null) {
             for (OperationsLink isRepl : isReplacedBys) {
                 String isReplUri = this.bauhausUriBuilder.getCompleteUriGestion(isRepl.getType(), isRepl.getId());
-                addReplacesAndReplacedBy(model, indicURI, RdfUtils.toURI(isReplUri));
+                addReplacesAndReplacedBy(model, indicURI, RdfTriples.iri(isReplUri));
             }
         }
 
@@ -434,10 +442,10 @@ public class IndicatorsRepository {
         indicatorPublication.validate(indicator);
         indicatorPublication.publish(id);
 
-        IRI indicatorURI = RdfUtils.objectIRI(ObjectType.INDICATOR, id);
+        IRI indicatorURI = iriFactory.objectIri(ObjectType.INDICATOR, id);
         logger.info("Validate indicator : {}", indicatorURI);
 
-        events.publishEvent(new ObjectPublished(indicatorURI, RdfUtils.productsGraph()));
+        events.publishEvent(new ObjectPublished(indicatorURI, iriFactory.productsGraph()));
     }
 
     private void addOneWayLink(Model model, IRI indicURI, List<OperationsLink> links, IRI linkPredicate) {
@@ -445,7 +453,7 @@ public class IndicatorsRepository {
             for (OperationsLink oneLink : links) {
                 String linkedObjectUri =
                         this.bauhausUriBuilder.getCompleteUriGestion(oneLink.getType(), oneLink.getId());
-                RdfUtils.addTripleUri(indicURI, linkPredicate, linkedObjectUri, model, RdfUtils.productsGraph());
+                RdfTriples.addUri(indicURI, linkPredicate, linkedObjectUri, model, iriFactory.productsGraph());
             }
         }
     }
@@ -457,29 +465,29 @@ public class IndicatorsRepository {
     private void addSeeAlsoLinks(Model model, IRI indicURI, List<OperationsLink> links) {
         if (links != null) {
             for (OperationsLink oneLink : links) {
-                IRI linkedObjectUri = RdfUtils.toURI(
+                IRI linkedObjectUri = RdfTriples.iri(
                         this.bauhausUriBuilder.getCompleteUriGestion(oneLink.getType(), oneLink.getId()));
-                RdfUtils.addTripleUri(indicURI, RDFS.SEEALSO, linkedObjectUri, model, RdfUtils.productsGraph());
-                RdfUtils.addTripleUri(linkedObjectUri, RDFS.SEEALSO, indicURI, model, graphOf(oneLink));
+                RdfTriples.addUri(indicURI, RDFS.SEEALSO, linkedObjectUri, model, iriFactory.productsGraph());
+                RdfTriples.addUri(linkedObjectUri, RDFS.SEEALSO, indicURI, model, graphOf(oneLink));
             }
         }
     }
 
-    private static Resource graphOf(OperationsLink link) {
+    private Resource graphOf(OperationsLink link) {
         return ObjectType.getEnumByLabel(link.getType())
                         .filter(ObjectType.INDICATOR::equals)
                         .isPresent()
-                ? RdfUtils.productsGraph()
-                : RdfUtils.operationsGraph();
+                ? iriFactory.productsGraph()
+                : iriFactory.operationsGraph();
     }
 
     private void addReplacesAndReplacedBy(Model model, IRI previous, IRI next) {
-        RdfUtils.addTripleUri(previous, DCTERMS.IS_REPLACED_BY, next, model, RdfUtils.productsGraph());
-        RdfUtils.addTripleUri(next, DCTERMS.REPLACES, previous, model, RdfUtils.productsGraph());
+        RdfTriples.addUri(previous, DCTERMS.IS_REPLACED_BY, next, model, iriFactory.productsGraph());
+        RdfTriples.addUri(next, DCTERMS.REPLACES, previous, model, iriFactory.productsGraph());
     }
 
     void addCreators(Model model, IRI indicURI, List<String> creators) {
-        addCreators(model, indicURI, creators, RdfUtils.productsGraph());
+        addCreators(model, indicURI, creators, iriFactory.productsGraph());
     }
 
     void addCreators(Model model, IRI indicURI, List<String> creators, Resource graph) {
@@ -487,12 +495,12 @@ public class IndicatorsRepository {
             return;
         }
         for (String creatorIri : creators) {
-            RdfUtils.addTripleUri(indicURI, DC.CREATOR, creatorIri, model, graph);
+            RdfTriples.addUri(indicURI, DC.CREATOR, creatorIri, model, graph);
         }
     }
 
     void addOrganisationLinks(List<String> orgRefs, IRI predicate, Model model, IRI indicURI) throws RmesException {
-        addOrganisationLinks(orgRefs, predicate, model, indicURI, RdfUtils.productsGraph());
+        addOrganisationLinks(orgRefs, predicate, model, indicURI, iriFactory.productsGraph());
     }
 
     void addOrganisationLinks(List<String> orgRefs, IRI predicate, Model model, IRI indicURI, Resource graph)
@@ -504,7 +512,7 @@ public class IndicatorsRepository {
             if (orgRef != null && !orgRef.isEmpty()) {
                 Optional<String> resolved = organisationLookup.resolve(orgRef);
                 if (resolved.isPresent()) {
-                    RdfUtils.addTripleUri(indicURI, predicate, resolved.get(), model, graph);
+                    RdfTriples.addUri(indicURI, predicate, resolved.get(), model, graph);
                 }
             }
         }

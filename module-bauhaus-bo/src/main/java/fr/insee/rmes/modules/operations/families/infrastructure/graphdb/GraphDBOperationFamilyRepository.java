@@ -2,8 +2,9 @@ package fr.insee.rmes.modules.operations.families.infrastructure.graphdb;
 
 import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.Constants;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausIriFactory;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfTriples;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.ErrorCodes;
@@ -56,6 +57,8 @@ public class GraphDBOperationFamilyRepository implements OperationFamilyReposito
     private final BauhausLanguagesProperties languages;
     private final ApplicationEventPublisher events;
 
+    private final BauhausIriFactory iriFactory;
+
     public GraphDBOperationFamilyRepository(
             RepositoryGestion repositoryGestion,
             OperationFamilyQueries operationFamilyQueries,
@@ -63,7 +66,9 @@ public class GraphDBOperationFamilyRepository implements OperationFamilyReposito
             RepositoryPublication repositoryPublication,
             PublicationUtils publicationUtils,
             BauhausLanguagesProperties languages,
-            ApplicationEventPublisher events) {
+            ApplicationEventPublisher events,
+            BauhausIriFactory iriFactory) {
+        this.iriFactory = iriFactory;
         this.repositoryGestion = repositoryGestion;
         this.operationFamilyQueries = operationFamilyQueries;
         this.operationQueries = operationQueries;
@@ -107,7 +112,7 @@ public class GraphDBOperationFamilyRepository implements OperationFamilyReposito
 
         List<String> contributors = new ArrayList<>();
         JSONUtils.stream(repositoryGestion.getResponseAsArray(
-                        operationFamilyQueries.getContributors(RdfUtils.toString(familyIRI(id)))))
+                        operationFamilyQueries.getContributors(familyIRI(id).toString())))
                 .forEach(row -> contributors.add(row.getString("contributor")));
         return OperationFamily.fromJson(family).withContributors(contributors);
     }
@@ -167,7 +172,7 @@ public class GraphDBOperationFamilyRepository implements OperationFamilyReposito
     @Override
     public boolean exists(String id) throws RmesException {
         return repositoryGestion.getResponseAsBoolean(
-                operationQueries.checkIfFamOpeSerExists(RdfUtils.toString(familyIRI(id))));
+                operationQueries.checkIfFamOpeSerExists(familyIRI(id).toString()));
     }
 
     @Override
@@ -186,34 +191,33 @@ public class GraphDBOperationFamilyRepository implements OperationFamilyReposito
     public void save(OperationFamily family) throws RmesException {
         Model model = new LinkedHashModel();
         IRI familyURI = familyIRI(family.id());
-        Resource graph = RdfUtils.operationsGraph();
+        Resource graph = iriFactory.operationsGraph();
 
         /*Const*/
         model.add(familyURI, RDF.TYPE, INSEE.FAMILY, graph);
-        model.add(familyURI, ADMS.HAS_IDENTIFIER, RdfUtils.setLiteralString(family.id()), graph);
+        model.add(familyURI, ADMS.HAS_IDENTIFIER, RdfTriples.string(family.id()), graph);
         /*Required*/
-        model.add(familyURI, SKOS.PREF_LABEL, RdfUtils.setLiteralString(family.prefLabelLg1(), lg1()), graph);
-        model.add(familyURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(family.validationState()), graph);
+        model.add(familyURI, SKOS.PREF_LABEL, RdfTriples.string(family.prefLabelLg1(), lg1()), graph);
+        model.add(familyURI, INSEE.VALIDATION_STATE, RdfTriples.string(family.validationState()), graph);
         /*Optional*/
-        RdfUtils.addTripleString(familyURI, SKOS.PREF_LABEL, family.prefLabelLg2(), lg2(), model, graph);
-        RdfUtils.addTripleStringMdToXhtml(familyURI, DCTERMS.ABSTRACT, family.abstractLg1(), lg1(), model, graph);
-        RdfUtils.addTripleStringMdToXhtml(familyURI, DCTERMS.ABSTRACT, family.abstractLg2(), lg2(), model, graph);
-        RdfUtils.addTripleDateTime(familyURI, DCTERMS.CREATED, family.created(), model, graph);
-        RdfUtils.addTripleDateTime(familyURI, DCTERMS.MODIFIED, family.modified(), model, graph);
+        RdfTriples.addString(familyURI, SKOS.PREF_LABEL, family.prefLabelLg2(), lg2(), model, graph);
+        RdfTriples.addStringMdToXhtml(familyURI, DCTERMS.ABSTRACT, family.abstractLg1(), lg1(), model, graph);
+        RdfTriples.addStringMdToXhtml(familyURI, DCTERMS.ABSTRACT, family.abstractLg2(), lg2(), model, graph);
+        RdfTriples.addDateTime(familyURI, DCTERMS.CREATED, family.created(), model, graph);
+        RdfTriples.addDateTime(familyURI, DCTERMS.MODIFIED, family.modified(), model, graph);
         if (family.contributors() != null) {
             family.contributors()
-                    .forEach(
-                            contributor -> RdfUtils.addTripleUri(familyURI, DC.CONTRIBUTOR, contributor, model, graph));
+                    .forEach(contributor -> RdfTriples.addUri(familyURI, DC.CONTRIBUTOR, contributor, model, graph));
         }
 
-        repositoryGestion.keepHierarchicalOperationLinks(familyURI, model, RdfUtils.operationsGraph());
+        repositoryGestion.keepHierarchicalOperationLinks(familyURI, model, iriFactory.operationsGraph());
         repositoryGestion.loadSimpleObject(familyURI, model);
     }
 
     @Override
     public void publish(String id) throws RmesException {
         IRI familyURI = familyIRI(id);
-        Resource graph = RdfUtils.operationsGraph();
+        Resource graph = iriFactory.operationsGraph();
         repositoryPublication.publishResource(
                 publicationUtils.tranformBaseURIToPublish(familyURI),
                 triplesToPublish(familyURI, graph),
@@ -239,7 +243,7 @@ public class GraphDBOperationFamilyRepository implements OperationFamilyReposito
             }
             while (statements.hasNext()) {
                 Statement statement = statements.next();
-                String predicate = RdfUtils.toString(statement.getPredicate());
+                String predicate = statement.getPredicate().toString();
                 if (isPublished(predicate)) {
                     model.add(
                             publicationUtils.tranformBaseURIToPublish(statement.getSubject()),
@@ -263,8 +267,8 @@ public class GraphDBOperationFamilyRepository implements OperationFamilyReposito
                 && !predicate.endsWith(Constants.CONTRIBUTOR);
     }
 
-    private static IRI familyIRI(String id) {
-        return RdfUtils.objectIRI(ObjectType.FAMILY, id);
+    private IRI familyIRI(String id) {
+        return iriFactory.objectIri(ObjectType.FAMILY, id);
     }
 
     private String lg1() {

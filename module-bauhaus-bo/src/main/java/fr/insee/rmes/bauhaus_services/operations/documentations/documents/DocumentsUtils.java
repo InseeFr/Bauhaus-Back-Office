@@ -1,9 +1,10 @@
 package fr.insee.rmes.bauhaus_services.operations.documentations.documents;
 
 import fr.insee.rmes.Constants;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausIriFactory;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfTriples;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.ObjectType;
@@ -45,6 +46,8 @@ public class DocumentsUtils extends RdfService {
 
     private final OperationDocumentsQueries operationDocumentsQueries;
 
+    private final BauhausIriFactory iriFactory;
+
     public DocumentsUtils(
             RepositoryGestion repoGestion,
             IdGenerator idGenerator,
@@ -52,8 +55,10 @@ public class DocumentsUtils extends RdfService {
             PublicationUtils publicationUtils,
             FilesOperations filesOperations,
             StorageProperties storageProperties,
-            OperationDocumentsQueries operationDocumentsQueries) {
+            OperationDocumentsQueries operationDocumentsQueries,
+            BauhausIriFactory iriFactory) {
         super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
+        this.iriFactory = iriFactory;
         this.filesOperations = filesOperations;
         this.storageProperties = storageProperties;
         this.operationDocumentsQueries = operationDocumentsQueries;
@@ -70,12 +75,12 @@ public class DocumentsUtils extends RdfService {
         List<Value> docUris = new ArrayList<>(documents.size());
         for (Document doc : documents) {
             if (StringUtils.isNotEmpty(doc.getUri())) {
-                docUris.add(RdfUtils.toURI(doc.getUri()));
+                docUris.add(RdfTriples.iri(doc.getUri()));
             } else {
-                docUris.add(getDocumentUri(RdfUtils.toURI(doc.getUrl())));
+                docUris.add(getDocumentUri(RdfTriples.iri(doc.getUrl())));
             }
         }
-        Resource head = RdfUtils.createBlankNode();
+        Resource head = RdfTriples.blankNode();
         Model listModel = new LinkedHashModel();
         RDFCollections.asRDF(docUris, head, listModel);
         listModel.forEach(st -> model.add(st.getSubject(), st.getPredicate(), st.getObject(), graph));
@@ -191,9 +196,9 @@ public class DocumentsUtils extends RdfService {
                 operationDocumentsQueries.getDocumentUriQuery(getDocumentNameFromUrl(url.stringValue())));
         if (uri.isEmpty() || !uri.has(Constants.DOCUMENT)) {
             String id = createDocumentID();
-            return RdfUtils.objectIRI(ObjectType.DOCUMENT, id);
+            return iriFactory.objectIri(ObjectType.DOCUMENT, id);
         }
-        return RdfUtils.toURI(uri.getString(Constants.DOCUMENT));
+        return RdfTriples.iri(uri.getString(Constants.DOCUMENT));
     }
 
     public static String getDocumentUrlFromDocument(JSONObject jsonDoc) {

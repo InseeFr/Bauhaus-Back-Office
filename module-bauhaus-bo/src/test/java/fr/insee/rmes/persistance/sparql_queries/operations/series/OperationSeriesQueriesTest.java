@@ -5,10 +5,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
 import fr.insee.rmes.BauhausLanguagesProperties;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausIriFactory;
 import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.config.DocumentationsPropertiesStub;
 import fr.insee.rmes.config.GraphsPropertiesStub;
-import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.modules.users.domain.model.Stamp;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationSeriesQueries;
 import java.util.LinkedHashSet;
@@ -33,7 +33,6 @@ class OperationSeriesQueriesTest {
     @Test
     void getCreatorsBySeriesUri_requestIsWellGenerated() {
         var id = "s2132";
-        prepareRdfUtils();
         String expectedGeneratedQuery = """
                 SELECT ?creators
                 FROM <http://rdf.insee.fr/graphes/operations>
@@ -49,13 +48,16 @@ class OperationSeriesQueriesTest {
                 		}
                 	}""";
         assertThatCode(() -> actualRequest = operationSeriesQueries.getCreatorsBySeriesUri(
-                        RdfUtils.objectIRI(ObjectType.SERIES, id).toString()))
+                        iriFactory().series(id).toString()))
                 .doesNotThrowAnyException();
         assertThat(normalize(actualRequest)).isEqualTo(normalize(expectedGeneratedQuery));
     }
 
-    private void prepareRdfUtils() {
-        RdfUtils.setBauhausUriBuilder(new BauhausUriBuilder("", "http://bauhaus/", p -> Optional.of(SERIES_BASE_URI)));
+    private static BauhausIriFactory iriFactory() {
+        return new BauhausIriFactory(
+                GraphsPropertiesStub.stub(),
+                new BauhausUriBuilder("", "http://bauhaus/", p -> Optional.of(SERIES_BASE_URI)),
+                DocumentationsPropertiesStub.stub());
     }
 
     @Test

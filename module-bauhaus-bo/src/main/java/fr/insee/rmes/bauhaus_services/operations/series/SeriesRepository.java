@@ -12,8 +12,9 @@ import fr.insee.rmes.bauhaus_services.operations.OperationsParentRepository;
 import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationsUtils;
 import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.OperationsObjectMapper;
 import fr.insee.rmes.bauhaus_services.operations.series.validation.SeriesValidator;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausIriFactory;
 import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfTriples;
 import fr.insee.rmes.bauhaus_services.utils.OrganisationLookup;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.ErrorCodes;
@@ -85,6 +86,8 @@ public class SeriesRepository {
 
     private final ApplicationEventPublisher events;
 
+    private final BauhausIriFactory iriFactory;
+
     public SeriesRepository(
             BauhausLanguagesProperties languages,
             RepositoryGestion repositoryGestion,
@@ -98,7 +101,9 @@ public class SeriesRepository {
             SeriesValidator validator,
             OperationSeriesQueries operationSeriesQueries,
             OrganisationLookup organisationLookup,
-            ApplicationEventPublisher events) {
+            ApplicationEventPublisher events,
+            BauhausIriFactory iriFactory) {
+        this.iriFactory = iriFactory;
         this.languages = languages;
         this.repositoryGestion = repositoryGestion;
         this.codeListService = codeListService;
@@ -280,7 +285,7 @@ public class SeriesRepository {
     }
 
     private void addSeriesThemes(String id, JSONObject series) throws RmesException {
-        String seriesIri = RdfUtils.objectIRI(ObjectType.SERIES, id).stringValue();
+        String seriesIri = iriFactory.objectIri(ObjectType.SERIES, id).stringValue();
         series.put(
                 THEMES,
                 repositoryGestion.getResponseAsJSONList(operationSeriesQueries.getThemesBySeriesIri(seriesIri)));
@@ -310,56 +315,65 @@ public class SeriesRepository {
 
     public void addMulltiLangValues(
             Model model, IRI seriesIri, Resource graph, String valueLg1, String valueLg2, IRI predicate) {
-        RdfUtils.addTripleStringMdToXhtml(seriesIri, predicate, valueLg1, languages.lg1(), model, graph);
-        RdfUtils.addTripleStringMdToXhtml(seriesIri, predicate, valueLg2, languages.lg2(), model, graph);
+        RdfTriples.addStringMdToXhtml(seriesIri, predicate, valueLg1, languages.lg1(), model, graph);
+        RdfTriples.addStringMdToXhtml(seriesIri, predicate, valueLg2, languages.lg2(), model, graph);
     }
 
     void createRdfSeries(Series series, IRI familyURI, ValidationStatus newStatus) throws RmesException {
         this.validator.validate(series);
 
         Model model = new LinkedHashModel();
-        IRI seriesURI = RdfUtils.objectIRI(ObjectType.SERIES, series.getId());
+        IRI seriesURI = iriFactory.objectIri(ObjectType.SERIES, series.getId());
         /*Const*/
-        model.add(seriesURI, RDF.TYPE, INSEE.SERIES, RdfUtils.operationsGraph());
-        model.add(
-                seriesURI, ADMS.HAS_IDENTIFIER, RdfUtils.setLiteralString(series.getId()), RdfUtils.operationsGraph());
+        model.add(seriesURI, RDF.TYPE, INSEE.SERIES, iriFactory.operationsGraph());
+        model.add(seriesURI, ADMS.HAS_IDENTIFIER, RdfTriples.string(series.getId()), iriFactory.operationsGraph());
         /*Required*/
         model.add(
                 seriesURI,
                 SKOS.PREF_LABEL,
-                RdfUtils.setLiteralString(series.getPrefLabelLg1(), languages.lg1()),
-                RdfUtils.operationsGraph());
+                RdfTriples.string(series.getPrefLabelLg1(), languages.lg1()),
+                iriFactory.operationsGraph());
         model.add(
                 seriesURI,
                 INSEE.VALIDATION_STATE,
-                RdfUtils.setLiteralString(newStatus.toString()),
-                RdfUtils.operationsGraph());
+                RdfTriples.string(newStatus.toString()),
+                iriFactory.operationsGraph());
         /*Optional*/
-        RdfUtils.addTripleString(
+        RdfTriples.addString(
                 seriesURI,
                 SKOS.PREF_LABEL,
                 series.getPrefLabelLg2(),
                 languages.lg2(),
                 model,
-                RdfUtils.operationsGraph());
-        RdfUtils.addTripleString(
-                seriesURI, SKOS.ALT_LABEL, series.getAltLabelLg1(), languages.lg1(), model, RdfUtils.operationsGraph());
-        RdfUtils.addTripleString(
-                seriesURI, SKOS.ALT_LABEL, series.getAltLabelLg2(), languages.lg2(), model, RdfUtils.operationsGraph());
-        RdfUtils.addTripleDateTime(seriesURI, DCTERMS.CREATED, series.getCreated(), model, RdfUtils.operationsGraph());
-        RdfUtils.addTripleDateTime(seriesURI, DCTERMS.MODIFIED, series.getUpdated(), model, RdfUtils.operationsGraph());
+                iriFactory.operationsGraph());
+        RdfTriples.addString(
+                seriesURI,
+                SKOS.ALT_LABEL,
+                series.getAltLabelLg1(),
+                languages.lg1(),
+                model,
+                iriFactory.operationsGraph());
+        RdfTriples.addString(
+                seriesURI,
+                SKOS.ALT_LABEL,
+                series.getAltLabelLg2(),
+                languages.lg2(),
+                model,
+                iriFactory.operationsGraph());
+        RdfTriples.addDateTime(seriesURI, DCTERMS.CREATED, series.getCreated(), model, iriFactory.operationsGraph());
+        RdfTriples.addDateTime(seriesURI, DCTERMS.MODIFIED, series.getUpdated(), model, iriFactory.operationsGraph());
 
         addMulltiLangValues(
                 model,
                 seriesURI,
-                RdfUtils.operationsGraph(),
+                iriFactory.operationsGraph(),
                 series.getAbstractLg1(),
                 series.getAbstractLg2(),
                 DCTERMS.ABSTRACT);
         addMulltiLangValues(
                 model,
                 seriesURI,
-                RdfUtils.operationsGraph(),
+                iriFactory.operationsGraph(),
                 series.getHistoryNoteLg1(),
                 series.getHistoryNoteLg2(),
                 SKOS.HISTORY_NOTE);
@@ -369,7 +383,7 @@ public class SeriesRepository {
         // Thèmes, par dcterms:subject comme pour les familles (les jeux de données utilisent dcat:theme)
         Optional.ofNullable(series.getThemes())
                 .ifPresent(themes -> themes.forEach(theme ->
-                        RdfUtils.addTripleUri(seriesURI, DCTERMS.SUBJECT, theme, model, RdfUtils.operationsGraph())));
+                        RdfTriples.addUri(seriesURI, DCTERMS.SUBJECT, theme, model, iriFactory.operationsGraph())));
 
         // Organismes responsables
         addOperationLinksOrganization(series.getPublishers(), DCTERMS.PUBLISHER, model, seriesURI);
@@ -397,7 +411,7 @@ public class SeriesRepository {
                 .filter(repl -> !repl.isEmpty())
                 .forEach(replace -> {
                     String replUri = this.bauhausUriBuilder.getCompleteUriGestion(replace.getType(), replace.getId());
-                    addReplacesAndReplacedBy(model, RdfUtils.toURI(replUri), seriesURI);
+                    addReplacesAndReplacedBy(model, RdfTriples.iri(replUri), seriesURI);
                 });
 
         List<OperationsLink> isReplacedBys = series.getIsReplacedBy();
@@ -405,22 +419,22 @@ public class SeriesRepository {
                 .filter(isRepl -> !isRepl.isEmpty())
                 .forEach(isRepl -> {
                     String isReplUri = this.bauhausUriBuilder.getCompleteUriGestion(isRepl.getType(), isRepl.getId());
-                    addReplacesAndReplacedBy(model, seriesURI, RdfUtils.toURI(isReplUri));
+                    addReplacesAndReplacedBy(model, seriesURI, RdfTriples.iri(isReplUri));
                 });
 
         if (familyURI != null) {
             // case CREATION : link series to family
-            RdfUtils.addTripleUri(seriesURI, DCTERMS.IS_PART_OF, familyURI, model, RdfUtils.operationsGraph());
-            RdfUtils.addTripleUri(familyURI, DCTERMS.HAS_PART, seriesURI, model, RdfUtils.operationsGraph());
+            RdfTriples.addUri(seriesURI, DCTERMS.IS_PART_OF, familyURI, model, iriFactory.operationsGraph());
+            RdfTriples.addUri(familyURI, DCTERMS.HAS_PART, seriesURI, model, iriFactory.operationsGraph());
         }
 
-        repositoryGestion.keepHierarchicalOperationLinks(seriesURI, model, RdfUtils.operationsGraph());
+        repositoryGestion.keepHierarchicalOperationLinks(seriesURI, model, iriFactory.operationsGraph());
 
         repositoryGestion.loadObjectWithReplaceLinks(seriesURI, model);
     }
 
     void addCreators(Model model, IRI seriesURI, List<String> creators) {
-        addCreators(model, seriesURI, creators, RdfUtils.operationsGraph());
+        addCreators(model, seriesURI, creators, iriFactory.operationsGraph());
     }
 
     void addCreators(Model model, IRI seriesURI, List<String> creators, Resource graph) {
@@ -428,13 +442,13 @@ public class SeriesRepository {
             return;
         }
         for (String creatorIri : creators) {
-            RdfUtils.addTripleUri(seriesURI, DC.CREATOR, creatorIri, model, graph);
+            RdfTriples.addUri(seriesURI, DC.CREATOR, creatorIri, model, graph);
         }
     }
 
     private void addReplacesAndReplacedBy(Model model, IRI previous, IRI next) {
-        RdfUtils.addTripleUri(previous, DCTERMS.IS_REPLACED_BY, next, model, RdfUtils.operationsGraph());
-        RdfUtils.addTripleUri(next, DCTERMS.REPLACES, previous, model, RdfUtils.operationsGraph());
+        RdfTriples.addUri(previous, DCTERMS.IS_REPLACED_BY, next, model, iriFactory.operationsGraph());
+        RdfTriples.addUri(next, DCTERMS.REPLACES, previous, model, iriFactory.operationsGraph());
     }
 
     /**
@@ -446,32 +460,32 @@ public class SeriesRepository {
             for (OperationsLink link : links) {
                 if (!link.isEmpty()) {
                     IRI linkUri =
-                            RdfUtils.toURI(this.bauhausUriBuilder.getCompleteUriGestion(link.getType(), link.getId()));
-                    RdfUtils.addTripleUri(seriesURI, RDFS.SEEALSO, linkUri, model, RdfUtils.operationsGraph());
-                    RdfUtils.addTripleUri(linkUri, RDFS.SEEALSO, seriesURI, model, graphOf(link));
+                            RdfTriples.iri(this.bauhausUriBuilder.getCompleteUriGestion(link.getType(), link.getId()));
+                    RdfTriples.addUri(seriesURI, RDFS.SEEALSO, linkUri, model, iriFactory.operationsGraph());
+                    RdfTriples.addUri(linkUri, RDFS.SEEALSO, seriesURI, model, graphOf(link));
                 }
             }
         }
     }
 
-    private static Resource graphOf(OperationsLink link) {
+    private Resource graphOf(OperationsLink link) {
         return ObjectType.getEnumByLabel(link.getType())
                         .filter(ObjectType.INDICATOR::equals)
                         .isPresent()
-                ? RdfUtils.productsGraph()
-                : RdfUtils.operationsGraph();
+                ? iriFactory.productsGraph()
+                : iriFactory.operationsGraph();
     }
 
     private void addCodeList(String list, String code, IRI predicate, Model model, IRI seriesURI) throws RmesException {
         if (!StringUtils.isEmpty(list) && !StringUtils.isEmpty(code)) {
             String uri = codeListService.getCodeUri(list, code);
-            RdfUtils.addTripleUri(seriesURI, predicate, uri, model, RdfUtils.operationsGraph());
+            RdfTriples.addUri(seriesURI, predicate, uri, model, iriFactory.operationsGraph());
         }
     }
 
     void addOperationLinksOrganization(List<OperationsLink> data, IRI predicate, Model model, IRI seriesURI)
             throws RmesException {
-        addOperationLinksOrganization(data, predicate, model, seriesURI, RdfUtils.operationsGraph());
+        addOperationLinksOrganization(data, predicate, model, seriesURI, iriFactory.operationsGraph());
     }
 
     void addOperationLinksOrganization(
@@ -481,7 +495,7 @@ public class SeriesRepository {
                 if (!d.isEmpty()) {
                     Optional<String> resolved = organisationLookup.resolve(d.getId());
                     if (resolved.isPresent()) {
-                        RdfUtils.addTripleUri(seriesURI, predicate, resolved.get(), model, graph);
+                        RdfTriples.addUri(seriesURI, predicate, resolved.get(), model, graph);
                     }
                 }
             }
@@ -499,7 +513,7 @@ public class SeriesRepository {
                     ErrorCodes.SERIES_UNKNOWN_FAMILY, "Unknown family: " + idFamily, new JSONArray());
         }
 
-        IRI familyURI = RdfUtils.objectIRI(ObjectType.FAMILY, idFamily);
+        IRI familyURI = iriFactory.objectIri(ObjectType.FAMILY, idFamily);
         series.setCreated(DateUtils.getCurrentDate());
         series.setUpdated(DateUtils.getCurrentDate());
 
@@ -588,11 +602,11 @@ public class SeriesRepository {
 
     public void setSeriesValidation(String id) throws RmesException {
         JSONObject serieJson = getSeriesJsonById(id, EncodingType.XML);
-        seriesPublication.publishSeries(id, serieJson, RdfUtils.operationsGraph());
+        seriesPublication.publishSeries(id, serieJson, iriFactory.operationsGraph());
 
-        IRI seriesURI = RdfUtils.objectIRI(ObjectType.SERIES, id);
+        IRI seriesURI = iriFactory.objectIri(ObjectType.SERIES, id);
         logger.info("Validate series : {}", seriesURI);
-        events.publishEvent(new ObjectPublished(seriesURI, RdfUtils.operationsGraph()));
+        events.publishEvent(new ObjectPublished(seriesURI, iriFactory.operationsGraph()));
     }
 
     public boolean isSeriesAndOperationsExist(List<String> iris) throws RmesException {

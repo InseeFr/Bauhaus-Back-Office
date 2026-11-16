@@ -7,10 +7,11 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationPublication;
 import fr.insee.rmes.bauhaus_services.operations.documentations.documents.DocumentsPublication;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausIriFactory;
 import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
+import fr.insee.rmes.config.DocumentationsPropertiesStub;
 import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.ErrorCodes;
@@ -43,7 +44,6 @@ class DocumentationPublicationTest extends WithGraphDBContainer {
 
     @BeforeAll
     static void initData() {
-        RdfUtils.setGraphs(GraphsPropertiesStub.stub());
         container.withTrigFiles("documentation-publication-test.trig");
     }
 
@@ -55,7 +55,6 @@ class DocumentationPublicationTest extends WithGraphDBContainer {
 
         BauhausUriBuilder bauhausUriBuilder =
                 new BauhausUriBuilder("http://publication/", "http://bauhaus/", propertiesFinder);
-        RdfUtils.setBauhausUriBuilder(bauhausUriBuilder);
 
         RepositoryUtils repositoryUtils = new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED);
 
@@ -80,7 +79,9 @@ class DocumentationPublicationTest extends WithGraphDBContainer {
                 publicationUtils,
                 documentsPublication,
                 documentationConfiguration,
-                new OrganisationsProperties("organisations"));
+                new OrganisationsProperties("organisations"),
+                new BauhausIriFactory(
+                        GraphsPropertiesStub.stub(), bauhausUriBuilder, DocumentationsPropertiesStub.stub()));
     }
 
     private void injectField(Object target, String fieldName, Object value) throws Exception {

@@ -31,7 +31,7 @@ public abstract class RdfService {
      */
     public void transformTripleToPublish(Model model, Statement st, Resource graph) {
         Resource subject = publicationUtils.tranformBaseURIToPublish(st.getSubject());
-        IRI predicateIRI = RdfUtils.createIRI(
+        IRI predicateIRI = RdfTriples.iriAsIs(
                 publicationUtils.tranformBaseURIToPublish(st.getPredicate()).stringValue());
         Value object = st.getObject();
         if (st.getObject() instanceof Resource resource) {

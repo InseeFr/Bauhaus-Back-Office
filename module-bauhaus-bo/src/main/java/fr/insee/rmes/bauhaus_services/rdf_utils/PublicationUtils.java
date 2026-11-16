@@ -44,7 +44,7 @@ public record PublicationUtils(
     public Resource tranformBaseURIToPublish(Resource resource) {
         if (!resource.toString().contains(this.baseUriGestion)) return resource;
         String newResource = resource.toString().replace(this.baseUriGestion, this.baseUriPublication);
-        return RdfUtils.toURI(newResource);
+        return RdfTriples.iri(newResource);
     }
 
     public static boolean stringEndsWithItemFromList(@NotNull String inputStr, @NotNull String[] items) {
@@ -94,7 +94,7 @@ public record PublicationUtils(
                 RepositoryResult<Statement> statements = repositoryGestion.getStatements(connection, resource, graph)) {
             while (statements.hasNext()) {
                 Statement statement = statements.next();
-                String predicate = RdfUtils.toString(statement.getPredicate());
+                String predicate = statement.getPredicate().toString();
 
                 boolean isDeniedPredicate =
                         !denyList.stream().filter(predicate::endsWith).toList().isEmpty();

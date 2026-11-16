@@ -15,8 +15,9 @@ import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.OperationsObjectMapper;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausIriFactory;
 import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfTriples;
 import fr.insee.rmes.bauhaus_services.utils.OrganisationLookup;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
@@ -70,6 +71,9 @@ class IndicatorsRepositoryTest {
 
     @Autowired
     private OperationsObjectMapper operationsObjectMapper;
+
+    @Autowired
+    private BauhausIriFactory iriFactory;
 
     @Test
     void shouldThrowExceptionIfWasGeneratedByNull() throws RmesException {
@@ -266,7 +270,7 @@ class IndicatorsRepositoryTest {
 
         ArgumentCaptor<Model> captor = ArgumentCaptor.forClass(Model.class);
         verify(repositoryGestion).loadObjectWithReplaceLinks(any(), captor.capture());
-        IRI indicURI = RdfUtils.objectIRI(ObjectType.INDICATOR, "p2000");
+        IRI indicURI = iriFactory.objectIri(ObjectType.INDICATOR, "p2000");
         assertThat(captor.getValue().filter(indicURI, ADMS.HAS_IDENTIFIER, null).objects())
                 .containsExactly(SimpleValueFactory.getInstance().createLiteral("p2000"));
     }
@@ -290,9 +294,9 @@ class IndicatorsRepositoryTest {
 
         ArgumentCaptor<Model> captor = ArgumentCaptor.forClass(Model.class);
         verify(repositoryGestion).loadObjectWithReplaceLinks(any(), captor.capture());
-        IRI linkedSeries = RdfUtils.toURI(bauhausUriBuilder.getCompleteUriGestion("series", "s3"));
-        IRI indicURI = RdfUtils.objectIRI(ObjectType.INDICATOR, "p2000");
-        assertThat(captor.getValue().contains(linkedSeries, RDFS.SEEALSO, indicURI, RdfUtils.operationsGraph()))
+        IRI linkedSeries = RdfTriples.iri(bauhausUriBuilder.getCompleteUriGestion("series", "s3"));
+        IRI indicURI = iriFactory.objectIri(ObjectType.INDICATOR, "p2000");
+        assertThat(captor.getValue().contains(linkedSeries, RDFS.SEEALSO, indicURI, iriFactory.operationsGraph()))
                 .isTrue();
     }
 
@@ -395,7 +399,7 @@ class IndicatorsRepositoryTest {
         verify(events).publishEvent(event.capture());
         assertThat(event.getValue())
                 .isEqualTo(new ObjectPublished(
-                        RdfUtils.objectIRI(ObjectType.INDICATOR, "p1000"),
+                        iriFactory.objectIri(ObjectType.INDICATOR, "p1000"),
                         SimpleValueFactory.getInstance().createIRI("http://rdf.insee.fr/graphes/produits")));
     }
 
@@ -442,6 +446,7 @@ class IndicatorsRepositoryTest {
                 new BauhausLanguagesProperties("fr", "en"),
                 indicatorsQueries,
                 organisationLookup,
-                events);
+                events,
+                iriFactory);
     }
 }

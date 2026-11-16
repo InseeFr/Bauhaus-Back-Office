@@ -11,15 +11,12 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
 import fr.insee.rmes.bauhaus_services.concepts.publication.ConceptsPublication;
-import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.config.GraphsPropertiesStub;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausIriFactory;
+import fr.insee.rmes.config.BauhausIriFactoryStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.concepts.collections.infrastructure.graphdb.GraphDBCollectionProperties;
 import fr.insee.rmes.modules.shared_kernel.infrastructure.publication.ObjectPublished;
-import java.util.Optional;
 import org.json.JSONArray;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -41,19 +38,14 @@ class LegacyCollectionsRepositoryTest {
 
     private LegacyCollectionsRepository legacyCollectionsRepository;
 
-    @BeforeAll
-    static void initConfig() {
-        RdfUtils.setGraphs(GraphsPropertiesStub.stub());
-        RdfUtils.setBauhausUriBuilder(new BauhausUriBuilder(
-                "http://bauhaus/publication/", "http://bauhaus/", p -> Optional.of("/collection")));
-    }
+    private final BauhausIriFactory iriFactory = BauhausIriFactoryStub.stub("/collection");
 
     @BeforeEach
     void setUp() {
         collectionProperties = new GraphDBCollectionProperties(
                 "http://rdf.insee.fr/graphes/concepts/definitions", "http://bauhaus//concepts/definitions");
         legacyCollectionsRepository =
-                new LegacyCollectionsRepository(conceptsPublication, collectionProperties, events);
+                new LegacyCollectionsRepository(conceptsPublication, collectionProperties, events, iriFactory);
     }
 
     @Test
@@ -63,7 +55,7 @@ class LegacyCollectionsRepositoryTest {
 
         InOrder inOrder = inOrder(conceptsPublication, events);
         for (String id : new String[] {"col1", "col2"}) {
-            inOrder.verify(conceptsPublication).publishCollection(onlyId(id), eq(RdfUtils.conceptGraph()));
+            inOrder.verify(conceptsPublication).publishCollection(onlyId(id), eq(iriFactory.conceptGraph()));
             inOrder.verify(events).publishEvent(published(id));
         }
     }
@@ -91,7 +83,7 @@ class LegacyCollectionsRepositoryTest {
     }
 
     private ObjectPublished published(String id) {
-        return new ObjectPublished(collectionProperties.getResourceIRI(id), RdfUtils.conceptGraph());
+        return new ObjectPublished(collectionProperties.getResourceIRI(id), iriFactory.conceptGraph());
     }
 
     private static JSONArray onlyId(String id) {

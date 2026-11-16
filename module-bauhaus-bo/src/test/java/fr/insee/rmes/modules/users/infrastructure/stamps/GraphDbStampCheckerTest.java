@@ -14,6 +14,7 @@ import static org.mockito.Mockito.when;
 
 import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausIriFactory;
 import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
+import fr.insee.rmes.config.DocumentationsPropertiesStub;
 import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.codeslists.codeslists.infrastructure.graphdb.CodeListsQueries;
@@ -104,7 +105,8 @@ class GraphDbStampCheckerTest {
                 case STRUCTURES_BASE_URI -> Optional.of("structures/structure");
                 case STRUCTURES_COMPONENTS_BASE_URI -> Optional.of("structures/");
                 default -> Optional.empty();
-            }));
+            }),
+            DocumentationsPropertiesStub.stub());
 
     private static final String DATASETS_GRAPH = "http://rdf.insee.fr/graphes/catalogue";
     private static final String CATALOG_RECORD_BASE_URI = "http://bauhaus/catalogues/entreeCatalogue";

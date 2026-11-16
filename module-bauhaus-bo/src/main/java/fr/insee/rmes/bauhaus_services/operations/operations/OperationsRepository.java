@@ -7,10 +7,11 @@ import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.operations.OperationsParentRepository;
 import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationsUtils;
 import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.OperationsObjectMapper;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausIriFactory;
 import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfTriples;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.*;
@@ -66,6 +67,8 @@ public class OperationsRepository extends RdfService {
 
     private final ApplicationEventPublisher events;
 
+    private final BauhausIriFactory iriFactory;
+
     public OperationsRepository(
             RepositoryGestion repoGestion,
             IdGenerator idGenerator,
@@ -79,8 +82,10 @@ public class OperationsRepository extends RdfService {
             OperationsOperationQueries operationsOperationQueries,
             OperationSeriesQueries operationSeriesQueries,
             BauhausUriBuilder bauhausUriBuilder,
-            ApplicationEventPublisher events) {
+            ApplicationEventPublisher events,
+            BauhausIriFactory iriFactory) {
         super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
+        this.iriFactory = iriFactory;
         this.languages = languages;
         this.operationsObjectMapper = operationsObjectMapper;
         this.documentationsUtils = documentationsUtils;
@@ -141,7 +146,7 @@ public class OperationsRepository extends RdfService {
         if (!operationsObjectMapper.checkIfObjectExists(ObjectType.SERIES, idSeries)) {
             throw new RmesNotFoundException(ErrorCodes.OPERATION_UNKNOWN_SERIES, "Unknown series: ", idSeries);
         }
-        IRI seriesURI = RdfUtils.objectIRI(ObjectType.SERIES, idSeries);
+        IRI seriesURI = iriFactory.objectIri(ObjectType.SERIES, idSeries);
 
         operation.setCreated(DateUtils.getCurrentDate());
         operation.setModified(DateUtils.getCurrentDate());
@@ -211,76 +216,73 @@ public class OperationsRepository extends RdfService {
         validate(operation);
 
         Model model = new LinkedHashModel();
-        IRI operationURI = RdfUtils.objectIRI(ObjectType.OPERATION, operation.getId());
+        IRI operationURI = iriFactory.objectIri(ObjectType.OPERATION, operation.getId());
         /*Const*/
-        model.add(operationURI, RDF.TYPE, INSEE.OPERATION, RdfUtils.operationsGraph());
+        model.add(operationURI, RDF.TYPE, INSEE.OPERATION, iriFactory.operationsGraph());
         model.add(
-                operationURI,
-                ADMS.HAS_IDENTIFIER,
-                RdfUtils.setLiteralString(operation.getId()),
-                RdfUtils.operationsGraph());
+                operationURI, ADMS.HAS_IDENTIFIER, RdfTriples.string(operation.getId()), iriFactory.operationsGraph());
         /*Required*/
         model.add(
                 operationURI,
                 SKOS.PREF_LABEL,
-                RdfUtils.setLiteralString(operation.getPrefLabelLg1(), languages.lg1()),
-                RdfUtils.operationsGraph());
+                RdfTriples.string(operation.getPrefLabelLg1(), languages.lg1()),
+                iriFactory.operationsGraph());
         model.add(
                 operationURI,
                 INSEE.VALIDATION_STATE,
-                RdfUtils.setLiteralString(newStatus.toString()),
-                RdfUtils.operationsGraph());
+                RdfTriples.string(newStatus.toString()),
+                iriFactory.operationsGraph());
         /*Optional*/
-        RdfUtils.addTripleString(
+        RdfTriples.addString(
                 operationURI,
                 SKOS.PREF_LABEL,
                 operation.getPrefLabelLg2(),
                 languages.lg2(),
                 model,
-                RdfUtils.operationsGraph());
-        RdfUtils.addTripleString(
+                iriFactory.operationsGraph());
+        RdfTriples.addString(
                 operationURI,
                 SKOS.ALT_LABEL,
                 operation.getAltLabelLg1(),
                 languages.lg1(),
                 model,
-                RdfUtils.operationsGraph());
-        RdfUtils.addTripleString(
+                iriFactory.operationsGraph());
+        RdfTriples.addString(
                 operationURI,
                 SKOS.ALT_LABEL,
                 operation.getAltLabelLg2(),
                 languages.lg2(),
                 model,
-                RdfUtils.operationsGraph());
-        RdfUtils.addTripleDateTime(
-                operationURI, DCTERMS.CREATED, operation.getCreated(), model, RdfUtils.operationsGraph());
-        RdfUtils.addTripleDateTime(
-                operationURI, DCTERMS.MODIFIED, operation.getModified(), model, RdfUtils.operationsGraph());
+                iriFactory.operationsGraph());
+        RdfTriples.addDateTime(
+                operationURI, DCTERMS.CREATED, operation.getCreated(), model, iriFactory.operationsGraph());
+        RdfTriples.addDateTime(
+                operationURI, DCTERMS.MODIFIED, operation.getModified(), model, iriFactory.operationsGraph());
 
         if (operation.getYear() != null) {
             model.add(
                     operationURI,
                     DCTERMS.TEMPORAL,
-                    RdfUtils.createLiteral(operation.getYear().toString(), XSD.GYEAR),
-                    RdfUtils.operationsGraph());
+                    RdfTriples.literal(operation.getYear().toString(), XSD.GYEAR),
+                    iriFactory.operationsGraph());
         }
 
         if (serieUri != null) {
             // case CREATION : link operation to series
-            RdfUtils.addTripleUri(operationURI, DCTERMS.IS_PART_OF, serieUri, model, RdfUtils.operationsGraph());
-            RdfUtils.addTripleUri(serieUri, DCTERMS.HAS_PART, operationURI, model, RdfUtils.operationsGraph());
+            RdfTriples.addUri(operationURI, DCTERMS.IS_PART_OF, serieUri, model, iriFactory.operationsGraph());
+            RdfTriples.addUri(serieUri, DCTERMS.HAS_PART, operationURI, model, iriFactory.operationsGraph());
         }
 
-        repoGestion.keepHierarchicalOperationLinks(operationURI, model, RdfUtils.operationsGraph());
+        repoGestion.keepHierarchicalOperationLinks(operationURI, model, iriFactory.operationsGraph());
         repoGestion.loadSimpleObject(operationURI, model);
     }
 
     public void setOperationValidation(String idOperation) throws RmesException {
         JSONObject operationJson = getOperationJsonById(idOperation);
-        operationPublication.publishOperation(idOperation, operationJson, RdfUtils.operationsGraph());
+        operationPublication.publishOperation(idOperation, operationJson, iriFactory.operationsGraph());
 
-        IRI operationURI = RdfUtils.objectIRI(ObjectType.OPERATION, idOperation);
+        IRI operationURI = iriFactory.objectIri(ObjectType.OPERATION, idOperation);
         logger.info("Validate operation : {}", operationURI);
-        events.publishEvent(new ObjectPublished(operationURI, RdfUtils.operationsGraph()));
+        events.publishEvent(new ObjectPublished(operationURI, iriFactory.operationsGraph()));
     }
 }

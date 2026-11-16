@@ -3,7 +3,6 @@ package fr.insee.rmes.bauhaus_services.structures.persistence;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
@@ -35,7 +34,7 @@ public class StructurePublication extends RdfService {
         try (RepositoryResult<Statement> statements = repoGestion.getStatements(con, structure, graph)) {
             while (statements.hasNext()) {
                 Statement st = statements.next();
-                String pred = RdfUtils.toString(st.getPredicate());
+                String pred = st.getPredicate().toString();
                 if (PublicationUtils.stringEndsWithItemFromList(pred, denyList)) {
                     // nothing, wouldn't copy this attr
                 } else if (pred.endsWith("component")) {
