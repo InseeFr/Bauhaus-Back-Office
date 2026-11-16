@@ -2,7 +2,6 @@ package fr.insee.rmes.exceptions;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -16,8 +15,6 @@ import fr.insee.rmes.modules.commons.domain.exceptions.ThemeFetchException;
 import fr.insee.rmes.modules.commons.domain.port.clientside.ThemeService;
 import fr.insee.rmes.modules.commons.webservice.ThemeResources;
 import fr.insee.rmes.modules.geographies.webservice.GeographyResources;
-import fr.insee.rmes.modules.operations.documents.domain.port.clientside.DocumentDescriptionService;
-import fr.insee.rmes.modules.operations.documents.webservice.DocumentDescriptionResources;
 import fr.insee.rmes.modules.organisations.domain.port.clientside.OrganisationService;
 import fr.insee.rmes.modules.organisations.webservice.StampResources;
 import org.junit.jupiter.api.Test;
@@ -37,12 +34,7 @@ import org.springframework.test.web.servlet.MockMvc;
  * partir en exception non gérée (ticket 1 de l'audit #1264).
  */
 @WebMvcTest(
-        controllers = {
-            GeographyResources.class,
-            DocumentDescriptionResources.class,
-            StampResources.class,
-            ThemeResources.class
-        },
+        controllers = {GeographyResources.class, StampResources.class, ThemeResources.class},
         excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = LogRequestFilter.class),
         excludeAutoConfiguration = OAuth2ResourceServerAutoConfiguration.class,
         properties = "fr.insee.rmes.bauhaus.modules.operations.enabled=true")
@@ -53,9 +45,6 @@ class RmesExceptionTranslationTest {
 
     @MockitoBean
     GeographyService geographyService;
-
-    @MockitoBean
-    DocumentDescriptionService documentDescriptionService;
 
     @MockitoBean
     OrganisationService organisationService;
@@ -75,15 +64,6 @@ class RmesExceptionTranslationTest {
         when(geographyService.getGeoFeatures()).thenThrow(rmesException());
 
         mockMvc.perform(get("/geo/territories"))
-                .andExpect(status().isInternalServerError())
-                .andExpect(jsonPath("$.message").value(MESSAGE));
-    }
-
-    @Test
-    void document_description_resources_translate_a_rmes_exception() throws Exception {
-        when(documentDescriptionService.getDescription(any(), any())).thenThrow(rmesException());
-
-        mockMvc.perform(get("/operations/documents/{id}", "1001"))
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.message").value(MESSAGE));
     }
