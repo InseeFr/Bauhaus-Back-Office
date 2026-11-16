@@ -102,7 +102,7 @@ public record GraphDBCollection(
         }
         try {
             return LocalDateTime.parse(dateString);
-        } catch (DateTimeParseException e) {
+        } catch (DateTimeParseException _) {
             return OffsetDateTime.parse(dateString).toLocalDateTime();
         }
     }

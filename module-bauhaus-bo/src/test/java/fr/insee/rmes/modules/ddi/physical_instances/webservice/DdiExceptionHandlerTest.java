@@ -150,7 +150,7 @@ class DdiExceptionHandlerTest {
     }
 
     @Test
-    void shouldReturnBadRequestWithCodeWhenTheRolloverTargetsTheSourceStudyUnit() throws Exception {
+    void should_return_bad_request_with_code_when_the_rollover_targets_the_source_study_unit() throws Exception {
         when(ddiService.rollover(eq("fr.insee"), eq("pi-111"), any()))
                 .thenThrow(InvalidRolloverException.sameStudyUnit("fr.insee", "su-1"));
 

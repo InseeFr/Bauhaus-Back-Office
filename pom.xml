@@ -61,6 +61,17 @@
     <sonar.organization>inseefr</sonar.organization>
     <sonar.host.url>https://sonarcloud.io</sonar.host.url>
     <sonar.projectKey>InseeFr_Bauhaus-Back-Office</sonar.projectKey>
+    <!-- java:S115 (constantes en MAJUSCULES) ignorée là où le nom de la constante d'enum est une
+         donnée échangée, pas un identifiant interne :
+         - Ddi4ObjectType : chaque nom est une valeur `$type` du schéma DDI 4, émise telle quelle
+           par Reference.of(..., type.name()) ;
+         - Language : lg1/lg2 sont lus depuis le paramètre `?langue=` des exports de concepts et de
+           collections, appelé ainsi par le front. -->
+    <sonar.issue.ignore.multicriteria>ignoreDdi4ObjectTypeNaming,ignoreLanguageNaming</sonar.issue.ignore.multicriteria>
+    <sonar.issue.ignore.multicriteria.ignoreDdi4ObjectTypeNaming.ruleKey>java:S115</sonar.issue.ignore.multicriteria.ignoreDdi4ObjectTypeNaming.ruleKey>
+    <sonar.issue.ignore.multicriteria.ignoreDdi4ObjectTypeNaming.resourceKey>**/ddi/physical_instances/domain/model/Ddi4ObjectType.java</sonar.issue.ignore.multicriteria.ignoreDdi4ObjectTypeNaming.resourceKey>
+    <sonar.issue.ignore.multicriteria.ignoreLanguageNaming.ruleKey>java:S115</sonar.issue.ignore.multicriteria.ignoreLanguageNaming.ruleKey>
+    <sonar.issue.ignore.multicriteria.ignoreLanguageNaming.resourceKey>**/shared_kernel/domain/model/Language.java</sonar.issue.ignore.multicriteria.ignoreLanguageNaming.resourceKey>
     <boot-properties-logger-starter.version>2.2.0</boot-properties-logger-starter.version>
     <ddi-lifecycle.version>2.0.0</ddi-lifecycle.version>
     <testcontainers-keycloak.version>4.2.1</testcontainers-keycloak.version>

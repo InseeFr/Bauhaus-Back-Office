@@ -417,7 +417,7 @@ class DdiResourcesTest {
     }
 
     @Test
-    void shouldRollPhysicalInstanceOver() {
+    void should_roll_physical_instance_over() {
         PhysicalInstanceRolloverRequest request = new PhysicalInstanceRolloverRequest(
                 "PI 2025",
                 "DR",
@@ -1056,7 +1056,7 @@ class DdiResourcesTest {
     // --- GET /ddi/operation/{id}/fichiers (JSON, public) ---
 
     @Test
-    void getOperationStudyUnitJson_returns200WithDdi4_whenStudyUnitExists() throws RmesException {
+    void getOperationStudyUnitJson_returns200WithDdi4_whenStudyUnitExists() {
         String id = "op1";
         String operationIri = givenOperationIri(id);
         Ddi4StudyUnitResponse expected = aStudyUnitResponse(operationIri);
@@ -1069,7 +1069,7 @@ class DdiResourcesTest {
     }
 
     @Test
-    void getOperationStudyUnitJson_returns404_whenStudyUnitNotFound() throws RmesException {
+    void getOperationStudyUnitJson_returns404_whenStudyUnitNotFound() {
         String id = "unknown";
         String operationIri = givenOperationIri(id);
         when(ddiService.getStudyUnitByOperationIri(operationIri, null)).thenReturn(Optional.empty());
@@ -1120,7 +1120,7 @@ class DdiResourcesTest {
     // --- GET /ddi/operation/{id}/fichiers (XML DDI 3.3, public) ---
 
     @Test
-    void getOperationStudyUnitXml_returns200WithXml_whenStudyUnitExists() throws RmesException {
+    void getOperationStudyUnitXml_returns200WithXml_whenStudyUnitExists() {
         String id = "op1";
         String operationIri = givenOperationIri(id);
         String xml = "<Fragment><StudyUnit/></Fragment>";
@@ -1133,7 +1133,7 @@ class DdiResourcesTest {
     }
 
     @Test
-    void getOperationStudyUnitXml_returns404_whenStudyUnitNotFound() throws RmesException {
+    void getOperationStudyUnitXml_returns404_whenStudyUnitNotFound() {
         String id = "unknown";
         String operationIri = givenOperationIri(id);
         when(ddiService.getStudyUnitXmlByOperationIri(operationIri, null)).thenReturn(Optional.empty());

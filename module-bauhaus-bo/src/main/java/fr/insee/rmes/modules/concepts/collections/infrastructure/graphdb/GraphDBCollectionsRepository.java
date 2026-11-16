@@ -390,7 +390,7 @@ public class GraphDBCollectionsRepository implements CollectionsRepository {
                     if (!conceptsIds.isEmpty()) {
                         collectionsConcepts.put(fileName, conceptsService.getConceptsExportIS(conceptsIds, null));
                     }
-                } catch (RmesException ignored) {
+                } catch (RmesException _) {
                     // Mirror legacy behavior: skip individual failures, keep building the archive.
                 }
             }

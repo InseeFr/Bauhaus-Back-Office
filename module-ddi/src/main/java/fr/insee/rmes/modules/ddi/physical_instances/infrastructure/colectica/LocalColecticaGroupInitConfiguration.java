@@ -1241,8 +1241,7 @@ public class LocalColecticaGroupInitConfiguration {
             DDIService ddiService,
             ColecticaClient colecticaClient,
             DDI4toDDI3ConverterService ddi4ToDdi3Converter,
-            ColecticaConfiguration colecticaConfiguration)
-            throws Exception {
+            ColecticaConfiguration colecticaConfiguration) {
         var server = colecticaConfiguration.server();
         String agency = server.defaultAgencyId();
         String lang = colecticaConfiguration.langs().getFirst();
@@ -1664,7 +1663,7 @@ public class LocalColecticaGroupInitConfiguration {
     private static ColecticaItemResponse findItem(ColecticaClient colecticaClient, String agency, String id) {
         try {
             return colecticaClient.getItem(agency, id, null);
-        } catch (RuntimeException e) {
+        } catch (RuntimeException _) {
             return null;
         }
     }

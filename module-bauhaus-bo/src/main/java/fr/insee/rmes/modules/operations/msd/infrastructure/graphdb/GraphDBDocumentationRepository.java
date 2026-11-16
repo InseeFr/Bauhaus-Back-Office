@@ -46,7 +46,7 @@ public class GraphDBDocumentationRepository implements DocumentationRepository {
             for (int i = 0; i < attributesList.length(); i++) {
                 JSONObject attribute = attributesList.getJSONObject(i);
                 transformRangeType(attribute);
-                documentationAttributes.add(DocumentationAttribute.fromJson(attribute));
+                documentationAttributes.add(DocumentationAttributeJsonMapper.fromJson(attribute));
             }
         }
         return documentationAttributes;
@@ -67,7 +67,7 @@ public class GraphDBDocumentationRepository implements DocumentationRepository {
         }
         transformRangeType(mas);
         mas.put(Constants.ID, id);
-        return DocumentationAttribute.fromJson(mas);
+        return DocumentationAttributeJsonMapper.fromJson(mas);
     }
 
     private void transformRangeType(JSONObject mas) throws OperationDocumentationRubricWithoutRangeException {

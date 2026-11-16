@@ -190,7 +190,7 @@ class RepositoryGestionTest {
     }
 
     @Test
-    void shouldThrowExceptionWhenGetStatementsThrowsRepositoryException() throws RmesException {
+    void shouldThrowExceptionWhenGetStatementsThrowsRepositoryException() {
         IRI subject = valueFactory.createIRI("http://example.org/subject");
         RepositoryException repositoryException = new RepositoryException("Test exception");
 
@@ -232,7 +232,7 @@ class RepositoryGestionTest {
     }
 
     @Test
-    void shouldThrowExceptionWhenCloseStatementsThrowsRepositoryException() throws RmesException {
+    void shouldThrowExceptionWhenCloseStatementsThrowsRepositoryException() {
         RepositoryException repositoryException = new RepositoryException("Test exception");
         doThrow(repositoryException).when(repositoryResult).close();
 

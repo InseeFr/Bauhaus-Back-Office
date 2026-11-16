@@ -22,8 +22,8 @@ public enum RangeType {
     RUBRIQUE_SANS_OBJECT(INSEE.RUBRIQUE_SANS_OBJECT, "RUBRIQUE_SANS_OBJECT"),
     UNDEFINED(null, Constants.UNDEFINED);
 
-    private IRI rdfType;
-    private String jsonType;
+    private final IRI rdfType;
+    private final String jsonType;
 
     RangeType(IRI rdfType, String jsonType) {
         this.rdfType = rdfType;

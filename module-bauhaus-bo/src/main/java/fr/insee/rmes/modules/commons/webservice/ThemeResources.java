@@ -1,6 +1,5 @@
 package fr.insee.rmes.modules.commons.webservice;
 
-import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.commons.domain.exceptions.ThemeFetchException;
 import fr.insee.rmes.modules.commons.domain.model.Theme;
 import fr.insee.rmes.modules.commons.domain.port.clientside.ThemeService;
@@ -22,7 +21,7 @@ public class ThemeResources {
     }
 
     @GetMapping(produces = "application/json")
-    public List<Theme> getThemes() throws RmesException {
+    public List<Theme> getThemes() {
         try {
             return this.themeService.getThemes();
         } catch (ThemeFetchException e) {

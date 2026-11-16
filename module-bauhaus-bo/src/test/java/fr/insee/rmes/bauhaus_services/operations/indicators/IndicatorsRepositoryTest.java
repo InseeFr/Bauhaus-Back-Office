@@ -169,7 +169,7 @@ class IndicatorsRepositoryTest {
     }
 
     @Test
-    void givenBuildIndicatorFromJson_whenCorrectRequest_thenResponseIsOk() throws RmesException {
+    void givenBuildIndicatorFromJson_whenCorrectRequest_thenResponseIsOk() {
         String json =
                 "{\"idSims\":\"1779\",\"wasGeneratedBy\":[{\"labelLg2\":\"Other indexes\",\"labelLg1\":\"Autres indicateurs\",\"id\":\"s1034\"}],\"abstractLg1\":\"Le nombre d'immatriculations de voitures particulières neuves permet de suivre l'évolution du marché automobile français et constitue l'un des indicateurs permettant de calculer la consommation des ménages en automobile.\",\"prefLabelLg1\":\"Immatriculations de voitures particulières neuves\",\"abstractLg2\":\"The number of new private car registrations is used to monitor the trends on the French automobile market and constitutes one of the indicators used to calculate household automobile consumption.\",\"prefLabelLg2\":\"New private car registrations\",\"creators\":[],\"publishers\":[],\"id\":\"p1638\",\"contributors\":[]}  ";
         JSONObject jsonIndicator = new JSONObject(json);
@@ -181,7 +181,7 @@ class IndicatorsRepositoryTest {
         assertThat(indicator).usingRecursiveComparison().isEqualTo(indicatorByApp);
     }
 
-    public Indicator initIndicator() throws RmesException {
+    public Indicator initIndicator() {
         Indicator indicator = new Indicator();
         indicator.setId("p1638");
         indicator.setIdSims("1779");

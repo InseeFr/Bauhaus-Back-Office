@@ -335,7 +335,7 @@ public class ConceptsImpl extends RdfService implements ConceptsService {
         return ret;
     }
 
-    private Map<String, String> convertConceptInXml(ConceptForExport concept) throws RmesException {
+    private Map<String, String> convertConceptInXml(ConceptForExport concept) {
         String conceptXml = XMLUtils.produceXMLResponse(concept);
         Map<String, String> xmlContent = new HashMap<>();
         xmlContent.put("conceptFile", conceptXml.replace("ConceptForExport", "Concept"));

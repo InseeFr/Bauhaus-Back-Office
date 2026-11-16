@@ -240,7 +240,7 @@ class DocumentationsUtilsTest {
                 fail("La création d'un SIMS sur une série avec opérations ne devrait plus lever 406 : "
                         + e.getDetails());
             }
-        } catch (Exception ignored) {
+        } catch (Exception _) {
             // d'autres exceptions sont attendues car les mocks ne couvrent pas tout le flow
         }
     }

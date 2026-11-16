@@ -13,7 +13,6 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.DDIRe
 import fr.insee.rmes.modules.ddi.physical_instances.domain.services.Ddi4ToLifecycle33;
 import java.util.List;
 import java.util.Set;
-import javax.xml.stream.XMLStreamException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -60,7 +59,7 @@ class DDIRepositoryImplGroupTest {
         }
 
         @Test
-        void createOrUpdate_shouldTransformAndPostGroup() throws XMLStreamException {
+        void createOrUpdate_shouldTransformAndPostGroup() {
             Ddi4Group group = new Ddi4Group(
                     Ddi4Group.TYPE,
                     CogsDate.ofDateTime("2026-04-02T00:00:00Z"),
@@ -144,7 +143,7 @@ class DDIRepositoryImplGroupTest {
         }
 
         @Test
-        void createOrUpdate_shouldTransformAndPostStudyUnit() throws XMLStreamException {
+        void createOrUpdate_shouldTransformAndPostStudyUnit() {
             Ddi4StudyUnit studyUnit = new Ddi4StudyUnit(
                     Ddi4StudyUnit.TYPE,
                     CogsDate.ofDateTime("2026-04-02T00:00:00Z"),

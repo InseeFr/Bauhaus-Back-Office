@@ -65,7 +65,6 @@ class OperationSeriesQueriesTest {
 
         String query = operationSeriesQueries.seriesWithStampQuery(stamps, false);
 
-        assertThat(query).contains("\"HIE2000069\"");
-        assertThat(query).doesNotContain("Stamp[");
+        assertThat(query).contains("\"HIE2000069\"").doesNotContain("Stamp[");
     }
 }

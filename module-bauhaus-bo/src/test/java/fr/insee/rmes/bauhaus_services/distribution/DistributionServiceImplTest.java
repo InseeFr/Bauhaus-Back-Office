@@ -117,7 +117,7 @@ class DistributionServiceImplTest {
     }
 
     @Test
-    void shouldReturnAnErrorIfIdDatasetNotDefinedWhenCreating() throws RmesException, JSONException {
+    void shouldReturnAnErrorIfIdDatasetNotDefinedWhenCreating() throws JSONException {
         JSONObject body = new JSONObject();
         RmesException exception =
                 assertThrows(RmesBadRequestException.class, () -> distributionService.create(body.toString()));
@@ -125,7 +125,7 @@ class DistributionServiceImplTest {
     }
 
     @Test
-    void shouldReturnAnErrorIfLabelLg1NotDefinedWhenCreating() throws RmesException, JSONException {
+    void shouldReturnAnErrorIfLabelLg1NotDefinedWhenCreating() throws JSONException {
         JSONObject body = new JSONObject();
         body.put("idDataset", "idDataset");
         RmesException exception =
@@ -134,7 +134,7 @@ class DistributionServiceImplTest {
     }
 
     @Test
-    void shouldReturnAnErrorIfLabelLg2NotDefinedWhenCreating() throws RmesException, JSONException {
+    void shouldReturnAnErrorIfLabelLg2NotDefinedWhenCreating() throws JSONException {
         JSONObject body = new JSONObject();
         body.put("idDataset", "idDataset");
         body.put("labelLg1", "labelLg1");

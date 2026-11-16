@@ -213,7 +213,7 @@ class LegacyConceptsRepositoryTest {
     }
 
     @Test
-    void shouldUpdateConceptWithSetConcept() throws RmesException {
+    void shouldUpdateConceptWithSetConcept() {
         // Given
         String id = "c1";
         String body =

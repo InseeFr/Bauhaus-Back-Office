@@ -831,7 +831,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         try {
             String iri = organizationsService.getOrganizationUriById(identifier);
             return (iri == null || iri.isBlank()) ? identifier : iri;
-        } catch (RmesException e) {
+        } catch (RmesException _) {
             return identifier;
         }
     }

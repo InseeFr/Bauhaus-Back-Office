@@ -89,9 +89,9 @@ class Ddi4ResponseWireFormatTest {
     void shouldFlattenEveryTypedListIntoItems() throws Exception {
         JsonNode items = mapper.readTree(mapper.writeValueAsString(aResponse())).get("items");
 
-        assertThat(items).hasSize(6);
-        assertThat(items).allSatisfy(item -> assertThat(item.has("$type")).isTrue());
         assertThat(items)
+                .hasSize(6)
+                .allSatisfy(item -> assertThat(item.has("$type")).isTrue())
                 .extracting(item -> item.get("$type").asText())
                 .containsExactlyInAnyOrder(
                         "PhysicalInstance",

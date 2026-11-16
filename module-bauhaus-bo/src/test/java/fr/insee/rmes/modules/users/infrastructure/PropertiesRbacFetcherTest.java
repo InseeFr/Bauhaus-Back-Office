@@ -82,8 +82,7 @@ class PropertiesRbacFetcherTest {
 
         Set<ModuleAccessPrivileges> result = rbacFetcher.getPrivilegesByRole("ADMIN");
 
-        assertThat(result).hasSize(2);
-        assertThat(result).contains(conceptPrivileges, operationPrivileges);
+        assertThat(result).hasSize(2).contains(conceptPrivileges, operationPrivileges);
     }
 
     @Test
@@ -105,8 +104,7 @@ class PropertiesRbacFetcherTest {
         Set<ModuleAccessPrivileges.Privilege> result =
                 rbacFetcher.getApplicationPrivilegesByRole("ADMIN", RBAC.Module.CONCEPT_CONCEPT);
 
-        assertThat(result).hasSize(2);
-        assertThat(result).contains(readPrivilege, createPrivilege);
+        assertThat(result).hasSize(2).contains(readPrivilege, createPrivilege);
     }
 
     @Test
@@ -221,8 +219,8 @@ class PropertiesRbacFetcherTest {
         long expectedModuleCount = Arrays.stream(RBAC.Module.values())
                 .filter(m -> m != RBAC.Module.UNKNOWN)
                 .count();
-        assertThat(result).hasSize((int) expectedModuleCount);
         assertThat(result)
+                .hasSize((int) expectedModuleCount)
                 .allSatisfy(
                         mp -> assertThat(mp.privileges()).contains(privilege(RBAC.Privilege.READ, RBAC.Strategy.ALL)));
     }

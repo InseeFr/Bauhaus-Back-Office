@@ -59,7 +59,7 @@ public class PropertiesRbacFetcher implements RbacFetcher {
                                 .findFirst()
                                 .orElseThrow(() -> new UnknownPrivilegeException(privilege, r, application))
                                 .strategy();
-                    } catch (UnknownApplicationException | UnknownRoleException exception) {
+                    } catch (UnknownApplicationException | UnknownRoleException _) {
 
                         return RBAC.Strategy.NONE;
                     }

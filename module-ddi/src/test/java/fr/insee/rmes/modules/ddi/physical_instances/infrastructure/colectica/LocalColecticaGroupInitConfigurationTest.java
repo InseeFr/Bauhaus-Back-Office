@@ -411,8 +411,8 @@ class LocalColecticaGroupInitConfigurationTest {
                     mmvrCaptor.getAllValues().get(variant);
 
             // La CodeList sentinelle porte 2 codes (NSP, REF) pointant vers les 2 catégories
-            assertThat(codeList.code()).hasSize(2);
             assertThat(codeList.code())
+                    .hasSize(2)
                     .extracting(code -> code.value().stringValue())
                     .containsExactly("NSP", "REF");
             assertThat(codeList.code())
@@ -471,11 +471,13 @@ class LocalColecticaGroupInitConfigurationTest {
         ArgumentCaptor<Ddi4VariableScheme> vsCaptor = ArgumentCaptor.forClass(Ddi4VariableScheme.class);
         verify(ddiService, times(variants)).createVariableScheme(vsCaptor.capture());
         List<Ddi4VariableScheme> variableSchemes = vsCaptor.getAllValues();
-        assertThat(variableSchemes).allSatisfy(vs -> {
-            assertThat(vs.agency()).isEqualTo("fr.insee");
-            assertThat(vs.variableReference()).isNullOrEmpty();
-        });
-        assertThat(variableSchemes).extracting(Ddi4VariableScheme::id).doesNotHaveDuplicates();
+        assertThat(variableSchemes)
+                .allSatisfy(vs -> {
+                    assertThat(vs.agency()).isEqualTo("fr.insee");
+                    assertThat(vs.variableReference()).isNullOrEmpty();
+                })
+                .extracting(Ddi4VariableScheme::id)
+                .doesNotHaveDuplicates();
 
         // Un LogicalProduct de study unit par StudyUnit (repérable à sa variableSchemeReference),
         // classant la VariableScheme de cette même StudyUnit
@@ -485,8 +487,10 @@ class LocalColecticaGroupInitConfigurationTest {
                 .filter(lp -> lp.variableSchemeReference() != null
                         && !lp.variableSchemeReference().isEmpty())
                 .toList();
-        assertThat(studyUnitLps).hasSize(variants);
-        assertThat(studyUnitLps).extracting(Ddi4LogicalProduct::id).doesNotHaveDuplicates();
+        assertThat(studyUnitLps)
+                .hasSize(variants)
+                .extracting(Ddi4LogicalProduct::id)
+                .doesNotHaveDuplicates();
         for (int variant = 0; variant < variants; variant++) {
             Ddi4LogicalProduct studyUnitLp = studyUnitLps.get(variant);
             assertThat(studyUnitLp.variableSchemeReference()).hasSize(1);
@@ -1078,8 +1082,8 @@ class LocalColecticaGroupInitConfigurationTest {
         verify(ddi4ToDdi3Converter).toCodeListItem(codeListCaptor.capture());
         Ddi4CodeList codeList = codeListCaptor.getValue();
         assertThat(codeList.id()).isEqualTo(largeCodeListId());
-        assertThat(codeList.code()).hasSize(45_000);
         assertThat(codeList.code())
+                .hasSize(45_000)
                 .extracting(code -> code.categoryReference().id())
                 .doesNotHaveDuplicates();
 
@@ -1323,9 +1327,10 @@ class LocalColecticaGroupInitConfigurationTest {
         List<ColecticaItemResponse> schemes = registeredItemsOfType(VARIABLE_SCHEME_ITEM_TYPE);
         assertThat(schemes).hasSize(1);
         String schemeXml = schemes.getFirst().item();
-        assertThat(schemeXml).doesNotContain("VariableReference>");
-        assertThat(schemeXml).contains(variableGroupId("LOGEMENT"), variableGroupId("INDIVIDU"));
-        assertThat(schemeXml).doesNotContain(variableGroupId("CHAUFFAGE"));
+        assertThat(schemeXml)
+                .doesNotContain("VariableReference>")
+                .contains(variableGroupId("LOGEMENT"), variableGroupId("INDIVIDU"))
+                .doesNotContain(variableGroupId("CHAUFFAGE"));
         verify(ddiService, never()).createVariableScheme(any());
     }
 

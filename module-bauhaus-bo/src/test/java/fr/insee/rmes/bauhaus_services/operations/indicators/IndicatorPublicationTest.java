@@ -71,7 +71,7 @@ class IndicatorPublicationTest {
     private Indicator indicator;
 
     @BeforeEach
-    void setUp() throws RmesException {
+    void setUp() {
         RdfUtils.setGraphs(GraphsPropertiesStub.stub());
         RdfUtils.setBauhausUriBuilder(
                 new BauhausUriBuilder(PUBLICATION, GESTION, name -> Optional.of("operations/indicateur")));

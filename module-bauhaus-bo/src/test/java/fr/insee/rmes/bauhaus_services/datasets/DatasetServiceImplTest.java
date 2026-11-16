@@ -169,7 +169,7 @@ class DatasetServiceImplTest {
     }
 
     @Test
-    void shouldResolveContributorStampsToIrisWhenFetchingDataset() throws RmesException, JsonProcessingException {
+    void shouldResolveContributorStampsToIrisWhenFetchingDataset() throws RmesException {
         JSONObject object = new JSONObject().put("id", "1");
         JSONArray array = new JSONArray().put(object);
 
@@ -466,9 +466,10 @@ class DatasetServiceImplTest {
         RmesBadRequestException exception =
                 assertThrows(RmesBadRequestException.class, () -> datasetService.publishDataset("1"));
 
-        assertThat(exception.getDetails()).contains("\"code\":1301");
-        assertThat(exception.getDetails()).contains("This dataset is already published");
-        assertThat(exception.getDetails()).contains("Dataset: 1");
+        assertThat(exception.getDetails())
+                .contains("\"code\":1301")
+                .contains("This dataset is already published")
+                .contains("Dataset: 1");
         verify(events, never()).publishEvent(any());
     }
 
@@ -648,10 +649,11 @@ class DatasetServiceImplTest {
         datasetService.patchDataset("jd1001", new PatchDataset(null, null, 5, null, null));
 
         String model = storedDatasetModel().toString();
-        assertThat(model).contains("2023-01-01");
-        assertThat(model).contains("2023-12-31");
-        assertThat(model).contains(DCAT.START_DATE.stringValue());
-        assertThat(model).contains(DCAT.END_DATE.stringValue());
+        assertThat(model)
+                .contains("2023-01-01")
+                .contains("2023-12-31")
+                .contains(DCAT.START_DATE.stringValue())
+                .contains(DCAT.END_DATE.stringValue());
     }
 
     @Test
@@ -682,9 +684,7 @@ class DatasetServiceImplTest {
         datasetService.patchDataset("jd1001", new PatchDataset(null, null, 5, null, null));
 
         String model = storedDatasetModel().toString();
-        assertThat(model).contains("mot clé");
-        assertThat(model).contains("keyword");
-        assertThat(model).contains("http://document");
+        assertThat(model).contains("mot clé").contains("keyword").contains("http://document");
     }
 
     /**

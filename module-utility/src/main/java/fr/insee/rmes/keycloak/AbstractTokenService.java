@@ -86,7 +86,7 @@ public abstract class AbstractTokenService implements TokenService {
             Date expiresAt = JWT.decode(token).getExpiresAt();
             return expiresAt != null
                     && expiresAt.toInstant().isAfter(Instant.now().plusSeconds(REFRESH_MARGIN_SECONDS));
-        } catch (JWTDecodeException e) {
+        } catch (JWTDecodeException _) {
             return false;
         }
     }

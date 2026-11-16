@@ -140,8 +140,8 @@ class SeriesRepositoryTest {
         List<Value> themes = captor.getValue().filter(seriesURI, DCTERMS.SUBJECT, null).stream()
                 .map(Statement::getObject)
                 .toList();
-        assertThat(themes).allMatch(IRI.class::isInstance, "every dcterms:subject object must be an IRI");
         assertThat(themes)
+                .allMatch(IRI.class::isInstance, "every dcterms:subject object must be an IRI")
                 .extracting(Value::stringValue)
                 .containsExactlyInAnyOrder("http://bauhaus/concepts/themes/th1", "http://bauhaus/concepts/themes/th2");
     }
@@ -236,9 +236,9 @@ class SeriesRepositoryTest {
         List<Value> creators = model.filter(seriesURI, dcCreator, null).stream()
                 .map(Statement::getObject)
                 .toList();
-        assertThat(creators).hasSize(2);
-        assertThat(creators).allMatch(IRI.class::isInstance, "every dc:creator object must be an IRI, not a literal");
         assertThat(creators)
+                .hasSize(2)
+                .allMatch(IRI.class::isInstance, "every dc:creator object must be an IRI, not a literal")
                 .extracting(Value::stringValue)
                 .containsExactlyInAnyOrder(
                         "http://bauhaus/organisations/DG75-A001", "http://bauhaus/organisations/DG75-B002");

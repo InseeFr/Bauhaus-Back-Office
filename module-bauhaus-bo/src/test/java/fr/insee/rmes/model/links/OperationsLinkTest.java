@@ -32,18 +32,18 @@ class OperationsLinkTest {
         OperationsLink link = OperationsLink.of("s1000", "série", "label fr", "label en");
         OperationsLink same = OperationsLink.of("s1000", "série", "label fr", "label en");
 
-        assertThat(link).isEqualTo(same).hasSameHashCodeAs(same);
-        assertThat(link).isEqualTo(link);
+        assertThat(link).isEqualTo(same).hasSameHashCodeAs(same).isEqualTo(link);
     }
 
     @Test
     void shouldDistinguishLinksThatDifferByAnyProperty() {
         OperationsLink link = OperationsLink.of("s1000", "série", "label fr", "label en");
 
-        assertThat(link).isNotEqualTo(OperationsLink.of("s1001", "série", "label fr", "label en"));
-        assertThat(link).isNotEqualTo(OperationsLink.of("s1000", "indicateur", "label fr", "label en"));
-        assertThat(link).isNotEqualTo(OperationsLink.of("s1000", "série", "autre", "label en"));
-        assertThat(link).isNotEqualTo(OperationsLink.of("s1000", "série", "label fr", "other"));
+        assertThat(link)
+                .isNotEqualTo(OperationsLink.of("s1001", "série", "label fr", "label en"))
+                .isNotEqualTo(OperationsLink.of("s1000", "indicateur", "label fr", "label en"))
+                .isNotEqualTo(OperationsLink.of("s1000", "série", "autre", "label en"))
+                .isNotEqualTo(OperationsLink.of("s1000", "série", "label fr", "other"));
     }
 
     /**

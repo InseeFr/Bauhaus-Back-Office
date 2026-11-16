@@ -4,7 +4,7 @@ import java.util.List;
 
 public class IdLabelTwoLangs {
 
-    private static final String classLink = "fr.insee.rmes.config.swagger.model.IdLabelTwoLangs";
+    private static final String CLASS_LINK = "fr.insee.rmes.config.swagger.model.IdLabelTwoLangs";
 
     public String id;
 
@@ -31,7 +31,7 @@ public class IdLabelTwoLangs {
     }
 
     public static String getClassIdLabelTwoLangs() {
-        return classLink;
+        return CLASS_LINK;
     }
 
     public String getLabelLg1() {

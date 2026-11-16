@@ -149,7 +149,7 @@ class DomainAccessPrivilegesCheckerTest {
 
     @Test
     void should_grant_access_with_stamp_strategy_when_stamp_matches()
-            throws Exception, StampFetchException, UnsupportedModuleException, MissingUserInformationException {
+            throws StampFetchException, UnsupportedModuleException, MissingUserInformationException {
         givenSeriesUpdateWithStampStrategy(userWithStamps("ssm", "STAMP-01"));
         whenSeriesCreatorsStampsFetched().thenReturn(List.of("STAMP-01", "STAMP-02"));
 
@@ -161,7 +161,7 @@ class DomainAccessPrivilegesCheckerTest {
 
     @Test
     void should_deny_access_with_stamp_strategy_when_stamp_does_not_match()
-            throws Exception, MissingUserInformationException, StampFetchException, UnsupportedModuleException {
+            throws MissingUserInformationException, StampFetchException, UnsupportedModuleException {
         givenSeriesUpdateWithStampStrategy(userWithStamps("ssm", "STAMP-03"));
         whenSeriesCreatorsStampsFetched().thenReturn(List.of("STAMP-01", "STAMP-02"));
 
@@ -172,7 +172,7 @@ class DomainAccessPrivilegesCheckerTest {
 
     @Test
     void should_grant_access_with_stamp_strategy_when_no_stamps_required()
-            throws Exception, MissingUserInformationException, StampFetchException, UnsupportedModuleException {
+            throws MissingUserInformationException, StampFetchException, UnsupportedModuleException {
         givenSeriesUpdateWithStampStrategy(userWithStamps("ssm", "STAMP-01"));
         whenSeriesCreatorsStampsFetched().thenReturn(List.of());
 
@@ -183,7 +183,7 @@ class DomainAccessPrivilegesCheckerTest {
 
     @Test
     void should_deny_access_when_stamp_fetch_fails()
-            throws Exception, MissingUserInformationException, StampFetchException, UnsupportedModuleException {
+            throws MissingUserInformationException, StampFetchException, UnsupportedModuleException {
         givenSeriesUpdateWithStampStrategy(userWithStamps("ssm", "STAMP-01"));
         whenSeriesCreatorsStampsFetched().thenThrow(new StampFetchException(RBAC.Module.OPERATION_SERIES, RESOURCE_ID));
 
@@ -194,7 +194,7 @@ class DomainAccessPrivilegesCheckerTest {
 
     @Test
     void should_handle_dataset_distribution_module()
-            throws Exception, MissingUserInformationException, StampFetchException, UnsupportedModuleException {
+            throws MissingUserInformationException, StampFetchException, UnsupportedModuleException {
         givenUpdateWithStampStrategyOnContributorsStamps(RBAC.Module.DATASET_DISTRIBUTION, "STAMP-01");
 
         boolean hasAccess = hasAccess("DATASET_DISTRIBUTION", "UPDATE");
@@ -205,7 +205,7 @@ class DomainAccessPrivilegesCheckerTest {
 
     @Test
     void should_handle_structure_module()
-            throws Exception, MissingUserInformationException, StampFetchException, UnsupportedModuleException {
+            throws MissingUserInformationException, StampFetchException, UnsupportedModuleException {
         givenUpdateWithStampStrategyOnContributorsStamps(RBAC.Module.STRUCTURE_STRUCTURE, "STAMP-01");
 
         boolean hasAccess = hasAccess("STRUCTURE_STRUCTURE", "UPDATE");
@@ -253,7 +253,7 @@ class DomainAccessPrivilegesCheckerTest {
 
     @Test
     void should_grant_access_with_stamp_strategy_when_user_has_multiple_stamps_and_one_matches()
-            throws Exception, StampFetchException, UnsupportedModuleException, MissingUserInformationException {
+            throws StampFetchException, UnsupportedModuleException, MissingUserInformationException {
         // User has multiple stamps: STAMP-01, STAMP-02, STAMP-03
         givenSeriesUpdateWithStampStrategy(userWithStamps("ssm", "STAMP-01", "STAMP-02", "STAMP-03"));
         // Resource only requires STAMP-02
@@ -266,7 +266,7 @@ class DomainAccessPrivilegesCheckerTest {
 
     @Test
     void should_grant_access_for_ddi_physicalinstance_with_stamp_strategy_when_stamp_matches()
-            throws Exception, StampFetchException, UnsupportedModuleException, MissingUserInformationException {
+            throws StampFetchException, UnsupportedModuleException, MissingUserInformationException {
         givenDdiGroupCreatedByStampsAAndB(userWithStamps("ssm", "stamp-A"));
 
         boolean hasAccess = accessChecker.hasAccess("DDI_PHYSICALINSTANCE", "CREATE", DDI_GROUP_ID, PRINCIPAL);
@@ -277,7 +277,7 @@ class DomainAccessPrivilegesCheckerTest {
 
     @Test
     void should_deny_access_for_ddi_physicalinstance_with_stamp_strategy_when_stamp_does_not_match()
-            throws Exception, StampFetchException, UnsupportedModuleException, MissingUserInformationException {
+            throws StampFetchException, UnsupportedModuleException, MissingUserInformationException {
         givenDdiGroupCreatedByStampsAAndB(userWithStamps("ssm", "stamp-X"));
 
         boolean hasAccess = accessChecker.hasAccess("DDI_PHYSICALINSTANCE", "CREATE", DDI_GROUP_ID, PRINCIPAL);
@@ -287,7 +287,7 @@ class DomainAccessPrivilegesCheckerTest {
 
     @Test
     void should_deny_access_when_user_has_multiple_stamps_but_none_matches()
-            throws Exception, StampFetchException, UnsupportedModuleException, MissingUserInformationException {
+            throws StampFetchException, UnsupportedModuleException, MissingUserInformationException {
         // User has multiple stamps but none match the resource
         givenSeriesUpdateWithStampStrategy(userWithStamps("ssm", "STAMP-01", "STAMP-02"));
         // Resource requires STAMP-99 which user doesn't have

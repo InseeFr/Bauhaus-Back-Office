@@ -48,7 +48,7 @@ class DocumentationPublicationTest extends WithGraphDBContainer {
     }
 
     @BeforeEach
-    void setUp() throws Exception {
+    void setUp() {
 
         // Create a simple PropertiesFinder for BauhausUriBuilder
         BauhausUriBuilder.PropertiesFinder propertiesFinder = Optional::of;

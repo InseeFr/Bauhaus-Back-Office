@@ -8,7 +8,7 @@ public class VersionableNote {
     private String noteType;
     private String lang;
     private String content;
-    private String validFrom;
+    private final String validFrom;
     private String version;
     private String conceptVersion;
     private String path;
