@@ -2,12 +2,11 @@ package fr.insee.rmes.modules.operations.documents.webservice;
 
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.commons.configuration.ConditionalOnModule;
+import fr.insee.rmes.modules.commons.security.PublicEndpoint;
 import fr.insee.rmes.modules.commons.webservice.ApiError;
 import fr.insee.rmes.modules.operations.documents.domain.exceptions.DocumentNotFoundException;
 import fr.insee.rmes.modules.operations.documents.domain.model.DocumentKind;
 import fr.insee.rmes.modules.operations.documents.domain.port.clientside.DocumentDescriptionService;
-import fr.insee.rmes.modules.users.domain.model.RBAC;
-import fr.insee.rmes.modules.users.webservice.HasAccess;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/operations")
+@RequestMapping("/operations/public")
 @ConditionalOnModule("operations")
 public class DocumentDescriptionResources {
 
@@ -29,14 +28,14 @@ public class DocumentDescriptionResources {
     }
 
     @GetMapping(value = "/documents/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @HasAccess(module = RBAC.Module.OPERATION_DOCUMENT, privilege = RBAC.Privilege.READ)
+    @PublicEndpoint
     public ResponseEntity<DocumentDescriptionResponse> getDocument(@PathVariable("id") String id)
             throws RmesException, DocumentNotFoundException {
         return describe(DocumentKind.DOCUMENT, id);
     }
 
     @GetMapping(value = "/liens/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @HasAccess(module = RBAC.Module.OPERATION_DOCUMENT, privilege = RBAC.Privilege.READ)
+    @PublicEndpoint
     public ResponseEntity<DocumentDescriptionResponse> getLink(@PathVariable("id") String id)
             throws RmesException, DocumentNotFoundException {
         return describe(DocumentKind.LINK, id);
