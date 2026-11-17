@@ -224,12 +224,12 @@ class VersionDateReconcilerTest {
 
     private static Ddi4Response mmvrOnlyResponse(Ddi4ManagedMissingValuesRepresentation mmvr) {
         return new Ddi4Response(
-                Ddi4Response.SCHEMA, null, null, null, null, null, null, mmvr == null ? null : List.of(mmvr));
+                Ddi4Response.SCHEMA_ID, null, null, null, null, null, null, mmvr == null ? null : List.of(mmvr));
     }
 
     private static Ddi4ManagedMissingValuesRepresentation mmvr(CogsDate date) {
         return new Ddi4ManagedMissingValuesRepresentation(
-                Ddi4ManagedMissingValuesRepresentation.TYPE,
+                Ddi4ManagedMissingValuesRepresentation.TYPE_NAME,
                 date,
                 "urn:ddi:fr.insee:mmvr-1:1",
                 AGENCY,
@@ -237,7 +237,7 @@ class VersionDateReconcilerTest {
                 "1",
                 List.of(new LangString("fr", "Valeurs sentinelles NSP/REF")),
                 List.of(new CodeRepresentation(
-                        CodeRepresentation.TYPE, false, ref("cl-sentinelles", Ddi4CodeList.TYPE))));
+                        CodeRepresentation.TYPE_NAME, false, ref("cl-sentinelles", Ddi4CodeList.TYPE_NAME))));
     }
 
     // --- fixtures : PI -> DR -> {var-1 -> cl-1 -> cat-1, var-2 -> cl-2 -> cat-2} ---
@@ -291,8 +291,8 @@ class VersionDateReconcilerTest {
             List<Ddi4CodeList> codeLists,
             List<Ddi4Category> categories) {
         return new Ddi4Response(
-                Ddi4Response.SCHEMA,
-                List.of(ref("pi-1", Ddi4PhysicalInstance.TYPE)),
+                Ddi4Response.SCHEMA_ID,
+                List.of(ref("pi-1", Ddi4PhysicalInstance.TYPE_NAME)),
                 List.of(physicalInstance(piDate)),
                 List.of(dataRelationship(drDate)),
                 variables,
@@ -313,16 +313,16 @@ class VersionDateReconcilerTest {
             CogsDate cat3Date,
             String cat3Label) {
         Code childCode = new Code(
-                Code.TYPE,
+                Code.TYPE_NAME,
                 urn("cl-1-c1-1"),
                 AGENCY,
                 "cl-1-c1-1",
                 "1",
-                ref("cat-3", Ddi4Category.TYPE),
+                ref("cat-3", Ddi4Category.TYPE_NAME),
                 ValueType.of("child-value"),
                 null);
         Code rootCode = new Code(
-                Code.TYPE,
+                Code.TYPE_NAME,
                 urn("cl-1-c1"),
                 AGENCY,
                 "cl-1-c1",
@@ -331,7 +331,7 @@ class VersionDateReconcilerTest {
                 ValueType.of("root-value"),
                 List.of(childCode));
         Ddi4CodeList hierarchicalCodeList = new Ddi4CodeList(
-                Ddi4CodeList.TYPE,
+                Ddi4CodeList.TYPE_NAME,
                 cl1Date,
                 urn("cl-1"),
                 AGENCY,
@@ -350,7 +350,7 @@ class VersionDateReconcilerTest {
 
     private static Ddi4PhysicalInstance physicalInstance(CogsDate date) {
         return new Ddi4PhysicalInstance(
-                Ddi4PhysicalInstance.TYPE,
+                Ddi4PhysicalInstance.TYPE_NAME,
                 date,
                 urn("pi-1"),
                 AGENCY,
@@ -358,12 +358,12 @@ class VersionDateReconcilerTest {
                 "1",
                 null,
                 new Citation(List.of(new LangString("fr", "Ma PI"))),
-                List.of(ref("dr-1", Ddi4DataRelationship.TYPE)));
+                List.of(ref("dr-1", Ddi4DataRelationship.TYPE_NAME)));
     }
 
     private static Ddi4DataRelationship dataRelationship(CogsDate date) {
         return new Ddi4DataRelationship(
-                Ddi4DataRelationship.TYPE,
+                Ddi4DataRelationship.TYPE_NAME,
                 date,
                 urn("dr-1"),
                 AGENCY,
@@ -372,19 +372,19 @@ class VersionDateReconcilerTest {
                 null,
                 List.of(new LangString("fr", "Mon DR")),
                 List.of(new LogicalRecord(
-                        LogicalRecord.TYPE,
+                        LogicalRecord.TYPE_NAME,
                         urn("lr-1"),
                         AGENCY,
                         "lr-1",
                         "1",
                         List.of(new LangString("fr", "Mon LR")),
                         new VariablesInRecord(
-                                List.of(ref("var-1", Ddi4Variable.TYPE), ref("var-2", Ddi4Variable.TYPE))))));
+                                List.of(ref("var-1", Ddi4Variable.TYPE_NAME), ref("var-2", Ddi4Variable.TYPE_NAME))))));
     }
 
     private static Ddi4Variable variable(String id, CogsDate date, String codeListId) {
         return new Ddi4Variable(
-                Ddi4Variable.TYPE,
+                Ddi4Variable.TYPE_NAME,
                 date,
                 urn(id),
                 AGENCY,
@@ -396,7 +396,8 @@ class VersionDateReconcilerTest {
                 null,
                 new VariableRepresentation(
                         null,
-                        new CodeRepresentation(CodeRepresentation.TYPE, null, ref(codeListId, Ddi4CodeList.TYPE)),
+                        new CodeRepresentation(
+                                CodeRepresentation.TYPE_NAME, null, ref(codeListId, Ddi4CodeList.TYPE_NAME)),
                         null,
                         null,
                         null,
@@ -406,7 +407,7 @@ class VersionDateReconcilerTest {
 
     private static Ddi4CodeList codeList(String id, CogsDate date, String categoryId, String codeValue) {
         return new Ddi4CodeList(
-                Ddi4CodeList.TYPE,
+                Ddi4CodeList.TYPE_NAME,
                 date,
                 urn(id),
                 AGENCY,
@@ -415,19 +416,19 @@ class VersionDateReconcilerTest {
                 List.of(new LangString("fr", id)),
                 null,
                 List.of(new Code(
-                        Code.TYPE,
+                        Code.TYPE_NAME,
                         urn(id + "-c1"),
                         AGENCY,
                         id + "-c1",
                         "1",
-                        ref(categoryId, Ddi4Category.TYPE),
+                        ref(categoryId, Ddi4Category.TYPE_NAME),
                         ValueType.of(codeValue),
                         null)));
     }
 
     private static Ddi4Category category(String id, CogsDate date, String label) {
         return new Ddi4Category(
-                Ddi4Category.TYPE, date, urn(id), AGENCY, id, "1", List.of(new LangString("fr", label)));
+                Ddi4Category.TYPE_NAME, date, urn(id), AGENCY, id, "1", List.of(new LangString("fr", label)));
     }
 
     private static Reference ref(String id, String type) {

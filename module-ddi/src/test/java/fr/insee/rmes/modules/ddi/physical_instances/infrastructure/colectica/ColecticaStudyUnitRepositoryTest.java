@@ -46,7 +46,7 @@ class ColecticaStudyUnitRepositoryTest {
         // Given a study unit that files a LogicalProduct (holding its series' VariableScheme)
         Reference logicalProductReference = Reference.of("fr.insee", "lp-1", "1", "LogicalProduct");
         Ddi4StudyUnit studyUnit = new Ddi4StudyUnit(
-                Ddi4StudyUnit.TYPE,
+                Ddi4StudyUnit.TYPE_NAME,
                 CogsDate.ofDateTime("2026-01-01T00:00:00Z"),
                 "urn:ddi:fr.insee:su-1:1",
                 "fr.insee",

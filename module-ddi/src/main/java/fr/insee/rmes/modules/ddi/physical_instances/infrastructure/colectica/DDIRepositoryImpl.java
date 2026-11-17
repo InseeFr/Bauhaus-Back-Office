@@ -296,7 +296,7 @@ public class DDIRepositoryImpl implements DDIRepository {
     public Ddi4Response createPhysicalInstance(CreatePhysicalInstanceRequest request) {
         Ddi4Response created = physicalInstanceWriter.createPhysicalInstance(request);
         searchRowsCache.add(createdPhysicalInstance(created), request.studyUnitAgency(), request.studyUnitId());
-        catalog.refreshStudyUnitsByOperationAsync();
+        catalog.refreshStudyUnitsByOperationNow();
         return created;
     }
 
@@ -304,7 +304,7 @@ public class DDIRepositoryImpl implements DDIRepository {
     public Ddi4Response createPhysicalInstance(CreatePhysicalInstanceRequest request, PhysicalInstanceIds ids) {
         Ddi4Response created = physicalInstanceWriter.createPhysicalInstance(request, ids);
         searchRowsCache.add(createdPhysicalInstance(created), request.studyUnitAgency(), request.studyUnitId());
-        catalog.refreshStudyUnitsByOperationAsync();
+        catalog.refreshStudyUnitsByOperationNow();
         return created;
     }
 
@@ -329,7 +329,7 @@ public class DDIRepositoryImpl implements DDIRepository {
         Ddi4PhysicalInstance copy = physicalInstanceWriter.duplicatePhysicalInstance(agencyId, id, request);
         searchRowsCache.add(copy, request.studyUnitAgency(), request.studyUnitId());
         catalog.refreshStudyUnitsByOperationAsync();
-        return Reference.of(copy.agency(), copy.id(), copy.version(), Ddi4PhysicalInstance.TYPE);
+        return Reference.of(copy.agency(), copy.id(), copy.version(), Ddi4PhysicalInstance.TYPE_NAME);
     }
 
     @Override

@@ -9,5 +9,5 @@ public record DateTimeRepresentation(
         @JsonProperty("DateTypeCode") CodeValue dateTypeCode,
         @JsonProperty("DateFieldFormat") String dateFieldFormat) {
 
-    public static final String TYPE = "DateTimeRepresentationBaseType";
+    public static final String TYPE_NAME = "DateTimeRepresentationBaseType";
 }

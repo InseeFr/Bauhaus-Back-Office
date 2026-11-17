@@ -467,7 +467,7 @@ public class DDIServiceImpl implements DDIService {
                 Ddi4Variable found = target.get();
                 reusedBySourceId.put(
                         variable.sourceId(),
-                        Reference.of(found.agency(), found.id(), found.version(), Ddi4Variable.TYPE));
+                        Reference.of(found.agency(), found.id(), found.version(), Ddi4Variable.TYPE_NAME));
             } else {
                 invalid.add(variable.sourceId());
             }

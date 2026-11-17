@@ -55,7 +55,7 @@ class Ddi4ToLifecycle33Test {
     @Test
     void shouldBuildPhysicalInstanceWithoutBasedOnObject() {
         Ddi4PhysicalInstance pi = new Ddi4PhysicalInstance(
-                Ddi4PhysicalInstance.TYPE,
+                Ddi4PhysicalInstance.TYPE_NAME,
                 CogsDate.ofDateTime("2025-12-23T09:52:06.355Z"),
                 "urn:ddi:fr.insee:new-pi-id:1",
                 "fr.insee",
@@ -84,7 +84,7 @@ class Ddi4ToLifecycle33Test {
     @Test
     void shouldBuildPhysicalInstanceWithBasedOnObjectAndDataRelationshipReference() {
         Ddi4PhysicalInstance pi = new Ddi4PhysicalInstance(
-                Ddi4PhysicalInstance.TYPE,
+                Ddi4PhysicalInstance.TYPE_NAME,
                 CogsDate.ofDateTime("2025-12-23T09:52:06.355Z"),
                 "urn:ddi:fr.insee:new-pi-id:1",
                 "fr.insee",
@@ -107,7 +107,7 @@ class Ddi4ToLifecycle33Test {
     @Test
     void shouldBuildDataRelationshipMinimal() {
         Ddi4DataRelationship dr = new Ddi4DataRelationship(
-                Ddi4DataRelationship.TYPE,
+                Ddi4DataRelationship.TYPE_NAME,
                 CogsDate.ofDateTime("2025-12-23T09:52:06.355Z"),
                 "urn:ddi:fr.insee:dr-id:1",
                 "fr.insee",
@@ -129,7 +129,7 @@ class Ddi4ToLifecycle33Test {
     @Test
     void shouldBuildDataRelationshipWithLabelAndLogicalRecord() {
         Ddi4DataRelationship dr = new Ddi4DataRelationship(
-                Ddi4DataRelationship.TYPE,
+                Ddi4DataRelationship.TYPE_NAME,
                 CogsDate.ofDateTime("2025-12-23T09:52:06.355Z"),
                 "urn:ddi:fr.insee:dr-id:1",
                 "fr.insee",
@@ -138,7 +138,7 @@ class Ddi4ToLifecycle33Test {
                 BasedOnObject.of(List.of(Reference.of("fr.insee", "original-dr", "1", "DataRelationship"))),
                 LangStrings.of("fr-FR", "DR Label"),
                 List.of(new LogicalRecord(
-                        LogicalRecord.TYPE,
+                        LogicalRecord.TYPE_NAME,
                         "urn:ddi:fr.insee:lr-id:1",
                         "fr.insee",
                         "lr-id",
@@ -163,7 +163,7 @@ class Ddi4ToLifecycle33Test {
     @Test
     void shouldBuildVariableWithBasedOnObjectAndLabel() {
         Ddi4Variable variable = new Ddi4Variable(
-                Ddi4Variable.TYPE,
+                Ddi4Variable.TYPE_NAME,
                 CogsDate.ofDateTime("2025-12-23T09:52:06.355Z"),
                 "urn:ddi:fr.insee:var-id:1",
                 "fr.insee",
@@ -194,7 +194,7 @@ class Ddi4ToLifecycle33Test {
         Ddi4Variable variable = variableWithRepresentation(new VariableRepresentation(
                 null,
                 new CodeRepresentation(
-                        CodeRepresentation.TYPE, true, Reference.of("fr.insee", "cl-id", "1", "CodeList")),
+                        CodeRepresentation.TYPE_NAME, true, Reference.of("fr.insee", "cl-id", "1", "CodeList")),
                 null,
                 null,
                 null,
@@ -220,7 +220,7 @@ class Ddi4ToLifecycle33Test {
         Ddi4Variable variable = variableWithRepresentation(new VariableRepresentation(
                 null,
                 new CodeRepresentation(
-                        CodeRepresentation.TYPE, false, Reference.of("fr.insee", "cl-id", "1", "CodeList")),
+                        CodeRepresentation.TYPE_NAME, false, Reference.of("fr.insee", "cl-id", "1", "CodeList")),
                 null,
                 null,
                 null,
@@ -240,7 +240,7 @@ class Ddi4ToLifecycle33Test {
                 null,
                 null,
                 new NumericRepresentation(
-                        NumericRepresentation.TYPE,
+                        NumericRepresentation.TYPE_NAME,
                         CodeValue.numericType("Integer"),
                         new NumberRange(new RangeValue(false, 0.0), new RangeValue(true, 100.0))),
                 null,
@@ -264,7 +264,7 @@ class Ddi4ToLifecycle33Test {
                 null,
                 null,
                 new NumericRepresentation(
-                        NumericRepresentation.TYPE,
+                        NumericRepresentation.TYPE_NAME,
                         CodeValue.numericType("Decimal"),
                         new NumberRange(new RangeValue(true, 0.0001), new RangeValue(true, 12345678.5))),
                 null,
@@ -284,7 +284,7 @@ class Ddi4ToLifecycle33Test {
                 null,
                 null,
                 null,
-                new DateTimeRepresentation(DateTimeRepresentation.TYPE, CodeValue.dateType("Date"), "yyyy-MM-dd"),
+                new DateTimeRepresentation(DateTimeRepresentation.TYPE_NAME, CodeValue.dateType("Date"), "yyyy-MM-dd"),
                 null,
                 null));
 
@@ -300,7 +300,12 @@ class Ddi4ToLifecycle33Test {
     @Test
     void shouldBuildVariableWithTextRepresentation() {
         Ddi4Variable variable = variableWithRepresentation(new VariableRepresentation(
-                null, null, null, null, new TextRepresentation(TextRepresentation.TYPE, 255, 1, "[A-Z]+", true), null));
+                null,
+                null,
+                null,
+                null,
+                new TextRepresentation(TextRepresentation.TYPE_NAME, 255, 1, "[A-Z]+", true),
+                null));
 
         String xml = converter.toVariable(variable).xmlText(logicalProductXmlOptions());
 
@@ -319,7 +324,12 @@ class Ddi4ToLifecycle33Test {
     @Test
     void shouldBuildTextRepresentationWithoutAnyAttribute() {
         Ddi4Variable variable = variableWithRepresentation(new VariableRepresentation(
-                null, null, null, null, new TextRepresentation(TextRepresentation.TYPE, null, null, null, null), null));
+                null,
+                null,
+                null,
+                null,
+                new TextRepresentation(TextRepresentation.TYPE_NAME, null, null, null, null),
+                null));
 
         String xml = converter.toVariable(variable).xmlText(logicalProductXmlOptions());
 
@@ -343,7 +353,7 @@ class Ddi4ToLifecycle33Test {
     @Test
     void shouldBuildCodeListWithCodes() {
         Ddi4CodeList cl = new Ddi4CodeList(
-                Ddi4CodeList.TYPE,
+                Ddi4CodeList.TYPE_NAME,
                 CogsDate.ofDateTime("2025-12-23T09:52:06.355Z"),
                 "urn:ddi:fr.insee:cl-id:1",
                 "fr.insee",
@@ -370,7 +380,7 @@ class Ddi4ToLifecycle33Test {
     void shouldBuildCategoryWithBasedOnObject() {
         // Variante d'une categorie partagee : l'attribut DDI BasedOn reference la categorie source.
         Ddi4Category cat = new Ddi4Category(
-                Ddi4Category.TYPE,
+                Ddi4Category.TYPE_NAME,
                 CogsDate.ofDateTime("2025-12-23T09:52:06.355Z"),
                 "urn:ddi:fr.insee:variant-cat:1",
                 "fr.insee",
@@ -392,7 +402,7 @@ class Ddi4ToLifecycle33Test {
     void shouldBuildCodeListWithBasedOnObject() {
         // Variante d'une liste partagée : l'attribut DDI BasedOn référence la liste d'origine.
         Ddi4CodeList cl = new Ddi4CodeList(
-                Ddi4CodeList.TYPE,
+                Ddi4CodeList.TYPE_NAME,
                 CogsDate.ofDateTime("2025-12-23T09:52:06.355Z"),
                 "urn:ddi:fr.insee:variant-id:1",
                 "fr.insee",
@@ -420,7 +430,7 @@ class Ddi4ToLifecycle33Test {
     @Test
     void shouldSynthesizeCodeListUrnWhenAbsent() {
         Ddi4CodeList cl = new Ddi4CodeList(
-                Ddi4CodeList.TYPE,
+                Ddi4CodeList.TYPE_NAME,
                 CogsDate.ofDateTime("2025-12-23T09:52:06.355Z"),
                 null,
                 "fr.insee",
@@ -438,7 +448,7 @@ class Ddi4ToLifecycle33Test {
     @Test
     void shouldSynthesizeCategoryUrnWhenAbsent() {
         Ddi4Category cat = new Ddi4Category(
-                Ddi4Category.TYPE,
+                Ddi4Category.TYPE_NAME,
                 CogsDate.ofDateTime("2025-12-23T09:52:06.355Z"),
                 null,
                 "fr.insee",
@@ -454,7 +464,7 @@ class Ddi4ToLifecycle33Test {
     @Test
     void shouldBuildCodeListWithLevels() {
         Ddi4CodeList cl = new Ddi4CodeList(
-                Ddi4CodeList.TYPE,
+                Ddi4CodeList.TYPE_NAME,
                 CogsDate.ofDateTime("2025-12-23T09:52:06.355Z"),
                 "urn:ddi:fr.insee:cl-id:1",
                 "fr.insee",
@@ -462,8 +472,8 @@ class Ddi4ToLifecycle33Test {
                 "1",
                 LangStrings.of("fr-FR", "NUTS"),
                 List.of(
-                        new Level(Level.TYPE, 0, LangStrings.of("fr-FR", "NUTS 0"), "Nominal"),
-                        new Level(Level.TYPE, 1, LangStrings.of("fr-FR", "NUTS 1"), "Ordinal")),
+                        new Level(Level.TYPE_NAME, 0, LangStrings.of("fr-FR", "NUTS 0"), "Nominal"),
+                        new Level(Level.TYPE_NAME, 1, LangStrings.of("fr-FR", "NUTS 1"), "Ordinal")),
                 null);
 
         var codeList = converter.toCodeList(cl).getFragment().getCodeList();
@@ -484,7 +494,7 @@ class Ddi4ToLifecycle33Test {
     @Test
     void shouldBuildHierarchicalCodeListWithNestedCodes() {
         Ddi4CodeList cl = new Ddi4CodeList(
-                Ddi4CodeList.TYPE,
+                Ddi4CodeList.TYPE_NAME,
                 CogsDate.ofDateTime("2025-12-23T09:52:06.355Z"),
                 "urn:ddi:fr.insee:cl-id:1",
                 "fr.insee",
@@ -493,7 +503,7 @@ class Ddi4ToLifecycle33Test {
                 LangStrings.of("fr-FR", "NUTS"),
                 null,
                 List.of(new Code(
-                        Code.TYPE,
+                        Code.TYPE_NAME,
                         "urn:ddi:fr.insee:code-at:1",
                         "fr.insee",
                         "code-at",
@@ -501,7 +511,7 @@ class Ddi4ToLifecycle33Test {
                         Reference.of("fr.insee", "cat-at", "1", "Category"),
                         ValueType.of("AT"),
                         List.of(new Code(
-                                Code.TYPE,
+                                Code.TYPE_NAME,
                                 "urn:ddi:fr.insee:code-at2:1",
                                 "fr.insee",
                                 "code-at2",
@@ -527,7 +537,7 @@ class Ddi4ToLifecycle33Test {
     @Test
     void shouldBuildCodeListSchemeWithCodeListReferences() {
         Ddi4CodeListScheme scheme = new Ddi4CodeListScheme(
-                Ddi4CodeListScheme.TYPE,
+                Ddi4CodeListScheme.TYPE_NAME,
                 CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
                 "urn:ddi:fr.insee:cls-id:1",
                 "fr.insee",
@@ -574,7 +584,7 @@ class Ddi4ToLifecycle33Test {
     @Test
     void shouldBuildCategorySchemeWithCategoryReferences() {
         Ddi4CategoryScheme scheme = new Ddi4CategoryScheme(
-                Ddi4CategoryScheme.TYPE,
+                Ddi4CategoryScheme.TYPE_NAME,
                 CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
                 "urn:ddi:fr.insee:cats-id:1",
                 "fr.insee",
@@ -600,7 +610,7 @@ class Ddi4ToLifecycle33Test {
     @Test
     void shouldBuildVariableSchemeWithVariableReferences() {
         Ddi4VariableScheme scheme = new Ddi4VariableScheme(
-                Ddi4VariableScheme.TYPE,
+                Ddi4VariableScheme.TYPE_NAME,
                 CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
                 "urn:ddi:fr.insee:vars-id:1",
                 "fr.insee",
@@ -626,7 +636,7 @@ class Ddi4ToLifecycle33Test {
     @Test
     void shouldBuildVariableSchemeWithItsOwnName() {
         Ddi4VariableScheme scheme = new Ddi4VariableScheme(
-                Ddi4VariableScheme.TYPE,
+                Ddi4VariableScheme.TYPE_NAME,
                 CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
                 "urn:ddi:fr.insee:vars-id:1",
                 "fr.insee",
@@ -647,7 +657,7 @@ class Ddi4ToLifecycle33Test {
     @Test
     void shouldBuildLogicalProductWithItsOwnName() {
         Ddi4LogicalProduct logicalProduct = new Ddi4LogicalProduct(
-                Ddi4LogicalProduct.TYPE,
+                Ddi4LogicalProduct.TYPE_NAME,
                 CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
                 "urn:ddi:fr.insee:lp-id:1",
                 "fr.insee",
@@ -671,7 +681,7 @@ class Ddi4ToLifecycle33Test {
     @Test
     void shouldBuildEmptyCategoryAndVariableSchemes() {
         Ddi4CategoryScheme categoryScheme = new Ddi4CategoryScheme(
-                Ddi4CategoryScheme.TYPE,
+                Ddi4CategoryScheme.TYPE_NAME,
                 CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
                 "urn:ddi:fr.insee:cats-id:1",
                 "fr.insee",
@@ -680,7 +690,7 @@ class Ddi4ToLifecycle33Test {
                 LangStrings.of("fr-FR", "Empty CategoryScheme"),
                 List.of());
         Ddi4VariableScheme variableScheme = new Ddi4VariableScheme(
-                Ddi4VariableScheme.TYPE,
+                Ddi4VariableScheme.TYPE_NAME,
                 CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
                 "urn:ddi:fr.insee:vars-id:1",
                 "fr.insee",
@@ -702,7 +712,7 @@ class Ddi4ToLifecycle33Test {
         // abstraite : Colectica ignore la référence (ni indexée, ni affichée) si elle n'est pas
         // écrite avec l'élément concret correspondant au type visé.
         Ddi4ManagedRepresentationScheme scheme = new Ddi4ManagedRepresentationScheme(
-                Ddi4ManagedRepresentationScheme.TYPE,
+                Ddi4ManagedRepresentationScheme.TYPE_NAME,
                 CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
                 "urn:ddi:fr.insee:mrs-id:1",
                 "fr.insee",
@@ -733,7 +743,7 @@ class Ddi4ToLifecycle33Test {
     @Test
     void shouldBuildManagedMissingValuesRepresentationWithMissingCodeRepresentation() {
         Ddi4ManagedMissingValuesRepresentation mmvr = new Ddi4ManagedMissingValuesRepresentation(
-                Ddi4ManagedMissingValuesRepresentation.TYPE,
+                Ddi4ManagedMissingValuesRepresentation.TYPE_NAME,
                 CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
                 "urn:ddi:fr.insee:mmvr-id:1",
                 "fr.insee",
@@ -741,7 +751,7 @@ class Ddi4ToLifecycle33Test {
                 "1",
                 LangStrings.of("fr-FR", "Valeurs manquantes standard"),
                 List.of(new CodeRepresentation(
-                        CodeRepresentation.TYPE,
+                        CodeRepresentation.TYPE_NAME,
                         Boolean.FALSE,
                         Reference.of("fr.insee", "cl-sentinel", "1", "CodeList"))));
 
@@ -760,7 +770,7 @@ class Ddi4ToLifecycle33Test {
     @Test
     void shouldBuildEmptyManagedRepresentationScheme() {
         Ddi4ManagedRepresentationScheme scheme = new Ddi4ManagedRepresentationScheme(
-                Ddi4ManagedRepresentationScheme.TYPE,
+                Ddi4ManagedRepresentationScheme.TYPE_NAME,
                 CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
                 "urn:ddi:fr.insee:mrs-id:1",
                 "fr.insee",
@@ -831,7 +841,7 @@ class Ddi4ToLifecycle33Test {
     @Test
     void shouldBuildCategory() {
         Ddi4Category cat = new Ddi4Category(
-                Ddi4Category.TYPE,
+                Ddi4Category.TYPE_NAME,
                 CogsDate.ofDateTime("2025-12-23T09:52:06.355Z"),
                 "urn:ddi:fr.insee:cat-id:1",
                 "fr.insee",
@@ -939,7 +949,7 @@ class Ddi4ToLifecycle33Test {
 
     private static Ddi4Variable variableWithRepresentation(VariableRepresentation rep) {
         return new Ddi4Variable(
-                Ddi4Variable.TYPE,
+                Ddi4Variable.TYPE_NAME,
                 CogsDate.ofDateTime("2025-12-23T09:52:06.355Z"),
                 "urn:ddi:fr.insee:var-rep:1",
                 "fr.insee",
@@ -956,7 +966,7 @@ class Ddi4ToLifecycle33Test {
     /** The code-id Code (value 01, category cat-id), with the given URN. */
     private static Code codeId01(String urn) {
         return new Code(
-                Code.TYPE,
+                Code.TYPE_NAME,
                 urn,
                 "fr.insee",
                 "code-id",
@@ -974,7 +984,7 @@ class Ddi4ToLifecycle33Test {
             String typeOfGroup,
             List<Reference> logicalProductReference) {
         return new Ddi4Group(
-                Ddi4Group.TYPE,
+                Ddi4Group.TYPE_NAME,
                 CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
                 "urn:ddi:fr.insee:group-id:1",
                 "fr.insee",
@@ -995,7 +1005,7 @@ class Ddi4ToLifecycle33Test {
             List<Reference> physicalInstanceReferences,
             List<Reference> logicalProductReferences) {
         return new Ddi4StudyUnit(
-                Ddi4StudyUnit.TYPE,
+                Ddi4StudyUnit.TYPE_NAME,
                 CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
                 "urn:ddi:fr.insee:su-id:1",
                 "fr.insee",

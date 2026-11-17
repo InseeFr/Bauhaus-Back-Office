@@ -22,5 +22,5 @@ public record Ddi4CodeListScheme(
         @JsonProperty("Label") List<LangString> label,
         @JsonProperty("CodeListReference") List<Reference> codeListReference) {
 
-    public static final String TYPE = "CodeListScheme";
+    public static final String TYPE_NAME = "CodeListScheme";
 }

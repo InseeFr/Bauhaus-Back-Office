@@ -21,10 +21,10 @@ class Ddi4StudyUnitResponseWireFormatTest {
 
     private static Ddi4StudyUnitResponse aResponse() {
         return new Ddi4StudyUnitResponse(
-                Ddi4Response.SCHEMA,
-                List.of(Reference.of("fr.insee", "su-1", "1", Ddi4StudyUnit.TYPE)),
+                Ddi4Response.SCHEMA_ID,
+                List.of(Reference.of("fr.insee", "su-1", "1", Ddi4StudyUnit.TYPE_NAME)),
                 List.of(new Ddi4StudyUnit(
-                        Ddi4StudyUnit.TYPE,
+                        Ddi4StudyUnit.TYPE_NAME,
                         null,
                         "urn:ddi:fr.insee:su-1:1",
                         "fr.insee",
@@ -32,7 +32,7 @@ class Ddi4StudyUnitResponseWireFormatTest {
                         "1",
                         new Citation(LangStrings.of("fr-FR", "Mon opération")),
                         "http://id.insee.fr/operations/operation/op1",
-                        List.of(Reference.of("fr.insee", "pi-1", "1", Ddi4PhysicalInstance.TYPE)))),
+                        List.of(Reference.of("fr.insee", "pi-1", "1", Ddi4PhysicalInstance.TYPE_NAME)))),
                 List.of(aPhysicalInstance()));
     }
 
@@ -67,7 +67,7 @@ class Ddi4StudyUnitResponseWireFormatTest {
 
     @Test
     void shouldOmitEmptyEnvelopeMembers() throws Exception {
-        Ddi4StudyUnitResponse empty = new Ddi4StudyUnitResponse(Ddi4Response.SCHEMA, null, null, null);
+        Ddi4StudyUnitResponse empty = new Ddi4StudyUnitResponse(Ddi4Response.SCHEMA_ID, null, null, null);
 
         String json = mapper.writeValueAsString(empty);
 

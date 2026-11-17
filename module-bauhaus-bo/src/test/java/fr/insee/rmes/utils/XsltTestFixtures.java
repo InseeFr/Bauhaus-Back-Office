@@ -1,6 +1,6 @@
 package fr.insee.rmes.utils;
 
-public class UtilsTest {
+final class XsltTestFixtures {
 
     public static final String MSD_FILE = """
             <MSD>
@@ -197,4 +197,6 @@ public class UtilsTest {
             	<targetType>SERIES</targetType>
             </parameters>
             """;
+
+    private XsltTestFixtures() {}
 }

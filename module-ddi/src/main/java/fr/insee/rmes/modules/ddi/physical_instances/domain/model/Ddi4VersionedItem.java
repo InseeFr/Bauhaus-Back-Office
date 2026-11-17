@@ -21,14 +21,14 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
         property = "$type",
         visible = true)
 @JsonSubTypes({
-    @JsonSubTypes.Type(value = Ddi4PhysicalInstance.class, name = Ddi4PhysicalInstance.TYPE),
-    @JsonSubTypes.Type(value = Ddi4DataRelationship.class, name = Ddi4DataRelationship.TYPE),
-    @JsonSubTypes.Type(value = Ddi4Variable.class, name = Ddi4Variable.TYPE),
-    @JsonSubTypes.Type(value = Ddi4CodeList.class, name = Ddi4CodeList.TYPE),
-    @JsonSubTypes.Type(value = Ddi4Category.class, name = Ddi4Category.TYPE),
+    @JsonSubTypes.Type(value = Ddi4PhysicalInstance.class, name = Ddi4PhysicalInstance.TYPE_NAME),
+    @JsonSubTypes.Type(value = Ddi4DataRelationship.class, name = Ddi4DataRelationship.TYPE_NAME),
+    @JsonSubTypes.Type(value = Ddi4Variable.class, name = Ddi4Variable.TYPE_NAME),
+    @JsonSubTypes.Type(value = Ddi4CodeList.class, name = Ddi4CodeList.TYPE_NAME),
+    @JsonSubTypes.Type(value = Ddi4Category.class, name = Ddi4Category.TYPE_NAME),
     @JsonSubTypes.Type(
             value = Ddi4ManagedMissingValuesRepresentation.class,
-            name = Ddi4ManagedMissingValuesRepresentation.TYPE)
+            name = Ddi4ManagedMissingValuesRepresentation.TYPE_NAME)
 })
 public interface Ddi4VersionedItem {
     String agency();

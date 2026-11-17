@@ -21,7 +21,7 @@ public record Ddi4Variable(
         @JsonProperty("VersionResponsibility") String versionResponsibility)
         implements Ddi4VersionedItem {
 
-    public static final String TYPE = "Variable";
+    public static final String TYPE_NAME = "Variable";
 
     /**
      * Constructeur de compatibilité (sans {@code VersionResponsibility}) : le champ est estampillé

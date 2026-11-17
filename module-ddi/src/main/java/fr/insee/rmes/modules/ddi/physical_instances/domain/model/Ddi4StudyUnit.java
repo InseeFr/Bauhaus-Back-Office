@@ -26,7 +26,7 @@ public record Ddi4StudyUnit(
         @JsonProperty("VersionResponsibility") String versionResponsibility)
         implements Ddi4Item {
 
-    public static final String TYPE = "StudyUnit";
+    public static final String TYPE_NAME = "StudyUnit";
 
     /**
      * Constructeur de compatibilité (sans {@code VersionResponsibility}) : le champ est estampillé

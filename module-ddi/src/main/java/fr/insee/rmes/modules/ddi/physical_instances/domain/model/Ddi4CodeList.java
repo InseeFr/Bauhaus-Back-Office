@@ -19,7 +19,7 @@ public record Ddi4CodeList(
         @JsonProperty("VersionResponsibility") String versionResponsibility)
         implements Ddi4VersionedItem {
 
-    public static final String TYPE = "CodeList";
+    public static final String TYPE_NAME = "CodeList";
 
     /**
      * Constructeur de compatibilité (sans {@code VersionResponsibility}) : le champ est estampillé

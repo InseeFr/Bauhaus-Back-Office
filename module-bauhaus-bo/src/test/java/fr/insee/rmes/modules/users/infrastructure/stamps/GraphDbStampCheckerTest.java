@@ -147,7 +147,7 @@ class GraphDbStampCheckerTest {
 
     private static Ddi4Group group(List<Reference> studyUnitReference, List<String> seriesIris) {
         return new Ddi4Group(
-                Ddi4Group.TYPE,
+                Ddi4Group.TYPE_NAME,
                 null,
                 null,
                 "fr.insee",

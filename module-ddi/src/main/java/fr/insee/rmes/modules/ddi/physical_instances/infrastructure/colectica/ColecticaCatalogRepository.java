@@ -104,6 +104,19 @@ class ColecticaCatalogRepository {
         studyUnitsByOperation.refreshAsync();
     }
 
+    /**
+     * Recalcule le cache opération → StudyUnits avant de rendre la main, pour que la lecture qui suit
+     * l'écriture voie déjà le nouveau fichier. Un échec est journalisé : l'écriture reste faite et le
+     * cache précédent reste servi.
+     */
+    void refreshStudyUnitsByOperationNow() {
+        try {
+            studyUnitsByOperation.refresh();
+        } catch (RuntimeException e) {
+            logger.warn("StudyUnits by operation cache refresh failed: {}", e.getMessage());
+        }
+    }
+
     /** Une StudyUnit et les PhysicalInstances qu'elle référence, telles que Colectica les renvoie. */
     private record StudyUnitFragments(ColecticaItemResponse studyUnit, List<ColecticaItemResponse> physicalInstances) {
         List<String> fragmentXmls() {
@@ -463,9 +476,9 @@ class ColecticaCatalogRepository {
         ColecticaItemResponse item = fragments.studyUnit();
         Ddi4StudyUnit studyUnit = ddi3ToDdi4Converter.toStudyUnit(item.item());
         return new Ddi4StudyUnitResponse(
-                Ddi4Response.SCHEMA,
+                Ddi4Response.SCHEMA_ID,
                 List.of(Reference.of(
-                        item.agencyId(), item.identifier(), String.valueOf(item.version()), Ddi4StudyUnit.TYPE)),
+                        item.agencyId(), item.identifier(), String.valueOf(item.version()), Ddi4StudyUnit.TYPE_NAME)),
                 List.of(studyUnit),
                 toDdi4PhysicalInstances(fragments.physicalInstances()));
     }
@@ -477,7 +490,7 @@ class ColecticaCatalogRepository {
         List<Ddi3Response.Ddi3Item> ddi3Items =
                 physicalInstances.stream().map(ColecticaItems::toDdi3Item).toList();
         Ddi4Response converted =
-                ddi3ToDdi4Converter.convertDdi3ToDdi4(new Ddi3Response(null, ddi3Items), Ddi4Response.SCHEMA);
+                ddi3ToDdi4Converter.convertDdi3ToDdi4(new Ddi3Response(null, ddi3Items), Ddi4Response.SCHEMA_ID);
         return converted == null ? null : converted.physicalInstance();
     }
 

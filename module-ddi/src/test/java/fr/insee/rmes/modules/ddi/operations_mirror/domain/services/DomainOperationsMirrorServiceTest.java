@@ -215,7 +215,7 @@ class DomainOperationsMirrorServiceTest {
                         existingGroup("1", "Recensement", null, List.of(SERIES_IRI), List.of(GROUP_LOGICAL_PRODUCT))));
         when(ddiService.findLogicalProduct(AGENCY, "lp-1"))
                 .thenReturn(Optional.of(new Ddi4LogicalProduct(
-                        Ddi4LogicalProduct.TYPE,
+                        Ddi4LogicalProduct.TYPE_NAME,
                         null,
                         "urn:ddi:fr.insee:lp-1:2",
                         AGENCY,
@@ -229,7 +229,7 @@ class DomainOperationsMirrorServiceTest {
                         "LP-" + shortLabel)));
         when(ddiService.findCodeListScheme(AGENCY, "cls-1"))
                 .thenReturn(Optional.of(new Ddi4CodeListScheme(
-                        Ddi4CodeListScheme.TYPE,
+                        Ddi4CodeListScheme.TYPE_NAME,
                         null,
                         "urn:ddi:fr.insee:cls-1:1",
                         AGENCY,
@@ -239,7 +239,7 @@ class DomainOperationsMirrorServiceTest {
                         List.of(CODE_LIST))));
         when(ddiService.findCategoryScheme(AGENCY, "cas-1"))
                 .thenReturn(Optional.of(new Ddi4CategoryScheme(
-                        Ddi4CategoryScheme.TYPE,
+                        Ddi4CategoryScheme.TYPE_NAME,
                         null,
                         "urn:ddi:fr.insee:cas-1:3",
                         AGENCY,
@@ -249,7 +249,7 @@ class DomainOperationsMirrorServiceTest {
                         List.of(CATEGORY))));
         when(ddiService.findManagedRepresentationScheme(AGENCY, "mrs-1"))
                 .thenReturn(Optional.of(new Ddi4ManagedRepresentationScheme(
-                        Ddi4ManagedRepresentationScheme.TYPE,
+                        Ddi4ManagedRepresentationScheme.TYPE_NAME,
                         null,
                         "urn:ddi:fr.insee:mrs-1:1",
                         AGENCY,
@@ -414,7 +414,7 @@ class DomainOperationsMirrorServiceTest {
         Reference physicalInstance = Reference.of(AGENCY, "pi-1", "1", "PhysicalInstance");
         when(studyUnitService.find(AGENCY, expectedStudyUnitId()))
                 .thenReturn(Optional.of(new Ddi4StudyUnit(
-                        Ddi4StudyUnit.TYPE,
+                        Ddi4StudyUnit.TYPE_NAME,
                         null,
                         null,
                         AGENCY,
@@ -453,7 +453,7 @@ class DomainOperationsMirrorServiceTest {
             List<String> seriesIris,
             List<Reference> logicalProductReferences) {
         return new Ddi4Group(
-                Ddi4Group.TYPE,
+                Ddi4Group.TYPE_NAME,
                 null,
                 null,
                 AGENCY,

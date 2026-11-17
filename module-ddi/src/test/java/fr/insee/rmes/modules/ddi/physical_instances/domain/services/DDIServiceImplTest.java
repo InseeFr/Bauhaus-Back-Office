@@ -444,7 +444,7 @@ class DDIServiceImplTest {
         String agencyId = "fr.insee";
         String instanceId = "pi-1";
         Ddi4Response repoResponse = new Ddi4Response(
-                Ddi4Response.SCHEMA,
+                Ddi4Response.SCHEMA_ID,
                 List.of(),
                 List.of(),
                 List.of(),
@@ -468,7 +468,7 @@ class DDIServiceImplTest {
 
     private Ddi4Variable variableWithName(String id, String name) {
         return new Ddi4Variable(
-                Ddi4Variable.TYPE,
+                Ddi4Variable.TYPE_NAME,
                 null,
                 "urn:ddi:fr.insee:" + id + ":1",
                 "fr.insee",
@@ -489,7 +489,7 @@ class DDIServiceImplTest {
         String agencyId = "fr.insee";
         String instanceId = "pi-test";
         List<Ddi4CodeList> expected = List.of(new Ddi4CodeList(
-                Ddi4CodeList.TYPE,
+                Ddi4CodeList.TYPE_NAME,
                 null,
                 "urn:ddi:fr.insee:cl-1:1",
                 agencyId,
@@ -572,7 +572,7 @@ class DDIServiceImplTest {
 
     private static Ddi4Group groupClassing(String... studyUnitIds) {
         return new Ddi4Group(
-                Ddi4Group.TYPE,
+                Ddi4Group.TYPE_NAME,
                 null,
                 "urn:ddi:fr.insee:" + GROUP + ":1",
                 "fr.insee",
@@ -590,7 +590,7 @@ class DDIServiceImplTest {
 
     private Ddi4Response rolloverSource() {
         return new Ddi4Response(
-                Ddi4Response.SCHEMA,
+                Ddi4Response.SCHEMA_ID,
                 List.of(Reference.of("fr.insee", "pi-src", "1", "PhysicalInstance")),
                 null,
                 null,
@@ -602,13 +602,13 @@ class DDIServiceImplTest {
 
     private static Ddi4Variable derivedVariable(String id, String basedOnId) {
         return new Ddi4Variable(
-                Ddi4Variable.TYPE,
+                Ddi4Variable.TYPE_NAME,
                 null,
                 "urn:ddi:fr.insee:" + id + ":1",
                 "fr.insee",
                 id,
                 "1",
-                BasedOnObject.of(List.of(Reference.of("fr.insee", basedOnId, "1", Ddi4Variable.TYPE))),
+                BasedOnObject.of(List.of(Reference.of("fr.insee", basedOnId, "1", Ddi4Variable.TYPE_NAME))),
                 LangStrings.of("fr-FR", id),
                 null,
                 null,
@@ -626,7 +626,7 @@ class DDIServiceImplTest {
         stubRolloverSource();
         when(ddiRepository.getStudyUnitVariables("fr.insee", TARGET_STUDY_UNIT))
                 .thenReturn(new Ddi4Response(
-                        Ddi4Response.SCHEMA,
+                        Ddi4Response.SCHEMA_ID,
                         null,
                         null,
                         null,
@@ -642,7 +642,7 @@ class DDIServiceImplTest {
         when(ddiRepository.rollover(
                         rolloverSource(),
                         request,
-                        Map.of("VAR_1", Reference.of("fr.insee", "VAR_1_2025", "1", Ddi4Variable.TYPE))))
+                        Map.of("VAR_1", Reference.of("fr.insee", "VAR_1_2025", "1", Ddi4Variable.TYPE_NAME))))
                 .thenReturn(Reference.of("fr.insee", "pi-2025", "1", "PhysicalInstance"));
         Ddi4Response created = new Ddi4Response("created", null, null, null, null, null, null, null);
         when(ddiRepository.getPhysicalInstance("fr.insee", "pi-2025")).thenReturn(created);
@@ -721,7 +721,7 @@ class DDIServiceImplTest {
         stubRolloverSource();
         when(ddiRepository.getStudyUnitVariables("fr.insee", TARGET_STUDY_UNIT))
                 .thenReturn(new Ddi4Response(
-                        Ddi4Response.SCHEMA,
+                        Ddi4Response.SCHEMA_ID,
                         null,
                         null,
                         null,
@@ -822,7 +822,7 @@ class DDIServiceImplTest {
     @Test
     void shouldRejectFullUpdateWhenMmvrHasNoLabel() {
         Ddi4ManagedMissingValuesRepresentation mmvrSansLabel = new Ddi4ManagedMissingValuesRepresentation(
-                Ddi4ManagedMissingValuesRepresentation.TYPE,
+                Ddi4ManagedMissingValuesRepresentation.TYPE_NAME,
                 null,
                 "urn:ddi:fr.insee:mmvr-1:1",
                 "fr.insee",
@@ -830,9 +830,9 @@ class DDIServiceImplTest {
                 "1",
                 null,
                 List.of(new CodeRepresentation(
-                        CodeRepresentation.TYPE, false, Reference.of("fr.insee", "cl-sent", "1", "CodeList"))));
+                        CodeRepresentation.TYPE_NAME, false, Reference.of("fr.insee", "cl-sent", "1", "CodeList"))));
         Ddi4Response incoming =
-                new Ddi4Response(Ddi4Response.SCHEMA, null, null, null, null, null, null, List.of(mmvrSansLabel));
+                new Ddi4Response(Ddi4Response.SCHEMA_ID, null, null, null, null, null, null, List.of(mmvrSansLabel));
 
         InvalidSentinelValuesException exception = assertThrows(
                 InvalidSentinelValuesException.class,
@@ -847,7 +847,7 @@ class DDIServiceImplTest {
     @Test
     void shouldRejectFullUpdateWhenSentinelCodeListHasNoLabel() {
         Ddi4ManagedMissingValuesRepresentation mmvr = new Ddi4ManagedMissingValuesRepresentation(
-                Ddi4ManagedMissingValuesRepresentation.TYPE,
+                Ddi4ManagedMissingValuesRepresentation.TYPE_NAME,
                 null,
                 "urn:ddi:fr.insee:mmvr-1:1",
                 "fr.insee",
@@ -855,10 +855,10 @@ class DDIServiceImplTest {
                 "1",
                 LangStrings.of("fr-FR", "Sentinelles"),
                 List.of(new CodeRepresentation(
-                        CodeRepresentation.TYPE, false, Reference.of("fr.insee", "cl-sent", "1", "CodeList"))));
+                        CodeRepresentation.TYPE_NAME, false, Reference.of("fr.insee", "cl-sent", "1", "CodeList"))));
         // La CodeList de sentinelles référencée par la MMVR est dans le payload, sans label.
         Ddi4CodeList sentinelCodeListSansLabel = new Ddi4CodeList(
-                Ddi4CodeList.TYPE,
+                Ddi4CodeList.TYPE_NAME,
                 null,
                 "urn:ddi:fr.insee:cl-sent:1",
                 "fr.insee",
@@ -868,7 +868,14 @@ class DDIServiceImplTest {
                 null,
                 List.of());
         Ddi4Response incoming = new Ddi4Response(
-                Ddi4Response.SCHEMA, null, null, null, null, List.of(sentinelCodeListSansLabel), null, List.of(mmvr));
+                Ddi4Response.SCHEMA_ID,
+                null,
+                null,
+                null,
+                null,
+                List.of(sentinelCodeListSansLabel),
+                null,
+                List.of(mmvr));
 
         InvalidSentinelValuesException exception = assertThrows(
                 InvalidSentinelValuesException.class,
@@ -883,7 +890,7 @@ class DDIServiceImplTest {
     @Test
     void shouldAcceptFullUpdateWhenSentinelLabelsArePresent() {
         Ddi4ManagedMissingValuesRepresentation mmvr = new Ddi4ManagedMissingValuesRepresentation(
-                Ddi4ManagedMissingValuesRepresentation.TYPE,
+                Ddi4ManagedMissingValuesRepresentation.TYPE_NAME,
                 null,
                 "urn:ddi:fr.insee:mmvr-1:1",
                 "fr.insee",
@@ -891,9 +898,9 @@ class DDIServiceImplTest {
                 "1",
                 LangStrings.of("fr-FR", "Sentinelles"),
                 List.of(new CodeRepresentation(
-                        CodeRepresentation.TYPE, false, Reference.of("fr.insee", "cl-sent", "1", "CodeList"))));
+                        CodeRepresentation.TYPE_NAME, false, Reference.of("fr.insee", "cl-sent", "1", "CodeList"))));
         Ddi4CodeList sentinelCodeList = new Ddi4CodeList(
-                Ddi4CodeList.TYPE,
+                Ddi4CodeList.TYPE_NAME,
                 null,
                 "urn:ddi:fr.insee:cl-sent:1",
                 "fr.insee",
@@ -903,7 +910,7 @@ class DDIServiceImplTest {
                 null,
                 List.of());
         Ddi4Response incoming = new Ddi4Response(
-                Ddi4Response.SCHEMA, null, null, null, null, List.of(sentinelCodeList), null, List.of(mmvr));
+                Ddi4Response.SCHEMA_ID, null, null, null, null, List.of(sentinelCodeList), null, List.of(mmvr));
         when(ddiRepository.getStoredItems(any())).thenReturn(null);
 
         ddiService.updateFullPhysicalInstance("fr.insee", "pi-1", incoming);
@@ -917,7 +924,7 @@ class DDIServiceImplTest {
 
     private static Ddi4Response physicalInstanceOnlyResponse(CogsDate date, String title, String version) {
         Ddi4PhysicalInstance physicalInstance = new Ddi4PhysicalInstance(
-                Ddi4PhysicalInstance.TYPE,
+                Ddi4PhysicalInstance.TYPE_NAME,
                 date,
                 Reference.synthesizeUrn("fr.insee", "pi-1", version),
                 "fr.insee",
@@ -926,7 +933,7 @@ class DDIServiceImplTest {
                 null,
                 new Citation(List.of(new LangString("fr", title))),
                 null);
-        return new Ddi4Response(Ddi4Response.SCHEMA, null, List.of(physicalInstance), null, null, null, null, null);
+        return new Ddi4Response(Ddi4Response.SCHEMA_ID, null, List.of(physicalInstance), null, null, null, null, null);
     }
 
     @Test
@@ -1017,7 +1024,7 @@ class DDIServiceImplTest {
         Reference suRef2 = Reference.of(agencyId, "su-2", "1", "StudyUnit");
 
         Ddi4Group group = new Ddi4Group(
-                Ddi4Group.TYPE,
+                Ddi4Group.TYPE_NAME,
                 CogsDate.ofDateTime("2025-01-09T09:00:00Z"),
                 "urn:ddi:fr.insee:" + groupId + ":1",
                 agencyId,
@@ -1030,7 +1037,7 @@ class DDIServiceImplTest {
                 "insee:StatisticalOperationSeries");
 
         Ddi4StudyUnit studyUnit1 = new Ddi4StudyUnit(
-                Ddi4StudyUnit.TYPE,
+                Ddi4StudyUnit.TYPE_NAME,
                 CogsDate.ofDateTime("2025-01-09T09:00:00Z"),
                 "urn:ddi:fr.insee:su-1:1",
                 agencyId,
@@ -1041,7 +1048,7 @@ class DDIServiceImplTest {
                 null);
 
         Ddi4StudyUnit studyUnit2 = new Ddi4StudyUnit(
-                Ddi4StudyUnit.TYPE,
+                Ddi4StudyUnit.TYPE_NAME,
                 CogsDate.ofDateTime("2025-01-09T09:00:00Z"),
                 "urn:ddi:fr.insee:su-2:1",
                 agencyId,
@@ -1121,7 +1128,7 @@ class DDIServiceImplTest {
 
     private Ddi4StudyUnit studyUnitWithTitle(String id, String title) {
         return new Ddi4StudyUnit(
-                Ddi4StudyUnit.TYPE,
+                Ddi4StudyUnit.TYPE_NAME,
                 CogsDate.ofDateTime("2025-01-09T09:00:00Z"),
                 "urn:ddi:fr.insee:" + id + ":1",
                 "fr.insee",
@@ -1437,7 +1444,7 @@ class DDIServiceImplTest {
     void shouldGetStudyUnitByOperationIri_returnsDdi4WhenFound() {
         String operationIri = "http://id.insee.fr/operations/operation/op1";
         Ddi4StudyUnitResponse expected =
-                new Ddi4StudyUnitResponse(Ddi4Response.SCHEMA, List.of(), List.of(), List.of());
+                new Ddi4StudyUnitResponse(Ddi4Response.SCHEMA_ID, List.of(), List.of(), List.of());
         when(ddiRepository.findStudyUnitByOperationIri(operationIri, null)).thenReturn(Optional.of(expected));
 
         Optional<Ddi4StudyUnitResponse> result = ddiService.getStudyUnitByOperationIri(operationIri, null);
@@ -1474,7 +1481,7 @@ class DDIServiceImplTest {
         String operationIri = "http://id.insee.fr/operations/operation/op1";
         Instant midnightInParis = Instant.parse("2026-01-14T23:00:00Z");
         Ddi4StudyUnitResponse expected =
-                new Ddi4StudyUnitResponse(Ddi4Response.SCHEMA, List.of(), List.of(), List.of());
+                new Ddi4StudyUnitResponse(Ddi4Response.SCHEMA_ID, List.of(), List.of(), List.of());
         when(ddiRepository.findStudyUnitByOperationIri(operationIri, midnightInParis))
                 .thenReturn(Optional.of(expected));
 
@@ -1542,10 +1549,10 @@ class DDIServiceImplTest {
 
         when(ddiRepository.getStoredItems(any()))
                 .thenReturn(new Ddi4Response(
-                        Ddi4Response.SCHEMA, null, null, null, List.of(variable), List.of(codeList), null, null));
+                        Ddi4Response.SCHEMA_ID, null, null, null, List.of(variable), List.of(codeList), null, null));
 
         Ddi4Response incoming = new Ddi4Response(
-                Ddi4Response.SCHEMA, null, null, null, List.of(variable), List.of(codeList), null, null);
+                Ddi4Response.SCHEMA_ID, null, null, null, List.of(variable), List.of(codeList), null, null);
 
         // When
         ddiService.updateFullPhysicalInstance("fr.insee", "pi-1", incoming);
@@ -1565,10 +1572,10 @@ class DDIServiceImplTest {
     void shouldAlignReferenceToStoredCodeListOutsideThePayloadOnFullUpdate() {
         CogsDate storedDate = CogsDate.ofDateTime("2020-01-01T00:00:00Z");
         Ddi4Response incoming = new Ddi4Response(
-                Ddi4Response.SCHEMA, null, null, null, List.of(codeVariable(storedDate)), null, null, null);
+                Ddi4Response.SCHEMA_ID, null, null, null, List.of(codeVariable(storedDate)), null, null, null);
         when(ddiRepository.getStoredItems(incoming))
                 .thenReturn(new Ddi4Response(
-                        Ddi4Response.SCHEMA,
+                        Ddi4Response.SCHEMA_ID,
                         null,
                         null,
                         null,
@@ -1577,7 +1584,7 @@ class DDIServiceImplTest {
                         null,
                         null));
         when(ddiRepository.getLatestVersions(anyList()))
-                .thenReturn(List.of(Reference.of("fr.insee", "cl-1", "4", Ddi4CodeList.TYPE)));
+                .thenReturn(List.of(Reference.of("fr.insee", "cl-1", "4", Ddi4CodeList.TYPE_NAME)));
 
         ddiService.updateFullPhysicalInstance("fr.insee", "pi-1", incoming);
 
@@ -1600,7 +1607,7 @@ class DDIServiceImplTest {
 
     private static Ddi4Variable codeVariable(CogsDate date, String codeListVersion) {
         return new Ddi4Variable(
-                Ddi4Variable.TYPE,
+                Ddi4Variable.TYPE_NAME,
                 date,
                 Reference.synthesizeUrn("fr.insee", "var-1", "1"),
                 "fr.insee",
@@ -1613,9 +1620,9 @@ class DDIServiceImplTest {
                 new VariableRepresentation(
                         null,
                         new CodeRepresentation(
-                                CodeRepresentation.TYPE,
+                                CodeRepresentation.TYPE_NAME,
                                 null,
-                                Reference.of("fr.insee", "cl-1", codeListVersion, Ddi4CodeList.TYPE)),
+                                Reference.of("fr.insee", "cl-1", codeListVersion, Ddi4CodeList.TYPE_NAME)),
                         null,
                         null,
                         null,
@@ -1625,7 +1632,7 @@ class DDIServiceImplTest {
 
     private static Ddi4CodeList sharedCodeList(CogsDate date) {
         return new Ddi4CodeList(
-                Ddi4CodeList.TYPE,
+                Ddi4CodeList.TYPE_NAME,
                 date,
                 Reference.synthesizeUrn("fr.insee", "cl-1", "1"),
                 "fr.insee",

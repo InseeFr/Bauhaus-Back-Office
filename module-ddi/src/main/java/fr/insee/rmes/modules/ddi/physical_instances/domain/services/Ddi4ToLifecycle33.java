@@ -76,7 +76,7 @@ public class Ddi4ToLifecycle33 {
 
     /** #1592 : représentation Text sans aucun attribut, utilisée comme repli à l'export. */
     private static final TextRepresentation EMPTY_TEXT_REPRESENTATION =
-            new TextRepresentation(TextRepresentation.TYPE, null, null, null, null);
+            new TextRepresentation(TextRepresentation.TYPE_NAME, null, null, null, null);
 
     public FragmentDocument toPhysicalInstance(Ddi4PhysicalInstance pi) {
         FragmentDocument doc = FragmentDocument.Factory.newInstance();

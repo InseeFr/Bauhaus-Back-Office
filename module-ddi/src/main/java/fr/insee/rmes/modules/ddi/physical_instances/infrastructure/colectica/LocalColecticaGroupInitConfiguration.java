@@ -266,7 +266,7 @@ public class LocalColecticaGroupInitConfiguration {
                                     defaultLang);
 
                             Ddi4StudyUnit studyUnit = new Ddi4StudyUnit(
-                                    Ddi4StudyUnit.TYPE,
+                                    Ddi4StudyUnit.TYPE_NAME,
                                     CogsDate.ofDateTime(versionDate),
                                     "urn:ddi:%s:%s:1".formatted(defaultAgencyId, studyUnitId),
                                     defaultAgencyId,
@@ -351,7 +351,7 @@ public class LocalColecticaGroupInitConfiguration {
                         String codeListSchemeId = generateDeterministicUuid(
                                 series.seriesIri() + VARIANT_SEED_SEPARATOR + variant + CODE_LIST_SCHEME_SEED_SUFFIX);
                         Ddi4CodeListScheme codeListScheme = new Ddi4CodeListScheme(
-                                Ddi4CodeListScheme.TYPE,
+                                Ddi4CodeListScheme.TYPE_NAME,
                                 CogsDate.ofDateTime(versionDate),
                                 "urn:ddi:%s:%s:1".formatted(defaultAgencyId, codeListSchemeId),
                                 defaultAgencyId,
@@ -365,7 +365,7 @@ public class LocalColecticaGroupInitConfiguration {
                         String categorySchemeId = generateDeterministicUuid(
                                 series.seriesIri() + VARIANT_SEED_SEPARATOR + variant + CATEGORY_SCHEME_SEED_SUFFIX);
                         Ddi4CategoryScheme categoryScheme = new Ddi4CategoryScheme(
-                                Ddi4CategoryScheme.TYPE,
+                                Ddi4CategoryScheme.TYPE_NAME,
                                 CogsDate.ofDateTime(versionDate),
                                 "urn:ddi:%s:%s:1".formatted(defaultAgencyId, categorySchemeId),
                                 defaultAgencyId,
@@ -382,7 +382,7 @@ public class LocalColecticaGroupInitConfiguration {
                                 + MANAGED_REPRESENTATION_SCHEME_SEED_SUFFIX);
                         Ddi4ManagedRepresentationScheme managedRepresentationScheme =
                                 new Ddi4ManagedRepresentationScheme(
-                                        Ddi4ManagedRepresentationScheme.TYPE,
+                                        Ddi4ManagedRepresentationScheme.TYPE_NAME,
                                         CogsDate.ofDateTime(versionDate),
                                         "urn:ddi:%s:%s:1".formatted(defaultAgencyId, managedRepresentationSchemeId),
                                         defaultAgencyId,
@@ -399,7 +399,7 @@ public class LocalColecticaGroupInitConfiguration {
                         String logicalProductId = generateDeterministicUuid(
                                 series.seriesIri() + VARIANT_SEED_SEPARATOR + variant + LOGICAL_PRODUCT_SEED_SUFFIX);
                         Ddi4LogicalProduct logicalProduct = new Ddi4LogicalProduct(
-                                Ddi4LogicalProduct.TYPE,
+                                Ddi4LogicalProduct.TYPE_NAME,
                                 CogsDate.ofDateTime(versionDate),
                                 "urn:ddi:%s:%s:1".formatted(defaultAgencyId, logicalProductId),
                                 defaultAgencyId,
@@ -434,7 +434,7 @@ public class LocalColecticaGroupInitConfiguration {
                                 .toList();
 
                         Ddi4Group group = new Ddi4Group(
-                                Ddi4Group.TYPE,
+                                Ddi4Group.TYPE_NAME,
                                 CogsDate.ofDateTime(versionDate),
                                 "urn:ddi:%s:%s:1".formatted(defaultAgencyId, groupId),
                                 defaultAgencyId,
@@ -556,7 +556,7 @@ public class LocalColecticaGroupInitConfiguration {
                 String studyUnitId = generateDeterministicUuid(VERSIONED_EXAMPLE_STUDY_UNIT_SEED);
                 for (String version : List.of("1", "2")) {
                     Ddi4StudyUnit studyUnit = new Ddi4StudyUnit(
-                            Ddi4StudyUnit.TYPE,
+                            Ddi4StudyUnit.TYPE_NAME,
                             CogsDate.ofDateTime(versionDate),
                             "urn:ddi:%s:%s:%s".formatted(defaultAgencyId, studyUnitId, version),
                             defaultAgencyId,
@@ -575,7 +575,7 @@ public class LocalColecticaGroupInitConfiguration {
                 // qu'une fois dans la recherche avancée, qui descend depuis les groupes.
                 String groupId = generateDeterministicUuid(VERSIONED_EXAMPLE_GROUP_SEED);
                 Ddi4Group group = new Ddi4Group(
-                        Ddi4Group.TYPE,
+                        Ddi4Group.TYPE_NAME,
                         CogsDate.ofDateTime(versionDate),
                         "urn:ddi:%s:%s:1".formatted(defaultAgencyId, groupId),
                         defaultAgencyId,
@@ -647,7 +647,7 @@ public class LocalColecticaGroupInitConfiguration {
 
                 String studyUnitId = generateDeterministicUuid(MOVED_EXAMPLE_STUDY_UNIT_SEED);
                 studyUnitService.createOrUpdate(new Ddi4StudyUnit(
-                        Ddi4StudyUnit.TYPE,
+                        Ddi4StudyUnit.TYPE_NAME,
                         CogsDate.ofDateTime(versionDate),
                         "urn:ddi:%s:%s:1".formatted(defaultAgencyId, studyUnitId),
                         defaultAgencyId,
@@ -711,7 +711,7 @@ public class LocalColecticaGroupInitConfiguration {
             String label,
             List<Reference> studyUnitRefs) {
         return new Ddi4Group(
-                Ddi4Group.TYPE,
+                Ddi4Group.TYPE_NAME,
                 CogsDate.ofDateTime(versionDate),
                 "urn:ddi:%s:%s:%s".formatted(agencyId, groupId, version),
                 agencyId,
@@ -786,7 +786,7 @@ public class LocalColecticaGroupInitConfiguration {
                 String studyUnitId = generateDeterministicUuid(SIX_VERSIONS_EXAMPLE_STUDY_UNIT_SEED);
                 for (String version : SIX_VERSIONS) {
                     Ddi4StudyUnit studyUnit = new Ddi4StudyUnit(
-                            Ddi4StudyUnit.TYPE,
+                            Ddi4StudyUnit.TYPE_NAME,
                             CogsDate.ofDateTime(versionDate),
                             "urn:ddi:%s:%s:%s".formatted(defaultAgencyId, studyUnitId, version),
                             defaultAgencyId,
@@ -803,7 +803,7 @@ public class LocalColecticaGroupInitConfiguration {
 
                 String groupId = generateDeterministicUuid(SIX_VERSIONS_EXAMPLE_GROUP_SEED);
                 Ddi4Group group = new Ddi4Group(
-                        Ddi4Group.TYPE,
+                        Ddi4Group.TYPE_NAME,
                         CogsDate.ofDateTime(versionDate),
                         "urn:ddi:%s:%s:1".formatted(defaultAgencyId, groupId),
                         defaultAgencyId,
@@ -868,7 +868,7 @@ public class LocalColecticaGroupInitConfiguration {
 
                 String studyUnitId = generateDeterministicUuid(WITHOUT_LOGICAL_PRODUCT_EXAMPLE_STUDY_UNIT_SEED);
                 Ddi4StudyUnit studyUnit = new Ddi4StudyUnit(
-                        Ddi4StudyUnit.TYPE,
+                        Ddi4StudyUnit.TYPE_NAME,
                         CogsDate.ofDateTime(versionDate),
                         "urn:ddi:%s:%s:1".formatted(defaultAgencyId, studyUnitId),
                         defaultAgencyId,
@@ -887,7 +887,7 @@ public class LocalColecticaGroupInitConfiguration {
 
                 String groupId = generateDeterministicUuid(WITHOUT_LOGICAL_PRODUCT_EXAMPLE_GROUP_SEED);
                 Ddi4Group group = new Ddi4Group(
-                        Ddi4Group.TYPE,
+                        Ddi4Group.TYPE_NAME,
                         CogsDate.ofDateTime(versionDate),
                         "urn:ddi:%s:%s:1".formatted(defaultAgencyId, groupId),
                         defaultAgencyId,
@@ -966,7 +966,7 @@ public class LocalColecticaGroupInitConfiguration {
 
                 String studyUnitId = generateDeterministicUuid(DANGLING_LOGICAL_PRODUCT_EXAMPLE_STUDY_UNIT_SEED);
                 Ddi4StudyUnit studyUnit = new Ddi4StudyUnit(
-                        Ddi4StudyUnit.TYPE,
+                        Ddi4StudyUnit.TYPE_NAME,
                         CogsDate.ofDateTime(versionDate),
                         "urn:ddi:%s:%s:1".formatted(defaultAgencyId, studyUnitId),
                         defaultAgencyId,
@@ -989,7 +989,7 @@ public class LocalColecticaGroupInitConfiguration {
 
                 String groupId = generateDeterministicUuid(DANGLING_LOGICAL_PRODUCT_EXAMPLE_GROUP_SEED);
                 Ddi4Group group = new Ddi4Group(
-                        Ddi4Group.TYPE,
+                        Ddi4Group.TYPE_NAME,
                         CogsDate.ofDateTime(versionDate),
                         "urn:ddi:%s:%s:1".formatted(defaultAgencyId, groupId),
                         defaultAgencyId,
@@ -1087,7 +1087,7 @@ public class LocalColecticaGroupInitConfiguration {
 
             String studyUnitId = generateDeterministicUuid(studyUnitSeed);
             Ddi4StudyUnit studyUnit = new Ddi4StudyUnit(
-                    Ddi4StudyUnit.TYPE,
+                    Ddi4StudyUnit.TYPE_NAME,
                     CogsDate.ofDateTime(versionDate),
                     "urn:ddi:%s:%s:1".formatted(defaultAgencyId, studyUnitId),
                     defaultAgencyId,
@@ -1108,7 +1108,7 @@ public class LocalColecticaGroupInitConfiguration {
             // ManagedRepresentationScheme.
             String codeListSchemeId = generateDeterministicUuid(groupSeed + CODE_LIST_SCHEME_SEED_SUFFIX);
             ddiService.createCodeListScheme(new Ddi4CodeListScheme(
-                    Ddi4CodeListScheme.TYPE,
+                    Ddi4CodeListScheme.TYPE_NAME,
                     CogsDate.ofDateTime(versionDate),
                     "urn:ddi:%s:%s:1".formatted(defaultAgencyId, codeListSchemeId),
                     defaultAgencyId,
@@ -1121,7 +1121,7 @@ public class LocalColecticaGroupInitConfiguration {
             if (withCategoryScheme) {
                 String categorySchemeId = generateDeterministicUuid(groupSeed + CATEGORY_SCHEME_SEED_SUFFIX);
                 ddiService.createCategoryScheme(new Ddi4CategoryScheme(
-                        Ddi4CategoryScheme.TYPE,
+                        Ddi4CategoryScheme.TYPE_NAME,
                         CogsDate.ofDateTime(versionDate),
                         "urn:ddi:%s:%s:1".formatted(defaultAgencyId, categorySchemeId),
                         defaultAgencyId,
@@ -1134,7 +1134,7 @@ public class LocalColecticaGroupInitConfiguration {
 
             String logicalProductId = generateDeterministicUuid(groupSeed + LOGICAL_PRODUCT_SEED_SUFFIX);
             ddiService.createLogicalProduct(new Ddi4LogicalProduct(
-                    Ddi4LogicalProduct.TYPE,
+                    Ddi4LogicalProduct.TYPE_NAME,
                     CogsDate.ofDateTime(versionDate),
                     "urn:ddi:%s:%s:1".formatted(defaultAgencyId, logicalProductId),
                     defaultAgencyId,
@@ -1147,7 +1147,7 @@ public class LocalColecticaGroupInitConfiguration {
 
             String groupId = generateDeterministicUuid(groupSeed);
             Ddi4Group group = new Ddi4Group(
-                    Ddi4Group.TYPE,
+                    Ddi4Group.TYPE_NAME,
                     CogsDate.ofDateTime(versionDate),
                     "urn:ddi:%s:%s:1".formatted(defaultAgencyId, groupId),
                     defaultAgencyId,
@@ -1260,7 +1260,7 @@ public class LocalColecticaGroupInitConfiguration {
                         String variableId =
                                 generateDeterministicUuid(VARIABLE_GROUP_EXAMPLE_SEED + "#variable-" + entry.getKey());
                         variables.add(new Ddi4Variable(
-                                Ddi4Variable.TYPE,
+                                Ddi4Variable.TYPE_NAME,
                                 CogsDate.ofDateTime(versionDate),
                                 "urn:ddi:%s:%s:1".formatted(agency, variableId),
                                 agency,
@@ -1272,12 +1272,12 @@ public class LocalColecticaGroupInitConfiguration {
                                 null,
                                 null,
                                 null));
-                        refs.add(Reference.of(agency, variableId, "1", Ddi4Variable.TYPE));
+                        refs.add(Reference.of(agency, variableId, "1", Ddi4Variable.TYPE_NAME));
                     });
             variableRefsByGroup.put(group.code(), refs);
         }
         Ddi3Response variableItems = ddi4ToDdi3Converter.convertDdi4ToDdi3(
-                new Ddi4Response(Ddi4Response.SCHEMA, null, null, null, variables, null, null, null));
+                new Ddi4Response(Ddi4Response.SCHEMA_ID, null, null, null, variables, null, null, null));
         colecticaClient.createOrUpdateItems(new ColecticaCreateItemRequest(variableItems.items().stream()
                 .map(ColecticaItems::toColecticaItem)
                 .toList()));
@@ -1328,7 +1328,7 @@ public class LocalColecticaGroupInitConfiguration {
         // 4. LogicalProduct → PhysicalInstance (vide) → StudyUnit → Group.
         String logicalProductId = generateDeterministicUuid(studyUnitSeed + STUDY_UNIT_LOGICAL_PRODUCT_SEED_SUFFIX);
         ddiService.createLogicalProduct(new Ddi4LogicalProduct(
-                Ddi4LogicalProduct.TYPE,
+                Ddi4LogicalProduct.TYPE_NAME,
                 CogsDate.ofDateTime(versionDate),
                 "urn:ddi:%s:%s:1".formatted(agency, logicalProductId),
                 agency,
@@ -1350,7 +1350,7 @@ public class LocalColecticaGroupInitConfiguration {
 
         String studyUnitId = generateDeterministicUuid(studyUnitSeed);
         studyUnitService.createOrUpdate(new Ddi4StudyUnit(
-                Ddi4StudyUnit.TYPE,
+                Ddi4StudyUnit.TYPE_NAME,
                 CogsDate.ofDateTime(versionDate),
                 "urn:ddi:%s:%s:1".formatted(agency, studyUnitId),
                 agency,
@@ -1367,7 +1367,7 @@ public class LocalColecticaGroupInitConfiguration {
 
         String groupId = generateDeterministicUuid(VARIABLE_GROUP_EXAMPLE_SEED);
         groupService.createOrUpdate(new Ddi4Group(
-                Ddi4Group.TYPE,
+                Ddi4Group.TYPE_NAME,
                 CogsDate.ofDateTime(versionDate),
                 "urn:ddi:%s:%s:1".formatted(agency, groupId),
                 agency,
@@ -1535,7 +1535,7 @@ public class LocalColecticaGroupInitConfiguration {
                 }
 
                 ColecticaItemResponse existingGroup = findItem(colecticaClient, groupAgencyId, groupRef.identifier());
-                Reference codeListReference = Reference.of(defaultAgencyId, codeListId, "1", Ddi4CodeList.TYPE);
+                Reference codeListReference = Reference.of(defaultAgencyId, codeListId, "1", Ddi4CodeList.TYPE_NAME);
                 String versionDate = ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
                 String groupXml = existingGroup == null
                         ? newCodeListGroupFragment(
@@ -1578,7 +1578,7 @@ public class LocalColecticaGroupInitConfiguration {
             String categoryId = generateDeterministicUuid(
                     LARGE_MUTUALIZED_CODE_LIST_SEED + LARGE_CODE_LIST_CATEGORY_SEED_SUFFIX + value);
             categoryItems.add(ddi4ToDdi3Converter.toCategoryItem(new Ddi4Category(
-                    Ddi4Category.TYPE,
+                    Ddi4Category.TYPE_NAME,
                     CogsDate.ofDateTime(versionDate),
                     "urn:ddi:%s:%s:1".formatted(defaultAgencyId, categoryId),
                     defaultAgencyId,
@@ -1587,7 +1587,7 @@ public class LocalColecticaGroupInitConfiguration {
                     LangStrings.of(defaultLang, "Modalité " + value))));
             String codeId = generateDeterministicUuid(LARGE_MUTUALIZED_CODE_LIST_SEED + "#code-" + value);
             codes.add(new Code(
-                    Code.TYPE,
+                    Code.TYPE_NAME,
                     "urn:ddi:%s:%s:1".formatted(defaultAgencyId, codeId),
                     defaultAgencyId,
                     codeId,
@@ -1607,7 +1607,7 @@ public class LocalColecticaGroupInitConfiguration {
         }
 
         Ddi4CodeList codeList = new Ddi4CodeList(
-                Ddi4CodeList.TYPE,
+                Ddi4CodeList.TYPE_NAME,
                 CogsDate.ofDateTime(versionDate),
                 "urn:ddi:%s:%s:1".formatted(defaultAgencyId, codeListId),
                 defaultAgencyId,
@@ -1708,7 +1708,7 @@ public class LocalColecticaGroupInitConfiguration {
         ref.addAgency(codeListReference.agency());
         ref.addNewID().setStringValue(codeListReference.id());
         ref.addVersion(codeListReference.version());
-        ref.setTypeOfObject(TypeOfObjectType.Enum.forString(Ddi4CodeList.TYPE));
+        ref.setTypeOfObject(TypeOfObjectType.Enum.forString(Ddi4CodeList.TYPE_NAME));
     }
 
     private static XmlOptions ddi33FragmentXmlOptions() {
@@ -1814,7 +1814,7 @@ public class LocalColecticaGroupInitConfiguration {
 
         String variableSchemeId = generateDeterministicUuid(studyUnitSeed + VARIABLE_SCHEME_SEED_SUFFIX);
         Ddi4VariableScheme variableScheme = new Ddi4VariableScheme(
-                Ddi4VariableScheme.TYPE,
+                Ddi4VariableScheme.TYPE_NAME,
                 CogsDate.ofDateTime(versionDate),
                 "urn:ddi:%s:%s:1".formatted(defaultAgencyId, variableSchemeId),
                 defaultAgencyId,
@@ -1828,7 +1828,7 @@ public class LocalColecticaGroupInitConfiguration {
         String studyUnitLogicalProductId =
                 generateDeterministicUuid(studyUnitSeed + STUDY_UNIT_LOGICAL_PRODUCT_SEED_SUFFIX);
         Ddi4LogicalProduct studyUnitLogicalProduct = new Ddi4LogicalProduct(
-                Ddi4LogicalProduct.TYPE,
+                Ddi4LogicalProduct.TYPE_NAME,
                 CogsDate.ofDateTime(versionDate),
                 "urn:ddi:%s:%s:1".formatted(defaultAgencyId, studyUnitLogicalProductId),
                 defaultAgencyId,
@@ -1882,7 +1882,7 @@ public class LocalColecticaGroupInitConfiguration {
             String categoryId =
                     generateDeterministicUuid(variantSeed + SENTINEL_CATEGORY_SEED_SUFFIX + sentinelCode.value());
             Ddi4Category category = new Ddi4Category(
-                    Ddi4Category.TYPE,
+                    Ddi4Category.TYPE_NAME,
                     CogsDate.ofDateTime(versionDate),
                     "urn:ddi:%s:%s:1".formatted(defaultAgencyId, categoryId),
                     defaultAgencyId,
@@ -1895,7 +1895,7 @@ public class LocalColecticaGroupInitConfiguration {
 
             String codeId = generateDeterministicUuid(variantSeed + SENTINEL_CODE_SEED_SUFFIX + sentinelCode.value());
             codes.add(new Code(
-                    Code.TYPE,
+                    Code.TYPE_NAME,
                     "urn:ddi:%s:%s:1".formatted(defaultAgencyId, codeId),
                     defaultAgencyId,
                     codeId,
@@ -1907,7 +1907,7 @@ public class LocalColecticaGroupInitConfiguration {
 
         String codeListId = generateDeterministicUuid(variantSeed + SENTINEL_CODE_LIST_SEED_SUFFIX);
         Ddi4CodeList codeList = new Ddi4CodeList(
-                Ddi4CodeList.TYPE,
+                Ddi4CodeList.TYPE_NAME,
                 CogsDate.ofDateTime(versionDate),
                 "urn:ddi:%s:%s:1".formatted(defaultAgencyId, codeListId),
                 defaultAgencyId,
@@ -1923,7 +1923,7 @@ public class LocalColecticaGroupInitConfiguration {
                 generateDeterministicUuid(variantSeed + SENTINEL_MMVR_SEED_SUFFIX);
         Ddi4ManagedMissingValuesRepresentation managedMissingValuesRepresentation =
                 new Ddi4ManagedMissingValuesRepresentation(
-                        Ddi4ManagedMissingValuesRepresentation.TYPE,
+                        Ddi4ManagedMissingValuesRepresentation.TYPE_NAME,
                         CogsDate.ofDateTime(versionDate),
                         "urn:ddi:%s:%s:1".formatted(defaultAgencyId, managedMissingValuesRepresentationId),
                         defaultAgencyId,
@@ -1931,15 +1931,15 @@ public class LocalColecticaGroupInitConfiguration {
                         "1",
                         LangStrings.of(defaultLang, groupLabel + " Sentinel Values"),
                         List.of(new CodeRepresentation(
-                                CodeRepresentation.TYPE,
+                                CodeRepresentation.TYPE_NAME,
                                 Boolean.FALSE,
-                                Reference.of(defaultAgencyId, codeListId, "1", Ddi4CodeList.TYPE))));
+                                Reference.of(defaultAgencyId, codeListId, "1", Ddi4CodeList.TYPE_NAME))));
         logger.info(
                 "Creating sentinel managed missing values representation: id={}", managedMissingValuesRepresentationId);
         ddiService.createManagedMissingValuesRepresentation(managedMissingValuesRepresentation);
 
         return new SentinelValuesExample(
-                Reference.of(defaultAgencyId, codeListId, "1", Ddi4CodeList.TYPE),
+                Reference.of(defaultAgencyId, codeListId, "1", Ddi4CodeList.TYPE_NAME),
                 categoryReferences,
                 Reference.of(
                         defaultAgencyId,
@@ -1974,10 +1974,10 @@ public class LocalColecticaGroupInitConfiguration {
             String variableId = generateDeterministicUuid("example:variable:missing-code-list");
             // Liste de codes qui n'existe pas : un UUID volontairement absent de Colectica.
             Reference missingCodeListRef =
-                    Reference.of(defaultAgencyId, "00000000-0000-0000-0000-000000000000", "1", Ddi4CodeList.TYPE);
+                    Reference.of(defaultAgencyId, "00000000-0000-0000-0000-000000000000", "1", Ddi4CodeList.TYPE_NAME);
 
             Ddi4Variable variable = new Ddi4Variable(
-                    Ddi4Variable.TYPE,
+                    Ddi4Variable.TYPE_NAME,
                     CogsDate.ofDateTime(versionDate),
                     "urn:ddi:%s:%s:1".formatted(defaultAgencyId, variableId),
                     defaultAgencyId,
@@ -1989,7 +1989,7 @@ public class LocalColecticaGroupInitConfiguration {
                     null,
                     new VariableRepresentation(
                             null,
-                            new CodeRepresentation(CodeRepresentation.TYPE, Boolean.FALSE, missingCodeListRef),
+                            new CodeRepresentation(CodeRepresentation.TYPE_NAME, Boolean.FALSE, missingCodeListRef),
                             null,
                             null,
                             null,
@@ -1997,7 +1997,7 @@ public class LocalColecticaGroupInitConfiguration {
                     null);
 
             LogicalRecord updatedLogicalRecord = new LogicalRecord(
-                    LogicalRecord.TYPE,
+                    LogicalRecord.TYPE_NAME,
                     logicalRecord.urn(),
                     logicalRecord.agency(),
                     logicalRecord.id(),
@@ -2006,7 +2006,7 @@ public class LocalColecticaGroupInitConfiguration {
                     new VariablesInRecord(List.of(Reference.of(defaultAgencyId, variableId, "1", "Variable"))));
 
             Ddi4DataRelationship updatedDataRelationship = new Ddi4DataRelationship(
-                    Ddi4DataRelationship.TYPE,
+                    Ddi4DataRelationship.TYPE_NAME,
                     dataRelationship.versionDate(),
                     dataRelationship.urn(),
                     dataRelationship.agency(),
@@ -2017,7 +2017,7 @@ public class LocalColecticaGroupInitConfiguration {
                     List.of(updatedLogicalRecord));
 
             Ddi4Response full = new Ddi4Response(
-                    Ddi4Response.SCHEMA,
+                    Ddi4Response.SCHEMA_ID,
                     created.topLevelReference(),
                     List.of(pi),
                     List.of(updatedDataRelationship),

@@ -57,7 +57,7 @@ public class DDIItemConvertServiceImpl implements DDIItemConvertService {
         Ddi3Response.Ddi3Item item = new Ddi3Response.Ddi3Item(
                 itemType, null, null, null, xmlFragment, null, null, false, false, false, null);
         Ddi3Response ddi3 = new Ddi3Response(null, List.of(item));
-        Ddi4Response ddi4 = ddi3ToDdi4ConverterService.convertDdi3ToDdi4(ddi3, Ddi4Response.SCHEMA);
+        Ddi4Response ddi4 = ddi3ToDdi4ConverterService.convertDdi3ToDdi4(ddi3, Ddi4Response.SCHEMA_ID);
         return objectMapper.valueToTree(ddi4);
     }
 

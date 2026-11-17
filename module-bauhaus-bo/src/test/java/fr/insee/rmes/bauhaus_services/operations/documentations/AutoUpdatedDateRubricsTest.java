@@ -1,5 +1,6 @@
 package fr.insee.rmes.bauhaus_services.operations.documentations;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import fr.insee.rmes.model.operations.documentations.DocumentationRubric;
@@ -56,6 +57,6 @@ class AutoUpdatedDateRubricsTest {
 
     @Test
     void tolerates_null_rubrics() {
-        AutoUpdatedDateRubrics.applyDate(null, Set.of("S.2.3"), "2026-05-07");
+        assertDoesNotThrow(() -> AutoUpdatedDateRubrics.applyDate(null, Set.of("S.2.3"), "2026-05-07"));
     }
 }

@@ -33,7 +33,7 @@ public record Ddi4LogicalProduct(
 
         @JsonProperty("Name") String name) {
 
-    public static final String TYPE = "LogicalProduct";
+    public static final String TYPE_NAME = "LogicalProduct";
 
     /** Un LogicalProduct sans {@code Name} propre — le DDI 3.3 n'écrit alors pas l'élément. */
     public Ddi4LogicalProduct(

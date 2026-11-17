@@ -175,7 +175,7 @@ class DdiResourcesTest {
         String agencyId = "fr.insee";
         String id = "pi-1";
         Ddi4CodeList codeList = new Ddi4CodeList(
-                Ddi4CodeList.TYPE,
+                Ddi4CodeList.TYPE_NAME,
                 null,
                 "urn:ddi:fr.insee:cl-1:1",
                 agencyId,
@@ -879,7 +879,7 @@ class DdiResourcesTest {
                 Reference.of("fr.insee", "d8283793-e88d-4cc7-a697-2951054e9a3a", "1", "DataRelationship");
 
         Ddi4PhysicalInstance physicalInstance = new Ddi4PhysicalInstance(
-                Ddi4PhysicalInstance.TYPE,
+                Ddi4PhysicalInstance.TYPE_NAME,
                 CogsDate.ofDateTime("2024-06-03T14:29:23.4049817Z"),
                 "urn:ddi:fr.insee:9a7f1abd-10ec-48f3-975f-fcfedb7dc4cd:1",
                 "fr.insee",
@@ -892,7 +892,7 @@ class DdiResourcesTest {
         List<LangString> drLabel = LangStrings.of("fr-FR", "Dessin de fichier thl-CASD");
 
         Ddi4DataRelationship dataRelationship = new Ddi4DataRelationship(
-                Ddi4DataRelationship.TYPE,
+                Ddi4DataRelationship.TYPE_NAME,
                 CogsDate.ofDateTime("2024-06-03T14:29:23.4049817Z"),
                 "urn:ddi:fr.insee:d8283793-e88d-4cc7-a697-2951054e9a3a:1",
                 "fr.insee",
@@ -1093,10 +1093,10 @@ class DdiResourcesTest {
 
     private static Ddi4StudyUnitResponse aStudyUnitResponse(String operationIri) {
         return new Ddi4StudyUnitResponse(
-                Ddi4Response.SCHEMA,
-                List.of(Reference.of("fr.insee", "su-1", "1", Ddi4StudyUnit.TYPE)),
+                Ddi4Response.SCHEMA_ID,
+                List.of(Reference.of("fr.insee", "su-1", "1", Ddi4StudyUnit.TYPE_NAME)),
                 List.of(new Ddi4StudyUnit(
-                        Ddi4StudyUnit.TYPE,
+                        Ddi4StudyUnit.TYPE_NAME,
                         null,
                         "urn:ddi:fr.insee:su-1:1",
                         "fr.insee",
@@ -1106,7 +1106,7 @@ class DdiResourcesTest {
                         operationIri,
                         null)),
                 List.of(new Ddi4PhysicalInstance(
-                        Ddi4PhysicalInstance.TYPE,
+                        Ddi4PhysicalInstance.TYPE_NAME,
                         null,
                         "urn:ddi:fr.insee:pi-1:1",
                         "fr.insee",

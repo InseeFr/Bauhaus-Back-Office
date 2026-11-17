@@ -23,7 +23,7 @@ public record Ddi4VariableScheme(
         @JsonProperty("VariableReference") List<Reference> variableReference,
         @JsonProperty("Name") String name) {
 
-    public static final String TYPE = "VariableScheme";
+    public static final String TYPE_NAME = "VariableScheme";
 
     /** Une VariableScheme sans {@code Name} propre — le DDI 3.3 n'écrit alors pas l'élément. */
     public Ddi4VariableScheme(

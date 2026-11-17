@@ -55,9 +55,9 @@ class Ddi4SentinelValuesSchemaConformanceTest {
     @Test
     void variableWithMissingValuesReference_matchesSchemaVariableDef() throws Exception {
         CodeRepresentation codeRepresentation = new CodeRepresentation(
-                CodeRepresentation.TYPE, null, Reference.of("fr.insee", "cl-1", "1", "CodeList"));
+                CodeRepresentation.TYPE_NAME, null, Reference.of("fr.insee", "cl-1", "1", "CodeList"));
         Ddi4Variable variable = new Ddi4Variable(
-                Ddi4Variable.TYPE,
+                Ddi4Variable.TYPE_NAME,
                 null,
                 "urn:ddi:fr.insee:var-1:1",
                 "fr.insee",
@@ -82,7 +82,7 @@ class Ddi4SentinelValuesSchemaConformanceTest {
     @Test
     void managedMissingValuesRepresentation_matchesItsSchemaDef() throws Exception {
         Ddi4ManagedMissingValuesRepresentation mmvr = new Ddi4ManagedMissingValuesRepresentation(
-                Ddi4ManagedMissingValuesRepresentation.TYPE,
+                Ddi4ManagedMissingValuesRepresentation.TYPE_NAME,
                 null,
                 "urn:ddi:fr.insee:mmvr-1:1",
                 "fr.insee",
@@ -90,7 +90,9 @@ class Ddi4SentinelValuesSchemaConformanceTest {
                 "1",
                 LangStrings.of("fr-FR", "Valeurs sentinelles NSP/REF"),
                 List.of(new CodeRepresentation(
-                        CodeRepresentation.TYPE, null, Reference.of("fr.insee", "cl-sentinelles-1", "1", "CodeList"))));
+                        CodeRepresentation.TYPE_NAME,
+                        null,
+                        Reference.of("fr.insee", "cl-sentinelles-1", "1", "CodeList"))));
 
         assertThat(validateAgainstDef(mmvr, "ManagedMissingValuesRepresentation"))
                 .isEmpty();
@@ -99,7 +101,7 @@ class Ddi4SentinelValuesSchemaConformanceTest {
     @Test
     void numericRepresentation_typeCodeMatchesSchemaCodeValueType() throws Exception {
         NumericRepresentation numeric =
-                new NumericRepresentation(NumericRepresentation.TYPE, CodeValue.numericType("Integer"), null);
+                new NumericRepresentation(NumericRepresentation.TYPE_NAME, CodeValue.numericType("Integer"), null);
 
         assertThat(validateAgainstDef(numeric, "NumericRepresentationBaseType")).isEmpty();
     }
@@ -107,7 +109,7 @@ class Ddi4SentinelValuesSchemaConformanceTest {
     @Test
     void dateTimeRepresentation_typeCodeMatchesSchemaCodeValueType() throws Exception {
         DateTimeRepresentation dateTime =
-                new DateTimeRepresentation(DateTimeRepresentation.TYPE, CodeValue.dateType("Date"), null);
+                new DateTimeRepresentation(DateTimeRepresentation.TYPE_NAME, CodeValue.dateType("Date"), null);
 
         assertThat(validateAgainstDef(dateTime, "DateTimeRepresentationBaseType"))
                 .isEmpty();

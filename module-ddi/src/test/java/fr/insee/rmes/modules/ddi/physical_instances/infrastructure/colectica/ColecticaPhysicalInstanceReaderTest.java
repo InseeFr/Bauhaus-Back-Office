@@ -133,16 +133,23 @@ class ColecticaPhysicalInstanceReaderTest {
     @Test
     void getStoredItems_readsTheLatestVersionOfThePayloadItemsOnly() {
         Ddi4Response payload = new Ddi4Response(
-                Ddi4Response.SCHEMA, null, null, null, null, List.of(codeList("cl-1"), codeList("cl-2")), null, null);
+                Ddi4Response.SCHEMA_ID,
+                null,
+                null,
+                null,
+                null,
+                List.of(codeList("cl-1"), codeList("cl-2")),
+                null,
+                null);
         ColecticaItemResponse[] stored = {item("cl-type", "cl-1", 3)};
         when(colecticaClient.getLatestItems(
                         List.of(new ItemReference(AGENCY, "cl-1"), new ItemReference(AGENCY, "cl-2"))))
                 .thenReturn(stored);
-        Ddi4Response converted = new Ddi4Response(Ddi4Response.SCHEMA, null, null, null, null, null, null, null);
+        Ddi4Response converted = new Ddi4Response(Ddi4Response.SCHEMA_ID, null, null, null, null, null, null, null);
         when(converter.convertDdi3ToDdi4(
                         argThat(ddi3 -> ddi3.items().size() == 1
                                 && "cl-1".equals(ddi3.items().getFirst().identifier())),
-                        eq(Ddi4Response.SCHEMA)))
+                        eq(Ddi4Response.SCHEMA_ID)))
                 .thenReturn(converted);
 
         assertThat(reader.getStoredItems(payload)).isSameAs(converted);
@@ -151,20 +158,20 @@ class ColecticaPhysicalInstanceReaderTest {
 
     @Test
     void getLatestVersions_pointsEachDistinctKnownTargetToItsLatestVersion() {
-        Reference codeList = Reference.of(AGENCY, "cl-1", "1", Ddi4CodeList.TYPE);
+        Reference codeList = Reference.of(AGENCY, "cl-1", "1", Ddi4CodeList.TYPE_NAME);
         when(colecticaClient.getLatestVersionNumbers(
                         List.of(new ItemReference(AGENCY, "cl-1"), new ItemReference(AGENCY, "unknown"))))
                 .thenReturn(List.of(new ColecticaSetItem("cl-1", 4, AGENCY)));
 
         List<Reference> latest = reader.getLatestVersions(
-                List.of(codeList, codeList, Reference.of(AGENCY, "unknown", "1", Ddi4CodeList.TYPE)));
+                List.of(codeList, codeList, Reference.of(AGENCY, "unknown", "1", Ddi4CodeList.TYPE_NAME)));
 
-        assertThat(latest).containsExactly(Reference.of(AGENCY, "cl-1", "4", Ddi4CodeList.TYPE));
+        assertThat(latest).containsExactly(Reference.of(AGENCY, "cl-1", "4", Ddi4CodeList.TYPE_NAME));
     }
 
     private static Ddi4CodeList codeList(String id) {
         return new Ddi4CodeList(
-                Ddi4CodeList.TYPE,
+                Ddi4CodeList.TYPE_NAME,
                 null,
                 Reference.synthesizeUrn(AGENCY, id, "1"),
                 AGENCY,

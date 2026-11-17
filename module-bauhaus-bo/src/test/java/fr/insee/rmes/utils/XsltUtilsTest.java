@@ -1,6 +1,6 @@
 package fr.insee.rmes.utils;
 
-import static fr.insee.rmes.utils.UtilsTest.*;
+import static fr.insee.rmes.utils.XsltTestFixtures.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.*;

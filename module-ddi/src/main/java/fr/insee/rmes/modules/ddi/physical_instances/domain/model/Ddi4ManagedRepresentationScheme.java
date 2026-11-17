@@ -24,5 +24,5 @@ public record Ddi4ManagedRepresentationScheme(
         @JsonProperty("Label") List<LangString> label,
         @JsonProperty("ManagedRepresentationReference") List<Reference> managedRepresentationReference) {
 
-    public static final String TYPE = "ManagedRepresentationScheme";
+    public static final String TYPE_NAME = "ManagedRepresentationScheme";
 }

@@ -70,7 +70,7 @@ class LocalColecticaGroupInitConfigurationTest {
 
     private Ddi4Response piResponse(String agency, String id) {
         Ddi4PhysicalInstance pi = new Ddi4PhysicalInstance(
-                Ddi4PhysicalInstance.TYPE,
+                Ddi4PhysicalInstance.TYPE_NAME,
                 CogsDate.ofDateTime("2026-01-01T00:00:00Z"),
                 "urn:ddi:%s:%s:1".formatted(agency, id),
                 agency,
@@ -85,9 +85,9 @@ class LocalColecticaGroupInitConfigurationTest {
     /** Réponse de création complète : la PI, sa DataRelationship et le LogicalRecord de celle-ci. */
     private Ddi4Response fullPiResponse(String agency, String id) {
         LogicalRecord logicalRecord = new LogicalRecord(
-                LogicalRecord.TYPE, "urn:ddi:%s:lr:1".formatted(agency), agency, "lr", "1", null, null);
+                LogicalRecord.TYPE_NAME, "urn:ddi:%s:lr:1".formatted(agency), agency, "lr", "1", null, null);
         Ddi4DataRelationship dataRelationship = new Ddi4DataRelationship(
-                Ddi4DataRelationship.TYPE,
+                Ddi4DataRelationship.TYPE_NAME,
                 CogsDate.ofDateTime("2026-01-01T00:00:00Z"),
                 "urn:ddi:%s:dr:1".formatted(agency),
                 agency,

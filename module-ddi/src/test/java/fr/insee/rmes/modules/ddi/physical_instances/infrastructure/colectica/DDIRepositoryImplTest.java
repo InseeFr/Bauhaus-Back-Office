@@ -260,7 +260,7 @@ class DDIRepositoryImplTest {
         stubPhysicalInstanceSet(setItems);
 
         Ddi4PhysicalInstance mockPhysicalInstance = new Ddi4PhysicalInstance(
-                Ddi4PhysicalInstance.TYPE,
+                Ddi4PhysicalInstance.TYPE_NAME,
                 CogsDate.ofDateTime("2025-10-23T12:28:43.615773Z"),
                 "urn:ddi:fr.inserm.constances:2514afe4-7b08-4500-be25-7a852a10fd8c:1",
                 agencyId,
@@ -377,7 +377,7 @@ class DDIRepositoryImplTest {
 
         // Mock converter
         Ddi4PhysicalInstance mockPhysicalInstance = new Ddi4PhysicalInstance(
-                Ddi4PhysicalInstance.TYPE,
+                Ddi4PhysicalInstance.TYPE_NAME,
                 CogsDate.ofDateTime("2025-01-01T00:00:00"),
                 "urn:ddi:fr.insee:test-id:1",
                 "fr.insee",
@@ -598,7 +598,7 @@ class DDIRepositoryImplTest {
 
         // Mock converter
         Ddi4PhysicalInstance mockPhysicalInstance = new Ddi4PhysicalInstance(
-                Ddi4PhysicalInstance.TYPE,
+                Ddi4PhysicalInstance.TYPE_NAME,
                 CogsDate.ofDateTime("2025-01-01T00:00:00"),
                 "urn:ddi:fr.insee:" + instanceId + ":1",
                 agencyId,
@@ -609,7 +609,7 @@ class DDIRepositoryImplTest {
                 List.of(Reference.of(agencyId, "dr-123", "1", "DataRelationship")));
 
         Ddi4DataRelationship mockDataRelationship = new Ddi4DataRelationship(
-                Ddi4DataRelationship.TYPE,
+                Ddi4DataRelationship.TYPE_NAME,
                 CogsDate.ofDateTime("2025-01-01T00:00:00"),
                 "urn:ddi:fr.insee:dr-123:1",
                 agencyId,
@@ -618,7 +618,7 @@ class DDIRepositoryImplTest {
                 null,
                 null,
                 List.of(new LogicalRecord(
-                        LogicalRecord.TYPE, "urn:ddi:fr.insee:lr-123:1", agencyId, "lr-123", "1", null, null)));
+                        LogicalRecord.TYPE_NAME, "urn:ddi:fr.insee:lr-123:1", agencyId, "lr-123", "1", null, null)));
 
         Ddi4Response mockDdi4Response = new Ddi4Response(
                 "ddi:4.0",
@@ -722,7 +722,7 @@ class DDIRepositoryImplTest {
         stubPhysicalInstanceSet(existingSetItems);
 
         Ddi4PhysicalInstance mockPhysicalInstance = new Ddi4PhysicalInstance(
-                Ddi4PhysicalInstance.TYPE,
+                Ddi4PhysicalInstance.TYPE_NAME,
                 CogsDate.ofDateTime("2025-01-01T00:00:00"),
                 "urn:ddi:fr.insee:" + instanceId + ":1",
                 agencyId,
@@ -732,7 +732,7 @@ class DDIRepositoryImplTest {
                 new Citation(LangStrings.of("fr-FR", "Old Label")),
                 List.of(Reference.of(agencyId, "dr-123", "1", "DataRelationship")));
         Ddi4DataRelationship mockDataRelationship = new Ddi4DataRelationship(
-                Ddi4DataRelationship.TYPE,
+                Ddi4DataRelationship.TYPE_NAME,
                 CogsDate.ofDateTime("2025-01-01T00:00:00"),
                 "urn:ddi:fr.insee:dr-123:1",
                 agencyId,
@@ -741,7 +741,7 @@ class DDIRepositoryImplTest {
                 null,
                 null,
                 List.of(new LogicalRecord(
-                        LogicalRecord.TYPE, "urn:ddi:fr.insee:lr-123:1", agencyId, "lr-123", "1", null, null)));
+                        LogicalRecord.TYPE_NAME, "urn:ddi:fr.insee:lr-123:1", agencyId, "lr-123", "1", null, null)));
         Ddi4Response mockDdi4Response = new Ddi4Response(
                 "ddi:4.0",
                 List.of(Reference.of(agencyId, instanceId, "1", "PhysicalInstance")),
@@ -900,7 +900,7 @@ class DDIRepositoryImplTest {
         when(colecticaClient.getDescriptions(anyList())).thenReturn(itemResponses);
 
         Ddi4CodeList mockCodeList = new Ddi4CodeList(
-                Ddi4CodeList.TYPE,
+                Ddi4CodeList.TYPE_NAME,
                 CogsDate.ofDateTime("2025-12-10T11:55:28.140Z"),
                 "urn:ddi:fr.insee:" + codeListId + ":1",
                 agencyId,
@@ -909,7 +909,7 @@ class DDIRepositoryImplTest {
                 LangStrings.of("fr-FR", "ma code list"),
                 null,
                 List.of(new Code(
-                        Code.TYPE,
+                        Code.TYPE_NAME,
                         "urn:ddi:fr.insee:6a290143-b9f6-43d3-92ac-70c3b2f516c1:1",
                         agencyId,
                         "6a290143-b9f6-43d3-92ac-70c3b2f516c1",
@@ -918,7 +918,7 @@ class DDIRepositoryImplTest {
                         ValueType.of("a"),
                         null)));
         Ddi4Category mockCategory = new Ddi4Category(
-                Ddi4Category.TYPE,
+                Ddi4Category.TYPE_NAME,
                 CogsDate.ofDateTime("2025-12-10T11:55:28.140Z"),
                 "urn:ddi:fr.insee:" + categoryId + ":1",
                 agencyId,
@@ -1510,7 +1510,7 @@ class DDIRepositoryImplTest {
                         null,
                         null,
                         List.of(new Ddi4CodeList(
-                                Ddi4CodeList.TYPE,
+                                Ddi4CodeList.TYPE_NAME,
                                 CogsDate.ofDateTime("2024-10-31T10:43:38"),
                                 "urn:ddi:fr.insee:" + MUTUALIZED_CODE_LIST_ID + ":" + version,
                                 MUTUALIZED_AGENCY,
@@ -1561,7 +1561,7 @@ class DDIRepositoryImplTest {
         assertEquals(MUTUALIZED_CODE_LIST_ID, result.codeList().getFirst().id());
         assertEquals(
                 List.of(new Ddi4Category(
-                        Ddi4Category.TYPE,
+                        Ddi4Category.TYPE_NAME,
                         null,
                         "urn:ddi:fr.insee:cat-1:2",
                         MUTUALIZED_AGENCY,
@@ -1690,7 +1690,7 @@ class DDIRepositoryImplTest {
 
         // Mock existing instance with a Label on DataRelationship
         Ddi4PhysicalInstance mockPhysicalInstance = new Ddi4PhysicalInstance(
-                Ddi4PhysicalInstance.TYPE,
+                Ddi4PhysicalInstance.TYPE_NAME,
                 CogsDate.ofDateTime("2025-01-01T00:00:00"),
                 "urn:ddi:fr.insee:" + instanceId + ":1",
                 agencyId,
@@ -1705,7 +1705,7 @@ class DDIRepositoryImplTest {
         List<LangString> existingLrLabel = LangStrings.of("de-DE", "Existing LR Label");
 
         Ddi4DataRelationship mockDataRelationship = new Ddi4DataRelationship(
-                Ddi4DataRelationship.TYPE,
+                Ddi4DataRelationship.TYPE_NAME,
                 CogsDate.ofDateTime("2025-01-01T00:00:00"),
                 "urn:ddi:fr.insee:dr-123:1",
                 agencyId,
@@ -1714,7 +1714,7 @@ class DDIRepositoryImplTest {
                 null,
                 existingDrLabel,
                 List.of(new LogicalRecord(
-                        LogicalRecord.TYPE,
+                        LogicalRecord.TYPE_NAME,
                         "urn:ddi:fr.insee:lr-123:1",
                         agencyId,
                         "lr-123",
@@ -1784,7 +1784,7 @@ class DDIRepositoryImplTest {
                 "New LR Label");
 
         Ddi4PhysicalInstance mockPhysicalInstance = new Ddi4PhysicalInstance(
-                Ddi4PhysicalInstance.TYPE,
+                Ddi4PhysicalInstance.TYPE_NAME,
                 CogsDate.ofDateTime("2025-01-01T00:00:00"),
                 "urn:ddi:fr.insee:" + instanceId + ":1",
                 agencyId,
@@ -1796,7 +1796,7 @@ class DDIRepositoryImplTest {
 
         // DataRelationship has NO existing Label (null)
         Ddi4DataRelationship mockDataRelationship = new Ddi4DataRelationship(
-                Ddi4DataRelationship.TYPE,
+                Ddi4DataRelationship.TYPE_NAME,
                 CogsDate.ofDateTime("2025-01-01T00:00:00"),
                 "urn:ddi:fr.insee:dr-123:1",
                 agencyId,
@@ -1805,7 +1805,7 @@ class DDIRepositoryImplTest {
                 null,
                 null, // No existing label
                 List.of(new LogicalRecord(
-                        LogicalRecord.TYPE,
+                        LogicalRecord.TYPE_NAME,
                         "urn:ddi:fr.insee:lr-123:1",
                         agencyId,
                         "lr-123",
@@ -1881,7 +1881,7 @@ class DDIRepositoryImplTest {
                 "Updated LR Label");
 
         Ddi4PhysicalInstance mockPhysicalInstance = new Ddi4PhysicalInstance(
-                Ddi4PhysicalInstance.TYPE,
+                Ddi4PhysicalInstance.TYPE_NAME,
                 CogsDate.ofDateTime("2025-01-01T00:00:00"),
                 "urn:ddi:fr.insee:" + instanceId + ":1",
                 agencyId,
@@ -1896,7 +1896,7 @@ class DDIRepositoryImplTest {
         List<LangString> existingLrLabel = LangStrings.of("es-ES", "Old LR Label");
 
         Ddi4DataRelationship mockDataRelationship = new Ddi4DataRelationship(
-                Ddi4DataRelationship.TYPE,
+                Ddi4DataRelationship.TYPE_NAME,
                 CogsDate.ofDateTime("2025-01-01T00:00:00"),
                 "urn:ddi:fr.insee:dr-123:1",
                 agencyId,
@@ -1905,7 +1905,7 @@ class DDIRepositoryImplTest {
                 null,
                 existingDrLabel,
                 List.of(new LogicalRecord(
-                        LogicalRecord.TYPE,
+                        LogicalRecord.TYPE_NAME,
                         "urn:ddi:fr.insee:lr-123:1",
                         agencyId,
                         "lr-123",
@@ -2148,7 +2148,7 @@ class DDIRepositoryImplTest {
                 .thenReturn(new ColecticaItemResponse[] {physicalInstanceItemResponse(suAgency, "pi-1", 1, piXml)});
 
         Ddi4StudyUnit studyUnit = new Ddi4StudyUnit(
-                Ddi4StudyUnit.TYPE,
+                Ddi4StudyUnit.TYPE_NAME,
                 null,
                 "urn:ddi:" + suAgency + ":" + suId + ":1",
                 suAgency,
@@ -2159,7 +2159,7 @@ class DDIRepositoryImplTest {
                 null);
         when(ddi3ToDdi4Converter.toStudyUnit(studyUnitXml)).thenReturn(studyUnit);
         Ddi4PhysicalInstance physicalInstance = new Ddi4PhysicalInstance(
-                Ddi4PhysicalInstance.TYPE,
+                Ddi4PhysicalInstance.TYPE_NAME,
                 null,
                 "urn:ddi:" + suAgency + ":pi-1:1",
                 suAgency,
@@ -2168,9 +2168,9 @@ class DDIRepositoryImplTest {
                 null,
                 null,
                 null);
-        when(ddi3ToDdi4Converter.convertDdi3ToDdi4(any(), eq(Ddi4Response.SCHEMA)))
+        when(ddi3ToDdi4Converter.convertDdi3ToDdi4(any(), eq(Ddi4Response.SCHEMA_ID)))
                 .thenReturn(new Ddi4Response(
-                        Ddi4Response.SCHEMA, null, List.of(physicalInstance), null, null, null, null, null));
+                        Ddi4Response.SCHEMA_ID, null, List.of(physicalInstance), null, null, null, null, null));
 
         Optional<Ddi4StudyUnitResponse> result = ddiRepository.findStudyUnitByOperationIri(operationIri, null);
 
@@ -2178,7 +2178,7 @@ class DDIRepositoryImplTest {
         assertThat(result.get().studyUnit()).containsExactly(studyUnit);
         assertThat(result.get().physicalInstance()).containsExactly(physicalInstance);
         assertThat(result.get().topLevelReference())
-                .containsExactly(Reference.of(suAgency, suId, "1", Ddi4StudyUnit.TYPE));
+                .containsExactly(Reference.of(suAgency, suId, "1", Ddi4StudyUnit.TYPE_NAME));
     }
 
     /**
@@ -2313,7 +2313,7 @@ class DDIRepositoryImplTest {
 
         when(ddi3ToDdi4Converter.toStudyUnit(anyString()))
                 .thenReturn(new Ddi4StudyUnit(
-                        Ddi4StudyUnit.TYPE,
+                        Ddi4StudyUnit.TYPE_NAME,
                         null,
                         "urn:ddi:fr.insee:su-abc:1",
                         "fr.insee",
@@ -2369,10 +2369,11 @@ class DDIRepositoryImplTest {
 
     /**
      * Une PhysicalInstance créée est rattachée à sa StudyUnit : le cache opération → StudyUnits est
-     * recalculé en tâche de fond, et la recherche suivante voit la StudyUnit à jour.
+     * recalculé avant la réponse. En tâche de fond, la fiche de l'opération, relue aussitôt par le
+     * front, ne voyait pas encore le nouveau fichier.
      */
     @Test
-    void createPhysicalInstance_refreshesTheStudyUnitsByOperationCacheInTheBackground() {
+    void createPhysicalInstance_refreshesTheStudyUnitsByOperationCacheBeforeReturning() {
         String operationIri = "http://id.insee.fr/operations/operation/op1";
         when(colecticaClient.query(anyList())).thenReturn(studyUnitQueryResponse("fr.insee", "su-abc"));
         when(colecticaClient.getDescriptions(anyList()))
@@ -2395,8 +2396,7 @@ class DDIRepositoryImplTest {
                 new CreatePhysicalInstanceRequest("New PI", "New DR", "New LR", null, null, null, null),
                 new PhysicalInstanceIds("pi-new", "dr-new", "lr-new"));
 
-        assertThat(scheduledRefreshes).hasSize(1);
-        scheduledRefreshes.forEach(Runnable::run);
+        assertThat(scheduledRefreshes).isEmpty();
         assertThat(ddiRepository.findStudyUnitXmlByOperationIri(operationIri, null))
                 .get(InstanceOfAssertFactories.STRING)
                 .contains("<r:ID>pi-new</r:ID>");
@@ -2864,7 +2864,7 @@ class DDIRepositoryImplTest {
         when(colecticaClient.getDescriptions(anyList())).thenReturn(itemResponses);
 
         Ddi4CodeList mockCodeList = new Ddi4CodeList(
-                Ddi4CodeList.TYPE,
+                Ddi4CodeList.TYPE_NAME,
                 CogsDate.ofDateTime("2024-10-31T10:43:38"),
                 "urn:ddi:fr.insee:" + codeListId + ":2",
                 agencyId,
@@ -2874,7 +2874,7 @@ class DDIRepositoryImplTest {
                 null,
                 List.of());
         Ddi4Category mockCategory = new Ddi4Category(
-                Ddi4Category.TYPE,
+                Ddi4Category.TYPE_NAME,
                 CogsDate.ofDateTime("2024-10-31T10:43:38"),
                 "urn:ddi:fr.insee:" + categoryId + ":2",
                 agencyId,
@@ -3256,7 +3256,7 @@ class DDIRepositoryImplTest {
 
         when(ddi3ToDdi4Converter.toManagedMissingValuesRepresentation(mmvrXml))
                 .thenReturn(new Ddi4ManagedMissingValuesRepresentation(
-                        Ddi4ManagedMissingValuesRepresentation.TYPE,
+                        Ddi4ManagedMissingValuesRepresentation.TYPE_NAME,
                         null,
                         null,
                         agencyId,
@@ -3264,12 +3264,12 @@ class DDIRepositoryImplTest {
                         "1",
                         null,
                         List.of(new CodeRepresentation(
-                                CodeRepresentation.TYPE,
+                                CodeRepresentation.TYPE_NAME,
                                 false,
                                 Reference.of(agencyId, "cl-sentinel", "1", "CodeList")))));
         when(ddi3ToDdi4Converter.toCodeList(sentinelCodeListXml))
                 .thenReturn(new Ddi4CodeList(
-                        Ddi4CodeList.TYPE,
+                        Ddi4CodeList.TYPE_NAME,
                         null,
                         null,
                         agencyId,
@@ -3278,7 +3278,7 @@ class DDIRepositoryImplTest {
                         null,
                         null,
                         List.of(new Code(
-                                Code.TYPE,
+                                Code.TYPE_NAME,
                                 null,
                                 agencyId,
                                 "code-1",
@@ -3402,7 +3402,7 @@ class DDIRepositoryImplTest {
 
         when(ddi3ToDdi4Converter.toManagedMissingValuesRepresentation(mmvrXml))
                 .thenReturn(new Ddi4ManagedMissingValuesRepresentation(
-                        Ddi4ManagedMissingValuesRepresentation.TYPE,
+                        Ddi4ManagedMissingValuesRepresentation.TYPE_NAME,
                         null,
                         null,
                         agencyId,
@@ -3410,12 +3410,12 @@ class DDIRepositoryImplTest {
                         "1",
                         null,
                         List.of(new CodeRepresentation(
-                                CodeRepresentation.TYPE,
+                                CodeRepresentation.TYPE_NAME,
                                 false,
                                 Reference.of(agencyId, "cl-sentinel", "1", "CodeList")))));
         when(ddi3ToDdi4Converter.toCodeList(sentinelCodeListXml))
                 .thenReturn(new Ddi4CodeList(
-                        Ddi4CodeList.TYPE,
+                        Ddi4CodeList.TYPE_NAME,
                         null,
                         null,
                         agencyId,
@@ -3424,7 +3424,7 @@ class DDIRepositoryImplTest {
                         null,
                         null,
                         List.of(new Code(
-                                Code.TYPE,
+                                Code.TYPE_NAME,
                                 null,
                                 agencyId,
                                 "code-1",
@@ -4240,7 +4240,7 @@ class DDIRepositoryImplTest {
         lenient()
                 .when(ddi3ToDdi4Converter.toManagedMissingValuesRepresentation("<mmvr/>"))
                 .thenReturn(new Ddi4ManagedMissingValuesRepresentation(
-                        Ddi4ManagedMissingValuesRepresentation.TYPE,
+                        Ddi4ManagedMissingValuesRepresentation.TYPE_NAME,
                         CogsDate.ofDateTime("2026-06-29T14:26:32Z"),
                         "urn:ddi:fr.insee:mmvr-1:1",
                         agencyId,
@@ -4248,7 +4248,7 @@ class DDIRepositoryImplTest {
                         "1",
                         LangStrings.of("fr-FR", "Valeurs sentinelles NSP/REF"),
                         List.of(new CodeRepresentation(
-                                CodeRepresentation.TYPE,
+                                CodeRepresentation.TYPE_NAME,
                                 false,
                                 Reference.of(agencyId, "cl-sentinelles", "1", "CodeList")))));
 
@@ -4270,7 +4270,7 @@ class DDIRepositoryImplTest {
         lenient()
                 .when(ddi3ToDdi4Converter.toCodeList("<cl/>"))
                 .thenReturn(new Ddi4CodeList(
-                        Ddi4CodeList.TYPE,
+                        Ddi4CodeList.TYPE_NAME,
                         CogsDate.ofDateTime("2026-06-29T14:26:32Z"),
                         "urn:ddi:fr.insee:cl-sentinelles:1",
                         agencyId,
@@ -4280,7 +4280,7 @@ class DDIRepositoryImplTest {
                         null,
                         List.of(
                                 new Code(
-                                        Code.TYPE,
+                                        Code.TYPE_NAME,
                                         "urn:ddi:fr.insee:c1:1",
                                         agencyId,
                                         "c1",
@@ -4289,7 +4289,7 @@ class DDIRepositoryImplTest {
                                         ValueType.of("NSP"),
                                         null),
                                 new Code(
-                                        Code.TYPE,
+                                        Code.TYPE_NAME,
                                         "urn:ddi:fr.insee:c2:1",
                                         agencyId,
                                         "c2",
@@ -5262,7 +5262,7 @@ class DDIRepositoryImplTest {
                 "fmt");
         when(colecticaClient.getItem("fr.insee", "CLS_1", null)).thenReturn(existingScheme);
         Ddi4CodeListScheme parsedScheme = new Ddi4CodeListScheme(
-                Ddi4CodeListScheme.TYPE,
+                Ddi4CodeListScheme.TYPE_NAME,
                 CogsDate.ofDateTime("2026-01-01T00:00:00"),
                 "urn:ddi:fr.insee:CLS_1:1",
                 "fr.insee",
@@ -5288,7 +5288,7 @@ class DDIRepositoryImplTest {
         when(ddi4ToDdi3Converter.toCodeListSchemeItem(schemeCaptor.capture())).thenReturn(schemeItem);
 
         Ddi4CodeList clMut = new Ddi4CodeList(
-                Ddi4CodeList.TYPE,
+                Ddi4CodeList.TYPE_NAME,
                 CogsDate.ofDateTime("2026-01-01T00:00:00"),
                 "urn:ddi:fr.insee:CL_MUT:1",
                 "fr.insee",
@@ -5298,7 +5298,7 @@ class DDIRepositoryImplTest {
                 null,
                 null);
         Ddi4CodeList clNew = new Ddi4CodeList(
-                Ddi4CodeList.TYPE,
+                Ddi4CodeList.TYPE_NAME,
                 CogsDate.ofDateTime("2026-01-01T00:00:00"),
                 "urn:ddi:fr.insee:CL_NEW:1",
                 "fr.insee",
@@ -5378,7 +5378,7 @@ class DDIRepositoryImplTest {
                 "fmt");
         lenient().when(colecticaClient.getItem("fr.insee", "MRS_1", null)).thenReturn(existingScheme);
         Ddi4ManagedRepresentationScheme parsedScheme = new Ddi4ManagedRepresentationScheme(
-                Ddi4ManagedRepresentationScheme.TYPE,
+                Ddi4ManagedRepresentationScheme.TYPE_NAME,
                 CogsDate.ofDateTime("2026-01-01T00:00:00"),
                 "urn:ddi:fr.insee:MRS_1:1",
                 "fr.insee",
@@ -5409,7 +5409,7 @@ class DDIRepositoryImplTest {
                         "fmt"));
 
         Ddi4ManagedMissingValuesRepresentation mmvrNew = new Ddi4ManagedMissingValuesRepresentation(
-                Ddi4ManagedMissingValuesRepresentation.TYPE,
+                Ddi4ManagedMissingValuesRepresentation.TYPE_NAME,
                 CogsDate.ofDateTime("2026-01-01T00:00:00"),
                 "urn:ddi:fr.insee:MMVR_NEW:1",
                 "fr.insee",
@@ -5458,7 +5458,7 @@ class DDIRepositoryImplTest {
         stubChildren("fr.insee", "GROUP_M", CODE_LIST_TYPE, new ItemReference("fr.insee", "CL_MUT"));
 
         Ddi4CodeList clMut = new Ddi4CodeList(
-                Ddi4CodeList.TYPE,
+                Ddi4CodeList.TYPE_NAME,
                 CogsDate.ofDateTime("2026-01-01T00:00:00"),
                 "urn:ddi:fr.insee:CL_MUT:1",
                 "fr.insee",
@@ -5521,7 +5521,7 @@ class DDIRepositoryImplTest {
                         false,
                         "fmt"));
         Ddi4CategoryScheme parsed = new Ddi4CategoryScheme(
-                Ddi4CategoryScheme.TYPE,
+                Ddi4CategoryScheme.TYPE_NAME,
                 CogsDate.ofDateTime("2026-01-01T00:00:00"),
                 "urn:ddi:fr.insee:CATS_1:1",
                 "fr.insee",
@@ -5547,7 +5547,7 @@ class DDIRepositoryImplTest {
                         "fmt"));
 
         Ddi4Category cat = new Ddi4Category(
-                Ddi4Category.TYPE,
+                Ddi4Category.TYPE_NAME,
                 CogsDate.ofDateTime("2026-01-01T00:00:00"),
                 "urn:ddi:fr.insee:CAT_NEW:1",
                 "fr.insee",
@@ -5586,7 +5586,7 @@ class DDIRepositoryImplTest {
                 .thenReturn(List.of());
 
         Ddi4Variable variable = new Ddi4Variable(
-                Ddi4Variable.TYPE,
+                Ddi4Variable.TYPE_NAME,
                 CogsDate.ofDateTime("2026-01-01T00:00:00"),
                 "urn:ddi:fr.insee:VAR_1:1",
                 "fr.insee",
@@ -5641,7 +5641,7 @@ class DDIRepositoryImplTest {
 
     private static Ddi4PhysicalInstance physicalInstance(String id, String label) {
         return new Ddi4PhysicalInstance(
-                Ddi4PhysicalInstance.TYPE,
+                Ddi4PhysicalInstance.TYPE_NAME,
                 CogsDate.ofDateTime("2026-10-02T10:00:00"),
                 "urn:ddi:fr.insee:" + id + ":2",
                 "fr.insee",
@@ -5687,7 +5687,7 @@ class DDIRepositoryImplTest {
                         Map.of("StudyUnit", STUDY_UNIT_ITEM_TYPE, "PhysicalInstance", PI_ITEM_TYPE)));
 
         Ddi4PhysicalInstance currentPhysicalInstance = new Ddi4PhysicalInstance(
-                Ddi4PhysicalInstance.TYPE,
+                Ddi4PhysicalInstance.TYPE_NAME,
                 CogsDate.ofDateTime("2026-01-01T00:00:00"),
                 "urn:ddi:fr.insee:pi-1:1",
                 agencyId,
@@ -5697,7 +5697,7 @@ class DDIRepositoryImplTest {
                 new Citation(LangStrings.of("fr-FR", "Old PI")),
                 List.of(Reference.of(agencyId, "dr-1", "1", "DataRelationship")));
         Ddi4DataRelationship currentDataRelationship = new Ddi4DataRelationship(
-                Ddi4DataRelationship.TYPE,
+                Ddi4DataRelationship.TYPE_NAME,
                 CogsDate.ofDateTime("2026-01-01T00:00:00"),
                 "urn:ddi:fr.insee:dr-1:1",
                 agencyId,
@@ -5706,7 +5706,7 @@ class DDIRepositoryImplTest {
                 null,
                 null,
                 List.of(new LogicalRecord(
-                        LogicalRecord.TYPE, "urn:ddi:fr.insee:lr-1:1", agencyId, "lr-1", "1", null, null)));
+                        LogicalRecord.TYPE_NAME, "urn:ddi:fr.insee:lr-1:1", agencyId, "lr-1", "1", null, null)));
         Ddi4Response currentInstance = new Ddi4Response(
                 "ddi:4.0",
                 List.of(Reference.of(agencyId, instanceId, "1", "PhysicalInstance")),
@@ -5934,7 +5934,7 @@ class DDIRepositoryImplTest {
                         "ddi:4.0",
                         List.of(Reference.of("fr.insee", "pi-new", "1", "PhysicalInstance")),
                         List.of(new Ddi4PhysicalInstance(
-                                Ddi4PhysicalInstance.TYPE,
+                                Ddi4PhysicalInstance.TYPE_NAME,
                                 CogsDate.ofDateTime("2026-10-02T10:00:00"),
                                 "urn:ddi:fr.insee:pi-new:1",
                                 "fr.insee",
@@ -5996,7 +5996,7 @@ class DDIRepositoryImplTest {
 
         // Instance source : une PI, sa DR (un LogicalRecord) et une variable
         Ddi4PhysicalInstance sourcePhysicalInstance = new Ddi4PhysicalInstance(
-                Ddi4PhysicalInstance.TYPE,
+                Ddi4PhysicalInstance.TYPE_NAME,
                 CogsDate.ofDateTime("2026-01-01T00:00:00"),
                 "urn:ddi:fr.insee:pi-src:3",
                 agencyId,
@@ -6006,7 +6006,7 @@ class DDIRepositoryImplTest {
                 new Citation(LangStrings.of("en-GB", "Source PI")),
                 List.of(Reference.of(agencyId, "dr-src", "1", "DataRelationship")));
         Ddi4DataRelationship sourceDataRelationship = new Ddi4DataRelationship(
-                Ddi4DataRelationship.TYPE,
+                Ddi4DataRelationship.TYPE_NAME,
                 CogsDate.ofDateTime("2026-01-01T00:00:00"),
                 "urn:ddi:fr.insee:dr-src:1",
                 agencyId,
@@ -6015,7 +6015,7 @@ class DDIRepositoryImplTest {
                 null,
                 LangStrings.of("en-GB", "Source DR"),
                 List.of(new LogicalRecord(
-                        LogicalRecord.TYPE,
+                        LogicalRecord.TYPE_NAME,
                         "urn:ddi:fr.insee:lr-src:1",
                         agencyId,
                         "lr-src",
@@ -6071,7 +6071,7 @@ class DDIRepositoryImplTest {
                         "fmt"));
         when(ddi3ToDdi4Converter.toVariableScheme("<vs/>"))
                 .thenReturn(new Ddi4VariableScheme(
-                        Ddi4VariableScheme.TYPE,
+                        Ddi4VariableScheme.TYPE_NAME,
                         CogsDate.ofDateTime("2026-01-01T00:00:00"),
                         "urn:ddi:fr.insee:VS_1:1",
                         "fr.insee",
@@ -6263,7 +6263,7 @@ class DDIRepositoryImplTest {
                         "fmt"));
         when(ddi3ToDdi4Converter.toVariableScheme("<vs/>"))
                 .thenReturn(new Ddi4VariableScheme(
-                        Ddi4VariableScheme.TYPE,
+                        Ddi4VariableScheme.TYPE_NAME,
                         CogsDate.ofDateTime("2026-01-01T00:00:00"),
                         "urn:ddi:fr.insee:VS_2025:1",
                         agencyId,
@@ -6355,7 +6355,7 @@ class DDIRepositoryImplTest {
                 "ddi:4.0",
                 List.of(Reference.of(agencyId, "pi-src", "3", "PhysicalInstance")),
                 List.of(new Ddi4PhysicalInstance(
-                        Ddi4PhysicalInstance.TYPE,
+                        Ddi4PhysicalInstance.TYPE_NAME,
                         CogsDate.ofDateTime("2026-01-01T00:00:00"),
                         "urn:ddi:fr.insee:pi-src:3",
                         agencyId,
@@ -6365,7 +6365,7 @@ class DDIRepositoryImplTest {
                         new Citation(LangStrings.of("en-GB", "Source PI")),
                         List.of(Reference.of(agencyId, "dr-src", "1", "DataRelationship")))),
                 List.of(new Ddi4DataRelationship(
-                        Ddi4DataRelationship.TYPE,
+                        Ddi4DataRelationship.TYPE_NAME,
                         CogsDate.ofDateTime("2026-01-01T00:00:00"),
                         "urn:ddi:fr.insee:dr-src:1",
                         agencyId,
@@ -6374,7 +6374,7 @@ class DDIRepositoryImplTest {
                         null,
                         LangStrings.of("en-GB", "Source DR"),
                         List.of(new LogicalRecord(
-                                LogicalRecord.TYPE,
+                                LogicalRecord.TYPE_NAME,
                                 "urn:ddi:fr.insee:lr-src:1",
                                 agencyId,
                                 "lr-src",
@@ -6396,7 +6396,7 @@ class DDIRepositoryImplTest {
                 .thenReturn(ColecticaTestItemTypes.configuredWith(Map.of("StudyUnit", STUDY_UNIT_ITEM_TYPE)));
         lenient().when(instanceConfiguration.itemFormat()).thenReturn("fmt");
         Ddi4PhysicalInstance sourcePhysicalInstance = new Ddi4PhysicalInstance(
-                Ddi4PhysicalInstance.TYPE,
+                Ddi4PhysicalInstance.TYPE_NAME,
                 CogsDate.ofDateTime("2026-01-01T00:00:00"),
                 "urn:ddi:fr.insee:pi-src:3",
                 agencyId,
@@ -6406,7 +6406,7 @@ class DDIRepositoryImplTest {
                 new Citation(LangStrings.of("en-GB", "Source PI")),
                 List.of(Reference.of(agencyId, "dr-src", "1", "DataRelationship")));
         Ddi4DataRelationship sourceDataRelationship = new Ddi4DataRelationship(
-                Ddi4DataRelationship.TYPE,
+                Ddi4DataRelationship.TYPE_NAME,
                 CogsDate.ofDateTime("2026-01-01T00:00:00"),
                 "urn:ddi:fr.insee:dr-src:1",
                 agencyId,
@@ -6415,7 +6415,7 @@ class DDIRepositoryImplTest {
                 null,
                 LangStrings.of("en-GB", "Source DR"),
                 List.of(new LogicalRecord(
-                        LogicalRecord.TYPE,
+                        LogicalRecord.TYPE_NAME,
                         "urn:ddi:fr.insee:lr-src:1",
                         agencyId,
                         "lr-src",
@@ -6479,7 +6479,7 @@ class DDIRepositoryImplTest {
 
     private static Ddi4Variable sourceVariable(String agencyId, String id, String version) {
         return new Ddi4Variable(
-                Ddi4Variable.TYPE,
+                Ddi4Variable.TYPE_NAME,
                 CogsDate.ofDateTime("2026-01-01T00:00:00"),
                 Reference.synthesizeUrn(agencyId, id, version),
                 agencyId,
@@ -6506,7 +6506,7 @@ class DDIRepositoryImplTest {
         stubPhysicalInstanceParents();
         stubChildrenOfLatestVersion("fr.insee", "group-1", "lp-type", List.of());
         Ddi4CodeList codeList = new Ddi4CodeList(
-                Ddi4CodeList.TYPE,
+                Ddi4CodeList.TYPE_NAME,
                 CogsDate.ofDateTime("2026-01-01T00:00:00"),
                 "urn:ddi:fr.insee:CL_NEW:1",
                 "fr.insee",
@@ -6539,7 +6539,7 @@ class DDIRepositoryImplTest {
         stubChildrenOfLatestVersion("fr.insee", "group-1", "lp-type", List.of(new ItemReference("fr.insee", "lp-1")));
         stubChildrenOfLatestVersion("fr.insee", "lp-1", "cats-type", List.of());
         Ddi4Category category = new Ddi4Category(
-                Ddi4Category.TYPE,
+                Ddi4Category.TYPE_NAME,
                 CogsDate.ofDateTime("2026-01-01T00:00:00"),
                 "urn:ddi:fr.insee:CAT_NEW:1",
                 "fr.insee",
@@ -6573,7 +6573,7 @@ class DDIRepositoryImplTest {
         stubChildrenOfLatestVersion("fr.insee", "group-1", "lp-type", List.of(new ItemReference("fr.insee", "lp-1")));
         stubChildrenOfLatestVersion("fr.insee", "lp-1", MANAGED_REPRESENTATION_SCHEME_TYPE, List.of());
         Ddi4ManagedMissingValuesRepresentation mmvr = new Ddi4ManagedMissingValuesRepresentation(
-                Ddi4ManagedMissingValuesRepresentation.TYPE,
+                Ddi4ManagedMissingValuesRepresentation.TYPE_NAME,
                 CogsDate.ofDateTime("2026-01-01T00:00:00"),
                 "urn:ddi:fr.insee:MMVR_NEW:1",
                 "fr.insee",
@@ -6674,7 +6674,7 @@ class DDIRepositoryImplTest {
                         "fmt"));
         when(ddi3ToDdi4Converter.toVariableScheme("<vs/>"))
                 .thenReturn(new Ddi4VariableScheme(
-                        Ddi4VariableScheme.TYPE,
+                        Ddi4VariableScheme.TYPE_NAME,
                         CogsDate.ofDateTime("2026-01-01T00:00:00"),
                         "urn:ddi:fr.insee:VS_1:1",
                         "fr.insee",
@@ -6741,7 +6741,7 @@ class DDIRepositoryImplTest {
                         "fmt"));
         when(ddi3ToDdi4Converter.toVariableScheme("<vs/>"))
                 .thenReturn(new Ddi4VariableScheme(
-                        Ddi4VariableScheme.TYPE,
+                        Ddi4VariableScheme.TYPE_NAME,
                         CogsDate.ofDateTime("2026-01-01T00:00:00"),
                         "urn:ddi:fr.insee:VS_2:1",
                         "fr.insee",
@@ -6820,7 +6820,7 @@ class DDIRepositoryImplTest {
                         "fmt"));
         when(ddi3ToDdi4Converter.toCategoryScheme("<cs/>"))
                 .thenReturn(new Ddi4CategoryScheme(
-                        Ddi4CategoryScheme.TYPE,
+                        Ddi4CategoryScheme.TYPE_NAME,
                         CogsDate.ofDateTime("2026-01-01T00:00:00"),
                         "urn:ddi:fr.insee:CS_NEW:1",
                         "fr.insee",
@@ -6843,7 +6843,7 @@ class DDIRepositoryImplTest {
                         false,
                         "fmt"));
         Ddi4Category category = new Ddi4Category(
-                Ddi4Category.TYPE,
+                Ddi4Category.TYPE_NAME,
                 CogsDate.ofDateTime("2026-01-01T00:00:00"),
                 "urn:ddi:fr.insee:CAT_NEW:1",
                 "fr.insee",
@@ -6925,7 +6925,7 @@ class DDIRepositoryImplTest {
 
     private static Ddi4Response ddi4WithOneVariable() {
         Ddi4Variable variable = new Ddi4Variable(
-                Ddi4Variable.TYPE,
+                Ddi4Variable.TYPE_NAME,
                 CogsDate.ofDateTime("2026-01-01T00:00:00"),
                 "urn:ddi:fr.insee:VAR_1:1",
                 "fr.insee",
@@ -6996,7 +6996,7 @@ class DDIRepositoryImplTest {
                         false,
                         null));
         Ddi4Group latest = new Ddi4Group(
-                Ddi4Group.TYPE,
+                Ddi4Group.TYPE_NAME,
                 null,
                 "urn:ddi:fr.insee:" + groupId + ":1",
                 "fr.insee",
@@ -7028,7 +7028,7 @@ class DDIRepositoryImplTest {
         String xml = "<Fragment xmlns=\"ddi:instance:3_3\"><LogicalProduct>lp</LogicalProduct></Fragment>";
         when(colecticaClient.getItem("fr.insee", "lp-1", null)).thenReturn(itemResponseWith("lp-1", xml));
         Ddi4LogicalProduct logicalProduct = new Ddi4LogicalProduct(
-                Ddi4LogicalProduct.TYPE,
+                Ddi4LogicalProduct.TYPE_NAME,
                 null,
                 "urn:ddi:fr.insee:lp-1:1",
                 "fr.insee",
@@ -7049,7 +7049,7 @@ class DDIRepositoryImplTest {
         String xml = "<Fragment xmlns=\"ddi:instance:3_3\"><CodeListScheme>cls</CodeListScheme></Fragment>";
         when(colecticaClient.getItem("fr.insee", "cls-1", null)).thenReturn(itemResponseWith("cls-1", xml));
         Ddi4CodeListScheme scheme = new Ddi4CodeListScheme(
-                Ddi4CodeListScheme.TYPE, null, "urn:ddi:fr.insee:cls-1:1", "fr.insee", "cls-1", "1", null, null);
+                Ddi4CodeListScheme.TYPE_NAME, null, "urn:ddi:fr.insee:cls-1:1", "fr.insee", "cls-1", "1", null, null);
         when(ddi3ToDdi4Converter.toCodeListScheme(xml)).thenReturn(scheme);
 
         assertThat(ddiRepository.findCodeListScheme("fr.insee", "cls-1")).contains(scheme);
@@ -7060,7 +7060,7 @@ class DDIRepositoryImplTest {
         String xml = "<Fragment xmlns=\"ddi:instance:3_3\"><CategoryScheme>cas</CategoryScheme></Fragment>";
         when(colecticaClient.getItem("fr.insee", "cas-1", null)).thenReturn(itemResponseWith("cas-1", xml));
         Ddi4CategoryScheme scheme = new Ddi4CategoryScheme(
-                Ddi4CategoryScheme.TYPE, null, "urn:ddi:fr.insee:cas-1:1", "fr.insee", "cas-1", "1", null, null);
+                Ddi4CategoryScheme.TYPE_NAME, null, "urn:ddi:fr.insee:cas-1:1", "fr.insee", "cas-1", "1", null, null);
         when(ddi3ToDdi4Converter.toCategoryScheme(xml)).thenReturn(scheme);
 
         assertThat(ddiRepository.findCategoryScheme("fr.insee", "cas-1")).contains(scheme);
@@ -7071,7 +7071,7 @@ class DDIRepositoryImplTest {
         String xml = "<Fragment xmlns=\"ddi:instance:3_3\"><ManagedRepresentationScheme/></Fragment>";
         when(colecticaClient.getItem("fr.insee", "mrs-1", null)).thenReturn(itemResponseWith("mrs-1", xml));
         Ddi4ManagedRepresentationScheme scheme = new Ddi4ManagedRepresentationScheme(
-                Ddi4ManagedRepresentationScheme.TYPE,
+                Ddi4ManagedRepresentationScheme.TYPE_NAME,
                 null,
                 "urn:ddi:fr.insee:mrs-1:1",
                 "fr.insee",
@@ -7293,7 +7293,7 @@ class DDIRepositoryImplTest {
 
     private static Ddi4Variable variable(String agencyId, String id, String version, String name) {
         return new Ddi4Variable(
-                Ddi4Variable.TYPE,
+                Ddi4Variable.TYPE_NAME,
                 null,
                 "urn:ddi:" + agencyId + ":" + id + ":" + version,
                 agencyId,

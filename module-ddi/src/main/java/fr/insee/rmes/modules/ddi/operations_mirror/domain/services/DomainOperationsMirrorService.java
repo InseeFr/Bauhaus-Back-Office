@@ -100,7 +100,7 @@ public class DomainOperationsMirrorService implements OperationsMirrorService {
         }
 
         groupService.createOrUpdate(new Ddi4Group(
-                Ddi4Group.TYPE,
+                Ddi4Group.TYPE_NAME,
                 now(),
                 DdiMirrorIdentity.urn(agencyId, groupId, version),
                 agencyId,
@@ -128,7 +128,7 @@ public class DomainOperationsMirrorService implements OperationsMirrorService {
         String version = existing.map(Ddi4StudyUnit::version).orElse(FIRST_VERSION);
 
         studyUnitService.createOrUpdate(new Ddi4StudyUnit(
-                Ddi4StudyUnit.TYPE,
+                Ddi4StudyUnit.TYPE_NAME,
                 now(),
                 DdiMirrorIdentity.urn(agencyId, studyUnitId, version),
                 agencyId,
@@ -152,7 +152,7 @@ public class DomainOperationsMirrorService implements OperationsMirrorService {
     private Reference createStudyUnitLogicalProduct(String operationIri, String shortLabel) {
         String variableSchemeId = DdiMirrorIdentity.of(operationIri, VARIABLE_SCHEME_ROLE);
         ddiService.createVariableScheme(new Ddi4VariableScheme(
-                Ddi4VariableScheme.TYPE,
+                Ddi4VariableScheme.TYPE_NAME,
                 now(),
                 DdiMirrorIdentity.urn(agencyId, variableSchemeId, FIRST_VERSION),
                 agencyId,
@@ -164,7 +164,7 @@ public class DomainOperationsMirrorService implements OperationsMirrorService {
 
         String logicalProductId = DdiMirrorIdentity.of(operationIri, LOGICAL_PRODUCT_ROLE);
         ddiService.createLogicalProduct(new Ddi4LogicalProduct(
-                Ddi4LogicalProduct.TYPE,
+                Ddi4LogicalProduct.TYPE_NAME,
                 now(),
                 DdiMirrorIdentity.urn(agencyId, logicalProductId, FIRST_VERSION),
                 agencyId,
@@ -208,7 +208,7 @@ public class DomainOperationsMirrorService implements OperationsMirrorService {
         List<Reference> updated = new ArrayList<>(filed);
         updated.add(studyUnitReference);
         groupService.createOrUpdate(new Ddi4Group(
-                Ddi4Group.TYPE,
+                Ddi4Group.TYPE_NAME,
                 now(),
                 DdiMirrorIdentity.urn(agencyId, groupId, group.get().version()),
                 agencyId,
@@ -231,7 +231,7 @@ public class DomainOperationsMirrorService implements OperationsMirrorService {
     private Reference createGroupLogicalProduct(String seriesIri, String shortLabel) {
         String codeListSchemeId = DdiMirrorIdentity.of(seriesIri, CODE_LIST_SCHEME_ROLE);
         ddiService.createCodeListScheme(new Ddi4CodeListScheme(
-                Ddi4CodeListScheme.TYPE,
+                Ddi4CodeListScheme.TYPE_NAME,
                 now(),
                 DdiMirrorIdentity.urn(agencyId, codeListSchemeId, FIRST_VERSION),
                 agencyId,
@@ -242,7 +242,7 @@ public class DomainOperationsMirrorService implements OperationsMirrorService {
 
         String categorySchemeId = DdiMirrorIdentity.of(seriesIri, CATEGORY_SCHEME_ROLE);
         ddiService.createCategoryScheme(new Ddi4CategoryScheme(
-                Ddi4CategoryScheme.TYPE,
+                Ddi4CategoryScheme.TYPE_NAME,
                 now(),
                 DdiMirrorIdentity.urn(agencyId, categorySchemeId, FIRST_VERSION),
                 agencyId,
@@ -253,7 +253,7 @@ public class DomainOperationsMirrorService implements OperationsMirrorService {
 
         String managedRepresentationSchemeId = DdiMirrorIdentity.of(seriesIri, MANAGED_REPRESENTATION_SCHEME_ROLE);
         ddiService.createManagedRepresentationScheme(new Ddi4ManagedRepresentationScheme(
-                Ddi4ManagedRepresentationScheme.TYPE,
+                Ddi4ManagedRepresentationScheme.TYPE_NAME,
                 now(),
                 DdiMirrorIdentity.urn(agencyId, managedRepresentationSchemeId, FIRST_VERSION),
                 agencyId,
@@ -264,7 +264,7 @@ public class DomainOperationsMirrorService implements OperationsMirrorService {
 
         String logicalProductId = DdiMirrorIdentity.of(seriesIri, LOGICAL_PRODUCT_ROLE);
         ddiService.createLogicalProduct(new Ddi4LogicalProduct(
-                Ddi4LogicalProduct.TYPE,
+                Ddi4LogicalProduct.TYPE_NAME,
                 now(),
                 DdiMirrorIdentity.urn(agencyId, logicalProductId, FIRST_VERSION),
                 agencyId,

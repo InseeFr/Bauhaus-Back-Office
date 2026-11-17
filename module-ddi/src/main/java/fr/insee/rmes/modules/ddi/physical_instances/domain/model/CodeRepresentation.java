@@ -9,5 +9,5 @@ public record CodeRepresentation(
         @JsonProperty("BlankIsMissingValue") Boolean blankIsMissingValue,
         @JsonProperty("CodeListReference") Reference codeListReference) {
 
-    public static final String TYPE = "CodeRepresentationBaseType";
+    public static final String TYPE_NAME = "CodeRepresentationBaseType";
 }

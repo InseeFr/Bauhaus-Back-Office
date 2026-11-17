@@ -42,7 +42,7 @@ class PhysicalInstanceConfigurationTest {
 
     private static Ddi4Response physicalInstanceOnly() {
         Ddi4PhysicalInstance physicalInstance = new Ddi4PhysicalInstance(
-                Ddi4PhysicalInstance.TYPE,
+                Ddi4PhysicalInstance.TYPE_NAME,
                 CogsDate.ofDateTime("2026-01-21T13:48:46.363"),
                 "urn:ddi:fr.insee:PhysicalInstance.saphir-rp99-sas:1",
                 "fr.insee",

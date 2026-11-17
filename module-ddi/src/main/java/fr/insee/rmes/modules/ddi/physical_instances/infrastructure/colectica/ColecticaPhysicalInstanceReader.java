@@ -56,7 +56,7 @@ class ColecticaPhysicalInstanceReader {
     }
 
     private static final Ddi4Response EMPTY =
-            new Ddi4Response(Ddi4Response.SCHEMA, null, null, null, null, null, null, null);
+            new Ddi4Response(Ddi4Response.SCHEMA_ID, null, null, null, null, null, null, null);
 
     /**
      * La PhysicalInstance, ses DataRelationships, leurs Variables et les MMVR de ces variables, en
@@ -131,7 +131,7 @@ class ColecticaPhysicalInstanceReader {
         Ddi4Response response = ddi3ToDdi4Converter.convertDdi3ToDdi4(
                 new Ddi3Response(
                         null, items.stream().map(ColecticaItems::toDdi3Item).toList()),
-                Ddi4Response.SCHEMA);
+                Ddi4Response.SCHEMA_ID);
         return response == null ? EMPTY : response;
     }
 
@@ -157,7 +157,7 @@ class ColecticaPhysicalInstanceReader {
             return null;
         }
         return ddi3ToDdi4Converter.convertDdi3ToDdi4(
-                new Ddi3Response(null, ColecticaItems.toDdi3Items(stored)), Ddi4Response.SCHEMA);
+                new Ddi3Response(null, ColecticaItems.toDdi3Items(stored)), Ddi4Response.SCHEMA_ID);
     }
 
     /**
@@ -200,7 +200,7 @@ class ColecticaPhysicalInstanceReader {
             }
 
             Ddi4Response response =
-                    ddi3ToDdi4Converter.convertDdi3ToDdi4(new Ddi3Response(null, ddi3Items), Ddi4Response.SCHEMA);
+                    ddi3ToDdi4Converter.convertDdi3ToDdi4(new Ddi3Response(null, ddi3Items), Ddi4Response.SCHEMA_ID);
             return response != null && response.codeList() != null ? response.codeList() : List.of();
         } catch (Exception e) {
             throw new RuntimeException("Failed to fetch CodeLists for PhysicalInstance", e);
@@ -222,7 +222,7 @@ class ColecticaPhysicalInstanceReader {
             }
             ColecticaItemResponse[] fragments = filterPhysicalInstanceDataRelationshipsAndVariables(itemResponses);
             Ddi4Response response = ddi3ToDdi4Converter.convertDdi3ToDdi4(
-                    new Ddi3Response(null, ColecticaItems.toDdi3Items(fragments)), Ddi4Response.SCHEMA);
+                    new Ddi3Response(null, ColecticaItems.toDdi3Items(fragments)), Ddi4Response.SCHEMA_ID);
             return ColecticaSetReader.withTopLevelReference(
                     response, setReader.findTopLevelReference(itemResponses, PHYSICAL_INSTANCE));
         } catch (Exception e) {

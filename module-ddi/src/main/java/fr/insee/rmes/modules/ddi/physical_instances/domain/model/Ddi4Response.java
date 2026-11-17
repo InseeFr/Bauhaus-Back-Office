@@ -34,7 +34,7 @@ public record Ddi4Response(
         @JsonIgnore List<Ddi4Category> category,
         @JsonIgnore List<Ddi4ManagedMissingValuesRepresentation> managedMissingValuesRepresentation) {
     /** Identifiant du schéma DDI 4. Marqueur interne : il ne circule plus sur le fil. */
-    public static final String SCHEMA = "ddi:4.0";
+    public static final String SCHEMA_ID = "ddi:4.0";
 
     /** Références de premier niveau de l'enveloppe. */
     @JsonProperty("topLevelReferences")
@@ -89,7 +89,7 @@ public record Ddi4Response(
         }
 
         return new Ddi4Response(
-                SCHEMA,
+                SCHEMA_ID,
                 topLevelReferences,
                 nullIfEmpty(physicalInstances),
                 nullIfEmpty(dataRelationships),

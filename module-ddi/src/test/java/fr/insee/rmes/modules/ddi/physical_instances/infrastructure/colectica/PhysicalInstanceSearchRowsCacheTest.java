@@ -222,7 +222,7 @@ class PhysicalInstanceSearchRowsCacheTest {
 
     private static Ddi4PhysicalInstance created(String id, String label) {
         return new Ddi4PhysicalInstance(
-                Ddi4PhysicalInstance.TYPE,
+                Ddi4PhysicalInstance.TYPE_NAME,
                 CogsDate.ofDateTime("2026-10-02T10:00:00"),
                 "urn:ddi:fr.insee:" + id + ":1",
                 "fr.insee",
@@ -244,7 +244,7 @@ class PhysicalInstanceSearchRowsCacheTest {
 
     private static Ddi4PhysicalInstance saved(CogsDate versionDate, Citation citation) {
         return new Ddi4PhysicalInstance(
-                Ddi4PhysicalInstance.TYPE,
+                Ddi4PhysicalInstance.TYPE_NAME,
                 versionDate,
                 "urn:ddi:fr.insee:pi-1:2",
                 "fr.insee",

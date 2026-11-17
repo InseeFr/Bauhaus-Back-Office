@@ -54,7 +54,7 @@ class StudyUnitResourcesTest {
     @Test
     void createOrUpdateStudyUnit_shouldReturn201() {
         Ddi4StudyUnit studyUnit = new Ddi4StudyUnit(
-                Ddi4StudyUnit.TYPE,
+                Ddi4StudyUnit.TYPE_NAME,
                 CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
                 "urn:ddi:fr.insee:su-id:1",
                 "fr.insee",
@@ -73,7 +73,7 @@ class StudyUnitResourcesTest {
     @Test
     void getStudyUnitVariables_shouldReturn200WithTheVariablesOfTheStudyUnitVariableScheme() {
         Ddi4Variable variable = new Ddi4Variable(
-                Ddi4Variable.TYPE,
+                Ddi4Variable.TYPE_NAME,
                 null,
                 "urn:ddi:fr.insee:var-1:2",
                 "fr.insee",
@@ -86,7 +86,7 @@ class StudyUnitResourcesTest {
                 null,
                 null);
         Ddi4Response variables =
-                new Ddi4Response(Ddi4Response.SCHEMA, null, null, null, List.of(variable), null, null, null);
+                new Ddi4Response(Ddi4Response.SCHEMA_ID, null, null, null, List.of(variable), null, null, null);
         when(ddiService.getStudyUnitVariables("fr.insee", "su-1")).thenReturn(variables);
 
         ResponseEntity<Ddi4Response> response = studyUnitResources.getStudyUnitVariables("fr.insee", "su-1");
