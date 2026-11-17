@@ -10,6 +10,7 @@ import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.stubs.RepositoryGestionStub;
 import fr.insee.rmes.stubs.RepositoryPublicationStub;
 import fr.insee.rmes.stubs.RepositoryPublicationStubInternalError;
+import java.util.List;
 import java.util.StringJoiner;
 import org.junit.jupiter.api.Test;
 
@@ -19,22 +20,16 @@ class HealthcheckApiTest {
     private String documentsStorageGestion;
     private String documentsStoragePublicationExterne;
 
+    private final StringJoiner errorMessage = new StringJoiner(" ");
+    private final StringJoiner stateResult = new StringJoiner(" ");
+
     @Test
     void checkDatabaseTest_success() {
         // Given
-        RepositoryGestion repoGestionStub = new RepositoryGestionStub();
         RepositoryPublication repoPublicationStub = new RepositoryPublicationStub();
-        var healthcheckApi = new HealthcheckResources(
-                repoGestionStub,
-                repoPublicationStub,
-                documentsStoragePublicationInterne,
-                documentsStoragePublicationExterne,
-                documentsStorageGestion);
-        StringJoiner errorMessage = new StringJoiner(" ");
-        StringJoiner stateResult = new StringJoiner(" ");
 
         // When
-        healthcheckApi.checkDatabase(errorMessage, stateResult);
+        checkDatabaseWith(repoPublicationStub);
 
         // Then
         assertThat(stateResult)
@@ -48,19 +43,10 @@ class HealthcheckApiTest {
     @Test
     void checkDatabaseTest_withInternalPublicationError() {
         // Given
-        RepositoryGestion repoGestionStub = new RepositoryGestionStub();
         RepositoryPublication repoPublicationStub = new RepositoryPublicationStubInternalError();
-        var healthcheckApi = new HealthcheckResources(
-                repoGestionStub,
-                repoPublicationStub,
-                documentsStoragePublicationInterne,
-                documentsStoragePublicationExterne,
-                documentsStorageGestion);
-        StringJoiner errorMessage = new StringJoiner(" ");
-        StringJoiner stateResult = new StringJoiner(" ");
 
         // When
-        healthcheckApi.checkDatabase(errorMessage, stateResult);
+        checkDatabaseWith(repoPublicationStub);
 
         // Then
         assertThat(stateResult)
@@ -68,6 +54,18 @@ class HealthcheckApiTest {
                         + " " + " - Publication Z" + " " + OK_STATE
                         + " " + " - Publication I" + " " + KO_STATE
                         + " " + " - Gestion" + " " + OK_STATE);
-        assertThat(errorMessage).hasToString("- Publication I " + null + " \n");
+        assertThat(errorMessage).hasToString("- Publication I unreachable \n");
+    }
+
+    private void checkDatabaseWith(RepositoryPublication repoPublicationStub) {
+        RepositoryGestion repoGestionStub = new RepositoryGestionStub();
+        var healthcheckApi = new HealthcheckResources(
+                repoGestionStub,
+                repoPublicationStub,
+                documentsStoragePublicationInterne,
+                documentsStoragePublicationExterne,
+                documentsStorageGestion,
+                List.of());
+        healthcheckApi.checkDatabase(errorMessage, stateResult);
     }
 }

@@ -9,8 +9,11 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Citation;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CategoryScheme;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4LogicalProduct;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedRepresentationScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4VariableScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LangString;
@@ -43,10 +46,7 @@ class DomainOperationsMirrorServiceTest {
 
     @Test
     void mirrorSeries_createsAGroupIdentifiedByTheSeriesIri() {
-        when(groupService.find(AGENCY, expectedGroupId())).thenReturn(Optional.empty());
-
-        service.mirror(new SeriesSaved(
-                SERIES_IRI, "s1001", new BilingualLabel("Recensement", "Census"), new BilingualLabel("RP", "CENS")));
+        mirrorCensusSeriesWithoutExistingGroup();
 
         Ddi4Group group = capturedGroup();
         assertThat(group.id()).isEqualTo(expectedGroupId());
@@ -58,16 +58,20 @@ class DomainOperationsMirrorServiceTest {
 
     @Test
     void mirrorSeries_writesThePrefLabelAsTitleAndTheAltLabelAsAlternateTitle() {
-        when(groupService.find(AGENCY, expectedGroupId())).thenReturn(Optional.empty());
-
-        service.mirror(new SeriesSaved(
-                SERIES_IRI, "s1001", new BilingualLabel("Recensement", "Census"), new BilingualLabel("RP", "CENS")));
+        mirrorCensusSeriesWithoutExistingGroup();
 
         Citation citation = capturedGroup().citation();
         assertThat(citation.title())
                 .containsExactly(new LangString("fr-FR", "Recensement"), new LangString("en-GB", "Census"));
         assertThat(citation.alternateTitle())
                 .containsExactly(new LangString("fr-FR", "RP"), new LangString("en-GB", "CENS"));
+    }
+
+    private void mirrorCensusSeriesWithoutExistingGroup() {
+        when(groupService.find(AGENCY, expectedGroupId())).thenReturn(Optional.empty());
+
+        service.mirror(new SeriesSaved(
+                SERIES_IRI, "s1001", new BilingualLabel("Recensement", "Census"), new BilingualLabel("RP", "CENS")));
     }
 
     @Test
@@ -87,19 +91,8 @@ class DomainOperationsMirrorServiceTest {
         Reference studyUnit = Reference.of(AGENCY, "su-1", "1", "StudyUnit");
         Reference logicalProduct = Reference.of(AGENCY, "lp-1", "1", "LogicalProduct");
         when(groupService.find(AGENCY, expectedGroupId()))
-                .thenReturn(Optional.of(new Ddi4Group(
-                        Ddi4Group.TYPE,
-                        null,
-                        null,
-                        AGENCY,
-                        expectedGroupId(),
-                        "1",
-                        null,
-                        new Citation(List.of(new LangString("fr-FR", "Ancien libellé"))),
-                        List.of(studyUnit),
-                        List.of(SERIES_IRI),
-                        "insee:StatisticalOperationSeries",
-                        List.of(logicalProduct))));
+                .thenReturn(Optional.of(existingGroup(
+                        "1", "Ancien libellé", List.of(studyUnit), List.of(SERIES_IRI), List.of(logicalProduct))));
 
         service.mirror(new SeriesSaved(
                 SERIES_IRI, "s1001", new BilingualLabel("Nouveau libellé", null), new BilingualLabel(null, null)));
@@ -114,18 +107,8 @@ class DomainOperationsMirrorServiceTest {
     void mirrorSeries_keepsTheOtherSeriesIrisAlreadyCarriedByTheGroup() {
         String otherSeriesIri = "http://id.insee.fr/operations/serie/s2002";
         when(groupService.find(AGENCY, expectedGroupId()))
-                .thenReturn(Optional.of(new Ddi4Group(
-                        Ddi4Group.TYPE,
-                        null,
-                        null,
-                        AGENCY,
-                        expectedGroupId(),
-                        "1",
-                        null,
-                        new Citation(List.of(new LangString("fr-FR", "Ancien libellé"))),
-                        null,
-                        List.of(otherSeriesIri, SERIES_IRI),
-                        "insee:StatisticalOperationSeries")));
+                .thenReturn(Optional.of(
+                        existingGroup("1", "Ancien libellé", null, List.of(otherSeriesIri, SERIES_IRI), null)));
 
         service.mirror(new SeriesSaved(
                 SERIES_IRI, "s1001", new BilingualLabel("Nouveau libellé", null), new BilingualLabel(null, null)));
@@ -138,24 +121,214 @@ class DomainOperationsMirrorServiceTest {
     @Test
     void mirrorSeries_reusesTheVersionOfTheExistingGroupSoThatColecticaDoesNotBumpIt() {
         when(groupService.find(AGENCY, expectedGroupId()))
-                .thenReturn(Optional.of(new Ddi4Group(
-                        Ddi4Group.TYPE,
-                        null,
-                        null,
-                        AGENCY,
-                        expectedGroupId(),
-                        "3",
-                        null,
-                        new Citation(List.of(new LangString("fr-FR", "Ancien libellé"))),
-                        null,
-                        List.of(SERIES_IRI),
-                        "insee:StatisticalOperationSeries")));
+                .thenReturn(Optional.of(existingGroup("3", "Ancien libellé", null, List.of(SERIES_IRI), null)));
 
         service.mirror(new SeriesSaved(
                 SERIES_IRI, "s1001", new BilingualLabel("Nouveau libellé", null), new BilingualLabel(null, null)));
 
         assertThat(capturedGroup().version()).isEqualTo("3");
         verify(studyUnitService, never()).createOrUpdate(any());
+    }
+
+    @Test
+    void mirrorSeries_createsTheSchemesThenTheirLogicalProductThenTheGroup() {
+        mirrorCensusSeriesWithoutExistingGroup();
+
+        ArgumentCaptor<Ddi4CodeListScheme> codeListScheme = ArgumentCaptor.forClass(Ddi4CodeListScheme.class);
+        ArgumentCaptor<Ddi4CategoryScheme> categoryScheme = ArgumentCaptor.forClass(Ddi4CategoryScheme.class);
+        ArgumentCaptor<Ddi4ManagedRepresentationScheme> managedRepresentationScheme =
+                ArgumentCaptor.forClass(Ddi4ManagedRepresentationScheme.class);
+        ArgumentCaptor<Ddi4LogicalProduct> logicalProduct = ArgumentCaptor.forClass(Ddi4LogicalProduct.class);
+        ArgumentCaptor<Ddi4Group> group = ArgumentCaptor.forClass(Ddi4Group.class);
+        InOrder inOrder = inOrder(ddiService, groupService);
+        inOrder.verify(ddiService).createCodeListScheme(codeListScheme.capture());
+        inOrder.verify(ddiService).createCategoryScheme(categoryScheme.capture());
+        inOrder.verify(ddiService).createManagedRepresentationScheme(managedRepresentationScheme.capture());
+        inOrder.verify(ddiService).createLogicalProduct(logicalProduct.capture());
+        inOrder.verify(groupService).createOrUpdate(group.capture());
+
+        assertThat(logicalProduct.getValue().name()).isEqualTo("LP-RP");
+        assertThat(logicalProduct.getValue().label()).containsExactly(new LangString("fr-FR", "RP"));
+        assertThat(logicalProduct.getValue().codeListSchemeReference())
+                .containsExactly(Reference.of(AGENCY, codeListScheme.getValue().id(), "1", "CodeListScheme"));
+        assertThat(logicalProduct.getValue().categorySchemeReference())
+                .containsExactly(Reference.of(AGENCY, categoryScheme.getValue().id(), "1", "CategoryScheme"));
+        assertThat(logicalProduct.getValue().managedRepresentationSchemeReference())
+                .containsExactly(Reference.of(
+                        AGENCY, managedRepresentationScheme.getValue().id(), "1", "ManagedRepresentationScheme"));
+        assertThat(logicalProduct.getValue().variableSchemeReference())
+                .as("la VariableScheme vit dans le LogicalProduct de la StudyUnit, jamais dans celui du Group")
+                .isNull();
+        assertThat(group.getValue().logicalProductReference())
+                .containsExactly(Reference.of(AGENCY, logicalProduct.getValue().id(), "1", "LogicalProduct"));
+    }
+
+    @Test
+    void mirrorSeries_givesALogicalProductToAnExistingGroupThatHasNone() {
+        when(groupService.find(AGENCY, expectedGroupId()))
+                .thenReturn(Optional.of(existingGroup("1", "Ancien libellé", null, List.of(SERIES_IRI), null)));
+
+        service.mirror(new SeriesSaved(
+                SERIES_IRI, "s1001", new BilingualLabel("Nouveau libellé", null), new BilingualLabel(null, null)));
+
+        ArgumentCaptor<Ddi4LogicalProduct> logicalProduct = ArgumentCaptor.forClass(Ddi4LogicalProduct.class);
+        verify(ddiService).createLogicalProduct(logicalProduct.capture());
+        assertThat(logicalProduct.getValue().name())
+                .as("sans libellé court, le libellé long en tient lieu")
+                .isEqualTo("LP-NOUVEAULIBELLE");
+        assertThat(capturedGroup().logicalProductReference())
+                .containsExactly(Reference.of(AGENCY, logicalProduct.getValue().id(), "1", "LogicalProduct"));
+    }
+
+    @Test
+    void mirrorSeries_leavesTheLogicalProductOfTheGroupAloneWhenItAlreadyHasOne() {
+        Reference logicalProduct = Reference.of(AGENCY, "lp-1", "1", "LogicalProduct");
+        when(groupService.find(AGENCY, expectedGroupId()))
+                .thenReturn(Optional.of(
+                        existingGroup("1", "Ancien libellé", null, List.of(SERIES_IRI), List.of(logicalProduct))));
+
+        service.mirror(new SeriesSaved(
+                SERIES_IRI, "s1001", new BilingualLabel("Nouveau libellé", null), new BilingualLabel(null, null)));
+
+        verify(ddiService, never()).createLogicalProduct(any());
+        verify(ddiService, never()).createCodeListScheme(any());
+        verify(ddiService, never()).createCategoryScheme(any());
+        verify(ddiService, never()).createManagedRepresentationScheme(any());
+        assertThat(capturedGroup().logicalProductReference()).containsExactly(logicalProduct);
+    }
+
+    // --- Renommage d'une série : LogicalProduct et schemes du Group (#1152) ----------------------
+
+    private static final Reference GROUP_LOGICAL_PRODUCT = Reference.of(AGENCY, "lp-1", "2", "LogicalProduct");
+    private static final Reference CODE_LIST_SCHEME = Reference.of(AGENCY, "cls-1", "1", "CodeListScheme");
+    private static final Reference CATEGORY_SCHEME = Reference.of(AGENCY, "cas-1", "3", "CategoryScheme");
+    private static final Reference MANAGED_REPRESENTATION_SCHEME =
+            Reference.of(AGENCY, "mrs-1", "1", "ManagedRepresentationScheme");
+    private static final Reference CODE_LIST = Reference.of(AGENCY, "cl-1", "1", "CodeList");
+    private static final Reference CATEGORY = Reference.of(AGENCY, "ca-1", "1", "Category");
+    private static final Reference MANAGED_REPRESENTATION =
+            Reference.of(AGENCY, "mmvr-1", "1", "ManagedMissingValuesRepresentation");
+
+    private void givenAGroupWhoseLogicalProductIsLabelled(String shortLabel) {
+        when(groupService.find(AGENCY, expectedGroupId()))
+                .thenReturn(Optional.of(
+                        existingGroup("1", "Recensement", null, List.of(SERIES_IRI), List.of(GROUP_LOGICAL_PRODUCT))));
+        when(ddiService.findLogicalProduct(AGENCY, "lp-1"))
+                .thenReturn(Optional.of(new Ddi4LogicalProduct(
+                        Ddi4LogicalProduct.TYPE,
+                        null,
+                        "urn:ddi:fr.insee:lp-1:2",
+                        AGENCY,
+                        "lp-1",
+                        "2",
+                        List.of(new LangString("fr-FR", shortLabel), new LangString("en-GB", "Census")),
+                        List.of(CODE_LIST_SCHEME),
+                        List.of(CATEGORY_SCHEME),
+                        null,
+                        List.of(MANAGED_REPRESENTATION_SCHEME),
+                        "LP-" + shortLabel)));
+        when(ddiService.findCodeListScheme(AGENCY, "cls-1"))
+                .thenReturn(Optional.of(new Ddi4CodeListScheme(
+                        Ddi4CodeListScheme.TYPE,
+                        null,
+                        "urn:ddi:fr.insee:cls-1:1",
+                        AGENCY,
+                        "cls-1",
+                        "1",
+                        List.of(new LangString("fr-FR", "Ensemble de listes de codes " + shortLabel)),
+                        List.of(CODE_LIST))));
+        when(ddiService.findCategoryScheme(AGENCY, "cas-1"))
+                .thenReturn(Optional.of(new Ddi4CategoryScheme(
+                        Ddi4CategoryScheme.TYPE,
+                        null,
+                        "urn:ddi:fr.insee:cas-1:3",
+                        AGENCY,
+                        "cas-1",
+                        "3",
+                        List.of(new LangString("fr-FR", "Ensemble de catégories " + shortLabel)),
+                        List.of(CATEGORY))));
+        when(ddiService.findManagedRepresentationScheme(AGENCY, "mrs-1"))
+                .thenReturn(Optional.of(new Ddi4ManagedRepresentationScheme(
+                        Ddi4ManagedRepresentationScheme.TYPE,
+                        null,
+                        "urn:ddi:fr.insee:mrs-1:1",
+                        AGENCY,
+                        "mrs-1",
+                        "1",
+                        List.of(new LangString("fr-FR", "Ensemble de représentations " + shortLabel)),
+                        List.of(MANAGED_REPRESENTATION))));
+    }
+
+    private void renameCensusSeriesTo(String shortLabel) {
+        service.mirror(new SeriesSaved(
+                SERIES_IRI,
+                "s1001",
+                new BilingualLabel("Recensement", "Census"),
+                new BilingualLabel(shortLabel, null)));
+    }
+
+    @Test
+    void mirrorSeries_relabelsTheLogicalProductOfTheGroupWithoutBumpingItsVersion() {
+        givenAGroupWhoseLogicalProductIsLabelled("RP");
+
+        renameCensusSeriesTo("RPX");
+
+        ArgumentCaptor<Ddi4LogicalProduct> captor = ArgumentCaptor.forClass(Ddi4LogicalProduct.class);
+        verify(ddiService).createLogicalProduct(captor.capture());
+        Ddi4LogicalProduct logicalProduct = captor.getValue();
+        assertThat(logicalProduct.id()).isEqualTo("lp-1");
+        assertThat(logicalProduct.version()).isEqualTo("2");
+        assertThat(logicalProduct.urn()).isEqualTo("urn:ddi:fr.insee:lp-1:2");
+        assertThat(logicalProduct.name()).isEqualTo("LP-RPX");
+        assertThat(logicalProduct.label())
+                .as("seul le libellé de la langue principale suit le nom court de la série")
+                .containsExactly(new LangString("fr-FR", "RPX"), new LangString("en-GB", "Census"));
+        assertThat(logicalProduct.codeListSchemeReference()).containsExactly(CODE_LIST_SCHEME);
+        assertThat(logicalProduct.categorySchemeReference()).containsExactly(CATEGORY_SCHEME);
+        assertThat(logicalProduct.managedRepresentationSchemeReference())
+                .containsExactly(MANAGED_REPRESENTATION_SCHEME);
+        assertThat(capturedGroup().logicalProductReference()).containsExactly(GROUP_LOGICAL_PRODUCT);
+    }
+
+    @Test
+    void mirrorSeries_relabelsTheSchemesOfTheGroupAndKeepsWhatTheyClassify() {
+        givenAGroupWhoseLogicalProductIsLabelled("RP");
+
+        renameCensusSeriesTo("RPX");
+
+        ArgumentCaptor<Ddi4CodeListScheme> codeListScheme = ArgumentCaptor.forClass(Ddi4CodeListScheme.class);
+        verify(ddiService).createCodeListScheme(codeListScheme.capture());
+        assertThat(codeListScheme.getValue().version()).isEqualTo("1");
+        assertThat(codeListScheme.getValue().label())
+                .containsExactly(new LangString("fr-FR", "Ensemble de listes de codes RPX"));
+        assertThat(codeListScheme.getValue().codeListReference()).containsExactly(CODE_LIST);
+
+        ArgumentCaptor<Ddi4CategoryScheme> categoryScheme = ArgumentCaptor.forClass(Ddi4CategoryScheme.class);
+        verify(ddiService).createCategoryScheme(categoryScheme.capture());
+        assertThat(categoryScheme.getValue().version()).isEqualTo("3");
+        assertThat(categoryScheme.getValue().label())
+                .containsExactly(new LangString("fr-FR", "Ensemble de catégories RPX"));
+        assertThat(categoryScheme.getValue().categoryReference()).containsExactly(CATEGORY);
+
+        ArgumentCaptor<Ddi4ManagedRepresentationScheme> managedRepresentationScheme =
+                ArgumentCaptor.forClass(Ddi4ManagedRepresentationScheme.class);
+        verify(ddiService).createManagedRepresentationScheme(managedRepresentationScheme.capture());
+        assertThat(managedRepresentationScheme.getValue().label())
+                .containsExactly(new LangString("fr-FR", "Ensemble de représentations RPX"));
+        assertThat(managedRepresentationScheme.getValue().managedRepresentationReference())
+                .containsExactly(MANAGED_REPRESENTATION);
+    }
+
+    @Test
+    void mirrorSeries_rewritesNeitherTheLogicalProductNorItsSchemesWhenTheShortLabelIsUnchanged() {
+        givenAGroupWhoseLogicalProductIsLabelled("RP");
+
+        renameCensusSeriesTo("RP");
+
+        verify(ddiService, never()).createLogicalProduct(any());
+        verify(ddiService, never()).createCodeListScheme(any());
+        verify(ddiService, never()).createCategoryScheme(any());
+        verify(ddiService, never()).createManagedRepresentationScheme(any());
     }
 
     private Ddi4Group capturedGroup() {
@@ -270,18 +443,28 @@ class DomainOperationsMirrorServiceTest {
     }
 
     private Ddi4Group existingGroup(List<Reference> studyUnitReferences) {
+        return existingGroup("1", "Recensement", studyUnitReferences, List.of(SERIES_IRI), null);
+    }
+
+    private static Ddi4Group existingGroup(
+            String version,
+            String frenchTitle,
+            List<Reference> studyUnitReferences,
+            List<String> seriesIris,
+            List<Reference> logicalProductReferences) {
         return new Ddi4Group(
                 Ddi4Group.TYPE,
                 null,
                 null,
                 AGENCY,
                 expectedGroupId(),
-                "1",
+                version,
                 null,
-                new Citation(List.of(new LangString("fr-FR", "Recensement"))),
+                new Citation(List.of(new LangString("fr-FR", frenchTitle))),
                 studyUnitReferences,
-                List.of(SERIES_IRI),
-                "insee:StatisticalOperationSeries");
+                seriesIris,
+                "insee:StatisticalOperationSeries",
+                logicalProductReferences);
     }
 
     private static String expectedStudyUnitId() {

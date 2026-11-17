@@ -32,6 +32,11 @@ public class GeographyQueries {
         return buildRequest("getGeoFeatures.ftlh", params);
     }
 
+    /** Unions et différences de tous les territoires, en une seule requête. */
+    public String getAllUnionsAndDifferencesQuery() throws RmesException {
+        return buildRequest("getAllUnionsAndDifferences.ftlh", initParams());
+    }
+
     public String getUnionsForAFeatureQuery(String uriFeature) throws RmesException {
         return getUnionOrDifferenceForFeature(uriFeature, true);
     }

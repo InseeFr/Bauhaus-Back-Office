@@ -1,6 +1,5 @@
 package fr.insee.rmes.integration;
 
-import fr.insee.rmes.bauhaus_services.DocumentsService;
 import fr.insee.rmes.modules.organisations.domain.port.clientside.OrganisationsService;
 import fr.insee.rmes.modules.users.domain.port.clientside.AccessPrivilegesCheckerService;
 import fr.insee.rmes.modules.users.infrastructure.JwtProperties;
@@ -16,9 +15,6 @@ public abstract class AbstractResourcesEnvProd {
 
     @MockitoBean
     protected JwtDecoder jwtDecoder;
-
-    @MockitoBean
-    protected DocumentsService documentsService;
 
     @MockitoBean(name = "propertiesAccessPrivilegesChecker")
     protected AccessPrivilegesCheckerService checker;

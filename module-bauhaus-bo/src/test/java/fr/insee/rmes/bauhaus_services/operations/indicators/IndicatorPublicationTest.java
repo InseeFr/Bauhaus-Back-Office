@@ -27,6 +27,7 @@ import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
+import org.eclipse.rdf4j.model.vocabulary.DC;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;
 import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.junit.jupiter.api.BeforeEach;
@@ -90,15 +91,7 @@ class IndicatorPublicationTest {
     @Test
     void validate_ShouldThrowBadRequestException_WhenParentSeriesIsNotValidated() throws RmesException {
         try (MockedStatic<RdfUtils> mockedFactory = Mockito.mockStatic(RdfUtils.class)) {
-            OperationsLink link = new OperationsLink();
-            link.id = "series-1";
-            when(operationsParentRepository.getValidationStatus("series-1"))
-                    .thenReturn(ValidationStatus.UNPUBLISHED.toString());
-            indicator.wasGeneratedBy = List.of(link);
-
-            mockedFactory
-                    .when(() -> RdfUtils.objectIRI(eq(ObjectType.INDICATOR), eq("123")))
-                    .thenReturn(SimpleValueFactory.getInstance().createIRI("http://indicator/1"));
+            givenIndicatorGeneratedBySeriesWithStatus(mockedFactory, ValidationStatus.UNPUBLISHED.toString());
 
             RmesBadRequestException exception =
                     assertThrows(RmesBadRequestException.class, () -> indicatorPublication.validate(indicator));
@@ -110,15 +103,7 @@ class IndicatorPublicationTest {
     @Test
     void validate_ShouldPass_WhenUserHasPermissionAndParentSeriesAreValidated() throws RmesException {
         try (MockedStatic<RdfUtils> mockedFactory = Mockito.mockStatic(RdfUtils.class)) {
-            OperationsLink link = new OperationsLink();
-            link.id = "series-1";
-            when(operationsParentRepository.getValidationStatus("series-1"))
-                    .thenReturn(ValidationStatus.VALIDATED.toString());
-            indicator.wasGeneratedBy = List.of(link);
-
-            mockedFactory
-                    .when(() -> RdfUtils.objectIRI(eq(ObjectType.INDICATOR), eq("123")))
-                    .thenReturn(SimpleValueFactory.getInstance().createIRI("http://indicator/1"));
+            givenIndicatorGeneratedBySeriesWithStatus(mockedFactory, ValidationStatus.VALIDATED.toString());
 
             assertDoesNotThrow(() -> indicatorPublication.validate(indicator));
         }
@@ -179,6 +164,40 @@ class IndicatorPublicationTest {
                 .isTrue();
         assertThat(model.contains(null, SKOS.PREF_LABEL, VF.createLiteral("label fr", "fr")))
                 .isTrue();
+    }
+
+    /**
+     * #1663 : le propriétaire (dc:creator) de l'indicateur est une IRI d'organisation de gestion ;
+     * il doit sortir sous la base de publication.
+     */
+    @Test
+    void publish_ShouldRewriteTheCreatorOrganisationToThePublicationBase() throws RmesException {
+        Resource indicatorIri = RdfUtils.objectIRI(ObjectType.INDICATOR, "123");
+        givenStatementsOfIndicator(VF.createStatement(
+                (org.eclipse.rdf4j.model.IRI) indicatorIri,
+                DC.CREATOR,
+                VF.createIRI(GESTION + "organisations/insee/HIE2003239")));
+
+        indicatorPublication.publish("123");
+
+        ArgumentCaptor<Model> modelCaptor = ArgumentCaptor.forClass(Model.class);
+        verify(repositoryPublication).publishResource(any(Resource.class), modelCaptor.capture(), eq("indicator"));
+        assertThat(modelCaptor
+                        .getValue()
+                        .contains(null, DC.CREATOR, VF.createIRI(PUBLICATION + "organisations/insee/HIE2003239")))
+                .isTrue();
+    }
+
+    private void givenIndicatorGeneratedBySeriesWithStatus(MockedStatic<RdfUtils> mockedFactory, String seriesStatus)
+            throws RmesException {
+        OperationsLink link = new OperationsLink();
+        link.id = "series-1";
+        when(operationsParentRepository.getValidationStatus("series-1")).thenReturn(seriesStatus);
+        indicator.wasGeneratedBy = List.of(link);
+
+        mockedFactory
+                .when(() -> RdfUtils.objectIRI(eq(ObjectType.INDICATOR), eq("123")))
+                .thenReturn(SimpleValueFactory.getInstance().createIRI("http://indicator/1"));
     }
 
     private void givenStatementsOfIndicator(Statement... statements) throws RmesException {

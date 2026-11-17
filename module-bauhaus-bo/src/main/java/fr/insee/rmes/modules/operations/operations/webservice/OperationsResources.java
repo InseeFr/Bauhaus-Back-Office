@@ -12,6 +12,7 @@ import fr.insee.rmes.modules.commons.configuration.ConditionalOnModule;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIService;
 import fr.insee.rmes.modules.users.domain.model.RBAC;
 import fr.insee.rmes.modules.users.webservice.HasAccess;
+import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.hateoas.MediaTypes;
@@ -72,16 +73,17 @@ public class OperationsResources {
 
     @HasAccess(module = RBAC.Module.OPERATION_OPERATION, privilege = RBAC.Privilege.UPDATE)
     @PutMapping(value = "/operation/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Void> setOperationById(@PathVariable(Constants.ID) String id, @RequestBody String body)
-            throws RmesException {
-        operationsService.setOperation(id, body);
+    public ResponseEntity<Void> setOperationById(
+            @PathVariable(Constants.ID) String id, @Valid @RequestBody OperationRequest body) throws RmesException {
+        operationsService.setOperation(id, body.toCommand());
         return ResponseEntity.noContent().build();
     }
 
     @HasAccess(module = RBAC.Module.OPERATION_OPERATION, privilege = RBAC.Privilege.CREATE)
     @PostMapping(value = "/operation", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> createOperation(@RequestBody String body) throws RmesException {
-        String id = operationsService.createOperation(body);
+    public ResponseEntity<String> createOperation(@Valid @RequestBody OperationCreationRequest body)
+            throws RmesException {
+        String id = operationsService.createOperation(body.toCommand());
         return ResponseEntity.status(HttpStatus.OK).body(id);
     }
 

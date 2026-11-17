@@ -1,5 +1,6 @@
 package fr.insee.rmes.modules.concepts.collections;
 
+import static fr.insee.rmes.testcontainers.GraphDbTestProperties.registerGestionAndDedicatedPublication;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import fr.insee.rmes.json.JSONUtils;
@@ -55,16 +56,10 @@ class CollectionPublicationBug1453Test extends WithGraphDBContainer {
 
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
-        String sesameServer = "http://" + container.getHost() + ":" + container.getMappedPort(7200);
-        registry.add("fr.insee.rmes.bauhaus.sesame.gestion.sesameServer", () -> sesameServer);
-        registry.add("fr.insee.rmes.bauhaus.sesame.gestion.repository", () -> BAUHAUS_TEST_REPOSITORY);
-        // Use a dedicated publication repository to mirror production (gestion and
-        // publication are separate repos there). Sharing one repo would let the
-        // dashboard SPARQL query (no graph filter) pick up both IRI prefixes.
-        container.withInitFolder("/testcontainers").withRepository("config-pub.ttl");
-        registry.add("fr.insee.rmes.bauhaus.sesame.publication.sesameServer", () -> sesameServer);
-        registry.add("fr.insee.rmes.bauhaus.sesame.publication.repository", () -> BAUHAUS_TEST_PUBLICATION_REPOSITORY);
-        registry.add("fr.insee.rmes.bauhaus.sesame.publication.baseURI", () -> "http://id.insee.fr/");
+        // The dedicated publication repository mirrors production (gestion and publication are
+        // separate repos there). Sharing one repo would let the dashboard SPARQL query (no graph
+        // filter) pick up both IRI prefixes.
+        registerGestionAndDedicatedPublication(registry);
         container
                 .withInitFolder("fr/insee/rmes/modules/concepts/collections")
                 .withTrigFiles("collections-end-to-end-test.trig");

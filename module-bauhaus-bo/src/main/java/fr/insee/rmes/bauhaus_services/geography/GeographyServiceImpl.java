@@ -1,5 +1,7 @@
 package fr.insee.rmes.bauhaus_services.geography;
 
+import static fr.insee.rmes.domain.logging.LogSanitizer.forLog;
+
 import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.GeographyService;
@@ -16,8 +18,9 @@ import fr.insee.rmes.graphdb.ontologies.IGEO;
 import fr.insee.rmes.modules.geographies.infrastructure.graphdb.GeographyQueries;
 import fr.insee.rmes.modules.geographies.model.GeoFeature;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
-import fr.insee.rmes.utils.Deserializer;
 import fr.insee.rmes.utils.IdGenerator;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.rdf4j.model.IRI;
@@ -30,13 +33,21 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 @Service
 public class GeographyServiceImpl extends RdfService implements GeographyService {
     private final BauhausLanguagesProperties languages;
 
+    public static final String GEO_FEATURES_CACHE = "geoFeatures";
+
     private static final String HAS_COMPOSITION = "hasComposition";
+    private static final String UNIONS = "unions";
+    private static final String DIFFERENCE = "difference";
+    private static final String FEATURE = "feature";
+    private static final String COMPOSITION = "composition";
     static final Logger logger = LoggerFactory.getLogger(GeographyServiceImpl.class);
 
     private final GeographyQueries geographyQueries;
@@ -54,15 +65,20 @@ public class GeographyServiceImpl extends RdfService implements GeographyService
     }
 
     @Override
+    @Cacheable(GEO_FEATURES_CACHE)
     public String getGeoFeatures() throws RmesException {
         logger.info("Starting to get geo features");
         JSONArray resQuery = repoGestion.getResponseAsArray(geographyQueries.getFeaturesQuery());
         if (!resQuery.isEmpty()) {
-            for (int i = resQuery.length() - 1; i >= 0; i--) {
+            Map<String, Map<String, JSONArray>> compositions = readAllCompositions();
+            for (int i = 0; i < resQuery.length(); i++) {
                 JSONObject feature = resQuery.getJSONObject(i);
                 if (feature.has(HAS_COMPOSITION)) {
                     if (feature.getBoolean(HAS_COMPOSITION)) {
-                        addUnionsAndDifferenceToJsonObject(feature);
+                        Map<String, JSONArray> composition =
+                                compositions.getOrDefault(feature.getString(Constants.URI), Map.of());
+                        feature.put(UNIONS, composition.getOrDefault(UNIONS, new JSONArray()));
+                        feature.put(DIFFERENCE, composition.getOrDefault(DIFFERENCE, new JSONArray()));
                     }
                     feature.remove(HAS_COMPOSITION);
                 }
@@ -70,6 +86,25 @@ public class GeographyServiceImpl extends RdfService implements GeographyService
         }
         logger.info("Get geo features is done");
         return QueryUtils.correctEmptyGroupConcat(resQuery.toString());
+    }
+
+    /**
+     * Unions et différences de tous les territoires, rangées par URI de territoire puis par nature
+     * ({@code unions} / {@code difference}) : une seule requête au lieu de deux par territoire.
+     */
+    private Map<String, Map<String, JSONArray>> readAllCompositions() throws RmesException {
+        JSONArray rows = repoGestion.getResponseAsArray(geographyQueries.getAllUnionsAndDifferencesQuery());
+        Map<String, Map<String, JSONArray>> compositions = new HashMap<>();
+        for (int i = 0; i < rows.length(); i++) {
+            JSONObject row = rows.getJSONObject(i);
+            String feature = (String) row.remove(FEATURE);
+            String kind = (String) row.remove(COMPOSITION);
+            compositions
+                    .computeIfAbsent(feature, k -> new HashMap<>())
+                    .computeIfAbsent(kind, k -> new JSONArray())
+                    .put(row);
+        }
+        return compositions;
     }
 
     @Override
@@ -112,18 +147,18 @@ public class GeographyServiceImpl extends RdfService implements GeographyService
     private void addUnionsAndDifferenceToJsonObject(JSONObject feature) throws RmesException {
         String uriFeature = feature.getString(Constants.URI);
         JSONArray unions = repoGestion.getResponseAsArray(geographyQueries.getUnionsForAFeatureQuery(uriFeature));
-        feature.put("unions", unions);
+        feature.put(UNIONS, unions);
         JSONArray diff = repoGestion.getResponseAsArray(geographyQueries.getDifferenceForAFeatureQuery(uriFeature));
-        feature.put("difference", diff);
+        feature.put(DIFFERENCE, diff);
     }
 
     @Override
-    public void updateFeature(String id, String body) throws RmesException {
+    @CacheEvict(cacheNames = GEO_FEATURES_CACHE, allEntries = true)
+    public void updateFeature(String id, GeoFeature geoFeature) throws RmesException {
 
         // Est-ce il existe une geographie ayant l'id passé en paramètre
         // si c'est non => 404
 
-        GeoFeature geoFeature = Deserializer.deserializeJsonString(body, GeoFeature.class);
         geoFeature.setId(id);
 
         if (geoFeature.getCode() == null) {
@@ -133,15 +168,15 @@ public class GeographyServiceImpl extends RdfService implements GeographyService
     }
 
     @Override
-    public String createFeature(String body) throws RmesException {
+    @CacheEvict(cacheNames = GEO_FEATURES_CACHE, allEntries = true)
+    public String createFeature(GeoFeature geoFeature) throws RmesException {
         UUID id = UUID.randomUUID();
-        GeoFeature geoFeature = Deserializer.deserializeJsonString(body, GeoFeature.class);
         geoFeature.setId(id.toString());
         if (geoFeature.getCode() == null) {
             geoFeature.setCode(id.toString());
         }
         String iri = createRdfGeoFeature(geoFeature);
-        logger.info("Create geofeature : {} - {}", id, geoFeature.getLabelLg1());
+        logger.info("Create geofeature : {} - {}", id, forLog(geoFeature.getLabelLg1()));
         return iri;
     }
 

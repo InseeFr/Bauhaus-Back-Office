@@ -13,7 +13,6 @@ import fr.insee.rmes.colectica.client.ItemReference;
 import fr.insee.rmes.colectica.client.RelationshipDirection;
 import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.ColecticaConfiguration;
 import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.MutualizedCodeListRefsProvider;
-import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
@@ -47,21 +46,8 @@ class ColecticaCacheIntegrationTest {
 
         @Bean
         ColecticaConfiguration colecticaConfiguration() {
-            var server = new ColecticaConfiguration.ColecticaInstanceConfiguration(
-                    "https://example.com",
-                    "/api/v1/",
-                    Map.of("CodeListScheme", SCHEME_TYPE, "CodeListGroup", GROUP_TYPE, "CodeList", CODE_LIST_TYPE),
-                    "resp",
-                    "format",
-                    "password",
-                    "user",
-                    "pass",
-                    "fr.insee");
-            return new ColecticaConfiguration(
-                    List.of("fr-FR"),
-                    server,
-                    new ColecticaConfiguration.PackageRef("fr.insee", "pkg-1", 1),
-                    Duration.ofHours(1));
+            return ColecticaTestConfigurations.colecticaConfiguration(
+                    Map.of("CodeListScheme", SCHEME_TYPE, "CodeListGroup", GROUP_TYPE, "CodeList", CODE_LIST_TYPE));
         }
 
         @Bean

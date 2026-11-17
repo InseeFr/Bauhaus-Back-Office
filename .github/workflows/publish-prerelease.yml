@@ -1,0 +1,25 @@
+name: Publish prerelease image
+
+# Publishes the image of a prerelease on ghcr.io. The build itself lives in
+# InseeFr/rmes-githubactions-commons, shared with the other RMéS projects.
+
+on:
+  release:
+    types: [prereleased]
+
+jobs:
+  docker:
+    name: Publish the image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      # ghcr.io is authenticated with the job's own token.
+      packages: write
+    steps:
+      # On a release event the checked out ref is already the tag.
+      - uses: actions/checkout@v4
+      - uses: InseeFr/rmes-githubactions-commons/.github/actions/docker-publish@main
+        with:
+          image: inseefr/bauhaus-back-office
+          registry: ghcr.io
+          dockerfile: Dockerfile.bauhaus

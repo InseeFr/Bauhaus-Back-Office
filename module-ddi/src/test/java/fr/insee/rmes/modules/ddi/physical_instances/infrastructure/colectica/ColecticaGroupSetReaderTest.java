@@ -7,10 +7,10 @@ import static org.mockito.Mockito.when;
 
 import fr.insee.rmes.colectica.client.ColecticaClient;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4GroupResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LangString;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import java.nio.charset.StandardCharsets;
-import java.util.Optional;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -57,10 +57,10 @@ class ColecticaGroupSetReaderTest {
         when(colecticaClient.getDdiSet(anyString(), anyString()))
                 .thenReturn(ddisetXml().getBytes(StandardCharsets.UTF_8));
 
-        Optional<Ddi4Group> group = reader.findGroup("fr.insee", GROUP_ID);
+        Ddi4GroupResponse response = reader.getGroup("fr.insee", GROUP_ID);
 
-        assertThat(group).isPresent();
-        return group.get();
+        assertThat(response.group()).hasSize(1);
+        return response.group().getFirst();
     }
 
     private static String ddisetXml() {

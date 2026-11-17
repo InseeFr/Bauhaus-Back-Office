@@ -21,6 +21,8 @@ public class CodeListItem {
     private String lastCodeUriSegment;
     private String codeUri;
     public List<String> broader;
+    public List<String> narrower;
+    public List<String> closeMatch;
 
     public CodeListItem() {
         super();
@@ -47,6 +49,14 @@ public class CodeListItem {
 
     public List<String> getBroader() {
         return this.broader;
+    }
+
+    public List<String> getNarrower() {
+        return this.narrower;
+    }
+
+    public List<String> getCloseMatch() {
+        return this.closeMatch;
     }
 
     public String getLabelLg1() {

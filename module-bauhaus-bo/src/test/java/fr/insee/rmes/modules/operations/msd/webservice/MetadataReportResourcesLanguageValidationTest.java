@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import fr.insee.rmes.exceptions.ErrorCodes;
-import fr.insee.rmes.exceptions.RmesNotAcceptableException;
+import fr.insee.rmes.exceptions.RmesBadRequestException;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
 
@@ -14,8 +14,8 @@ class MetadataReportResourcesLanguageValidationTest {
     void getSimsExport_rejectsRequestWithNoLanguageSelected() {
         MetadataReportResources controller = new MetadataReportResources(null, null, null, null);
 
-        RmesNotAcceptableException exception = assertThrows(
-                RmesNotAcceptableException.class, () -> controller.getSimsExport("1234", true, false, false, true));
+        RmesBadRequestException exception = assertThrows(
+                RmesBadRequestException.class, () -> controller.getSimsExport("1234", true, false, false, true));
 
         JSONObject details = new JSONObject(exception.getDetails());
         assertEquals(ErrorCodes.SIMS_EXPORT_WITHOUT_LANGUAGE, details.getInt("code"));

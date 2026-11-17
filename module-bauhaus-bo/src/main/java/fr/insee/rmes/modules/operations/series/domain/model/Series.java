@@ -55,6 +55,8 @@ public class Series {
 
     public List<OperationsLink> isReplacedBy;
 
+    public List<String> themes;
+
     public String idSims;
 
     private String created;
@@ -147,6 +149,14 @@ public class Series {
 
     public List<OperationsLink> getIsReplacedBy() {
         return isReplacedBy;
+    }
+
+    public List<String> getThemes() {
+        return themes;
+    }
+
+    public void setThemes(List<String> themes) {
+        this.themes = themes;
     }
 
     public String getIdSims() {

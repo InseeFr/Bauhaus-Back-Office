@@ -16,6 +16,7 @@ import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import org.eclipse.rdf4j.common.iteration.CloseableIteratorIteration;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -52,6 +53,8 @@ class CodeListPublicationTest {
     @Mock
     GenericStatement statement;
 
+    private static final IRI GRAPH = SimpleValueFactory.getInstance().createIRI("http://example.org/context");
+
     @Test
     void shouldExcludeTriplet() {
         InternedIRI myIRI = new InternedIRI("myIRI", "creator");
@@ -72,10 +75,11 @@ class CodeListPublicationTest {
                 new RepositoryResult<>(new CloseableIteratorIteration<>(fakeStatements.iterator()));
 
         when(repositoryGestion.getConnection()).thenReturn(null);
-        when(repositoryGestion.getStatements(any(), eq(resource)))
+        when(repositoryGestion.getStatements(any(), eq(resource), eq(GRAPH)))
                 .thenReturn(new RepositoryResult<>(fakeRepositoryResult));
 
-        Assertions.assertThrows(RuntimeException.class, () -> codeListPublication.publishCodeListAndCodes(resource));
+        Assertions.assertThrows(
+                RuntimeException.class, () -> codeListPublication.publishCodeListAndCodes(resource, GRAPH));
     }
 
     @Test
@@ -124,16 +128,16 @@ class CodeListPublicationTest {
 
         when(publicationUtils.tranformBaseURIToPublish(subject)).thenReturn(subject);
         when(repositoryGestion.getConnection()).thenReturn(null);
-        when(repositoryGestion.getStatementsPredicateObject(any(), eq(SKOS.IN_SCHEME), any()))
+        when(repositoryGestion.getStatementsPredicateObject(any(), eq(SKOS.IN_SCHEME), any(), eq(GRAPH)))
                 .thenReturn(new RepositoryResult<>(new CloseableIteratorIteration<>(codeStatement.iterator())));
-        when(repositoryGestion.getStatements(any(), eq(resource)))
+        when(repositoryGestion.getStatements(any(), eq(resource), eq(GRAPH)))
                 .thenReturn(new RepositoryResult<>(fakeRepositoryResult));
 
-        codeListPublication.publishCodeListAndCodes(resource);
+        codeListPublication.publishCodeListAndCodes(resource, GRAPH);
 
         ArgumentCaptor<Model> model = ArgumentCaptor.forClass(Model.class);
 
-        verify(repositoryPublication).publishResource(any(), model.capture(), eq(Constants.CODELIST));
+        verify(repositoryPublication).publishResource(any(), model.capture(), eq(Constants.CODELIST), eq(GRAPH));
         Assertions.assertEquals(
                 "[(http://codes-list/1, http://example.org/predicate1, \"Object 1\") [http://example.org/context]]",
                 model.getValue().toString());
@@ -150,7 +154,7 @@ class CodeListPublicationTest {
         SimpleValueFactory valueFactory = SimpleValueFactory.getInstance();
         IRI codeListIri = valueFactory.createIRI("http://codes-list/1");
         IRI codeIri = valueFactory.createIRI("http://codes-list/1/A");
-        IRI graph = valueFactory.createIRI("http://example.org/context");
+        IRI graph = GRAPH;
 
         Statement inScheme = valueFactory.createStatement(codeIri, SKOS.IN_SCHEME, codeListIri, graph);
         Statement type = valueFactory.createStatement(codeIri, RDF.TYPE, SKOS.CONCEPT, graph);
@@ -164,21 +168,23 @@ class CodeListPublicationTest {
 
         when(publicationUtils.tranformBaseURIToPublish(any())).thenAnswer(invocation -> invocation.getArgument(0));
         when(repositoryGestion.getConnection()).thenReturn(null);
-        when(repositoryGestion.getStatements(any(), eq(codeListIri)))
+        when(repositoryGestion.getStatements(any(), eq(codeListIri), eq(GRAPH)))
                 .thenReturn(new RepositoryResult<>(new CloseableIteratorIteration<>(
                         List.of(codeListStatement(codeListIri, graph)).iterator())));
-        when(repositoryGestion.getStatementsPredicateObject(any(), eq(SKOS.IN_SCHEME), eq(codeListIri)))
+        when(repositoryGestion.getStatementsPredicateObject(any(), eq(SKOS.IN_SCHEME), eq(codeListIri), eq(GRAPH)))
                 .thenReturn(new RepositoryResult<>(
                         new CloseableIteratorIteration<>(List.of(inScheme).iterator())));
-        when(repositoryGestion.getStatements(any(), eq(codeIri)))
+        when(repositoryGestion.getStatements(any(), eq(codeIri), eq(GRAPH)))
                 .thenReturn(new RepositoryResult<>(new CloseableIteratorIteration<>(
                         List.of(inScheme, type, label, creator).iterator())));
 
-        codeListPublication.publishCodeListAndCodes(codeListIri);
+        codeListPublication.publishCodeListAndCodes(codeListIri, GRAPH);
 
         ArgumentCaptor<Model> model = ArgumentCaptor.forClass(Model.class);
-        verify(repositoryPublication, times(2)).publishResource(any(), model.capture(), eq(Constants.CODELIST));
+        verify(repositoryPublication, times(2))
+                .publishResource(any(), model.capture(), eq(Constants.CODELIST), eq(GRAPH));
         Model codeModel = model.getAllValues().getFirst();
+        Assertions.assertEquals(Set.of(GRAPH), codeModel.contexts(), "le code est publié dans le graphe reçu");
         assertTrue(codeModel.contains(codeIri, RDF.TYPE, SKOS.CONCEPT));
         assertTrue(codeModel.contains(codeIri, SKOS.IN_SCHEME, codeListIri));
         assertTrue(codeModel.contains(codeIri, SKOS.PREF_LABEL, valueFactory.createLiteral("A")));

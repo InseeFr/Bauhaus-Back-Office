@@ -6,6 +6,7 @@ import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.commons.security.PublicEndpoint;
+import fr.insee.rmes.modules.commons.webservice.ApiError;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.InvalidDdi4JsonException;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CreatePhysicalInstanceRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi3Response;
@@ -32,10 +33,14 @@ import fr.insee.rmes.modules.users.domain.port.clientside.UserService;
 import fr.insee.rmes.modules.users.infrastructure.UserProvider;
 import fr.insee.rmes.modules.users.webservice.HasAccess;
 import jakarta.validation.Valid;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import org.jspecify.annotations.Nullable;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.format.annotation.DateTimeFormat.ISO;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -49,6 +54,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -57,6 +63,11 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
         value = "/ddi",
         produces = {"application/hal+json", MediaType.APPLICATION_JSON_VALUE})
 public class DdiResources {
+
+    static final String DDI4_INVALID = "DDI4_INVALID";
+
+    /** Paramètre de filtre du endpoint {@code /operation/{id}/fichiers} (#1176). */
+    static final String DATE_MISE_A_JOUR = "dateMiseAJour";
 
     private final DDIService ddiService;
     private final DDI4toDDI3ConverterService ddi4toDdi3ConverterService;
@@ -106,6 +117,20 @@ public class DdiResources {
         return ResponseEntity.ok()
                 .contentType(org.springframework.hateoas.MediaTypes.HAL_JSON)
                 .body(responses);
+    }
+
+    /**
+     * Fichiers de données d'une opération, pour sa fiche dans le module opérations : les
+     * PhysicalInstances de toutes les StudyUnits qui la reflètent, qu'elles la désignent par son IRI
+     * de publication ou de gestion.
+     */
+    @GetMapping("/operation/{id}/physical-instances")
+    @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.READ)
+    public ResponseEntity<List<PartialPhysicalInstanceResponse>> getOperationPhysicalInstances(
+            @PathVariable(Constants.ID) String id) {
+        return ResponseEntity.ok(ddiService.getPhysicalInstancesByOperation(id).stream()
+                .map(PartialPhysicalInstanceResponse::fromDomain)
+                .toList());
     }
 
     @GetMapping("/physical-instance/search")
@@ -310,10 +335,7 @@ public class DdiResources {
     @PublicEndpoint
     public ResponseEntity<String> getItemXmlByVersion(
             @PathVariable String agency, @PathVariable String id, @PathVariable String version) {
-        String xml = ddiService.getItemXml(agency, id, version);
-        if (xml == null) {
-            return ResponseEntity.notFound().build();
-        }
+        String xml = DdiResponses.found(ddiService.getItemXml(agency, id, version));
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML).body(xml);
     }
 
@@ -321,10 +343,7 @@ public class DdiResources {
     @PublicEndpoint
     public ResponseEntity<String> getItemJsonByVersion(
             @PathVariable String agency, @PathVariable String id, @PathVariable String version) {
-        String xml = ddiService.getItemXml(agency, id, version);
-        if (xml == null) {
-            return ResponseEntity.notFound().build();
-        }
+        String xml = DdiResponses.found(ddiService.getItemXml(agency, id, version));
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(ddiItemConvertService.convert(xml).toString());
@@ -333,20 +352,14 @@ public class DdiResources {
     @GetMapping(value = "/public/item/{agency}/{id}", produces = MediaType.APPLICATION_XML_VALUE)
     @PublicEndpoint
     public ResponseEntity<String> getItemXml(@PathVariable String agency, @PathVariable String id) {
-        String xml = ddiService.getItemXml(agency, id);
-        if (xml == null) {
-            return ResponseEntity.notFound().build();
-        }
+        String xml = DdiResponses.found(ddiService.getItemXml(agency, id));
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML).body(xml);
     }
 
     @GetMapping(value = "/public/item/{agency}/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @PublicEndpoint
     public ResponseEntity<String> getItemJson(@PathVariable String agency, @PathVariable String id) {
-        String xml = ddiService.getItemXml(agency, id);
-        if (xml == null) {
-            return ResponseEntity.notFound().build();
-        }
+        String xml = DdiResponses.found(ddiService.getItemXml(agency, id));
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(ddiItemConvertService.convert(xml).toString());
@@ -392,27 +405,39 @@ public class DdiResources {
      * Depuis #1145 la sortie ne se limite plus au StudyUnit : les PhysicalInstances qu'il référence
      * sont déréférencées et l'accompagnent — fragments d'une même {@code <FragmentInstance>} côté
      * XML, items de l'enveloppe {@code topLevelReferences}/{@code items} côté JSON.
+     * <p>
+     * #1176 : {@code dateMiseAJour} ({@code AAAA-MM-JJ}, à 0:00:00 heure de Paris) ne garde que les
+     * PhysicalInstances modifiées à cette date ou après ; la StudyUnit sort toujours. Une date mal
+     * formée répond 400.
      */
     @GetMapping(value = "/public/operation/{id}/fichiers", produces = MediaType.APPLICATION_JSON_VALUE)
     @PublicEndpoint
-    public ResponseEntity<Ddi4StudyUnitResponse> getOperationStudyUnitJson(@PathVariable(Constants.ID) String id) {
+    public ResponseEntity<Ddi4StudyUnitResponse> getOperationStudyUnitJson(
+            @PathVariable(Constants.ID) String id,
+            @RequestParam(name = DATE_MISE_A_JOUR, required = false) @DateTimeFormat(iso = ISO.DATE) @Nullable
+                    LocalDate dateMiseAJour) {
         String operationIri = bauhausUriBuilder.getCompleteUriPublication("operation", id);
 
-        return DdiResponses.json(
-                ddiService.getStudyUnitByOperationIri(operationIri).orElse(null));
+        return DdiResponses.json(ddiService
+                .getStudyUnitByOperationIri(operationIri, dateMiseAJour)
+                .orElse(null));
     }
 
     @GetMapping(value = "/public/operation/{id}/fichiers", produces = MediaType.APPLICATION_XML_VALUE)
     @PublicEndpoint
-    public ResponseEntity<String> getOperationStudyUnitXml(@PathVariable(Constants.ID) String id) {
+    public ResponseEntity<String> getOperationStudyUnitXml(
+            @PathVariable(Constants.ID) String id,
+            @RequestParam(name = DATE_MISE_A_JOUR, required = false) @DateTimeFormat(iso = ISO.DATE) @Nullable
+                    LocalDate dateMiseAJour) {
         String operationIri = bauhausUriBuilder.getCompleteUriPublication("operation", id);
-        return DdiResponses.xml(
-                ddiService.getStudyUnitXmlByOperationIri(operationIri).orElse(null));
+        return DdiResponses.xml(ddiService
+                .getStudyUnitXmlByOperationIri(operationIri, dateMiseAJour)
+                .orElse(null));
     }
 
     @PostMapping("/validate")
     @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.PUBLISH)
-    public ResponseEntity<ValidationResponse> validateDdi4(@RequestBody String jsonData) {
+    public ResponseEntity<Object> validateDdi4(@RequestBody String jsonData) {
         try {
             // Le DDI 4 circule déjà sous l'enveloppe du schéma ({topLevelReferences, items}) :
             // rien à traduire ici. Le schéma est compilé une fois pour toutes par le validateur.
@@ -423,16 +448,24 @@ public class DdiResources {
                         .contentType(MediaType.APPLICATION_JSON)
                         .body(ValidationResponse.success());
             } else {
-                return ResponseEntity.badRequest()
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .body(ValidationResponse.failure(errors));
+                return invalidDdi4(errors);
             }
         } catch (InvalidDdi4JsonException e) {
             // Seul un document mal formé vaut un 400 : une panne de chargement du schéma doit
             // remonter en 500 plutôt que de se déguiser en erreur de saisie.
-            return ResponseEntity.badRequest()
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(ValidationResponse.failure(List.of("Invalid JSON: " + e.getMessage())));
+            return invalidDdi4(List.of("Invalid JSON: " + e.getMessage()));
         }
+    }
+
+    /**
+     * Document hors schéma : 400 {@link ApiError}, une erreur par écart. Les écarts portent leur
+     * propre chemin JSON dans leur texte : ils sont rattachés au corps entier.
+     */
+    private static ResponseEntity<Object> invalidDdi4(List<String> violations) {
+        List<ApiError.FieldError> errors =
+                violations.stream().map(ApiError.FieldError::onWholeBody).toList();
+        return ResponseEntity.badRequest()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(ApiError.invalid(DDI4_INVALID, errors));
     }
 }

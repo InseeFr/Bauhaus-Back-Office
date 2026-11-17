@@ -46,9 +46,7 @@ class VersionDateReconcilerTest {
 
         Ddi4Response reconciled = VersionDateReconciler.reconcile(stored, incoming, NOW);
 
-        assertEquals(PI_DATE, reconciled.physicalInstance().getFirst().versionDate());
-        assertEquals(DR_DATE, reconciled.dataRelationship().getFirst().versionDate());
-        assertEquals(VAR1_DATE, variableDate(reconciled, "var-1"));
+        assertKeepsStoredDatesOfPhysicalInstanceDataRelationshipAndVar1(reconciled);
         assertEquals(VAR2_DATE, variableDate(reconciled, "var-2"));
         assertEquals(CL1_DATE, codeListDate(reconciled, "cl-1"));
         assertEquals(CL2_DATE, codeListDate(reconciled, "cl-2"));
@@ -110,10 +108,7 @@ class VersionDateReconcilerTest {
 
         Ddi4Response reconciled = VersionDateReconciler.reconcile(stored, incoming, NOW);
 
-        assertEquals(NOW, codeListDate(reconciled, "cl-1"));
-        assertEquals(NOW, variableDate(reconciled, "var-1"));
-        assertEquals(NOW, reconciled.dataRelationship().getFirst().versionDate());
-        assertEquals(NOW, reconciled.physicalInstance().getFirst().versionDate());
+        assertRefreshesCl1AndItsAncestors(reconciled);
         assertEquals(VAR2_DATE, variableDate(reconciled, "var-2"));
         assertEquals(CL2_DATE, codeListDate(reconciled, "cl-2"));
         assertEquals(CAT1_DATE, categoryDate(reconciled, "cat-1"));
@@ -139,10 +134,7 @@ class VersionDateReconcilerTest {
         Ddi4Response reconciled = VersionDateReconciler.reconcile(stored, incoming, NOW);
 
         assertEquals(NOW, categoryDate(reconciled, "cat-1"));
-        assertEquals(NOW, codeListDate(reconciled, "cl-1"));
-        assertEquals(NOW, variableDate(reconciled, "var-1"));
-        assertEquals(NOW, reconciled.dataRelationship().getFirst().versionDate());
-        assertEquals(NOW, reconciled.physicalInstance().getFirst().versionDate());
+        assertRefreshesCl1AndItsAncestors(reconciled);
         assertEquals(CAT2_DATE, categoryDate(reconciled, "cat-2"));
         assertEquals(CL2_DATE, codeListDate(reconciled, "cl-2"));
         assertEquals(VAR2_DATE, variableDate(reconciled, "var-2"));
@@ -160,10 +152,7 @@ class VersionDateReconcilerTest {
         Ddi4Response reconciled = VersionDateReconciler.reconcile(stored, incoming, NOW);
 
         assertEquals(NOW, categoryDate(reconciled, "cat-3"));
-        assertEquals(NOW, codeListDate(reconciled, "cl-1"));
-        assertEquals(NOW, variableDate(reconciled, "var-1"));
-        assertEquals(NOW, reconciled.dataRelationship().getFirst().versionDate());
-        assertEquals(NOW, reconciled.physicalInstance().getFirst().versionDate());
+        assertRefreshesCl1AndItsAncestors(reconciled);
     }
 
     @Test
@@ -187,9 +176,7 @@ class VersionDateReconcilerTest {
         Ddi4Response reconciled = VersionDateReconciler.reconcile(stored, incoming, NOW);
 
         assertEquals(NOW, variableDate(reconciled, "var-3"));
-        assertEquals(PI_DATE, reconciled.physicalInstance().getFirst().versionDate());
-        assertEquals(DR_DATE, reconciled.dataRelationship().getFirst().versionDate());
-        assertEquals(VAR1_DATE, variableDate(reconciled, "var-1"));
+        assertKeepsStoredDatesOfPhysicalInstanceDataRelationshipAndVar1(reconciled);
         assertEquals(CL2_DATE, codeListDate(reconciled, "cl-2"));
     }
 
@@ -286,16 +273,31 @@ class VersionDateReconcilerTest {
             CogsDate cat2Date,
             String cl1CodeValue,
             String cat1Label) {
+        return response(
+                piDate,
+                drDate,
+                List.of(variable("var-1", var1Date, "cl-1"), variable("var-2", var2Date, "cl-2")),
+                List.of(
+                        codeList("cl-1", cl1Date, "cat-1", cl1CodeValue),
+                        codeList("cl-2", cl2Date, "cat-2", "code-value-2")),
+                List.of(category("cat-1", cat1Date, cat1Label), category("cat-2", cat2Date, "Catégorie 2")));
+    }
+
+    /** PI -> DR -> the given variables, code lists and categories. */
+    private static Ddi4Response response(
+            CogsDate piDate,
+            CogsDate drDate,
+            List<Ddi4Variable> variables,
+            List<Ddi4CodeList> codeLists,
+            List<Ddi4Category> categories) {
         return new Ddi4Response(
                 Ddi4Response.SCHEMA,
                 List.of(ref("pi-1", Ddi4PhysicalInstance.TYPE)),
                 List.of(physicalInstance(piDate)),
                 List.of(dataRelationship(drDate)),
-                List.of(variable("var-1", var1Date, "cl-1"), variable("var-2", var2Date, "cl-2")),
-                List.of(
-                        codeList("cl-1", cl1Date, "cat-1", cl1CodeValue),
-                        codeList("cl-2", cl2Date, "cat-2", "code-value-2")),
-                List.of(category("cat-1", cat1Date, cat1Label), category("cat-2", cat2Date, "Catégorie 2")),
+                variables,
+                codeLists,
+                categories,
                 null);
     }
 
@@ -338,15 +340,12 @@ class VersionDateReconcilerTest {
                 List.of(new LangString("fr", "cl-1")),
                 null,
                 List.of(rootCode));
-        return new Ddi4Response(
-                Ddi4Response.SCHEMA,
-                List.of(ref("pi-1", Ddi4PhysicalInstance.TYPE)),
-                List.of(physicalInstance(piDate)),
-                List.of(dataRelationship(drDate)),
+        return response(
+                piDate,
+                drDate,
                 List.of(variable("var-1", var1Date, "cl-1")),
                 List.of(hierarchicalCodeList),
-                List.of(category("cat-3", cat3Date, cat3Label)),
-                null);
+                List.of(category("cat-3", cat3Date, cat3Label)));
     }
 
     private static Ddi4PhysicalInstance physicalInstance(CogsDate date) {
@@ -441,6 +440,20 @@ class VersionDateReconcilerTest {
 
     private static CogsDate date(String iso) {
         return CogsDate.ofDateTime(iso);
+    }
+
+    private static void assertKeepsStoredDatesOfPhysicalInstanceDataRelationshipAndVar1(Ddi4Response reconciled) {
+        assertEquals(PI_DATE, reconciled.physicalInstance().getFirst().versionDate());
+        assertEquals(DR_DATE, reconciled.dataRelationship().getFirst().versionDate());
+        assertEquals(VAR1_DATE, variableDate(reconciled, "var-1"));
+    }
+
+    /** cl-1 and its whole parent chain (var-1, DR, PI) are dated now. */
+    private static void assertRefreshesCl1AndItsAncestors(Ddi4Response reconciled) {
+        assertEquals(NOW, codeListDate(reconciled, "cl-1"));
+        assertEquals(NOW, variableDate(reconciled, "var-1"));
+        assertEquals(NOW, reconciled.dataRelationship().getFirst().versionDate());
+        assertEquals(NOW, reconciled.physicalInstance().getFirst().versionDate());
     }
 
     private static CogsDate variableDate(Ddi4Response response, String id) {

@@ -10,6 +10,7 @@ import fr.insee.rmes.modules.commons.configuration.ConditionalOnModule;
 import fr.insee.rmes.modules.commons.configuration.swagger.model.Id;
 import fr.insee.rmes.modules.users.domain.model.RBAC;
 import fr.insee.rmes.modules.users.webservice.HasAccess;
+import jakarta.validation.Valid;
 import java.util.List;
 import org.apache.http.HttpStatus;
 import org.springframework.hateoas.MediaTypes;
@@ -78,16 +79,18 @@ public class StructureResources {
 
     @HasAccess(module = RBAC.Module.STRUCTURE_STRUCTURE, privilege = RBAC.Privilege.CREATE)
     @PostMapping(value = "/structure", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> setStructure(@RequestBody String body) throws RmesException {
-        String id = structureService.setStructure(body);
+    public ResponseEntity<Object> setStructure(@Valid @RequestBody StructureRequest structure) throws RmesException {
+        String id = structureService.setStructure(structure.toLegacyJson());
         return ResponseEntity.status(HttpStatus.SC_OK).body(id);
     }
 
     @HasAccess(module = RBAC.Module.STRUCTURE_STRUCTURE, privilege = RBAC.Privilege.UPDATE)
     @PutMapping(value = "/structure/{structureId}", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> setStructure(@PathVariable("structureId") String id, @RequestBody String body)
+    public ResponseEntity<Object> setStructure(
+            @PathVariable("structureId") String id, @Valid @RequestBody StructureRequest structure)
             throws RmesException {
-        return ResponseEntity.status(HttpStatus.SC_OK).body(structureService.setStructure(id, body));
+        return ResponseEntity.status(HttpStatus.SC_OK)
+                .body(structureService.setStructure(id, structure.toLegacyJson()));
     }
 
     @HasAccess(module = RBAC.Module.STRUCTURE_STRUCTURE, privilege = RBAC.Privilege.DELETE)

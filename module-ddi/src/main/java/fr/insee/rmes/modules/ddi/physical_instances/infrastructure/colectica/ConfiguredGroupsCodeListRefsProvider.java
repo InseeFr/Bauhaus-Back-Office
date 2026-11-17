@@ -66,32 +66,22 @@ public class ConfiguredGroupsCodeListRefsProvider implements MutualizedCodeListR
 
     /**
      * Dernière version de chaque groupe configuré. Un groupe inconnu de Colectica est absent de la
-     * réponse, donc ignoré. Tolérante aux pannes : en cas d'échec, aucun groupe n'est retenu.
+     * réponse, donc ignoré. Un échec de Colectica, lui, est propagé : le convertir en « aucun groupe »
+     * mettrait en cache (TTL {@code mutualized-codes-cache-ttl}) un catalogue vide, et toute liste
+     * mutualisée serait alors lue et embarquée comme une liste de groupe. Une exception n'étant pas
+     * mise en cache, l'appel suivant réessaie.
      */
     private List<ColecticaSetItem> latestGroupVersions() {
-        try {
-            return colecticaClient.getLatestVersionNumbers(groupRefs);
-        } catch (RuntimeException e) {
-            logger.warn("latest version lookup failed for configured groups {}: {}", groupRefs, e.getMessage());
-            return List.of();
-        }
+        return colecticaClient.getLatestVersionNumbers(groupRefs);
     }
 
     /**
      * CodeList enfants de la version {@code version} de {@code agencyId/identifier} via une requête
-     * {@code bysubject} filtrée côté serveur. Tolérante aux pannes : une branche cassée ne fait pas
-     * échouer tout le calcul.
+     * {@code bysubject} filtrée côté serveur. Un échec est propagé, pour la même raison que
+     * {@link #latestGroupVersions()} : un groupe manquant donnerait un catalogue partiel mis en cache.
      */
     private List<ItemReference> childrenOfType(String agencyId, String identifier, int version, String childType) {
-        try {
-            return colecticaClient.findRelatedDescriptions(
-                    RelationshipDirection.BY_SUBJECT,
-                    new ItemReference(agencyId, identifier),
-                    version,
-                    List.of(childType));
-        } catch (RuntimeException e) {
-            logger.warn("bysubject lookup failed for group {}/{}: {}", agencyId, identifier, e.getMessage());
-            return List.of();
-        }
+        return colecticaClient.findRelatedDescriptions(
+                RelationshipDirection.BY_SUBJECT, new ItemReference(agencyId, identifier), version, List.of(childType));
     }
 }

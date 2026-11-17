@@ -17,7 +17,6 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.client.HttpClientErrorException;
@@ -42,26 +41,6 @@ class ColecticaGroupSetReader {
     ColecticaGroupSetReader(ColecticaClient colecticaClient, String defaultLang) {
         this.colecticaClient = colecticaClient;
         this.defaultLang = defaultLang;
-    }
-
-    /**
-     * Le Group d'identifiant {@code id}, ou {@link Optional#empty()} si Colectica ne le connaît pas.
-     * <p>
-     * Seul le 404 vaut « absent » : toute autre défaillance remonte, un dépôt injoignable ne devant
-     * pas passer pour un groupe encore à créer.
-     */
-    Optional<Ddi4Group> findGroup(String agencyId, String id) {
-        Ddi4GroupResponse response;
-        try {
-            response = getGroup(agencyId, id);
-        } catch (HttpClientErrorException.NotFound _) {
-            logger.info("No group {}/{} in Colectica yet", agencyId, id);
-            return Optional.empty();
-        }
-        if (response == null || response.group() == null || response.group().isEmpty()) {
-            return Optional.empty();
-        }
-        return response.group().stream().filter(group -> id.equals(group.id())).findFirst();
     }
 
     Ddi4GroupResponse getGroup(String agencyId, String id) {

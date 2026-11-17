@@ -6,6 +6,7 @@ import static org.mockito.Mockito.*;
 
 import fr.insee.rmes.colectica.client.ColecticaClient;
 import fr.insee.rmes.colectica.client.dto.ColecticaCreateItemRequest;
+import fr.insee.rmes.colectica.client.dto.ColecticaItemResponse;
 import fr.insee.rmes.colectica.client.dto.UpdateItemStateRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.*;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.DDIRepository;
@@ -42,6 +43,7 @@ class DDIRepositoryImplGroupTest {
         lenient().when(instanceConfiguration.defaultAgencyId()).thenReturn("fr.insee");
         lenient().when(instanceConfiguration.versionResponsibility()).thenReturn("bauhaus");
         lenient().when(instanceConfiguration.itemFormat()).thenReturn("DC337820-AF3A-4C0B-82F9-CF02535CDE83");
+        lenient().when(instanceConfiguration.itemTypes()).thenReturn(ColecticaTestItemTypes.CONFIGURED);
     }
 
     // --- ColecticaGroupRepository ---
@@ -74,15 +76,7 @@ class DDIRepositoryImplGroupTest {
 
             groupRepository.createOrUpdate(group);
 
-            ArgumentCaptor<ColecticaCreateItemRequest> captor =
-                    ArgumentCaptor.forClass(ColecticaCreateItemRequest.class);
-            verify(colecticaClient).createOrUpdateItems(captor.capture());
-
-            ColecticaCreateItemRequest request = captor.getValue();
-            assertThat(request).isNotNull();
-            assertThat(request.items()).hasSize(1);
-
-            var item = request.items().getFirst();
+            var item = singlePostedItem();
             assertThat(item.itemType()).isEqualTo("4bd6eef6-99df-40e6-9b11-5b8f64e5cb23");
             assertThat(item.agencyId()).isEqualTo("fr.insee");
             assertThat(item.identifier()).isEqualTo("group-uuid");
@@ -164,15 +158,7 @@ class DDIRepositoryImplGroupTest {
 
             studyUnitRepository.createOrUpdate(studyUnit);
 
-            ArgumentCaptor<ColecticaCreateItemRequest> captor =
-                    ArgumentCaptor.forClass(ColecticaCreateItemRequest.class);
-            verify(colecticaClient).createOrUpdateItems(captor.capture());
-
-            ColecticaCreateItemRequest request = captor.getValue();
-            assertThat(request).isNotNull();
-            assertThat(request.items()).hasSize(1);
-
-            var item = request.items().getFirst();
+            var item = singlePostedItem();
             assertThat(item.itemType()).isEqualTo("30ea0200-7121-4f01-8d21-a931a182b86d");
             assertThat(item.agencyId()).isEqualTo("fr.insee");
             assertThat(item.identifier()).isEqualTo("su-uuid");
@@ -228,5 +214,19 @@ class DDIRepositoryImplGroupTest {
         String uuid2 =
                 AbstractColecticaItemRepository.generateDeterministicUuid("http://id.insee.fr/operations/serie/s1002");
         assertThat(uuid1).isNotEqualTo(uuid2);
+    }
+
+    // --- helper ---
+
+    /** Captures the single create-or-update request sent to Colectica and returns its only item. */
+    private ColecticaItemResponse singlePostedItem() {
+        ArgumentCaptor<ColecticaCreateItemRequest> captor = ArgumentCaptor.forClass(ColecticaCreateItemRequest.class);
+        verify(colecticaClient).createOrUpdateItems(captor.capture());
+
+        ColecticaCreateItemRequest request = captor.getValue();
+        assertThat(request).isNotNull();
+        assertThat(request.items()).hasSize(1);
+
+        return request.items().getFirst();
     }
 }

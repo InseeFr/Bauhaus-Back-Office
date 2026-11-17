@@ -1,6 +1,7 @@
 package fr.insee.rmes.testcontainers.documentations;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -20,12 +21,14 @@ import fr.insee.rmes.modules.operations.msd.DocumentationConfiguration;
 import fr.insee.rmes.modules.organisations.OrganisationsProperties;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.testcontainers.WithGraphDBContainer;
+import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 import java.lang.reflect.Field;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 @Tag("integration")
@@ -116,6 +119,25 @@ class DocumentationPublicationTest extends WithGraphDBContainer {
                 .contains("3");
 
         // Atomicity : nothing must be published when a document is missing
+        Mockito.verify(documentsPublication, Mockito.never()).publishAllDocumentsInSims(Mockito.anyString());
+    }
+
+    /**
+     * Le contenu Markdown d'une rubrique ne fait jamais échouer flexmark : l'échec est provoqué
+     * pour vérifier qu'il bloque la publication au lieu de publier la rubrique sans version HTML.
+     */
+    @Test
+    void shouldBlockPublicationWhenARichTextRubricCannotBeConvertedToHtml() throws RmesException {
+        IllegalStateException conversionFailure = new IllegalStateException("conversion failed");
+        try (MockedStatic<XhtmlToMarkdownUtils> converter = Mockito.mockStatic(XhtmlToMarkdownUtils.class)) {
+            converter
+                    .when(() -> XhtmlToMarkdownUtils.markdownToXhtml(Mockito.anyString()))
+                    .thenThrow(conversionFailure);
+
+            assertThatThrownBy(() -> documentationPublication.publishSims("9999"))
+                    .isSameAs(conversionFailure);
+        }
+
         Mockito.verify(documentsPublication, Mockito.never()).publishAllDocumentsInSims(Mockito.anyString());
     }
 

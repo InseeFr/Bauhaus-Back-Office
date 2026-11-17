@@ -29,6 +29,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.Col
 import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.ColecticaConfiguration;
 import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.schema.ClasspathDdi4SchemaRepository;
 import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.schema.NetworkntDdi4SchemaValidator;
+import fr.insee.rmes.modules.operation.operations.domain.port.serverside.OperationIrisPort;
 import fr.insee.rmes.modules.operation.series.domain.port.serverside.SeriesCreatorsPort;
 import fr.insee.rmes.modules.operation.series.infrastructure.CachingSeriesCreatorsAdapter;
 import java.time.Clock;
@@ -41,11 +42,15 @@ import org.springframework.context.annotation.Configuration;
 public class PhysicalInstanceConfiguration {
 
     @Bean
-    DDIService ddiService(DDIRepository repository, SeriesCreatorsPort seriesCreatorsPort, CacheManager cacheManager) {
+    DDIService ddiService(
+            DDIRepository repository,
+            SeriesCreatorsPort seriesCreatorsPort,
+            OperationIrisPort operationIrisPort,
+            CacheManager cacheManager) {
         // Cache réservé aux listes : les contrôles d'écriture (GraphDbStampChecker) relisent GraphDB.
         SeriesCreatorsPort cachedCreators = new CachingSeriesCreatorsAdapter(
                 seriesCreatorsPort, cacheManager.getCache(ColecticaCacheNames.SERIES_CREATORS));
-        return new DDIServiceImpl(repository, cachedCreators, Clock.systemDefaultZone());
+        return new DDIServiceImpl(repository, cachedCreators, operationIrisPort, Clock.systemDefaultZone());
     }
 
     @Bean

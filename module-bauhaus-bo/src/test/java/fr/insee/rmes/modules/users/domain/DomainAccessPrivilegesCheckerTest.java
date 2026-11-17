@@ -24,9 +24,14 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.stubbing.OngoingStubbing;
 
 @ExtendWith(MockitoExtension.class)
 class DomainAccessPrivilegesCheckerTest {
+
+    private static final Object PRINCIPAL = "somePrincipal";
+    private static final String RESOURCE_ID = "resource-id";
+    private static final String DDI_GROUP_ID = "fr.insee|group-id";
 
     @Mock
     private RbacFetcher rbacFetcher;
@@ -44,61 +49,99 @@ class DomainAccessPrivilegesCheckerTest {
         accessChecker = new DomainAccessPrivilegesChecker(rbacFetcher, userDecoder, stampChecker);
     }
 
+    private static User userWithStamps(String source, String... stamps) {
+        return new User("user123", List.of("USER"), Set.of(stamps), source);
+    }
+
+    private void givenUser(User user) throws MissingUserInformationException {
+        when(userDecoder.fromPrincipal(PRINCIPAL)).thenReturn(Optional.of(user));
+    }
+
+    private void givenUserWithPrivilege(User user, RBAC.Module module, RBAC.Privilege privilege, RBAC.Strategy strategy)
+            throws MissingUserInformationException {
+        var modulePrivileges =
+                new ModuleAccessPrivileges(module, Set.of(new ModuleAccessPrivileges.Privilege(privilege, strategy)));
+
+        givenUser(user);
+        when(rbacFetcher.computePrivileges(anyList(), any())).thenReturn(Set.of(modulePrivileges));
+    }
+
+    /** The user holds UPDATE with the STAMP strategy on OPERATION_SERIES. */
+    private void givenSeriesUpdateWithStampStrategy(User user) throws MissingUserInformationException {
+        givenUserWithPrivilege(user, RBAC.Module.OPERATION_SERIES, RBAC.Privilege.UPDATE, RBAC.Strategy.STAMP);
+    }
+
+    private OngoingStubbing<List<String>> whenSeriesCreatorsStampsFetched()
+            throws StampFetchException, UnsupportedModuleException {
+        return when(stampChecker.getCreatorsStamps(RBAC.Module.OPERATION_SERIES, RESOURCE_ID));
+    }
+
+    /**
+     * A user stamped STAMP-01 holds UPDATE with the STAMP strategy on the module, whose resource
+     * has the given contributors stamps.
+     */
+    private void givenUpdateWithStampStrategyOnContributorsStamps(RBAC.Module module, String... contributorsStamps)
+            throws MissingUserInformationException, StampFetchException, UnsupportedModuleException {
+        givenUserWithPrivilege(userWithStamps("ssm", "STAMP-01"), module, RBAC.Privilege.UPDATE, RBAC.Strategy.STAMP);
+        when(stampChecker.getContributorsStamps(module, RESOURCE_ID)).thenReturn(List.of(contributorsStamps));
+    }
+
+    private boolean hasAccess(String module, String privilege) throws MissingUserInformationException {
+        return accessChecker.hasAccess(module, privilege, RESOURCE_ID, PRINCIPAL);
+    }
+
+    /** The user holds CREATE with the STAMP strategy on DDI_PHYSICALINSTANCE; the group is created by stamp-A and stamp-B. */
+    private void givenDdiGroupCreatedByStampsAAndB(User user)
+            throws MissingUserInformationException, StampFetchException, UnsupportedModuleException {
+        givenUserWithPrivilege(user, RBAC.Module.DDI_PHYSICALINSTANCE, RBAC.Privilege.CREATE, RBAC.Strategy.STAMP);
+        when(stampChecker.getCreatorsStamps(RBAC.Module.DDI_PHYSICALINSTANCE, DDI_GROUP_ID))
+                .thenReturn(List.of("stamp-A", "stamp-B"));
+    }
+
     @Test
     void should_grant_access_for_insee_user_with_read_privilege() throws MissingUserInformationException {
-        var user = new User("user123", List.of("USER"), Set.of("STAMP-01"), "insee");
-        Object principal = "somePrincipal";
+        givenUserWithPrivilege(
+                userWithStamps("insee", "STAMP-01"),
+                RBAC.Module.CONCEPT_CONCEPT,
+                RBAC.Privilege.READ,
+                RBAC.Strategy.ALL);
 
-        var readPrivilege = new ModuleAccessPrivileges.Privilege(RBAC.Privilege.READ, RBAC.Strategy.ALL);
-        var modulePrivileges = new ModuleAccessPrivileges(RBAC.Module.CONCEPT_CONCEPT, Set.of(readPrivilege));
-
-        when(userDecoder.fromPrincipal(principal)).thenReturn(Optional.of(user));
-        when(rbacFetcher.computePrivileges(anyList(), any())).thenReturn(Set.of(modulePrivileges));
-
-        boolean hasAccess = accessChecker.hasAccess("CONCEPT_CONCEPT", "READ", "resource-id", principal);
+        boolean hasAccess = hasAccess("CONCEPT_CONCEPT", "READ");
 
         assertThat(hasAccess).isTrue();
     }
 
     @Test
     void should_deny_access_when_user_not_found() throws MissingUserInformationException {
-        Object principal = "somePrincipal";
+        when(userDecoder.fromPrincipal(PRINCIPAL)).thenReturn(Optional.empty());
 
-        when(userDecoder.fromPrincipal(principal)).thenReturn(Optional.empty());
-
-        boolean hasAccess = accessChecker.hasAccess("CONCEPT_CONCEPT", "READ", "resource-id", principal);
+        boolean hasAccess = hasAccess("CONCEPT_CONCEPT", "READ");
 
         assertThat(hasAccess).isFalse();
     }
 
     @Test
     void should_grant_access_with_all_strategy() throws MissingUserInformationException {
-        var user = new User("user123", List.of("ADMIN"), Set.of("STAMP-01"), "ssm");
-        Object principal = "somePrincipal";
+        givenUserWithPrivilege(
+                new User("user123", List.of("ADMIN"), Set.of("STAMP-01"), "ssm"),
+                RBAC.Module.CONCEPT_CONCEPT,
+                RBAC.Privilege.CREATE,
+                RBAC.Strategy.ALL);
 
-        var privilege = new ModuleAccessPrivileges.Privilege(RBAC.Privilege.CREATE, RBAC.Strategy.ALL);
-        var modulePrivileges = new ModuleAccessPrivileges(RBAC.Module.CONCEPT_CONCEPT, Set.of(privilege));
-
-        when(userDecoder.fromPrincipal(principal)).thenReturn(Optional.of(user));
-        when(rbacFetcher.computePrivileges(anyList(), any())).thenReturn(Set.of(modulePrivileges));
-
-        boolean hasAccess = accessChecker.hasAccess("CONCEPT_CONCEPT", "CREATE", "resource-id", principal);
+        boolean hasAccess = hasAccess("CONCEPT_CONCEPT", "CREATE");
 
         assertThat(hasAccess).isTrue();
     }
 
     @Test
     void should_deny_access_with_none_strategy() throws MissingUserInformationException {
-        var user = new User("user123", List.of("USER"), Set.of("STAMP-01"), "ssm");
-        Object principal = "somePrincipal";
+        givenUserWithPrivilege(
+                userWithStamps("ssm", "STAMP-01"),
+                RBAC.Module.CONCEPT_CONCEPT,
+                RBAC.Privilege.DELETE,
+                RBAC.Strategy.NONE);
 
-        var privilege = new ModuleAccessPrivileges.Privilege(RBAC.Privilege.DELETE, RBAC.Strategy.NONE);
-        var modulePrivileges = new ModuleAccessPrivileges(RBAC.Module.CONCEPT_CONCEPT, Set.of(privilege));
-
-        when(userDecoder.fromPrincipal(principal)).thenReturn(Optional.of(user));
-        when(rbacFetcher.computePrivileges(anyList(), any())).thenReturn(Set.of(modulePrivileges));
-
-        boolean hasAccess = accessChecker.hasAccess("CONCEPT_CONCEPT", "DELETE", "resource-id", principal);
+        boolean hasAccess = hasAccess("CONCEPT_CONCEPT", "DELETE");
 
         assertThat(hasAccess).isFalse();
     }
@@ -106,38 +149,22 @@ class DomainAccessPrivilegesCheckerTest {
     @Test
     void should_grant_access_with_stamp_strategy_when_stamp_matches()
             throws Exception, StampFetchException, UnsupportedModuleException, MissingUserInformationException {
-        var user = new User("user123", List.of("USER"), Set.of("STAMP-01"), "ssm");
-        Object principal = "somePrincipal";
+        givenSeriesUpdateWithStampStrategy(userWithStamps("ssm", "STAMP-01"));
+        whenSeriesCreatorsStampsFetched().thenReturn(List.of("STAMP-01", "STAMP-02"));
 
-        var privilege = new ModuleAccessPrivileges.Privilege(RBAC.Privilege.UPDATE, RBAC.Strategy.STAMP);
-        var modulePrivileges = new ModuleAccessPrivileges(RBAC.Module.OPERATION_SERIES, Set.of(privilege));
-
-        when(userDecoder.fromPrincipal(principal)).thenReturn(Optional.of(user));
-        when(rbacFetcher.computePrivileges(anyList(), any())).thenReturn(Set.of(modulePrivileges));
-        when(stampChecker.getCreatorsStamps(RBAC.Module.OPERATION_SERIES, "resource-id"))
-                .thenReturn(List.of("STAMP-01", "STAMP-02"));
-
-        boolean hasAccess = accessChecker.hasAccess("OPERATION_SERIES", "UPDATE", "resource-id", principal);
+        boolean hasAccess = hasAccess("OPERATION_SERIES", "UPDATE");
 
         assertThat(hasAccess).isTrue();
-        verify(stampChecker).getCreatorsStamps(RBAC.Module.OPERATION_SERIES, "resource-id");
+        verify(stampChecker).getCreatorsStamps(RBAC.Module.OPERATION_SERIES, RESOURCE_ID);
     }
 
     @Test
     void should_deny_access_with_stamp_strategy_when_stamp_does_not_match()
             throws Exception, MissingUserInformationException, StampFetchException, UnsupportedModuleException {
-        var user = new User("user123", List.of("USER"), Set.of("STAMP-03"), "ssm");
-        Object principal = "somePrincipal";
+        givenSeriesUpdateWithStampStrategy(userWithStamps("ssm", "STAMP-03"));
+        whenSeriesCreatorsStampsFetched().thenReturn(List.of("STAMP-01", "STAMP-02"));
 
-        var privilege = new ModuleAccessPrivileges.Privilege(RBAC.Privilege.UPDATE, RBAC.Strategy.STAMP);
-        var modulePrivileges = new ModuleAccessPrivileges(RBAC.Module.OPERATION_SERIES, Set.of(privilege));
-
-        when(userDecoder.fromPrincipal(principal)).thenReturn(Optional.of(user));
-        when(rbacFetcher.computePrivileges(anyList(), any())).thenReturn(Set.of(modulePrivileges));
-        when(stampChecker.getCreatorsStamps(RBAC.Module.OPERATION_SERIES, "resource-id"))
-                .thenReturn(List.of("STAMP-01", "STAMP-02"));
-
-        boolean hasAccess = accessChecker.hasAccess("OPERATION_SERIES", "UPDATE", "resource-id", principal);
+        boolean hasAccess = hasAccess("OPERATION_SERIES", "UPDATE");
 
         assertThat(hasAccess).isFalse();
     }
@@ -145,18 +172,10 @@ class DomainAccessPrivilegesCheckerTest {
     @Test
     void should_grant_access_with_stamp_strategy_when_no_stamps_required()
             throws Exception, MissingUserInformationException, StampFetchException, UnsupportedModuleException {
-        var user = new User("user123", List.of("USER"), Set.of("STAMP-01"), "ssm");
-        Object principal = "somePrincipal";
+        givenSeriesUpdateWithStampStrategy(userWithStamps("ssm", "STAMP-01"));
+        whenSeriesCreatorsStampsFetched().thenReturn(List.of());
 
-        var privilege = new ModuleAccessPrivileges.Privilege(RBAC.Privilege.UPDATE, RBAC.Strategy.STAMP);
-        var modulePrivileges = new ModuleAccessPrivileges(RBAC.Module.OPERATION_SERIES, Set.of(privilege));
-
-        when(userDecoder.fromPrincipal(principal)).thenReturn(Optional.of(user));
-        when(rbacFetcher.computePrivileges(anyList(), any())).thenReturn(Set.of(modulePrivileges));
-        when(stampChecker.getCreatorsStamps(RBAC.Module.OPERATION_SERIES, "resource-id"))
-                .thenReturn(List.of());
-
-        boolean hasAccess = accessChecker.hasAccess("OPERATION_SERIES", "UPDATE", "resource-id", principal);
+        boolean hasAccess = hasAccess("OPERATION_SERIES", "UPDATE");
 
         assertThat(hasAccess).isTrue();
     }
@@ -164,18 +183,10 @@ class DomainAccessPrivilegesCheckerTest {
     @Test
     void should_deny_access_when_stamp_fetch_fails()
             throws Exception, MissingUserInformationException, StampFetchException, UnsupportedModuleException {
-        var user = new User("user123", List.of("USER"), Set.of("STAMP-01"), "ssm");
-        Object principal = "somePrincipal";
+        givenSeriesUpdateWithStampStrategy(userWithStamps("ssm", "STAMP-01"));
+        whenSeriesCreatorsStampsFetched().thenThrow(new StampFetchException(RBAC.Module.OPERATION_SERIES, RESOURCE_ID));
 
-        var privilege = new ModuleAccessPrivileges.Privilege(RBAC.Privilege.UPDATE, RBAC.Strategy.STAMP);
-        var modulePrivileges = new ModuleAccessPrivileges(RBAC.Module.OPERATION_SERIES, Set.of(privilege));
-
-        when(userDecoder.fromPrincipal(principal)).thenReturn(Optional.of(user));
-        when(rbacFetcher.computePrivileges(anyList(), any())).thenReturn(Set.of(modulePrivileges));
-        when(stampChecker.getCreatorsStamps(RBAC.Module.OPERATION_SERIES, "resource-id"))
-                .thenThrow(new StampFetchException(RBAC.Module.OPERATION_SERIES, "resource-id"));
-
-        boolean hasAccess = accessChecker.hasAccess("OPERATION_SERIES", "UPDATE", "resource-id", principal);
+        boolean hasAccess = hasAccess("OPERATION_SERIES", "UPDATE");
 
         assertThat(hasAccess).isFalse();
     }
@@ -183,94 +194,58 @@ class DomainAccessPrivilegesCheckerTest {
     @Test
     void should_handle_dataset_distribution_module()
             throws Exception, MissingUserInformationException, StampFetchException, UnsupportedModuleException {
-        var user = new User("user123", List.of("USER"), Set.of("STAMP-01"), "ssm");
-        Object principal = "somePrincipal";
+        givenUpdateWithStampStrategyOnContributorsStamps(RBAC.Module.DATASET_DISTRIBUTION, "STAMP-01");
 
-        var privilege = new ModuleAccessPrivileges.Privilege(RBAC.Privilege.UPDATE, RBAC.Strategy.STAMP);
-        var modulePrivileges = new ModuleAccessPrivileges(RBAC.Module.DATASET_DISTRIBUTION, Set.of(privilege));
-
-        when(userDecoder.fromPrincipal(principal)).thenReturn(Optional.of(user));
-        when(rbacFetcher.computePrivileges(anyList(), any())).thenReturn(Set.of(modulePrivileges));
-        when(stampChecker.getContributorsStamps(RBAC.Module.DATASET_DISTRIBUTION, "resource-id"))
-                .thenReturn(List.of("STAMP-01"));
-
-        boolean hasAccess = accessChecker.hasAccess("DATASET_DISTRIBUTION", "UPDATE", "resource-id", principal);
+        boolean hasAccess = hasAccess("DATASET_DISTRIBUTION", "UPDATE");
 
         assertThat(hasAccess).isTrue();
-        verify(stampChecker).getContributorsStamps(RBAC.Module.DATASET_DISTRIBUTION, "resource-id");
+        verify(stampChecker).getContributorsStamps(RBAC.Module.DATASET_DISTRIBUTION, RESOURCE_ID);
     }
 
     @Test
     void should_handle_structure_module()
             throws Exception, MissingUserInformationException, StampFetchException, UnsupportedModuleException {
-        var user = new User("user123", List.of("USER"), Set.of("STAMP-01"), "ssm");
-        Object principal = "somePrincipal";
+        givenUpdateWithStampStrategyOnContributorsStamps(RBAC.Module.STRUCTURE_STRUCTURE, "STAMP-01");
 
-        var privilege = new ModuleAccessPrivileges.Privilege(RBAC.Privilege.UPDATE, RBAC.Strategy.STAMP);
-        var modulePrivileges = new ModuleAccessPrivileges(RBAC.Module.STRUCTURE_STRUCTURE, Set.of(privilege));
-
-        when(userDecoder.fromPrincipal(principal)).thenReturn(Optional.of(user));
-        when(rbacFetcher.computePrivileges(anyList(), any())).thenReturn(Set.of(modulePrivileges));
-        when(stampChecker.getContributorsStamps(RBAC.Module.STRUCTURE_STRUCTURE, "resource-id"))
-                .thenReturn(List.of("STAMP-01"));
-
-        boolean hasAccess = accessChecker.hasAccess("STRUCTURE_STRUCTURE", "UPDATE", "resource-id", principal);
+        boolean hasAccess = hasAccess("STRUCTURE_STRUCTURE", "UPDATE");
 
         assertThat(hasAccess).isTrue();
     }
 
     @Test
     void should_deny_access_when_no_matching_privilege() throws MissingUserInformationException {
-        var user = new User("user123", List.of("USER"), Set.of("STAMP-01"), "ssm");
-        Object principal = "somePrincipal";
+        givenUserWithPrivilege(
+                userWithStamps("ssm", "STAMP-01"), RBAC.Module.CONCEPT_CONCEPT, RBAC.Privilege.READ, RBAC.Strategy.ALL);
 
-        var privilege = new ModuleAccessPrivileges.Privilege(RBAC.Privilege.READ, RBAC.Strategy.ALL);
-        var modulePrivileges = new ModuleAccessPrivileges(RBAC.Module.CONCEPT_CONCEPT, Set.of(privilege));
-
-        when(userDecoder.fromPrincipal(principal)).thenReturn(Optional.of(user));
-        when(rbacFetcher.computePrivileges(anyList(), any())).thenReturn(Set.of(modulePrivileges));
-
-        boolean hasAccess = accessChecker.hasAccess("CONCEPT_CONCEPT", "DELETE", "resource-id", principal);
+        boolean hasAccess = hasAccess("CONCEPT_CONCEPT", "DELETE");
 
         assertThat(hasAccess).isFalse();
     }
 
     @Test
     void should_deny_access_when_no_matching_module() throws MissingUserInformationException {
-        var user = new User("user123", List.of("USER"), Set.of("STAMP-01"), "ssm");
-        Object principal = "somePrincipal";
+        givenUserWithPrivilege(
+                userWithStamps("ssm", "STAMP-01"), RBAC.Module.CONCEPT_CONCEPT, RBAC.Privilege.READ, RBAC.Strategy.ALL);
 
-        var privilege = new ModuleAccessPrivileges.Privilege(RBAC.Privilege.READ, RBAC.Strategy.ALL);
-        var modulePrivileges = new ModuleAccessPrivileges(RBAC.Module.CONCEPT_CONCEPT, Set.of(privilege));
-
-        when(userDecoder.fromPrincipal(principal)).thenReturn(Optional.of(user));
-        when(rbacFetcher.computePrivileges(anyList(), any())).thenReturn(Set.of(modulePrivileges));
-
-        boolean hasAccess = accessChecker.hasAccess("OPERATION_SERIES", "READ", "resource-id", principal);
+        boolean hasAccess = hasAccess("OPERATION_SERIES", "READ");
 
         assertThat(hasAccess).isFalse();
     }
 
     @Test
     void should_deny_access_when_privilege_identifier_is_invalid() throws MissingUserInformationException {
-        var user = new User("user123", List.of("USER"), Set.of("STAMP-01"), "ssm");
-        Object principal = "somePrincipal";
+        givenUser(userWithStamps("ssm", "STAMP-01"));
 
-        when(userDecoder.fromPrincipal(principal)).thenReturn(Optional.of(user));
-
-        boolean hasAccess = accessChecker.hasAccess("CONCEPT_CONCEPT", "INVALID_PRIVILEGE", "resource-id", principal);
+        boolean hasAccess = hasAccess("CONCEPT_CONCEPT", "INVALID_PRIVILEGE");
 
         assertThat(hasAccess).isFalse();
     }
 
     @Test
     void should_deny_access_when_module_identifier_is_invalid() throws MissingUserInformationException {
-        var user = new User("user123", List.of("USER"), Set.of("STAMP-01"), "ssm");
-        Object principal = "somePrincipal";
+        givenUser(userWithStamps("ssm", "STAMP-01"));
 
-        when(userDecoder.fromPrincipal(principal)).thenReturn(Optional.of(user));
-
-        boolean hasAccess = accessChecker.hasAccess("INVALID_MODULE", "READ", "resource-id", principal);
+        boolean hasAccess = hasAccess("INVALID_MODULE", "READ");
 
         assertThat(hasAccess).isFalse();
     }
@@ -279,19 +254,11 @@ class DomainAccessPrivilegesCheckerTest {
     void should_grant_access_with_stamp_strategy_when_user_has_multiple_stamps_and_one_matches()
             throws Exception, StampFetchException, UnsupportedModuleException, MissingUserInformationException {
         // User has multiple stamps: STAMP-01, STAMP-02, STAMP-03
-        var user = new User("user123", List.of("USER"), Set.of("STAMP-01", "STAMP-02", "STAMP-03"), "ssm");
-        Object principal = "somePrincipal";
-
-        var privilege = new ModuleAccessPrivileges.Privilege(RBAC.Privilege.UPDATE, RBAC.Strategy.STAMP);
-        var modulePrivileges = new ModuleAccessPrivileges(RBAC.Module.OPERATION_SERIES, Set.of(privilege));
-
-        when(userDecoder.fromPrincipal(principal)).thenReturn(Optional.of(user));
-        when(rbacFetcher.computePrivileges(anyList(), any())).thenReturn(Set.of(modulePrivileges));
+        givenSeriesUpdateWithStampStrategy(userWithStamps("ssm", "STAMP-01", "STAMP-02", "STAMP-03"));
         // Resource only requires STAMP-02
-        when(stampChecker.getCreatorsStamps(RBAC.Module.OPERATION_SERIES, "resource-id"))
-                .thenReturn(List.of("STAMP-02"));
+        whenSeriesCreatorsStampsFetched().thenReturn(List.of("STAMP-02"));
 
-        boolean hasAccess = accessChecker.hasAccess("OPERATION_SERIES", "UPDATE", "resource-id", principal);
+        boolean hasAccess = hasAccess("OPERATION_SERIES", "UPDATE");
 
         assertThat(hasAccess).isTrue();
     }
@@ -299,38 +266,20 @@ class DomainAccessPrivilegesCheckerTest {
     @Test
     void should_grant_access_for_ddi_physicalinstance_with_stamp_strategy_when_stamp_matches()
             throws Exception, StampFetchException, UnsupportedModuleException, MissingUserInformationException {
-        var user = new User("user123", List.of("USER"), Set.of("stamp-A"), "ssm");
-        Object principal = "somePrincipal";
+        givenDdiGroupCreatedByStampsAAndB(userWithStamps("ssm", "stamp-A"));
 
-        var privilege = new ModuleAccessPrivileges.Privilege(RBAC.Privilege.CREATE, RBAC.Strategy.STAMP);
-        var modulePrivileges = new ModuleAccessPrivileges(RBAC.Module.DDI_PHYSICALINSTANCE, Set.of(privilege));
-
-        when(userDecoder.fromPrincipal(principal)).thenReturn(Optional.of(user));
-        when(rbacFetcher.computePrivileges(anyList(), any())).thenReturn(Set.of(modulePrivileges));
-        when(stampChecker.getCreatorsStamps(RBAC.Module.DDI_PHYSICALINSTANCE, "fr.insee|group-id"))
-                .thenReturn(List.of("stamp-A", "stamp-B"));
-
-        boolean hasAccess = accessChecker.hasAccess("DDI_PHYSICALINSTANCE", "CREATE", "fr.insee|group-id", principal);
+        boolean hasAccess = accessChecker.hasAccess("DDI_PHYSICALINSTANCE", "CREATE", DDI_GROUP_ID, PRINCIPAL);
 
         assertThat(hasAccess).isTrue();
-        verify(stampChecker).getCreatorsStamps(RBAC.Module.DDI_PHYSICALINSTANCE, "fr.insee|group-id");
+        verify(stampChecker).getCreatorsStamps(RBAC.Module.DDI_PHYSICALINSTANCE, DDI_GROUP_ID);
     }
 
     @Test
     void should_deny_access_for_ddi_physicalinstance_with_stamp_strategy_when_stamp_does_not_match()
             throws Exception, StampFetchException, UnsupportedModuleException, MissingUserInformationException {
-        var user = new User("user123", List.of("USER"), Set.of("stamp-X"), "ssm");
-        Object principal = "somePrincipal";
+        givenDdiGroupCreatedByStampsAAndB(userWithStamps("ssm", "stamp-X"));
 
-        var privilege = new ModuleAccessPrivileges.Privilege(RBAC.Privilege.CREATE, RBAC.Strategy.STAMP);
-        var modulePrivileges = new ModuleAccessPrivileges(RBAC.Module.DDI_PHYSICALINSTANCE, Set.of(privilege));
-
-        when(userDecoder.fromPrincipal(principal)).thenReturn(Optional.of(user));
-        when(rbacFetcher.computePrivileges(anyList(), any())).thenReturn(Set.of(modulePrivileges));
-        when(stampChecker.getCreatorsStamps(RBAC.Module.DDI_PHYSICALINSTANCE, "fr.insee|group-id"))
-                .thenReturn(List.of("stamp-A", "stamp-B"));
-
-        boolean hasAccess = accessChecker.hasAccess("DDI_PHYSICALINSTANCE", "CREATE", "fr.insee|group-id", principal);
+        boolean hasAccess = accessChecker.hasAccess("DDI_PHYSICALINSTANCE", "CREATE", DDI_GROUP_ID, PRINCIPAL);
 
         assertThat(hasAccess).isFalse();
     }
@@ -339,35 +288,21 @@ class DomainAccessPrivilegesCheckerTest {
     void should_deny_access_when_user_has_multiple_stamps_but_none_matches()
             throws Exception, StampFetchException, UnsupportedModuleException, MissingUserInformationException {
         // User has multiple stamps but none match the resource
-        var user = new User("user123", List.of("USER"), Set.of("STAMP-01", "STAMP-02"), "ssm");
-        Object principal = "somePrincipal";
-
-        var privilege = new ModuleAccessPrivileges.Privilege(RBAC.Privilege.UPDATE, RBAC.Strategy.STAMP);
-        var modulePrivileges = new ModuleAccessPrivileges(RBAC.Module.OPERATION_SERIES, Set.of(privilege));
-
-        when(userDecoder.fromPrincipal(principal)).thenReturn(Optional.of(user));
-        when(rbacFetcher.computePrivileges(anyList(), any())).thenReturn(Set.of(modulePrivileges));
+        givenSeriesUpdateWithStampStrategy(userWithStamps("ssm", "STAMP-01", "STAMP-02"));
         // Resource requires STAMP-99 which user doesn't have
-        when(stampChecker.getCreatorsStamps(RBAC.Module.OPERATION_SERIES, "resource-id"))
-                .thenReturn(List.of("STAMP-99"));
+        whenSeriesCreatorsStampsFetched().thenReturn(List.of("STAMP-99"));
 
-        boolean hasAccess = accessChecker.hasAccess("OPERATION_SERIES", "UPDATE", "resource-id", principal);
+        boolean hasAccess = hasAccess("OPERATION_SERIES", "UPDATE");
 
         assertThat(hasAccess).isFalse();
     }
 
     @Test
     void should_handle_null_source_for_insee_check() throws MissingUserInformationException {
-        var user = new User("user123", List.of("USER"), Set.of("STAMP-01"), null);
-        Object principal = "somePrincipal";
+        givenUserWithPrivilege(
+                userWithStamps(null, "STAMP-01"), RBAC.Module.CONCEPT_CONCEPT, RBAC.Privilege.READ, RBAC.Strategy.ALL);
 
-        var privilege = new ModuleAccessPrivileges.Privilege(RBAC.Privilege.READ, RBAC.Strategy.ALL);
-        var modulePrivileges = new ModuleAccessPrivileges(RBAC.Module.CONCEPT_CONCEPT, Set.of(privilege));
-
-        when(userDecoder.fromPrincipal(principal)).thenReturn(Optional.of(user));
-        when(rbacFetcher.computePrivileges(anyList(), any())).thenReturn(Set.of(modulePrivileges));
-
-        boolean hasAccess = accessChecker.hasAccess("CONCEPT_CONCEPT", "READ", "resource-id", principal);
+        boolean hasAccess = hasAccess("CONCEPT_CONCEPT", "READ");
 
         assertThat(hasAccess).isTrue();
     }
@@ -380,68 +315,37 @@ class DomainAccessPrivilegesCheckerTest {
     @ValueSource(strings = {"CREATE", "UPDATE", "DELETE", "PUBLISH", "ADMINISTRATION"})
     void should_deny_a_write_privilege_with_all_strategy_to_a_user_without_any_stamp(String privilegeName)
             throws MissingUserInformationException {
-        var user = new User("user123", List.of("USER"), Set.of(), "insee");
-        Object principal = "somePrincipal";
+        givenUserWithPrivilege(
+                userWithStamps("insee"),
+                RBAC.Module.CONCEPT_CONCEPT,
+                RBAC.Privilege.valueOf(privilegeName),
+                RBAC.Strategy.ALL);
 
-        var privilege = new ModuleAccessPrivileges.Privilege(RBAC.Privilege.valueOf(privilegeName), RBAC.Strategy.ALL);
-        var modulePrivileges = new ModuleAccessPrivileges(RBAC.Module.CONCEPT_CONCEPT, Set.of(privilege));
-
-        when(userDecoder.fromPrincipal(principal)).thenReturn(Optional.of(user));
-        when(rbacFetcher.computePrivileges(anyList(), any())).thenReturn(Set.of(modulePrivileges));
-
-        assertThat(accessChecker.hasAccess("CONCEPT_CONCEPT", privilegeName, "resource-id", principal))
-                .isFalse();
+        assertThat(hasAccess("CONCEPT_CONCEPT", privilegeName)).isFalse();
     }
 
     @Test
     void should_grant_a_read_privilege_with_all_strategy_to_a_user_without_any_stamp()
             throws MissingUserInformationException {
-        var user = new User("user123", List.of("USER"), Set.of(), "insee");
-        Object principal = "somePrincipal";
+        givenUserWithPrivilege(
+                userWithStamps("insee"), RBAC.Module.CONCEPT_CONCEPT, RBAC.Privilege.READ, RBAC.Strategy.ALL);
 
-        var privilege = new ModuleAccessPrivileges.Privilege(RBAC.Privilege.READ, RBAC.Strategy.ALL);
-        var modulePrivileges = new ModuleAccessPrivileges(RBAC.Module.CONCEPT_CONCEPT, Set.of(privilege));
-
-        when(userDecoder.fromPrincipal(principal)).thenReturn(Optional.of(user));
-        when(rbacFetcher.computePrivileges(anyList(), any())).thenReturn(Set.of(modulePrivileges));
-
-        assertThat(accessChecker.hasAccess("CONCEPT_CONCEPT", "READ", "resource-id", principal))
-                .isTrue();
+        assertThat(hasAccess("CONCEPT_CONCEPT", "READ")).isTrue();
     }
 
     @Test
     void should_check_the_contributors_stamps_of_a_component()
             throws MissingUserInformationException, StampFetchException, UnsupportedModuleException {
-        var user = new User("user123", List.of("USER"), Set.of("STAMP-01"), "ssm");
-        Object principal = "somePrincipal";
+        givenUpdateWithStampStrategyOnContributorsStamps(RBAC.Module.STRUCTURE_COMPONENT, "STAMP-01");
 
-        var privilege = new ModuleAccessPrivileges.Privilege(RBAC.Privilege.UPDATE, RBAC.Strategy.STAMP);
-        var modulePrivileges = new ModuleAccessPrivileges(RBAC.Module.STRUCTURE_COMPONENT, Set.of(privilege));
-
-        when(userDecoder.fromPrincipal(principal)).thenReturn(Optional.of(user));
-        when(rbacFetcher.computePrivileges(anyList(), any())).thenReturn(Set.of(modulePrivileges));
-        when(stampChecker.getContributorsStamps(RBAC.Module.STRUCTURE_COMPONENT, "resource-id"))
-                .thenReturn(List.of("STAMP-01"));
-
-        assertThat(accessChecker.hasAccess("STRUCTURE_COMPONENT", "UPDATE", "resource-id", principal))
-                .isTrue();
+        assertThat(hasAccess("STRUCTURE_COMPONENT", "UPDATE")).isTrue();
     }
 
     @Test
     void should_check_the_contributors_stamps_of_a_dataset()
             throws MissingUserInformationException, StampFetchException, UnsupportedModuleException {
-        var user = new User("user123", List.of("USER"), Set.of("STAMP-01"), "ssm");
-        Object principal = "somePrincipal";
+        givenUpdateWithStampStrategyOnContributorsStamps(RBAC.Module.DATASET_DATASET, "STAMP-02");
 
-        var privilege = new ModuleAccessPrivileges.Privilege(RBAC.Privilege.UPDATE, RBAC.Strategy.STAMP);
-        var modulePrivileges = new ModuleAccessPrivileges(RBAC.Module.DATASET_DATASET, Set.of(privilege));
-
-        when(userDecoder.fromPrincipal(principal)).thenReturn(Optional.of(user));
-        when(rbacFetcher.computePrivileges(anyList(), any())).thenReturn(Set.of(modulePrivileges));
-        when(stampChecker.getContributorsStamps(RBAC.Module.DATASET_DATASET, "resource-id"))
-                .thenReturn(List.of("STAMP-02"));
-
-        assertThat(accessChecker.hasAccess("DATASET_DATASET", "UPDATE", "resource-id", principal))
-                .isFalse();
+        assertThat(hasAccess("DATASET_DATASET", "UPDATE")).isFalse();
     }
 }

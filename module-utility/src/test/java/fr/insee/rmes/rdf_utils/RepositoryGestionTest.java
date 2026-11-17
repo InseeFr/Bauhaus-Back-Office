@@ -35,6 +35,8 @@ import org.springframework.http.HttpStatus;
 @ExtendWith(MockitoExtension.class)
 class RepositoryGestionTest {
 
+    private static final IRI GRAPH = SimpleValueFactory.getInstance().createIRI("http://example.org/graph");
+
     @Mock
     private RdfConnectionDetails rdfConnectionDetails;
 
@@ -66,13 +68,18 @@ class RepositoryGestionTest {
         lenient().when(repository.getConnection()).thenReturn(connection);
     }
 
+    /** Runs the queries against an empty in-memory repository instead of the mocked one. */
+    private void useInMemoryRepository() {
+        Repository memoryRepository = new SailRepository(new MemoryStore());
+        memoryRepository.init();
+        doReturn(memoryRepository).when(repositoryUtils).initRepository(anyString(), anyString());
+    }
+
     @Test
     void shouldGetResponse() throws RmesException {
         String query = "SELECT * WHERE { ?s ?p ?o }";
 
-        Repository memoryRepo = new SailRepository(new MemoryStore());
-        memoryRepo.init();
-        doReturn(memoryRepo).when(repositoryUtils).initRepository(anyString(), anyString());
+        useInMemoryRepository();
 
         String result = repositoryGestion.getResponse(query);
 
@@ -85,9 +92,7 @@ class RepositoryGestionTest {
         String updateQuery =
                 "INSERT { <http://example.org/s> <http://example.org/p> <http://example.org/o> } WHERE { }";
 
-        Repository memoryRepo = new SailRepository(new MemoryStore());
-        memoryRepo.init();
-        doReturn(memoryRepo).when(repositoryUtils).initRepository(anyString(), anyString());
+        useInMemoryRepository();
 
         HttpStatus result = repositoryGestion.executeUpdate(updateQuery);
 
@@ -99,9 +104,7 @@ class RepositoryGestionTest {
     void shouldGetResponseAsObject() throws RmesException {
         String query = "SELECT * WHERE { ?s ?p ?o }";
 
-        Repository memoryRepo = new SailRepository(new MemoryStore());
-        memoryRepo.init();
-        doReturn(memoryRepo).when(repositoryUtils).initRepository(anyString(), anyString());
+        useInMemoryRepository();
 
         JSONObject result = repositoryGestion.getResponseAsObject(query);
 
@@ -113,9 +116,7 @@ class RepositoryGestionTest {
     void shouldGetResponseAsArray() throws RmesException {
         String query = "SELECT * WHERE { ?s ?p ?o }";
 
-        Repository memoryRepo = new SailRepository(new MemoryStore());
-        memoryRepo.init();
-        doReturn(memoryRepo).when(repositoryUtils).initRepository(anyString(), anyString());
+        useInMemoryRepository();
 
         JSONArray result = repositoryGestion.getResponseAsArray(query);
 
@@ -127,9 +128,7 @@ class RepositoryGestionTest {
     void shouldGetResponseAsJSONList() throws RmesException {
         String query = "SELECT * WHERE { ?s ?p ?o }";
 
-        Repository memoryRepo = new SailRepository(new MemoryStore());
-        memoryRepo.init();
-        doReturn(memoryRepo).when(repositoryUtils).initRepository(anyString(), anyString());
+        useInMemoryRepository();
 
         JSONArray result = repositoryGestion.getResponseAsJSONList(query);
 
@@ -141,9 +140,7 @@ class RepositoryGestionTest {
     void shouldGetResponseAsBoolean() throws RmesException {
         String query = "ASK { ?s ?p ?o }";
 
-        Repository memoryRepo = new SailRepository(new MemoryStore());
-        memoryRepo.init();
-        doReturn(memoryRepo).when(repositoryUtils).initRepository(anyString(), anyString());
+        useInMemoryRepository();
 
         boolean result = repositoryGestion.getResponseAsBoolean(query);
 
@@ -185,7 +182,9 @@ class RepositoryGestionTest {
         doReturn(null).when(repositoryUtils).initRepository(anyString(), anyString());
 
         assertThrows(RmesException.class, () -> repositoryGestion.getStatements(null, subject));
-        assertThrows(RmesException.class, () -> repositoryGestion.getHasPartStatements(null, object));
+        assertThrows(
+                RmesException.class,
+                () -> repositoryGestion.getStatementsPredicateObject(null, DCTERMS.HAS_PART, object, GRAPH));
     }
 
     @Test
@@ -199,40 +198,28 @@ class RepositoryGestionTest {
     }
 
     @Test
-    void shouldGetHasPartStatements() throws RmesException {
+    void shouldGetPredicateObjectStatementsInTheGivenGraph() throws RmesException {
         IRI object = valueFactory.createIRI("http://example.org/object");
 
-        when(connection.getStatements(null, DCTERMS.HAS_PART, object, false)).thenReturn(repositoryResult);
-
-        RepositoryResult<Statement> result = repositoryGestion.getHasPartStatements(connection, object);
-
-        assertEquals(repositoryResult, result);
-        verify(connection).getStatements(null, DCTERMS.HAS_PART, object, false);
-    }
-
-    @Test
-    void shouldGetReplacesStatements() throws RmesException {
-        IRI object = valueFactory.createIRI("http://example.org/object");
-
-        when(connection.getStatements(null, DCTERMS.REPLACES, object, false)).thenReturn(repositoryResult);
-
-        RepositoryResult<Statement> result = repositoryGestion.getReplacesStatements(connection, object);
-
-        assertEquals(repositoryResult, result);
-        verify(connection).getStatements(null, DCTERMS.REPLACES, object, false);
-    }
-
-    @Test
-    void shouldGetIsReplacedByStatements() throws RmesException {
-        IRI object = valueFactory.createIRI("http://example.org/object");
-
-        when(connection.getStatements(null, DCTERMS.IS_REPLACED_BY, object, false))
+        when(connection.getStatements(null, DCTERMS.HAS_PART, object, false, GRAPH))
                 .thenReturn(repositoryResult);
 
-        RepositoryResult<Statement> result = repositoryGestion.getIsReplacedByStatements(connection, object);
+        RepositoryResult<Statement> result =
+                repositoryGestion.getStatementsPredicateObject(connection, DCTERMS.HAS_PART, object, GRAPH);
 
         assertEquals(repositoryResult, result);
-        verify(connection).getStatements(null, DCTERMS.IS_REPLACED_BY, object, false);
+    }
+
+    @Test
+    void shouldThrowExceptionWhenGetPredicateObjectStatementsThrowsRepositoryException() {
+        IRI object = valueFactory.createIRI("http://example.org/object");
+
+        when(connection.getStatements(null, DCTERMS.REPLACES, object, false, GRAPH))
+                .thenThrow(new RepositoryException("Test exception"));
+
+        assertThrows(
+                RmesException.class,
+                () -> repositoryGestion.getStatementsPredicateObject(connection, DCTERMS.REPLACES, object, GRAPH));
     }
 
     @Test
@@ -252,27 +239,28 @@ class RepositoryGestionTest {
 
     @Test
     void shouldDeleteTripletByPredicateAndValueWithConnection() throws RmesException {
-        IRI object = valueFactory.createIRI("http://example.org/object");
-        IRI predicate = valueFactory.createIRI("http://example.org/predicate");
-        IRI graph = valueFactory.createIRI("http://example.org/graph");
-        Value value = valueFactory.createLiteral("test value");
+        repositoryGestion.deleteTripletByPredicateAndValue(
+                TRIPLET_OBJECT, TRIPLET_PREDICATE, TRIPLET_GRAPH, connection, TRIPLET_VALUE);
 
-        repositoryGestion.deleteTripletByPredicateAndValue(object, predicate, graph, connection, value);
-
-        verify(connection).remove(object, predicate, value, graph);
-        verify(connection).close();
+        verifyTripletRemovedAndConnectionClosed();
     }
 
     @Test
     void shouldDeleteTripletByPredicateAndValueWithoutConnection() throws RmesException {
-        IRI object = valueFactory.createIRI("http://example.org/object");
-        IRI predicate = valueFactory.createIRI("http://example.org/predicate");
-        IRI graph = valueFactory.createIRI("http://example.org/graph");
-        Value value = valueFactory.createLiteral("test value");
+        repositoryGestion.deleteTripletByPredicateAndValue(
+                TRIPLET_OBJECT, TRIPLET_PREDICATE, TRIPLET_GRAPH, TRIPLET_VALUE);
 
-        repositoryGestion.deleteTripletByPredicateAndValue(object, predicate, graph, value);
+        verifyTripletRemovedAndConnectionClosed();
+    }
 
-        verify(connection).remove(object, predicate, value, graph);
+    private static final IRI TRIPLET_OBJECT = SimpleValueFactory.getInstance().createIRI("http://example.org/object");
+    private static final IRI TRIPLET_PREDICATE =
+            SimpleValueFactory.getInstance().createIRI("http://example.org/predicate");
+    private static final IRI TRIPLET_GRAPH = SimpleValueFactory.getInstance().createIRI("http://example.org/graph");
+    private static final Value TRIPLET_VALUE = SimpleValueFactory.getInstance().createLiteral("test value");
+
+    private void verifyTripletRemovedAndConnectionClosed() {
+        verify(connection).remove(TRIPLET_OBJECT, TRIPLET_PREDICATE, TRIPLET_VALUE, TRIPLET_GRAPH);
         verify(connection).close();
     }
 
@@ -407,30 +395,11 @@ class RepositoryGestionTest {
         String query = "SELECT * WHERE { ?s ?p ?o }";
         String queryKey = "value";
 
-        Repository memoryRepo = new SailRepository(new MemoryStore());
-        memoryRepo.init();
-        doReturn(memoryRepo).when(repositoryUtils).initRepository(anyString(), anyString());
+        useInMemoryRepository();
 
         repositoryGestion.getMultipleTripletsForObject(object, objectKey, query, queryKey);
 
         // Empty repository won't add anything to the object
-        assertTrue(object.has(objectKey));
-        verify(repositoryUtils).initRepository("http://localhost:8080", "test-repo");
-    }
-
-    @Test
-    void shouldHandleNullArrayInGetMultipleTripletsForObject() throws RmesException {
-        JSONObject object = new JSONObject();
-        String objectKey = "results";
-        String query = "SELECT * WHERE { ?s ?p ?o }";
-        String queryKey = "value";
-
-        Repository memoryRepo = new SailRepository(new MemoryStore());
-        memoryRepo.init();
-        doReturn(memoryRepo).when(repositoryUtils).initRepository(anyString(), anyString());
-
-        repositoryGestion.getMultipleTripletsForObject(object, objectKey, query, queryKey);
-
         assertTrue(object.has(objectKey));
         verify(repositoryUtils).initRepository("http://localhost:8080", "test-repo");
     }

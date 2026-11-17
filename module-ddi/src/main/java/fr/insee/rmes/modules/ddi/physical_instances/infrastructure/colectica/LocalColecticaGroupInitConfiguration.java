@@ -4,6 +4,10 @@ import static fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colect
 
 import fr.insee.ddi.lifecycle33.instance.FragmentDocument;
 import fr.insee.ddi.lifecycle33.logicalproduct.CodeListGroupType;
+import fr.insee.ddi.lifecycle33.logicalproduct.VariableGroupType;
+import fr.insee.ddi.lifecycle33.logicalproduct.VariableSchemeType;
+import fr.insee.ddi.lifecycle33.reusable.ContentType;
+import fr.insee.ddi.lifecycle33.reusable.LabelType;
 import fr.insee.ddi.lifecycle33.reusable.ReferenceType;
 import fr.insee.ddi.lifecycle33.reusable.TypeOfObjectType;
 import fr.insee.rmes.colectica.client.ColecticaClient;
@@ -54,6 +58,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.apache.xmlbeans.XmlCursor;
 import org.apache.xmlbeans.XmlException;
 import org.apache.xmlbeans.XmlOptions;
 import org.json.JSONArray;
@@ -476,7 +481,8 @@ public class LocalColecticaGroupInitConfiguration {
 
             // Step 4: Verify items in Colectica by querying back
             logger.info("Step 4: Verifying created items in Colectica via _query");
-            verifyItemsInColectica(colecticaClient);
+            verifyItemsInColectica(
+                    colecticaClient, colecticaConfiguration.server().itemTypes());
         };
     }
 
@@ -1164,6 +1170,313 @@ public class LocalColecticaGroupInitConfiguration {
         }
     }
 
+    /** Graine des ids déterministes de l'exemple « variables rangées dans des VariableGroup » (#1387). */
+    static final String VARIABLE_GROUP_EXAMPLE_SEED = "example:group:variable-groups";
+
+    /**
+     * Exemple reproduisant #1387 (EAR 2025 / BPE 2024 de la démo) : un Group → une StudyUnit →
+     * LogicalProduct → VariableScheme qui ne référence <em>aucune</em> variable en direct, seulement
+     * deux VariableGroup (LOGEMENT, INDIVIDU), LOGEMENT contenant lui-même un VariableGroup imbriqué
+     * (CHAUFFAGE). Cinq variables en tout. La StudyUnit porte une PhysicalInstance vide : la liste
+     * « réutiliser une variable » de cette PI doit proposer les cinq variables.
+     * <p>
+     * Le modèle DDI4 n'a pas de VariableGroup : les groupes et le scheme sont écrits en fragments
+     * DDI 3.3, comme le CodeListGroup mutualisé. Ids déterministes, donc l'init reste rejouable.
+     */
+    @Bean
+    @Order(Ordered.LOWEST_PRECEDENCE)
+    CommandLineRunner initColecticaVariableGroupExample(
+            GroupService groupService,
+            StudyUnitService studyUnitService,
+            DDIService ddiService,
+            ColecticaClient colecticaClient,
+            DDI4toDDI3ConverterService ddi4ToDdi3Converter,
+            ColecticaConfiguration colecticaConfiguration) {
+        return args -> {
+            logger.info("=== Creating the example study unit whose variables are filed in variable groups ===");
+            try {
+                createVariableGroupExample(
+                        groupService,
+                        studyUnitService,
+                        ddiService,
+                        colecticaClient,
+                        ddi4ToDdi3Converter,
+                        colecticaConfiguration);
+            } catch (Exception e) {
+                logger.error("Failed to create the example study unit whose variables are filed in variable groups", e);
+            }
+        };
+    }
+
+    /** Un VariableGroup de l'exemple : ses variables (nom → libellé) et ses sous-groupes. */
+    private record ExampleVariableGroup(
+            String code, String label, Map<String, String> variables, List<String> subGroups) {}
+
+    /**
+     * Les groupes de l'exemple, dans l'ordre d'enregistrement : le groupe imbriqué avant celui qui le
+     * référence. Seuls LOGEMENT et INDIVIDU sont référencés par le VariableScheme.
+     */
+    private static final List<ExampleVariableGroup> EXAMPLE_VARIABLE_GROUPS = List.of(
+            new ExampleVariableGroup(
+                    "CHAUFFAGE",
+                    "Chauffage du logement",
+                    Map.of("CHAUFF_MODE", "Mode de chauffage principal"),
+                    List.of()),
+            new ExampleVariableGroup(
+                    "LOGEMENT",
+                    "Logement",
+                    Map.of("NBPIECES", "Nombre de pièces du logement", "SURFACE", "Surface du logement"),
+                    List.of("CHAUFFAGE")),
+            new ExampleVariableGroup(
+                    "INDIVIDU",
+                    "Individu",
+                    Map.of("AGE", "Âge de l'individu", "SEXE", "Sexe de l'individu"),
+                    List.of()));
+
+    private static final List<String> TOP_LEVEL_EXAMPLE_VARIABLE_GROUPS = List.of("LOGEMENT", "INDIVIDU");
+
+    private void createVariableGroupExample(
+            GroupService groupService,
+            StudyUnitService studyUnitService,
+            DDIService ddiService,
+            ColecticaClient colecticaClient,
+            DDI4toDDI3ConverterService ddi4ToDdi3Converter,
+            ColecticaConfiguration colecticaConfiguration)
+            throws Exception {
+        var server = colecticaConfiguration.server();
+        String agency = server.defaultAgencyId();
+        String lang = colecticaConfiguration.langs().getFirst();
+        String versionDate = ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+        String label = "EXEMPLE - variables rangées dans des VariableGroup";
+        String studyUnitSeed = VARIABLE_GROUP_EXAMPLE_SEED + EXAMPLE_STUDY_UNIT_SEED_SUFFIX;
+
+        // 1. Les variables, avant les groupes qui les référencent (pas de stubs Colectica).
+        List<Ddi4Variable> variables = new ArrayList<>();
+        Map<String, List<Reference>> variableRefsByGroup = new HashMap<>();
+        for (ExampleVariableGroup group : EXAMPLE_VARIABLE_GROUPS) {
+            List<Reference> refs = new ArrayList<>();
+            group.variables().entrySet().stream()
+                    .sorted(Map.Entry.comparingByKey())
+                    .forEach(entry -> {
+                        String variableId =
+                                generateDeterministicUuid(VARIABLE_GROUP_EXAMPLE_SEED + "#variable-" + entry.getKey());
+                        variables.add(new Ddi4Variable(
+                                Ddi4Variable.TYPE,
+                                CogsDate.ofDateTime(versionDate),
+                                "urn:ddi:%s:%s:1".formatted(agency, variableId),
+                                agency,
+                                variableId,
+                                "1",
+                                null,
+                                LangStrings.of(lang, entry.getKey()),
+                                LangStrings.of(lang, entry.getValue()),
+                                null,
+                                null,
+                                null));
+                        refs.add(Reference.of(agency, variableId, "1", Ddi4Variable.TYPE));
+                    });
+            variableRefsByGroup.put(group.code(), refs);
+        }
+        Ddi3Response variableItems = ddi4ToDdi3Converter.convertDdi4ToDdi3(
+                new Ddi4Response(Ddi4Response.SCHEMA, null, null, null, variables, null, null, null));
+        colecticaClient.createOrUpdateItems(new ColecticaCreateItemRequest(variableItems.items().stream()
+                .map(ColecticaItems::toColecticaItem)
+                .toList()));
+        logger.info("Example variable groups: {} variables registered", variables.size());
+
+        // 2. Les VariableGroup, le groupe imbriqué avant celui qui le référence.
+        for (ExampleVariableGroup group : EXAMPLE_VARIABLE_GROUPS) {
+            String groupId = exampleVariableGroupId(group.code());
+            String xml = newVariableGroupFragment(
+                    agency,
+                    groupId,
+                    lang,
+                    versionDate,
+                    group.label(),
+                    variableRefsByGroup.get(group.code()),
+                    group.subGroups().stream()
+                            .map(code -> Reference.of(agency, exampleVariableGroupId(code), "1", "VariableGroup"))
+                            .toList());
+            colecticaClient.createOrUpdateItems(new ColecticaCreateItemRequest(List.of(rawItem(
+                    server,
+                    server.itemTypes().get(ColecticaItemTypes.VARIABLE_GROUP),
+                    agency,
+                    groupId,
+                    xml,
+                    versionDate))));
+            logger.info("Example variable group {} registered: {}/{}", group.code(), agency, groupId);
+        }
+
+        // 3. Le VariableScheme, qui ne référence que les groupes de tête — aucune variable en direct.
+        String variableSchemeId = generateDeterministicUuid(studyUnitSeed + VARIABLE_SCHEME_SEED_SUFFIX);
+        String schemeXml = newVariableSchemeOfGroupsFragment(
+                agency,
+                variableSchemeId,
+                lang,
+                versionDate,
+                label + " Variable Scheme",
+                TOP_LEVEL_EXAMPLE_VARIABLE_GROUPS.stream()
+                        .map(code -> Reference.of(agency, exampleVariableGroupId(code), "1", "VariableGroup"))
+                        .toList());
+        colecticaClient.createOrUpdateItems(new ColecticaCreateItemRequest(List.of(rawItem(
+                server,
+                server.itemTypes().get(ColecticaItemTypes.VARIABLE_SCHEME),
+                agency,
+                variableSchemeId,
+                schemeXml,
+                versionDate))));
+
+        // 4. LogicalProduct → PhysicalInstance (vide) → StudyUnit → Group.
+        String logicalProductId = generateDeterministicUuid(studyUnitSeed + STUDY_UNIT_LOGICAL_PRODUCT_SEED_SUFFIX);
+        ddiService.createLogicalProduct(new Ddi4LogicalProduct(
+                Ddi4LogicalProduct.TYPE,
+                CogsDate.ofDateTime(versionDate),
+                "urn:ddi:%s:%s:1".formatted(agency, logicalProductId),
+                agency,
+                logicalProductId,
+                "1",
+                LangStrings.of(lang, label + " Study Unit Logical Product"),
+                null,
+                null,
+                List.of(Reference.of(agency, variableSchemeId, "1", "VariableScheme"))));
+
+        String physicalInstanceLabel = label + " - PI";
+        Ddi4PhysicalInstance physicalInstance = ddiService
+                .createPhysicalInstance(
+                        new CreatePhysicalInstanceRequest(
+                                physicalInstanceLabel, physicalInstanceLabel, null, null, null, null, null),
+                        physicalInstanceIds(studyUnitSeed))
+                .physicalInstance()
+                .getFirst();
+
+        String studyUnitId = generateDeterministicUuid(studyUnitSeed);
+        studyUnitService.createOrUpdate(new Ddi4StudyUnit(
+                Ddi4StudyUnit.TYPE,
+                CogsDate.ofDateTime(versionDate),
+                "urn:ddi:%s:%s:1".formatted(agency, studyUnitId),
+                agency,
+                studyUnitId,
+                "1",
+                new Citation(LangStrings.of(lang, label + " - study unit")),
+                null,
+                List.of(Reference.of(
+                        physicalInstance.agency(),
+                        physicalInstance.id(),
+                        physicalInstance.version(),
+                        "PhysicalInstance")),
+                List.of(Reference.of(agency, logicalProductId, "1", "LogicalProduct"))));
+
+        String groupId = generateDeterministicUuid(VARIABLE_GROUP_EXAMPLE_SEED);
+        groupService.createOrUpdate(new Ddi4Group(
+                Ddi4Group.TYPE,
+                CogsDate.ofDateTime(versionDate),
+                "urn:ddi:%s:%s:1".formatted(agency, groupId),
+                agency,
+                groupId,
+                "1",
+                server.versionResponsibility(),
+                new Citation(LangStrings.of(lang, label)),
+                List.of(Reference.of(agency, studyUnitId, "1", "StudyUnit")),
+                List.of(),
+                "insee:StatisticalOperationSeries",
+                null));
+        logger.info(
+                "Example study unit with variable groups created: studyUnit={}/{}, variableScheme={}, physicalInstance={}",
+                agency,
+                studyUnitId,
+                variableSchemeId,
+                physicalInstance.id());
+    }
+
+    private static String exampleVariableGroupId(String code) {
+        return generateDeterministicUuid(VARIABLE_GROUP_EXAMPLE_SEED + "#variablegroup-" + code);
+    }
+
+    private static ColecticaItemResponse rawItem(
+            ColecticaConfiguration.ColecticaInstanceConfiguration server,
+            String itemType,
+            String agency,
+            String id,
+            String xml,
+            String versionDate) {
+        return new ColecticaItemResponse(
+                itemType,
+                agency,
+                1,
+                id,
+                xml,
+                versionDate,
+                server.versionResponsibility(),
+                false,
+                false,
+                false,
+                server.itemFormat());
+    }
+
+    /** Un VariableGroup (fragment DDI 3.3) : ses variables puis ses sous-groupes. */
+    static String newVariableGroupFragment(
+            String agency,
+            String id,
+            String lang,
+            String versionDate,
+            String label,
+            List<Reference> variableReferences,
+            List<Reference> subGroupReferences) {
+        FragmentDocument doc = FragmentDocument.Factory.newInstance();
+        VariableGroupType group = doc.addNewFragment().addNewVariableGroup();
+        group.setIsUniversallyUnique(true);
+        group.setVersionDate(versionDate);
+        group.addNewURN().setStringValue("urn:ddi:%s:%s:1".formatted(agency, id));
+        group.addAgency(agency);
+        group.addNewID().setStringValue(id);
+        group.addVersion("1");
+        var name = group.addNewVariableGroupName().addNewString();
+        name.setStringValue(label);
+        name.setLang(lang);
+        writeLabel(group.addNewLabel(), lang, label);
+        for (Reference reference : variableReferences) {
+            populateReference(group.addNewVariableReference(), reference, TypeOfObjectType.VARIABLE);
+        }
+        for (Reference reference : subGroupReferences) {
+            populateReference(group.addNewVariableGroupReference(), reference, TypeOfObjectType.VARIABLE_GROUP);
+        }
+        return doc.xmlText(ddi33FragmentXmlOptions());
+    }
+
+    /** Un VariableScheme (fragment DDI 3.3) qui ne référence que des VariableGroup. */
+    static String newVariableSchemeOfGroupsFragment(
+            String agency, String id, String lang, String versionDate, String label, List<Reference> groupReferences) {
+        FragmentDocument doc = FragmentDocument.Factory.newInstance();
+        VariableSchemeType scheme = doc.addNewFragment().addNewVariableScheme();
+        scheme.setIsUniversallyUnique(true);
+        scheme.setVersionDate(versionDate);
+        scheme.addNewURN().setStringValue("urn:ddi:%s:%s:1".formatted(agency, id));
+        scheme.addAgency(agency);
+        scheme.addNewID().setStringValue(id);
+        scheme.addVersion("1");
+        writeLabel(scheme.addNewLabel(), lang, label);
+        for (Reference reference : groupReferences) {
+            populateReference(scheme.addNewVariableGroupReference(), reference, TypeOfObjectType.VARIABLE_GROUP);
+        }
+        return doc.xmlText(ddi33FragmentXmlOptions());
+    }
+
+    private static void writeLabel(LabelType target, String lang, String value) {
+        ContentType content = target.addNewContent();
+        content.setLang(lang);
+        try (XmlCursor cursor = content.newCursor()) {
+            cursor.toEndToken();
+            cursor.insertChars(value);
+        }
+    }
+
+    private static void populateReference(ReferenceType target, Reference reference, TypeOfObjectType.Enum type) {
+        target.addAgency(reference.agency());
+        target.addNewID().setStringValue(reference.id());
+        target.addVersion(reference.version());
+        target.setTypeOfObject(type);
+    }
+
     /** Graine des ids déterministes de la liste de codes mutualisée volumineuse (et de ses catégories). */
     static final String LARGE_MUTUALIZED_CODE_LIST_SEED = "example:codelist:mutualized-45000-codes";
 
@@ -1371,7 +1684,7 @@ public class LocalColecticaGroupInitConfiguration {
         name.setStringValue("Listes de codes mutualisées");
         name.setLang(lang);
         addCodeListReference(group, codeListReference);
-        return doc.xmlText(codeListGroupXmlOptions());
+        return doc.xmlText(ddi33FragmentXmlOptions());
     }
 
     /**
@@ -1388,7 +1701,7 @@ public class LocalColecticaGroupInitConfiguration {
         if (!alreadyReferenced) {
             addCodeListReference(group, codeListReference);
         }
-        return doc.xmlText(codeListGroupXmlOptions());
+        return doc.xmlText(ddi33FragmentXmlOptions());
     }
 
     private static void addCodeListReference(CodeListGroupType group, Reference codeListReference) {
@@ -1399,7 +1712,7 @@ public class LocalColecticaGroupInitConfiguration {
         ref.setTypeOfObject(TypeOfObjectType.Enum.forString(Ddi4CodeList.TYPE));
     }
 
-    private static XmlOptions codeListGroupXmlOptions() {
+    private static XmlOptions ddi33FragmentXmlOptions() {
         Map<String, String> prefixes = new HashMap<>();
         prefixes.put("ddi:instance:3_3", "");
         prefixes.put("ddi:logicalproduct:3_3", "");
@@ -1409,9 +1722,9 @@ public class LocalColecticaGroupInitConfiguration {
         return options;
     }
 
-    private void verifyItemsInColectica(ColecticaClient colecticaClient) {
-        String groupItemType = "4bd6eef6-99df-40e6-9b11-5b8f64e5cb23";
-        String studyUnitItemType = "752a535b-b548-4fbe-97e4-f26a02d9e413";
+    private void verifyItemsInColectica(ColecticaClient colecticaClient, Map<String, String> itemTypes) {
+        String groupItemType = itemTypes.get(ColecticaItemTypes.GROUP);
+        String studyUnitItemType = itemTypes.get(ColecticaItemTypes.STUDY_UNIT);
 
         // Query Groups
         try {

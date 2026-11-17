@@ -1,6 +1,8 @@
 package fr.insee.rmes.modules.codeslists.codeslists.webservice;
 
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.everyItem;
+import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -54,7 +56,8 @@ class CodesListsResourcesCodeValidationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.errors[*].field").value(containsInAnyOrder("code", "labelLg1", "labelLg2")));
+                .andExpect(jsonPath("$.errors[*].field").value(containsInAnyOrder("code", "labelLg1", "labelLg2")))
+                .andExpect(jsonPath("$.errors[*].message").value(everyItem(is("Ce champ est obligatoire."))));
 
         verify(codeListService, never()).addCodeFromCodeList(any(), any());
     }

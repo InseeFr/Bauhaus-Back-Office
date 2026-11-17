@@ -48,6 +48,7 @@ public class MutualizedCodesCacheWarmer {
     private void warmUp() {
         warmUpMutualizedCodesLists();
         warmUpPhysicalInstanceSearchRows();
+        warmUpStudyUnitsByOperation();
     }
 
     private void warmUpMutualizedCodesLists() {
@@ -86,6 +87,23 @@ public class MutualizedCodesCacheWarmer {
             logger.warn(
                     "Physical instance search rows cache warm-up failed after {} ms; "
                             + "the cache will be loaded lazily on the first request: {}",
+                    System.currentTimeMillis() - startedAt,
+                    e.getMessage());
+        }
+    }
+
+    /**
+     * Calcule le cache opération → StudyUnits servi par {@code /ddi/public/operation/{id}/fichiers} ;
+     * la fin du calcul est journalisée par le cache lui-même.
+     */
+    private void warmUpStudyUnitsByOperation() {
+        long startedAt = System.currentTimeMillis();
+        try {
+            ddiRepository.refreshStudyUnitsByOperationCache();
+        } catch (RuntimeException e) {
+            logger.warn(
+                    "StudyUnits by operation cache warm-up failed after {} ms; "
+                            + "the cache will be computed on the first request: {}",
                     System.currentTimeMillis() - startedAt,
                     e.getMessage());
         }

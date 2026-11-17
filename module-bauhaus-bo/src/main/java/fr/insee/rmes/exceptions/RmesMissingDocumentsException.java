@@ -1,7 +1,7 @@
 package fr.insee.rmes.exceptions;
 
 import java.util.Collection;
-import org.json.JSONArray;
+import org.json.JSONObject;
 
 /**
  * Raised when a SIMS publication is requested while some of the documents it references
@@ -17,6 +17,6 @@ public class RmesMissingDocumentsException extends RmesBadRequestException {
         super(
                 ErrorCodes.SIMS_PUBLICATION_MISSING_DOCUMENTS,
                 "Some documents referenced by this metadataReport are missing from storage",
-                new JSONArray(missingDocumentIds));
+                new JSONObject().put("documents", String.join(",", missingDocumentIds)));
     }
 }

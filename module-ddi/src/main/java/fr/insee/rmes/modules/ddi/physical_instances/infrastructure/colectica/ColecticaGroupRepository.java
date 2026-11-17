@@ -16,7 +16,6 @@ import org.slf4j.LoggerFactory;
 public class ColecticaGroupRepository extends AbstractColecticaItemRepository implements GroupRepository {
 
     private static final Logger logger = LoggerFactory.getLogger(ColecticaGroupRepository.class);
-    private static final String GROUP_ITEM_TYPE = "4bd6eef6-99df-40e6-9b11-5b8f64e5cb23";
 
     private final DDIRepository ddiRepository;
 
@@ -37,7 +36,7 @@ public class ColecticaGroupRepository extends AbstractColecticaItemRepository im
                 group.agency(),
                 group.urn());
         try {
-            createOrUpdateItem(GROUP_ITEM_TYPE, group);
+            createOrUpdateItem(instanceConfiguration.itemTypes().get(ColecticaItemTypes.GROUP), group);
             logger.info("Group successfully sent to Colectica: id={}", group.id());
         } catch (RuntimeException e) {
             logger.error("Unexpected error creating group in Colectica: id={}", group.id(), e);

@@ -5,40 +5,14 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.bauhaus_services.code_list.CodeListKind;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
-import fr.insee.rmes.modules.codeslists.codeslists.domain.port.clientside.CodesListsService;
-import fr.insee.rmes.modules.codeslists.partialcodeslists.webservice.PartialCodeListsResources;
-import fr.insee.rmes.modules.commons.configuration.LogRequestFilter;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.security.oauth2.server.resource.autoconfigure.OAuth2ResourceServerAutoConfiguration;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.FilterType;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
 
 /**
  * Contrat HTTP des DELETE de listes de codes : un identifiant inconnu doit donner 404, pas 500.
  */
-@WebMvcTest(
-        value = {CodesListsResources.class, PartialCodeListsResources.class},
-        excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = LogRequestFilter.class),
-        excludeAutoConfiguration = OAuth2ResourceServerAutoConfiguration.class)
-@AutoConfigureMockMvc(addFilters = false)
-class CodesListsResourcesDeleteTest {
-
-    @MockitoBean
-    private CodeListService codeListService;
-
-    @MockitoBean
-    private CodesListsService codesListsService;
-
-    @Autowired
-    MockMvc mockMvc;
+class CodesListsResourcesDeleteTest extends AbstractCodesListsResourcesWebMvcTest {
 
     @Test
     void deleteCodeList_whenCodeListDoesNotExist_shouldReturnNotFound() throws Exception {

@@ -41,6 +41,7 @@ class ComponentPublicationTest {
     private static final SimpleValueFactory VF = SimpleValueFactory.getInstance();
     private static final String GESTION = "http://gestion/";
     private static final String PUBLICATION = "http://publication/";
+    private static final IRI GRAPH = VF.createIRI("http://rdf.insee.fr/graphes/composants");
 
     @Mock
     RepositoryGestion repoGestion;
@@ -64,7 +65,7 @@ class ComponentPublicationTest {
                 VF.createStatement(component, RDFS.LABEL, VF.createLiteral("label fr", "fr")),
                 VF.createStatement(component, QB.CODE_LIST, codeList));
 
-        componentPublication.publishComponent(component, QB.DIMENSION_PROPERTY);
+        componentPublication.publishComponent(component, QB.DIMENSION_PROPERTY, GRAPH);
 
         Model model = publishedModel();
         IRI publishedComponent = VF.createIRI(PUBLICATION + "composants/dimension/d1000");
@@ -72,6 +73,7 @@ class ComponentPublicationTest {
                 .isTrue();
         assertThat(model.contains(publishedComponent, QB.CODE_LIST, VF.createIRI(PUBLICATION + "codes/cl1000")))
                 .isTrue();
+        assertThat(model.contexts()).containsExactly(GRAPH);
     }
 
     /** L'état de validation, le créateur et les contributeurs n'appartiennent qu'à la base de gestion. */
@@ -87,7 +89,7 @@ class ComponentPublicationTest {
                 VF.createStatement(component, DC.CONTRIBUTOR, VF.createLiteral("DG75-F302")),
                 VF.createStatement(component, SKOS.NOTATION, VF.createLiteral("d1000")));
 
-        componentPublication.publishComponent(component, QB.DIMENSION_PROPERTY);
+        componentPublication.publishComponent(component, QB.DIMENSION_PROPERTY, GRAPH);
 
         Model model = publishedModel();
         assertThat(model).hasSize(1);
@@ -99,24 +101,25 @@ class ComponentPublicationTest {
     void shouldReportARepositoryFailureAsAServerError() throws RmesException {
         IRI component = VF.createIRI(GESTION + "composants/dimension/d1000");
         when(repoGestion.getConnection()).thenReturn(null);
-        when(repoGestion.getStatements(any(), eq(component))).thenThrow(new RepositoryException("boom"));
+        when(repoGestion.getStatements(any(), eq(component), eq(GRAPH))).thenThrow(new RepositoryException("boom"));
 
         RmesException exception = assertThrows(
-                RmesException.class, () -> componentPublication.publishComponent(component, QB.DIMENSION_PROPERTY));
+                RmesException.class,
+                () -> componentPublication.publishComponent(component, QB.DIMENSION_PROPERTY, GRAPH));
 
         assertThat(exception.getStatus()).isEqualTo(500);
     }
 
     private void givenStatements(Statement... statements) throws RmesException {
         when(repoGestion.getConnection()).thenReturn(null);
-        when(repoGestion.getStatements(any(), any(IRI.class)))
+        when(repoGestion.getStatements(any(), any(IRI.class), eq(GRAPH)))
                 .thenReturn(new RepositoryResult<>(
                         new CloseableIteratorIteration<>(List.of(statements).iterator())));
     }
 
     private Model publishedModel() throws RmesException {
         ArgumentCaptor<Model> modelCaptor = ArgumentCaptor.forClass(Model.class);
-        verify(repositoryPublication).publishResource(any(), modelCaptor.capture(), any());
+        verify(repositoryPublication).publishResource(any(), modelCaptor.capture(), any(), eq(GRAPH));
         return modelCaptor.getValue();
     }
 }

@@ -3,6 +3,7 @@ package fr.insee.rmes.modules.ddi.config;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
+import fr.insee.rmes.bauhaus_services.geography.GeographyServiceImpl;
 import fr.insee.rmes.colectica.client.ColecticaClient;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3toDDI4ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI4toDDI3ConverterService;
@@ -11,7 +12,6 @@ import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.Col
 import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.ColecticaConfiguration;
 import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.DDIRepositoryImpl;
 import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.MutualizedCodeListRefsProvider;
-import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
@@ -40,21 +40,8 @@ class MutualizedCacheEvictionIntegrationTest {
 
         @Bean
         ColecticaConfiguration colecticaConfiguration() {
-            var server = new ColecticaConfiguration.ColecticaInstanceConfiguration(
-                    "https://example.com",
-                    "/api/v1/",
-                    Map.of("CodeListScheme", "s", "CodeListGroup", "g", "CodeList", "c"),
-                    "resp",
-                    "format",
-                    "password",
-                    "user",
-                    "pass",
-                    "fr.insee");
-            return new ColecticaConfiguration(
-                    List.of("fr-FR"),
-                    server,
-                    new ColecticaConfiguration.PackageRef("fr.insee", "pkg-1", 1),
-                    Duration.ofHours(1));
+            return ColecticaTestConfigurations.colecticaConfiguration(
+                    Map.of("CodeListScheme", "s", "CodeListGroup", "g", "CodeList", "c"));
         }
 
         @Bean
@@ -68,7 +55,8 @@ class MutualizedCacheEvictionIntegrationTest {
                     mock(ColecticaClient.class),
                     provider,
                     cacheManager.getCache(ColecticaCacheNames.PHYSICAL_INSTANCE_SEARCH_ROWS),
-                    cacheManager.getCache(ColecticaCacheNames.MUTUALIZED_CODE_LIST_CONTENTS));
+                    cacheManager.getCache(ColecticaCacheNames.MUTUALIZED_CODE_LIST_CONTENTS),
+                    Runnable::run);
         }
     }
 
@@ -110,7 +98,9 @@ class MutualizedCacheEvictionIntegrationTest {
 
     @Test
     void evictAllCaches_clearsEveryColecticaRegion() {
+        // Le cache des territoires partage le gestionnaire mais ne relève pas de Colectica.
         List<Cache> regions = cacheManager.getCacheNames().stream()
+                .filter(name -> !GeographyServiceImpl.GEO_FEATURES_CACHE.equals(name))
                 .map(cacheManager::getCache)
                 .toList();
         assertThat(regions)

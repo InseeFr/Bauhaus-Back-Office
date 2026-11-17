@@ -1,10 +1,28 @@
 package fr.insee.rmes.modules.datasets.distributions.model;
 
+import static fr.insee.rmes.modules.commons.webservice.ValidationMessages.INVALID_URL;
+import static fr.insee.rmes.modules.commons.webservice.ValidationMessages.REQUIRED;
+
+import jakarta.validation.constraints.NotBlank;
+import org.hibernate.validator.constraints.URL;
+
+/**
+ * Distribution, telle que lue et telle qu'écrite : c'est aussi le corps des requêtes de création et
+ * de modification. Les contraintes reprennent celles du formulaire et du service (qui vérifie encore
+ * la présence des champs obligatoires, sans Bean Validation).
+ */
 public class Distribution {
     String id;
+
+    @NotBlank(message = REQUIRED)
     String idDataset;
+
+    @NotBlank(message = REQUIRED)
     String labelLg1;
+
+    @NotBlank(message = REQUIRED)
     String labelLg2;
+
     String descriptionLg1;
     String descriptionLg2;
     String language;
@@ -14,8 +32,13 @@ public class Distribution {
     String mediaType;
     String compressFormat;
     String byteSize;
+
+    @URL(message = INVALID_URL)
     String accessUrl;
+
+    @URL(message = INVALID_URL)
     String url;
+
     String validationState;
 
     public String getLanguage() {

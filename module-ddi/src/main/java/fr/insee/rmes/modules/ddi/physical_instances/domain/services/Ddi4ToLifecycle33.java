@@ -8,6 +8,7 @@ import fr.insee.ddi.lifecycle33.reusable.BasedOnObjectType;
 import fr.insee.ddi.lifecycle33.reusable.CategoryRelationCodeType;
 import fr.insee.ddi.lifecycle33.reusable.CitationType;
 import fr.insee.ddi.lifecycle33.reusable.CodeRepresentationBaseType;
+import fr.insee.ddi.lifecycle33.reusable.CodeValueType;
 import fr.insee.ddi.lifecycle33.reusable.ContentType;
 import fr.insee.ddi.lifecycle33.reusable.DateTimeRepresentationBaseType;
 import fr.insee.ddi.lifecycle33.reusable.NumberRangeType;
@@ -21,6 +22,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.BasedOnObject;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Citation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Code;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeRepresentation;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeValue;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.DateTimeRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Category;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CategoryScheme;
@@ -741,7 +743,10 @@ public class Ddi4ToLifecycle33 {
         }
 
         if (source.numericTypeCode() != null) {
-            numRep.addNewNumericTypeCode().setStringValue(source.numericTypeCode());
+            CodeValueType typeCode = numRep.addNewNumericTypeCode();
+            typeCode.setStringValue(source.numericTypeCode().stringValue());
+            typeCode.setControlledVocabularyID(CodeValue.NUMERIC_TYPE_VOCABULARY_URI);
+            typeCode.setControlledVocabularyVersionID(CodeValue.NUMERIC_TYPE_VOCABULARY_VERSION);
         }
     }
 
@@ -770,7 +775,10 @@ public class Ddi4ToLifecycle33 {
                     (DateTimeRepresentationBaseType) cursor.getObject().changeType(DateTimeRepresentationBaseType.type);
         }
         if (source.dateTypeCode() != null) {
-            dateTimeRep.addNewDateTypeCode().setStringValue(source.dateTypeCode());
+            CodeValueType typeCode = dateTimeRep.addNewDateTypeCode();
+            typeCode.setStringValue(source.dateTypeCode().stringValue());
+            typeCode.setControlledVocabularyID(CodeValue.DATE_TYPE_VOCABULARY_URI);
+            typeCode.setControlledVocabularyVersionID(CodeValue.DATE_TYPE_VOCABULARY_VERSION);
         }
         if (source.dateFieldFormat() != null) {
             dateTimeRep.addNewDateFieldFormat().setStringValue(source.dateFieldFormat());

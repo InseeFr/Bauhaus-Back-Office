@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>4.1.0</version>
+    <version>4.1.1</version>
     <relativePath/>
     <!-- lookup parent from repository -->
   </parent>
@@ -36,7 +36,7 @@
     <springdoc.version>3.0.3</springdoc.version>
     <rdf4j.version>5.3.1</rdf4j.version>
     <xdocreport.version>2.2.0</xdocreport.version>
-    <!-- Surcharge du BOM Spring Boot 4.1.0 (qui fixe 2.3.34) -->
+    <!-- Surcharge du BOM Spring Boot 4.1.1 (qui fixe 2.3.34) -->
     <freemarker.version>2.3.35</freemarker.version>
     <jacoco.version>0.8.15</jacoco.version>
     <spotless.version>3.10.2</spotless.version>
@@ -65,11 +65,7 @@
     <ddi-lifecycle.version>2.0.0</ddi-lifecycle.version>
     <testcontainers-keycloak.version>4.2.1</testcontainers-keycloak.version>
     <testcontainers.version>1.21.4</testcontainers.version>
-    <!-- Overrides Spring Boot 4.0.7 (5.3.6), vulnerable to CVE-2026-54399 (httpcore5, HTTP/1.1 parser)
-         and CVE-2026-54428 (httpcore5-h2, HPACK decoder). Both fixed in 5.4.3.
-         À supprimer dès qu'une version de Spring Boot managera >= 5.4.3. -->
-    <httpcore5.version>5.4.3</httpcore5.version>
-    <!-- Surcharge le Tomcat embarqué managé par Spring Boot 4.1.0 (11.0.22), affecté entre autres par
+    <!-- Surcharge le Tomcat embarqué managé par Spring Boot 4.1.1 (11.0.24), affecté entre autres par
          CVE-2026-68763 (fuite d'allocation dans le suivi du backlog HTTP/2 lors d'un reset de stream, DoS)
          et CVE-2026-68569 (authentification qui réussit pour un utilisateur absent du realm), toutes deux
          corrigées en 11.0.25.
@@ -79,10 +75,6 @@
          À supprimer dès qu'une version de Spring Boot managera ces versions. -->
     <jackson-2-bom.version>2.22.3</jackson-2-bom.version>
     <jackson-bom.version>3.2.3</jackson-bom.version>
-        <!-- Surcharge Spring Framework managé par Spring Boot 4.1.0 pour corriger CVE-2026-47890
-         (spring-webmvc), corrigée en 7.0.9.
-         À supprimer dès qu'une version de Spring Boot managera >= 7.0.9. -->
-    <spring-framework.version>7.0.9</spring-framework.version>
     <!-- Docker API version forced for Testcontainers (workaround: it falls back to 1.32 which is rejected by Docker Engine 20.10+ that requires min API 1.40) -->
     <docker.api.version>1.41</docker.api.version>
     <!-- Voir la dépendance bcprov-jdk18on ci-dessous : surcharge de la version que minio ramène. -->
@@ -231,6 +223,18 @@
     <dependency>
       <groupId>org.eclipse.rdf4j</groupId>
       <artifactId>rdf4j-repository-http</artifactId>
+      <version>${rdf4j.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>jcl-over-slf4j</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <!-- SPARQLRepository : accès aux bases qui ne parlent que SPARQL 1.1 (Fuseki), fr.insee.rmes.rdf.backend -->
+    <dependency>
+      <groupId>org.eclipse.rdf4j</groupId>
+      <artifactId>rdf4j-repository-sparql</artifactId>
       <version>${rdf4j.version}</version>
       <exclusions>
         <exclusion>
@@ -443,7 +447,9 @@
   <modules>
     <module>colectica-client</module>
     <module>module-utility</module>
+    <module>module-testcontainer-sparql</module>
     <module>module-testcontainer-graphdb</module>
+    <module>module-testcontainer-fuseki</module>
     <module>module-operation</module>
     <module>module-ddi</module>
     <module>module-bauhaus-bo</module>

@@ -2,27 +2,24 @@ package fr.insee.rmes.modules.ddi.physical_instances.domain.services;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import fr.insee.rmes.domain.xml.SecureXml;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi3Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3toDDI4ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIItemConvertService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIItemConverter;
-import java.io.StringReader;
 import java.util.List;
 import java.util.Map;
-import javax.xml.parsers.DocumentBuilderFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
 
 public class DDIItemConvertServiceImpl implements DDIItemConvertService {
 
     private final List<DDIItemConverter> converters;
     private final DDI3toDDI4ConverterService ddi3ToDdi4ConverterService;
     private final Map<String, String> itemTypes;
-    private final DocumentBuilderFactory documentBuilderFactory;
     private final ObjectMapper objectMapper;
 
     public DDIItemConvertServiceImpl(
@@ -33,8 +30,6 @@ public class DDIItemConvertServiceImpl implements DDIItemConvertService {
         this.converters = converters;
         this.ddi3ToDdi4ConverterService = ddi3ToDdi4ConverterService;
         this.itemTypes = itemTypes;
-        this.documentBuilderFactory = DocumentBuilderFactory.newInstance();
-        this.documentBuilderFactory.setNamespaceAware(true);
         this.objectMapper = objectMapper;
     }
 
@@ -68,8 +63,7 @@ public class DDIItemConvertServiceImpl implements DDIItemConvertService {
 
     private String resolveItemLocalName(String xmlFragment) {
         try {
-            Document doc =
-                    documentBuilderFactory.newDocumentBuilder().parse(new InputSource(new StringReader(xmlFragment)));
+            Document doc = SecureXml.parse(xmlFragment);
             Element root = doc.getDocumentElement();
             if ("Fragment".equals(root.getLocalName())) {
                 NodeList children = root.getChildNodes();

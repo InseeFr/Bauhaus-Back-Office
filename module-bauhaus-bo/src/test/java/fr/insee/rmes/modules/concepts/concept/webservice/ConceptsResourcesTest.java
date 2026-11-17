@@ -30,6 +30,23 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 @AppSpringBootTest
 class ConceptsResourcesTest {
 
+    private static final ConceptRequest CONCEPT = new ConceptRequest(
+            "Concept",
+            null,
+            null,
+            null,
+            null,
+            null,
+            "http://id.insee.fr/codes/base/statutDiffusion/Prive",
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null);
+
     @MockitoBean
     fr.insee.rmes.bauhaus_services.ConceptsService legacyConceptsService;
 
@@ -40,6 +57,14 @@ class ConceptsResourcesTest {
         return new ConceptsResources(legacyConceptsService, conceptsService);
     }
 
+    private JsonNode listedConceptsBody(PartialConcept concept) throws Throwable {
+        when(conceptsService.getAllConcepts()).thenReturn(List.of(concept));
+
+        var response = newController().getConcepts();
+
+        return new ObjectMapper().valueToTree(response.getBody());
+    }
+
     @Test
     void shouldExposeTheAlternativeLabelWhenListingConcepts() throws Throwable {
         PartialConcept concept = new PartialConcept(
@@ -47,11 +72,7 @@ class ConceptsResourcesTest {
                 LocalisedLabel.ofDefaultLanguage("Répertoire des personnes physiques"),
                 LocalisedLabel.ofDefaultLanguage("RNIPP"));
 
-        when(conceptsService.getAllConcepts()).thenReturn(List.of(concept));
-
-        var response = newController().getConcepts();
-
-        JsonNode body = new ObjectMapper().valueToTree(response.getBody());
+        JsonNode body = listedConceptsBody(concept);
         assertThat(body.get(0).get("id").asText()).isEqualTo("c00001");
         assertThat(body.get(0).get("altLabel").asText()).isEqualTo("RNIPP");
     }
@@ -61,11 +82,7 @@ class ConceptsResourcesTest {
         PartialConcept concept = new PartialConcept(
                 new ConceptId("c00002"), LocalisedLabel.ofDefaultLanguage("Concept sans sigle"), null);
 
-        when(conceptsService.getAllConcepts()).thenReturn(List.of(concept));
-
-        var response = newController().getConcepts();
-
-        JsonNode body = new ObjectMapper().valueToTree(response.getBody());
+        JsonNode body = listedConceptsBody(concept);
         assertThat(body.get(0).get("altLabel").isNull()).isTrue();
     }
 
@@ -131,9 +148,9 @@ class ConceptsResourcesTest {
         req.setScheme("http");
         RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(req));
 
-        when(legacyConceptsService.setConcept("mocked body")).thenReturn("test-concept-123");
+        when(legacyConceptsService.setConcept(CONCEPT.toLegacyJson())).thenReturn("test-concept-123");
 
-        var response = newController().setConcept("mocked body");
+        var response = newController().setConcept(CONCEPT);
 
         Assertions.assertEquals(HttpStatus.CREATED, response.getStatusCode());
         Assertions.assertEquals("test-concept-123", response.getBody());
@@ -144,9 +161,9 @@ class ConceptsResourcesTest {
 
     @Test
     void shouldReturnResponseWhenSetConceptWithIdAndConcept() throws RmesException {
-        doNothing().when(legacyConceptsService).setConcept("mocked id", "mocked body");
+        doNothing().when(legacyConceptsService).setConcept("mocked id", CONCEPT.toLegacyJson());
         Assertions.assertEquals(
                 "<204 NO_CONTENT No Content,[]>",
-                newController().setConcept("mocked id", "mocked body").toString());
+                newController().setConcept("mocked id", CONCEPT).toString());
     }
 }

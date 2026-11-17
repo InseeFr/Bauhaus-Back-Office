@@ -14,6 +14,7 @@ import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesRuntimeBadRequestException;
 import fr.insee.rmes.freemarker.FreeMarkerUtils;
 import fr.insee.rmes.modules.codeslists.codeslists.infrastructure.graphdb.CodeListsQueries;
+import fr.insee.rmes.persistance.sparql_queries.FreeMarkerRequestStub.QueryCall;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +29,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class CodeListsQueriesTest {
+
+    private static final String CODES_LISTS_GRAPH = "http://rdf.insee.fr/graphes/codes/nomenclatures";
+    private static final String GET_DETAILED_CODES_TEMPLATE = "getDetailedCodes.ftlh";
 
     @Mock
     GraphsProperties graphs;
@@ -53,7 +57,7 @@ class CodeListsQueriesTest {
      */
     @Test
     void getCodeByNotation_should_constrain_the_code() throws RmesException {
-        when(graphs.codeListGraph()).thenReturn("http://rdf.insee.fr/graphes/codes/nomenclatures");
+        when(graphs.codeListGraph()).thenReturn(CODES_LISTS_GRAPH);
 
         String query = codeListsQueries.getCodeByNotation("CL_TEST", "A");
 
@@ -64,173 +68,92 @@ class CodeListsQueriesTest {
 
     @Test
     void getCodeListItemsByNotation() throws RmesException {
-        when(graphs.codeListGraph()).thenReturn("http://rdf.insee.fr/graphes/codes/nomenclatures");
-        try (MockedStatic<FreeMarkerUtils> mockedFactory = Mockito.mockStatic(FreeMarkerUtils.class)) {
-            Map<String, Object> map = new HashMap<>() {
-                {
-                    put("CODES_LISTS_GRAPH", "<http://rdf.insee.fr/graphes/codes/nomenclatures>");
-                    put("NOTATION", "\"NOTATION\"");
-                    put("LG1", "\"fr\"");
-                    put("LG2", "\"en\"");
-                    put("OFFSET", "5");
-                    put("PER_PAGE", "5");
-                }
-            };
-            mockedFactory
-                    .when(() -> FreeMarkerUtils.buildRequest(
-                            eq("codes-list/"), eq("getCodeListItemsByNotation.ftlh"), eq(map)))
-                    .thenReturn("request");
-            String query = codeListsQueries.getCodeListItemsByNotation("NOTATION", 2, null);
-            Assertions.assertEquals("request", query);
-        }
+        when(graphs.codeListGraph()).thenReturn(CODES_LISTS_GRAPH);
+        Map<String, Object> map = codeListParams();
+        map.put("OFFSET", "5");
+        map.put("PER_PAGE", "5");
+
+        assertRequestBuiltWith(
+                "getCodeListItemsByNotation.ftlh",
+                map,
+                () -> codeListsQueries.getCodeListItemsByNotation("NOTATION", 2, null));
     }
 
     @Test
     void getCodeListItemsByNotationWithoutPerPageValue() throws RmesException {
-        when(graphs.codeListGraph()).thenReturn("http://rdf.insee.fr/graphes/codes/nomenclatures");
+        when(graphs.codeListGraph()).thenReturn(CODES_LISTS_GRAPH);
         codeListsQueries = new CodeListsQueries(
                 uris, new BauhausLanguagesProperties("fr", "en"), graphs, new PaginationProperties(0));
-        try (MockedStatic<FreeMarkerUtils> mockedFactory = Mockito.mockStatic(FreeMarkerUtils.class)) {
-            Map<String, Object> map = new HashMap<>() {
-                {
-                    put("CODES_LISTS_GRAPH", "<http://rdf.insee.fr/graphes/codes/nomenclatures>");
-                    put("NOTATION", "\"NOTATION\"");
-                    put("LG1", "\"fr\"");
-                    put("LG2", "\"en\"");
-                }
-            };
-            mockedFactory
-                    .when(() -> FreeMarkerUtils.buildRequest(
-                            eq("codes-list/"), eq("getCodeListItemsByNotation.ftlh"), eq(map)))
-                    .thenReturn("request");
-            String query = codeListsQueries.getCodeListItemsByNotation("NOTATION", 2, null);
-            Assertions.assertEquals("request", query);
-        }
+
+        assertRequestBuiltWith(
+                "getCodeListItemsByNotation.ftlh",
+                codeListParams(),
+                () -> codeListsQueries.getCodeListItemsByNotation("NOTATION", 2, null));
     }
 
     @Test
     void countCodesForCodeList() throws RmesException {
-        when(graphs.codeListGraph()).thenReturn("http://rdf.insee.fr/graphes/codes/nomenclatures");
-        try (MockedStatic<FreeMarkerUtils> mockedFactory = Mockito.mockStatic(FreeMarkerUtils.class)) {
-            Map<String, Object> map = new HashMap<>() {
-                {
-                    put("CODES_LISTS_GRAPH", "<http://rdf.insee.fr/graphes/codes/nomenclatures>");
-                    put("NOTATION", "\"NOTATION\"");
-                    put("LG1", "\"fr\"");
-                    put("LG2", "\"en\"");
-                    put("SEARCH_CODE", "\"code\"");
-                }
-            };
-            mockedFactory
-                    .when(() -> FreeMarkerUtils.buildRequest(eq("codes-list/"), eq("countNumberOfCodes.ftlh"), eq(map)))
-                    .thenReturn("request");
-            String query = codeListsQueries.countCodesForCodeList("NOTATION", List.of("code:code"));
-            Assertions.assertEquals("request", query);
-        }
+        when(graphs.codeListGraph()).thenReturn(CODES_LISTS_GRAPH);
+        Map<String, Object> map = codeListParams();
+        map.put("SEARCH_CODE", "\"code\"");
+
+        assertRequestBuiltWith(
+                "countNumberOfCodes.ftlh",
+                map,
+                () -> codeListsQueries.countCodesForCodeList("NOTATION", List.of("code:code")));
     }
 
     @Test
     void getDetailedCodesWithPagination() throws RmesException {
-        when(graphs.codeListGraph()).thenReturn("http://rdf.insee.fr/graphes/codes/nomenclatures");
-        when(uris.codeListBaseUri()).thenReturn("codelist-base-uri");
-        try (MockedStatic<FreeMarkerUtils> mockedFactory = Mockito.mockStatic(FreeMarkerUtils.class)) {
-            Map<String, Object> map = new HashMap<>() {
-                {
-                    put("CODES_LISTS_GRAPH", "<http://rdf.insee.fr/graphes/codes/nomenclatures>");
-                    put("LG1", "\"fr\"");
-                    put("LG2", "\"en\"");
-                    put("NOTATION", "\"NOTATION\"");
-                    put("PARTIAL", false);
-                    put("CODE_LIST_BASE_URI_PREFIX", "\"codelist-base-uri/\"");
-                    put("OFFSET", 5);
-                    put("PER_PAGE", 5);
-                    put("SEARCH_CODE", "\"search\"");
-                    put("SORT", "?labelLg1");
-                }
-            };
-            mockedFactory
-                    .when(() -> FreeMarkerUtils.buildRequest(eq("codes-list/"), eq("getDetailedCodes.ftlh"), eq(map)))
-                    .thenReturn("request");
-            String query = codeListsQueries.getDetailedCodes(
-                    "NOTATION", CodeListKind.FULL, List.of("code:search"), 2, null, "labelLg1");
-            Assertions.assertEquals("request", query);
-        }
+        stubCodeListGraphAndBaseUri();
+        Map<String, Object> map = detailedCodesParams(false, "?labelLg1");
+        map.put("OFFSET", 5);
+        map.put("PER_PAGE", 5);
+        map.put("SEARCH_CODE", "\"search\"");
+
+        assertRequestBuiltWith(
+                GET_DETAILED_CODES_TEMPLATE,
+                map,
+                () -> codeListsQueries.getDetailedCodes(
+                        "NOTATION", CodeListKind.FULL, List.of("code:search"), 2, null, "labelLg1"));
     }
 
     @Test
     void getDetailedCodesWithoutPagination() throws RmesException {
-        when(graphs.codeListGraph()).thenReturn("http://rdf.insee.fr/graphes/codes/nomenclatures");
-        when(uris.codeListBaseUri()).thenReturn("codelist-base-uri");
-        try (MockedStatic<FreeMarkerUtils> mockedFactory = Mockito.mockStatic(FreeMarkerUtils.class)) {
-            Map<String, Object> map = new HashMap<>() {
-                {
-                    put("CODES_LISTS_GRAPH", "<http://rdf.insee.fr/graphes/codes/nomenclatures>");
-                    put("LG1", "\"fr\"");
-                    put("LG2", "\"en\"");
-                    put("NOTATION", "\"NOTATION\"");
-                    put("PARTIAL", true);
-                    put("CODE_LIST_BASE_URI_PREFIX", "\"codelist-base-uri/\"");
-                    put("SEARCH_CODE", "\"search\"");
-                    put("SORT", "?labelLg1");
-                }
-            };
-            mockedFactory
-                    .when(() -> FreeMarkerUtils.buildRequest(eq("codes-list/"), eq("getDetailedCodes.ftlh"), eq(map)))
-                    .thenReturn("request");
-            String query = codeListsQueries.getDetailedCodes(
-                    "NOTATION", CodeListKind.PARTIAL, List.of("code:search"), 0, 0, "labelLg1");
-            Assertions.assertEquals("request", query);
-        }
+        stubCodeListGraphAndBaseUri();
+        Map<String, Object> map = detailedCodesParams(true, "?labelLg1");
+        map.put("SEARCH_CODE", "\"search\"");
+
+        assertRequestBuiltWith(
+                GET_DETAILED_CODES_TEMPLATE,
+                map,
+                () -> codeListsQueries.getDetailedCodes(
+                        "NOTATION", CodeListKind.PARTIAL, List.of("code:search"), 0, 0, "labelLg1"));
     }
 
     @Test
     void getBroaderNarrowerCloseMatch() throws RmesException {
-        when(graphs.codeListGraph()).thenReturn("http://rdf.insee.fr/graphes/codes/nomenclatures");
-        try (MockedStatic<FreeMarkerUtils> mockedFactory = Mockito.mockStatic(FreeMarkerUtils.class)) {
-            Map<String, Object> map = new HashMap<>() {
-                {
-                    put("CODES_LISTS_GRAPH", "<http://rdf.insee.fr/graphes/codes/nomenclatures>");
-                    put("LG1", "\"fr\"");
-                    put("LG2", "\"en\"");
-                    put("NOTATION", "\"NOTATION\"");
-                }
-            };
-            mockedFactory
-                    .when(() -> FreeMarkerUtils.buildRequest(
-                            eq("codes-list/"), eq("getBroaderNarrowerCloseMatch.ftlh"), eq(map)))
-                    .thenReturn("request");
-            String query = codeListsQueries.getBroaderNarrowerCloseMatch("NOTATION");
-            Assertions.assertEquals("request", query);
-        }
+        when(graphs.codeListGraph()).thenReturn(CODES_LISTS_GRAPH);
+
+        assertRequestBuiltWith(
+                "getBroaderNarrowerCloseMatch.ftlh",
+                codeListParams(),
+                () -> codeListsQueries.getBroaderNarrowerCloseMatch("NOTATION"));
     }
 
     @Test
     void getDetailedCodesWithoutSearch() throws RmesException {
-        when(graphs.codeListGraph()).thenReturn("http://rdf.insee.fr/graphes/codes/nomenclatures");
-        when(uris.codeListBaseUri()).thenReturn("codelist-base-uri");
-        try (MockedStatic<FreeMarkerUtils> mockedFactory = Mockito.mockStatic(FreeMarkerUtils.class)) {
-            Map<String, Object> map = new HashMap<>() {
-                {
-                    put("CODES_LISTS_GRAPH", "<http://rdf.insee.fr/graphes/codes/nomenclatures>");
-                    put("LG1", "\"fr\"");
-                    put("LG2", "\"en\"");
-                    put("NOTATION", "\"NOTATION\"");
-                    put("PARTIAL", true);
-                    put("CODE_LIST_BASE_URI_PREFIX", "\"codelist-base-uri/\"");
-                    put("SORT", "?labelLg1");
-                }
-            };
-            mockedFactory
-                    .when(() -> FreeMarkerUtils.buildRequest(eq("codes-list/"), eq("getDetailedCodes.ftlh"), eq(map)))
-                    .thenReturn("request");
-            String query = codeListsQueries.getDetailedCodes("NOTATION", CodeListKind.PARTIAL, null, 0, 0, "labelLg1");
-            Assertions.assertEquals("request", query);
-        }
+        stubCodeListGraphAndBaseUri();
+
+        assertRequestBuiltWith(
+                GET_DETAILED_CODES_TEMPLATE,
+                detailedCodesParams(true, "?labelLg1"),
+                () -> codeListsQueries.getDetailedCodes("NOTATION", CodeListKind.PARTIAL, null, 0, 0, "labelLg1"));
     }
 
     @Test
     void getCodeUriByNotation_returnsExpectedSparql() throws RmesException {
-        when(graphs.codeListGraph()).thenReturn("http://rdf.insee.fr/graphes/codes/nomenclatures");
+        when(graphs.codeListGraph()).thenReturn(CODES_LISTS_GRAPH);
 
         String query = normalize(codeListsQueries.getCodeUriByNotation("CL_TEST", "CODE_1"));
 
@@ -247,26 +170,12 @@ class CodeListsQueriesTest {
 
     @Test
     void getDetailedCodesShouldSortOnTheCodeWhenNoSortIsRequested() throws RmesException {
-        when(graphs.codeListGraph()).thenReturn("http://rdf.insee.fr/graphes/codes/nomenclatures");
-        when(uris.codeListBaseUri()).thenReturn("codelist-base-uri");
-        try (MockedStatic<FreeMarkerUtils> mockedFactory = Mockito.mockStatic(FreeMarkerUtils.class)) {
-            Map<String, Object> map = new HashMap<>() {
-                {
-                    put("CODES_LISTS_GRAPH", "<http://rdf.insee.fr/graphes/codes/nomenclatures>");
-                    put("LG1", "\"fr\"");
-                    put("LG2", "\"en\"");
-                    put("NOTATION", "\"NOTATION\"");
-                    put("PARTIAL", true);
-                    put("CODE_LIST_BASE_URI_PREFIX", "\"codelist-base-uri/\"");
-                    put("SORT", "?code");
-                }
-            };
-            mockedFactory
-                    .when(() -> FreeMarkerUtils.buildRequest(eq("codes-list/"), eq("getDetailedCodes.ftlh"), eq(map)))
-                    .thenReturn("request");
-            String query = codeListsQueries.getDetailedCodes("NOTATION", CodeListKind.PARTIAL, null, 0, 0, null);
-            Assertions.assertEquals("request", query);
-        }
+        stubCodeListGraphAndBaseUri();
+
+        assertRequestBuiltWith(
+                GET_DETAILED_CODES_TEMPLATE,
+                detailedCodesParams(true, "?code"),
+                () -> codeListsQueries.getDetailedCodes("NOTATION", CodeListKind.PARTIAL, null, 0, 0, null));
     }
 
     @Test
@@ -282,5 +191,40 @@ class CodeListsQueriesTest {
                 RmesRuntimeBadRequestException.class,
                 () -> codeListsQueries.getDetailedCodes(
                         "NOTATION", CodeListKind.FULL, null, 1, 10, "code } ORDER BY ?x #"));
+    }
+
+    private void stubCodeListGraphAndBaseUri() {
+        when(graphs.codeListGraph()).thenReturn(CODES_LISTS_GRAPH);
+        when(uris.codeListBaseUri()).thenReturn("codelist-base-uri");
+    }
+
+    /** Paramètres communs à tous les templates des listes de codes. */
+    private static Map<String, Object> codeListParams() {
+        Map<String, Object> map = new HashMap<>();
+        map.put("CODES_LISTS_GRAPH", "<" + CODES_LISTS_GRAPH + ">");
+        map.put("NOTATION", "\"NOTATION\"");
+        map.put("LG1", "\"fr\"");
+        map.put("LG2", "\"en\"");
+        return map;
+    }
+
+    private static Map<String, Object> detailedCodesParams(boolean partial, String sort) {
+        Map<String, Object> map = codeListParams();
+        map.put("PARTIAL", partial);
+        map.put("CODE_LIST_BASE_URI_PREFIX", "\"codelist-base-uri/\"");
+        map.put("SORT", sort);
+        return map;
+    }
+
+    /** La requête rendue est celle construite par le template avec exactement ces paramètres. */
+    private static void assertRequestBuiltWith(String template, Map<String, Object> expectedParams, QueryCall call)
+            throws RmesException {
+        try (MockedStatic<FreeMarkerUtils> mockedFactory = Mockito.mockStatic(FreeMarkerUtils.class)) {
+            mockedFactory
+                    .when(() -> FreeMarkerUtils.buildRequest(eq("codes-list/"), eq(template), eq(expectedParams)))
+                    .thenReturn("request");
+            String query = call.call();
+            Assertions.assertEquals("request", query);
+        }
     }
 }

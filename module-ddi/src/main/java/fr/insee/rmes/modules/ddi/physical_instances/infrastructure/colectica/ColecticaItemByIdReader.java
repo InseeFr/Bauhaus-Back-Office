@@ -2,6 +2,11 @@ package fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica;
 
 import fr.insee.rmes.colectica.client.ColecticaClient;
 import fr.insee.rmes.colectica.client.dto.ColecticaItemResponse;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CategoryScheme;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeListScheme;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4LogicalProduct;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedRepresentationScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3toDDI4ConverterService;
 import java.util.List;
@@ -48,6 +53,63 @@ class ColecticaItemByIdReader {
     }
 
     /**
+     * La dernière version du Group d'identifiant {@code id}, ou {@link Optional#empty()} si Colectica
+     * ne le connaît pas. Seul le 404 vaut « absent ».
+     * <p>
+     * Lue sur l'item et non sur le ddiset : le ddiset peut rendre un état antérieur au dernier
+     * remplacement de l'item, et le miroir des opérations réécrit le Group à partir de cette relecture
+     * — il lui faisait reprendre l'ancien libellé de sa série et perdre ses StudyUnits (issue #1151).
+     */
+    Optional<Ddi4Group> findGroup(String agencyId, String id) {
+        ColecticaItemResponse item;
+        try {
+            item = colecticaClient.getItem(agencyId, id, null);
+        } catch (HttpClientErrorException.NotFound _) {
+            logger.info("No group {}/{} in Colectica yet", agencyId, id);
+            return Optional.empty();
+        }
+        if (item == null || item.item() == null || item.item().isBlank()) {
+            return Optional.empty();
+        }
+        return Optional.of(ddi3ToDdi4Converter.toGroup(ColecticaXml.stripLeadingGarbage(item.item())));
+    }
+
+    Optional<Ddi4LogicalProduct> findLogicalProduct(String agencyId, String id) {
+        return findItem("logical product", agencyId, id).map(ddi3ToDdi4Converter::toLogicalProduct);
+    }
+
+    Optional<Ddi4CodeListScheme> findCodeListScheme(String agencyId, String id) {
+        return findItem("code list scheme", agencyId, id).map(ddi3ToDdi4Converter::toCodeListScheme);
+    }
+
+    Optional<Ddi4CategoryScheme> findCategoryScheme(String agencyId, String id) {
+        return findItem("category scheme", agencyId, id).map(ddi3ToDdi4Converter::toCategoryScheme);
+    }
+
+    Optional<Ddi4ManagedRepresentationScheme> findManagedRepresentationScheme(String agencyId, String id) {
+        return findItem("managed representation scheme", agencyId, id)
+                .map(ddi3ToDdi4Converter::toManagedRepresentationScheme);
+    }
+
+    /**
+     * Le fragment XML de la dernière version de l'item, ou {@link Optional#empty()} si Colectica ne
+     * le connaît pas. Seul le 404 vaut « absent ».
+     */
+    private Optional<String> findItem(String what, String agencyId, String id) {
+        ColecticaItemResponse item;
+        try {
+            item = colecticaClient.getItem(agencyId, id, null);
+        } catch (HttpClientErrorException.NotFound _) {
+            logger.info("No {} {}/{} in Colectica", what, agencyId, id);
+            return Optional.empty();
+        }
+        if (item == null || item.item() == null || item.item().isBlank()) {
+            return Optional.empty();
+        }
+        return Optional.of(ColecticaXml.stripLeadingGarbage(item.item()));
+    }
+
+    /**
      * Les IRIs des séries d'un Group (ses {@code r:UserID}), lues sur le seul item du Group. Le ddiset
      * du Group embarquerait toute sa descendance (StudyUnits, PI, variables, listes de codes…) pour
      * n'en garder que ces quelques valeurs.
@@ -58,5 +120,16 @@ class ColecticaItemByIdReader {
             return List.of();
         }
         return ColecticaXml.userIds(ColecticaXml.stripLeadingGarbage(item.item()));
+    }
+
+    /** L'IRI de l'opération d'une StudyUnit (son {@code r:UserID}), lue sur le seul item de la StudyUnit. */
+    Optional<String> studyUnitOperationIri(String agencyId, String studyUnitId) {
+        ColecticaItemResponse item = colecticaClient.getItem(agencyId, studyUnitId, null);
+        if (item == null) {
+            return Optional.empty();
+        }
+        return ColecticaXml.userIds(ColecticaXml.stripLeadingGarbage(item.item())).stream()
+                .filter(userId -> !userId.isBlank())
+                .findFirst();
     }
 }

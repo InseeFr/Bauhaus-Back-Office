@@ -141,7 +141,7 @@ public class GraphDBCodesListsRepository implements CodesListsRepository {
         RdfUtils.addTripleUri(owlClassIri, RDFS.SEEALSO, codesListIri, model, graph);
 
         try {
-            repositoryGestion.clearStructureNodeAndComponents(codesListIri);
+            repositoryGestion.clearStructureNodeAndComponents(codesListIri, graph);
             repositoryGestion.loadSimpleObject(codesListIri, model, null);
         } catch (RmesException e) {
             throw new CodesListsSaveException(e);

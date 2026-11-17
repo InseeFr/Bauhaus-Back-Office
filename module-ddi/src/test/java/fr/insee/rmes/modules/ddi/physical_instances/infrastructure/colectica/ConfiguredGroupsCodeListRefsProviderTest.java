@@ -1,6 +1,7 @@
 package fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyList;
@@ -146,6 +147,31 @@ class ConfiguredGroupsCodeListRefsProviderTest {
                 provider(group("group-missing"), group("group-2")).codeListRefs();
 
         assertThat(refs).containsExactly(new ItemReference(DEFAULT_AGENCY, "cl-2"));
+    }
+
+    // Un échec Colectica ne doit pas se déguiser en « aucune liste mutualisée » : ce résultat vide
+    // serait mis en cache (24 h) et chaque liste mutualisée serait alors traitée comme une liste de
+    // groupe. L'exception, elle, n'est pas mise en cache : l'appel suivant réessaie.
+    @Test
+    void propagatesTheFailure_whenTheLatestGroupVersionsCannotBeRead() {
+        RuntimeException failure = new IllegalStateException("Colectica unavailable");
+        when(colecticaClient.getLatestVersionNumbers(anyList())).thenThrow(failure);
+
+        assertThatThrownBy(() -> provider(group("group-1")).codeListRefs()).isSameAs(failure);
+    }
+
+    @Test
+    void propagatesTheFailure_whenTheCodeListsOfAGroupCannotBeRead() {
+        RuntimeException failure = new IllegalStateException("Colectica unavailable");
+        stubLatestVersions(latest(DEFAULT_AGENCY, "group-1", 1));
+        when(colecticaClient.findRelatedDescriptions(
+                        RelationshipDirection.BY_SUBJECT,
+                        new ItemReference(DEFAULT_AGENCY, "group-1"),
+                        1,
+                        List.of(CODE_LIST_TYPE)))
+                .thenThrow(failure);
+
+        assertThatThrownBy(() -> provider(group("group-1")).codeListRefs()).isSameAs(failure);
     }
 
     @Test

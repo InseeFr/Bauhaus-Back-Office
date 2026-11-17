@@ -1,12 +1,15 @@
 package fr.insee.rmes.modules.operations.msd.webservice;
 
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import fr.insee.rmes.bauhaus_services.OperationsDocumentationsService;
 import fr.insee.rmes.bauhaus_services.OperationsService;
+import fr.insee.rmes.domain.exceptions.CodedRmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
+import fr.insee.rmes.graphdb.RepositoryUtils;
 import fr.insee.rmes.modules.commons.configuration.LogRequestFilter;
 import fr.insee.rmes.modules.operations.msd.domain.port.clientside.DocumentationExportService;
 import fr.insee.rmes.modules.operations.msd.domain.port.clientside.DocumentationService;
@@ -47,24 +50,37 @@ class MetadataReportResourcesDeleteTest {
 
     @Test
     void deleteMetadataReport_withAcceptJson_shouldReturnSuccess() throws Exception {
-        when(documentationsService.deleteMetadataReport("42")).thenReturn(HttpStatus.NO_CONTENT);
-
         mockMvc.perform(delete("/operations/metadataReport/{id}", "42").accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNoContent());
+                .andExpect(status().isOk());
     }
 
     @Test
     void deleteMetadataReport_whenSimsDoesNotExist_shouldReturnNotFound() throws Exception {
-        when(documentationsService.deleteMetadataReport("unknown"))
-                .thenThrow(new RmesNotFoundException("Documentation not found", "unknown"));
+        doThrow(new RmesNotFoundException("Documentation not found", "unknown"))
+                .when(documentationsService)
+                .deleteMetadataReport("unknown");
 
         mockMvc.perform(delete("/operations/metadataReport/{id}", "unknown")).andExpect(status().isNotFound());
     }
 
     @Test
-    void deleteMetadataReport_withoutAccept_shouldReturnSuccess() throws Exception {
-        when(documentationsService.deleteMetadataReport("42")).thenReturn(HttpStatus.NO_CONTENT);
+    void deleteMetadataReport_whenRepositoryIsUnavailable_shouldAnswer503WithMessageAndCode() throws Exception {
+        doThrow(new CodedRmesException(
+                        HttpStatus.SERVICE_UNAVAILABLE.value(),
+                        RepositoryUtils.RDF_REPOSITORY_UNAVAILABLE,
+                        "The RDF repository is unavailable. Please try again later.",
+                        null))
+                .when(documentationsService)
+                .deleteMetadataReport("42");
 
-        mockMvc.perform(delete("/operations/metadataReport/{id}", "42")).andExpect(status().isNoContent());
+        mockMvc.perform(delete("/operations/metadataReport/{id}", "42"))
+                .andExpect(status().isServiceUnavailable())
+                .andExpect(jsonPath("$.message").value("The RDF repository is unavailable. Please try again later."))
+                .andExpect(jsonPath("$.code").value("RDF_REPOSITORY_UNAVAILABLE"));
+    }
+
+    @Test
+    void deleteMetadataReport_withoutAccept_shouldReturnSuccess() throws Exception {
+        mockMvc.perform(delete("/operations/metadataReport/{id}", "42")).andExpect(status().isOk());
     }
 }

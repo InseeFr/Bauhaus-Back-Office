@@ -1,5 +1,6 @@
 package fr.insee.rmes.modules.commons.webservice;
 
+import static fr.insee.rmes.modules.commons.webservice.ApiErrorContract.apiError;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -22,10 +23,8 @@ import org.springframework.test.web.servlet.MockMvc;
  * Contrat d'erreur de validation, commun à tous les modules : un corps de requête refusé
  * répond 400 avec {@code {"errors":[{"field","message"}]}}.
  * <p>
- * Le test est monté sur {@link DatasetResources}, qui figure dans les {@code assignableTypes}
- * de {@code RmesExceptionHandler} (@Order(2)) : c'est tout l'intérêt du test, il vérifie que
- * le handler de validation passe devant lui et impose le contrat, au lieu du corps
- * {@code ProblemDetail} par défaut de {@code ResponseEntityExceptionHandler}.
+ * Le test vérifie aussi que le handler de validation passe devant le filet
+ * {@link UnexpectedErrorHandler}, qui répondrait sinon par un message générique sans les champs.
  */
 @WebMvcTest(
         value = DatasetResources.class,
@@ -49,8 +48,11 @@ class ValidationErrorContractTest {
                         .content("""
                                 {"numObservations": -1}"""))
                 .andExpect(status().isBadRequest())
+                .andExpect(apiError())
+                .andExpect(jsonPath("$.code").value("INVALID_REQUEST_BODY"))
+                .andExpect(jsonPath("$.message").value("The submitted data is invalid"))
                 .andExpect(jsonPath("$.errors[0].field").value("numObservations"))
-                .andExpect(jsonPath("$.errors[0].message").isNotEmpty());
+                .andExpect(jsonPath("$.errors[0].message").value("La valeur doit être strictement positive."));
     }
 
     /**
@@ -64,7 +66,40 @@ class ValidationErrorContractTest {
                         .content("""
                                 {"numObservations": "pas-un-entier"}"""))
                 .andExpect(status().isBadRequest())
+                .andExpect(apiError())
+                .andExpect(jsonPath("$.code").value("INVALID_REQUEST_BODY"))
+                .andExpect(jsonPath("$.message").value("The submitted data is invalid"))
                 .andExpect(jsonPath("$.errors[0].field").value("numObservations"))
-                .andExpect(jsonPath("$.errors[0].message").isNotEmpty());
+                .andExpect(jsonPath("$.errors[0].message").value("La valeur doit être un nombre entier."));
+    }
+
+    /** JSON malformé : l'erreur porte sur le corps entier, sans exposer l'état du parseur. */
+    @Test
+    void malformed_body_should_be_reported_on_the_whole_body() throws Exception {
+        mockMvc.perform(patch("/datasets/{id}", "d1")
+                        .contentType(APPLICATION_JSON)
+                        .content("{\"numObservations\": "))
+                .andExpect(status().isBadRequest())
+                .andExpect(apiError())
+                .andExpect(jsonPath("$.code").value("INVALID_REQUEST_BODY"))
+                .andExpect(jsonPath("$.message").value("The submitted data is invalid"))
+                .andExpect(jsonPath("$.errors[0].field").value("body"))
+                .andExpect(jsonPath("$.errors[0].message").value("Le corps de la requête n'a pas pu être lu."));
+    }
+
+    /** Le DTO se refuse lui-même dans son constructeur : son message est relayé tel quel. */
+    @Test
+    void body_refused_by_the_dto_should_carry_its_message() throws Exception {
+        mockMvc.perform(patch("/datasets/{id}", "d1")
+                        .contentType(APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(apiError())
+                .andExpect(jsonPath("$.code").value("INVALID_REQUEST_BODY"))
+                .andExpect(jsonPath("$.message").value("The submitted data is invalid"))
+                .andExpect(jsonPath("$.errors[0].field").value("body"))
+                .andExpect(jsonPath("$.errors[0].message")
+                        .value("Renseignez au moins un de ces champs : updated, issued, numObservations,"
+                                + " numSeries, temporal."));
     }
 }

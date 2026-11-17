@@ -1,5 +1,8 @@
 package fr.insee.rmes.bauhaus_services.distribution;
 
+import static fr.insee.rmes.bauhaus_services.utils.RdfUtilsStaticStubs.CURRENT_DATE;
+import static fr.insee.rmes.bauhaus_services.utils.RdfUtilsStaticStubs.callRealLiteralAndTripleBuilders;
+import static fr.insee.rmes.bauhaus_services.utils.RdfUtilsStaticStubs.freezeCurrentDate;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
@@ -12,6 +15,7 @@ import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.modules.datasets.distributions.model.Distribution;
 import fr.insee.rmes.modules.datasets.distributions.model.PatchDistribution;
+import fr.insee.rmes.modules.shared_kernel.infrastructure.publication.ObjectPublished;
 import fr.insee.rmes.persistance.sparql_queries.datasets.DatasetDistributionQueries;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.utils.DateUtils;
@@ -32,8 +36,11 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.event.ApplicationEvents;
+import org.springframework.test.context.event.RecordApplicationEvents;
 
 @AppSpringBootTest
+@RecordApplicationEvents
 class DistributionServiceImplTest {
     @MockitoBean
     RepositoryGestion repositoryGestion;
@@ -49,6 +56,9 @@ class DistributionServiceImplTest {
 
     @Autowired
     DistributionServiceImpl distributionService;
+
+    @Autowired
+    ApplicationEvents events;
 
     private static final String EMPTY_JSON_OBJECT = "{}";
     private static final String DISTRIB = "{\"id\":\"d1000\"}";
@@ -144,42 +154,14 @@ class DistributionServiceImplTest {
         IRI iri = SimpleValueFactory.getInstance().createIRI("http://distributionIRI/" + nextId);
         try (MockedStatic<RdfUtils> rdfUtilsMock = Mockito.mockStatic(RdfUtils.class);
                 MockedStatic<DateUtils> dateUtilsMock = Mockito.mockStatic(DateUtils.class)) {
-            rdfUtilsMock.when(() -> RdfUtils.createIRI(any())).thenCallRealMethod();
+            stubDistributionRdfUtils(rdfUtilsMock);
 
-            dateUtilsMock.when(DateUtils::getCurrentDate).thenReturn("2023-10-19T11:44:23.335590");
+            freezeCurrentDate(dateUtilsMock);
             dateUtilsMock
                     .when(() -> DateUtils.parseDateTime(anyString()))
-                    .thenReturn(LocalDateTime.parse("2023-10-19T11:44:23.335590"));
-            rdfUtilsMock
-                    .when(() -> RdfUtils.seriesIRI("2"))
-                    .thenReturn(SimpleValueFactory.getInstance().createIRI("http://seriesIRI/2"));
-            rdfUtilsMock.when(() -> RdfUtils.setLiteralString(anyString())).thenCallRealMethod();
-            rdfUtilsMock
-                    .when(() -> RdfUtils.setLiteralString(anyString(), anyString()))
-                    .thenCallRealMethod();
-            rdfUtilsMock.when(() -> RdfUtils.setLiteralDateTime(any())).thenCallRealMethod();
-            rdfUtilsMock
-                    .when(() -> RdfUtils.addTripleString(any(), any(), any(), any(), any(), any()))
-                    .thenCallRealMethod();
-            rdfUtilsMock
-                    .when(() -> RdfUtils.addTripleString(any(), any(), any(), any(), any()))
-                    .thenCallRealMethod();
-            rdfUtilsMock
-                    .when(() -> RdfUtils.addTripleUri(any(IRI.class), any(), any(IRI.class), any(), any()))
-                    .thenCallRealMethod();
-            rdfUtilsMock
-                    .when(() -> RdfUtils.addTripleDateTime(any(), any(), any(), any(), any()))
-                    .thenCallRealMethod();
+                    .thenReturn(LocalDateTime.parse(CURRENT_DATE));
 
-            JSONObject body = new JSONObject();
-            body.put("idDataset", "idDataset");
-            body.put("labelLg1", "labelLg1");
-            body.put("labelLg2", "labelLg2");
-            body.put("descriptionLg1", "descriptionLg1");
-            body.put("descriptionLg2", "descriptionLg2");
-            body.put("format", "format");
-            body.put("byteSize", "byteSize");
-            body.put("url", "url");
+            JSONObject body = distributionBody("idDataset");
 
             String id = distributionService.create(body.toString());
 
@@ -192,6 +174,27 @@ class DistributionServiceImplTest {
                     model.getValue().toString());
             Assertions.assertEquals(id, nextId);
         }
+    }
+
+    /** Socle commun des bouchons {@link RdfUtils}, complété du triplet IRI → IRI d'une distribution. */
+    private static void stubDistributionRdfUtils(MockedStatic<RdfUtils> rdfUtilsMock) {
+        callRealLiteralAndTripleBuilders(rdfUtilsMock);
+        rdfUtilsMock
+                .when(() -> RdfUtils.addTripleUri(any(IRI.class), any(), any(IRI.class), any(), any()))
+                .thenCallRealMethod();
+    }
+
+    private static JSONObject distributionBody(String idDataset) {
+        JSONObject body = new JSONObject();
+        body.put("idDataset", idDataset);
+        body.put("labelLg1", "labelLg1");
+        body.put("labelLg2", "labelLg2");
+        body.put("descriptionLg1", "descriptionLg1");
+        body.put("descriptionLg2", "descriptionLg2");
+        body.put("format", "format");
+        body.put("byteSize", "byteSize");
+        body.put("url", "url");
+        return body;
     }
 
     @Test
@@ -221,45 +224,17 @@ class DistributionServiceImplTest {
                 when(repositoryGestion.getResponseAsObject("query d1001")).thenReturn(distribution);
             }
 
-            rdfUtilsMock.when(() -> RdfUtils.createIRI(any())).thenCallRealMethod();
+            stubDistributionRdfUtils(rdfUtilsMock);
 
-            dateUtilsMock.when(DateUtils::getCurrentDate).thenReturn("2023-10-19T11:44:23.335590");
+            freezeCurrentDate(dateUtilsMock);
             dateUtilsMock
                     .when(() -> DateUtils.parseDateTime(eq("2022-10-19T11:44:23.335590")))
                     .thenReturn(LocalDateTime.parse("2022-10-19T11:44:23.335590"));
             dateUtilsMock
-                    .when(() -> DateUtils.parseDateTime(eq("2023-10-19T11:44:23.335590")))
-                    .thenReturn(LocalDateTime.parse("2023-10-19T11:44:23.335590"));
-            rdfUtilsMock
-                    .when(() -> RdfUtils.seriesIRI("2"))
-                    .thenReturn(SimpleValueFactory.getInstance().createIRI("http://seriesIRI/2"));
-            rdfUtilsMock.when(() -> RdfUtils.setLiteralString(anyString())).thenCallRealMethod();
-            rdfUtilsMock
-                    .when(() -> RdfUtils.setLiteralString(anyString(), anyString()))
-                    .thenCallRealMethod();
-            rdfUtilsMock.when(() -> RdfUtils.setLiteralDateTime(any())).thenCallRealMethod();
-            rdfUtilsMock
-                    .when(() -> RdfUtils.addTripleString(any(), any(), any(), any(), any(), any()))
-                    .thenCallRealMethod();
-            rdfUtilsMock
-                    .when(() -> RdfUtils.addTripleString(any(), any(), any(), any(), any()))
-                    .thenCallRealMethod();
-            rdfUtilsMock
-                    .when(() -> RdfUtils.addTripleUri(any(IRI.class), any(), any(IRI.class), any(), any()))
-                    .thenCallRealMethod();
-            rdfUtilsMock
-                    .when(() -> RdfUtils.addTripleDateTime(any(), any(), any(), any(), any()))
-                    .thenCallRealMethod();
+                    .when(() -> DateUtils.parseDateTime(eq(CURRENT_DATE)))
+                    .thenReturn(LocalDateTime.parse(CURRENT_DATE));
 
-            JSONObject body = new JSONObject();
-            body.put("idDataset", "d1001");
-            body.put("labelLg1", "labelLg1");
-            body.put("labelLg2", "labelLg2");
-            body.put("descriptionLg1", "descriptionLg1");
-            body.put("descriptionLg2", "descriptionLg2");
-            body.put("format", "format");
-            body.put("byteSize", "byteSize");
-            body.put("url", "url");
+            JSONObject body = distributionBody("d1001");
             body.put("created", "2022-10-19T11:44:23.335590");
 
             String id = distributionService.update("d1001", body.toString());
@@ -297,7 +272,7 @@ class DistributionServiceImplTest {
         assertThat(exception.getDetails()).contains("\"code\":1301");
         assertThat(exception.getDetails()).contains("This distribution is already published");
         assertThat(exception.getDetails()).contains("Distribution: 1");
-        verify(repositoryGestion, never()).objectValidation(any(), any());
+        assertThat(events.stream(ObjectPublished.class).toList()).isEmpty();
     }
 
     @Test
@@ -325,11 +300,23 @@ class DistributionServiceImplTest {
         String id = distributionService.publishDistribution("1");
         ArgumentCaptor<Model> model = ArgumentCaptor.forClass(Model.class);
 
-        verify(repositoryGestion, times(1)).objectValidation(eq(iri), model.capture());
+        verify(repositoryGestion).loadSimpleObjectWithoutDeletion(eq(iri), model.capture(), any());
         Assertions.assertEquals(
                 "[(http://distributionIRI/1, http://rdf.insee.fr/def/base#validationState, \"Validated\") [http://rdf.insee.fr/graphes/datasetGraph/]]",
                 model.getValue().toString());
         Assertions.assertEquals("1", id);
+    }
+
+    @Test
+    void shouldAnnounceThePublicationWithTheDistributionGraph() throws RmesException {
+        givenDistributionWithValidationState("Unpublished");
+
+        distributionService.publishDistribution("1");
+
+        assertThat(events.stream(ObjectPublished.class).toList())
+                .containsExactly(new ObjectPublished(
+                        SimpleValueFactory.getInstance().createIRI("http://distributionIRI/1"),
+                        SimpleValueFactory.getInstance().createIRI("http://rdf.insee.fr/graphes/datasetGraph/")));
     }
 
     @Test

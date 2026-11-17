@@ -519,43 +519,47 @@ class DocumentationsRubricsUtilsTest {
     @Test
     void shouldBuildRubricFromJsonWithCodeListValue() {
         // Given
-        JSONObject jsonRubric = new JSONObject();
-        jsonRubric.put(Constants.ID_ATTRIBUTE, "FREQ");
-        jsonRubric.put(Constants.RANGE_TYPE, RangeType.CODELIST.getJsonType());
-        jsonRubric.put(Constants.VALUE, "M");
-        jsonRubric.put(Constants.CODELIST, "CL_FREQ");
+        JSONObject jsonRubric = frequencyCodeListRubric("M");
 
         // When
         DocumentationRubric result = documentationsRubricsUtils.buildRubricFromJson(jsonRubric, false);
 
         // Then
-        assertNotNull(result);
-        assertEquals("FREQ", result.getIdAttribute());
-        assertEquals("CL_FREQ", result.getCodeList());
+        assertFrequencyCodeListRubric(result);
         assertEquals("M", result.getSimpleValue());
     }
 
     @Test
     void shouldBuildRubricFromJsonWithMultipleCodeListValues() {
         // Given
-        JSONObject jsonRubric = new JSONObject();
-        jsonRubric.put(Constants.ID_ATTRIBUTE, "FREQ");
-        jsonRubric.put(Constants.RANGE_TYPE, RangeType.CODELIST.getJsonType());
         JSONArray values = new JSONArray();
         values.put("M");
         values.put("A");
-        jsonRubric.put(Constants.VALUE, values);
-        jsonRubric.put(Constants.CODELIST, "CL_FREQ");
+        JSONObject jsonRubric = frequencyCodeListRubric(values);
 
         // When
         DocumentationRubric result = documentationsRubricsUtils.buildRubricFromJson(jsonRubric, false);
 
         // Then
-        assertNotNull(result);
-        assertEquals("FREQ", result.getIdAttribute());
-        assertEquals("CL_FREQ", result.getCodeList());
+        assertFrequencyCodeListRubric(result);
         assertEquals(2, result.getValue().size());
         assertTrue(result.getValue().contains("M"));
         assertTrue(result.getValue().contains("A"));
+    }
+
+    /** Rubrique FREQ adossée à la liste de codes CL_FREQ, de valeur simple ou multiple. */
+    private static JSONObject frequencyCodeListRubric(Object value) {
+        JSONObject jsonRubric = new JSONObject();
+        jsonRubric.put(Constants.ID_ATTRIBUTE, "FREQ");
+        jsonRubric.put(Constants.RANGE_TYPE, RangeType.CODELIST.getJsonType());
+        jsonRubric.put(Constants.VALUE, value);
+        jsonRubric.put(Constants.CODELIST, "CL_FREQ");
+        return jsonRubric;
+    }
+
+    private static void assertFrequencyCodeListRubric(DocumentationRubric result) {
+        assertNotNull(result);
+        assertEquals("FREQ", result.getIdAttribute());
+        assertEquals("CL_FREQ", result.getCodeList());
     }
 }

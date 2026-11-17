@@ -95,4 +95,21 @@ class Ddi4SentinelValuesSchemaConformanceTest {
         assertThat(validateAgainstDef(mmvr, "ManagedMissingValuesRepresentation"))
                 .isEmpty();
     }
+
+    @Test
+    void numericRepresentation_typeCodeMatchesSchemaCodeValueType() throws Exception {
+        NumericRepresentation numeric =
+                new NumericRepresentation(NumericRepresentation.TYPE, CodeValue.numericType("Integer"), null);
+
+        assertThat(validateAgainstDef(numeric, "NumericRepresentationBaseType")).isEmpty();
+    }
+
+    @Test
+    void dateTimeRepresentation_typeCodeMatchesSchemaCodeValueType() throws Exception {
+        DateTimeRepresentation dateTime =
+                new DateTimeRepresentation(DateTimeRepresentation.TYPE, CodeValue.dateType("Date"), null);
+
+        assertThat(validateAgainstDef(dateTime, "DateTimeRepresentationBaseType"))
+                .isEmpty();
+    }
 }

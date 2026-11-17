@@ -1,7 +1,6 @@
 package fr.insee.rmes.keycloak;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import com.auth0.jwt.JWT;
@@ -34,24 +33,11 @@ class KeycloakServiceTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        var properties = new KeycloakProperties(
-                new KeycloakProperties.Server("keycloak.test"),
-                new KeycloakProperties.RealmConfig("default-realm", "default-client", "default-secret"),
-                new KeycloakProperties.RealmConfig("colectica-realm", "colectica-client", "colectica-secret"));
-        keycloakService = new KeycloakService(properties);
+        keycloakService = new KeycloakService(KeycloakTestFixtures.properties());
         keycloakService.keycloakClient = testRestClient;
 
-        when(testRestClient.post()).thenReturn(requestBodyUriSpec);
-        when(requestBodyUriSpec.uri(anyString())).thenReturn(requestBodySpec);
-        when(requestBodySpec.retrieve()).thenReturn(responseSpec);
-
-        Token token = new Token() {
-            @Override
-            public String getAccessToken() {
-                return "token";
-            }
-        };
-        when(responseSpec.body(Token.class)).thenReturn(token);
+        KeycloakTestFixtures.stubTokenRequest(testRestClient, requestBodyUriSpec, requestBodySpec, responseSpec);
+        when(responseSpec.body(Token.class)).thenReturn(KeycloakTestFixtures.token("token"));
     }
 
     @Test
@@ -79,11 +65,7 @@ class KeycloakServiceTest {
 
     @Test
     void shouldThrowMissingKeycloakConfigurationException_whenServerUrlIsNull() {
-        var propertiesWithNullServer = new KeycloakProperties(
-                null,
-                new KeycloakProperties.RealmConfig("default-realm", "default-client", "default-secret"),
-                new KeycloakProperties.RealmConfig("colectica-realm", "colectica-client", "colectica-secret"));
-        KeycloakService serviceWithNullServer = new KeycloakService(propertiesWithNullServer);
+        KeycloakService serviceWithNullServer = new KeycloakService(KeycloakTestFixtures.propertiesWithoutServer());
 
         assertThrows(MissingKeycloakConfigurationException.class, serviceWithNullServer::getAccessToken);
     }
@@ -121,12 +103,7 @@ class KeycloakServiceTest {
     }
 
     private void stubKeycloakReturns(String accessToken) {
-        when(responseSpec.body(Token.class)).thenReturn(new Token() {
-            @Override
-            public String getAccessToken() {
-                return accessToken;
-            }
-        });
+        when(responseSpec.body(Token.class)).thenReturn(KeycloakTestFixtures.token(accessToken));
     }
 
     private static String jwtExpiringIn(long seconds) {

@@ -1,4 +1,19 @@
 name: Test and Sonar Analysis
+
+# The body of this job lives in InseeFr/rmes-githubactions-commons, shared with
+# the other RMéS projects: the Conventional Commits title of the pull request
+# (which used to be the pr-name.yml workflow of this repository), hadolint on
+# the Dockerfile, the copy-paste check, then the JDK with its Maven cache and
+# the build with its tests.
+#
+# What stays here is what belongs to this repository: the Sonar analysis — a
+# back-end runs it through the Maven plugin, inside the build itself, so it
+# travels in `verify-command` — and the cache of the analyser that plugin
+# downloads, which setup-java does not cover.
+#
+# The workflow name, the job id and the job name are unchanged on purpose: a
+# required status check of the branch protection is keyed on the job name.
+
 on:
   pull_request:
     types: [opened, synchronize, reopened]
@@ -7,33 +22,37 @@ on:
       - main
   schedule:
     - cron: '0 12 * * 1'
+
 jobs:
   test-build:
     name: build & test & analyze
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read # read by the pull request title check
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+          fetch-depth: 0 # Shallow clones should be disabled for a better relevancy of analysis
+
       - name: Cache SonarCloud packages
         uses: actions/cache@v4
         with:
           path: ~/.sonar/cache
           key: ${{ runner.os }}-sonar
           restore-keys: ${{ runner.os }}-sonar
-      - name: Cache Maven packages
-        uses: actions/cache@v4
+
+      - uses: InseeFr/rmes-githubactions-commons/.github/actions/quality-back@main
         with:
-          path: ~/.m2
-          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-          restore-keys: ${{ runner.os }}-m2
-      - name: Set up JDK 25
-        uses: actions/setup-java@v5
-        with:
-          java-version: '25'
-          distribution: 'corretto'
-      - name: Run Sonar
+          # 14.26% of duplicated lines on 2026-09-24 (12.98% when first frozen),
+          # against the 2% shared default: the threshold freezes what exists
+          # rather than dropping the check, and is meant to come down as the
+          # duplication does.
+          jscpd-threshold: '15'
+          # Static analysis of the Dockerfile (threshold `warning`, exceptions in
+          # .hadolint.yaml), a step of the shared `quality` action.
+          hadolint-dockerfile: Dockerfile.bauhaus
+          verify-command: ./mvnw -T 1C -B clean verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: mvn -T 1C clean -B clean verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Pcoverage

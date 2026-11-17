@@ -14,6 +14,7 @@ import com.tngtech.archunit.lang.ArchRule;
 import com.tngtech.archunit.lang.ConditionEvents;
 import com.tngtech.archunit.lang.SimpleConditionEvent;
 import com.tngtech.archunit.library.freeze.FreezingArchRule;
+import fr.insee.rmes.modules.commons.webservice.UnexpectedErrorHandler;
 import fr.insee.rmes.modules.commons.webservice.ValidationExceptionHandler;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,16 +29,19 @@ public class ForbiddenApiArchTest {
     private static final String LG2_PROPERTY = "fr.insee.rmes.bauhaus.lg2";
 
     /**
-     * {@link ValidationExceptionHandler} est explicitement exempté : le format d'erreur de la
-     * validation des corps de requête est transverse par nature, aucun contrôleur ne peut le rendre
-     * lui-même avec une {@code ResponseStatusException}. Les autres handlers restent de la dette,
-     * gelée dans {@code archunit_store}.
+     * {@link ValidationExceptionHandler} et {@link UnexpectedErrorHandler} sont explicitement
+     * exemptés : le format d'erreur de la validation des corps de requête et le filet des erreurs
+     * imprévues sont transverses par nature, aucun contrôleur ne peut les rendre lui-même avec une
+     * {@code ResponseStatusException}. Les autres handlers restent de la dette, gelée dans
+     * {@code archunit_store}.
      */
     @ArchTest
     public static final ArchRule noControllerAdvice = FreezingArchRule.freeze(
             noClasses()
                     .that()
                     .areNotAssignableTo(ValidationExceptionHandler.class)
+                    .and()
+                    .areNotAssignableTo(UnexpectedErrorHandler.class)
                     .should()
                     .beMetaAnnotatedWith(ControllerAdvice.class)
                     .because(

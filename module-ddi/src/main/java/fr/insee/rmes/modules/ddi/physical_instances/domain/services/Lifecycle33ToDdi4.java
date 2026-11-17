@@ -42,6 +42,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.BasedOnObject;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Citation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Code;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeRepresentation;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeValue;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CogsDate;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.DateTimeRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Category;
@@ -382,6 +383,10 @@ public class Lifecycle33ToDdi4 {
         for (ReferenceType ref : group.getStudyUnitReferenceArray()) {
             suRefs.add(readReference(ref));
         }
+        List<Reference> logicalProductRefs = new ArrayList<>();
+        for (ReferenceType ref : group.getLogicalProductReferenceArray()) {
+            logicalProductRefs.add(readReference(ref));
+        }
         return new Ddi4Group(
                 Ddi4Group.TYPE,
                 CogsDate.ofDateTime(group.xgetVersionDate().getStringValue()),
@@ -393,7 +398,8 @@ public class Lifecycle33ToDdi4 {
                 readCitation(group.getCitation()),
                 suRefs,
                 seriesIris.isEmpty() ? null : seriesIris,
-                group.getTypeOfGroup() != null ? group.getTypeOfGroup().getStringValue() : null);
+                group.getTypeOfGroup() != null ? group.getTypeOfGroup().getStringValue() : null,
+                logicalProductRefs.isEmpty() ? null : logicalProductRefs);
     }
 
     public Ddi4StudyUnit toStudyUnit(FragmentDocument doc) {
@@ -495,8 +501,8 @@ public class Lifecycle33ToDdi4 {
             RangeValue high = nrt.isSetHigh() ? toRangeValue(nrt.getHigh()) : null;
             numberRange = new NumberRange(low, high);
         }
-        String typeCode = numRep.isSetNumericTypeCode() && numRep.getNumericTypeCode() != null
-                ? numRep.getNumericTypeCode().getStringValue()
+        CodeValue typeCode = numRep.isSetNumericTypeCode() && numRep.getNumericTypeCode() != null
+                ? CodeValue.numericType(numRep.getNumericTypeCode().getStringValue())
                 : null;
         return new NumericRepresentation(NumericRepresentation.TYPE, typeCode, numberRange);
     }
@@ -511,7 +517,9 @@ public class Lifecycle33ToDdi4 {
         if (rep == null) return null;
         DateTimeRepresentationBaseType dt =
                 (DateTimeRepresentationBaseType) rep.changeType(DateTimeRepresentationBaseType.type);
-        String typeCode = dt.getDateTypeCode() != null ? dt.getDateTypeCode().getStringValue() : null;
+        CodeValue typeCode = dt.getDateTypeCode() != null
+                ? CodeValue.dateType(dt.getDateTypeCode().getStringValue())
+                : null;
         String format = dt.isSetDateFieldFormat() && dt.getDateFieldFormat() != null
                 ? dt.getDateFieldFormat().getStringValue()
                 : null;

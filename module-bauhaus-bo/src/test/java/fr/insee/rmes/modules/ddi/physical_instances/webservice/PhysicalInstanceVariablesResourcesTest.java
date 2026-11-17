@@ -1,8 +1,8 @@
 package fr.insee.rmes.modules.ddi.physical_instances.webservice;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -21,6 +21,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.server.ResponseStatusException;
 
 @ExtendWith(MockitoExtension.class)
 class PhysicalInstanceVariablesResourcesTest {
@@ -56,10 +57,10 @@ class PhysicalInstanceVariablesResourcesTest {
     void getVariablesXml_returns404WhenNull() {
         when(ddiService.getDataRelationshipsXml(AGENCY, "unknown", null)).thenReturn(null);
 
-        ResponseEntity<String> response = resources.getVariablesXml(AGENCY, "unknown");
+        ResponseStatusException exception =
+                assertThrows(ResponseStatusException.class, () -> resources.getVariablesXml(AGENCY, "unknown"));
 
-        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-        assertNull(response.getBody());
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
     }
 
     @Test
@@ -79,10 +80,10 @@ class PhysicalInstanceVariablesResourcesTest {
     void getVariablesJson_returns404WhenNull() {
         when(ddiService.getDataRelationships(AGENCY, "unknown", null)).thenReturn(null);
 
-        ResponseEntity<Ddi4Response> response = resources.getVariablesJson(AGENCY, "unknown");
+        ResponseStatusException exception =
+                assertThrows(ResponseStatusException.class, () -> resources.getVariablesJson(AGENCY, "unknown"));
 
-        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-        assertNull(response.getBody());
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
     }
 
     @Test

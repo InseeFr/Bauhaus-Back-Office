@@ -82,6 +82,14 @@ class TestSeriesResourcesEnvProd extends AbstractResourcesEnvProd {
         mvc.perform(request).andExpect(status().is(code));
     }
 
+    /**
+     * Corps valide : la validation du @RequestBody passe avant le contrôle RBAC, un corps sans
+     * prefLabelLg1 répondrait 400 sans jamais atteindre le HasAccess testé ici — y compris dans le
+     * cas 403.
+     */
+    private static final String SERIES_BODY = """
+            {"prefLabelLg1": "Série"}""";
+
     private static Stream<Arguments> provideDataForPutEndpoints() {
         return Stream.of(Arguments.of(200, true), Arguments.of(403, false));
     }
@@ -96,7 +104,7 @@ class TestSeriesResourcesEnvProd extends AbstractResourcesEnvProd {
                 .header("Authorization", "Bearer toto")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content("{\"id\": \"1\"}");
+                .content(SERIES_BODY);
         request.header("Authorization", "Bearer toto");
 
         mvc.perform(request).andExpect(status().is(code));

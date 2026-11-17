@@ -50,6 +50,13 @@ class GraphDBOrganisationsRepositoryTest {
         lenient().when(organizationQueries.organizationsQuery()).thenReturn("mock-query");
     }
 
+    private CompactOrganisation getCompactOrganisationFrom(String organisationId, String jsonResponse)
+            throws RmesException, OrganisationFetchException {
+        when(repositoryGestion.getResponseAsObject(anyString())).thenReturn(new JSONObject(jsonResponse));
+
+        return repository.getCompactOrganisation(organisationId);
+    }
+
     @Test
     void shouldGetAllOrganisationsMappedFromSparqlRows() throws RmesException, OrganisationFetchException {
         // Given
@@ -190,10 +197,8 @@ class GraphDBOrganisationsRepositoryTest {
             }
             """;
 
-        when(repositoryGestion.getResponseAsObject(anyString())).thenReturn(new JSONObject(jsonResponse));
-
         // When
-        CompactOrganisation result = repository.getCompactOrganisation(organisationId);
+        CompactOrganisation result = getCompactOrganisationFrom(organisationId, jsonResponse);
 
         // Then
         assertThat(result).isNotNull();
@@ -250,10 +255,8 @@ class GraphDBOrganisationsRepositoryTest {
             }
             """;
 
-        when(repositoryGestion.getResponseAsObject(anyString())).thenReturn(new JSONObject(jsonResponse));
-
         // When
-        repository.getCompactOrganisation(organisationId);
+        getCompactOrganisationFrom(organisationId, jsonResponse);
 
         // Then
         verify(repositoryGestion, times(1)).getResponseAsObject(anyString());
@@ -272,10 +275,8 @@ class GraphDBOrganisationsRepositoryTest {
             }
             """;
 
-        when(repositoryGestion.getResponseAsObject(anyString())).thenReturn(new JSONObject(jsonResponse));
-
         // When
-        CompactOrganisation result = repository.getCompactOrganisation(organisationId);
+        CompactOrganisation result = getCompactOrganisationFrom(organisationId, jsonResponse);
 
         // Then
         assertThat(result).isNotNull();

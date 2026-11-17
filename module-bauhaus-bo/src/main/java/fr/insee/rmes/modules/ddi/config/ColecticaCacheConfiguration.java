@@ -1,6 +1,7 @@
 package fr.insee.rmes.modules.ddi.config;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
+import fr.insee.rmes.bauhaus_services.geography.GeographyServiceImpl;
 import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.ColecticaCacheNames;
 import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.ColecticaConfiguration;
 import java.time.Duration;
@@ -31,6 +32,12 @@ public class ColecticaCacheConfiguration {
     /** Un créateur de série se modifie dans le module Opérations, sans éviction côté DDI. */
     static final Duration SERIES_CREATORS_TTL = Duration.ofMinutes(5);
 
+    /**
+     * Les territoires se modifient dans l'application (éviction à l'écriture) mais le COG peut être
+     * rechargé directement dans le triplestore : la durée borne le délai de prise en compte.
+     */
+    static final Duration GEO_FEATURES_TTL = Duration.ofHours(1);
+
     @Bean
     public CacheManager colecticaCacheManager(ColecticaConfiguration colecticaConfiguration) {
         Duration ttl = Objects.requireNonNullElse(
@@ -44,6 +51,9 @@ public class ColecticaCacheConfiguration {
         cacheManager.registerCustomCache(
                 ColecticaCacheNames.SERIES_CREATORS,
                 Caffeine.newBuilder().expireAfterWrite(SERIES_CREATORS_TTL).build());
+        cacheManager.registerCustomCache(
+                GeographyServiceImpl.GEO_FEATURES_CACHE,
+                Caffeine.newBuilder().expireAfterWrite(GEO_FEATURES_TTL).build());
         return cacheManager;
     }
 }

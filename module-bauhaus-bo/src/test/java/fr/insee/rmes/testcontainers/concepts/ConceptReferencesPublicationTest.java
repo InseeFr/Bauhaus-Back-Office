@@ -14,6 +14,7 @@ import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
+import org.json.JSONArray;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -52,9 +53,7 @@ class ConceptReferencesPublicationTest extends WithGraphDBContainer {
     @Test
     void referencesLinkSurvivesPublicationOfTheReferencedConcept() throws RmesException {
         // A référence C : ce triplet sortant appartient au modèle propre de A.
-        Model modelA = new LinkedHashModel();
-        modelA.add(CONCEPT_A, RDFS.LABEL, VF.createLiteral("Concept A"), GRAPH);
-        modelA.add(CONCEPT_A, DCTERMS.REFERENCES, CONCEPT_C, GRAPH);
+        Model modelA = conceptAModel(true);
 
         // C n'a aucun triplet sortant references : son modèle propre l'ignore.
         Model modelC = new LinkedHashModel();
@@ -65,15 +64,7 @@ class ConceptReferencesPublicationTest extends WithGraphDBContainer {
         // Puis C est publié : la publication de C ne doit pas toucher au lien entrant A references C.
         repositoryPublication.publishConcept(CONCEPT_C, modelC, List.of(), List.of());
 
-        String query = """
-                SELECT ?s WHERE {
-                    GRAPH <%s> {
-                        ?s <%s> <%s> .
-                    }
-                }
-                """.formatted(GRAPH.stringValue(), DCTERMS.REFERENCES.stringValue(), CONCEPT_C.stringValue());
-
-        var result = repositoryPublication.getResponseAsArray(query);
+        var result = subjectsReferencingConceptC();
 
         assertThat(result)
                 .as("A dcterms:references C doit subsister après la publication de C (#1495)")
@@ -83,16 +74,30 @@ class ConceptReferencesPublicationTest extends WithGraphDBContainer {
 
     @Test
     void removingTheReferenceFromTheReferencingConceptIsStillPropagated() throws RmesException {
-        Model modelWithReference = new LinkedHashModel();
-        modelWithReference.add(CONCEPT_A, RDFS.LABEL, VF.createLiteral("Concept A"), GRAPH);
-        modelWithReference.add(CONCEPT_A, DCTERMS.REFERENCES, CONCEPT_C, GRAPH);
+        Model modelWithReference = conceptAModel(true);
         repositoryPublication.publishConcept(CONCEPT_A, modelWithReference, List.of(), List.of());
 
         // A est republié sans la référence : son modèle propre ne contient plus le triplet sortant.
-        Model modelWithoutReference = new LinkedHashModel();
-        modelWithoutReference.add(CONCEPT_A, RDFS.LABEL, VF.createLiteral("Concept A"), GRAPH);
+        Model modelWithoutReference = conceptAModel(false);
         repositoryPublication.publishConcept(CONCEPT_A, modelWithoutReference, List.of(), List.of());
 
+        var result = subjectsReferencingConceptC();
+
+        assertThat(result)
+                .as("retirer la référence à la republication du concept référençant doit bien la supprimer")
+                .isEmpty();
+    }
+
+    private static Model conceptAModel(boolean referencesConceptC) {
+        Model model = new LinkedHashModel();
+        model.add(CONCEPT_A, RDFS.LABEL, VF.createLiteral("Concept A"), GRAPH);
+        if (referencesConceptC) {
+            model.add(CONCEPT_A, DCTERMS.REFERENCES, CONCEPT_C, GRAPH);
+        }
+        return model;
+    }
+
+    private JSONArray subjectsReferencingConceptC() throws RmesException {
         String query = """
                 SELECT ?s WHERE {
                     GRAPH <%s> {
@@ -101,10 +106,6 @@ class ConceptReferencesPublicationTest extends WithGraphDBContainer {
                 }
                 """.formatted(GRAPH.stringValue(), DCTERMS.REFERENCES.stringValue(), CONCEPT_C.stringValue());
 
-        var result = repositoryPublication.getResponseAsArray(query);
-
-        assertThat(result)
-                .as("retirer la référence à la republication du concept référençant doit bien la supprimer")
-                .isEmpty();
+        return repositoryPublication.getResponseAsArray(query);
     }
 }

@@ -4,7 +4,6 @@ import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.model.operations.documentations.Documentation;
 import fr.insee.rmes.model.operations.documentations.MSD;
 import java.io.IOException;
-import org.springframework.http.HttpStatus;
 
 public interface OperationsDocumentationsService {
 
@@ -19,9 +18,9 @@ public interface OperationsDocumentationsService {
 
     String getFullSimsForJson(String id) throws RmesException;
 
-    String createMetadataReport(String body) throws RmesException;
+    String createMetadataReport(Documentation sims) throws RmesException;
 
-    void setMetadataReport(String id, String body) throws RmesException;
+    void setMetadataReport(String id, Documentation sims) throws RmesException;
 
     void publishMetadataReport(String id) throws RmesException;
 
@@ -31,5 +30,5 @@ public interface OperationsDocumentationsService {
 
     String getMetadataReportDefaultValue() throws IOException;
 
-    HttpStatus deleteMetadataReport(String id) throws RmesException;
+    void deleteMetadataReport(String id) throws RmesException;
 }

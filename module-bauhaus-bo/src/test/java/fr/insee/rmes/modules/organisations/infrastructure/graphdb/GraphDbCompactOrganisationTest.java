@@ -9,14 +9,8 @@ import org.junit.jupiter.api.Test;
 
 class GraphDbCompactOrganisationTest {
 
-    @Test
-    void shouldConvertToDomainWithFrenchLabel() {
-        // Given
-        String iriString = "http://rdf.insee.fr/def/base#OrganismUnit_1234";
-        String identifier = "ORG-001";
-        String label = "Direction des statistiques";
-        String labelLg = "fr";
-
+    private static void assertConvertsToDomain(
+            String iriString, String identifier, String label, String labelLg, Lang expectedLang) {
         GraphDbCompactOrganisation graphDbOrganisation =
                 new GraphDbCompactOrganisation(iriString, identifier, label, labelLg);
 
@@ -29,30 +23,23 @@ class GraphDbCompactOrganisationTest {
         assertThat(result.iri().stringValue()).isEqualTo(iriString);
         assertThat(result.identifier()).isEqualTo(identifier);
         assertThat(result.label().value()).isEqualTo(label);
-        assertThat(result.label().lang()).isEqualTo(Lang.FR);
+        assertThat(result.label().lang()).isEqualTo(expectedLang);
+    }
+
+    @Test
+    void shouldConvertToDomainWithFrenchLabel() {
+        assertConvertsToDomain(
+                "http://rdf.insee.fr/def/base#OrganismUnit_1234",
+                "ORG-001",
+                "Direction des statistiques",
+                "fr",
+                Lang.FR);
     }
 
     @Test
     void shouldConvertToDomainWithEnglishLabel() {
-        // Given
-        String iriString = "http://rdf.insee.fr/def/base#OrganismUnit_5678";
-        String identifier = "ORG-002";
-        String label = "Statistics Department";
-        String labelLg = "en";
-
-        GraphDbCompactOrganisation graphDbOrganisation =
-                new GraphDbCompactOrganisation(iriString, identifier, label, labelLg);
-
-        // When
-        CompactOrganisation result = graphDbOrganisation.toDomain();
-
-        // Then
-        assertThat(result).isNotNull();
-        assertThat(result.iri()).isInstanceOf(IRI.class);
-        assertThat(result.iri().stringValue()).isEqualTo(iriString);
-        assertThat(result.identifier()).isEqualTo(identifier);
-        assertThat(result.label().value()).isEqualTo(label);
-        assertThat(result.label().lang()).isEqualTo(Lang.EN);
+        assertConvertsToDomain(
+                "http://rdf.insee.fr/def/base#OrganismUnit_5678", "ORG-002", "Statistics Department", "en", Lang.EN);
     }
 
     @Test

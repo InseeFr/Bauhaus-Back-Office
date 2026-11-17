@@ -1,7 +1,7 @@
 package fr.insee.rmes.modules.ddi.physical_instances.webservice;
 
+import static fr.insee.rmes.modules.ddi.physical_instances.webservice.DdiResourcesTestSupport.assertOkListOfSize;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -10,18 +10,14 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDISe
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PartialCodeListSchemeResponse;
 import java.util.Date;
 import java.util.List;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
-import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
-@ExtendWith(MockitoExtension.class)
+@ExtendWith({MockitoExtension.class, LocalhostRequestContextExtension.class})
 class CodeListSchemeResourcesTest {
 
     @Mock
@@ -32,19 +28,6 @@ class CodeListSchemeResourcesTest {
     @BeforeEach
     void setUp() {
         codeListSchemeResources = new CodeListSchemeResources(ddiService);
-
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        request.setScheme("http");
-        request.setServerName("localhost");
-        request.setServerPort(8080);
-        request.setContextPath("");
-        ServletRequestAttributes attrs = new ServletRequestAttributes(request);
-        RequestContextHolder.setRequestAttributes(attrs);
-    }
-
-    @AfterEach
-    void tearDown() {
-        RequestContextHolder.resetRequestAttributes();
     }
 
     @Test
@@ -56,11 +39,7 @@ class CodeListSchemeResourcesTest {
 
         ResponseEntity<List<PartialCodeListSchemeResponse>> response = codeListSchemeResources.getCodeListSchemes();
 
-        assertNotNull(response);
-        assertEquals(200, response.getStatusCode().value());
-        List<PartialCodeListSchemeResponse> result = response.getBody();
-        assertNotNull(result);
-        assertEquals(2, result.size());
+        List<PartialCodeListSchemeResponse> result = assertOkListOfSize(response, 2);
 
         assertEquals("cls-1", result.getFirst().getId());
         assertEquals("Schéma 1", result.getFirst().getLabel());

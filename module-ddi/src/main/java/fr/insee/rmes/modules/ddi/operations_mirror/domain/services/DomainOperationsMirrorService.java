@@ -6,8 +6,11 @@ import fr.insee.rmes.modules.ddi.operations_mirror.domain.model.DdiShortName;
 import fr.insee.rmes.modules.ddi.operations_mirror.domain.port.clientside.OperationsMirrorService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Citation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CogsDate;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CategoryScheme;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4LogicalProduct;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedRepresentationScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4VariableScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LangString;
@@ -22,6 +25,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,6 +51,12 @@ public class DomainOperationsMirrorService implements OperationsMirrorService {
     private static final String LOGICAL_PRODUCT_NAME_PREFIX = "LP-";
     private static final String VARIABLE_SCHEME_NAME_PREFIX = "VS-";
     private static final String VARIABLE_SCHEME_LABEL_PREFIX = "Ensemble de variables ";
+    private static final String CODE_LIST_SCHEME_ROLE = "codelistscheme";
+    private static final String CATEGORY_SCHEME_ROLE = "categoryscheme";
+    private static final String MANAGED_REPRESENTATION_SCHEME_ROLE = "managedrepresentationscheme";
+    private static final String CODE_LIST_SCHEME_LABEL_PREFIX = "Ensemble de listes de codes ";
+    private static final String CATEGORY_SCHEME_LABEL_PREFIX = "Ensemble de catégories ";
+    private static final String MANAGED_REPRESENTATION_SCHEME_LABEL_PREFIX = "Ensemble de représentations ";
 
     private final GroupService groupService;
     private final StudyUnitService studyUnitService;
@@ -74,6 +84,21 @@ public class DomainOperationsMirrorService implements OperationsMirrorService {
         String version = existing.map(Ddi4Group::version).orElse(FIRST_VERSION);
         logger.info("Mirroring series {} as DDI group {} (version {})", event.iri(), groupId, version);
 
+        // Comme pour une opération, le LogicalProduct et ses schemes passent avant le Group qui les
+        // référence. Un Group qui a déjà le sien (créé par l'init, ou à un précédent enregistrement)
+        // le garde : on n'en fabrique pas un second.
+        String shortLabel = shortLabelOf(event.prefLabel(), event.altLabel());
+        List<Reference> carried = existing.map(Ddi4Group::logicalProductReference)
+                .filter(references -> !references.isEmpty())
+                .orElse(null);
+        List<Reference> logicalProducts;
+        if (carried == null) {
+            logicalProducts = List.of(createGroupLogicalProduct(event.iri(), shortLabel));
+        } else {
+            carried.forEach(reference -> relabelGroupLogicalProduct(reference, shortLabel));
+            logicalProducts = carried;
+        }
+
         groupService.createOrUpdate(new Ddi4Group(
                 Ddi4Group.TYPE,
                 now(),
@@ -86,13 +111,13 @@ public class DomainOperationsMirrorService implements OperationsMirrorService {
                 existing.map(Ddi4Group::studyUnitReference).orElse(null),
                 seriesIrisOf(existing, event.iri()),
                 SERIES_TYPE_OF_GROUP,
-                existing.map(Ddi4Group::logicalProductReference).orElse(null)));
+                logicalProducts));
     }
 
     @Override
     public void mirror(OperationSaved event) {
         String studyUnitId = DdiMirrorIdentity.of(event.iri());
-        String shortLabel = shortLabelOf(event);
+        String shortLabel = shortLabelOf(event.prefLabel(), event.altLabel());
         logger.info("Mirroring operation {} as DDI study unit {}", event.iri(), studyUnitId);
 
         // La VariableScheme avant le LogicalProduct qui la classe, lui-même avant la StudyUnit qui le
@@ -198,17 +223,186 @@ public class DomainOperationsMirrorService implements OperationsMirrorService {
     }
 
     /**
-     * Le nom court de l'opération, sur lequel se construisent les libellés et les noms de sa
-     * VariableScheme et de son LogicalProduct. À défaut de nom court, le libellé long en tient lieu :
-     * ces objets ont besoin d'un libellé quoi qu'il arrive.
+     * Crée les schemes (initialement vides) du Group d'une série — CodeListScheme, CategoryScheme,
+     * ManagedRepresentationScheme — puis le LogicalProduct qui les classe, et rend la référence vers
+     * ce LogicalProduct. La VariableScheme n'en fait pas partie : elle vit dans le LogicalProduct de
+     * chaque StudyUnit.
      */
-    private static String shortLabelOf(OperationSaved event) {
-        if (event.altLabel() != null && !event.altLabel().isEmpty()) {
-            return event.altLabel().lg1() != null
-                    ? event.altLabel().lg1()
-                    : event.altLabel().lg2();
+    private Reference createGroupLogicalProduct(String seriesIri, String shortLabel) {
+        String codeListSchemeId = DdiMirrorIdentity.of(seriesIri, CODE_LIST_SCHEME_ROLE);
+        ddiService.createCodeListScheme(new Ddi4CodeListScheme(
+                Ddi4CodeListScheme.TYPE,
+                now(),
+                DdiMirrorIdentity.urn(agencyId, codeListSchemeId, FIRST_VERSION),
+                agencyId,
+                codeListSchemeId,
+                FIRST_VERSION,
+                labelIn(languages.get(0), CODE_LIST_SCHEME_LABEL_PREFIX + shortLabel),
+                List.of()));
+
+        String categorySchemeId = DdiMirrorIdentity.of(seriesIri, CATEGORY_SCHEME_ROLE);
+        ddiService.createCategoryScheme(new Ddi4CategoryScheme(
+                Ddi4CategoryScheme.TYPE,
+                now(),
+                DdiMirrorIdentity.urn(agencyId, categorySchemeId, FIRST_VERSION),
+                agencyId,
+                categorySchemeId,
+                FIRST_VERSION,
+                labelIn(languages.get(0), CATEGORY_SCHEME_LABEL_PREFIX + shortLabel),
+                List.of()));
+
+        String managedRepresentationSchemeId = DdiMirrorIdentity.of(seriesIri, MANAGED_REPRESENTATION_SCHEME_ROLE);
+        ddiService.createManagedRepresentationScheme(new Ddi4ManagedRepresentationScheme(
+                Ddi4ManagedRepresentationScheme.TYPE,
+                now(),
+                DdiMirrorIdentity.urn(agencyId, managedRepresentationSchemeId, FIRST_VERSION),
+                agencyId,
+                managedRepresentationSchemeId,
+                FIRST_VERSION,
+                labelIn(languages.get(0), MANAGED_REPRESENTATION_SCHEME_LABEL_PREFIX + shortLabel),
+                List.of()));
+
+        String logicalProductId = DdiMirrorIdentity.of(seriesIri, LOGICAL_PRODUCT_ROLE);
+        ddiService.createLogicalProduct(new Ddi4LogicalProduct(
+                Ddi4LogicalProduct.TYPE,
+                now(),
+                DdiMirrorIdentity.urn(agencyId, logicalProductId, FIRST_VERSION),
+                agencyId,
+                logicalProductId,
+                FIRST_VERSION,
+                labelIn(languages.get(0), shortLabel),
+                List.of(Reference.of(agencyId, codeListSchemeId, FIRST_VERSION, "CodeListScheme")),
+                List.of(Reference.of(agencyId, categorySchemeId, FIRST_VERSION, "CategoryScheme")),
+                null,
+                List.of(Reference.of(
+                        agencyId, managedRepresentationSchemeId, FIRST_VERSION, "ManagedRepresentationScheme")),
+                DdiShortName.prefixed(LOGICAL_PRODUCT_NAME_PREFIX, shortLabel)));
+
+        return Reference.of(agencyId, logicalProductId, FIRST_VERSION, "LogicalProduct");
+    }
+
+    /**
+     * Reporte le nom court de la série sur le LogicalProduct déjà en place et sur ses schemes. Chaque
+     * objet est relu puis réécrit à l'identique, version comprise : seuls son libellé dans la langue
+     * principale et son {@code Name} changent, si bien que ce qu'il classe (listes de codes,
+     * catégories, représentations) reste en place. Un objet déjà à jour n'est pas réécrit.
+     */
+    private void relabelGroupLogicalProduct(Reference reference, String shortLabel) {
+        if (shortLabel == null || shortLabel.isBlank()) {
+            return;
         }
-        return event.prefLabel() == null ? "" : event.prefLabel().lg1();
+        Optional<Ddi4LogicalProduct> found = ddiService.findLogicalProduct(reference.agency(), reference.id());
+        if (found.isEmpty()) {
+            logger.warn("Logical product {} of a series group not found: its label is left as is", reference.id());
+            return;
+        }
+        Ddi4LogicalProduct logicalProduct = found.get();
+        relabelSchemes(logicalProduct, shortLabel);
+
+        List<LangString> label = relabelled(logicalProduct.label(), shortLabel);
+        String name = DdiShortName.prefixed(LOGICAL_PRODUCT_NAME_PREFIX, shortLabel);
+        if (label.equals(logicalProduct.label()) && Objects.equals(name, logicalProduct.name())) {
+            return;
+        }
+        ddiService.createLogicalProduct(new Ddi4LogicalProduct(
+                logicalProduct.type(),
+                now(),
+                logicalProduct.urn(),
+                logicalProduct.agency(),
+                logicalProduct.id(),
+                logicalProduct.version(),
+                label,
+                logicalProduct.codeListSchemeReference(),
+                logicalProduct.categorySchemeReference(),
+                logicalProduct.variableSchemeReference(),
+                logicalProduct.managedRepresentationSchemeReference(),
+                name));
+    }
+
+    private void relabelSchemes(Ddi4LogicalProduct logicalProduct, String shortLabel) {
+        for (Reference reference : orEmpty(logicalProduct.codeListSchemeReference())) {
+            ddiService.findCodeListScheme(reference.agency(), reference.id()).ifPresent(scheme -> {
+                List<LangString> label = relabelled(scheme.label(), CODE_LIST_SCHEME_LABEL_PREFIX + shortLabel);
+                if (!label.equals(scheme.label())) {
+                    ddiService.createCodeListScheme(new Ddi4CodeListScheme(
+                            scheme.type(),
+                            now(),
+                            scheme.urn(),
+                            scheme.agency(),
+                            scheme.id(),
+                            scheme.version(),
+                            label,
+                            scheme.codeListReference()));
+                }
+            });
+        }
+        for (Reference reference : orEmpty(logicalProduct.categorySchemeReference())) {
+            ddiService.findCategoryScheme(reference.agency(), reference.id()).ifPresent(scheme -> {
+                List<LangString> label = relabelled(scheme.label(), CATEGORY_SCHEME_LABEL_PREFIX + shortLabel);
+                if (!label.equals(scheme.label())) {
+                    ddiService.createCategoryScheme(new Ddi4CategoryScheme(
+                            scheme.type(),
+                            now(),
+                            scheme.urn(),
+                            scheme.agency(),
+                            scheme.id(),
+                            scheme.version(),
+                            label,
+                            scheme.categoryReference()));
+                }
+            });
+        }
+        for (Reference reference : orEmpty(logicalProduct.managedRepresentationSchemeReference())) {
+            ddiService
+                    .findManagedRepresentationScheme(reference.agency(), reference.id())
+                    .ifPresent(scheme -> {
+                        List<LangString> label =
+                                relabelled(scheme.label(), MANAGED_REPRESENTATION_SCHEME_LABEL_PREFIX + shortLabel);
+                        if (!label.equals(scheme.label())) {
+                            ddiService.createManagedRepresentationScheme(new Ddi4ManagedRepresentationScheme(
+                                    scheme.type(),
+                                    now(),
+                                    scheme.urn(),
+                                    scheme.agency(),
+                                    scheme.id(),
+                                    scheme.version(),
+                                    label,
+                                    scheme.managedRepresentationReference()));
+                        }
+                    });
+        }
+    }
+
+    /**
+     * Le libellé {@code existing} dont la valeur dans la langue principale devient {@code value} ; les
+     * autres langues sont gardées telles quelles.
+     */
+    private List<LangString> relabelled(List<LangString> existing, String value) {
+        String language = languages.get(0);
+        List<LangString> label = new ArrayList<>();
+        label.add(new LangString(language, value));
+        for (LangString other : orEmpty(existing)) {
+            if (!language.equals(other.language())) {
+                label.add(other);
+            }
+        }
+        return label;
+    }
+
+    private static <T> List<T> orEmpty(List<T> values) {
+        return values == null ? List.of() : values;
+    }
+
+    /**
+     * Le nom court de la ressource, sur lequel se construisent les libellés et les noms de son
+     * LogicalProduct et de ses schemes. À défaut de nom court, le libellé long en tient lieu : ces
+     * objets ont besoin d'un libellé quoi qu'il arrive.
+     */
+    private static String shortLabelOf(BilingualLabel prefLabel, BilingualLabel altLabel) {
+        if (altLabel != null && !altLabel.isEmpty()) {
+            return altLabel.lg1() != null ? altLabel.lg1() : altLabel.lg2();
+        }
+        return prefLabel == null ? "" : prefLabel.lg1();
     }
 
     private static List<LangString> labelIn(String language, String value) {
