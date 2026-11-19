@@ -12,8 +12,8 @@ import org.springframework.http.ResponseEntity;
  * Test E2E reproduisant le bug : insee:html de la rubrique S.3.1 (RICHTEXT)
  * est stocké dans le graphe rapport/null au lieu du graphe rapport/8888.
  *
- * Cause : addHtmlVersionForRichText() utilise RdfUtils.simsGraph(null) comme
- * contexte du graphe au lieu de RdfUtils.simsGraph(simsId).
+ * Cause : addHtmlVersionForRichText() utilise iriFactory.simsGraph(null) comme
+ * contexte du graphe au lieu de iriFactory.simsGraph(simsId).
  *
  * Ce test ÉCHOUE intentionnellement tant que le bug n'est pas corrigé.
  */

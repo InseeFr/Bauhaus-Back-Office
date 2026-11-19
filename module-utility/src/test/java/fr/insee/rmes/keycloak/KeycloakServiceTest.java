@@ -7,43 +7,19 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import java.time.Instant;
 import java.util.Date;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Answers;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.springframework.web.client.RestClient;
 
-class KeycloakServiceTest {
+class KeycloakServiceTest extends AbstractTokenServiceTest<KeycloakService> {
 
-    @Mock
-    private RestClient testRestClient;
-
-    @Mock
-    private RestClient.RequestBodyUriSpec requestBodyUriSpec;
-
-    @Mock(answer = Answers.RETURNS_SELF)
-    private RestClient.RequestBodySpec requestBodySpec;
-
-    @Mock
-    private RestClient.ResponseSpec responseSpec;
-
-    private KeycloakService keycloakService;
-
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-        keycloakService = new KeycloakService(KeycloakTestFixtures.properties());
-        keycloakService.keycloakClient = testRestClient;
-
-        KeycloakTestFixtures.stubTokenRequest(testRestClient, requestBodyUriSpec, requestBodySpec, responseSpec);
-        when(responseSpec.body(Token.class)).thenReturn(KeycloakTestFixtures.token("token"));
+    @Override
+    KeycloakService createService(KeycloakProperties properties) {
+        return new KeycloakService(properties);
     }
 
     @Test
     void nowPlus1Second() {
         var start = new Date();
-        var actual = keycloakService.nowPlus1Second();
+        var actual = service.nowPlus1Second();
         var nowPlus1 = Date.from(start.toInstant().plusSeconds(1));
         var nowPlus10 = Date.from(start.toInstant().plusSeconds(10));
         assertFalse(actual.before(nowPlus1));
@@ -52,13 +28,13 @@ class KeycloakServiceTest {
 
     @Test
     void getAccessToken_shouldCallKeycloakServerWithDefaultRealm() {
-        keycloakService.getAccessToken();
+        service.getAccessToken();
         verify(requestBodyUriSpec).uri("keycloak.test/realms/default-realm/protocol/openid-connect/token");
     }
 
     @Test
     void getRealmConfig_shouldReturnDefaultRealm() {
-        var realmConfig = keycloakService.getRealmConfig();
+        var realmConfig = service.getRealmConfig();
         assertEquals("default-realm", realmConfig.name());
         assertEquals("default-client", realmConfig.clientid());
     }
@@ -72,12 +48,12 @@ class KeycloakServiceTest {
 
     @Test
     void isTokenValid_shouldReturnFalse_whenTokenIsNull() {
-        assertFalse(keycloakService.isTokenValid(null));
+        assertFalse(service.isTokenValid(null));
     }
 
     @Test
     void isTokenValid_shouldReturnFalse_whenTokenIsNotAJwt() {
-        assertFalse(keycloakService.isTokenValid("not-a-jwt"));
+        assertFalse(service.isTokenValid("not-a-jwt"));
     }
 
     @Test
@@ -85,7 +61,7 @@ class KeycloakServiceTest {
         String token = JWT.create()
                 .withExpiresAt(Date.from(Instant.now().plusSeconds(300)))
                 .sign(Algorithm.HMAC256("secret"));
-        assertTrue(keycloakService.isTokenValid(token));
+        assertTrue(service.isTokenValid(token));
     }
 
     @Test
@@ -93,13 +69,13 @@ class KeycloakServiceTest {
         String token = JWT.create()
                 .withExpiresAt(Date.from(Instant.now().minusSeconds(300)))
                 .sign(Algorithm.HMAC256("secret"));
-        assertFalse(keycloakService.isTokenValid(token));
+        assertFalse(service.isTokenValid(token));
     }
 
     @Test
     void isTokenValid_shouldReturnFalse_whenTokenHasNoExpiryClaim() {
         String token = JWT.create().sign(Algorithm.HMAC256("secret"));
-        assertFalse(keycloakService.isTokenValid(token));
+        assertFalse(service.isTokenValid(token));
     }
 
     private void stubKeycloakReturns(String accessToken) {
@@ -117,8 +93,8 @@ class KeycloakServiceTest {
         String jwt = jwtExpiringIn(300);
         stubKeycloakReturns(jwt);
 
-        String first = keycloakService.getAccessToken();
-        String second = keycloakService.getAccessToken();
+        String first = service.getAccessToken();
+        String second = service.getAccessToken();
 
         assertEquals(jwt, first);
         assertEquals(jwt, second);
@@ -129,8 +105,8 @@ class KeycloakServiceTest {
     void getAccessToken_refetchesWhenCachedTokenIsExpired() {
         stubKeycloakReturns(jwtExpiringIn(-10));
 
-        keycloakService.getAccessToken();
-        keycloakService.getAccessToken();
+        service.getAccessToken();
+        service.getAccessToken();
 
         verify(testRestClient, times(2)).post();
     }
@@ -140,8 +116,8 @@ class KeycloakServiceTest {
         // exp in 10s while the refresh margin is larger → treated as stale to avoid mid-call expiry.
         stubKeycloakReturns(jwtExpiringIn(10));
 
-        keycloakService.getAccessToken();
-        keycloakService.getAccessToken();
+        service.getAccessToken();
+        service.getAccessToken();
 
         verify(testRestClient, times(2)).post();
     }
@@ -150,9 +126,9 @@ class KeycloakServiceTest {
     void invalidate_forcesRefetchOnNextCall() {
         stubKeycloakReturns(jwtExpiringIn(300));
 
-        keycloakService.getAccessToken();
-        keycloakService.invalidate();
-        keycloakService.getAccessToken();
+        service.getAccessToken();
+        service.invalidate();
+        service.getAccessToken();
 
         verify(testRestClient, times(2)).post();
     }

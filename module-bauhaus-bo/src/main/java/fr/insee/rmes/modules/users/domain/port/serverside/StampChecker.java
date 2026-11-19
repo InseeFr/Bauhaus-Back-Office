@@ -13,4 +13,10 @@ public interface StampChecker {
 
     List<String> getContributorsStamps(RBAC.Module module, String id)
             throws UnsupportedModuleException, StampFetchException;
+
+    /**
+     * Les timbres des organisations données, chacune désignée par son IRI ou déjà par son timbre.
+     * Une organisation inconnue est rendue telle quelle.
+     */
+    List<String> toStamps(List<String> organisations);
 }

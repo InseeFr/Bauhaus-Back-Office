@@ -4,7 +4,9 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausIriFactory;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfTriples;
+import fr.insee.rmes.config.BauhausIriFactoryStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.ontologies.EVOC;
 import fr.insee.rmes.graphdb.ontologies.INSEE;
@@ -25,23 +27,24 @@ import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
 
 class NotesRepositoryTest {
+
+    private static final BauhausIriFactory IRI_FACTORY = BauhausIriFactoryStub.stub("concepts/definition");
 
     @Test
     void shouldGetVersion() throws RmesException {
         Concept concept = new Concept("id", true);
         VersionableNote versionableNote = new VersionableNote();
         String defaultBVersion = "defaultVersion";
-        NotesRepository notesRepository = new NotesRepository(null, null, null, null, null);
+        NotesRepository notesRepository = new NotesRepository(null, null, null, null, null, IRI_FACTORY);
         String result = notesRepository.getVersion(concept, versionableNote, defaultBVersion);
         assertEquals("1", result);
     }
 
     @Test
     void createRdfDatableNote_shouldAddExpectedStatements() {
-        NotesRepository notesRepository = new NotesRepository(null, null, null, null, null);
+        NotesRepository notesRepository = new NotesRepository(null, null, null, null, null, IRI_FACTORY);
 
         ValueFactory vf = SimpleValueFactory.getInstance();
 
@@ -59,38 +62,26 @@ class NotesRepositoryTest {
 
         Model model = mock(Model.class);
 
-        IRI conceptIri = vf.createIRI("http://example.org/concept/C123");
-        IRI noteIri = vf.createIRI("http://example.org/note/N1");
-        IRI graph = vf.createIRI("http://example.org/graph/concepts");
+        IRI conceptIri = vf.createIRI("http://bauhaus/concepts/definition/C123");
+        IRI noteIri = IRI_FACTORY.datableNote(conceptId, noteDto);
+        IRI graph = vf.createIRI("http://rdf.insee.fr/graphes/concepts/");
 
-        Literal langLit = vf.createLiteral("fr");
-        Literal versionLit = vf.createLiteral(42);
-        Literal issuedLit = vf.createLiteral(issued.toString());
-        Literal xmlLit = vf.createLiteral(content);
-        Literal stringLit = vf.createLiteral(content);
+        Literal langLit = RdfTriples.language("fr");
+        Literal versionLit = RdfTriples.integer("42");
+        Literal issuedLit = RdfTriples.dateTime(issued.toString());
+        Literal xmlLit = RdfTriples.xmlLiteral(content);
+        Literal stringLit = RdfTriples.string(content);
 
-        try (MockedStatic<RdfUtils> rdfUtils = mockStatic(RdfUtils.class)) {
-            rdfUtils.when(() -> RdfUtils.datableNoteIRI(conceptId, noteDto)).thenReturn(noteIri);
-            rdfUtils.when(() -> RdfUtils.conceptIRI(conceptId)).thenReturn(conceptIri);
-            rdfUtils.when(RdfUtils::conceptGraph).thenReturn(graph);
+        notesRepository.createRdfDatableNote(conceptId, noteDto, model);
 
-            rdfUtils.when(() -> RdfUtils.setLiteralLanguage("fr")).thenReturn(langLit);
-            rdfUtils.when(() -> RdfUtils.setLiteralInt("42")).thenReturn(versionLit);
-            rdfUtils.when(() -> RdfUtils.setLiteralDateTime(issued.toString())).thenReturn(issuedLit);
-            rdfUtils.when(() -> RdfUtils.setLiteralXML(content)).thenReturn(xmlLit);
-            rdfUtils.when(() -> RdfUtils.setLiteralString(content)).thenReturn(stringLit);
-
-            notesRepository.createRdfDatableNote(conceptId, noteDto, model);
-
-            verify(model).add(conceptIri, predicate, noteIri, graph);
-            verify(model).add(noteIri, RDF.TYPE, XKOS.EXPLANATORY_NOTE, graph);
-            verify(model).add(noteIri, DCTERMS.LANGUAGE, langLit, graph);
-            verify(model).add(noteIri, INSEE.CONCEPT_VERSION, versionLit, graph);
-            verify(model).add(noteIri, DCTERMS.ISSUED, issuedLit, graph);
-            verify(model).add(noteIri, EVOC.NOTE_LITERAL, xmlLit, graph);
-            verify(model).add(noteIri, RDF.VALUE, stringLit, graph);
-            verifyNoMoreInteractions(model);
-        }
+        verify(model).add(conceptIri, predicate, noteIri, graph);
+        verify(model).add(noteIri, RDF.TYPE, XKOS.EXPLANATORY_NOTE, graph);
+        verify(model).add(noteIri, DCTERMS.LANGUAGE, langLit, graph);
+        verify(model).add(noteIri, INSEE.CONCEPT_VERSION, versionLit, graph);
+        verify(model).add(noteIri, DCTERMS.ISSUED, issuedLit, graph);
+        verify(model).add(noteIri, EVOC.NOTE_LITERAL, xmlLit, graph);
+        verify(model).add(noteIri, RDF.VALUE, stringLit, graph);
+        verifyNoMoreInteractions(model);
     }
 
     @Test
@@ -123,7 +114,7 @@ class NotesRepositoryTest {
     private static NotesRepository notesRepositoryReturning(JSONObject lastVersionResponse) throws RmesException {
         RepositoryGestion repoGestion = mock(RepositoryGestion.class);
         when(repoGestion.getResponseAsObject(any())).thenReturn(lastVersionResponse);
-        return new NotesRepository(repoGestion, null, null, null, mock(ConceptNotesQueries.class));
+        return new NotesRepository(repoGestion, null, null, null, mock(ConceptNotesQueries.class), IRI_FACTORY);
     }
 
     private static Concept conceptUnderUpdate(boolean versioning) throws IOException {

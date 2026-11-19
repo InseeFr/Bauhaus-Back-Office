@@ -90,7 +90,7 @@ class ColecticaGroupSetReader {
             studyUnits.add(parseStudyUnitElement((Element) studyUnitNodes.item(i)));
         }
 
-        return new Ddi4GroupResponse(Ddi4Response.SCHEMA, topLevelReferences, groups, studyUnits);
+        return new Ddi4GroupResponse(Ddi4Response.SCHEMA_ID, topLevelReferences, groups, studyUnits);
     }
 
     private Ddi4Group parseGroupElement(Element groupElement) {
@@ -100,7 +100,7 @@ class ColecticaGroupSetReader {
         List<Reference> logicalProductReferences = parseReferences(groupElement, "LogicalProductReference");
 
         return new Ddi4Group(
-                Ddi4Group.TYPE,
+                Ddi4Group.TYPE_NAME,
                 versionDate.isEmpty() ? null : CogsDate.ofDateTime(versionDate),
                 ColecticaXml.textContent(groupElement, REUSABLE_NS, "URN"),
                 ColecticaXml.textContent(groupElement, REUSABLE_NS, AGENCY),
@@ -119,7 +119,7 @@ class ColecticaGroupSetReader {
         String operationIri = ColecticaXml.textContent(studyUnitElement, REUSABLE_NS, "UserID");
 
         return new Ddi4StudyUnit(
-                Ddi4StudyUnit.TYPE,
+                Ddi4StudyUnit.TYPE_NAME,
                 (versionDate == null || versionDate.isEmpty()) ? null : CogsDate.ofDateTime(versionDate),
                 ColecticaXml.textContent(studyUnitElement, REUSABLE_NS, "URN"),
                 ColecticaXml.textContent(studyUnitElement, REUSABLE_NS, AGENCY),

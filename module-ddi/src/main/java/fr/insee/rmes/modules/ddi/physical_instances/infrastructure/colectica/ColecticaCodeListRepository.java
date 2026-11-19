@@ -76,7 +76,7 @@ class ColecticaCodeListRepository {
                 return null;
             }
             Ddi4Response response = ddi3ToDdi4Converter.convertDdi3ToDdi4(
-                    new Ddi3Response(null, ColecticaItems.toDdi3Items(itemResponses)), Ddi4Response.SCHEMA);
+                    new Ddi3Response(null, ColecticaItems.toDdi3Items(itemResponses)), Ddi4Response.SCHEMA_ID);
             return ColecticaSetReader.withTopLevelReference(
                     response, setReader.findTopLevelReference(itemResponses, CODE_LIST));
         } catch (Exception e) {
@@ -116,9 +116,9 @@ class ColecticaCodeListRepository {
                 return null;
             }
             Ddi4Response converted = ddi3ToDdi4Converter.convertDdi3ToDdi4(
-                    new Ddi3Response(null, List.of(ColecticaItems.toDdi3Item(codeList))), Ddi4Response.SCHEMA);
+                    new Ddi3Response(null, List.of(ColecticaItems.toDdi3Item(codeList))), Ddi4Response.SCHEMA_ID);
             return new Ddi4Response(
-                    Ddi4Response.SCHEMA,
+                    Ddi4Response.SCHEMA_ID,
                     List.of(Reference.of(agencyId, id, String.valueOf(version), CODE_LIST)),
                     null,
                     null,
@@ -143,7 +143,7 @@ class ColecticaCodeListRepository {
                 .map(item -> {
                     String version = String.valueOf(item.version());
                     return new Ddi4Category(
-                            Ddi4Category.TYPE,
+                            Ddi4Category.TYPE_NAME,
                             null,
                             Reference.synthesizeUrn(item.agencyId(), item.identifier(), version),
                             item.agencyId(),

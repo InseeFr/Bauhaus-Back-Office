@@ -128,10 +128,10 @@ public class CodesListsResources extends GenericResources {
     }
 
     @HasAccess(module = RBAC.Module.CODESLIST_CODESLIST, privilege = RBAC.Privilege.DELETE)
-    @DeleteMapping(value = "/detailed/{notation}/codes/{code}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @DeleteMapping(value = "/detailed/{id}/codes/{code}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> deleteCodeForCodeList(
-            @PathVariable("notation") String notation, @PathVariable("code") String code) throws RmesException {
-        codeListService.deleteCodeFromCodeList(notation, code);
+            @PathVariable(Constants.ID) String id, @PathVariable("code") String code) throws RmesException {
+        codeListService.deleteCodeFromCodeList(id, code);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 

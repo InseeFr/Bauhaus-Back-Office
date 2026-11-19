@@ -122,20 +122,6 @@ public class RepositoryGestion {
                 query, repositoryUtils.initRepository(rdfGestion.getUrlServer(), rdfGestion.repositoryId()));
     }
 
-    public RepositoryResult<Statement> getStatements(RepositoryConnection con, Resource subject) throws RmesException {
-        RepositoryResult<Statement> statements = null;
-        if (con == null) {
-            con = gestionConnection();
-        }
-
-        try {
-            statements = con.getStatements(subject, null, null, false);
-        } catch (RepositoryException e) {
-            throwsRmesException(e, "Failure get statements : " + subject);
-        }
-        return statements;
-    }
-
     public void closeStatements(RepositoryResult<Statement> statements) throws RmesException {
         try {
             statements.close();
@@ -148,17 +134,17 @@ public class RepositoryGestion {
         try (RepositoryConnection conn = gestionConnection()) {
             // notes to delete
             for (IRI note : notesToDeleteAndUpdate.get(0)) {
-                conn.remove(note, null, null);
+                removeSubjectFromEveryGraph(conn, note);
             }
             // notes to update
             for (IRI note : notesToDeleteAndUpdate.get(1)) {
-                conn.remove(note, EVOC.NOTE_LITERAL, null);
+                deleteInEveryGraph(conn, "<%s> <%s> ?value".formatted(note, EVOC.NOTE_LITERAL));
             }
             // links to delete
             clearConceptLinks(concept);
 
             loadSimpleObject(concept, model, conn);
-        } catch (RepositoryException e) {
+        } catch (RDF4JException e) {
             throwsRmesException(e, "Failure load concept : " + concept);
         }
     }
@@ -209,7 +195,7 @@ public class RepositoryGestion {
         processConnection(
                 connection -> {
                     logger.info("Removing existing triples for object: {}", object);
-                    connection.remove(object, null, null);
+                    removeSubjectFromEveryGraph(connection, object);
 
                     logger.info("Adding new triples");
                     model.forEach(statement -> logger.info("Triplet: {}", statement));
@@ -246,7 +232,7 @@ public class RepositoryGestion {
     }
 
     public void deleteObject(IRI object, RepositoryConnection conn) throws RmesException {
-        processConnection(connection -> connection.remove(object, null, null), conn, "delete " + object);
+        processConnection(connection -> removeSubjectFromEveryGraph(connection, object), conn, "delete " + object);
     }
 
     public void deleteObject(IRI object) throws RmesException {
@@ -292,8 +278,7 @@ public class RepositoryGestion {
     public void objectsValidation(List<IRI> collectionsToValidateList, Model model) throws RmesException {
         try (RepositoryConnection conn = gestionConnection()) {
             for (IRI item : collectionsToValidateList) {
-                conn.remove(item, INSEE.VALIDATION_STATE, null);
-                conn.remove(item, INSEE.IS_VALIDATED, null);
+                removeValidationStatusFromEveryGraph(conn, item);
             }
             conn.add(model);
         } catch (RepositoryException e) {
@@ -303,12 +288,35 @@ public class RepositoryGestion {
 
     public void objectValidation(IRI ressourceURI, Model model) throws RmesException {
         try (RepositoryConnection conn = gestionConnection()) {
-            conn.remove(ressourceURI, INSEE.VALIDATION_STATE, null);
-            conn.remove(ressourceURI, INSEE.IS_VALIDATED, null);
+            removeValidationStatusFromEveryGraph(conn, ressourceURI);
             conn.add(model);
         } catch (RepositoryException e) {
             throwsRmesException(e, "Failure validation : " + ressourceURI);
         }
+    }
+
+    /**
+     * Efface le statut dans tous les graphes nommés, par SPARQL : un {@code remove} sans graphe ne
+     * supprime rien hors de GraphDB, dont le graphe par défaut est l'union des graphes nommés.
+     */
+    private static void removeValidationStatusFromEveryGraph(RepositoryConnection conn, IRI object) {
+        for (IRI predicate : List.of(INSEE.VALIDATION_STATE, INSEE.IS_VALIDATED)) {
+            deleteInEveryGraph(conn, "<%s> <%s> ?value".formatted(object, predicate));
+        }
+    }
+
+    /**
+     * Efface les triplets du sujet dans tous les graphes nommés, par SPARQL, pour la même raison que
+     * {@link #removeValidationStatusFromEveryGraph}.
+     */
+    private static void removeSubjectFromEveryGraph(RepositoryConnection conn, IRI subject) {
+        deleteInEveryGraph(conn, "<%s> ?predicate ?value".formatted(subject));
+    }
+
+    /** Efface, dans tous les graphes nommés, les triplets qui correspondent au motif SPARQL donné. */
+    private static void deleteInEveryGraph(RepositoryConnection conn, String triplePattern) {
+        conn.prepareUpdate(QueryLanguage.SPARQL, "DELETE WHERE { GRAPH ?graph { %s } }".formatted(triplePattern))
+                .execute();
     }
 
     public void clearConceptLinks(Resource concept) throws RmesException {
@@ -325,19 +333,16 @@ public class RepositoryGestion {
         getStatementsAndRemove(object, typeOfLink);
     }
 
+    /** Efface, dans tous les graphes nommés, les liens des types donnés qui pointent vers l'objet. */
     private void getStatementsAndRemove(Resource object, List<IRI> typeOfLink) throws RmesException {
-        String exceptionCirucmstances = "";
+        String exceptionCircumstances = "";
         try (RepositoryConnection conn = gestionConnection()) {
             for (IRI predicat : typeOfLink) {
-                exceptionCirucmstances = "get " + predicat + " links from " + object;
-                try (RepositoryResult<Statement> statements = conn.getStatements(null, predicat, object, false)) {
-                    exceptionCirucmstances = "remove " + predicat + " links from " + object;
-                    conn.remove(statements);
-                }
+                exceptionCircumstances = "remove " + predicat + " links to " + object;
+                deleteInEveryGraph(conn, "?subject <%s> <%s>".formatted(predicat, object));
             }
-        } catch (RepositoryException e) {
-
-            throwsRmesException(e, "Failure " + exceptionCirucmstances);
+        } catch (RDF4JException e) {
+            throwsRmesException(e, "Failure " + exceptionCircumstances);
         }
     }
 
@@ -346,34 +351,37 @@ public class RepositoryGestion {
                 structure, graph, repositoryUtils.initRepository(rdfGestion.getUrlServer(), rdfGestion.repositoryId()));
     }
 
-    public void keepHierarchicalOperationLinks(Resource object, Model model) throws RmesException {
-        getHierarchicalOperationLinksModel(object, model, List.of(DCTERMS.HAS_PART, DCTERMS.IS_PART_OF));
-    }
-
-    private void getHierarchicalOperationLinksModel(Resource object, Model model, List<IRI> typeOfLink)
-            throws RmesException {
-        try (RepositoryConnection conn = gestionConnection()) {
-            for (IRI predicat : typeOfLink) {
+    /**
+     * Reporte dans le modèle les liens {@code dcterms:hasPart} / {@code dcterms:isPartOf} de l'objet,
+     * entrants et sortants, lus dans le graphe donné, puis les y efface : le modèle les réécrit avec
+     * ce graphe. Le contexte d'un triplet relu est {@code null} hors de GraphDB, le graphe vient donc
+     * de l'appelant.
+     */
+    public void keepHierarchicalOperationLinks(Resource object, Model model, Resource graph) throws RmesException {
+        try (RepositoryConnection conn = getConnection()) {
+            for (IRI predicate : List.of(DCTERMS.HAS_PART, DCTERMS.IS_PART_OF)) {
                 try {
-                    try (RepositoryResult<Statement> statements = conn.getStatements(null, predicat, object, false)) {
-                        addStatementToModel(model, statements);
-                        conn.remove(statements);
+                    try (RepositoryResult<Statement> statements =
+                            conn.getStatements(null, predicate, object, false, graph)) {
+                        addStatementsToModel(model, statements, graph);
                     }
-                    try (RepositoryResult<Statement> statements = conn.getStatements(object, predicat, null, false)) {
-                        addStatementToModel(model, statements);
-                        conn.remove(statements);
+                    try (RepositoryResult<Statement> statements =
+                            conn.getStatements(object, predicate, null, false, graph)) {
+                        addStatementsToModel(model, statements, graph);
                     }
+                    conn.remove((Resource) null, predicate, object, graph);
+                    conn.remove(object, predicate, null, graph);
                 } catch (RepositoryException e) {
-                    throwsRmesException(e, "Failure getHierarchicalOperationLinksModel : " + object);
+                    throwsRmesException(e, "Failure keepHierarchicalOperationLinks : " + object);
                 }
             }
         }
     }
 
-    private void addStatementToModel(Model model, RepositoryResult<Statement> statements) {
+    private static void addStatementsToModel(Model model, RepositoryResult<Statement> statements, Resource graph) {
         while (statements.hasNext()) {
             Statement st = statements.next();
-            model.add(st.getSubject(), st.getPredicate(), st.getObject(), st.getContext());
+            model.add(st.getSubject(), st.getPredicate(), st.getObject(), graph);
         }
     }
 
@@ -415,9 +423,8 @@ public class RepositoryGestion {
     }
 
     /**
-     * Triplets du sujet dans le graphe donné. À préférer à {@link #getStatements(RepositoryConnection,
-     * Resource)} : sans graphe nommé, la lecture ne rend rien sur un triplestore dont le graphe par
-     * défaut n'est pas l'union des graphes nommés, et les triplets lus n'y portent pas leur graphe.
+     * Triplets du sujet dans le graphe donné : sans graphe nommé, la lecture ne rendrait rien sur un
+     * triplestore dont le graphe par défaut n'est pas l'union des graphes nommés.
      */
     public RepositoryResult<Statement> getStatements(RepositoryConnection con, Resource subject, Resource graph)
             throws RmesException {

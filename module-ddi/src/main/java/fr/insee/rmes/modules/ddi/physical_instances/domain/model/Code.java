@@ -15,5 +15,5 @@ public record Code(
         @JsonProperty("Value") ValueType value,
         @JsonProperty("Code") List<Code> code) {
 
-    public static final String TYPE = "CodeType";
+    public static final String TYPE_NAME = "CodeType";
 }

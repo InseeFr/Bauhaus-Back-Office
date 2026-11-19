@@ -47,8 +47,7 @@ class DomainOrganisationsServiceTest {
         CompactOrganisation result = service.getCompactOrganisation(organisationId);
 
         // Then
-        assertThat(result).isNotNull();
-        assertThat(result).isEqualTo(expectedOrganisation);
+        assertThat(result).isNotNull().isEqualTo(expectedOrganisation);
         assertThat(result.identifier()).isEqualTo(organisationId);
         assertThat(result.label().value()).isEqualTo("Direction des statistiques");
         assertThat(result.label().lang()).isEqualTo(Lang.FR);
@@ -186,9 +185,7 @@ class DomainOrganisationsServiceTest {
         List<CompactOrganisation> result = service.getCompactOrganisations(organisationIds);
 
         // Then
-        assertThat(result).isNotNull();
-        assertThat(result).hasSize(3);
-        assertThat(result).isEqualTo(expectedOrganisations);
+        assertThat(result).isNotNull().hasSize(3).isEqualTo(expectedOrganisations);
         assertThat(result.get(0).identifier()).isEqualTo("ORG-001");
         assertThat(result.get(1).identifier()).isEqualTo("ORG-002");
         assertThat(result.get(2).identifier()).isEqualTo("ORG-003");
@@ -244,8 +241,7 @@ class DomainOrganisationsServiceTest {
         List<CompactOrganisation> result = service.getCompactOrganisations(organisationIds);
 
         // Then
-        assertThat(result).isNotNull();
-        assertThat(result).isEmpty();
+        assertThat(result).isNotNull().isEmpty();
 
         verify(organisationsRepository, times(1)).getCompactOrganisations(organisationIds);
     }

@@ -14,9 +14,10 @@ import static org.mockito.Mockito.when;
 import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.operations.OperationsParentRepository;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausIriFactory;
 import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
+import fr.insee.rmes.config.DocumentationsPropertiesStub;
 import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
@@ -38,12 +39,12 @@ import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
@@ -70,15 +71,14 @@ class DocumentationsUtilsTest {
     @Mock
     private BauhausLanguagesProperties languages;
 
+    @Spy
+    private BauhausIriFactory iriFactory = new BauhausIriFactory(
+            GraphsPropertiesStub.stub(),
+            new BauhausUriBuilder("http://bauhaus/publication/", "http://bauhaus/", p -> Optional.of("/operations")),
+            DocumentationsPropertiesStub.stub());
+
     @InjectMocks
     private DocumentationsUtils documentationsUtils;
-
-    @BeforeEach
-    void initStaticGraphs() {
-        RdfUtils.setGraphs(GraphsPropertiesStub.stub());
-        RdfUtils.setBauhausUriBuilder(new BauhausUriBuilder(
-                "http://bauhaus/publication/", "http://bauhaus/", p -> Optional.of("/operations")));
-    }
 
     @Test
     void saveRdfMetadataReport_addsAdmsIdentifierTriple() throws RmesException {
@@ -90,7 +90,7 @@ class DocumentationsUtilsTest {
 
         ArgumentCaptor<Model> captor = ArgumentCaptor.forClass(Model.class);
         verify(repoGestion).replaceGraph(any(Resource.class), captor.capture(), any());
-        IRI simsURI = RdfUtils.objectIRI(ObjectType.DOCUMENTATION, "1500");
+        IRI simsURI = iriFactory.objectIri(ObjectType.DOCUMENTATION, "1500");
         assertThat(captor.getValue().filter(simsURI, ADMS.HAS_IDENTIFIER, null).objects())
                 .containsExactly(SimpleValueFactory.getInstance().createLiteral("1500"));
     }
@@ -240,7 +240,7 @@ class DocumentationsUtilsTest {
                 fail("La création d'un SIMS sur une série avec opérations ne devrait plus lever 406 : "
                         + e.getDetails());
             }
-        } catch (Exception ignored) {
+        } catch (Exception _) {
             // d'autres exceptions sont attendues car les mocks ne couvrent pas tout le flow
         }
     }

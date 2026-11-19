@@ -158,7 +158,11 @@ class DocumentsResourcesHasAccessIntegrationTest extends AbstractHasAccessResour
                 "file", "Nouveau.pdf", MediaType.APPLICATION_PDF_VALUE, "Contenu du fichier".getBytes());
         var request = multipart("/documents/document")
                 .file(file)
-                .param("body", "{\"labelLg1\": \"Nouveau\"}")
+                .file(new MockMultipartFile(
+                        "body",
+                        "",
+                        MediaType.APPLICATION_JSON_VALUE,
+                        "{\"labelLg1\": \"Nouveau\", \"labelLg2\": \"New\", \"lang\": \"fr\"}".getBytes()))
                 .contentType(MULTIPART_FORM_DATA_VALUE);
 
         assertStatusWithAccess(request, code, hasAccessReturn);
@@ -171,9 +175,13 @@ class DocumentsResourcesHasAccessIntegrationTest extends AbstractHasAccessResour
     @MethodSource("provideDataForLinkPostEndpoints")
     @ParameterizedTest
     void postLink(Integer code, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
-        var request = post("/documents/link")
-                .param("body", "{\"labelLg1\": \"Nouvelle page\", \"url\": \"https://www.insee.fr/nouvelle\"}")
-                .contentType(MediaType.APPLICATION_FORM_URLENCODED);
+        var request = multipart("/documents/link")
+                .file(new MockMultipartFile(
+                        "body",
+                        "",
+                        MediaType.APPLICATION_JSON_VALUE,
+                        "{\"labelLg1\": \"Nouvelle page\", \"labelLg2\": \"New page\", \"lang\": \"fr\", \"url\": \"https://www.insee.fr/nouvelle\"}"
+                                .getBytes()));
 
         assertStatusWithAccess(request, code, hasAccessReturn);
     }

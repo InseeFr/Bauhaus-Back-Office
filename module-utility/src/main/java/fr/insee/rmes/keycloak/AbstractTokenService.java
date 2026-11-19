@@ -3,6 +3,7 @@ package fr.insee.rmes.keycloak;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import fr.insee.rmes.http.RestClients;
 import java.time.Instant;
 import java.util.Date;
 import org.slf4j.Logger;
@@ -15,11 +16,11 @@ import org.springframework.web.client.RestClientException;
 
 public abstract class AbstractTokenService implements TokenService {
 
-    protected RestClient keycloakClient = RestClient.create();
-
     private static final Logger logger = LoggerFactory.getLogger(AbstractTokenService.class);
 
     protected final KeycloakProperties keycloakProperties;
+
+    protected RestClient keycloakClient;
 
     /**
      * Re-fetch the token once fewer than this many seconds remain before its expiry, so a cached token
@@ -32,6 +33,11 @@ public abstract class AbstractTokenService implements TokenService {
 
     protected AbstractTokenService(KeycloakProperties keycloakProperties) {
         this.keycloakProperties = keycloakProperties;
+        this.keycloakClient = keycloakProperties == null || keycloakProperties.server() == null
+                ? RestClient.create()
+                : RestClients.withTimeouts(
+                        keycloakProperties.server().connectTimeout(),
+                        keycloakProperties.server().readTimeout());
     }
 
     protected abstract KeycloakProperties.RealmConfig getRealmConfig();
@@ -80,7 +86,7 @@ public abstract class AbstractTokenService implements TokenService {
             Date expiresAt = JWT.decode(token).getExpiresAt();
             return expiresAt != null
                     && expiresAt.toInstant().isAfter(Instant.now().plusSeconds(REFRESH_MARGIN_SECONDS));
-        } catch (JWTDecodeException e) {
+        } catch (JWTDecodeException _) {
             return false;
         }
     }

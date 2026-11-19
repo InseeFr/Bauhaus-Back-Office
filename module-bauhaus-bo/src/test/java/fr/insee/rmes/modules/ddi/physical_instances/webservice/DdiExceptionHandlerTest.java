@@ -11,6 +11,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.InvalidReuseVariablesException;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.InvalidRolloverException;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.MissingSchemeException;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.StudyUnitNotFoundException;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3toDDI4ConverterService;
@@ -20,6 +22,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDISe
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.Ddi4SchemaService;
 import fr.insee.rmes.modules.users.domain.port.clientside.UserService;
 import fr.insee.rmes.modules.users.infrastructure.UserProvider;
+import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -80,7 +83,9 @@ class DdiExceptionHandlerTest {
 
         mockMvc.perform(put("/ddi/physical-instance/fr.insee/pi-111")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{}"))
+                        .content("""
+                                {"items": [{"$type": "PhysicalInstance", "Agency": "fr.insee", "ID": "pi-111", "Version": "1"}]}
+                                """))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("No study unit found for physical instance fr.insee/pi-111"))
                 .andExpect(jsonPath("$.code").value("DDI_STUDY_UNIT_NOT_FOUND"));
@@ -119,10 +124,44 @@ class DdiExceptionHandlerTest {
 
         mockMvc.perform(put("/ddi/physical-instance/fr.insee/pi-111")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{}"))
+                        .content("""
+                                {"items": [{"$type": "PhysicalInstance", "Agency": "fr.insee", "ID": "pi-111", "Version": "1"}]}
+                                """))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.message").value(message))
                 .andExpect(jsonPath("$.code").value("GROUP_MISSING_CODE_LIST_SCHEME"))
                 .andExpect(jsonPath("$.params.group").value("fr.insee/group-1"));
+    }
+
+    @Test
+    void shouldReturnBadRequestWithCodeWhenReusedVariablesAreNotInTheSource() throws Exception {
+        when(ddiService.reuseVariables(eq("fr.insee"), eq("pi-111"), any()))
+                .thenThrow(InvalidReuseVariablesException.notInSource(List.of("VAR_X")));
+
+        mockMvc.perform(post("/ddi/physical-instance/fr.insee/pi-111/reuse-variables")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"physicalInstanceLabel": "PI", "groupId": "group-1", "groupAgency": "fr.insee",
+                                 "variableIds": ["VAR_X"]}
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("REUSE_VARIABLES_NOT_IN_SOURCE"))
+                .andExpect(jsonPath("$.params.variables").value("VAR_X"));
+    }
+
+    @Test
+    void should_return_bad_request_with_code_when_the_rollover_targets_the_source_study_unit() throws Exception {
+        when(ddiService.rollover(eq("fr.insee"), eq("pi-111"), any()))
+                .thenThrow(InvalidRolloverException.sameStudyUnit("fr.insee", "su-1"));
+
+        mockMvc.perform(post("/ddi/physical-instance/fr.insee/pi-111/rollover")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"physicalInstanceLabel": "PI", "studyUnitId": "su-1", "studyUnitAgency": "fr.insee",
+                                 "groupId": "group-1", "groupAgency": "fr.insee", "variables": [{"sourceId": "VAR_1"}]}
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("ROLLOVER_SAME_STUDY_UNIT"))
+                .andExpect(jsonPath("$.params.studyUnitId").value("su-1"));
     }
 }

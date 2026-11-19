@@ -1,7 +1,8 @@
 package fr.insee.rmes.modules.concepts.collections.infrastructure.graphdb;
 
 import fr.insee.rmes.BauhausLanguagesProperties;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausIriFactory;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfTriples;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.ontologies.INSEE;
 import fr.insee.rmes.model.concepts.Collection;
@@ -23,73 +24,75 @@ public class GraphDBCollectionRepository implements CollectionRepository {
 
     private final RepositoryGestion repositoryGestion;
     private final BauhausLanguagesProperties languages;
+    private final BauhausIriFactory iriFactory;
 
-    public GraphDBCollectionRepository(RepositoryGestion repositoryGestion, BauhausLanguagesProperties languages) {
+    public GraphDBCollectionRepository(
+            RepositoryGestion repositoryGestion, BauhausLanguagesProperties languages, BauhausIriFactory iriFactory) {
         this.repositoryGestion = repositoryGestion;
         this.languages = languages;
+        this.iriFactory = iriFactory;
     }
 
     @Override
     public String save(Collection collection) throws RmesException {
         Model model = new LinkedHashModel();
-        IRI collectionURI = RdfUtils.collectionIRI(collection.getId());
-        model.add(collectionURI, RDF.TYPE, SKOS.COLLECTION, RdfUtils.conceptGraph());
+        IRI collectionURI = iriFactory.collection(collection.getId());
+        model.add(collectionURI, RDF.TYPE, SKOS.COLLECTION, iriFactory.conceptGraph());
         model.add(
                 collectionURI,
                 INSEE.VALIDATION_STATE,
-                RdfUtils.setLiteralString(
+                RdfTriples.string(
                         Boolean.TRUE.equals(collection.getIsValidated())
                                 ? ValidationStatus.VALIDATED
                                 : ValidationStatus.UNPUBLISHED),
-                RdfUtils.conceptGraph());
+                iriFactory.conceptGraph());
         model.add(
                 collectionURI,
                 DCTERMS.TITLE,
-                RdfUtils.setLiteralString(collection.getPrefLabelLg1(), languages.lg1()),
-                RdfUtils.conceptGraph());
+                RdfTriples.string(collection.getPrefLabelLg1(), languages.lg1()),
+                iriFactory.conceptGraph());
         model.add(
                 collectionURI,
                 DCTERMS.CREATED,
-                RdfUtils.setLiteralDateTime(collection.getCreated()),
-                RdfUtils.conceptGraph());
-        RdfUtils.addTripleDate(
-                collectionURI, DCTERMS.MODIFIED, LocalDateTime.now().toString(), model, RdfUtils.conceptGraph());
+                RdfTriples.dateTime(collection.getCreated()),
+                iriFactory.conceptGraph());
+        RdfTriples.addDate(
+                collectionURI, DCTERMS.MODIFIED, LocalDateTime.now().toString(), model, iriFactory.conceptGraph());
         model.add(
                 collectionURI,
                 DC.CONTRIBUTOR,
-                RdfUtils.setLiteralString(collection.getContributor()),
-                RdfUtils.conceptGraph());
-        model.add(
-                collectionURI, DC.CREATOR, RdfUtils.setLiteralString(collection.getCreator()), RdfUtils.conceptGraph());
+                RdfTriples.string(collection.getContributor()),
+                iriFactory.conceptGraph());
+        model.add(collectionURI, DC.CREATOR, RdfTriples.string(collection.getCreator()), iriFactory.conceptGraph());
         /*Optional*/
-        RdfUtils.addTripleDateTime(
-                collectionURI, DCTERMS.MODIFIED, collection.getModified(), model, RdfUtils.conceptGraph());
-        RdfUtils.addTripleString(
+        RdfTriples.addDateTime(
+                collectionURI, DCTERMS.MODIFIED, collection.getModified(), model, iriFactory.conceptGraph());
+        RdfTriples.addString(
                 collectionURI,
                 DCTERMS.TITLE,
                 collection.getPrefLabelLg2(),
                 languages.lg2(),
                 model,
-                RdfUtils.conceptGraph());
-        RdfUtils.addTripleString(
+                iriFactory.conceptGraph());
+        RdfTriples.addString(
                 collectionURI,
                 DCTERMS.DESCRIPTION,
                 collection.getDescriptionLg1(),
                 languages.lg1(),
                 model,
-                RdfUtils.conceptGraph());
-        RdfUtils.addTripleString(
+                iriFactory.conceptGraph());
+        RdfTriples.addString(
                 collectionURI,
                 DCTERMS.DESCRIPTION,
                 collection.getDescriptionLg2(),
                 languages.lg2(),
                 model,
-                RdfUtils.conceptGraph());
+                iriFactory.conceptGraph());
 
         /*Members*/
         collection.getMembers().forEach(member -> {
-            IRI memberIRI = RdfUtils.conceptIRI(member);
-            model.add(collectionURI, SKOS.MEMBER, memberIRI, RdfUtils.conceptGraph());
+            IRI memberIRI = iriFactory.concept(member);
+            model.add(collectionURI, SKOS.MEMBER, memberIRI, iriFactory.conceptGraph());
         });
 
         repositoryGestion.loadSimpleObject(collectionURI, model);

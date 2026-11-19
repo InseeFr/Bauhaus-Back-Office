@@ -4,11 +4,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
+import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
+import org.eclipse.rdf4j.model.BNode;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
+import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
+import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;
 import org.eclipse.rdf4j.model.vocabulary.XSD;
@@ -18,9 +22,8 @@ import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 /**
- * Contrat de {@link RdfTriples}, successeur sans état de {@code RdfUtils} (déprécié pour
- * suppression) pour tout ce qui ne dépend pas de la configuration : littéraux, IRI et ajout
- * de triplets dans un {@link Model}.
+ * Contrat de {@link RdfTriples}, pour tout ce qui ne dépend pas de la configuration :
+ * littéraux, IRI et ajout de triplets dans un {@link Model}.
  */
 class RdfTriplesTest {
 
@@ -136,5 +139,130 @@ class RdfTriplesTest {
     void addUri_throws_when_the_string_value_is_not_an_iri() {
         assertThatThrownBy(() -> RdfTriples.addUri(SUBJECT, RDFS.SEEALSO, "valeur libre", model, GRAPH))
                 .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void bool_literal_is_typed_as_xsd_boolean() {
+        assertThat(RdfTriples.bool(true)).isEqualTo(VF.createLiteral(true));
+    }
+
+    @Test
+    void integer_literal_is_typed_as_xsd_int() {
+        assertThat(RdfTriples.integer("3")).isEqualTo(VF.createLiteral("3", XSD.INT));
+    }
+
+    @Test
+    void date_literal_keeps_only_the_day_and_is_typed() {
+        assertThat(RdfTriples.date("2024-01-15T10:00:00.000")).isEqualTo(VF.createLiteral("2024-01-15", XSD.DATE));
+    }
+
+    @Test
+    void xml_literal_is_trimmed_and_typed_as_rdf_xml_literal() {
+        assertThat(RdfTriples.xmlLiteral("  <p>note</p>  ")).isEqualTo(VF.createLiteral("<p>note</p>", RDF.XMLLITERAL));
+    }
+
+    @Test
+    void language_literal_is_trimmed_and_typed_as_xsd_language() {
+        assertThat(RdfTriples.language("  fr  ")).isEqualTo(VF.createLiteral("fr", XSD.LANGUAGE));
+    }
+
+    @Test
+    void add_date_time_adds_a_typed_date_time() {
+        RdfTriples.addDateTime(SUBJECT, DCTERMS.CREATED, "2024-01-15T10:00:00.000", model, GRAPH);
+
+        assertThat(model)
+                .containsExactly(VF.createStatement(
+                        SUBJECT, DCTERMS.CREATED, VF.createLiteral("2024-01-15T10:00:00", XSD.DATETIME), GRAPH));
+    }
+
+    @Test
+    void add_date_adds_a_typed_date() {
+        RdfTriples.addDate(SUBJECT, DCTERMS.VALID, "2024-01-15T10:00:00.000", model, GRAPH);
+
+        assertThat(model)
+                .containsExactly(
+                        VF.createStatement(SUBJECT, DCTERMS.VALID, VF.createLiteral("2024-01-15", XSD.DATE), GRAPH));
+    }
+
+    @ParameterizedTest
+    @NullSource
+    @ValueSource(strings = "")
+    void addDateTime_and_addDate_ignore_a_missing_value(String value) {
+        RdfTriples.addDateTime(SUBJECT, DCTERMS.CREATED, value, model, GRAPH);
+        RdfTriples.addDate(SUBJECT, DCTERMS.VALID, value, model, GRAPH);
+
+        assertThat(model).isEmpty();
+    }
+
+    /**
+     * Contrairement à {@link RdfTriples#iri(String)}, la valeur est reprise sans retouche, pour
+     * les appelants qui en dépendent.
+     */
+    @Test
+    void iri_as_is_builds_an_iri_without_trimming() {
+        assertThat(RdfTriples.iriAsIs(" http://bauhaus/concept/c1"))
+                .isEqualTo(VF.createIRI(" http://bauhaus/concept/c1"));
+    }
+
+    @Test
+    void literal_keeps_its_value_and_datatype() {
+        assertThat(RdfTriples.literal(" 2024 ", XSD.GYEAR)).isEqualTo(VF.createLiteral(" 2024 ", XSD.GYEAR));
+    }
+
+    @Test
+    void blank_node_creates_a_fresh_blank_node_each_time() {
+        assertThat(RdfTriples.blankNode()).isNotNull().isNotEqualTo(RdfTriples.blankNode());
+    }
+
+    @Test
+    void add_int_adds_an_xsd_int_literal() {
+        RdfTriples.addInt(SUBJECT, DCTERMS.VALID, "3", model, GRAPH);
+
+        assertThat(model)
+                .containsExactly(VF.createStatement(SUBJECT, DCTERMS.VALID, VF.createLiteral("3", XSD.INT), GRAPH));
+    }
+
+    @Test
+    void add_string_md_to_xhtml_adds_the_markdown_converted_to_xhtml() {
+        RdfTriples.addStringMdToXhtml(SUBJECT, DCTERMS.ABSTRACT, "**gras**", "fr", model, GRAPH);
+
+        assertThat(model)
+                .containsExactly(VF.createStatement(
+                        SUBJECT,
+                        DCTERMS.ABSTRACT,
+                        VF.createLiteral(
+                                XhtmlToMarkdownUtils.markdownToXhtml("**gras**").trim(), "fr"),
+                        GRAPH));
+    }
+
+    @ParameterizedTest
+    @NullSource
+    @ValueSource(strings = "")
+    void add_int_and_add_string_md_to_xhtml_ignore_a_missing_value(String value) {
+        RdfTriples.addInt(SUBJECT, DCTERMS.VALID, value, model, GRAPH);
+        RdfTriples.addStringMdToXhtml(SUBJECT, DCTERMS.ABSTRACT, value, "fr", model, GRAPH);
+
+        assertThat(model).isEmpty();
+    }
+
+    @Test
+    void year_literal_keeps_only_the_day_and_is_typed_as_xsd_g_year() {
+        assertThat(RdfTriples.year("2024-03-15T10:00:00")).isEqualTo(VF.createLiteral("2024-03-15", XSD.GYEAR));
+    }
+
+    @Test
+    void add_b_node_adds_a_blank_node_object() {
+        BNode node = VF.createBNode();
+
+        RdfTriples.addBNode(SUBJECT, DCTERMS.TEMPORAL, node, model, GRAPH);
+
+        assertThat(model).containsExactly(VF.createStatement(SUBJECT, DCTERMS.TEMPORAL, node, GRAPH));
+    }
+
+    @Test
+    void add_b_node_ignores_a_null_node() {
+        RdfTriples.addBNode(SUBJECT, DCTERMS.TEMPORAL, null, model, GRAPH);
+
+        assertThat(model).isEmpty();
     }
 }

@@ -8,20 +8,19 @@ import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.commons.security.PublicEndpoint;
 import fr.insee.rmes.modules.commons.webservice.ApiError;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.InvalidDdi4JsonException;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CreatePhysicalInstanceRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi3Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnitResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.MutualizedCodeListCodes;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodesList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialPhysicalInstance;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UpdatePhysicalInstanceRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3toDDI4ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI4toDDI3ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIItemConvertService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.Ddi4SchemaService;
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.CodeListSummaryResponse;
+import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.OperationStudyUnitResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PartialPhysicalInstanceResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PhysicalInstanceParentsResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PhysicalInstanceSearchResponse;
@@ -130,6 +129,19 @@ public class DdiResources {
             @PathVariable(Constants.ID) String id) {
         return ResponseEntity.ok(ddiService.getPhysicalInstancesByOperation(id).stream()
                 .map(PartialPhysicalInstanceResponse::fromDomain)
+                .toList());
+    }
+
+    /**
+     * Études d'une opération, chacune avec le groupe (miroir de la série) qui la classe : c'est là
+     * que la fiche de l'opération range un nouveau fichier de données.
+     */
+    @GetMapping("/operation/{id}/study-units")
+    @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.READ)
+    public ResponseEntity<List<OperationStudyUnitResponse>> getOperationStudyUnits(
+            @PathVariable(Constants.ID) String id) {
+        return ResponseEntity.ok(ddiService.getStudyUnitsByOperation(id).stream()
+                .map(OperationStudyUnitResponse::fromDomain)
                 .toList());
     }
 
@@ -246,8 +258,9 @@ public class DdiResources {
     @PostMapping("/physical-instance")
     @PreAuthorize(
             "@propertiesAccessPrivilegesChecker.hasAccess('DDI_PHYSICALINSTANCE', 'CREATE', #request.groupAgency + '|' + #request.groupId, authentication.principal)")
-    public ResponseEntity<Ddi4Response> createPhysicalInstance(@RequestBody CreatePhysicalInstanceRequest request) {
-        Ddi4Response response = ddiService.createPhysicalInstance(request);
+    public ResponseEntity<Ddi4Response> createPhysicalInstance(
+            @Valid @RequestBody PhysicalInstanceCreationRequest request) {
+        Ddi4Response response = ddiService.createPhysicalInstance(request.toDomain());
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(response);
     }
 
@@ -283,8 +296,8 @@ public class DdiResources {
     public ResponseEntity<Ddi4Response> updatePhysicalInstance(
             @PathVariable String agencyId,
             @PathVariable String id,
-            @RequestBody UpdatePhysicalInstanceRequest request) {
-        Ddi4Response updatedInstance = ddiService.updatePhysicalInstance(agencyId, id, request);
+            @Valid @RequestBody PhysicalInstanceUpdateRequest request) {
+        Ddi4Response updatedInstance = ddiService.updatePhysicalInstance(agencyId, id, request.toDomain());
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(updatedInstance);
     }
 
@@ -299,10 +312,42 @@ public class DdiResources {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(copy);
     }
 
+    /**
+     * Nouvelle PhysicalInstance dans l'Étude de la source, réutilisant une partie de ses variables
+     * sans les copier (#1674).
+     */
+    @PostMapping("/physical-instance/{agencyId}/{id}/reuse-variables")
+    @PreAuthorize(
+            "@propertiesAccessPrivilegesChecker.hasAccess('DDI_PHYSICALINSTANCE', 'CREATE', #request.groupAgency + '|' + #request.groupId, authentication.principal)")
+    public ResponseEntity<Ddi4Response> reuseVariables(
+            @PathVariable String agencyId,
+            @PathVariable String id,
+            @Valid @RequestBody PhysicalInstanceReuseVariablesRequest request) {
+        Ddi4Response created = ddiService.reuseVariables(agencyId, id, request.toDomain());
+        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(created);
+    }
+
+    /**
+     * Nouvelle période (#1672) : une PhysicalInstance dans une autre Étude du groupe de la source, qui
+     * copie les variables choisies (avec {@code BasedOn}) ou réutilise celles déjà dérivées d'elles.
+     */
+    @PostMapping("/physical-instance/{agencyId}/{id}/rollover")
+    @PreAuthorize(
+            "@propertiesAccessPrivilegesChecker.hasAccess('DDI_PHYSICALINSTANCE', 'CREATE', #request.groupAgency + '|' + #request.groupId, authentication.principal)")
+    public ResponseEntity<Ddi4Response> rollover(
+            @PathVariable String agencyId,
+            @PathVariable String id,
+            @Valid @RequestBody PhysicalInstanceRolloverRequest request) {
+        Ddi4Response created = ddiService.rollover(agencyId, id, request.toDomain());
+        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(created);
+    }
+
     @PutMapping("/physical-instance/{agencyId}/{id}")
     @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.UPDATE)
     public ResponseEntity<Void> replacePhysicalInstance(
-            @PathVariable String agencyId, @PathVariable String id, @RequestBody Ddi4Response ddi4Response) {
+            @PathVariable String agencyId,
+            @PathVariable String id,
+            @Valid @ContainsPhysicalInstance @RequestBody Ddi4Response ddi4Response) {
         // 204 : relire une grosse PI coûte des dizaines de secondes, le front la recharge par le GET.
         ddiService.updateFullPhysicalInstance(agencyId, id, ddi4Response);
         return ResponseEntity.noContent().build();

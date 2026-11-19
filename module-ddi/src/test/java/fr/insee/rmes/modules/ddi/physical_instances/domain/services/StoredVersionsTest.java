@@ -82,7 +82,7 @@ class StoredVersionsTest {
     @Test
     void pointsReferencesToItemsOutsideThePayloadToTheirSuppliedStoredVersion() {
         Ddi4Response aligned = StoredVersions.align(
-                stored(), List.of(Reference.of(AGENCY, "cl-mutualisee", "5", Ddi4CodeList.TYPE)), incoming());
+                stored(), List.of(Reference.of(AGENCY, "cl-mutualisee", "5", Ddi4CodeList.TYPE_NAME)), incoming());
 
         Reference codeListReference = codeListReference(variable(aligned, "var-new"));
         assertEquals("5", codeListReference.version());
@@ -98,7 +98,7 @@ class StoredVersionsTest {
                         "1",
                         "cl-1",
                         "1",
-                        BasedOnObject.of(List.of(Reference.of(AGENCY, "var-source", "1", Ddi4Variable.TYPE))))),
+                        BasedOnObject.of(List.of(Reference.of(AGENCY, "var-source", "1", Ddi4Variable.TYPE_NAME))))),
                 List.of());
 
         assertEquals(
@@ -127,19 +127,19 @@ class StoredVersionsTest {
                                 "1",
                                 "cl-mutualisee",
                                 "1",
-                                BasedOnObject.of(List.of(Reference.of(AGENCY, "var-1", "1", Ddi4Variable.TYPE))))),
+                                BasedOnObject.of(List.of(Reference.of(AGENCY, "var-1", "1", Ddi4Variable.TYPE_NAME))))),
                 List.of(codeList("cl-1", "1")));
     }
 
     private static Ddi4Response response(
             Ddi4DataRelationship dataRelationship, List<Ddi4Variable> variables, List<Ddi4CodeList> codeLists) {
         return new Ddi4Response(
-                Ddi4Response.SCHEMA, null, null, List.of(dataRelationship), variables, codeLists, null, null);
+                Ddi4Response.SCHEMA_ID, null, null, List.of(dataRelationship), variables, codeLists, null, null);
     }
 
     private static Ddi4DataRelationship dataRelationship(String variableVersion) {
         return new Ddi4DataRelationship(
-                Ddi4DataRelationship.TYPE,
+                Ddi4DataRelationship.TYPE_NAME,
                 null,
                 Reference.synthesizeUrn(AGENCY, "dr-1", "1"),
                 AGENCY,
@@ -148,20 +148,20 @@ class StoredVersionsTest {
                 null,
                 List.of(new LangString("fr", "Mon DR")),
                 List.of(new LogicalRecord(
-                        LogicalRecord.TYPE,
+                        LogicalRecord.TYPE_NAME,
                         Reference.synthesizeUrn(AGENCY, "lr-1", "1"),
                         AGENCY,
                         "lr-1",
                         "1",
                         List.of(new LangString("fr", "Mon LR")),
                         new VariablesInRecord(
-                                List.of(Reference.of(AGENCY, "var-1", variableVersion, Ddi4Variable.TYPE))))));
+                                List.of(Reference.of(AGENCY, "var-1", variableVersion, Ddi4Variable.TYPE_NAME))))));
     }
 
     private static Ddi4Variable variable(
             String id, String version, String codeListId, String codeListVersion, BasedOnObject basedOnObject) {
         return new Ddi4Variable(
-                Ddi4Variable.TYPE,
+                Ddi4Variable.TYPE_NAME,
                 null,
                 Reference.synthesizeUrn(AGENCY, id, version),
                 AGENCY,
@@ -174,9 +174,9 @@ class StoredVersionsTest {
                 new VariableRepresentation(
                         null,
                         new CodeRepresentation(
-                                CodeRepresentation.TYPE,
+                                CodeRepresentation.TYPE_NAME,
                                 null,
-                                Reference.of(AGENCY, codeListId, codeListVersion, Ddi4CodeList.TYPE)),
+                                Reference.of(AGENCY, codeListId, codeListVersion, Ddi4CodeList.TYPE_NAME)),
                         null,
                         null,
                         null,
@@ -186,7 +186,7 @@ class StoredVersionsTest {
 
     private static Ddi4CodeList codeList(String id, String version) {
         return new Ddi4CodeList(
-                Ddi4CodeList.TYPE,
+                Ddi4CodeList.TYPE_NAME,
                 null,
                 Reference.synthesizeUrn(AGENCY, id, version),
                 AGENCY,

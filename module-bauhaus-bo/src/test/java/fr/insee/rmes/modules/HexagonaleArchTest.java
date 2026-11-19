@@ -19,7 +19,7 @@ import fr.insee.rmes.modules.commons.hexagonal.ServerSidePort;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * Règles d'architecture hexagonale appliquées à l'ensemble de {@code fr.insee.rmes.modules}.
+ * Règles d'architecture hexagonale appliquées à l'ensemble de {@code fr.insee.rmes}.
  * <p>
  * Toutes les règles sont gelées ({@link FreezingArchRule}) : les violations héritées des modules
  * pas encore migrés sont enregistrées dans {@code archunit_store} et tolérées, mais toute nouvelle
@@ -29,7 +29,7 @@ import org.springframework.web.bind.annotation.*;
  * nouvelle entrée dans le store sans supprimer l'ancienne. {@link ArchUnitStoreTest} détecte ces
  * entrées obsolètes ; il faut alors purger la ligne de {@code stored.rules} et son fichier de violations.
  */
-@AnalyzeClasses(packages = "fr.insee.rmes.modules", importOptions = ImportOption.DoNotIncludeTests.class)
+@AnalyzeClasses(packages = "fr.insee.rmes", importOptions = ImportOption.DoNotIncludeTests.class)
 public class HexagonaleArchTest {
 
     private static ArchCondition<JavaClass> beImplementedIn(String targetPackage, String prefix) {

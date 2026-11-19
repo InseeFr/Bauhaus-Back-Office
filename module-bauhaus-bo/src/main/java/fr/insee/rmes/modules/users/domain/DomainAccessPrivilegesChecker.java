@@ -10,8 +10,10 @@ import fr.insee.rmes.modules.users.domain.port.clientside.AccessPrivilegesChecke
 import fr.insee.rmes.modules.users.domain.port.serverside.RbacFetcher;
 import fr.insee.rmes.modules.users.domain.port.serverside.StampChecker;
 import fr.insee.rmes.modules.users.domain.port.serverside.UserDecoder;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import org.slf4j.Logger;
@@ -54,6 +56,137 @@ public class DomainAccessPrivilegesChecker implements AccessPrivilegesCheckerSer
                 privilege,
                 id);
         return granted;
+    }
+
+    @Override
+    public boolean hasCreateAccess(String module, Collection<String> owners, Object principal)
+            throws MissingUserInformationException {
+        var user = this.decoder.fromPrincipal(principal);
+        if (user.isEmpty()) {
+            logger.debug("Creation denied: no user could be decoded from the principal");
+            return false;
+        }
+        var granted = hasCreateAccess(module, owners, user.get());
+        logger.debug(
+                "Creation {} for user {} on module={} with owners {}",
+                granted ? "granted" : "denied",
+                user.get().id(),
+                module,
+                owners);
+        return granted;
+    }
+
+    @Override
+    public boolean hasCreateAccessUnder(String module, String parentModule, String parentId, Object principal)
+            throws MissingUserInformationException {
+        var user = this.decoder.fromPrincipal(principal);
+        if (user.isEmpty()) {
+            logger.debug("Creation denied: no user could be decoded from the principal");
+            return false;
+        }
+        var granted = hasCreateAccessUnder(module, parentModule, parentId, user.get());
+        logger.debug(
+                "Creation {} for user {} on module={} under {} {}",
+                granted ? "granted" : "denied",
+                user.get().id(),
+                module,
+                parentModule,
+                parentId);
+        return granted;
+    }
+
+    /**
+     * La ressource créée hérite des propriétaires de son parent, qui existe déjà : ce sont eux qui
+     * sont relus en base. Un parent sans propriétaire, ou introuvable, refuse la création, pour la
+     * même raison qu'une création sans propriétaire posté.
+     */
+    private boolean hasCreateAccessUnder(
+            String moduleIdentifier, String parentModuleIdentifier, String parentId, User user) {
+        RBAC.Module module;
+        RBAC.Module parentModule;
+        try {
+            module = RBAC.Module.valueOf(moduleIdentifier);
+            parentModule = RBAC.Module.valueOf(parentModuleIdentifier);
+        } catch (IllegalArgumentException e) {
+            logger.warn("Invalid module identifier: {} or {}", moduleIdentifier, parentModuleIdentifier, e);
+            return false;
+        }
+
+        var privilegeAndStrategy =
+                findStrategyByPrivilege(RBAC.Privilege.CREATE, findModuleAccessPrivileges(user, module));
+        if (privilegeAndStrategy.isEmpty()) {
+            logger.debug("Creation denied: roles {} grant no CREATE privilege on module {}", user.roles(), module);
+            return false;
+        }
+
+        return switch (privilegeAndStrategy.get().strategy()) {
+            case ALL -> !user.getStamps().isEmpty();
+            case STAMP -> {
+                List<String> parentStamps;
+                try {
+                    parentStamps = getStamps(parentModule, parentId);
+                } catch (StampFetchException | UnsupportedModuleException e) {
+                    logger.error(
+                            "Could not fetch stamp of the parent %s %s, so creation on %s is denied"
+                                    .formatted(parentModule, parentId, module),
+                            e);
+                    yield false;
+                }
+                logger.debug(
+                        "Strategy STAMP: parent {} {} has stamps {}, user {} has stamps {}",
+                        parentModule,
+                        parentId,
+                        parentStamps,
+                        user.id(),
+                        user.getStamps());
+                yield parentStamps.stream().anyMatch(user.getStamps()::contains);
+            }
+            case NONE -> false;
+        };
+    }
+
+    /**
+     * Le contrôle par timbre d'une création porte sur le corps de la requête : aucune ressource
+     * n'existe encore pour relire ses propriétaires en base. Contrairement à une ressource
+     * existante sans propriétaire, une création sans propriétaire est refusée : la ressource
+     * échapperait ensuite à tout contrôle par timbre.
+     */
+    private boolean hasCreateAccess(String moduleIdentifier, Collection<String> owners, User user) {
+        RBAC.Module module;
+        try {
+            module = RBAC.Module.valueOf(moduleIdentifier);
+        } catch (IllegalArgumentException e) {
+            logger.warn("Invalid module identifier: {}", moduleIdentifier, e);
+            return false;
+        }
+
+        var privilegeAndStrategy =
+                findStrategyByPrivilege(RBAC.Privilege.CREATE, findModuleAccessPrivileges(user, module));
+        if (privilegeAndStrategy.isEmpty()) {
+            logger.debug("Creation denied: roles {} grant no CREATE privilege on module {}", user.roles(), module);
+            return false;
+        }
+
+        return switch (privilegeAndStrategy.get().strategy()) {
+            case ALL -> !user.getStamps().isEmpty();
+            case STAMP -> {
+                var postedOwners = owners == null
+                        ? List.<String>of()
+                        : owners.stream().filter(Objects::nonNull).toList();
+                if (postedOwners.isEmpty()) {
+                    logger.debug("Creation denied: strategy STAMP but no owner in the request");
+                    yield false;
+                }
+                var ownersStamps = infrastructureStampChecker.toStamps(postedOwners);
+                logger.debug(
+                        "Strategy STAMP: owners stamps {}, user {} has stamps {}",
+                        ownersStamps,
+                        user.id(),
+                        user.getStamps());
+                yield ownersStamps.stream().anyMatch(user.getStamps()::contains);
+            }
+            case NONE -> false;
+        };
     }
 
     private boolean hasAcccess(String moduleIdentifer, String privilegeIdentifier, String id, User user) {
@@ -175,8 +308,15 @@ public class DomainAccessPrivilegesChecker implements AccessPrivilegesCheckerSer
     private List<String> getStamps(RBAC.Module module, String id)
             throws StampFetchException, UnsupportedModuleException {
         return switch (module) {
+            case OPERATION_FAMILY ->
+                this.infrastructureStampChecker.getContributorsStamps(RBAC.Module.OPERATION_FAMILY, id);
             case OPERATION_SERIES ->
                 this.infrastructureStampChecker.getCreatorsStamps(RBAC.Module.OPERATION_SERIES, id);
+            case OPERATION_OPERATION ->
+                this.infrastructureStampChecker.getCreatorsStamps(RBAC.Module.OPERATION_OPERATION, id);
+            case OPERATION_INDICATOR ->
+                this.infrastructureStampChecker.getCreatorsStamps(RBAC.Module.OPERATION_INDICATOR, id);
+            case OPERATION_SIMS -> this.infrastructureStampChecker.getCreatorsStamps(RBAC.Module.OPERATION_SIMS, id);
             case DDI_PHYSICALINSTANCE ->
                 this.infrastructureStampChecker.getCreatorsStamps(RBAC.Module.DDI_PHYSICALINSTANCE, id);
 
@@ -184,6 +324,19 @@ public class DomainAccessPrivilegesChecker implements AccessPrivilegesCheckerSer
                 this.infrastructureStampChecker.getContributorsStamps(RBAC.Module.STRUCTURE_STRUCTURE, id);
             case STRUCTURE_COMPONENT ->
                 this.infrastructureStampChecker.getContributorsStamps(RBAC.Module.STRUCTURE_COMPONENT, id);
+
+            case CLASSIFICATION_CLASSIFICATION ->
+                this.infrastructureStampChecker.getContributorsStamps(RBAC.Module.CLASSIFICATION_CLASSIFICATION, id);
+
+            case CODESLIST_CODESLIST ->
+                this.infrastructureStampChecker.getContributorsStamps(RBAC.Module.CODESLIST_CODESLIST, id);
+            case CODESLIST_PARTIALCODESLIST ->
+                this.infrastructureStampChecker.getContributorsStamps(RBAC.Module.CODESLIST_PARTIALCODESLIST, id);
+
+            case CONCEPT_CONCEPT ->
+                this.infrastructureStampChecker.getContributorsStamps(RBAC.Module.CONCEPT_CONCEPT, id);
+            case CONCEPT_COLLECTION ->
+                this.infrastructureStampChecker.getContributorsStamps(RBAC.Module.CONCEPT_COLLECTION, id);
 
             case DATASET_DATASET ->
                 this.infrastructureStampChecker.getContributorsStamps(RBAC.Module.DATASET_DATASET, id);

@@ -28,7 +28,7 @@ public record Ddi4ManagedMissingValuesRepresentation(
         @JsonProperty("VersionResponsibility") String versionResponsibility)
         implements Ddi4VersionedItem {
 
-    public static final String TYPE = "ManagedMissingValuesRepresentation";
+    public static final String TYPE_NAME = "ManagedMissingValuesRepresentation";
 
     /**
      * Constructeur de compatibilité (sans {@code VersionResponsibility}) : le champ est estampillé

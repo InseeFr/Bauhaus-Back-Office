@@ -75,7 +75,7 @@ public class ColecticaStudyUnitRepository extends AbstractColecticaItemRepositor
                 studyUnit.physicalInstanceReferences() != null ? studyUnit.physicalInstanceReferences() : List.of());
         refs.add(physicalInstanceReference);
         Ddi4StudyUnit updated = new Ddi4StudyUnit(
-                Ddi4StudyUnit.TYPE,
+                Ddi4StudyUnit.TYPE_NAME,
                 studyUnit.versionDate(),
                 studyUnit.urn(),
                 studyUnit.agency(),
@@ -104,6 +104,24 @@ public class ColecticaStudyUnitRepository extends AbstractColecticaItemRepositor
         } catch (Exception e) {
             logger.error("Unexpected error creating study unit in Colectica: id={}", studyUnit.id(), e);
             throw new RuntimeException("Failed to create study unit: " + studyUnit.id(), e);
+        }
+        refreshStudyUnitsByOperationCache(studyUnit);
+    }
+
+    /**
+     * L'étude vient d'être écrite : le cache opération → StudyUnits est recalculé tout de suite, sans
+     * quoi une opération créée après son calcul n'aurait aucune étude (ni bouton de création de
+     * fichier sur sa fiche) jusqu'au prochain démarrage. Synchrone, pour que la fiche relue juste
+     * après l'enregistrement la voie ; un échec n'annule pas l'écriture, le cache précédent reste servi.
+     */
+    private void refreshStudyUnitsByOperationCache(Ddi4StudyUnit studyUnit) {
+        try {
+            ddiRepository.refreshStudyUnitsByOperationCache();
+        } catch (RuntimeException e) {
+            logger.warn(
+                    "StudyUnits by operation cache refresh failed after writing study unit {}: {}",
+                    studyUnit.id(),
+                    e.getMessage());
         }
     }
 }

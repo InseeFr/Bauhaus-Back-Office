@@ -1,18 +1,21 @@
 package fr.insee.rmes.bauhaus_services.operations.indicators;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import fr.insee.rmes.bauhaus_services.operations.OperationsParentRepository;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausIriFactory;
 import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
+import fr.insee.rmes.config.DocumentationsPropertiesStub;
+import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.graphdb.ObjectType;
@@ -28,6 +31,7 @@ import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.DC;
+import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;
 import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.junit.jupiter.api.BeforeEach;
@@ -36,8 +40,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -47,6 +49,8 @@ class IndicatorPublicationTest {
     private static final SimpleValueFactory VF = SimpleValueFactory.getInstance();
     private static final String GESTION = "http://gestion/";
     private static final String PUBLICATION = "http://publication/";
+    private static final Resource PRODUCTS_GRAPH = VF.createIRI("http://rdf.insee.fr/graphes/produits");
+    private static final Resource OPERATIONS_GRAPH = VF.createIRI("http://rdf.insee.fr/graphes/operations");
 
     @Mock
     private OperationsParentRepository operationsParentRepository;
@@ -60,15 +64,19 @@ class IndicatorPublicationTest {
     @Spy
     private PublicationUtils publicationUtils = new PublicationUtils(GESTION, PUBLICATION, null, null);
 
+    @Spy
+    private BauhausIriFactory iriFactory = new BauhausIriFactory(
+            GraphsPropertiesStub.stub(),
+            new BauhausUriBuilder(PUBLICATION, GESTION, name -> Optional.of("operations/indicateur")),
+            DocumentationsPropertiesStub.stub());
+
     @InjectMocks
     private IndicatorPublication indicatorPublication;
 
     private Indicator indicator;
 
     @BeforeEach
-    void setUp() throws RmesException {
-        RdfUtils.setBauhausUriBuilder(
-                new BauhausUriBuilder(PUBLICATION, GESTION, name -> Optional.of("operations/indicateur")));
+    void setUp() {
         indicator = new Indicator();
         indicator.setId("123");
     }
@@ -90,23 +98,19 @@ class IndicatorPublicationTest {
 
     @Test
     void validate_ShouldThrowBadRequestException_WhenParentSeriesIsNotValidated() throws RmesException {
-        try (MockedStatic<RdfUtils> mockedFactory = Mockito.mockStatic(RdfUtils.class)) {
-            givenIndicatorGeneratedBySeriesWithStatus(mockedFactory, ValidationStatus.UNPUBLISHED.toString());
+        givenIndicatorGeneratedBySeriesWithStatus(ValidationStatus.UNPUBLISHED.toString());
 
-            RmesBadRequestException exception =
-                    assertThrows(RmesBadRequestException.class, () -> indicatorPublication.validate(indicator));
-            assertThat(exception.getDetails())
-                    .contains("An indicator can be published if and only if all parent series have been published.");
-        }
+        RmesBadRequestException exception =
+                assertThrows(RmesBadRequestException.class, () -> indicatorPublication.validate(indicator));
+        assertThat(exception.getDetails())
+                .contains("An indicator can be published if and only if all parent series have been published.");
     }
 
     @Test
     void validate_ShouldPass_WhenUserHasPermissionAndParentSeriesAreValidated() throws RmesException {
-        try (MockedStatic<RdfUtils> mockedFactory = Mockito.mockStatic(RdfUtils.class)) {
-            givenIndicatorGeneratedBySeriesWithStatus(mockedFactory, ValidationStatus.VALIDATED.toString());
+        givenIndicatorGeneratedBySeriesWithStatus(ValidationStatus.VALIDATED.toString());
 
-            assertDoesNotThrow(() -> indicatorPublication.validate(indicator));
-        }
+        assertDoesNotThrow(() -> indicatorPublication.validate(indicator));
     }
 
     @Test
@@ -136,7 +140,7 @@ class IndicatorPublicationTest {
      */
     @Test
     void publish_ShouldRewriteTheLinksAndDropTheValidationState() throws RmesException {
-        Resource indicatorIri = RdfUtils.objectIRI(ObjectType.INDICATOR, "123");
+        Resource indicatorIri = iriFactory.objectIri(ObjectType.INDICATOR, "123");
         givenStatementsOfIndicator(
                 VF.createStatement(
                         (org.eclipse.rdf4j.model.IRI) indicatorIri,
@@ -154,9 +158,10 @@ class IndicatorPublicationTest {
         indicatorPublication.publish("123");
 
         ArgumentCaptor<Model> modelCaptor = ArgumentCaptor.forClass(Model.class);
-        verify(repositoryPublication).publishResource(any(Resource.class), modelCaptor.capture(), eq("indicator"));
+        verify(repositoryPublication)
+                .publishResource(any(Resource.class), modelCaptor.capture(), eq("indicator"), eq(PRODUCTS_GRAPH));
         Model model = modelCaptor.getValue();
-        assertThat(model.size()).isEqualTo(2);
+        assertThat(model).hasSize(2);
         assertThat(model.contains(
                         null,
                         VF.createIRI("http://www.w3.org/ns/prov#wasGeneratedBy"),
@@ -172,7 +177,7 @@ class IndicatorPublicationTest {
      */
     @Test
     void publish_ShouldRewriteTheCreatorOrganisationToThePublicationBase() throws RmesException {
-        Resource indicatorIri = RdfUtils.objectIRI(ObjectType.INDICATOR, "123");
+        Resource indicatorIri = iriFactory.objectIri(ObjectType.INDICATOR, "123");
         givenStatementsOfIndicator(VF.createStatement(
                 (org.eclipse.rdf4j.model.IRI) indicatorIri,
                 DC.CREATOR,
@@ -181,28 +186,60 @@ class IndicatorPublicationTest {
         indicatorPublication.publish("123");
 
         ArgumentCaptor<Model> modelCaptor = ArgumentCaptor.forClass(Model.class);
-        verify(repositoryPublication).publishResource(any(Resource.class), modelCaptor.capture(), eq("indicator"));
+        verify(repositoryPublication)
+                .publishResource(any(Resource.class), modelCaptor.capture(), eq("indicator"), eq(PRODUCTS_GRAPH));
         assertThat(modelCaptor
                         .getValue()
                         .contains(null, DC.CREATOR, VF.createIRI(PUBLICATION + "organisations/insee/HIE2003239")))
                 .isTrue();
     }
 
-    private void givenIndicatorGeneratedBySeriesWithStatus(MockedStatic<RdfUtils> mockedFactory, String seriesStatus)
-            throws RmesException {
+    private void givenIndicatorGeneratedBySeriesWithStatus(String seriesStatus) throws RmesException {
         OperationsLink link = new OperationsLink();
         link.id = "series-1";
         when(operationsParentRepository.getValidationStatus("series-1")).thenReturn(seriesStatus);
         indicator.wasGeneratedBy = List.of(link);
+    }
 
-        mockedFactory
-                .when(() -> RdfUtils.objectIRI(eq(ObjectType.INDICATOR), eq("123")))
-                .thenReturn(SimpleValueFactory.getInstance().createIRI("http://indicator/1"));
+    /**
+     * Le contexte d'un triplet relu est {@code null} hors de GraphDB : chaque triplet publié doit
+     * prendre le graphe d'où il a été lu.
+     */
+    @Test
+    void publishes_each_triple_into_the_graph_it_was_read_from() throws RmesException {
+        Resource indicatorIri = iriFactory.objectIri(ObjectType.INDICATOR, "123");
+        givenStatementsOfIndicator(VF.createStatement(
+                (org.eclipse.rdf4j.model.IRI) indicatorIri, SKOS.PREF_LABEL, VF.createLiteral("label fr", "fr")));
+        givenStatementsOfIndicatorIn(
+                OPERATIONS_GRAPH,
+                VF.createStatement(
+                        (org.eclipse.rdf4j.model.IRI) indicatorIri, DCTERMS.CREATED, VF.createLiteral("2026-01-15")));
+
+        indicatorPublication.publish("123");
+
+        ArgumentCaptor<Model> description = ArgumentCaptor.forClass(Model.class);
+        ArgumentCaptor<Model> dates = ArgumentCaptor.forClass(Model.class);
+        verify(repositoryPublication)
+                .publishResource(any(Resource.class), description.capture(), eq("indicator"), eq(PRODUCTS_GRAPH));
+        verify(repositoryPublication)
+                .publishResource(any(Resource.class), dates.capture(), eq("indicator"), eq(OPERATIONS_GRAPH));
+        assertThat(description.getValue().contexts()).containsExactly(PRODUCTS_GRAPH);
+        assertThat(dates.getValue().contexts()).containsExactly(OPERATIONS_GRAPH);
+        assertThat(dates.getValue().contains(null, DCTERMS.CREATED, null)).isTrue();
     }
 
     private void givenStatementsOfIndicator(Statement... statements) throws RmesException {
         when(repoGestion.getConnection()).thenReturn(null);
-        when(repoGestion.getStatements(any(), any(Resource.class)))
+        givenStatementsOfIndicatorIn(PRODUCTS_GRAPH, statements);
+        lenient()
+                .when(repoGestion.getStatements(any(), any(Resource.class), eq(OPERATIONS_GRAPH)))
+                .thenAnswer(_ -> new RepositoryResult<>(
+                        new CloseableIteratorIteration<>(List.<Statement>of().iterator())));
+    }
+
+    private void givenStatementsOfIndicatorIn(Resource graph, Statement... statements) throws RmesException {
+        lenient()
+                .when(repoGestion.getStatements(any(), any(Resource.class), eq(graph)))
                 .thenReturn(new RepositoryResult<>(
                         new CloseableIteratorIteration<>(List.of(statements).iterator())));
     }

@@ -15,8 +15,9 @@ import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.OperationsObjectMapper;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausIriFactory;
 import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfTriples;
 import fr.insee.rmes.bauhaus_services.utils.OrganisationLookup;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
@@ -28,6 +29,7 @@ import fr.insee.rmes.model.operations.Indicator;
 import fr.insee.rmes.modules.operations.indicators.domain.model.IndicatorLink;
 import fr.insee.rmes.modules.operations.indicators.domain.model.commands.IndicatorCommand;
 import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
+import fr.insee.rmes.modules.shared_kernel.infrastructure.publication.ObjectPublished;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationIndicatorsQueries;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import java.util.ArrayList;
@@ -50,6 +52,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 
 @AppSpringBootTest
 @ExtendWith(MockitoExtension.class)
@@ -60,8 +63,17 @@ class IndicatorsRepositoryTest {
     @Mock
     private OperationIndicatorsQueries operationIndicatorsQueries;
 
+    @Mock
+    private IndicatorPublication indicatorPublication;
+
+    @Mock
+    private ApplicationEventPublisher events;
+
     @Autowired
     private OperationsObjectMapper operationsObjectMapper;
+
+    @Autowired
+    private BauhausIriFactory iriFactory;
 
     @Test
     void shouldThrowExceptionIfWasGeneratedByNull() throws RmesException {
@@ -161,7 +173,7 @@ class IndicatorsRepositoryTest {
     }
 
     @Test
-    void givenBuildIndicatorFromJson_whenCorrectRequest_thenResponseIsOk() throws RmesException {
+    void givenBuildIndicatorFromJson_whenCorrectRequest_thenResponseIsOk() {
         String json =
                 "{\"idSims\":\"1779\",\"wasGeneratedBy\":[{\"labelLg2\":\"Other indexes\",\"labelLg1\":\"Autres indicateurs\",\"id\":\"s1034\"}],\"abstractLg1\":\"Le nombre d'immatriculations de voitures particulières neuves permet de suivre l'évolution du marché automobile français et constitue l'un des indicateurs permettant de calculer la consommation des ménages en automobile.\",\"prefLabelLg1\":\"Immatriculations de voitures particulières neuves\",\"abstractLg2\":\"The number of new private car registrations is used to monitor the trends on the French automobile market and constitutes one of the indicators used to calculate household automobile consumption.\",\"prefLabelLg2\":\"New private car registrations\",\"creators\":[],\"publishers\":[],\"id\":\"p1638\",\"contributors\":[]}  ";
         JSONObject jsonIndicator = new JSONObject(json);
@@ -173,7 +185,7 @@ class IndicatorsRepositoryTest {
         assertThat(indicator).usingRecursiveComparison().isEqualTo(indicatorByApp);
     }
 
-    public Indicator initIndicator() throws RmesException {
+    public Indicator initIndicator() {
         Indicator indicator = new Indicator();
         indicator.setId("p1638");
         indicator.setIdSims("1779");
@@ -258,7 +270,7 @@ class IndicatorsRepositoryTest {
 
         ArgumentCaptor<Model> captor = ArgumentCaptor.forClass(Model.class);
         verify(repositoryGestion).loadObjectWithReplaceLinks(any(), captor.capture());
-        IRI indicURI = RdfUtils.objectIRI(ObjectType.INDICATOR, "p2000");
+        IRI indicURI = iriFactory.objectIri(ObjectType.INDICATOR, "p2000");
         assertThat(captor.getValue().filter(indicURI, ADMS.HAS_IDENTIFIER, null).objects())
                 .containsExactly(SimpleValueFactory.getInstance().createLiteral("p2000"));
     }
@@ -282,9 +294,9 @@ class IndicatorsRepositoryTest {
 
         ArgumentCaptor<Model> captor = ArgumentCaptor.forClass(Model.class);
         verify(repositoryGestion).loadObjectWithReplaceLinks(any(), captor.capture());
-        IRI linkedSeries = RdfUtils.toURI(bauhausUriBuilder.getCompleteUriGestion("series", "s3"));
-        IRI indicURI = RdfUtils.objectIRI(ObjectType.INDICATOR, "p2000");
-        assertThat(captor.getValue().contains(linkedSeries, RDFS.SEEALSO, indicURI, RdfUtils.operationsGraph()))
+        IRI linkedSeries = RdfTriples.iri(bauhausUriBuilder.getCompleteUriGestion("series", "s3"));
+        IRI indicURI = iriFactory.objectIri(ObjectType.INDICATOR, "p2000");
+        assertThat(captor.getValue().contains(linkedSeries, RDFS.SEEALSO, indicURI, iriFactory.operationsGraph()))
                 .isTrue();
     }
 
@@ -375,6 +387,39 @@ class IndicatorsRepositoryTest {
         assertThat(exception.getStatus()).isEqualTo(404);
     }
 
+    @Test
+    void shouldAnnounceThePublicationWithTheProductsGraph() throws RmesException {
+        IndicatorsRepository indicatorsRepository = spy(indicatorsRepository());
+        Indicator indicator = new Indicator();
+        doReturn(indicator).when(indicatorsRepository).getIndicatorById("p1000", false);
+
+        indicatorsRepository.validateIndicator("p1000");
+
+        ArgumentCaptor<ObjectPublished> event = ArgumentCaptor.forClass(ObjectPublished.class);
+        verify(events).publishEvent(event.capture());
+        assertThat(event.getValue())
+                .isEqualTo(new ObjectPublished(
+                        iriFactory.objectIri(ObjectType.INDICATOR, "p1000"),
+                        SimpleValueFactory.getInstance().createIRI("http://rdf.insee.fr/graphes/produits")));
+    }
+
+    @Test
+    void shouldNeitherPublishNorAnnounceAnIndicatorWhoseSeriesAreNotPublished() throws RmesException {
+        IndicatorsRepository indicatorsRepository = spy(indicatorsRepository());
+        Indicator indicator = new Indicator();
+        doReturn(indicator).when(indicatorsRepository).getIndicatorById("p1000", false);
+        doThrow(RmesBadRequestException.coded(
+                        IndicatorErrorCode.VALIDATION_UNVALIDATED_SERIES,
+                        "An indicator can be published if and only if all parent series have been published."))
+                .when(indicatorPublication)
+                .validate(indicator);
+
+        assertThrows(RmesBadRequestException.class, () -> indicatorsRepository.validateIndicator("p1000"));
+
+        verify(indicatorPublication, never()).publish(any());
+        verifyNoInteractions(events);
+    }
+
     private IndicatorsRepository indicatorsRepository() {
         return indicatorsRepository(operationIndicatorsQueries, null);
     }
@@ -393,13 +438,15 @@ class IndicatorsRepositoryTest {
                 repositoryGestion,
                 codeListService,
                 null,
-                null,
+                indicatorPublication,
                 operationsObjectMapper,
                 null,
                 null,
                 bauhausUriBuilder,
                 new BauhausLanguagesProperties("fr", "en"),
                 indicatorsQueries,
-                organisationLookup);
+                organisationLookup,
+                events,
+                iriFactory);
     }
 }

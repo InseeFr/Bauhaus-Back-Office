@@ -12,6 +12,11 @@
   <name>module-utility</name>
 
   <dependencies>
+    <!-- Fabrique HTTP détectée (HttpComponents) avec timeouts, pour les RestClient Keycloak et Colectica -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-http-client</artifactId>
+    </dependency>
     <!-- RDF4J in-memory store for RepositoryGestionTest -->
     <dependency>
       <groupId>org.eclipse.rdf4j</groupId>

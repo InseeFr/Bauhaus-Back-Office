@@ -2,6 +2,7 @@ package fr.insee.rmes.integration.authorizations;
 
 import static fr.insee.rmes.integration.authorizations.TokenForTestsConfiguration.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -28,6 +29,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
 @WebMvcTest(
         controllers = ClassificationsResources.class,
@@ -206,5 +208,38 @@ class TestClassificationsRessourcesEnvProd extends AbstractResourcesEnvProd {
 
     static Collection<Arguments> TestRoleCaseForUploadClassification() {
         return Arrays.asList(Arguments.of(200, true), Arguments.of(403, false));
+    }
+
+    /**
+     * La stratégie STAMP compare le timbre de l'utilisateur aux contributeurs de la nomenclature :
+     * chaque écriture, sur la nomenclature ou sur l'un de ses postes, doit donc transmettre
+     * l'identifiant de la nomenclature au contrôle d'accès. Seul cet identifiant est autorisé.
+     */
+    static Collection<Arguments> classificationWritesCheckedOnTheClassificationId() {
+        return Arrays.asList(
+                Arguments.of(
+                        "UPDATE",
+                        put("/classifications/classification/" + familyId)
+                                .content("{\"prefLabelLg1\": \"Nomenclature\", \"prefLabelLg2\": \"Classification\"}")),
+                Arguments.of("PUBLISH", put("/classifications/classification/" + familyId + "/validate")),
+                Arguments.of(
+                        "UPDATE",
+                        put("/classifications/classification/" + familyId + "/item/" + itemId)
+                                .content("{\"prefLabelLg1\": \"Libellé\", \"prefLabelLg2\": \"Label\"}")));
+    }
+
+    @ParameterizedTest
+    @MethodSource("classificationWritesCheckedOnTheClassificationId")
+    void checks_the_access_on_the_classification_id(String privilege, MockHttpServletRequestBuilder request)
+            throws Exception, MissingUserInformationException {
+        when(checker.hasAccess(eq("CLASSIFICATION_CLASSIFICATION"), eq(privilege), eq(familyId), any()))
+                .thenReturn(true);
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
+
+        request.contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer toto");
+
+        mvc.perform(request).andExpect(status().isOk());
     }
 }

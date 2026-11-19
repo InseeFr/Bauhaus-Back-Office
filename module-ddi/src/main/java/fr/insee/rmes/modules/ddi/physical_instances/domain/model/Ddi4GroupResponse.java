@@ -56,7 +56,7 @@ public record Ddi4GroupResponse(
         }
 
         return new Ddi4GroupResponse(
-                Ddi4Response.SCHEMA,
+                Ddi4Response.SCHEMA_ID,
                 topLevelReferences,
                 groups.isEmpty() ? null : groups,
                 studyUnits.isEmpty() ? null : studyUnits);

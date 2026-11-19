@@ -11,6 +11,7 @@ import fr.insee.rmes.colectica.client.ColecticaClient;
 import fr.insee.rmes.colectica.client.dto.ColecticaCreateItemRequest;
 import fr.insee.rmes.colectica.client.dto.ColecticaItemResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.DdiItemNotFoundException;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.InvalidReuseVariablesException;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.BasedOnObject;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Citation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CogsDate;
@@ -27,6 +28,9 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LogicalRecord;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceIds;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceParents;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.ReuseVariablesRequest;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.RolloverRequest;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.RolloverVariable;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UpdatePhysicalInstanceRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.VariablesInRecord;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI4toDDI3ConverterService;
@@ -34,6 +38,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
@@ -170,7 +175,7 @@ class ColecticaPhysicalInstanceWriter {
                 request.physicalInstanceLabel() != null ? request.physicalInstanceLabel() : currentTitle.value();
 
         Ddi4PhysicalInstance updatedPI = new Ddi4PhysicalInstance(
-                Ddi4PhysicalInstance.TYPE,
+                Ddi4PhysicalInstance.TYPE_NAME,
                 CogsDate.ofDateTime(versionDate),
                 currentPI.urn(),
                 currentPI.agency(),
@@ -229,13 +234,13 @@ class ColecticaPhysicalInstanceWriter {
                     String copyId = UUID.randomUUID().toString();
                     variableIds.put(variable.id(), copyId);
                     return new Ddi4Variable(
-                            Ddi4Variable.TYPE,
+                            Ddi4Variable.TYPE_NAME,
                             versionDate,
                             Reference.synthesizeUrn(agencyId, copyId, COPY_VERSION),
                             agencyId,
                             copyId,
                             COPY_VERSION,
-                            basedOn(variable.agency(), variable.id(), variable.version(), Ddi4Variable.TYPE),
+                            basedOn(variable.agency(), variable.id(), variable.version(), Ddi4Variable.TYPE_NAME),
                             variable.variableName(),
                             variable.label(),
                             variable.description(),
@@ -245,34 +250,40 @@ class ColecticaPhysicalInstanceWriter {
                 })
                 .toList();
         List<Reference> copiedVariableReferences = variableIds.values().stream()
-                .map(copyId -> Reference.of(agencyId, copyId, COPY_VERSION, Ddi4Variable.TYPE))
+                .map(copyId -> Reference.of(agencyId, copyId, COPY_VERSION, Ddi4Variable.TYPE_NAME))
                 .toList();
 
         List<Ddi4DataRelationship> copiedDataRelationships = orEmpty(source.dataRelationship()).stream()
                 .limit(1)
                 .map(dataRelationship -> copiedDataRelationship(
-                        dataRelationship, agencyId, request, versionDate, copiedVariableReferences))
+                        dataRelationship,
+                        agencyId,
+                        label,
+                        request.dataRelationshipLabel(),
+                        request.logicalRecordLabel(),
+                        versionDate,
+                        copiedVariableReferences))
                 .toList();
 
         Ddi4PhysicalInstance sourcePI = source.physicalInstance().getFirst();
         String copyId = UUID.randomUUID().toString();
         Ddi4PhysicalInstance copiedPI = new Ddi4PhysicalInstance(
-                Ddi4PhysicalInstance.TYPE,
+                Ddi4PhysicalInstance.TYPE_NAME,
                 versionDate,
                 Reference.synthesizeUrn(agencyId, copyId, COPY_VERSION),
                 agencyId,
                 copyId,
                 COPY_VERSION,
-                basedOn(sourcePI.agency(), sourcePI.id(), sourcePI.version(), Ddi4PhysicalInstance.TYPE),
+                basedOn(sourcePI.agency(), sourcePI.id(), sourcePI.version(), Ddi4PhysicalInstance.TYPE_NAME),
                 new Citation(labels.withFallback(
                         sourcePI.citation() == null ? null : sourcePI.citation().title(), label)),
                 copiedDataRelationships.stream()
-                        .map(dr -> Reference.of(agencyId, dr.id(), COPY_VERSION, Ddi4DataRelationship.TYPE))
+                        .map(dr -> Reference.of(agencyId, dr.id(), COPY_VERSION, Ddi4DataRelationship.TYPE_NAME))
                         .toList());
 
         Ddi4Response copy = new Ddi4Response(
-                Ddi4Response.SCHEMA,
-                List.of(Reference.of(agencyId, copyId, COPY_VERSION, Ddi4PhysicalInstance.TYPE)),
+                Ddi4Response.SCHEMA_ID,
+                List.of(Reference.of(agencyId, copyId, COPY_VERSION, Ddi4PhysicalInstance.TYPE_NAME)),
                 List.of(copiedPI),
                 copiedDataRelationships.isEmpty() ? null : copiedDataRelationships,
                 copiedVariables.isEmpty() ? null : copiedVariables,
@@ -289,26 +300,220 @@ class ColecticaPhysicalInstanceWriter {
         return copiedPI;
     }
 
+    /**
+     * Crée une PhysicalInstance dans l'Étude de la source, qui réutilise les variables choisies sans
+     * les copier (#1674) : la PI, sa DataRelationship et son LogicalRecord sont neufs, la PI pointe sur
+     * la source via {@code BasedOnObject}, et le LogicalRecord référence les variables telles que
+     * stockées. Ni les variables ni le VariableScheme de l'Étude, qui les range déjà, ne sont réécrits.
+     *
+     * @param parents les parents de la source : la nouvelle PI rejoint sa StudyUnit
+     * @throws InvalidReuseVariablesException si le groupe de la requête n'est pas celui de la source,
+     *     ou si une variable demandée n'est pas utilisée par la source
+     */
+    Reference reuseVariables(
+            String agencyId, String id, ReuseVariablesRequest request, PhysicalInstanceParents parents) {
+        if (!parents.groupAgency().equals(request.groupAgency())
+                || !parents.groupId().equals(request.groupId())) {
+            throw InvalidReuseVariablesException.groupMismatch(request.groupAgency(), request.groupId());
+        }
+        Ddi4Response source = reader.getPhysicalInstance(agencyId, id);
+        if (source == null
+                || source.physicalInstance() == null
+                || source.physicalInstance().isEmpty()) {
+            throw DdiItemNotFoundException.physicalInstance(agencyId, id);
+        }
+
+        Set<String> selectedIds = Set.copyOf(request.variableIds());
+        List<Ddi4Variable> sourceVariables = orEmpty(source.variable());
+        Set<String> sourceIds = sourceVariables.stream().map(Ddi4Variable::id).collect(Collectors.toSet());
+        List<String> unknownIds = request.variableIds().stream()
+                .filter(variableId -> !sourceIds.contains(variableId))
+                .toList();
+        if (!unknownIds.isEmpty()) {
+            throw InvalidReuseVariablesException.notInSource(unknownIds);
+        }
+        // Ordre de la source, versions stockées : la nouvelle PI partage les mêmes variables.
+        List<Reference> reusedVariableReferences = sourceVariables.stream()
+                .filter(variable -> selectedIds.contains(variable.id()))
+                .map(variable -> Reference.of(
+                        variable.agency(),
+                        variable.id(),
+                        variable.version() != null ? variable.version() : COPY_VERSION,
+                        Ddi4Variable.TYPE_NAME))
+                .toList();
+
+        CogsDate versionDate = CogsDate.ofDateTime(ColecticaDates.nowIso());
+        String label = request.physicalInstanceLabel();
+        List<Ddi4DataRelationship> newDataRelationships = orEmpty(source.dataRelationship()).stream()
+                .limit(1)
+                .map(dataRelationship -> copiedDataRelationship(
+                        dataRelationship,
+                        agencyId,
+                        label,
+                        request.dataRelationshipLabel(),
+                        request.logicalRecordLabel(),
+                        versionDate,
+                        reusedVariableReferences))
+                .toList();
+
+        Ddi4PhysicalInstance sourcePI = source.physicalInstance().getFirst();
+        String newId = UUID.randomUUID().toString();
+        Ddi4PhysicalInstance newPI = new Ddi4PhysicalInstance(
+                Ddi4PhysicalInstance.TYPE_NAME,
+                versionDate,
+                Reference.synthesizeUrn(agencyId, newId, COPY_VERSION),
+                agencyId,
+                newId,
+                COPY_VERSION,
+                basedOn(sourcePI.agency(), sourcePI.id(), sourcePI.version(), Ddi4PhysicalInstance.TYPE_NAME),
+                new Citation(labels.withFallback(
+                        sourcePI.citation() == null ? null : sourcePI.citation().title(), label)),
+                newDataRelationships.stream()
+                        .map(dr -> Reference.of(agencyId, dr.id(), COPY_VERSION, Ddi4DataRelationship.TYPE_NAME))
+                        .toList());
+
+        Ddi4Response newInstance = new Ddi4Response(
+                Ddi4Response.SCHEMA_ID,
+                List.of(Reference.of(agencyId, newId, COPY_VERSION, Ddi4PhysicalInstance.TYPE_NAME)),
+                List.of(newPI),
+                newDataRelationships.isEmpty() ? null : newDataRelationships,
+                null,
+                null,
+                null,
+                null);
+
+        List<ColecticaItemResponse> studyUnit = List.of(addPhysicalInstanceReferenceToStudyUnit(
+                parents.studyUnitAgency(), parents.studyUnitId(), agencyId, newId));
+        updateFullPhysicalInstance(agencyId, newId, newInstance, studyUnit, parents);
+
+        return Reference.of(agencyId, newId, COPY_VERSION, Ddi4PhysicalInstance.TYPE_NAME);
+    }
+
+    /**
+     * Nouvelle période d'une PhysicalInstance (#1672), dans une autre étude du groupe : la PI, sa
+     * DataRelationship et son LogicalRecord sont neufs et pointent sur la source via
+     * {@code BasedOnObject}. Chaque variable choisie est copiée avec un {@code BasedOn} vers son
+     * original, sauf celles de {@code reusedBySourceId}, déjà dérivées de la source dans l'étude
+     * cible : le LogicalRecord les référence telles quelles, sans les réécrire. Listes de codes et
+     * catégories restent référencées par les copies sans être réécrites.
+     *
+     * <p>La PI, l'étude cible et son VariableScheme, qui range les copies, partent dans un seul
+     * enregistrement ; un scheme manquant lève une {@code MissingSchemeException} avant tout envoi.
+     *
+     * @param source la PI source, lue et validée par l'appelant
+     */
+    Reference rollover(Ddi4Response source, RolloverRequest request, Map<String, Reference> reusedBySourceId) {
+        Ddi4PhysicalInstance sourcePI = source.physicalInstance().getFirst();
+        // Comme la duplication : les nouveaux objets sont créés sous l'agence de la source.
+        String agencyId = sourcePI.agency();
+        CogsDate versionDate = CogsDate.ofDateTime(ColecticaDates.nowIso());
+        String label = request.physicalInstanceLabel();
+        Set<String> selectedIds =
+                request.variables().stream().map(RolloverVariable::sourceId).collect(Collectors.toSet());
+
+        // Ordre de la source : chaque variable choisie est soit remplacée par sa dérivée de l'étude
+        // cible, soit copiée.
+        List<Ddi4Variable> copiedVariables = new ArrayList<>();
+        List<Reference> variableReferences = new ArrayList<>();
+        for (Ddi4Variable variable : orEmpty(source.variable())) {
+            if (!selectedIds.contains(variable.id())) {
+                continue;
+            }
+            Reference reused = reusedBySourceId.get(variable.id());
+            if (reused != null) {
+                variableReferences.add(reused);
+                continue;
+            }
+            Ddi4Variable copy = copiedVariable(variable, agencyId, versionDate);
+            copiedVariables.add(copy);
+            variableReferences.add(Reference.of(agencyId, copy.id(), COPY_VERSION, Ddi4Variable.TYPE_NAME));
+        }
+
+        List<Ddi4DataRelationship> newDataRelationships = orEmpty(source.dataRelationship()).stream()
+                .limit(1)
+                .map(dataRelationship -> copiedDataRelationship(
+                        dataRelationship,
+                        agencyId,
+                        label,
+                        request.dataRelationshipLabel(),
+                        request.logicalRecordLabel(),
+                        versionDate,
+                        variableReferences))
+                .toList();
+
+        String newId = UUID.randomUUID().toString();
+        Ddi4PhysicalInstance newPI = new Ddi4PhysicalInstance(
+                Ddi4PhysicalInstance.TYPE_NAME,
+                versionDate,
+                Reference.synthesizeUrn(agencyId, newId, COPY_VERSION),
+                agencyId,
+                newId,
+                COPY_VERSION,
+                basedOn(sourcePI.agency(), sourcePI.id(), sourcePI.version(), Ddi4PhysicalInstance.TYPE_NAME),
+                new Citation(labels.withFallback(
+                        sourcePI.citation() == null ? null : sourcePI.citation().title(), label)),
+                newDataRelationships.stream()
+                        .map(dr -> Reference.of(agencyId, dr.id(), COPY_VERSION, Ddi4DataRelationship.TYPE_NAME))
+                        .toList());
+
+        Ddi4Response newInstance = new Ddi4Response(
+                Ddi4Response.SCHEMA_ID,
+                List.of(Reference.of(agencyId, newId, COPY_VERSION, Ddi4PhysicalInstance.TYPE_NAME)),
+                List.of(newPI),
+                newDataRelationships.isEmpty() ? null : newDataRelationships,
+                copiedVariables.isEmpty() ? null : copiedVariables,
+                null,
+                null,
+                null);
+
+        List<ColecticaItemResponse> studyUnit = List.of(addPhysicalInstanceReferenceToStudyUnit(
+                request.studyUnitAgency(), request.studyUnitId(), agencyId, newId));
+        PhysicalInstanceParents parents = new PhysicalInstanceParents(
+                request.studyUnitAgency(), request.studyUnitId(), request.groupAgency(), request.groupId());
+        updateFullPhysicalInstance(agencyId, newId, newInstance, studyUnit, parents);
+
+        return Reference.of(agencyId, newId, COPY_VERSION, Ddi4PhysicalInstance.TYPE_NAME);
+    }
+
+    /** Copie d'une variable : nouvel identifiant en version 1, {@code BasedOn} vers l'originale. */
+    private static Ddi4Variable copiedVariable(Ddi4Variable variable, String agencyId, CogsDate versionDate) {
+        String copyId = UUID.randomUUID().toString();
+        return new Ddi4Variable(
+                Ddi4Variable.TYPE_NAME,
+                versionDate,
+                Reference.synthesizeUrn(agencyId, copyId, COPY_VERSION),
+                agencyId,
+                copyId,
+                COPY_VERSION,
+                basedOn(variable.agency(), variable.id(), variable.version(), Ddi4Variable.TYPE_NAME),
+                variable.variableName(),
+                variable.label(),
+                variable.description(),
+                variable.variableRepresentation(),
+                variable.isGeographic(),
+                variable.versionResponsibility());
+    }
+
     private Ddi4DataRelationship copiedDataRelationship(
             Ddi4DataRelationship source,
             String agencyId,
-            DuplicatePhysicalInstanceRequest request,
+            String label,
+            String requestedDataRelationshipLabel,
+            String requestedLogicalRecordLabel,
             CogsDate versionDate,
             List<Reference> copiedVariableReferences) {
-        String label = request.physicalInstanceLabel();
-        String dataRelationshipLabel = request.dataRelationshipLabel() != null
-                ? request.dataRelationshipLabel()
+        String dataRelationshipLabel = requestedDataRelationshipLabel != null
+                ? requestedDataRelationshipLabel
                 : DATA_RELATIONSHIP_LABEL_PREFIX + label;
-        String logicalRecordLabel = request.logicalRecordLabel() != null
-                ? request.logicalRecordLabel()
-                : LOGICAL_RECORD_LABEL_PREFIX + label;
+        String logicalRecordLabel =
+                requestedLogicalRecordLabel != null ? requestedLogicalRecordLabel : LOGICAL_RECORD_LABEL_PREFIX + label;
 
         List<LogicalRecord> copiedLogicalRecords = orEmpty(source.logicalRecord()).stream()
                 .limit(1)
                 .map(logicalRecord -> {
                     String copyId = UUID.randomUUID().toString();
                     return new LogicalRecord(
-                            LogicalRecord.TYPE,
+                            LogicalRecord.TYPE_NAME,
                             Reference.synthesizeUrn(agencyId, copyId, COPY_VERSION),
                             agencyId,
                             copyId,
@@ -320,13 +525,13 @@ class ColecticaPhysicalInstanceWriter {
 
         String copyId = UUID.randomUUID().toString();
         return new Ddi4DataRelationship(
-                Ddi4DataRelationship.TYPE,
+                Ddi4DataRelationship.TYPE_NAME,
                 versionDate,
                 Reference.synthesizeUrn(agencyId, copyId, COPY_VERSION),
                 agencyId,
                 copyId,
                 COPY_VERSION,
-                basedOn(source.agency(), source.id(), source.version(), Ddi4DataRelationship.TYPE),
+                basedOn(source.agency(), source.id(), source.version(), Ddi4DataRelationship.TYPE_NAME),
                 labels.withFallback(source.label(), dataRelationshipLabel),
                 copiedLogicalRecords.isEmpty() ? null : copiedLogicalRecords);
     }
@@ -345,7 +550,7 @@ class ColecticaPhysicalInstanceWriter {
         if (updatedLRs != null && request.logicalRecordLabel() != null) {
             updatedLRs = updatedLRs.stream()
                     .map(lr -> new LogicalRecord(
-                            LogicalRecord.TYPE,
+                            LogicalRecord.TYPE_NAME,
                             lr.urn(),
                             lr.agency(),
                             lr.id(),
@@ -356,7 +561,7 @@ class ColecticaPhysicalInstanceWriter {
         }
 
         return new Ddi4DataRelationship(
-                Ddi4DataRelationship.TYPE,
+                Ddi4DataRelationship.TYPE_NAME,
                 CogsDate.ofDateTime(versionDate),
                 currentDR.urn(),
                 currentDR.agency(),

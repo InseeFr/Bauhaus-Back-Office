@@ -171,6 +171,7 @@ class OperationFamilyTest {
                 "2023-01-01",
                 "2023-06-01",
                 Collections.emptyList(),
+                Collections.emptyList(),
                 Collections.emptyList());
     }
 

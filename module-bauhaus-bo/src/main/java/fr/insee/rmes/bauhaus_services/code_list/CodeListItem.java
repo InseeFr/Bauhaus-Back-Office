@@ -6,7 +6,7 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class CodeListItem {
 
-    private static final String classLink = "fr.insee.rmes.bauhaus_services.code_list.CodeListItem";
+    private static final String CLASS_LINK = "fr.insee.rmes.bauhaus_services.code_list.CodeListItem";
 
     private String iri;
 
@@ -104,6 +104,6 @@ public class CodeListItem {
     }
 
     public static String getClassOperationsLink() {
-        return classLink;
+        return CLASS_LINK;
     }
 }

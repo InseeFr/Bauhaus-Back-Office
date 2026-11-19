@@ -92,7 +92,7 @@ public class Lifecycle33ToDdi4 {
             throw new IllegalArgumentException("Fragment does not contain a PhysicalInstance");
         }
         return new Ddi4PhysicalInstance(
-                Ddi4PhysicalInstance.TYPE,
+                Ddi4PhysicalInstance.TYPE_NAME,
                 CogsDate.ofDateTime(pi.xgetVersionDate().getStringValue()),
                 pi.getURNArray(0).getStringValue(),
                 pi.getAgencyArray(0),
@@ -110,7 +110,7 @@ public class Lifecycle33ToDdi4 {
             throw new IllegalArgumentException("Fragment does not contain a DataRelationship");
         }
         return new Ddi4DataRelationship(
-                Ddi4DataRelationship.TYPE,
+                Ddi4DataRelationship.TYPE_NAME,
                 CogsDate.ofDateTime(dr.xgetVersionDate().getStringValue()),
                 dr.getURNArray(0).getStringValue(),
                 dr.getAgencyArray(0),
@@ -130,7 +130,7 @@ public class Lifecycle33ToDdi4 {
             throw new IllegalArgumentException("Fragment does not contain a Variable");
         }
         return new Ddi4Variable(
-                Ddi4Variable.TYPE,
+                Ddi4Variable.TYPE_NAME,
                 CogsDate.ofDateTime(var.xgetVersionDate().getStringValue()),
                 var.getURNArray(0).getStringValue(),
                 var.getAgencyArray(0),
@@ -153,7 +153,7 @@ public class Lifecycle33ToDdi4 {
         List<Level> levels = new ArrayList<>();
         for (LevelType l : cl.getLevelArray()) {
             levels.add(new Level(
-                    Level.TYPE,
+                    Level.TYPE_NAME,
                     l.getLevelNumber() != null ? l.getLevelNumber().intValue() : null,
                     l.sizeOfLevelNameArray() > 0 ? readName(l.getLevelNameArray(0)) : null,
                     l.isSetCategoryRelationship() ? l.getCategoryRelationship().toString() : null));
@@ -163,7 +163,7 @@ public class Lifecycle33ToDdi4 {
             codes.add(toCode(c));
         }
         return new Ddi4CodeList(
-                Ddi4CodeList.TYPE,
+                Ddi4CodeList.TYPE_NAME,
                 CogsDate.ofDateTime(cl.xgetVersionDate().getStringValue()),
                 cl.getURNArray(0).getStringValue(),
                 cl.getAgencyArray(0),
@@ -185,7 +185,7 @@ public class Lifecycle33ToDdi4 {
         String id = c.getIDArray(0).getStringValue();
         String version = c.getVersionArray(0);
         return new Code(
-                Code.TYPE,
+                Code.TYPE_NAME,
                 c.sizeOfURNArray() > 0
                         ? c.getURNArray(0).getStringValue()
                         : Reference.synthesizeUrn(agency, id, version),
@@ -207,7 +207,7 @@ public class Lifecycle33ToDdi4 {
             codeListReferences.add(readReference(ref));
         }
         return new Ddi4CodeListScheme(
-                Ddi4CodeListScheme.TYPE,
+                Ddi4CodeListScheme.TYPE_NAME,
                 CogsDate.ofDateTime(scheme.xgetVersionDate().getStringValue()),
                 scheme.getURNArray(0).getStringValue(),
                 scheme.getAgencyArray(0),
@@ -244,7 +244,7 @@ public class Lifecycle33ToDdi4 {
             managedRepresentationReferences.add(readReference((ReferenceType) child));
         }
         return new Ddi4ManagedRepresentationScheme(
-                Ddi4ManagedRepresentationScheme.TYPE,
+                Ddi4ManagedRepresentationScheme.TYPE_NAME,
                 CogsDate.ofDateTime(scheme.xgetVersionDate().getStringValue()),
                 scheme.getURNArray(0).getStringValue(),
                 scheme.getAgencyArray(0),
@@ -263,10 +263,10 @@ public class Lifecycle33ToDdi4 {
         for (CodeRepresentationBaseType rep : mmvr.getMissingCodeRepresentationArray()) {
             Reference clRef = rep.isSetCodeListReference() ? readReference(rep.getCodeListReference()) : null;
             missingCodeRepresentations.add(
-                    new CodeRepresentation(CodeRepresentation.TYPE, rep.getBlankIsMissingValue(), clRef));
+                    new CodeRepresentation(CodeRepresentation.TYPE_NAME, rep.getBlankIsMissingValue(), clRef));
         }
         return new Ddi4ManagedMissingValuesRepresentation(
-                Ddi4ManagedMissingValuesRepresentation.TYPE,
+                Ddi4ManagedMissingValuesRepresentation.TYPE_NAME,
                 mmvr.isSetVersionDate()
                         ? CogsDate.ofDateTime(mmvr.xgetVersionDate().getStringValue())
                         : null,
@@ -289,7 +289,7 @@ public class Lifecycle33ToDdi4 {
             categoryReferences.add(readReference(ref));
         }
         return new Ddi4CategoryScheme(
-                Ddi4CategoryScheme.TYPE,
+                Ddi4CategoryScheme.TYPE_NAME,
                 CogsDate.ofDateTime(scheme.xgetVersionDate().getStringValue()),
                 scheme.getURNArray(0).getStringValue(),
                 scheme.getAgencyArray(0),
@@ -309,7 +309,7 @@ public class Lifecycle33ToDdi4 {
             variableReferences.add(readReference(ref));
         }
         return new Ddi4VariableScheme(
-                Ddi4VariableScheme.TYPE,
+                Ddi4VariableScheme.TYPE_NAME,
                 CogsDate.ofDateTime(scheme.xgetVersionDate().getStringValue()),
                 scheme.getURNArray(0).getStringValue(),
                 scheme.getAgencyArray(0),
@@ -332,7 +332,7 @@ public class Lifecycle33ToDdi4 {
         }
         LogicalProductType lp = (LogicalProductType) base.changeType(LogicalProductType.type);
         return new Ddi4LogicalProduct(
-                Ddi4LogicalProduct.TYPE,
+                Ddi4LogicalProduct.TYPE_NAME,
                 CogsDate.ofDateTime(lp.xgetVersionDate().getStringValue()),
                 lp.getURNArray(0).getStringValue(),
                 lp.getAgencyArray(0),
@@ -359,7 +359,7 @@ public class Lifecycle33ToDdi4 {
             throw new IllegalArgumentException("Fragment does not contain a Category");
         }
         return new Ddi4Category(
-                Ddi4Category.TYPE,
+                Ddi4Category.TYPE_NAME,
                 CogsDate.ofDateTime(cat.xgetVersionDate().getStringValue()),
                 cat.getURNArray(0).getStringValue(),
                 cat.getAgencyArray(0),
@@ -388,7 +388,7 @@ public class Lifecycle33ToDdi4 {
             logicalProductRefs.add(readReference(ref));
         }
         return new Ddi4Group(
-                Ddi4Group.TYPE,
+                Ddi4Group.TYPE_NAME,
                 CogsDate.ofDateTime(group.xgetVersionDate().getStringValue()),
                 group.getURNArray(0).getStringValue(),
                 group.getAgencyArray(0),
@@ -413,7 +413,7 @@ public class Lifecycle33ToDdi4 {
             piRefs.add(readReference(ref));
         }
         return new Ddi4StudyUnit(
-                Ddi4StudyUnit.TYPE,
+                Ddi4StudyUnit.TYPE_NAME,
                 CogsDate.ofDateTime(su.xgetVersionDate().getStringValue()),
                 su.getURNArray(0).getStringValue(),
                 su.getAgencyArray(0),
@@ -478,7 +478,7 @@ public class Lifecycle33ToDdi4 {
         CodeRepresentationBaseType codeRep =
                 (CodeRepresentationBaseType) rep.changeType(CodeRepresentationBaseType.type);
         Reference clRef = codeRep.isSetCodeListReference() ? readReference(codeRep.getCodeListReference()) : null;
-        return new CodeRepresentation(CodeRepresentation.TYPE, codeRep.getBlankIsMissingValue(), clRef);
+        return new CodeRepresentation(CodeRepresentation.TYPE_NAME, codeRep.getBlankIsMissingValue(), clRef);
     }
 
     private static Reference readReference(ReferenceType ref) {
@@ -504,7 +504,7 @@ public class Lifecycle33ToDdi4 {
         CodeValue typeCode = numRep.isSetNumericTypeCode() && numRep.getNumericTypeCode() != null
                 ? CodeValue.numericType(numRep.getNumericTypeCode().getStringValue())
                 : null;
-        return new NumericRepresentation(NumericRepresentation.TYPE, typeCode, numberRange);
+        return new NumericRepresentation(NumericRepresentation.TYPE_NAME, typeCode, numberRange);
     }
 
     private static RangeValue toRangeValue(NumberRangeValueType v) {
@@ -523,7 +523,7 @@ public class Lifecycle33ToDdi4 {
         String format = dt.isSetDateFieldFormat() && dt.getDateFieldFormat() != null
                 ? dt.getDateFieldFormat().getStringValue()
                 : null;
-        return new DateTimeRepresentation(DateTimeRepresentation.TYPE, typeCode, format);
+        return new DateTimeRepresentation(DateTimeRepresentation.TYPE_NAME, typeCode, format);
     }
 
     private static TextRepresentation readTextRepresentation(RepresentationType rep) {
@@ -537,7 +537,7 @@ public class Lifecycle33ToDdi4 {
                 : null;
         String regExp = txt.isSetRegExp() ? txt.getRegExp() : null;
         return new TextRepresentation(
-                TextRepresentation.TYPE, maxLength, minLength, regExp, txt.getBlankIsMissingValue());
+                TextRepresentation.TYPE_NAME, maxLength, minLength, regExp, txt.getBlankIsMissingValue());
     }
 
     private static List<LangString> readStructuredString(StructuredStringType struct) {
@@ -552,7 +552,7 @@ public class Lifecycle33ToDdi4 {
     private static LogicalRecord readLogicalRecord(LogicalRecordType lr) {
         if (lr == null) return null;
         return new LogicalRecord(
-                LogicalRecord.TYPE,
+                LogicalRecord.TYPE_NAME,
                 lr.getURNArray(0).getStringValue(),
                 lr.getAgencyArray(0),
                 lr.getIDArray(0).getStringValue(),

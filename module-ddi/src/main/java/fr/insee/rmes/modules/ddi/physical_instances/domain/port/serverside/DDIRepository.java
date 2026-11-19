@@ -1,5 +1,6 @@
 package fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside;
 
+import fr.insee.rmes.modules.commons.hexagonal.ServerSidePort;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CategoryCodeListUsage;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeListVariableUsage;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CreatePhysicalInstanceRequest;
@@ -18,6 +19,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnitRe
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4VariableScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.DuplicatePhysicalInstanceRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.MutualizedCodeListCodes;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.OperationStudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodesList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialGroup;
@@ -29,13 +31,17 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanc
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceParents;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceSearchRow;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.ReuseVariablesRequest;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.RolloverRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UpdatePhysicalInstanceRequest;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import org.jspecify.annotations.Nullable;
 
+@ServerSidePort
 public interface DDIRepository {
     List<PartialPhysicalInstance> getPhysicalInstances();
     /**
@@ -106,6 +112,27 @@ public interface DDIRepository {
      * @return la référence de la PhysicalInstance créée
      */
     Reference duplicatePhysicalInstance(String agencyId, String id, DuplicatePhysicalInstanceRequest request);
+
+    /**
+     * Crée une PhysicalInstance dans l'Étude de {@code agencyId/id}, qui réutilise les variables
+     * choisies de la source sans les copier (#1674) : son LogicalRecord les référence telles quelles.
+     *
+     * @return la référence de la PhysicalInstance créée
+     */
+    Reference reuseVariables(String agencyId, String id, ReuseVariablesRequest request);
+
+    /**
+     * Crée la PhysicalInstance d'une nouvelle période (#1672) dans l'étude de la requête : PI,
+     * DataRelationship et LogicalRecord neufs (pointant la source via {@code BasedOn}), variables
+     * choisies copiées avec {@code BasedOn}, sauf celles de {@code reusedBySourceId}, référencées
+     * telles quelles. Les copies sont rangées dans le VariableScheme de l'étude cible, dans le même
+     * enregistrement que la PI et l'étude.
+     *
+     * @param source la PhysicalInstance source, déjà lue (et validée) par l'appelant
+     * @param reusedBySourceId identifiant de variable source → variable de l'étude cible qui la remplace
+     * @return la référence de la PhysicalInstance créée
+     */
+    Reference rollover(Ddi4Response source, RolloverRequest request, Map<String, Reference> reusedBySourceId);
 
     Ddi4Response createPhysicalInstance(CreatePhysicalInstanceRequest request);
 
@@ -238,4 +265,10 @@ public interface DDIRepository {
      * {@code operationIris} (une opération peut en avoir plusieurs) ; vide si aucune ne la reflète.
      */
     List<PartialPhysicalInstance> findPhysicalInstancesByOperationIris(Collection<String> operationIris);
+
+    /**
+     * Les StudyUnits dont un {@code r:UserID} vaut l'une des {@code operationIris}, chacune avec le
+     * Group qui la classe ; une StudyUnit sans Group est écartée. Vide si aucune ne reflète l'opération.
+     */
+    List<OperationStudyUnit> findStudyUnitsByOperationIris(Collection<String> operationIris);
 }

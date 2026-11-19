@@ -18,7 +18,7 @@ public record Ddi4PhysicalInstance(
         @JsonProperty("VersionResponsibility") String versionResponsibility)
         implements Ddi4VersionedItem, Ddi4Item {
 
-    public static final String TYPE = "PhysicalInstance";
+    public static final String TYPE_NAME = "PhysicalInstance";
 
     /**
      * Constructeur de compatibilité (sans {@code VersionResponsibility}) : le champ est estampillé

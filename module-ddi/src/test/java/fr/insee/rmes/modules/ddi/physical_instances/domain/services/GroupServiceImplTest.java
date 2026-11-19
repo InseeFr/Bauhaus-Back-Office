@@ -37,7 +37,7 @@ class GroupServiceImplTest {
     @Test
     void createOrUpdate_shouldDelegateToRepository() {
         Ddi4Group group = new Ddi4Group(
-                Ddi4Group.TYPE,
+                Ddi4Group.TYPE_NAME,
                 CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
                 "urn:ddi:fr.insee:group-id:1",
                 "fr.insee",

@@ -16,6 +16,7 @@ public record OperationFamily(
         String validationState,
         String created,
         String modified,
+        List<String> contributors,
         List<OperationFamilySeries> series,
         List<OperationFamilySubject> subjects) {
 
@@ -30,6 +31,7 @@ public record OperationFamily(
                 ValidationStatus.UNPUBLISHED.getValue(),
                 creationDate,
                 creationDate,
+                command.contributors(),
                 Collections.emptyList(),
                 Collections.emptyList());
     }
@@ -45,6 +47,7 @@ public record OperationFamily(
                 validationStatus.getValue(),
                 command.created(),
                 modificationDate,
+                command.contributors(),
                 Collections.emptyList(),
                 Collections.emptyList());
     }
@@ -69,7 +72,23 @@ public record OperationFamily(
                 created,
                 modified,
                 Collections.emptyList(),
+                Collections.emptyList(),
                 Collections.emptyList());
+    }
+
+    public OperationFamily withContributors(List<String> contributors) {
+        return new OperationFamily(
+                id,
+                prefLabelLg1,
+                prefLabelLg2,
+                abstractLg1,
+                abstractLg2,
+                validationState,
+                created,
+                modified,
+                contributors,
+                series,
+                subjects);
     }
 
     public OperationFamily withSeries(List<OperationFamilySeries> series) {
@@ -82,6 +101,7 @@ public record OperationFamily(
                 validationState,
                 created,
                 modified,
+                contributors,
                 series,
                 Collections.emptyList());
     }
@@ -96,6 +116,7 @@ public record OperationFamily(
                 validationState,
                 created,
                 modified,
+                contributors,
                 series,
                 subjects);
     }

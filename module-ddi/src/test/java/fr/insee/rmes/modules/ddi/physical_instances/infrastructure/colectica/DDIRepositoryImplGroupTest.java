@@ -1,8 +1,10 @@
 package fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.inOrder;
 
 import fr.insee.rmes.colectica.client.ColecticaClient;
 import fr.insee.rmes.colectica.client.dto.ColecticaCreateItemRequest;
@@ -13,12 +15,12 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.DDIRe
 import fr.insee.rmes.modules.ddi.physical_instances.domain.services.Ddi4ToLifecycle33;
 import java.util.List;
 import java.util.Set;
-import javax.xml.stream.XMLStreamException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -60,9 +62,9 @@ class DDIRepositoryImplGroupTest {
         }
 
         @Test
-        void createOrUpdate_shouldTransformAndPostGroup() throws XMLStreamException {
+        void createOrUpdate_shouldTransformAndPostGroup() {
             Ddi4Group group = new Ddi4Group(
-                    Ddi4Group.TYPE,
+                    Ddi4Group.TYPE_NAME,
                     CogsDate.ofDateTime("2026-04-02T00:00:00Z"),
                     "urn:ddi:fr.insee:group-uuid:1",
                     "fr.insee",
@@ -144,9 +146,9 @@ class DDIRepositoryImplGroupTest {
         }
 
         @Test
-        void createOrUpdate_shouldTransformAndPostStudyUnit() throws XMLStreamException {
+        void createOrUpdate_shouldTransformAndPostStudyUnit() {
             Ddi4StudyUnit studyUnit = new Ddi4StudyUnit(
-                    Ddi4StudyUnit.TYPE,
+                    Ddi4StudyUnit.TYPE_NAME,
                     CogsDate.ofDateTime("2026-04-02T00:00:00Z"),
                     "urn:ddi:fr.insee:su-uuid:1",
                     "fr.insee",
@@ -167,6 +169,39 @@ class DDIRepositoryImplGroupTest {
                     .contains(">urn:ddi:fr.insee:su-uuid:1<")
                     .contains(">op1 Study Unit<")
                     .contains(">http://id.insee.fr/operations/operation/op1<");
+        }
+
+        private Ddi4StudyUnit mirroredStudyUnit() {
+            return new Ddi4StudyUnit(
+                    Ddi4StudyUnit.TYPE_NAME,
+                    CogsDate.ofDateTime("2026-04-02T00:00:00Z"),
+                    "urn:ddi:fr.insee:su-uuid:1",
+                    "fr.insee",
+                    "su-uuid",
+                    "1",
+                    new Citation(LangStrings.of("fr-FR", "op1 Study Unit")),
+                    "http://bauhaus/operations/operation/op1",
+                    null);
+        }
+
+        @Test
+        void createOrUpdate_shouldRefreshTheStudyUnitsByOperationCacheOnceWritten() {
+            // Sans relecture, une opération créée après le calcul du cache n'avait aucune étude :
+            // pas de bouton « Nouveau fichier de données » sur sa fiche (#1608).
+            studyUnitRepository.createOrUpdate(mirroredStudyUnit());
+
+            InOrder inOrder = inOrder(colecticaClient, ddiRepository);
+            inOrder.verify(colecticaClient).createOrUpdateItems(any());
+            inOrder.verify(ddiRepository).refreshStudyUnitsByOperationCache();
+        }
+
+        @Test
+        void createOrUpdate_shouldNotFailWhenTheCacheRefreshFails() {
+            when(ddiRepository.refreshStudyUnitsByOperationCache())
+                    .thenThrow(new IllegalStateException("Colectica unavailable"));
+
+            assertThatCode(() -> studyUnitRepository.createOrUpdate(mirroredStudyUnit()))
+                    .doesNotThrowAnyException();
         }
 
         @Test

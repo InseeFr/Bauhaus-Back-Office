@@ -5,9 +5,10 @@ import static fr.insee.rmes.domain.logging.LogSanitizer.forLog;
 import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.GeographyService;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausIriFactory;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfTriples;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.*;
@@ -52,14 +53,18 @@ public class GeographyServiceImpl extends RdfService implements GeographyService
 
     private final GeographyQueries geographyQueries;
 
+    private final BauhausIriFactory iriFactory;
+
     public GeographyServiceImpl(
             RepositoryGestion repoGestion,
             IdGenerator idGenerator,
             RepositoryPublication repositoryPublication,
             BauhausLanguagesProperties languages,
             PublicationUtils publicationUtils,
-            GeographyQueries geographyQueries) {
+            GeographyQueries geographyQueries,
+            BauhausIriFactory iriFactory) {
         super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
+        this.iriFactory = iriFactory;
         this.languages = languages;
         this.geographyQueries = geographyQueries;
     }
@@ -137,9 +142,9 @@ public class GeographyServiceImpl extends RdfService implements GeographyService
         JSONObject uriInCog = repoGestion.getResponseAsObject(geographyQueries.getGeoUriIfExists(id));
         if (uriInCog.has(Constants.URI)
                 && StringUtils.isNotBlank(uriInCog.get(Constants.URI).toString())) {
-            uri = RdfUtils.createIRI(uriInCog.get(Constants.URI).toString());
+            uri = RdfTriples.iriAsIs(uriInCog.get(Constants.URI).toString());
         } else {
-            uri = RdfUtils.objectIRI(ObjectType.GEO_STAT_TERRITORY, id);
+            uri = iriFactory.objectIri(ObjectType.GEO_STAT_TERRITORY, id);
         }
         return uri;
     }
@@ -194,7 +199,7 @@ public class GeographyServiceImpl extends RdfService implements GeographyService
             throw new RmesBadRequestException(ErrorCodes.GEOFEATURE_INCORRECT_BODY, "LabelLg2 is mandatory");
         }
 
-        IRI geoIRI = RdfUtils.objectIRI(ObjectType.GEO_STAT_TERRITORY, geoFeature.getId());
+        IRI geoIRI = iriFactory.objectIri(ObjectType.GEO_STAT_TERRITORY, geoFeature.getId());
 
         // We check the unicity of the value
         JSONObject checkUnicityTerritory =
@@ -207,49 +212,49 @@ public class GeographyServiceImpl extends RdfService implements GeographyService
         Model model = new LinkedHashModel();
 
         /*Const*/
-        model.add(geoIRI, RDF.TYPE, IGEO.TERRITOIRE_STATISTIQUE, RdfUtils.simsGeographyGraph());
+        model.add(geoIRI, RDF.TYPE, IGEO.TERRITOIRE_STATISTIQUE, iriFactory.simsGeographyGraph());
         /*Required*/
         model.add(
                 geoIRI,
                 SKOS.PREF_LABEL,
-                RdfUtils.setLiteralString(geoFeature.getLabelLg1(), languages.lg1()),
-                RdfUtils.simsGeographyGraph());
+                RdfTriples.string(geoFeature.getLabelLg1(), languages.lg1()),
+                iriFactory.simsGeographyGraph());
 
         /*Optional*/
-        RdfUtils.addTripleString(
+        RdfTriples.addString(
                 geoIRI,
                 SKOS.PREF_LABEL,
                 geoFeature.getLabelLg2(),
                 languages.lg2(),
                 model,
-                RdfUtils.simsGeographyGraph());
-        RdfUtils.addTripleString(
-                geoIRI, IGEO.NOM, geoFeature.getLabelLg2(), languages.lg2(), model, RdfUtils.simsGeographyGraph());
-        RdfUtils.addTripleStringMdToXhtml(
+                iriFactory.simsGeographyGraph());
+        RdfTriples.addString(
+                geoIRI, IGEO.NOM, geoFeature.getLabelLg2(), languages.lg2(), model, iriFactory.simsGeographyGraph());
+        RdfTriples.addStringMdToXhtml(
                 geoIRI,
                 DCTERMS.ABSTRACT,
                 geoFeature.getDescriptionLg1(),
                 languages.lg1(),
                 model,
-                RdfUtils.simsGeographyGraph());
-        RdfUtils.addTripleStringMdToXhtml(
+                iriFactory.simsGeographyGraph());
+        RdfTriples.addStringMdToXhtml(
                 geoIRI,
                 DCTERMS.ABSTRACT,
                 geoFeature.getDescriptionLg2(),
                 languages.lg2(),
                 model,
-                RdfUtils.simsGeographyGraph());
+                iriFactory.simsGeographyGraph());
 
         geoFeature
                 .getUnions()
-                .forEach(feature -> RdfUtils.addTripleUri(
-                        geoIRI, GEO.UNION, feature.getUri(), model, RdfUtils.simsGeographyGraph()));
+                .forEach(feature ->
+                        RdfTriples.addUri(geoIRI, GEO.UNION, feature.getUri(), model, iriFactory.simsGeographyGraph()));
         geoFeature
                 .getDifference()
-                .forEach(feature -> RdfUtils.addTripleUri(
-                        geoIRI, GEO.DIFFERENCE, feature.getUri(), model, RdfUtils.simsGeographyGraph()));
+                .forEach(feature -> RdfTriples.addUri(
+                        geoIRI, GEO.DIFFERENCE, feature.getUri(), model, iriFactory.simsGeographyGraph()));
         repoGestion.loadSimpleObject(geoIRI, model);
 
-        return RdfUtils.toString(geoIRI);
+        return geoIRI.toString();
     }
 }

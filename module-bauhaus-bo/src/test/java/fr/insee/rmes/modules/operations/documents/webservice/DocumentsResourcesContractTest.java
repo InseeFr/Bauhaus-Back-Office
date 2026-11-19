@@ -125,6 +125,11 @@ class DocumentsResourcesContractTest {
         return new MockMultipartFile("file", name, MediaType.APPLICATION_OCTET_STREAM_VALUE, content.getBytes());
     }
 
+    /** Le champ {@code body} d'une création : l'objet du formulaire, en partie JSON. */
+    private static MockMultipartFile body(String json) {
+        return new MockMultipartFile("body", "", MediaType.APPLICATION_JSON_VALUE, json.getBytes());
+    }
+
     @Test
     void should_list_documents_and_links() throws Exception {
         mvc.perform(get("/documents"))
@@ -181,7 +186,9 @@ class DocumentsResourcesContractTest {
     @Test
     void should_create_a_document_from_a_multipart_upload_and_record_its_size() throws Exception {
         mvc.perform(multipart("/documents/document")
-                        .param("body", "{\"labelLg1\": \"Nouveau\", \"lang\": \"fr\", \"id\": \"ignoré\"}")
+                        .file(
+                                body(
+                                        "{\"labelLg1\": \"Nouveau\", \"labelLg2\": \"New\", \"lang\": \"fr\", \"id\": \"ignoré\"}"))
                         .file(file("Nouveau.pdf", "12345")))
                 .andExpect(status().isCreated())
                 .andExpect(header().string("Location", endsWith("/documents/document/1000")))
@@ -194,7 +201,7 @@ class DocumentsResourcesContractTest {
     @Test
     void should_refuse_a_label_already_used_with_its_error_code() throws Exception {
         mvc.perform(multipart("/documents/document")
-                        .param("body", "{\"labelLg1\": \"Note\"}")
+                        .file(body("{\"labelLg1\": \"Note\", \"labelLg2\": \"Other\", \"lang\": \"fr\"}"))
                         .file(file("Autre.pdf", "x")))
                 .andExpect(status().isBadRequest())
                 .andExpect(apiError())
@@ -205,31 +212,71 @@ class DocumentsResourcesContractTest {
     @Test
     void should_refuse_a_file_name_already_used_with_its_error_code() throws Exception {
         mvc.perform(multipart("/documents/document")
-                        .param("body", "{\"labelLg1\": \"Autre\"}")
+                        .file(body("{\"labelLg1\": \"Autre\", \"labelLg2\": \"Other\", \"lang\": \"fr\"}"))
                         .file(file("Note.pdf", "x")))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string(containsString("302")));
     }
 
     @Test
-    void should_create_a_link_from_a_form_field() throws Exception {
-        mvc.perform(multipart("/documents/link")
-                        .param("body", "{\"labelLg1\": \"Nouvelle page\", \"url\": \"https://www.insee.fr/nouvelle\"}"))
+    void should_refuse_a_new_document_whose_extension_is_not_allowed() throws Exception {
+        mvc.perform(multipart("/documents/document")
+                        .file(body("{\"labelLg1\": \"Charge\", \"labelLg2\": \"Load\", \"lang\": \"fr\"}"))
+                        .file(file("charge.exe", "x")))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(containsString("Invalid File Extension")));
+
+        assertThat(repository.stored(DocumentKind.DOCUMENT, "1000")).isEmpty();
+    }
+
+    @Test
+    void should_create_a_link_from_a_json_part() throws Exception {
+        mvc.perform(
+                        multipart("/documents/link")
+                                .file(
+                                        body(
+                                                "{\"labelLg1\": \"Nouvelle page\", \"labelLg2\": \"New page\", \"lang\": \"fr\", \"url\": \"https://www.insee.fr/nouvelle\"}")))
                 .andExpect(status().isOk())
                 .andExpect(content().string("1000"));
     }
 
     @Test
     void should_refuse_a_body_that_is_not_json() throws Exception {
-        mvc.perform(multipart("/documents/link").param("body", "pas du json")).andExpect(status().isBadRequest());
+        mvc.perform(multipart("/documents/link").file(body("pas du json")))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("INVALID_REQUEST_BODY"));
     }
 
     @Test
     void should_refuse_a_link_without_url_with_its_error_code() throws Exception {
-        mvc.perform(multipart("/documents/link").param("body", "{\"labelLg1\": \"Nouvelle page\"}"))
+        mvc.perform(multipart("/documents/link")
+                        .file(body("{\"labelLg1\": \"Nouvelle page\", \"labelLg2\": \"New page\", \"lang\": \"fr\"}")))
                 .andExpect(status().isBadRequest())
                 .andExpect(apiError())
                 .andExpect(jsonPath("$.code").value("461"));
+    }
+
+    @Test
+    void should_refuse_a_new_document_without_titles_nor_lang_with_the_invalid_fields() throws Exception {
+        mvc.perform(multipart("/documents/document")
+                        .file(body("{\"labelLg1\": \" \"}"))
+                        .file(file("Vide.pdf", "x")))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("INVALID_REQUEST_BODY"))
+                .andExpect(jsonPath("$.errors[*].field", containsInAnyOrder("labelLg1", "labelLg2", "lang")))
+                .andExpect(jsonPath("$.errors[*].message", everyItem(is(REQUIRED))));
+
+        assertThat(repository.stored(DocumentKind.DOCUMENT, "1000")).isEmpty();
+    }
+
+    @Test
+    void should_refuse_a_new_link_without_titles_nor_lang_with_the_invalid_fields() throws Exception {
+        mvc.perform(multipart("/documents/link").file(body("{\"url\": \"https://www.insee.fr/nouvelle\"}")))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("INVALID_REQUEST_BODY"))
+                .andExpect(jsonPath("$.errors[*].field", containsInAnyOrder("labelLg1", "labelLg2", "lang")));
+
+        assertThat(repository.stored(DocumentKind.LINK, "1000")).isEmpty();
     }
 
     @Test

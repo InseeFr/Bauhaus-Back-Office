@@ -76,7 +76,7 @@ final class Lifecycle33TestFixtures {
     /** The sentinel values MMVR (#1566) referencing the cl-sentinelles code list. */
     static Ddi4ManagedMissingValuesRepresentation sentinelValuesMmvr(CogsDate versionDate) {
         return new Ddi4ManagedMissingValuesRepresentation(
-                Ddi4ManagedMissingValuesRepresentation.TYPE,
+                Ddi4ManagedMissingValuesRepresentation.TYPE_NAME,
                 versionDate,
                 "urn:ddi:fr.insee:mmvr-1:1",
                 "fr.insee",
@@ -84,7 +84,9 @@ final class Lifecycle33TestFixtures {
                 "1",
                 LangStrings.of("fr-FR", "Valeurs sentinelles NSP/REF"),
                 List.of(new CodeRepresentation(
-                        CodeRepresentation.TYPE, false, Reference.of("fr.insee", "cl-sentinelles", "1", "CodeList"))));
+                        CodeRepresentation.TYPE_NAME,
+                        false,
+                        Reference.of("fr.insee", "cl-sentinelles", "1", "CodeList"))));
     }
 
     /** The lp-id LogicalProduct, with the given scheme references. */
@@ -95,7 +97,7 @@ final class Lifecycle33TestFixtures {
             List<Reference> variableSchemeReference,
             List<Reference> managedRepresentationSchemeReference) {
         return new Ddi4LogicalProduct(
-                Ddi4LogicalProduct.TYPE,
+                Ddi4LogicalProduct.TYPE_NAME,
                 CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
                 "urn:ddi:fr.insee:lp-id:1",
                 "fr.insee",

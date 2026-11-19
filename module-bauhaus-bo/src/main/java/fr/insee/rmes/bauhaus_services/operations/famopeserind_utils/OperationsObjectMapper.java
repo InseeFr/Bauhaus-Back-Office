@@ -1,9 +1,9 @@
 package fr.insee.rmes.bauhaus_services.operations.famopeserind_utils;
 
 import fr.insee.rmes.Constants;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausIriFactory;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.ObjectType;
@@ -28,13 +28,17 @@ public class OperationsObjectMapper extends RdfService {
 
     private final OperationQueries operationQueries;
 
+    private final BauhausIriFactory iriFactory;
+
     public OperationsObjectMapper(
             RepositoryGestion repoGestion,
             IdGenerator idGenerator,
             RepositoryPublication repositoryPublication,
             PublicationUtils publicationUtils,
-            OperationQueries operationQueries) {
+            OperationQueries operationQueries,
+            BauhausIriFactory iriFactory) {
         super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
+        this.iriFactory = iriFactory;
         this.operationQueries = operationQueries;
     }
 
@@ -53,8 +57,8 @@ public class OperationsObjectMapper extends RdfService {
     }
 
     public boolean checkIfObjectExists(ObjectType type, String id) throws RmesException {
-        return repoGestion.getResponseAsBoolean(
-                operationQueries.checkIfFamOpeSerExists(RdfUtils.toString(RdfUtils.objectIRI(type, id))));
+        return repoGestion.getResponseAsBoolean(operationQueries.checkIfFamOpeSerExists(
+                iriFactory.objectIri(type, id).toString()));
     }
 
     public IdLabelTwoLangs buildIdLabelTwoLangsFromJson(JSONObject jsonFamOpeSer) {

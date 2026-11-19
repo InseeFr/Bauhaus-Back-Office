@@ -282,7 +282,7 @@ class GraphDBOrganisationsRepositoryTest {
         assertThat(result).isNotNull();
         assertThat(result.identifier()).isEqualTo("ORG-002");
         assertThat(result.label().value()).isEqualTo("Statistics Department");
-        assertThat(result.label().lang().toString()).isEqualTo("EN");
+        assertThat(result.label().lang()).hasToString("EN");
     }
 
     @Test
@@ -321,8 +321,7 @@ class GraphDBOrganisationsRepositoryTest {
         List<CompactOrganisation> result = repository.getCompactOrganisations(organisationIds);
 
         // Then
-        assertThat(result).isNotNull();
-        assertThat(result).hasSize(3);
+        assertThat(result).isNotNull().hasSize(3);
         assertThat(result.get(0).identifier()).isEqualTo("ORG-001");
         assertThat(result.get(0).label().value()).isEqualTo("Direction des statistiques");
         assertThat(result.get(1).identifier()).isEqualTo("ORG-002");
@@ -345,8 +344,7 @@ class GraphDBOrganisationsRepositoryTest {
         List<CompactOrganisation> result = repository.getCompactOrganisations(organisationIds);
 
         // Then
-        assertThat(result).isNotNull();
-        assertThat(result).isEmpty();
+        assertThat(result).isNotNull().isEmpty();
 
         verify(repositoryGestion).getResponseAsArray(anyString());
     }

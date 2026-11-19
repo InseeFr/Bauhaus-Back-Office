@@ -47,9 +47,7 @@ class UserResourcesTest {
 
         Set<ModuleAccessPrivileges> result = userResources.getUserInformation(principal);
 
-        assertThat(result).isEqualTo(expectedPrivileges);
-        assertThat(result).hasSize(2);
-        assertThat(result).contains(conceptPrivileges, operationPrivileges);
+        assertThat(result).isEqualTo(expectedPrivileges).hasSize(2).contains(conceptPrivileges, operationPrivileges);
         verify(userService).computePrivileges(principal);
     }
 
@@ -87,8 +85,7 @@ class UserResourcesTest {
 
         var result = userResources.getStamps(principal);
 
-        assertThat(result).isEqualTo(expectedStamps);
-        assertThat(result).extracting(Stamp::stamp).containsExactly("STAMP-01");
+        assertThat(result).isEqualTo(expectedStamps).extracting(Stamp::stamp).containsExactly("STAMP-01");
         verify(userService).findStampsFrom(principal);
     }
 

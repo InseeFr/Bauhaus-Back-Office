@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 class RepositoryInitiatorTest {
 
     @Test
-    void talks_to_graphdb_through_the_rdf4j_rest_protocol() throws Exception {
+    void talks_to_graphdb_through_the_rdf4j_rest_protocol() {
         var initiator = RepositoryInitiator.newInstance(
                 RdfBackend.GRAPHDB, RepositoryInitiator.Type.DISABLED, null, Optional.empty());
 
@@ -29,7 +29,7 @@ class RepositoryInitiatorTest {
     }
 
     @Test
-    void talks_to_fuseki_through_the_sparql_protocol() throws Exception {
+    void talks_to_fuseki_through_the_sparql_protocol() {
         var initiator = RepositoryInitiator.newInstance(
                 RdfBackend.FUSEKI, RepositoryInitiator.Type.DISABLED, null, Optional.empty());
 

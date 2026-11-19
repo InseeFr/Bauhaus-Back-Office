@@ -1,7 +1,7 @@
 package fr.insee.rmes.modules.commons.configuration.swagger.model.operations.documentation;
 
 public class DocumentId {
-    private String id;
+    private final String id;
 
     public DocumentId(String id) {
         this.id = id;

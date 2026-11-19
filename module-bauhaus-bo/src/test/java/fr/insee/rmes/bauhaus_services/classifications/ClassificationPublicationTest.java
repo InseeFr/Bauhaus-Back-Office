@@ -107,6 +107,30 @@ class ClassificationPublicationTest {
                 .isTrue();
     }
 
+    /**
+     * Le triplet relu ne porte pas de graphe hors de GraphDB : le modèle publié prend celui de la
+     * nomenclature, reçu de l'appelant.
+     */
+    @Test
+    void publishes_the_triples_into_the_graph_of_the_classification() throws RmesException {
+        SimpleValueFactory valueFactory = SimpleValueFactory.getInstance();
+        Resource graphIri = valueFactory.createIRI("http://rdf.insee.fr/graphes/codes/nafr2");
+        IRI classification = valueFactory.createIRI("http://bauhaus/codes/nafr2");
+
+        when(repoGestion.getConnection()).thenReturn(repositoryConnection);
+        when(repoGestion.getCompleteGraph(repositoryConnection, graphIri))
+                .thenReturn(
+                        new RepositoryResult<>(new CloseableIteratorIteration<>(List.of(valueFactory.createStatement(
+                                        classification, SKOS.PREF_LABEL, valueFactory.createLiteral("NAF rév. 2")))
+                                .iterator())));
+
+        classificationPublication.publishClassification(graphIri);
+
+        ArgumentCaptor<Model> modelCaptor = ArgumentCaptor.forClass(Model.class);
+        verify(repositoryPublication).publishContext(eq(graphIri), modelCaptor.capture(), eq("classification"));
+        assertThat(modelCaptor.getValue().contexts()).containsExactly(graphIri);
+    }
+
     @Test
     void shouldReportAFailingRepositoryAsAServerError() throws RmesException {
         Resource graphIri = new InternedIRI("http://graphe/", "nafr2");

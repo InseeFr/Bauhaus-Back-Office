@@ -200,14 +200,16 @@ public class ClassificationsResources {
         return ResponseEntity.status(HttpStatus.OK).body(classificationItem);
     }
 
+    // Un poste hérite des contributeurs de sa nomenclature : l'identifiant contrôlé par @HasAccess
+    // (`id`) est donc celui de la nomenclature.
     @HasAccess(module = RBAC.Module.CLASSIFICATION_CLASSIFICATION, privilege = RBAC.Privilege.UPDATE)
-    @PutMapping(value = "/classification/{classificationId}/item/{itemId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(value = "/classification/{id}/item/{itemId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> updateClassificationItem(
-            @PathVariable("classificationId") String classificationId,
+            @PathVariable(Constants.ID) String id,
             @PathVariable("itemId") String itemId,
             @Valid @RequestBody ClassificationItemRequest item)
             throws RmesException {
-        classificationItemService.updateClassificationItem(classificationId, itemId, item.toLegacyJson());
+        classificationItemService.updateClassificationItem(id, itemId, item.toLegacyJson());
         return ResponseEntity.status(HttpStatus.OK).body(itemId);
     }
 

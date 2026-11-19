@@ -22,6 +22,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4PhysicalIns
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnitResponse;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.OperationStudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialGroup;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialLogicalProduct;
@@ -51,10 +52,12 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.Semaphore;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.client.HttpClientErrorException;
 
 /**
  * Listings et recherches du catalogue Colectica : tout ce qui s'obtient par un {@code _query} global
@@ -99,6 +102,19 @@ class ColecticaCatalogRepository {
     /** Recalcule le cache opération → StudyUnits en tâche de fond (après une écriture de PhysicalInstance). */
     void refreshStudyUnitsByOperationAsync() {
         studyUnitsByOperation.refreshAsync();
+    }
+
+    /**
+     * Recalcule le cache opération → StudyUnits avant de rendre la main, pour que la lecture qui suit
+     * l'écriture voie déjà le nouveau fichier. Un échec est journalisé : l'écriture reste faite et le
+     * cache précédent reste servi.
+     */
+    void refreshStudyUnitsByOperationNow() {
+        try {
+            studyUnitsByOperation.refresh();
+        } catch (RuntimeException e) {
+            logger.warn("StudyUnits by operation cache refresh failed: {}", e.getMessage());
+        }
     }
 
     /** Une StudyUnit et les PhysicalInstances qu'elle référence, telles que Colectica les renvoie. */
@@ -286,6 +302,10 @@ class ColecticaCatalogRepository {
                 }
             }
 
+            List<ColecticaItem> parents = new ArrayList<>(groups);
+            descents.forEach(descent -> parents.add(descent.studyUnit()));
+            Map<String, List<String>> alternateTitlesByKey = alternateTitlesByKey(parents);
+
             for (StudyUnitDescent descent : descents) {
                 ColecticaItem group = descent.group();
                 ColecticaItem studyUnit = descent.studyUnit();
@@ -308,7 +328,9 @@ class ColecticaCatalogRepository {
                             studyUnitLabel,
                             group.agencyId(),
                             group.identifier(),
-                            descent.groupLabel()));
+                            descent.groupLabel(),
+                            alternateTitlesOf(alternateTitlesByKey, studyUnit),
+                            alternateTitlesOf(alternateTitlesByKey, group)));
                 }
             }
         }
@@ -318,10 +340,45 @@ class ColecticaCatalogRepository {
             if (!attachedKeys.contains(entry.getKey())) {
                 PartialPhysicalInstance pi = entry.getValue();
                 rows.add(new PhysicalInstanceSearchRow(
-                        pi.agency(), pi.id(), pi.label(), pi.versionDate(), null, null, null, null, null, null));
+                        pi.agency(),
+                        pi.id(),
+                        pi.label(),
+                        pi.versionDate(),
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        List.of(),
+                        List.of()));
             }
         }
         return rows;
+    }
+
+    /**
+     * Les titres alternatifs ({@code r:AlternateTitle}) des Groups et StudyUnits, absents du résumé
+     * renvoyé par {@code _query} : un unique {@code item/_getList} relit leurs fragments.
+     */
+    private Map<String, List<String>> alternateTitlesByKey(List<ColecticaItem> items) {
+        Map<String, List<String>> alternateTitlesByKey = new HashMap<>();
+        if (items.isEmpty()) {
+            return alternateTitlesByKey;
+        }
+        ColecticaItemResponse[] fragments = colecticaClient.getDescriptions(ColecticaItems.identifiersOf(items));
+        if (fragments != null) {
+            for (ColecticaItemResponse fragment : fragments) {
+                alternateTitlesByKey.put(
+                        ColecticaItems.key(fragment.agencyId(), fragment.identifier()),
+                        ColecticaXml.alternateTitles(fragment.item()));
+            }
+        }
+        return alternateTitlesByKey;
+    }
+
+    private static List<String> alternateTitlesOf(Map<String, List<String>> alternateTitlesByKey, ColecticaItem item) {
+        return alternateTitlesByKey.getOrDefault(ColecticaItems.key(item.agencyId(), item.identifier()), List.of());
     }
 
     /** Une StudyUnit rattachée à son groupe, et la descente vers ses PI en cours. */
@@ -423,6 +480,34 @@ class ColecticaCatalogRepository {
                 .toList();
     }
 
+    /**
+     * Les StudyUnits miroirs de l'opération, chacune avec le Group qui la classe — là où un nouveau
+     * fichier de données de l'opération doit être rangé. Une StudyUnit qu'aucun Group ne classe est
+     * écartée : elle ne saurait recevoir de fichier.
+     */
+    List<OperationStudyUnit> findStudyUnitsByOperationIris(Collection<String> operationIris) {
+        ColecticaResponse studyUnits = colecticaClient.query(List.of(itemType(STUDY_UNIT)));
+        Map<String, ColecticaItem> listedByKey = studyUnits.results().stream()
+                .collect(Collectors.toMap(
+                        item -> ColecticaItems.key(item.agencyId(), item.identifier()),
+                        Function.identity(),
+                        (first, _) -> first));
+        List<OperationStudyUnit> result = new ArrayList<>();
+        for (ColecticaItemResponse studyUnit : studyUnitsMirroring(operationIris)) {
+            ItemReference reference = new ItemReference(studyUnit.agencyId(), studyUnit.identifier());
+            ColecticaItem listed = listedByKey.get(ColecticaItems.key(studyUnit.agencyId(), studyUnit.identifier()));
+            firstRelated(reference, itemType(GROUP))
+                    .ifPresent(group -> result.add(new OperationStudyUnit(
+                            studyUnit.agencyId(),
+                            studyUnit.identifier(),
+                            listed == null ? null : displayLabel(listed),
+                            group.agencyId(),
+                            group.identifier(),
+                            displayLabel(group))));
+        }
+        return result;
+    }
+
     /** Les mêmes fragments, projetés en DDI 4 pour la négociation JSON (#1145). */
     Optional<Ddi4StudyUnitResponse> findStudyUnitByOperationIri(String operationIri, @Nullable Instant modifiedSince) {
         return findStudyUnitFragmentsByOperationIri(operationIri, modifiedSince).map(this::toDdi4);
@@ -432,9 +517,9 @@ class ColecticaCatalogRepository {
         ColecticaItemResponse item = fragments.studyUnit();
         Ddi4StudyUnit studyUnit = ddi3ToDdi4Converter.toStudyUnit(item.item());
         return new Ddi4StudyUnitResponse(
-                Ddi4Response.SCHEMA,
+                Ddi4Response.SCHEMA_ID,
                 List.of(Reference.of(
-                        item.agencyId(), item.identifier(), String.valueOf(item.version()), Ddi4StudyUnit.TYPE)),
+                        item.agencyId(), item.identifier(), String.valueOf(item.version()), Ddi4StudyUnit.TYPE_NAME)),
                 List.of(studyUnit),
                 toDdi4PhysicalInstances(fragments.physicalInstances()));
     }
@@ -446,7 +531,7 @@ class ColecticaCatalogRepository {
         List<Ddi3Response.Ddi3Item> ddi3Items =
                 physicalInstances.stream().map(ColecticaItems::toDdi3Item).toList();
         Ddi4Response converted =
-                ddi3ToDdi4Converter.convertDdi3ToDdi4(new Ddi3Response(null, ddi3Items), Ddi4Response.SCHEMA);
+                ddi3ToDdi4Converter.convertDdi3ToDdi4(new Ddi3Response(null, ddi3Items), Ddi4Response.SCHEMA_ID);
         return converted == null ? null : converted.physicalInstance();
     }
 
@@ -556,9 +641,21 @@ class ColecticaCatalogRepository {
                 .toList();
     }
 
+    /**
+     * @return le XML de l'item, ou {@code null} s'il n'existe pas. Colectica répond 400 à un
+     *     identifiant qui n'est pas un UUID ou à une version non numérique, 404 à un item inconnu :
+     *     tous trois valent « absent » (#1671).
+     */
     String getItemXml(String agency, String id, String version) {
-        ColecticaItemResponse response = colecticaClient.getItem(agency, id, version);
-        return response != null ? response.item() : null;
+        if (!ColecticaIdentifiers.isIdentifier(id) || (version != null && !version.matches("\\d+"))) {
+            return null;
+        }
+        try {
+            ColecticaItemResponse response = colecticaClient.getItem(agency, id, version);
+            return response != null ? response.item() : null;
+        } catch (HttpClientErrorException.NotFound _) {
+            return null;
+        }
     }
 
     private <T> List<T> queryPartials(String itemTypeUuid, PartialFactory<T> factory) {

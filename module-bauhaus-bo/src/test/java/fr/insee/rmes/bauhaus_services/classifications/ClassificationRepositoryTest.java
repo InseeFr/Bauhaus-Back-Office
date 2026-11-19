@@ -6,8 +6,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import fr.insee.rmes.BauhausLanguagesProperties;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.config.BauhausUriPropertiesStub;
+import fr.insee.rmes.config.BauhausIriFactoryStub;
 import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.ontologies.INSEE;
@@ -47,8 +46,6 @@ class ClassificationRepositoryTest {
 
     @BeforeEach
     void setUp() {
-        RdfUtils.setGraphs(GraphsPropertiesStub.stub());
-        RdfUtils.setUris(BauhausUriPropertiesStub.stub());
         classificationRepository = new ClassificationRepository(
                 repoGestion,
                 null,
@@ -57,7 +54,8 @@ class ClassificationRepositoryTest {
                 null,
                 classificationNoteService,
                 classificationsQueries,
-                GraphsPropertiesStub.stub());
+                GraphsPropertiesStub.stub(),
+                BauhausIriFactoryStub.stub(""));
     }
 
     @Test

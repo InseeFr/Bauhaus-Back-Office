@@ -1,6 +1,7 @@
 package fr.insee.rmes.modules.ddi.physical_instances.domain.model;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * Ligne aplatie de la recherche avancée d'instances physiques : une PhysicalInstance jointe à sa
@@ -8,7 +9,9 @@ import java.util.Date;
  * ces lignes par {@code label} (PI), {@code studyUnitLabel} et {@code groupLabel}.
  *
  * <p>Les champs StudyUnit/Group peuvent être {@code null} pour une PI qui n'est rattachée à aucune
- * StudyUnit résolvable (PI orpheline).
+ * StudyUnit résolvable (PI orpheline). Les titres alternatifs ({@code r:Citation/r:AlternateTitle},
+ * toutes langues confondues) de la StudyUnit et du Group permettent de les retrouver par leur sigle ;
+ * liste vide quand il n'y en a pas.
  */
 public record PhysicalInstanceSearchRow(
         String agency,
@@ -20,4 +23,6 @@ public record PhysicalInstanceSearchRow(
         String studyUnitLabel,
         String groupAgency,
         String groupId,
-        String groupLabel) {}
+        String groupLabel,
+        List<String> studyUnitAlternateTitles,
+        List<String> groupAlternateTitles) {}

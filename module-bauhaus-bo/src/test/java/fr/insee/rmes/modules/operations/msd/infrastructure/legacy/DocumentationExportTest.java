@@ -267,59 +267,38 @@ class DocumentationExportTest {
                 .contains("<prefLabelLg1>Comptes nationaux annuels (base 2020)</prefLabelLg1>")
                 .contains("<prefLabelLg2>Annual national accounts (2020 Base)</prefLabelLg2>")
                 .contains("<abstractLg1><p>La comptabilité nationale")
-                .contains("<historyNoteLg1><p>Les origines de la comptabilité nationale");
-
-        // Verify family
-        assertThat(seriesFile)
+                .contains("<historyNoteLg1><p>Les origines de la comptabilité nationale")
+                // Verify family
                 .contains("<family>")
                 .contains("<id>s30</id>")
                 .contains("<labelLg1>Comptes nationaux</labelLg1>")
                 .contains("<labelLg2>National accounts</labelLg2>")
-                .contains("</family>");
-        assertThat(seriesFile).startsWith("<Series><id>s2144</id>");
-        assertThat(seriesFile).contains("<prefLabelLg1>Comptes nationaux annuels (base 2020)</prefLabelLg1>");
-        assertThat(seriesFile).contains("<prefLabelLg2>Annual national accounts (2020 Base)</prefLabelLg2>");
-        assertThat(seriesFile).contains("<abstractLg1><p>La comptabilité nationale");
-        assertThat(seriesFile).contains("<historyNoteLg1><p>Les origines de la comptabilité nationale");
-
-        // Verify family
-        assertThat(seriesFile).contains("<family>");
-        assertThat(seriesFile).contains("<id>s30</id>");
-        assertThat(seriesFile).contains("<labelLg1>Comptes nationaux</labelLg1>");
-        assertThat(seriesFile).contains("<labelLg2>National accounts</labelLg2>");
-        assertThat(seriesFile).contains("</family>");
-
-        // Verify type and periodicity
-        assertThat(seriesFile).contains("<typeCode>C</typeCode>");
-        assertThat(seriesFile).contains("<typeList>CL_SOURCE_CATEGORY</typeList>");
-        assertThat(seriesFile).contains("<accrualPeriodicityCode>A</accrualPeriodicityCode>");
-        assertThat(seriesFile).contains("<accrualPeriodicityList>CL_FREQ</accrualPeriodicityList>");
-
-        // Verify publishers (nested structure: <publishers><publishers>...</publishers></publishers>)
-        assertThat(seriesFile).contains("<publishers><publishers>");
-        assertThat(seriesFile).contains("<id>HIE2000007</id>");
-        assertThat(seriesFile).contains("<labelLg1>Direction des études et synthèses économiques (DESE)</labelLg1>");
-        assertThat(seriesFile).contains("<empty>false</empty>");
-
-        // Verify creators (should contain organization labels instead of stamps)
-        assertThat(seriesFile).contains("<creators>");
-        assertThat(seriesFile).contains("<creators>Organisation HIE2004993</creators>");
-        assertThat(seriesFile).contains("<creators>Organisation DG75-G401</creators>");
-        assertThat(seriesFile).contains("<creators>Organisation DG75-G450</creators>");
-
-        // Verify replaces (nested structure: <replaces><replaces>...</replaces></replaces>)
-        assertThat(seriesFile).contains("<replaces><replaces>");
-        assertThat(seriesFile).contains("<id>s1030</id>");
-        assertThat(seriesFile).contains("<type>series</type>");
-        assertThat(seriesFile).contains("<labelLg1>Comptes nationaux annuels (base 2014)</labelLg1>");
-        assertThat(seriesFile).contains("<labelLg2>Annual national accounts (2014 Base)</labelLg2>");
-        assertThat(seriesFile).contains("<empty>false</empty>");
-
-        // Verify idSims and timestamps
-        assertThat(seriesFile).contains("<idSims>2179</idSims>");
-        assertThat(seriesFile).contains("<created>2023-11-28T09:18:46.114042714</created>");
-
-        assertThat(seriesFile).endsWith("</Series>");
+                .contains("</family>")
+                // Verify type and periodicity
+                .contains("<typeCode>C</typeCode>")
+                .contains("<typeList>CL_SOURCE_CATEGORY</typeList>")
+                .contains("<accrualPeriodicityCode>A</accrualPeriodicityCode>")
+                .contains("<accrualPeriodicityList>CL_FREQ</accrualPeriodicityList>")
+                // Verify publishers (nested structure: <publishers><publishers>...</publishers></publishers>)
+                .contains("<publishers><publishers>")
+                .contains("<id>HIE2000007</id>")
+                .contains("<labelLg1>Direction des études et synthèses économiques (DESE)</labelLg1>")
+                .contains("<empty>false</empty>")
+                // Verify creators (should contain organization labels instead of stamps)
+                .contains("<creators>")
+                .contains("<creators>Organisation HIE2004993</creators>")
+                .contains("<creators>Organisation DG75-G401</creators>")
+                .contains("<creators>Organisation DG75-G450</creators>")
+                // Verify replaces (nested structure: <replaces><replaces>...</replaces></replaces>)
+                .contains("<replaces><replaces>")
+                .contains("<id>s1030</id>")
+                .contains("<type>series</type>")
+                .contains("<labelLg1>Comptes nationaux annuels (base 2014)</labelLg1>")
+                .contains("<labelLg2>Annual national accounts (2014 Base)</labelLg2>")
+                // Verify idSims and timestamps
+                .contains("<idSims>2179</idSims>")
+                .contains("<created>2023-11-28T09:18:46.114042714</created>")
+                .endsWith("</Series>");
     }
 
     private Series createSeriesForTest() {
@@ -411,31 +390,25 @@ class DocumentationExportTest {
                 .startsWith("<Indicator><id>p1723</id>")
                 .contains("<prefLabelLg1>Aide publique au développement (APD) bilatérale</prefLabelLg1>")
                 .contains("<prefLabelLg2>Bilateral Official Development Assistance (ODA)</prefLabelLg2>")
-                .contains("<altLabelLg1>ODD 17.i2</altLabelLg1>");
-
-        // Verify abstract
-        assertThat(indicatorFile).contains("<abstractLg1>L'Indicateur 17.i2");
-
-        // Verify contributors (now serialized as labels, like creators)
-        assertThat(indicatorFile).contains("<contributors>Administration du comité du Label</contributors>");
-
-        // Verify creators (should contain organization value instead of stamp)
-        assertThat(indicatorFile).contains("<creators>");
-        assertThat(indicatorFile).contains("<creators>Organisation HIE2004993</creators>");
-
-        // Verify wasGeneratedBy
-        assertThat(indicatorFile).contains("<wasGeneratedBy><wasGeneratedBy>");
-        assertThat(indicatorFile).contains("<id>s1034</id>");
-        assertThat(indicatorFile).contains("<labelLg1>Autres indicateurs</labelLg1>");
-        assertThat(indicatorFile).contains("<labelLg2>Other indexes</labelLg2>");
-
-        // Verify idSims and timestamps
-        assertThat(indicatorFile).contains("<idSims>2167</idSims>");
-        assertThat(indicatorFile).contains("<created>2023-12-13T18:42:05.461209844</created>");
-        assertThat(indicatorFile).contains("<updated>2025-11-05T10:11:04.793047</updated>");
-        assertThat(indicatorFile).contains("<validationState>Unpublished</validationState>");
-
-        assertThat(indicatorFile).endsWith("</Indicator>");
+                .contains("<altLabelLg1>ODD 17.i2</altLabelLg1>")
+                // Verify abstract
+                .contains("<abstractLg1>L'Indicateur 17.i2")
+                // Verify contributors (now serialized as labels, like creators)
+                .contains("<contributors>Administration du comité du Label</contributors>")
+                // Verify creators (should contain organization value instead of stamp)
+                .contains("<creators>")
+                .contains("<creators>Organisation HIE2004993</creators>")
+                // Verify wasGeneratedBy
+                .contains("<wasGeneratedBy><wasGeneratedBy>")
+                .contains("<id>s1034</id>")
+                .contains("<labelLg1>Autres indicateurs</labelLg1>")
+                .contains("<labelLg2>Other indexes</labelLg2>")
+                // Verify idSims and timestamps
+                .contains("<idSims>2167</idSims>")
+                .contains("<created>2023-12-13T18:42:05.461209844</created>")
+                .contains("<updated>2025-11-05T10:11:04.793047</updated>")
+                .contains("<validationState>Unpublished</validationState>")
+                .endsWith("</Indicator>");
     }
 
     private Indicator createIndicatorForTest() {

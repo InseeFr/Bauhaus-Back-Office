@@ -80,10 +80,11 @@ class UserTest {
 
         String result = user.toString();
 
-        assertThat(result).contains("user123");
-        assertThat(result).contains("ADMIN");
-        assertThat(result).contains("STAMP-01");
-        assertThat(result).contains("INSEE");
+        assertThat(result)
+                .contains("user123")
+                .contains("ADMIN")
+                .contains("STAMP-01")
+                .contains("INSEE");
     }
 
     @Test
@@ -108,8 +109,7 @@ class UserTest {
     void should_create_user_with_multiple_stamps() {
         var user = new User("user123", List.of("ADMIN"), Set.of("STAMP-01", "STAMP-02", "STAMP-03"), "insee");
 
-        assertThat(user.getStamps()).hasSize(3);
-        assertThat(user.getStamps()).containsExactlyInAnyOrder("STAMP-01", "STAMP-02", "STAMP-03");
+        assertThat(user.getStamps()).hasSize(3).containsExactlyInAnyOrder("STAMP-01", "STAMP-02", "STAMP-03");
         assertThat(user.stamps()).hasSize(3);
     }
 

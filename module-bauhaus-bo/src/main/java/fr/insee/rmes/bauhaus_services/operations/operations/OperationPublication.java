@@ -2,9 +2,9 @@ package fr.insee.rmes.bauhaus_services.operations.operations;
 
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.operations.OperationsParentRepository;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausIriFactory;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.ErrorCodes;
@@ -29,13 +29,17 @@ public class OperationPublication extends RdfService {
 
     private final OperationsParentRepository operationsParentRepository;
 
+    private final BauhausIriFactory iriFactory;
+
     public OperationPublication(
             RepositoryGestion repoGestion,
             IdGenerator idGenerator,
             RepositoryPublication repositoryPublication,
             PublicationUtils publicationUtils,
-            OperationsParentRepository operationsParentRepository) {
+            OperationsParentRepository operationsParentRepository,
+            BauhausIriFactory iriFactory) {
         super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
+        this.iriFactory = iriFactory;
         this.operationsParentRepository = operationsParentRepository;
     }
 
@@ -49,7 +53,7 @@ public class OperationPublication extends RdfService {
 
         Model model = new LinkedHashModel();
 
-        Resource operation = RdfUtils.operationIRI(operationId);
+        Resource operation = iriFactory.operation(operationId);
         try (RepositoryConnection con = repoGestion.getConnection();
                 RepositoryResult<Statement> statements = repoGestion.getStatements(con, operation, graph)) {
             if (!statements.hasNext()) {
@@ -58,14 +62,14 @@ public class OperationPublication extends RdfService {
             while (statements.hasNext()) {
                 Statement st = statements.next();
                 // Other URI to transform
-                if (RdfUtils.toString(st.getPredicate()).endsWith("isPartOf")) {
+                if (st.getPredicate().toString().endsWith("isPartOf")) {
                     model.add(
                             publicationUtils.tranformBaseURIToPublish(st.getSubject()),
                             st.getPredicate(),
                             publicationUtils.tranformBaseURIToPublish((Resource) st.getObject()),
                             graph);
                 } else if (PublicationUtils.stringEndsWithItemFromList(
-                        RdfUtils.toString(st.getPredicate()), ignoredAttrs)) {
+                        st.getPredicate().toString(), ignoredAttrs)) {
                     // nothing, wouldn't copy this attr
                 }
                 // Literals

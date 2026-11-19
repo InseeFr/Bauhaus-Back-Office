@@ -5,6 +5,7 @@ import fr.insee.rmes.domain.xml.SecureXml;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -91,6 +92,33 @@ final class ColecticaXml {
             return userIds;
         } catch (Exception e) {
             logger.warn("Failed to parse XML to extract UserIDs", e);
+            return List.of();
+        }
+    }
+
+    /**
+     * Les titres alternatifs ({@code r:AlternateTitle}, toutes langues confondues, sans doublon) de la
+     * citation d'un fragment DDI 3.3 — le sigle d'un Group ou d'une StudyUnit. Liste vide quand le
+     * XML est absent, illisible ou sans citation.
+     */
+    static List<String> alternateTitles(String xml) {
+        if (xml == null || xml.isBlank()) {
+            return List.of();
+        }
+        try {
+            NodeList citations = parse(xml).getElementsByTagNameNS(REUSABLE_NS, "Citation");
+            if (citations.getLength() == 0) {
+                return List.of();
+            }
+            Element citation = (Element) citations.item(0);
+            NodeList alternateTitles = citation.getElementsByTagNameNS(REUSABLE_NS, "AlternateTitle");
+            Set<String> values = new LinkedHashSet<>();
+            for (int i = 0; i < alternateTitles.getLength(); i++) {
+                values.addAll(textContents((Element) alternateTitles.item(i), REUSABLE_NS, "String"));
+            }
+            return List.copyOf(values);
+        } catch (Exception e) {
+            logger.warn("Failed to parse XML to extract alternate titles", e);
             return List.of();
         }
     }

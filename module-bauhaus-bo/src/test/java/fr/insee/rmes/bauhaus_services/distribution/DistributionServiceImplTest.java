@@ -1,15 +1,12 @@
 package fr.insee.rmes.bauhaus_services.distribution;
 
-import static fr.insee.rmes.bauhaus_services.utils.RdfUtilsStaticStubs.CURRENT_DATE;
-import static fr.insee.rmes.bauhaus_services.utils.RdfUtilsStaticStubs.callRealLiteralAndTripleBuilders;
-import static fr.insee.rmes.bauhaus_services.utils.RdfUtilsStaticStubs.freezeCurrentDate;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 import fr.insee.rmes.AppSpringBootTest;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfTriples;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
@@ -59,6 +56,9 @@ class DistributionServiceImplTest {
 
     @Autowired
     ApplicationEvents events;
+
+    /** Date courante figée rendue par {@link DateUtils#getCurrentDate()}. */
+    private static final String CURRENT_DATE = "2023-10-19T11:44:23.335590";
 
     private static final String EMPTY_JSON_OBJECT = "{}";
     private static final String DISTRIB = "{\"id\":\"d1000\"}";
@@ -117,7 +117,7 @@ class DistributionServiceImplTest {
     }
 
     @Test
-    void shouldReturnAnErrorIfIdDatasetNotDefinedWhenCreating() throws RmesException, JSONException {
+    void shouldReturnAnErrorIfIdDatasetNotDefinedWhenCreating() throws JSONException {
         JSONObject body = new JSONObject();
         RmesException exception =
                 assertThrows(RmesBadRequestException.class, () -> distributionService.create(body.toString()));
@@ -125,7 +125,7 @@ class DistributionServiceImplTest {
     }
 
     @Test
-    void shouldReturnAnErrorIfLabelLg1NotDefinedWhenCreating() throws RmesException, JSONException {
+    void shouldReturnAnErrorIfLabelLg1NotDefinedWhenCreating() throws JSONException {
         JSONObject body = new JSONObject();
         body.put("idDataset", "idDataset");
         RmesException exception =
@@ -134,7 +134,7 @@ class DistributionServiceImplTest {
     }
 
     @Test
-    void shouldReturnAnErrorIfLabelLg2NotDefinedWhenCreating() throws RmesException, JSONException {
+    void shouldReturnAnErrorIfLabelLg2NotDefinedWhenCreating() throws JSONException {
         JSONObject body = new JSONObject();
         body.put("idDataset", "idDataset");
         body.put("labelLg1", "labelLg1");
@@ -152,11 +152,9 @@ class DistributionServiceImplTest {
         JSONObject mockJSON = new JSONObject(DISTRIB);
         when(idGenerator.generateNextId()).thenReturn(nextId);
         IRI iri = SimpleValueFactory.getInstance().createIRI("http://distributionIRI/" + nextId);
-        try (MockedStatic<RdfUtils> rdfUtilsMock = Mockito.mockStatic(RdfUtils.class);
-                MockedStatic<DateUtils> dateUtilsMock = Mockito.mockStatic(DateUtils.class)) {
-            stubDistributionRdfUtils(rdfUtilsMock);
+        try (MockedStatic<DateUtils> dateUtilsMock = Mockito.mockStatic(DateUtils.class)) {
 
-            freezeCurrentDate(dateUtilsMock);
+            dateUtilsMock.when(DateUtils::getCurrentDate).thenReturn(CURRENT_DATE);
             dateUtilsMock
                     .when(() -> DateUtils.parseDateTime(anyString()))
                     .thenReturn(LocalDateTime.parse(CURRENT_DATE));
@@ -174,14 +172,6 @@ class DistributionServiceImplTest {
                     model.getValue().toString());
             Assertions.assertEquals(id, nextId);
         }
-    }
-
-    /** Socle commun des bouchons {@link RdfUtils}, complété du triplet IRI → IRI d'une distribution. */
-    private static void stubDistributionRdfUtils(MockedStatic<RdfUtils> rdfUtilsMock) {
-        callRealLiteralAndTripleBuilders(rdfUtilsMock);
-        rdfUtilsMock
-                .when(() -> RdfUtils.addTripleUri(any(IRI.class), any(), any(IRI.class), any(), any()))
-                .thenCallRealMethod();
     }
 
     private static JSONObject distributionBody(String idDataset) {
@@ -211,8 +201,7 @@ class DistributionServiceImplTest {
         IRI iri = SimpleValueFactory.getInstance().createIRI("http://distributionIRI/d1001");
         when(datasetDistributionQueries.getDistribution(eq("d1001"), any())).thenReturn("query d1001");
 
-        try (MockedStatic<RdfUtils> rdfUtilsMock = Mockito.mockStatic(RdfUtils.class);
-                MockedStatic<DateUtils> dateUtilsMock = Mockito.mockStatic(DateUtils.class)) {
+        try (MockedStatic<DateUtils> dateUtilsMock = Mockito.mockStatic(DateUtils.class)) {
 
             if (!withDataSetRemoval) {
                 JSONObject mockJSON = new JSONObject(DISTRIB);
@@ -224,9 +213,7 @@ class DistributionServiceImplTest {
                 when(repositoryGestion.getResponseAsObject("query d1001")).thenReturn(distribution);
             }
 
-            stubDistributionRdfUtils(rdfUtilsMock);
-
-            freezeCurrentDate(dateUtilsMock);
+            dateUtilsMock.when(DateUtils::getCurrentDate).thenReturn(CURRENT_DATE);
             dateUtilsMock
                     .when(() -> DateUtils.parseDateTime(eq("2022-10-19T11:44:23.335590")))
                     .thenReturn(LocalDateTime.parse("2022-10-19T11:44:23.335590"));
@@ -280,8 +267,6 @@ class DistributionServiceImplTest {
         IRI iri = SimpleValueFactory.getInstance().createIRI("http://distributionIRI/1");
         givenDistributionWithValidationState("Modified");
 
-        doNothing().when(publicationUtils).publishResource(iri, Set.of());
-
         Assertions.assertEquals("1", distributionService.publishDistribution("1"));
     }
 
@@ -296,8 +281,12 @@ class DistributionServiceImplTest {
         IRI iri = SimpleValueFactory.getInstance().createIRI("http://distributionIRI/1");
         givenDistributionWithValidationState("Unpublished");
 
-        doNothing().when(publicationUtils).publishResource(iri, Set.of());
         String id = distributionService.publishDistribution("1");
+        verify(publicationUtils)
+                .publishResource(
+                        iri,
+                        Set.of(),
+                        SimpleValueFactory.getInstance().createIRI("http://rdf.insee.fr/graphes/datasetGraph/"));
         ArgumentCaptor<Model> model = ArgumentCaptor.forClass(Model.class);
 
         verify(repositoryGestion).loadSimpleObjectWithoutDeletion(eq(iri), model.capture(), any());
@@ -375,22 +364,16 @@ class DistributionServiceImplTest {
     @Test
     void shouldDeleteDistribution() throws RmesException {
         JSONObject mockJSON = new JSONObject("{\"id\":\"idtest\",\"validationState\":\"Unpublished\"}");
-        String stringDistributionIri = "http://bauhaus/catalogues/distribution/idtest";
-        IRI distributionUri = RdfUtils.toURI(stringDistributionIri);
         when(datasetDistributionQueries.getDistribution(any(), any())).thenReturn("query1 ");
         when(repositoryGestion.getResponseAsObject("query1 ")).thenReturn(mockJSON);
-        try (MockedStatic<RdfUtils> rdfUtilsMock = Mockito.mockStatic(RdfUtils.class)) {
-            rdfUtilsMock.when(() -> RdfUtils.createIRI(any(String.class))).thenReturn(distributionUri);
-            rdfUtilsMock.when(() -> RdfUtils.toURI(any(String.class))).thenReturn(distributionUri);
 
-            // Capture the argument passed to deleteObject
-            ArgumentCaptor<IRI> uriCaptor = ArgumentCaptor.forClass(IRI.class);
-            distributionService.deleteDistributionId("idTest");
-            verify(repositoryGestion, times(1)).deleteObject(uriCaptor.capture());
-            Assertions.assertEquals(distributionUri, uriCaptor.getValue());
-            verify(repositoryGestion, times(1)).deleteObject(distributionUri);
-            verify(repositoryGestion, times(1))
-                    .deleteTripletByPredicate(any(IRI.class), eq(DCAT.DISTRIBUTION), any(IRI.class));
-        }
+        distributionService.deleteDistributionId("idTest");
+
+        verify(repositoryGestion, times(1)).deleteObject(RdfTriples.iriAsIs("http://distributionIRI/idTest"));
+        verify(repositoryGestion, times(1))
+                .deleteTripletByPredicate(
+                        RdfTriples.iriAsIs("http://distributionIRI"),
+                        DCAT.DISTRIBUTION,
+                        RdfTriples.iriAsIs("http://datasetIRI/idTest"));
     }
 }

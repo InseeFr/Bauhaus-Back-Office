@@ -14,5 +14,5 @@ public record LogicalRecord(
         @JsonProperty("Label") List<LangString> label,
         @JsonProperty("VariablesInRecord") VariablesInRecord variablesInRecord) {
 
-    public static final String TYPE = "LogicalRecordType";
+    public static final String TYPE_NAME = "LogicalRecordType";
 }

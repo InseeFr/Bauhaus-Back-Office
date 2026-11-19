@@ -19,9 +19,9 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
         property = "$type",
         visible = true)
 @JsonSubTypes({
-    @JsonSubTypes.Type(value = Ddi4Group.class, name = Ddi4Group.TYPE),
-    @JsonSubTypes.Type(value = Ddi4StudyUnit.class, name = Ddi4StudyUnit.TYPE),
-    @JsonSubTypes.Type(value = Ddi4PhysicalInstance.class, name = Ddi4PhysicalInstance.TYPE)
+    @JsonSubTypes.Type(value = Ddi4Group.class, name = Ddi4Group.TYPE_NAME),
+    @JsonSubTypes.Type(value = Ddi4StudyUnit.class, name = Ddi4StudyUnit.TYPE_NAME),
+    @JsonSubTypes.Type(value = Ddi4PhysicalInstance.class, name = Ddi4PhysicalInstance.TYPE_NAME)
 })
 public interface Ddi4Item {
     String type();

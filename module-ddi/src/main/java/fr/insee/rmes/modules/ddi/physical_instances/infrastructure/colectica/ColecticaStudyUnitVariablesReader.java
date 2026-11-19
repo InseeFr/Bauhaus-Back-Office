@@ -86,7 +86,7 @@ class ColecticaStudyUnitVariablesReader {
         ColecticaItemResponse[] fragments = colecticaClient.getDescriptions(ColecticaItems.identifiersOf(variables));
         List<Ddi3Response.Ddi3Item> ddi3Items = fragments == null ? List.of() : ColecticaItems.toDdi3Items(fragments);
         Ddi4Response converted =
-                ddi3ToDdi4Converter.convertDdi3ToDdi4(new Ddi3Response(null, ddi3Items), Ddi4Response.SCHEMA);
+                ddi3ToDdi4Converter.convertDdi3ToDdi4(new Ddi3Response(null, ddi3Items), Ddi4Response.SCHEMA_ID);
         return variablesOnly(converted == null || converted.variable() == null ? List.of() : converted.variable());
     }
 
@@ -173,7 +173,7 @@ class ColecticaStudyUnitVariablesReader {
     }
 
     private static Ddi4Response variablesOnly(List<Ddi4Variable> variables) {
-        return new Ddi4Response(Ddi4Response.SCHEMA, null, null, null, variables, null, null, null);
+        return new Ddi4Response(Ddi4Response.SCHEMA_ID, null, null, null, variables, null, null, null);
     }
 
     private String itemType(String typeKey) {

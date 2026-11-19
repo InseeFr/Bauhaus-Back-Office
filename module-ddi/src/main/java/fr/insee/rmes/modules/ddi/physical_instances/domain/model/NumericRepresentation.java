@@ -9,5 +9,5 @@ public record NumericRepresentation(
         @JsonProperty("NumericTypeCode") CodeValue numericTypeCode,
         @JsonProperty("NumberRange") NumberRange numberRange) {
 
-    public static final String TYPE = "NumericRepresentationBaseType";
+    public static final String TYPE_NAME = "NumericRepresentationBaseType";
 }

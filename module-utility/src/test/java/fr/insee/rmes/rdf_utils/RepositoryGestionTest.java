@@ -16,6 +16,8 @@ import org.eclipse.rdf4j.model.*;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.impl.TreeModel;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
+import org.eclipse.rdf4j.query.QueryLanguage;
+import org.eclipse.rdf4j.query.Update;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
@@ -152,25 +154,25 @@ class RepositoryGestionTest {
     void shouldGetStatements() throws RmesException {
         IRI subject = valueFactory.createIRI("http://example.org/subject");
 
-        when(connection.getStatements(subject, null, null, false)).thenReturn(repositoryResult);
+        when(connection.getStatements(subject, null, null, false, GRAPH)).thenReturn(repositoryResult);
 
-        RepositoryResult<Statement> result = repositoryGestion.getStatements(connection, subject);
+        RepositoryResult<Statement> result = repositoryGestion.getStatements(connection, subject, GRAPH);
 
         assertEquals(repositoryResult, result);
-        verify(connection).getStatements(subject, null, null, false);
+        verify(connection).getStatements(subject, null, null, false, GRAPH);
     }
 
     @Test
     void shouldGetStatementsWithNullConnection() throws RmesException {
         IRI subject = valueFactory.createIRI("http://example.org/subject");
 
-        when(connection.getStatements(subject, null, null, false)).thenReturn(repositoryResult);
+        when(connection.getStatements(subject, null, null, false, GRAPH)).thenReturn(repositoryResult);
 
-        RepositoryResult<Statement> result = repositoryGestion.getStatements(null, subject);
+        RepositoryResult<Statement> result = repositoryGestion.getStatements(null, subject, GRAPH);
 
         assertEquals(repositoryResult, result);
         verify(repositoryUtils).initRepository("http://localhost:8080", "test-repo");
-        verify(connection).getStatements(subject, null, null, false);
+        verify(connection).getStatements(subject, null, null, false, GRAPH);
     }
 
     /* Configuration RDF incomplète : `initRepository` rend `null`. Ouvrir la connexion doit
@@ -181,20 +183,20 @@ class RepositoryGestionTest {
         IRI object = valueFactory.createIRI("http://example.org/object");
         doReturn(null).when(repositoryUtils).initRepository(anyString(), anyString());
 
-        assertThrows(RmesException.class, () -> repositoryGestion.getStatements(null, subject));
+        assertThrows(RmesException.class, () -> repositoryGestion.getStatements(null, subject, GRAPH));
         assertThrows(
                 RmesException.class,
                 () -> repositoryGestion.getStatementsPredicateObject(null, DCTERMS.HAS_PART, object, GRAPH));
     }
 
     @Test
-    void shouldThrowExceptionWhenGetStatementsThrowsRepositoryException() throws RmesException {
+    void shouldThrowExceptionWhenGetStatementsThrowsRepositoryException() {
         IRI subject = valueFactory.createIRI("http://example.org/subject");
         RepositoryException repositoryException = new RepositoryException("Test exception");
 
-        when(connection.getStatements(subject, null, null, false)).thenThrow(repositoryException);
+        when(connection.getStatements(subject, null, null, false, GRAPH)).thenThrow(repositoryException);
 
-        assertThrows(RmesException.class, () -> repositoryGestion.getStatements(connection, subject));
+        assertThrows(RmesException.class, () -> repositoryGestion.getStatements(connection, subject, GRAPH));
     }
 
     @Test
@@ -230,7 +232,7 @@ class RepositoryGestionTest {
     }
 
     @Test
-    void shouldThrowExceptionWhenCloseStatementsThrowsRepositoryException() throws RmesException {
+    void shouldThrowExceptionWhenCloseStatementsThrowsRepositoryException() {
         RepositoryException repositoryException = new RepositoryException("Test exception");
         doThrow(repositoryException).when(repositoryResult).close();
 
@@ -292,9 +294,13 @@ class RepositoryGestionTest {
         IRI object = valueFactory.createIRI("http://example.org/object");
         Model model = new TreeModel();
 
+        Update update = mock(Update.class);
+        when(connection.prepareUpdate(eq(QueryLanguage.SPARQL), anyString())).thenReturn(update);
+
         repositoryGestion.loadSimpleObject(object, model, connection);
 
-        verify(connection).remove(object, null, null);
+        verify(connection).prepareUpdate(QueryLanguage.SPARQL, subjectRemoval(object));
+        verify(update).execute();
         verify(connection).add(model);
         verify(connection).close();
     }
@@ -303,9 +309,13 @@ class RepositoryGestionTest {
     void shouldDeleteObject() throws RmesException {
         IRI object = valueFactory.createIRI("http://example.org/object");
 
+        Update update = mock(Update.class);
+        when(connection.prepareUpdate(eq(QueryLanguage.SPARQL), anyString())).thenReturn(update);
+
         repositoryGestion.deleteObject(object, connection);
 
-        verify(connection).remove(object, null, null);
+        verify(connection).prepareUpdate(QueryLanguage.SPARQL, subjectRemoval(object));
+        verify(update).execute();
         verify(connection).close();
     }
 
@@ -326,10 +336,14 @@ class RepositoryGestionTest {
         IRI resourceURI = valueFactory.createIRI("http://example.org/resource");
         Model model = new TreeModel();
 
+        Update update = mock(Update.class);
+        when(connection.prepareUpdate(eq(QueryLanguage.SPARQL), anyString())).thenReturn(update);
+
         repositoryGestion.objectValidation(resourceURI, model);
 
-        verify(connection).remove(resourceURI, INSEE.VALIDATION_STATE, null);
-        verify(connection).remove(resourceURI, INSEE.IS_VALIDATED, null);
+        verify(connection).prepareUpdate(QueryLanguage.SPARQL, statusRemoval(resourceURI, INSEE.VALIDATION_STATE));
+        verify(connection).prepareUpdate(QueryLanguage.SPARQL, statusRemoval(resourceURI, INSEE.IS_VALIDATED));
+        verify(update, times(2)).execute();
         verify(connection).add(model);
         verify(connection).close();
     }
@@ -341,14 +355,25 @@ class RepositoryGestionTest {
                 valueFactory.createIRI("http://example.org/resource2"));
         Model model = new TreeModel();
 
+        Update update = mock(Update.class);
+        when(connection.prepareUpdate(eq(QueryLanguage.SPARQL), anyString())).thenReturn(update);
+
         repositoryGestion.objectsValidation(collectionsToValidate, model);
 
         for (IRI item : collectionsToValidate) {
-            verify(connection).remove(item, INSEE.VALIDATION_STATE, null);
-            verify(connection).remove(item, INSEE.IS_VALIDATED, null);
+            verify(connection).prepareUpdate(QueryLanguage.SPARQL, statusRemoval(item, INSEE.VALIDATION_STATE));
+            verify(connection).prepareUpdate(QueryLanguage.SPARQL, statusRemoval(item, INSEE.IS_VALIDATED));
         }
         verify(connection).add(model);
         verify(connection).close();
+    }
+
+    private static String subjectRemoval(IRI subject) {
+        return "DELETE WHERE { GRAPH ?graph { <%s> ?predicate ?value } }".formatted(subject);
+    }
+
+    private static String statusRemoval(IRI object, IRI predicate) {
+        return "DELETE WHERE { GRAPH ?graph { <%s> <%s> ?value } }".formatted(object, predicate);
     }
 
     @Test
@@ -405,19 +430,21 @@ class RepositoryGestionTest {
     }
 
     @Test
-    void shouldKeepHierarchicalOperationLinks() throws RmesException {
+    void shouldKeepHierarchicalOperationLinksInTheGivenGraph() throws RmesException {
         IRI object = valueFactory.createIRI("http://example.org/object");
+        IRI graph = valueFactory.createIRI("http://example.org/graph");
         Model model = new TreeModel();
 
-        when(connection.getStatements(null, DCTERMS.HAS_PART, object, false)).thenReturn(repositoryResult);
-        when(connection.getStatements(object, DCTERMS.HAS_PART, null, false)).thenReturn(repositoryResult);
-        when(connection.getStatements(null, DCTERMS.IS_PART_OF, object, false)).thenReturn(repositoryResult);
-        when(connection.getStatements(object, DCTERMS.IS_PART_OF, null, false)).thenReturn(repositoryResult);
+        when(connection.getStatements(any(), any(), any(), eq(false), eq(graph)))
+                .thenReturn(repositoryResult);
         when(repositoryResult.hasNext()).thenReturn(false);
 
-        repositoryGestion.keepHierarchicalOperationLinks(object, model);
+        repositoryGestion.keepHierarchicalOperationLinks(object, model, graph);
 
-        verify(connection, times(4)).getStatements(any(), any(), any(), eq(false));
-        verify(connection, times(4)).remove(repositoryResult);
+        verify(connection, times(4)).getStatements(any(), any(), any(), eq(false), eq(graph));
+        verify(connection).remove((Resource) null, DCTERMS.HAS_PART, object, graph);
+        verify(connection).remove(object, DCTERMS.HAS_PART, null, graph);
+        verify(connection).remove((Resource) null, DCTERMS.IS_PART_OF, object, graph);
+        verify(connection).remove(object, DCTERMS.IS_PART_OF, null, graph);
     }
 }

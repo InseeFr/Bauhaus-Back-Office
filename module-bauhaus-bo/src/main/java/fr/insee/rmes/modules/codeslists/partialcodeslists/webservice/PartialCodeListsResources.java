@@ -74,17 +74,16 @@ public class PartialCodeListsResources extends GenericResources {
     @HasAccess(module = RBAC.Module.CODESLIST_PARTIALCODESLIST, privilege = RBAC.Privilege.UPDATE)
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> updatePartialCodeList(
-            @PathVariable(Constants.ID) String componentId, @Valid @RequestBody PartialCodesListRequest codesList)
+            @PathVariable(Constants.ID) String id, @Valid @RequestBody PartialCodesListRequest codesList)
             throws RmesException {
-        String id = codeListService.setCodesList(componentId, codesList.toLegacyJson(), CodeListKind.PARTIAL);
-        return ResponseEntity.status(HttpStatus.OK).body(id);
+        String savedId = codeListService.setCodesList(id, codesList.toLegacyJson(), CodeListKind.PARTIAL);
+        return ResponseEntity.status(HttpStatus.OK).body(savedId);
     }
 
     @HasAccess(module = RBAC.Module.CODESLIST_PARTIALCODESLIST, privilege = RBAC.Privilege.DELETE)
     @DeleteMapping(value = "/{id}")
-    public ResponseEntity<Object> deletePartialCodeList(@PathVariable(Constants.ID) String notation)
-            throws RmesException {
-        codeListService.deleteCodeList(notation, CodeListKind.PARTIAL);
+    public ResponseEntity<Object> deletePartialCodeList(@PathVariable(Constants.ID) String id) throws RmesException {
+        codeListService.deleteCodeList(id, CodeListKind.PARTIAL);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 }

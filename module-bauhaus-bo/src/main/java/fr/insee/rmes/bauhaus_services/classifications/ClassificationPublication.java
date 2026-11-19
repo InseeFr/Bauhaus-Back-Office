@@ -3,7 +3,6 @@ package fr.insee.rmes.bauhaus_services.classifications;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.ErrorCodes;
@@ -48,7 +47,7 @@ public class ClassificationPublication extends RdfService {
                 throw new RmesNotFoundException(
                         ErrorCodes.CLASSIFICATION_UNKNOWN_ID, "Classification not found", graphIri.stringValue());
             }
-            transformStatementToPublish(model, classifStatements);
+            transformStatementToPublish(model, classifStatements, graphIri);
         } catch (RepositoryException e) {
             logger.debug("publishClassification - failed to read graph [{}]: {}", graphIri, e.getMessage());
             throw new RmesException(
@@ -63,20 +62,21 @@ public class ClassificationPublication extends RdfService {
         logger.debug("publishClassification - publishContext completed for graph [{}]", graphIri);
     }
 
-    public void transformStatementToPublish(Model model, RepositoryResult<Statement> classifStatements) {
+    public void transformStatementToPublish(
+            Model model, RepositoryResult<Statement> classifStatements, Resource graph) {
         int read = 0;
         int ignored = 0;
         while (classifStatements.hasNext()) {
             Statement st = classifStatements.next();
             read++;
             // Triplets that don't get published
-            String predicate = RdfUtils.toString(st.getPredicate());
+            String predicate = st.getPredicate().toString();
             if (!isTripletForPublication(predicate)) {
                 // nothing, wouldn't copy this attr
                 ignored++;
                 logger.debug("transformStatementToPublish - triple skipped (predicate not published): {}", predicate);
             } else {
-                transformTripleToPublish(model, st);
+                transformTripleToPublish(model, st, graph);
             }
         }
         logger.debug(

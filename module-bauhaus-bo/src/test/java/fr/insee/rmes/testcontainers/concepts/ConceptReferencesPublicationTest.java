@@ -60,9 +60,9 @@ class ConceptReferencesPublicationTest extends WithGraphDBContainer {
         modelC.add(CONCEPT_C, RDFS.LABEL, VF.createLiteral("Concept C"), GRAPH);
 
         // A est publié avant C.
-        repositoryPublication.publishConcept(CONCEPT_A, modelA, List.of(), List.of());
+        repositoryPublication.publishConcept(CONCEPT_A, modelA, List.of(), List.of(), GRAPH);
         // Puis C est publié : la publication de C ne doit pas toucher au lien entrant A references C.
-        repositoryPublication.publishConcept(CONCEPT_C, modelC, List.of(), List.of());
+        repositoryPublication.publishConcept(CONCEPT_C, modelC, List.of(), List.of(), GRAPH);
 
         var result = subjectsReferencingConceptC();
 
@@ -75,11 +75,11 @@ class ConceptReferencesPublicationTest extends WithGraphDBContainer {
     @Test
     void removingTheReferenceFromTheReferencingConceptIsStillPropagated() throws RmesException {
         Model modelWithReference = conceptAModel(true);
-        repositoryPublication.publishConcept(CONCEPT_A, modelWithReference, List.of(), List.of());
+        repositoryPublication.publishConcept(CONCEPT_A, modelWithReference, List.of(), List.of(), GRAPH);
 
         // A est republié sans la référence : son modèle propre ne contient plus le triplet sortant.
         Model modelWithoutReference = conceptAModel(false);
-        repositoryPublication.publishConcept(CONCEPT_A, modelWithoutReference, List.of(), List.of());
+        repositoryPublication.publishConcept(CONCEPT_A, modelWithoutReference, List.of(), List.of(), GRAPH);
 
         var result = subjectsReferencingConceptC();
 

@@ -2,8 +2,10 @@ package fr.insee.rmes.integration.authorizations;
 
 import static fr.insee.rmes.integration.authorizations.TokenForTestsConfiguration.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -15,7 +17,9 @@ import fr.insee.rmes.modules.commons.configuration.LogRequestFilter;
 import fr.insee.rmes.modules.operations.series.webservice.SeriesResources;
 import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
 import java.util.Collections;
+import java.util.List;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -108,5 +112,48 @@ class TestSeriesResourcesEnvProd extends AbstractResourcesEnvProd {
         request.header("Authorization", "Bearer toto");
 
         mvc.perform(request).andExpect(status().is(code));
+    }
+
+    private static Stream<Arguments> provideDataForPostEndpoints() {
+        return Stream.of(Arguments.of(200, true), Arguments.of(403, false));
+    }
+
+    @MethodSource("provideDataForPostEndpoints")
+    @ParameterizedTest
+    void createSeries(Integer code, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
+        when(checker.hasCreateAccess(any(), any(), any())).thenReturn(hasAccessReturn);
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
+
+        mvc.perform(post("/operations/series")
+                        .header("Authorization", "Bearer toto")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content(SERIES_BODY))
+                .andExpect(status().is(code));
+    }
+
+    /**
+     * Une série n'existe pas encore à sa création : le contrôle par timbre porte sur les
+     * propriétaires postés ({@code dc:creator}), que l'utilisateur doit compter parmi ses
+     * organisations.
+     */
+    @Test
+    void checks_the_creation_access_on_the_posted_creators() throws Exception, MissingUserInformationException {
+        when(checker.hasCreateAccess(
+                        eq("OPERATION_SERIES"),
+                        eq(List.of("http://bauhaus/organisations/insee/DG75-L201", "DG75-G401")),
+                        any()))
+                .thenReturn(true);
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
+
+        mvc.perform(post("/operations/series")
+                        .header("Authorization", "Bearer toto")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"prefLabelLg1": "Série",
+                                 "creators": ["http://bauhaus/organisations/insee/DG75-L201", "DG75-G401"]}
+                                """))
+                .andExpect(status().isOk());
     }
 }

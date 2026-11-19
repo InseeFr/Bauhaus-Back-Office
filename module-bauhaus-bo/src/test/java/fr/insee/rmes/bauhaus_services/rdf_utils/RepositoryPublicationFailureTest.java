@@ -4,7 +4,6 @@ import static fr.insee.rmes.graphdb.RepositoryInitiator.Type.DISABLED;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowableOfType;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -19,6 +18,8 @@ import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
+import org.eclipse.rdf4j.query.QueryLanguage;
+import org.eclipse.rdf4j.query.Update;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
@@ -38,6 +39,7 @@ class RepositoryPublicationFailureTest {
 
     private final SimpleValueFactory factory = SimpleValueFactory.getInstance();
     private final IRI subject = factory.createIRI("http://example.org/subject");
+    private final IRI graph = factory.createIRI("http://example.org/graph");
     private final Model model = new LinkedHashModel();
 
     private RepositoryConnection connection;
@@ -52,6 +54,7 @@ class RepositoryPublicationFailureTest {
         when(repositoryUtils.authType()).thenReturn(DISABLED);
         when(repositoryUtils.initRepository(anyString(), anyString())).thenReturn(repository);
         when(repository.getConnection()).thenReturn(connection);
+        when(connection.prepareUpdate(any(QueryLanguage.class), anyString())).thenReturn(mock(Update.class));
         repositoryPublication = new RepositoryPublication("http://graphdb:7200", "publication", repositoryUtils);
         model.add(subject, factory.createIRI("http://example.org/p"), factory.createLiteral("o"));
     }
@@ -60,23 +63,25 @@ class RepositoryPublicationFailureTest {
     void shouldReportAnUnavailableRepositoryWhenPublishingAConcept() {
         doThrow(new RepositoryException(RDF4J_MESSAGE)).when(connection).add(any(Model.class));
 
-        assertUnavailableRepository(() -> repositoryPublication.publishConcept(subject, model, List.of(), List.of()));
+        assertUnavailableRepository(
+                () -> repositoryPublication.publishConcept(subject, model, List.of(), List.of(), graph));
     }
 
     @Test
     void shouldReportAnUnavailableRepositoryWhenClearingTheLinksOfAConcept() {
         doThrow(new RepositoryException(RDF4J_MESSAGE))
                 .when(connection)
-                .getStatements(any(), any(), any(Resource.class), anyBoolean());
+                .prepareUpdate(any(QueryLanguage.class), anyString());
 
-        assertUnavailableRepository(() -> repositoryPublication.publishConcept(subject, model, List.of(), List.of()));
+        assertUnavailableRepository(
+                () -> repositoryPublication.publishConcept(subject, model, List.of(), List.of(), graph));
     }
 
     @Test
     void shouldReportAnUnavailableRepositoryWhenPublishingAResource() {
         doThrow(new RepositoryException(RDF4J_MESSAGE)).when(connection).add(any(Model.class));
 
-        assertUnavailableRepository(() -> repositoryPublication.publishResource(subject, model, "operation"));
+        assertUnavailableRepository(() -> repositoryPublication.publishResource(subject, model, "operation", graph));
     }
 
     @Test

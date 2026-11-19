@@ -22,7 +22,7 @@ final class Ddi4WireFormatFixtures {
     /** The physical instance {@code fr.insee/pi-1}, titled "Ma PI". */
     static Ddi4PhysicalInstance aPhysicalInstance() {
         return new Ddi4PhysicalInstance(
-                Ddi4PhysicalInstance.TYPE,
+                Ddi4PhysicalInstance.TYPE_NAME,
                 null,
                 "urn:ddi:fr.insee:pi-1:1",
                 "fr.insee",

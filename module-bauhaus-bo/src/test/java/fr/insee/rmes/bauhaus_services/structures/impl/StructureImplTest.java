@@ -9,16 +9,13 @@ import static org.mockito.Mockito.when;
 
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.CodeListService;
-import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.structures.persistence.StructureRepository;
-import fr.insee.rmes.config.GraphsPropertiesStub;
+import fr.insee.rmes.config.BauhausIriFactoryStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.ontologies.QB;
 import fr.insee.rmes.modules.structures.infrastructure.graphdb.StructureQueries;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptConceptsQueries;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
-import java.util.Optional;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
@@ -48,10 +45,7 @@ class StructureImplTest {
     private StructureImpl structureService;
 
     @BeforeEach
-    void initStaticGraphsAndService() {
-        RdfUtils.setGraphs(GraphsPropertiesStub.stub());
-        RdfUtils.setBauhausUriBuilder(
-                new BauhausUriBuilder("http://publication/", "http://bauhaus/", name -> Optional.of("structures")));
+    void initService() {
         structureService = new StructureImpl(
                 repoGestion,
                 null,
@@ -60,7 +54,8 @@ class StructureImplTest {
                 structureRepository,
                 codeListService,
                 structureQueries,
-                conceptConceptsQueries);
+                conceptConceptsQueries,
+                BauhausIriFactoryStub.stub("structures"));
     }
 
     @Test

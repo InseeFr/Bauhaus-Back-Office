@@ -72,7 +72,7 @@ class GroupResourcesTest {
     @Test
     void createOrUpdateGroup_shouldReturn201() {
         Ddi4Group group = new Ddi4Group(
-                Ddi4Group.TYPE,
+                Ddi4Group.TYPE_NAME,
                 CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
                 "urn:ddi:fr.insee:group-id:1",
                 "fr.insee",
@@ -318,7 +318,7 @@ class GroupResourcesTest {
         Reference suRef2 = Reference.of("fr.insee", "820a7c14-0ac4-42bc-a8c1-d39f60e304ee", "1", "StudyUnit");
 
         Ddi4Group group = new Ddi4Group(
-                Ddi4Group.TYPE,
+                Ddi4Group.TYPE_NAME,
                 CogsDate.ofDateTime("2025-01-09T09:00:00.000000Z"),
                 "urn:ddi:fr.insee:10a689ce-7006-429b-8e84-036b7787b422:1",
                 "fr.insee",
@@ -331,7 +331,7 @@ class GroupResourcesTest {
                 "insee:StatisticalOperationSeries");
 
         Ddi4StudyUnit studyUnit1 = new Ddi4StudyUnit(
-                Ddi4StudyUnit.TYPE,
+                Ddi4StudyUnit.TYPE_NAME,
                 CogsDate.ofDateTime("2025-01-09T09:00:00.000000Z"),
                 "urn:ddi:fr.insee:89f5e04d-da22-485f-9c08-5fbe452b6c90:1",
                 "fr.insee",
@@ -342,7 +342,7 @@ class GroupResourcesTest {
                 null);
 
         Ddi4StudyUnit studyUnit2 = new Ddi4StudyUnit(
-                Ddi4StudyUnit.TYPE,
+                Ddi4StudyUnit.TYPE_NAME,
                 CogsDate.ofDateTime("2025-01-09T09:00:00.000000Z"),
                 "urn:ddi:fr.insee:820a7c14-0ac4-42bc-a8c1-d39f60e304ee:1",
                 "fr.insee",

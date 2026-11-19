@@ -122,7 +122,7 @@ class DDI3toDDI4ConverterServiceImplTest {
         // Build a schema-valid Group fragment with the real serializer, then parse it back:
         // this is the exact round-trip the auto-provision of a group's CodeListScheme relies on.
         Ddi4Group original = new Ddi4Group(
-                Ddi4Group.TYPE,
+                Ddi4Group.TYPE_NAME,
                 CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
                 "urn:ddi:fr.insee:group-id:1",
                 "fr.insee",
@@ -153,7 +153,7 @@ class DDI3toDDI4ConverterServiceImplTest {
     @Test
     void shouldReadBackEverythingTheOperationsMirrorRewritesOnAGroup() {
         Ddi4Group original = new Ddi4Group(
-                Ddi4Group.TYPE,
+                Ddi4Group.TYPE_NAME,
                 CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
                 "urn:ddi:fr.insee:group-id:1",
                 "fr.insee",
@@ -178,7 +178,7 @@ class DDI3toDDI4ConverterServiceImplTest {
     @Test
     void shouldParseCategorySchemeFromFragmentXml() {
         Ddi4CategoryScheme original = new Ddi4CategoryScheme(
-                Ddi4CategoryScheme.TYPE,
+                Ddi4CategoryScheme.TYPE_NAME,
                 CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
                 "urn:ddi:fr.insee:cats-id:1",
                 "fr.insee",
@@ -199,7 +199,7 @@ class DDI3toDDI4ConverterServiceImplTest {
     @Test
     void shouldParseVariableSchemeFromFragmentXml() {
         Ddi4VariableScheme original = new Ddi4VariableScheme(
-                Ddi4VariableScheme.TYPE,
+                Ddi4VariableScheme.TYPE_NAME,
                 CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
                 "urn:ddi:fr.insee:vars-id:1",
                 "fr.insee",
@@ -244,7 +244,7 @@ class DDI3toDDI4ConverterServiceImplTest {
     @Test
     void shouldParseStudyUnitFromFragmentXml() {
         Ddi4StudyUnit original = new Ddi4StudyUnit(
-                Ddi4StudyUnit.TYPE,
+                Ddi4StudyUnit.TYPE_NAME,
                 CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
                 "urn:ddi:fr.insee:su-id:1",
                 "fr.insee",

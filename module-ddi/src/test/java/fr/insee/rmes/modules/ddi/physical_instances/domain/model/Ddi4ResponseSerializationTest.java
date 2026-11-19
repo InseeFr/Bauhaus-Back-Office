@@ -19,7 +19,7 @@ class Ddi4ResponseSerializationTest {
     @Test
     void ddi4Response_omitsNullFields() throws Exception {
         Ddi4Response response = new Ddi4Response(
-                Ddi4Response.SCHEMA,
+                Ddi4Response.SCHEMA_ID,
                 List.of(Reference.of("fr.insee", "dr-1", "1", "DataRelationship")),
                 null, // PhysicalInstance
                 List.of(), // DataRelationship (présent mais vide)
@@ -46,7 +46,7 @@ class Ddi4ResponseSerializationTest {
     @Test
     void ddi4GroupResponse_omitsNullFields() throws Exception {
         Ddi4GroupResponse response = new Ddi4GroupResponse(
-                Ddi4Response.SCHEMA,
+                Ddi4Response.SCHEMA_ID,
                 null, // TopLevelReference
                 null, // Group
                 null); // StudyUnit
@@ -65,7 +65,7 @@ class Ddi4ResponseSerializationTest {
     @Test
     void ddi4CodeList_omitsNullFields() throws Exception {
         Ddi4CodeList flatCodeList = new Ddi4CodeList(
-                Ddi4CodeList.TYPE,
+                Ddi4CodeList.TYPE_NAME,
                 null, // VersionDate
                 "urn:ddi:fr.insee:cl-1:1",
                 "fr.insee",
@@ -120,7 +120,7 @@ class Ddi4ResponseSerializationTest {
     @Test
     void ddi4CodeListResponse_omitsNullFields() throws Exception {
         Ddi4CodeListResponse response = new Ddi4CodeListResponse(
-                Ddi4Response.SCHEMA,
+                Ddi4Response.SCHEMA_ID,
                 null, // TopLevelReference
                 null); // CodeList
 

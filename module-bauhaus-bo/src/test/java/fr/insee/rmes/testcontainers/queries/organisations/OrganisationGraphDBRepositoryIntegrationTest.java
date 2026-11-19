@@ -83,11 +83,11 @@ class OrganisationGraphDBRepositoryIntegrationTest extends WithGraphDBContainer 
         List<OrganisationOption> organisations = repository.getOrganisations();
 
         // Then
-        assertThat(organisations).isNotEmpty();
-        // All labels should be in French (we can't verify the language tag after parsing,
-        // but we verify that we get results which implies the FILTER worked)
-        assertThat(organisations).hasSizeGreaterThan(0);
-        assertThat(organisations.size()).isGreaterThan(0);
+        assertThat(organisations)
+                .isNotEmpty()
+                // All labels should be in French (we can't verify the language tag after parsing,
+                // but we verify that we get results which implies the FILTER worked)
+                .hasSizeGreaterThan(0);
     }
 
     @Test
@@ -101,8 +101,7 @@ class OrganisationGraphDBRepositoryIntegrationTest extends WithGraphDBContainer 
         // Then
         assertThat(organisation).isNotNull();
         assertThat(organisation.stamp()).isEqualTo("HIE2000069");
-        assertThat(organisation.label()).isNotBlank();
-        assertThat(organisation.label()).contains("Direction");
+        assertThat(organisation.label()).isNotBlank().contains("Direction");
     }
 
     @Test

@@ -2,7 +2,7 @@ package fr.insee.rmes.modules.organisations.domain.model;
 
 public class Organization {
 
-    private static final String classLink = "fr.insee.rmes.model.organizations.Organization";
+    private static final String CLASS_LINK = "fr.insee.rmes.model.organizations.Organization";
 
     public String id;
 
@@ -23,6 +23,6 @@ public class Organization {
     public String seeAlso;
 
     public static String getClassOperationsLink() {
-        return classLink;
+        return CLASS_LINK;
     }
 }
