@@ -257,6 +257,17 @@ class PhysicalInstanceSearchRowsCacheTest {
 
     private static PhysicalInstanceSearchRow row(String agency, String id, String label) {
         return new PhysicalInstanceSearchRow(
-                agency, id, label, null, "fr.insee", "su-1", "Recensement 2024", "fr.insee", "g1", "Groupe BPE");
+                agency,
+                id,
+                label,
+                null,
+                "fr.insee",
+                "su-1",
+                "Recensement 2024",
+                "fr.insee",
+                "g1",
+                "Groupe BPE",
+                List.of(),
+                List.of());
     }
 }

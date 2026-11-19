@@ -4021,6 +4021,64 @@ class DDIRepositoryImplTest {
     }
 
     @Test
+    void getPhysicalInstanceSearchRows_carriesTheAlternateTitlesOfTheStudyUnitAndTheGroup() {
+        String agency = "agency1";
+        String piType = "a51e85bb-6259-4488-8df2-f08cb43485f8";
+        when(instanceConfiguration.itemTypes())
+                .thenReturn(ColecticaTestItemTypes.configuredWith(Map.of("PhysicalInstance", piType)));
+        when(colecticaClient.queryAdvanced(anyList()))
+                .thenReturn(new ColecticaAdvancedResponse(
+                        List.of(advancedPhysicalInstance(agency, "pi-1", piType)), 1, null));
+        when(colecticaClient.query(List.of(STUDY_UNIT_ITEM_TYPE)))
+                .thenReturn(new ColecticaResponse(List.of(), 0, 0, null, null, null));
+        when(colecticaClient.query(List.of(GROUP_ITEM_TYPE)))
+                .thenReturn(new ColecticaResponse(
+                        List.of(labelItem(GROUP_ITEM_TYPE, agency, "g1", "Recensement de la population")),
+                        1,
+                        1,
+                        null,
+                        null,
+                        null));
+        when(colecticaClient.findRelatedItems(
+                        RelationshipDirection.BY_SUBJECT,
+                        new ItemReference(agency, "g1"),
+                        1,
+                        List.of(STUDY_UNIT_ITEM_TYPE)))
+                .thenReturn(List.of(labelItem(STUDY_UNIT_ITEM_TYPE, agency, "su-1", "Enquête annuelle 2026")));
+        when(colecticaClient.findRelatedDescriptions(
+                        RelationshipDirection.BY_SUBJECT, new ItemReference(agency, "su-1"), 1, List.of(piType)))
+                .thenReturn(List.of(new ItemReference(agency, "pi-1")));
+        when(colecticaClient.getDescriptions(anyList())).thenReturn(new ColecticaItemResponse[] {
+            fragmentWithAlternateTitles(GROUP_ITEM_TYPE, agency, "g1", "Group", "RP", "CENS"),
+            fragmentWithAlternateTitles(STUDY_UNIT_ITEM_TYPE, agency, "su-1", "StudyUnit", "SAEC 2026")
+        });
+
+        List<PhysicalInstanceSearchRow> rows = ddiRepository.getPhysicalInstanceSearchRows();
+
+        assertThat(rows)
+                .extracting(
+                        PhysicalInstanceSearchRow::groupAlternateTitles,
+                        PhysicalInstanceSearchRow::studyUnitAlternateTitles)
+                .containsExactly(tuple(List.of("RP", "CENS"), List.of("SAEC 2026")));
+    }
+
+    /** Fragment DDI 3.3 d'un Group ou d'une StudyUnit dont la citation porte ces titres alternatifs. */
+    private static ColecticaItemResponse fragmentWithAlternateTitles(
+            String itemType, String agency, String id, String element, String... alternateTitles) {
+        StringBuilder citation =
+                new StringBuilder("<r:Citation><r:Title><r:String xml:lang=\"fr-FR\">Titre</r:String></r:Title>");
+        for (String alternateTitle : alternateTitles) {
+            citation.append("<r:AlternateTitle><r:String xml:lang=\"fr-FR\">")
+                    .append(alternateTitle)
+                    .append("</r:String></r:AlternateTitle>");
+        }
+        citation.append("</r:Citation>");
+        String xml = "<Fragment xmlns=\"ddi:instance:3_3\" xmlns:r=\"ddi:reusable:3_3\"><" + element + ">" + citation
+                + "</" + element + "></Fragment>";
+        return new ColecticaItemResponse(itemType, agency, 1, id, xml, null, null, false, false, false, null);
+    }
+
+    @Test
     void getPhysicalInstanceSearchRows_leavesParentsNullForPiAttachedToNoGroup() {
         String agency = "agency1";
         String piType = "a51e85bb-6259-4488-8df2-f08cb43485f8";
@@ -5099,7 +5157,9 @@ class DDIRepositoryImplTest {
                 "Recensement 2024",
                 "fr.insee",
                 "g1",
-                "Groupe BPE");
+                "Groupe BPE",
+                List.of(),
+                List.of());
     }
 
     @Test
@@ -5288,7 +5348,9 @@ class DDIRepositoryImplTest {
                 "Recensement 2024",
                 "fr.insee",
                 "g1",
-                "Groupe BPE");
+                "Groupe BPE",
+                List.of(),
+                List.of());
     }
 
     private record DuplicationStubs(

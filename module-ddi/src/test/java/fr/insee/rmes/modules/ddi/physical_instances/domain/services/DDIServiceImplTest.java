@@ -140,9 +140,22 @@ class DDIServiceImplTest {
                                 "Study",
                                 "fr.insee",
                                 "g1",
-                                "Group"),
+                                "Group",
+                                List.of(),
+                                List.of()),
                         new PhysicalInstanceSearchRow(
-                                "fr.insee", "pi-2", "Orpheline", versionDate, null, null, null, null, null, null)));
+                                "fr.insee",
+                                "pi-2",
+                                "Orpheline",
+                                versionDate,
+                                null,
+                                null,
+                                null,
+                                null,
+                                null,
+                                null,
+                                List.of(),
+                                List.of())));
 
         List<PartialPhysicalInstance> result = ddiService.getPhysicalInstances();
 
@@ -196,7 +209,9 @@ class DDIServiceImplTest {
                 "Study One",
                 "fr.insee",
                 "g1",
-                "Group One");
+                "Group One",
+                List.of(),
+                List.of());
         PhysicalInstanceSearchRow alpha = new PhysicalInstanceSearchRow(
                 "fr.insee",
                 "pi-a",
@@ -207,7 +222,9 @@ class DDIServiceImplTest {
                 "Study One",
                 "fr.insee",
                 "g1",
-                "Group One");
+                "Group One",
+                List.of(),
+                List.of());
         when(ddiRepository.getPhysicalInstanceSearchRows()).thenReturn(List.of(charlie, alpha));
 
         List<PhysicalInstanceSearchRow> rows = ddiService.searchPhysicalInstances();
@@ -227,7 +244,7 @@ class DDIServiceImplTest {
         when(seriesCreatorsPort.getCreatorsForSeries(Set.of(iri1, iri2)))
                 .thenReturn(Map.of(iri1, List.of("stamp-A"), iri2, List.of("stamp-B")));
         PhysicalInstanceSearchRow orphan = new PhysicalInstanceSearchRow(
-                "fr.insee", "pi-3", "Orphan", new Date(), null, null, null, null, null, null);
+                "fr.insee", "pi-3", "Orphan", new Date(), null, null, null, null, null, null, List.of(), List.of());
         when(ddiRepository.getPhysicalInstanceSearchRows())
                 .thenReturn(List.of(searchRow("pi-1", "Kept", "g1"), searchRow("pi-2", "Other team", "g2"), orphan));
 
@@ -1369,7 +1386,18 @@ class DDIServiceImplTest {
         when(ddiRepository.getGroups()).thenReturn(List.of(groupWithSeries("g1", iri)));
         when(seriesCreatorsPort.getCreatorsForSeries(Set.of(iri))).thenReturn(Map.of(iri, List.of("stamp-A")));
         PhysicalInstanceSearchRow orphan = new PhysicalInstanceSearchRow(
-                "fr.insee", "pi-orphan", "Orphan", new Date(), null, null, null, null, null, null);
+                "fr.insee",
+                "pi-orphan",
+                "Orphan",
+                new Date(),
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                List.of(),
+                List.of());
         when(ddiRepository.getPhysicalInstanceSearchRows())
                 .thenReturn(List.of(searchRow("pi-1", "PI 1", "g1"), orphan));
 
@@ -1386,7 +1414,18 @@ class DDIServiceImplTest {
 
     private PhysicalInstanceSearchRow searchRow(String piId, String label, String groupId) {
         return new PhysicalInstanceSearchRow(
-                "fr.insee", piId, label, new Date(), "fr.insee", "su-" + piId, "Study", "fr.insee", groupId, "Group");
+                "fr.insee",
+                piId,
+                label,
+                new Date(),
+                "fr.insee",
+                "su-" + piId,
+                "Study",
+                "fr.insee",
+                groupId,
+                "Group",
+                List.of(),
+                List.of());
     }
 
     @Test

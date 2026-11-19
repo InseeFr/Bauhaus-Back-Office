@@ -100,7 +100,9 @@ class PhysicalInstanceSearchRowsCache {
                 parents.map(PhysicalInstanceSearchRow::studyUnitLabel).orElse(null),
                 parents.map(PhysicalInstanceSearchRow::groupAgency).orElse(null),
                 parents.map(PhysicalInstanceSearchRow::groupId).orElse(null),
-                parents.map(PhysicalInstanceSearchRow::groupLabel).orElse(null));
+                parents.map(PhysicalInstanceSearchRow::groupLabel).orElse(null),
+                parents.map(PhysicalInstanceSearchRow::studyUnitAlternateTitles).orElse(List.of()),
+                parents.map(PhysicalInstanceSearchRow::groupAlternateTitles).orElse(List.of()));
         List<PhysicalInstanceSearchRow> updated = new ArrayList<>(rows.stream()
                 .filter(row -> !isRowOf(row, saved.agency(), saved.id()))
                 .toList());
@@ -148,6 +150,8 @@ class PhysicalInstanceSearchRowsCache {
                 row.studyUnitLabel(),
                 row.groupAgency(),
                 row.groupId(),
-                row.groupLabel());
+                row.groupLabel(),
+                row.studyUnitAlternateTitles(),
+                row.groupAlternateTitles());
     }
 }

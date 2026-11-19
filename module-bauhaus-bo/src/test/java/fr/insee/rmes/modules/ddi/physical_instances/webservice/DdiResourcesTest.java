@@ -762,7 +762,9 @@ class DdiResourcesTest {
                 "Study One",
                 "fr.insee",
                 "g1",
-                "Group One");
+                "Group One",
+                List.of("SO"),
+                List.of("G1", "GRP"));
         when(ddiService.searchPhysicalInstances()).thenReturn(List.of(row));
 
         ResponseEntity<List<PhysicalInstanceSearchResponse>> response = ddiResources.searchPhysicalInstances(null);
@@ -775,6 +777,8 @@ class DdiResourcesTest {
         assertEquals("Instance A", body.getFirst().label());
         assertEquals("Study One", body.getFirst().studyUnitLabel());
         assertEquals("Group One", body.getFirst().groupLabel());
+        assertEquals(List.of("SO"), body.getFirst().studyUnitAlternateTitles());
+        assertEquals(List.of("G1", "GRP"), body.getFirst().groupAlternateTitles());
         verify(ddiService).searchPhysicalInstances();
     }
 
@@ -791,7 +795,9 @@ class DdiResourcesTest {
                 "Study One",
                 "fr.insee",
                 "g1",
-                "Group One");
+                "Group One",
+                List.of(),
+                List.of());
         when(ddiService.searchPhysicalInstances()).thenReturn(List.of(row));
 
         ResponseEntity<List<PhysicalInstanceSearchResponse>> response =
@@ -1246,7 +1252,9 @@ class DdiResourcesTest {
                 "Study One",
                 "fr.insee",
                 "g1",
-                "Group One");
+                "Group One",
+                List.of(),
+                List.of());
     }
 
     /** 200 JSON dont le corps est la réponse DDI 4 de schéma {@code test-schema}, rendue pour la suite. */

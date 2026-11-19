@@ -302,6 +302,10 @@ class ColecticaCatalogRepository {
                 }
             }
 
+            List<ColecticaItem> parents = new ArrayList<>(groups);
+            descents.forEach(descent -> parents.add(descent.studyUnit()));
+            Map<String, List<String>> alternateTitlesByKey = alternateTitlesByKey(parents);
+
             for (StudyUnitDescent descent : descents) {
                 ColecticaItem group = descent.group();
                 ColecticaItem studyUnit = descent.studyUnit();
@@ -324,7 +328,9 @@ class ColecticaCatalogRepository {
                             studyUnitLabel,
                             group.agencyId(),
                             group.identifier(),
-                            descent.groupLabel()));
+                            descent.groupLabel(),
+                            alternateTitlesOf(alternateTitlesByKey, studyUnit),
+                            alternateTitlesOf(alternateTitlesByKey, group)));
                 }
             }
         }
@@ -334,10 +340,45 @@ class ColecticaCatalogRepository {
             if (!attachedKeys.contains(entry.getKey())) {
                 PartialPhysicalInstance pi = entry.getValue();
                 rows.add(new PhysicalInstanceSearchRow(
-                        pi.agency(), pi.id(), pi.label(), pi.versionDate(), null, null, null, null, null, null));
+                        pi.agency(),
+                        pi.id(),
+                        pi.label(),
+                        pi.versionDate(),
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        List.of(),
+                        List.of()));
             }
         }
         return rows;
+    }
+
+    /**
+     * Les titres alternatifs ({@code r:AlternateTitle}) des Groups et StudyUnits, absents du résumé
+     * renvoyé par {@code _query} : un unique {@code item/_getList} relit leurs fragments.
+     */
+    private Map<String, List<String>> alternateTitlesByKey(List<ColecticaItem> items) {
+        Map<String, List<String>> alternateTitlesByKey = new HashMap<>();
+        if (items.isEmpty()) {
+            return alternateTitlesByKey;
+        }
+        ColecticaItemResponse[] fragments = colecticaClient.getDescriptions(ColecticaItems.identifiersOf(items));
+        if (fragments != null) {
+            for (ColecticaItemResponse fragment : fragments) {
+                alternateTitlesByKey.put(
+                        ColecticaItems.key(fragment.agencyId(), fragment.identifier()),
+                        ColecticaXml.alternateTitles(fragment.item()));
+            }
+        }
+        return alternateTitlesByKey;
+    }
+
+    private static List<String> alternateTitlesOf(Map<String, List<String>> alternateTitlesByKey, ColecticaItem item) {
+        return alternateTitlesByKey.getOrDefault(ColecticaItems.key(item.agencyId(), item.identifier()), List.of());
     }
 
     /** Une StudyUnit rattachée à son groupe, et la descente vers ses PI en cours. */
