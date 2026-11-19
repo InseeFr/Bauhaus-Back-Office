@@ -21,9 +21,14 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3t
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import javax.xml.parsers.ParserConfigurationException;
 import org.apache.xmlbeans.XmlException;
+import org.apache.xmlbeans.XmlOptions;
+import org.apache.xmlbeans.impl.common.SAXHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
 
 public class DDI3toDDI4ConverterServiceImpl implements DDI3toDDI4ConverterService {
     static final Logger logger = LoggerFactory.getLogger(DDI3toDDI4ConverterServiceImpl.class);
@@ -53,9 +58,11 @@ public class DDI3toDDI4ConverterServiceImpl implements DDI3toDDI4ConverterServic
         List<Reference> topLevelReferences = new ArrayList<>();
 
         if (ddi3.items() != null) {
+            XmlOptions parseOptions = reusedReaderOptions();
             for (Ddi3Response.Ddi3Item item : ddi3.items()) {
                 try {
-                    FragmentDocument fragment = FragmentDocument.Factory.parse(Ddi32Compatibility.asDdi33(item.item()));
+                    FragmentDocument fragment =
+                            FragmentDocument.Factory.parse(Ddi32Compatibility.asDdi33(item.item()), parseOptions);
                     String itemType = item.itemType();
                     if (itemTypes.get("PhysicalInstance").equals(itemType)) {
                         physicalInstances.add(lifecycle33ToDdi4.toPhysicalInstance(fragment));
@@ -89,6 +96,23 @@ public class DDI3toDDI4ConverterServiceImpl implements DDI3toDDI4ConverterServic
                 codeLists.isEmpty() ? null : codeLists,
                 categories.isEmpty() ? null : categories,
                 managedMissingValuesRepresentations.isEmpty() ? null : managedMissingValuesRepresentations);
+    }
+
+    /**
+     * Options de lecture qui réutilisent un seul {@link XMLReader} pour tous les fragments d'une
+     * conversion. Sans elles, {@code Factory.parse} crée un parseur SAX par fragment (scan
+     * {@code ServiceLoader}, {@code Class.forName} en échec) : ~10× plus lent, soit plusieurs dizaines de
+     * secondes pour les 31 000 Category d'une liste de sentinelles IRIS. Le lecteur n'est pas
+     * thread-safe : un par conversion, jamais partagé. {@link SAXHelper} le configure comme XMLBeans le
+     * fait par défaut (entités externes et DOCTYPE refusés).
+     */
+    private static XmlOptions reusedReaderOptions() {
+        XmlOptions options = new XmlOptions();
+        try {
+            return options.setLoadUseXMLReader(SAXHelper.newXMLReader(options));
+        } catch (SAXException | ParserConfigurationException e) {
+            throw new IllegalStateException("Unable to create the SAX parser for DDI3 fragments", e);
+        }
     }
 
     @Override
