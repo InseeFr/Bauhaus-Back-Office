@@ -6,6 +6,8 @@ import static fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colect
 import static fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.ColecticaXml.XML_NS;
 
 import fr.insee.rmes.colectica.client.ColecticaClient;
+import fr.insee.rmes.colectica.client.ItemReference;
+import fr.insee.rmes.colectica.client.dto.ColecticaItemResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Citation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CogsDate;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
@@ -14,9 +16,10 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LangString;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.client.HttpClientErrorException;
@@ -25,8 +28,8 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 /**
- * Lecture d'un Group et de ses StudyUnits via l'endpoint {@code ddiset} de Colectica, puis parsing
- * direct du DDI 3.3 vers {@link Ddi4GroupResponse} (sans passer par le convertisseur générique).
+ * Lecture d'un Group et de ses StudyUnits sur leurs items Colectica, puis parsing direct du DDI 3.3
+ * vers {@link Ddi4GroupResponse} (sans passer par le convertisseur générique).
  */
 class ColecticaGroupSetReader {
 
@@ -43,24 +46,32 @@ class ColecticaGroupSetReader {
         this.defaultLang = defaultLang;
     }
 
+    /**
+     * Le Group et les StudyUnits qu'il classe, lus sur leurs items et non sur le ddiset : le miroir
+     * des opérations réécrit le Group à version constante, et le ddiset rend alors l'état antérieur,
+     * sans les StudyUnits classées depuis (même cause que l'issue #1151 pour {@code findGroup}).
+     * Les StudyUnits suivent l'ordre des références du Group ; celles que Colectica ne connaît pas
+     * sont ignorées.
+     *
+     * @return {@code null} si l'item du Group est vide ; un 404 remonte tel quel
+     */
     Ddi4GroupResponse getGroup(String agencyId, String id) {
-        logger.info("Fetching DDI4 Group from Colectica API for agencyId: {}, id: {}", agencyId, id);
+        logger.info("Fetching DDI4 Group {}/{} and its study units from Colectica items", agencyId, id);
         try {
-            // Lecture des octets bruts décodés explicitement en UTF-8 : Colectica omet le charset, et
-            // le StringHttpMessageConverter de Spring retomberait sur ISO-8859-1, produisant du
-            // mojibake sur les caractères accentués.
-            logger.info("Fetching full DDI set for Group {}/{}", agencyId, id);
-            byte[] ddisetBytes = colecticaClient.getDdiSet(agencyId, id);
-
-            if (ddisetBytes == null || ddisetBytes.length == 0) {
-                logger.error("Received empty response from Colectica API for ddiset {}/{}", agencyId, id);
+            ColecticaItemResponse groupItem = colecticaClient.getItem(agencyId, id, null);
+            if (groupItem == null
+                    || groupItem.item() == null
+                    || groupItem.item().isBlank()) {
+                logger.error("Received empty item from Colectica API for group {}/{}", agencyId, id);
                 return null;
             }
-
-            String ddisetXml = new String(ddisetBytes, StandardCharsets.UTF_8);
-            logger.info("Received response from ddiset endpoint for Group. Length: {}", ddisetXml.length());
-
-            return parseGroupXml(ColecticaXml.stripLeadingGarbage(ddisetXml));
+            Ddi4Group group = parseGroupElement(firstElement(groupItem.item(), GROUP_NS, "Group"));
+            List<Ddi4StudyUnit> studyUnits = readStudyUnits(group.studyUnitReference());
+            return new Ddi4GroupResponse(
+                    Ddi4Response.SCHEMA_ID,
+                    List.of(Reference.of(group.agency(), group.id(), group.version(), "Group")),
+                    List.of(group),
+                    studyUnits);
         } catch (HttpClientErrorException.NotFound e) {
             throw e;
         } catch (Exception e) {
@@ -69,28 +80,41 @@ class ColecticaGroupSetReader {
         }
     }
 
-    private Ddi4GroupResponse parseGroupXml(String xml) throws Exception {
-        Document doc = ColecticaXml.parse(xml);
-
-        List<Ddi4Group> groups = new ArrayList<>();
+    private List<Ddi4StudyUnit> readStudyUnits(List<Reference> references) throws Exception {
+        if (references == null || references.isEmpty()) {
+            return List.of();
+        }
+        ColecticaItemResponse[] items = colecticaClient.getLatestItems(references.stream()
+                .map(reference -> new ItemReference(reference.agency(), reference.id()))
+                .toList());
+        Map<String, ColecticaItemResponse> byId = new HashMap<>();
+        for (ColecticaItemResponse item : items == null ? new ColecticaItemResponse[0] : items) {
+            if (item != null && item.item() != null && !item.item().isBlank()) {
+                byId.put(item.agencyId() + "|" + item.identifier(), item);
+            }
+        }
         List<Ddi4StudyUnit> studyUnits = new ArrayList<>();
-        List<Reference> topLevelReferences = new ArrayList<>();
-
-        NodeList groupNodes = doc.getElementsByTagNameNS(GROUP_NS, "Group");
-        logger.info("Found {} Group elements", groupNodes.getLength());
-        for (int i = 0; i < groupNodes.getLength(); i++) {
-            Ddi4Group group = parseGroupElement((Element) groupNodes.item(i));
-            groups.add(group);
-            topLevelReferences.add(Reference.of(group.agency(), group.id(), group.version(), "Group"));
+        for (Reference reference : references) {
+            ColecticaItemResponse item = byId.get(reference.agency() + "|" + reference.id());
+            if (item == null) {
+                logger.warn(
+                        "Study unit {}/{} filed in its group is unknown to Colectica",
+                        reference.agency(),
+                        reference.id());
+                continue;
+            }
+            studyUnits.add(parseStudyUnitElement(firstElement(item.item(), STUDY_UNIT_NS, "StudyUnit")));
         }
+        return studyUnits;
+    }
 
-        NodeList studyUnitNodes = doc.getElementsByTagNameNS(STUDY_UNIT_NS, "StudyUnit");
-        logger.info("Found {} StudyUnit elements", studyUnitNodes.getLength());
-        for (int i = 0; i < studyUnitNodes.getLength(); i++) {
-            studyUnits.add(parseStudyUnitElement((Element) studyUnitNodes.item(i)));
+    private static Element firstElement(String fragmentXml, String namespace, String localName) throws Exception {
+        Document doc = ColecticaXml.parse(ColecticaXml.stripLeadingGarbage(fragmentXml));
+        NodeList nodes = doc.getElementsByTagNameNS(namespace, localName);
+        if (nodes.getLength() == 0) {
+            throw new IllegalStateException("No " + localName + " element in the Colectica item");
         }
-
-        return new Ddi4GroupResponse(Ddi4Response.SCHEMA_ID, topLevelReferences, groups, studyUnits);
+        return (Element) nodes.item(0);
     }
 
     private Ddi4Group parseGroupElement(Element groupElement) {

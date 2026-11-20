@@ -39,6 +39,8 @@ import java.util.Set;
 import java.util.TimeZone;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.MatchResult;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.BeforeEach;
@@ -1102,9 +1104,16 @@ class DDIRepositoryImplTest {
                 + "    </Fragment>\n"
                 + "</ddi:FragmentInstance>";
 
-        // Mock the direct call to /ddiset/{agencyId}/{identifier}
-        when(colecticaClient.getDdiSet(anyString(), anyString()))
-                .thenReturn(ddisetXml.getBytes(StandardCharsets.UTF_8));
+        // Le Group et ses StudyUnits sont lus sur leurs items, pas sur le ddiset
+        List<String> fragments = fragmentsOf(ddisetXml);
+        when(colecticaClient.getItem(agencyId, groupId, null)).thenReturn(groupItem(groupId, fragments.get(0)));
+        when(colecticaClient.getLatestItems(List.of(
+                        new ItemReference(agencyId, "89f5e04d-da22-485f-9c08-5fbe452b6c90"),
+                        new ItemReference(agencyId, "820a7c14-0ac4-42bc-a8c1-d39f60e304ee"))))
+                .thenReturn(new ColecticaItemResponse[] {
+                    groupItem("89f5e04d-da22-485f-9c08-5fbe452b6c90", fragments.get(1)),
+                    groupItem("820a7c14-0ac4-42bc-a8c1-d39f60e304ee", fragments.get(2))
+                });
 
         // When
         Ddi4GroupResponse result = ddiRepository.getGroup(agencyId, groupId);
@@ -1143,8 +1152,7 @@ class DDIRepositoryImplTest {
         assertEquals(groupId, result.topLevelReference().get(0).id());
         assertEquals("Group", result.topLevelReference().get(0).type());
 
-        // Verify ddiset endpoint was called
-        verify(colecticaClient).getDdiSet(agencyId, groupId);
+        verify(colecticaClient, never()).getDdiSet(anyString(), anyString());
     }
 
     @Test
@@ -1177,10 +1185,8 @@ class DDIRepositoryImplTest {
                 + "        </Group>\n"
                 + "    </Fragment>\n"
                 + "</ddi:FragmentInstance>";
-        byte[] ddisetBytes = ddisetXml.getBytes(StandardCharsets.UTF_8);
-
-        // Simulate Colectica delivering raw bytes (what a real server returns), not a pre-decoded String.
-        when(colecticaClient.getDdiSet(anyString(), anyString())).thenReturn(ddisetBytes);
+        when(colecticaClient.getItem(agencyId, groupId, null))
+                .thenReturn(groupItem(groupId, fragmentsOf(ddisetXml).get(0)));
 
         Ddi4GroupResponse result = ddiRepository.getGroup(agencyId, groupId);
 
@@ -1190,6 +1196,19 @@ class DDIRepositoryImplTest {
         assertEquals(
                 "Enquête capacité à innover et stratégie",
                 result.group().get(0).citation().title().get(0).value());
+    }
+
+    /** Les {@code Fragment} d'un ddiset, chacun tel que Colectica le rend dans un item. */
+    private static List<String> fragmentsOf(String ddisetXml) {
+        return Pattern.compile("<Fragment .*?</Fragment>", Pattern.DOTALL)
+                .matcher(ddisetXml)
+                .results()
+                .map(MatchResult::group)
+                .toList();
+    }
+
+    private static ColecticaItemResponse groupItem(String id, String xml) {
+        return new ColecticaItemResponse(null, "fr.insee", 1, id, xml, null, null, false, false, false, null);
     }
 
     private static final String CODE_LIST_TYPE = "8b108ef8-b642-4484-9c49-f88e4bf7cf1d";
@@ -6339,7 +6358,7 @@ class DDIRepositoryImplTest {
 
     @Test
     void getGroup_returnsNullWhenColecticaDoesNotKnowTheGroup() {
-        when(colecticaClient.getDdiSet(anyString(), anyString()))
+        when(colecticaClient.getItem(anyString(), anyString(), isNull()))
                 .thenThrow(HttpClientErrorException.create(HttpStatus.NOT_FOUND, "Not Found", null, null, null));
 
         assertNull(ddiRepository.getGroup("fr.insee", "00000000-0000-0000-0000-000000000000"));
