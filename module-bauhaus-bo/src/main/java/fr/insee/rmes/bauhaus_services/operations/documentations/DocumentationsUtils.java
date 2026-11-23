@@ -281,8 +281,7 @@ public class DocumentationsUtils {
         if (StringUtils.isNotEmpty(sims.getIdIndicator())) {
             target = iriFactory.objectIri(ObjectType.INDICATOR, sims.getIdTarget());
         }
-        if (!operationsParentRepository.checkIfParentExists(target.toString())) target = null;
-        if (target == null) {
+        if (target == null || !operationsParentRepository.checkIfParentExists(target.toString())) {
             logger.error("Create or Update sims cancelled - no target");
             throw new RmesException(
                     HttpStatus.BAD_REQUEST,
