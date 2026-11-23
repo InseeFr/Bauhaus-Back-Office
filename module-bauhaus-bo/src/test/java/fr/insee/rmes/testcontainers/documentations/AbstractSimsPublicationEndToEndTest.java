@@ -14,8 +14,7 @@ import fr.insee.rmes.testcontainers.GraphDbTestProperties;
 import fr.insee.rmes.testcontainers.WithGraphDBContainer;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.resttestclient.TestRestTemplate;
-import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureTestRestTemplate;
+import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Import;
@@ -24,6 +23,8 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.client.EntityExchangeResult;
+import org.springframework.test.web.servlet.client.RestTestClient;
 
 /**
  * Socle des tests E2E de publication d'un SIMS : application complète sur GraphDB, appel HTTP de
@@ -53,7 +54,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
             "jwt.roleClaimConfig.roles=roles",
             "spring.hateoas.use-hal-as-default-json-media-type=true"
         })
-@AutoConfigureTestRestTemplate
+@AutoConfigureRestTestClient
 @Import(GraphDBDocumentationRepository.class)
 abstract class AbstractSimsPublicationEndToEndTest extends WithGraphDBContainer {
 
@@ -66,7 +67,7 @@ abstract class AbstractSimsPublicationEndToEndTest extends WithGraphDBContainer 
     int port;
 
     @Autowired
-    TestRestTemplate restTemplate;
+    RestTestClient restTestClient;
 
     @Autowired
     RepositoryPublication repositoryPublication;
@@ -81,18 +82,16 @@ abstract class AbstractSimsPublicationEndToEndTest extends WithGraphDBContainer 
     AccessPrivilegesCheckerService checker;
 
     /** Valide (publie) le rapport qualité {@code simsId} en tant qu'administrateur. */
-    ResponseEntity<String> validateSimsAsAdmin(String simsId) throws MissingUserInformationException {
+    EntityExchangeResult<String> validateSimsAsAdmin(String simsId) throws MissingUserInformationException {
         configureJwtDecoderMock(jwtDecoder, "admin", "XX59-YYY", List.of(Roles.ADMIN));
         when(checker.hasAccess(any(), any(), any(), any())).thenReturn(true);
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("Authorization", "Bearer test-token");
-        headers.setContentType(MediaType.APPLICATION_JSON);
-
-        return restTemplate.exchange(
-                "http://localhost:" + port + "/api/operations/metadataReport/" + simsId + "/validate",
-                HttpMethod.PUT,
-                new HttpEntity<>(headers),
-                String.class);
+        return restTestClient
+                .put()
+                .uri("http://localhost:" + port + "/api/operations/metadataReport/" + simsId + "/validate")
+                .header(HttpHeaders.AUTHORIZATION, "Bearer test-token")
+                .contentType(MediaType.APPLICATION_JSON)
+                .exchange()
+                .returnResult(String.class);
     }
 }

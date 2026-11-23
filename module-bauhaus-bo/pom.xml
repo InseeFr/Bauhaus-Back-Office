@@ -86,14 +86,6 @@
       <artifactId>spring-boot-resttestclient</artifactId>
       <scope>test</scope>
     </dependency>
-    <!-- Fournit org.springframework.boot.restclient.RestTemplateBuilder, requis par
-         TestRestTemplateTestAutoConfiguration de spring-boot-resttestclient (Spring Boot 4
-         a séparé RestTemplateBuilder dans ce module et ne l'apporte pas transitivement). -->
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-restclient</artifactId>
-      <scope>test</scope>
-    </dependency>
     <!-- Pas de rdf4j-queryparser-sparql en scope test ici : rdf4j-repository-sparql l'apporte en
          compile, et SPARQLConnection s'en sert pour toute écriture vers Fuseki. Une déclaration
          directe en test l'emporterait et le sortirait du jar livré (NoClassDefFoundError sur

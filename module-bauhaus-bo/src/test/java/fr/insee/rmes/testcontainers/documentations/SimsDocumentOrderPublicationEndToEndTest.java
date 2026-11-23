@@ -11,7 +11,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import org.springframework.http.ResponseEntity;
+import org.springframework.test.web.servlet.client.EntityExchangeResult;
 
 /**
  * Filet de sécurité E2E : l'ordre des documents d'une rubrique RICHTEXT, stocké
@@ -39,9 +39,9 @@ class SimsDocumentOrderPublicationEndToEndTest extends AbstractSimsPublicationEn
     @Test
     @DisplayName("La publication d'un SIMS conserve l'ordre de la liste de documents")
     void publishingASimsKeepsDocumentListOrder() throws Exception, MissingUserInformationException {
-        ResponseEntity<String> response = validateSimsAsAdmin("7777");
+        EntityExchangeResult<String> response = validateSimsAsAdmin("7777");
 
-        assertThat(response.getStatusCode().value()).isEqualTo(200);
+        assertThat(response.getStatus().value()).isEqualTo(200);
 
         // Reconstitue l'ordre de la rdf:List dans le graphe de publication : la
         // position d'un maillon = nombre de maillons depuis la tête jusqu'à lui.

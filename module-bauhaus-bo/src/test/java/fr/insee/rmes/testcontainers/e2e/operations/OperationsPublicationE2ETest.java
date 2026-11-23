@@ -18,14 +18,11 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.web.servlet.client.EntityExchangeResult;
 
 /**
  * End-to-end tests of the three publication endpoints of the operations module:
@@ -108,10 +105,10 @@ class OperationsPublicationE2ETest extends BaseE2ETest {
                     .as("s9106 is published by this test only, its initial state is observable")
                     .isEqualTo("Unpublished");
 
-            ResponseEntity<String> response = validate("/operations/series/s9106/validate");
+            EntityExchangeResult<String> response = validate("/operations/series/s9106/validate");
 
-            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-            assertThat(response.getBody()).isEqualTo("s9106");
+            assertThat(response.getStatus()).isEqualTo(HttpStatus.OK);
+            assertThat(response.getResponseBody()).isEqualTo("s9106");
             assertThat(gestionValidationState(GESTION_SERIES + "s9106")).isEqualTo("Validated");
             assertThat(publishedObjectsOf(PUBLISHED_SERIES + "s9106", PREF_LABEL))
                     .contains("Série pour la transition d'état");
@@ -169,10 +166,10 @@ class OperationsPublicationE2ETest extends BaseE2ETest {
 
         @Test
         void refusesToPublishASeriesWhoseFamilyIsNotPublished() throws RmesException {
-            ResponseEntity<String> response = validate("/operations/series/s9111/validate");
+            EntityExchangeResult<String> response = validate("/operations/series/s9111/validate");
 
-            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-            assertThat(new JSONObject(response.getBody()).getInt("code"))
+            assertThat(response.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
+            assertThat(new JSONObject(response.getResponseBody()).getInt("code"))
                     .isEqualTo(ErrorCodes.SERIES_VALIDATION_UNPUBLISHED_FAMILY);
             assertThat(gestionValidationState(GESTION_SERIES + "s9111"))
                     .as("a refused publication must leave the gestion base untouched")
@@ -184,20 +181,23 @@ class OperationsPublicationE2ETest extends BaseE2ETest {
         void refusesToPublishASeriesThatIsAlreadyPublished() throws RmesException {
             publishOnce("/operations/series/s9101/validate");
 
-            ResponseEntity<String> response = validate("/operations/series/s9101/validate");
+            EntityExchangeResult<String> response = validate("/operations/series/s9101/validate");
 
-            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-            assertThat(new JSONObject(response.getBody()).getInt("code")).isEqualTo(ErrorCodes.ALREADY_PUBLISHED);
+            assertThat(response.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
+            assertThat(new JSONObject(response.getResponseBody()).getInt("code"))
+                    .isEqualTo(ErrorCodes.ALREADY_PUBLISHED);
             assertThat(gestionValidationState(GESTION_SERIES + "s9101")).isEqualTo("Validated");
         }
 
         @Test
         void returnsNotFoundForAnUnknownSeries() {
-            ResponseEntity<String> response = validate("/operations/series/s9199/validate");
+            EntityExchangeResult<String> response = validate("/operations/series/s9199/validate");
 
-            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-            assertThat(new JSONObject(response.getBody()).getInt("code")).isEqualTo(ErrorCodes.SERIES_UNKNOWN_ID);
-            assertThat(new JSONObject(response.getBody()).getString("message")).isEqualTo("Series not found");
+            assertThat(response.getStatus()).isEqualTo(HttpStatus.NOT_FOUND);
+            assertThat(new JSONObject(response.getResponseBody()).getInt("code"))
+                    .isEqualTo(ErrorCodes.SERIES_UNKNOWN_ID);
+            assertThat(new JSONObject(response.getResponseBody()).getString("message"))
+                    .isEqualTo("Series not found");
         }
     }
 
@@ -213,10 +213,10 @@ class OperationsPublicationE2ETest extends BaseE2ETest {
                     .as("s9107 is published by this test only, its initial state is observable")
                     .isEqualTo("Unpublished");
 
-            ResponseEntity<String> response = validate("/operations/operation/s9107/validate");
+            EntityExchangeResult<String> response = validate("/operations/operation/s9107/validate");
 
-            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-            assertThat(response.getBody()).isEqualTo("s9107");
+            assertThat(response.getStatus()).isEqualTo(HttpStatus.OK);
+            assertThat(response.getResponseBody()).isEqualTo("s9107");
             assertThat(gestionValidationState(GESTION_OPERATION + "s9107")).isEqualTo("Validated");
             assertThat(publishedObjectsOf(PUBLISHED_OPERATION + "s9107", PREF_LABEL))
                     .contains("Opération pour la transition d'état");
@@ -257,19 +257,20 @@ class OperationsPublicationE2ETest extends BaseE2ETest {
         void refusesToPublishAnOperationThatIsAlreadyPublished() throws RmesException {
             publishOnce("/operations/operation/s9104/validate");
 
-            ResponseEntity<String> response = validate("/operations/operation/s9104/validate");
+            EntityExchangeResult<String> response = validate("/operations/operation/s9104/validate");
 
-            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-            assertThat(new JSONObject(response.getBody()).getInt("code")).isEqualTo(ErrorCodes.ALREADY_PUBLISHED);
+            assertThat(response.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
+            assertThat(new JSONObject(response.getResponseBody()).getInt("code"))
+                    .isEqualTo(ErrorCodes.ALREADY_PUBLISHED);
             assertThat(gestionValidationState(GESTION_OPERATION + "s9104")).isEqualTo("Validated");
         }
 
         @Test
         void refusesToPublishAnOperationWhoseSeriesIsNotPublished() throws RmesException {
-            ResponseEntity<String> response = validate("/operations/operation/s9112/validate");
+            EntityExchangeResult<String> response = validate("/operations/operation/s9112/validate");
 
-            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-            assertThat(new JSONObject(response.getBody()).getInt("code"))
+            assertThat(response.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
+            assertThat(new JSONObject(response.getResponseBody()).getInt("code"))
                     .isEqualTo(ErrorCodes.OPERATION_VALIDATION_UNPUBLISHED_SERIES);
             assertThat(gestionValidationState(GESTION_OPERATION + "s9112"))
                     .as("a refused publication must leave the gestion base untouched")
@@ -290,10 +291,10 @@ class OperationsPublicationE2ETest extends BaseE2ETest {
                     .as("9204 is published by this test only, its initial state is observable")
                     .isEqualTo("Unpublished");
 
-            ResponseEntity<String> response = validate("/operations/metadataReport/9204/validate");
+            EntityExchangeResult<String> response = validate("/operations/metadataReport/9204/validate");
 
-            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-            assertThat(response.getBody()).isEqualTo("9204");
+            assertThat(response.getStatus()).isEqualTo(HttpStatus.OK);
+            assertThat(response.getResponseBody()).isEqualTo("9204");
             assertThat(gestionValidationState(GESTION_REPORT + "9204")).isEqualTo("Validated");
             assertThat(publishedObjectsOf(PUBLISHED_REPORT + "9204", RDFS_LABEL))
                     .contains("Rapport qualité pour la transition d'état");
@@ -330,19 +331,20 @@ class OperationsPublicationE2ETest extends BaseE2ETest {
         void refusesToPublishAReportThatIsAlreadyPublished() throws RmesException {
             publishOnce("/operations/metadataReport/9202/validate");
 
-            ResponseEntity<String> response = validate("/operations/metadataReport/9202/validate");
+            EntityExchangeResult<String> response = validate("/operations/metadataReport/9202/validate");
 
-            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-            assertThat(new JSONObject(response.getBody()).getInt("code")).isEqualTo(ErrorCodes.ALREADY_PUBLISHED);
+            assertThat(response.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
+            assertThat(new JSONObject(response.getResponseBody()).getInt("code"))
+                    .isEqualTo(ErrorCodes.ALREADY_PUBLISHED);
             assertThat(gestionValidationState(GESTION_REPORT + "9202")).isEqualTo("Validated");
         }
 
         @Test
         void refusesToPublishAReportWhoseTargetIsNotPublished() throws RmesException {
-            ResponseEntity<String> response = validate("/operations/metadataReport/9203/validate");
+            EntityExchangeResult<String> response = validate("/operations/metadataReport/9203/validate");
 
-            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-            assertThat(new JSONObject(response.getBody()).getInt("code"))
+            assertThat(response.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
+            assertThat(new JSONObject(response.getResponseBody()).getInt("code"))
                     .isEqualTo(ErrorCodes.OPERATION_VALIDATION_UNPUBLISHED_PARENT);
             assertThat(gestionValidationState(GESTION_REPORT + "9203"))
                     .as("a refused publication must leave the gestion base untouched")
@@ -358,19 +360,21 @@ class OperationsPublicationE2ETest extends BaseE2ETest {
      */
     private void publishOnce(String path) {
         if (alreadyPublished.add(path)) {
-            ResponseEntity<String> response = validate(path);
-            assertThat(response.getStatusCode())
+            EntityExchangeResult<String> response = validate(path);
+            assertThat(response.getStatus())
                     .as("the shared publication of %s must succeed", path)
                     .isEqualTo(HttpStatus.OK);
         }
     }
 
-    private ResponseEntity<String> validate(String path) {
-        HttpHeaders headers = new HttpHeaders();
-        // Every /validate endpoint declares consumes=application/json.
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        return restTemplate.exchange(
-                "http://localhost:" + port + "/api" + path, HttpMethod.PUT, new HttpEntity<>(headers), String.class);
+    private EntityExchangeResult<String> validate(String path) {
+        return restTestClient
+                .put()
+                .uri("http://localhost:" + port + "/api" + path)
+                // Every /validate endpoint declares consumes=application/json.
+                .contentType(MediaType.APPLICATION_JSON)
+                .exchange()
+                .returnResult(String.class);
     }
 
     /**

@@ -6,7 +6,7 @@ import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationExcep
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import org.springframework.http.ResponseEntity;
+import org.springframework.test.web.servlet.client.EntityExchangeResult;
 
 /**
  * Test E2E reproduisant le bug : insee:html de la rubrique S.3.1 (RICHTEXT)
@@ -27,9 +27,9 @@ class SimsPublicationEndToEndTest extends AbstractSimsPublicationEndToEndTest {
 
     @Test
     void validate_htmlS31DevraitEtreDansLeGrapheRapport8888() throws Exception, MissingUserInformationException {
-        ResponseEntity<String> response = validateSimsAsAdmin("8888");
+        EntityExchangeResult<String> response = validateSimsAsAdmin("8888");
 
-        assertThat(response.getStatusCode().value()).isEqualTo(200);
+        assertThat(response.getStatus().value()).isEqualTo(200);
 
         // BUG : addHtmlVersionForRichText() utilise simsGraph(null) → graphe rapport/null
         // au lieu de simsGraph("8888") → graphe rapport/8888

@@ -6,13 +6,11 @@ import fr.insee.rmes.testcontainers.e2e.BaseE2ETest;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.web.servlet.client.EntityExchangeResult;
 
 /**
  * End-to-end test for the organisation-aware validation on POST /api/operations/series.
@@ -46,15 +44,15 @@ class SeriesValidatorIntegrationTest extends BaseE2ETest {
     void postSeries_returnsSuccess_whenCreatorIsAKnownIri() {
         var response = postSeries(buildSeriesJson("Série E2E IRI connue", KNOWN_IRI));
 
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getStatus()).isEqualTo(HttpStatus.OK);
     }
 
     @Test
     void postSeries_returnsBadRequest_whenCreatorIsAnUnknownIri() {
         var response = postSeries(buildSeriesJson("Série E2E IRI inconnue", UNKNOWN_IRI));
 
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-        assertThat(response.getBody())
+        assertThat(response.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(response.getResponseBody())
                 .as("the failing IRI should appear in the response body for debug")
                 .contains(UNKNOWN_IRI);
     }
@@ -65,16 +63,18 @@ class SeriesValidatorIntegrationTest extends BaseE2ETest {
 
         var response = postSeries(buildSeriesJson("Série E2E littéral inconnu", legacy));
 
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-        assertThat(response.getBody()).contains(legacy);
+        assertThat(response.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(response.getResponseBody()).contains(legacy);
     }
 
-    private org.springframework.http.ResponseEntity<String> postSeries(String body) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        HttpEntity<String> entity = new HttpEntity<>(body, headers);
-        return restTemplate.exchange(
-                "http://localhost:" + port + "/api/operations/series", HttpMethod.POST, entity, String.class);
+    private EntityExchangeResult<String> postSeries(String body) {
+        return restTestClient
+                .post()
+                .uri("http://localhost:" + port + "/api/operations/series")
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(body)
+                .exchange()
+                .returnResult(String.class);
     }
 
     private static String buildSeriesJson(String label, String creatorIri) {
