@@ -385,6 +385,12 @@ public class Ddi4ToLifecycle33 {
             }
         }
 
+        if (scheme.variableGroupReference() != null) {
+            for (Reference ref : scheme.variableGroupReference()) {
+                populateReference(schemeType.addNewVariableGroupReference(), ref);
+            }
+        }
+
         return doc;
     }
 

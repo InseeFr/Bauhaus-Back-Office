@@ -584,6 +584,11 @@ public class DDIServiceImpl implements DDIService {
     }
 
     @Override
+    public Optional<Ddi4VariableScheme> findVariableScheme(String agencyId, String id) {
+        return ddiRepository.findVariableScheme(agencyId, id);
+    }
+
+    @Override
     public void createLogicalProduct(Ddi4LogicalProduct logicalProduct) {
         if (logger.isInfoEnabled()) {
             logger.info(

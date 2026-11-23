@@ -6100,6 +6100,62 @@ class DDIRepositoryImplTest {
     }
 
     @Test
+    void updateFullPhysicalInstance_keepsTheVariableGroupsOfTheVariableSchemeWhenFilingVariables() {
+        stubPhysicalInstanceConversion();
+        when(instanceConfiguration.itemTypes())
+                .thenReturn(ColecticaTestItemTypes.configuredWith(
+                        Map.of("LogicalProduct", "lp-type", "VariableScheme", "vs-type")));
+        stubPhysicalInstanceParents();
+        stubChildrenOfLatestVersion("fr.insee", "su-1", "lp-type", List.of(new ItemReference("fr.insee", "lp-1")));
+        stubChildrenOfLatestVersion("fr.insee", "lp-1", "vs-type", List.of(new ItemReference("fr.insee", "VS_1")));
+        when(colecticaClient.getItem("fr.insee", "VS_1", null))
+                .thenReturn(new ColecticaItemResponse(
+                        "vs-type",
+                        "fr.insee",
+                        1,
+                        "VS_1",
+                        "<vs/>",
+                        "2026-01-01T00:00:00",
+                        "resp",
+                        false,
+                        false,
+                        false,
+                        "fmt"));
+        Reference variableGroup = Reference.of("fr.insee", "VG_1", "3", "VariableGroup");
+        when(ddi3ToDdi4Converter.toVariableScheme("<vs/>"))
+                .thenReturn(new Ddi4VariableScheme(
+                        Ddi4VariableScheme.TYPE_NAME,
+                        CogsDate.ofDateTime("2026-01-01T00:00:00"),
+                        "urn:ddi:fr.insee:VS_1:1",
+                        "fr.insee",
+                        "VS_1",
+                        "1",
+                        LangStrings.of("fr-FR", "VS"),
+                        List.of(),
+                        "VS-EEC",
+                        List.of(variableGroup)));
+        ArgumentCaptor<Ddi4VariableScheme> vsCaptor = ArgumentCaptor.forClass(Ddi4VariableScheme.class);
+        when(ddi4ToDdi3Converter.toVariableSchemeItem(vsCaptor.capture()))
+                .thenReturn(new Ddi3Response.Ddi3Item(
+                        "vs-type",
+                        "fr.insee",
+                        "1",
+                        "VS_1",
+                        "<vs-updated/>",
+                        "2026-01-01T00:00:00",
+                        "resp",
+                        false,
+                        false,
+                        false,
+                        "fmt"));
+
+        ddiRepository.updateFullPhysicalInstance("fr.insee", "pi-1", ddi4WithOneVariable());
+
+        assertThat(vsCaptor.getValue().variableGroupReference()).containsExactly(variableGroup);
+        assertThat(vsCaptor.getValue().name()).isEqualTo("VS-EEC");
+    }
+
+    @Test
     void updateFullPhysicalInstance_filesVariablesUnderTheLogicalProductOfTheLatestStudyUnitVersion() {
         stubPhysicalInstanceConversion();
         when(instanceConfiguration.itemTypes())

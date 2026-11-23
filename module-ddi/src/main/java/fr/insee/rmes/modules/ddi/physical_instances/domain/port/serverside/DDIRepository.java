@@ -84,6 +84,8 @@ public interface DDIRepository {
 
     Optional<Ddi4ManagedRepresentationScheme> findManagedRepresentationScheme(String agencyId, String id);
 
+    Optional<Ddi4VariableScheme> findVariableScheme(String agencyId, String id);
+
     /**
      * L'état stocké (dernière version) des items que ce payload réécrit, et d'eux seuls : ce qu'une
      * sauvegarde compare pour réconcilier versions et dates. Les items inconnus du stockage sont absents

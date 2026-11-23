@@ -218,6 +218,45 @@ class DDI3toDDI4ConverterServiceImplTest {
     }
 
     @Test
+    void shouldKeepTheVariableGroupReferencesOfAParsedVariableScheme() {
+        Ddi4VariableScheme original = new Ddi4VariableScheme(
+                Ddi4VariableScheme.TYPE_NAME,
+                CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
+                "urn:ddi:fr.insee:vars-id:1",
+                "fr.insee",
+                "vars-id",
+                "1",
+                LangStrings.of("fr-FR", "Schéma variables"),
+                null,
+                null,
+                List.of(Reference.of("fr.insee", "vg-1", "2", "VariableGroup")));
+        String xml = new Ddi4ToLifecycle33("abcde").toVariableScheme(original).xmlText(logicalProductFragmentOptions());
+
+        Ddi4VariableScheme scheme = converter.toVariableScheme(xml);
+
+        assertEquals(List.of(Reference.of("fr.insee", "vg-1", "2", "VariableGroup")), scheme.variableGroupReference());
+    }
+
+    @Test
+    void shouldKeepTheNameOfAParsedVariableScheme() {
+        Ddi4VariableScheme original = new Ddi4VariableScheme(
+                Ddi4VariableScheme.TYPE_NAME,
+                CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
+                "urn:ddi:fr.insee:vars-id:1",
+                "fr.insee",
+                "vars-id",
+                "1",
+                LangStrings.of("fr-FR", "Schéma variables"),
+                null,
+                "VS-EEC");
+        String xml = new Ddi4ToLifecycle33("abcde").toVariableScheme(original).xmlText(logicalProductFragmentOptions());
+
+        Ddi4VariableScheme scheme = converter.toVariableScheme(xml);
+
+        assertEquals("VS-EEC", scheme.name());
+    }
+
+    @Test
     void shouldParseLogicalProductFromFragmentXml() {
         // Round-trip through the real serializer: this is what reading a group's existing
         // LogicalProduct relies on, to add a scheme reference to it instead of creating a second one.

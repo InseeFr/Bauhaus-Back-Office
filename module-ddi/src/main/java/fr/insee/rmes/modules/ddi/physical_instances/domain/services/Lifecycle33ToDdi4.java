@@ -308,6 +308,14 @@ public class Lifecycle33ToDdi4 {
         for (ReferenceType ref : scheme.getVariableReferenceArray()) {
             variableReferences.add(readReference(ref));
         }
+        List<Reference> variableGroupReferences = new ArrayList<>();
+        for (ReferenceType ref : scheme.getVariableGroupReferenceArray()) {
+            variableGroupReferences.add(readReference(ref));
+        }
+        String name = scheme.sizeOfVariableSchemeNameArray() > 0
+                        && scheme.getVariableSchemeNameArray(0).sizeOfStringArray() > 0
+                ? scheme.getVariableSchemeNameArray(0).getStringArray(0).getStringValue()
+                : null;
         return new Ddi4VariableScheme(
                 Ddi4VariableScheme.TYPE_NAME,
                 CogsDate.ofDateTime(scheme.xgetVersionDate().getStringValue()),
@@ -316,7 +324,9 @@ public class Lifecycle33ToDdi4 {
                 scheme.getIDArray(0).getStringValue(),
                 scheme.getVersionArray(0),
                 scheme.sizeOfLabelArray() > 0 ? readLabel(scheme.getLabelArray(0)) : null,
-                variableReferences.isEmpty() ? null : variableReferences);
+                variableReferences.isEmpty() ? null : variableReferences,
+                name,
+                variableGroupReferences.isEmpty() ? null : variableGroupReferences);
     }
 
     /**

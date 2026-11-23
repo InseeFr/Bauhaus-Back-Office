@@ -387,6 +387,35 @@ class DomainOperationsMirrorServiceTest {
     }
 
     @Test
+    void mirrorOperation_keepsTheVariablesAndVariableGroupsOfAnExistingVariableScheme() {
+        when(studyUnitService.find(AGENCY, expectedStudyUnitId())).thenReturn(Optional.empty());
+        String variableSchemeId = UUID.nameUUIDFromBytes(
+                        (OPERATION_IRI + "#variablescheme").getBytes(StandardCharsets.UTF_8))
+                .toString();
+        Reference variable = Reference.of(AGENCY, "var-1", "1", "Variable");
+        Reference variableGroup = Reference.of(AGENCY, "vg-1", "2", "VariableGroup");
+        when(ddiService.findVariableScheme(AGENCY, variableSchemeId))
+                .thenReturn(Optional.of(new Ddi4VariableScheme(
+                        Ddi4VariableScheme.TYPE_NAME,
+                        null,
+                        "urn:ddi:fr.insee:" + variableSchemeId + ":1",
+                        AGENCY,
+                        variableSchemeId,
+                        "1",
+                        List.of(new LangString("fr-FR", "Ensemble de variables EEC")),
+                        List.of(variable),
+                        "VS-EEC",
+                        List.of(variableGroup))));
+
+        service.mirror(operationSaved(null));
+
+        ArgumentCaptor<Ddi4VariableScheme> captor = ArgumentCaptor.forClass(Ddi4VariableScheme.class);
+        verify(ddiService).createVariableScheme(captor.capture());
+        assertThat(captor.getValue().variableReference()).containsExactly(variable);
+        assertThat(captor.getValue().variableGroupReference()).containsExactly(variableGroup);
+    }
+
+    @Test
     void mirrorOperation_filesTheStudyUnitUnderTheGroupOfItsSeries() {
         when(groupService.find(AGENCY, expectedGroupId())).thenReturn(Optional.of(existingGroup(null)));
         when(studyUnitService.find(AGENCY, expectedStudyUnitId())).thenReturn(Optional.empty());

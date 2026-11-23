@@ -634,6 +634,28 @@ class Ddi4ToLifecycle33Test {
     }
 
     @Test
+    void shouldBuildVariableSchemeWithVariableGroupReferences() {
+        Ddi4VariableScheme scheme = new Ddi4VariableScheme(
+                Ddi4VariableScheme.TYPE_NAME,
+                CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
+                "urn:ddi:fr.insee:vars-id:1",
+                "fr.insee",
+                "vars-id",
+                "1",
+                LangStrings.of("fr-FR", "VariableScheme Label"),
+                List.of(Reference.of("fr.insee", "var-1", "1", "Variable")),
+                null,
+                List.of(Reference.of("fr.insee", "vg-1", "1", "VariableGroup")));
+
+        String xml = converter.toVariableScheme(scheme).xmlText(logicalProductXmlOptions());
+
+        Assertions.assertThat(xml)
+                .contains("<ddi:VariableGroupReference")
+                .contains(">vg-1<")
+                .contains(">VariableGroup<");
+    }
+
+    @Test
     void shouldBuildVariableSchemeWithItsOwnName() {
         Ddi4VariableScheme scheme = new Ddi4VariableScheme(
                 Ddi4VariableScheme.TYPE_NAME,

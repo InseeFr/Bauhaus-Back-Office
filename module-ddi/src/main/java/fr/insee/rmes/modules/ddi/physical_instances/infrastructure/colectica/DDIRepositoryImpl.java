@@ -415,6 +415,11 @@ public class DDIRepositoryImpl implements DDIRepository {
     }
 
     @Override
+    public Optional<Ddi4VariableScheme> findVariableScheme(String agencyId, String id) {
+        return itemByIdReader.findVariableScheme(agencyId, id);
+    }
+
+    @Override
     public Optional<Ddi4StudyUnit> findStudyUnit(String agencyId, String id) {
         return itemByIdReader.findStudyUnit(agencyId, id);
     }

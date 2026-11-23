@@ -151,6 +151,7 @@ public class DomainOperationsMirrorService implements OperationsMirrorService {
      */
     private Reference createStudyUnitLogicalProduct(String operationIri, String shortLabel) {
         String variableSchemeId = DdiMirrorIdentity.of(operationIri, VARIABLE_SCHEME_ROLE);
+        Optional<Ddi4VariableScheme> existingVariableScheme = ddiService.findVariableScheme(agencyId, variableSchemeId);
         ddiService.createVariableScheme(new Ddi4VariableScheme(
                 Ddi4VariableScheme.TYPE_NAME,
                 now(),
@@ -159,8 +160,13 @@ public class DomainOperationsMirrorService implements OperationsMirrorService {
                 variableSchemeId,
                 FIRST_VERSION,
                 labelIn(languages.get(0), VARIABLE_SCHEME_LABEL_PREFIX + shortLabel),
-                List.of(),
-                DdiShortName.prefixed(VARIABLE_SCHEME_NAME_PREFIX, shortLabel)));
+                existingVariableScheme
+                        .map(Ddi4VariableScheme::variableReference)
+                        .orElse(List.of()),
+                DdiShortName.prefixed(VARIABLE_SCHEME_NAME_PREFIX, shortLabel),
+                existingVariableScheme
+                        .map(Ddi4VariableScheme::variableGroupReference)
+                        .orElse(null)));
 
         String logicalProductId = DdiMirrorIdentity.of(operationIri, LOGICAL_PRODUCT_ROLE);
         ddiService.createLogicalProduct(new Ddi4LogicalProduct(

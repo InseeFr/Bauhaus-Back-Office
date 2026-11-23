@@ -97,6 +97,8 @@ public interface DDIService {
 
     Optional<Ddi4ManagedRepresentationScheme> findManagedRepresentationScheme(String agencyId, String id);
 
+    Optional<Ddi4VariableScheme> findVariableScheme(String agencyId, String id);
+
     void createLogicalProduct(Ddi4LogicalProduct logicalProduct);
 
     void createCodeListScheme(Ddi4CodeListScheme codeListScheme);

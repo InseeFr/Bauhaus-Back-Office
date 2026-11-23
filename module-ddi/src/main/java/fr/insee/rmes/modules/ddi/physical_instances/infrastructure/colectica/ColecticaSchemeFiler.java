@@ -343,7 +343,9 @@ class ColecticaSchemeFiler {
                 current.id(),
                 current.version(),
                 current.label(),
-                merged);
+                merged,
+                current.name(),
+                current.variableGroupReference());
         colecticaItems.add(ColecticaItems.toColecticaItem(ddi4ToDdi3Converter.toVariableSchemeItem(updated)));
         logger.info(
                 "Filed {} variable(s) under variable scheme {}/{} of study unit {}/{}",
