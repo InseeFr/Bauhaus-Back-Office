@@ -6,10 +6,11 @@ import static org.mockito.Mockito.when;
 
 import fr.insee.rmes.DocumentsStorageProperties;
 import fr.insee.rmes.bauhaus_services.operations.OperationsParentRepository;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausIriFactory;
 import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
+import fr.insee.rmes.config.DocumentationsPropertiesStub;
 import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.commons.configuration.StorageProperties;
@@ -56,14 +57,15 @@ abstract class AbstractDocumentsUtilsTest {
     DocumentsUtils documentsUtils;
 
     /** Documents sous http://bauhaus/documents/document, liens sous http://bauhaus/documents/page. */
-    static void useDocumentAndLinkBaseUris() {
-        RdfUtils.setGraphs(GraphsPropertiesStub.stub());
-        RdfUtils.setBauhausUriBuilder(
+    static BauhausIriFactory documentAndLinkIriFactory() {
+        return new BauhausIriFactory(
+                GraphsPropertiesStub.stub(),
                 new BauhausUriBuilder("http://id.insee.fr/", "http://bauhaus/", name -> switch (name) {
                     case DOCUMENTS_BASE_URI -> Optional.of("documents/document");
                     case LINKS_BASE_URI -> Optional.of("documents/page");
                     default -> Optional.empty();
-                }));
+                }),
+                DocumentationsPropertiesStub.stub());
     }
 
     DocumentsUtils newDocumentsUtils() {
@@ -74,7 +76,8 @@ abstract class AbstractDocumentsUtilsTest {
                 publicationUtils,
                 filesOperations,
                 storageProperties,
-                operationDocumentsQueries);
+                operationDocumentsQueries,
+                documentAndLinkIriFactory());
     }
 
     /** Le stockage gestion des documents est {@code storageFolder}, et ce dossier existe. */

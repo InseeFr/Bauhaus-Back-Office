@@ -25,11 +25,11 @@ class Ddi4ResponseWireFormatTest {
 
     private static Ddi4Response aResponse() {
         return new Ddi4Response(
-                Ddi4Response.SCHEMA,
-                List.of(Reference.of("fr.insee", "pi-1", "1", Ddi4PhysicalInstance.TYPE)),
+                Ddi4Response.SCHEMA_ID,
+                List.of(Reference.of("fr.insee", "pi-1", "1", Ddi4PhysicalInstance.TYPE_NAME)),
                 List.of(aPhysicalInstance()),
                 List.of(new Ddi4DataRelationship(
-                        Ddi4DataRelationship.TYPE,
+                        Ddi4DataRelationship.TYPE_NAME,
                         null,
                         "urn:ddi:fr.insee:dr-1:1",
                         "fr.insee",
@@ -39,7 +39,7 @@ class Ddi4ResponseWireFormatTest {
                         LangStrings.of("fr-FR", "Structure"),
                         null)),
                 List.of(new Ddi4Variable(
-                        Ddi4Variable.TYPE,
+                        Ddi4Variable.TYPE_NAME,
                         null,
                         "urn:ddi:fr.insee:var-1:1",
                         "fr.insee",
@@ -52,7 +52,7 @@ class Ddi4ResponseWireFormatTest {
                         null,
                         null)),
                 List.of(new Ddi4CodeList(
-                        Ddi4CodeList.TYPE,
+                        Ddi4CodeList.TYPE_NAME,
                         null,
                         "urn:ddi:fr.insee:cl-1:1",
                         "fr.insee",
@@ -62,7 +62,7 @@ class Ddi4ResponseWireFormatTest {
                         null,
                         null)),
                 List.of(new Ddi4Category(
-                        Ddi4Category.TYPE,
+                        Ddi4Category.TYPE_NAME,
                         null,
                         "urn:ddi:fr.insee:cat-1:1",
                         "fr.insee",
@@ -70,7 +70,7 @@ class Ddi4ResponseWireFormatTest {
                         "1",
                         LangStrings.of("fr-FR", "Oui"))),
                 List.of(new Ddi4ManagedMissingValuesRepresentation(
-                        Ddi4ManagedMissingValuesRepresentation.TYPE,
+                        Ddi4ManagedMissingValuesRepresentation.TYPE_NAME,
                         null,
                         "urn:ddi:fr.insee:mmvr-1:1",
                         "fr.insee",
@@ -89,9 +89,9 @@ class Ddi4ResponseWireFormatTest {
     void shouldFlattenEveryTypedListIntoItems() throws Exception {
         JsonNode items = mapper.readTree(mapper.writeValueAsString(aResponse())).get("items");
 
-        assertThat(items).hasSize(6);
-        assertThat(items).allSatisfy(item -> assertThat(item.has("$type")).isTrue());
         assertThat(items)
+                .hasSize(6)
+                .allSatisfy(item -> assertThat(item.has("$type")).isTrue())
                 .extracting(item -> item.get("$type").asText())
                 .containsExactlyInAnyOrder(
                         "PhysicalInstance",
@@ -125,7 +125,7 @@ class Ddi4ResponseWireFormatTest {
 
     @Test
     void shouldOmitEmptyEnvelopeMembers() throws Exception {
-        Ddi4Response empty = new Ddi4Response(Ddi4Response.SCHEMA, null, null, null, null, null, null, null);
+        Ddi4Response empty = new Ddi4Response(Ddi4Response.SCHEMA_ID, null, null, null, null, null, null, null);
 
         String json = mapper.writeValueAsString(empty);
 

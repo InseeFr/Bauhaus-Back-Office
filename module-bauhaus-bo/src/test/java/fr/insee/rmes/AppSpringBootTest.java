@@ -5,7 +5,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureTestRestTemplate;
+import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 
@@ -33,6 +33,6 @@ import org.springframework.context.annotation.Import;
             "fr.insee.rmes.bauhaus.modules.ddi.enabled=false",
             "spring.hateoas.use-hal-as-default-json-media-type=true"
         })
-@AutoConfigureTestRestTemplate
+@AutoConfigureRestTestClient
 @Import(GraphDBDocumentationRepository.class)
 public @interface AppSpringBootTest {}

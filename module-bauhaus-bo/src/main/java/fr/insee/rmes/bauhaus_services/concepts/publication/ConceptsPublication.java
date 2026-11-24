@@ -1,9 +1,10 @@
 package fr.insee.rmes.bauhaus_services.concepts.publication;
 
 import fr.insee.rmes.Constants;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausIriFactory;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfTriples;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.ontologies.XKOS;
@@ -33,6 +34,7 @@ public class ConceptsPublication extends RdfService {
 
     private final ConceptConceptsQueries conceptConceptsQueries;
     private final GraphDBCollectionProperties collectionProperties;
+    private final BauhausIriFactory iriFactory;
 
     public ConceptsPublication(
             RepositoryGestion repoGestion,
@@ -40,52 +42,55 @@ public class ConceptsPublication extends RdfService {
             RepositoryPublication repositoryPublication,
             PublicationUtils publicationUtils,
             ConceptConceptsQueries conceptConceptsQueries,
-            GraphDBCollectionProperties collectionProperties) {
+            GraphDBCollectionProperties collectionProperties,
+            BauhausIriFactory iriFactory) {
         super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
         this.conceptConceptsQueries = conceptConceptsQueries;
         this.collectionProperties = collectionProperties;
+        this.iriFactory = iriFactory;
     }
 
     String[] notes = {"scopeNote", "definition", "editorialNote"};
     String[] links = {"inScheme", "disseminationStatus", "references"};
     String[] ignoredAttrs = {"validationState", "changeNote", Constants.CREATOR, Constants.CONTRIBUTOR};
+    String[] ignoredCollectionAttrs = {"validationState", "isValidated", Constants.CREATOR, Constants.CONTRIBUTOR};
 
-    public void publishConcepts(JSONArray conceptsToPublish) throws RmesException {
+    public void publishConcepts(JSONArray conceptsToPublish, Resource graph) throws RmesException {
         for (int i = 0; i < conceptsToPublish.length(); ++i) {
             String conceptId = conceptsToPublish.getString(i);
             Model model = new LinkedHashModel();
             List<Resource> noteToClear = new ArrayList<>();
             List<Resource> topConceptOfToDelete = new ArrayList<>();
-            checkTopConceptOf(conceptId, model);
-            Resource concept = RdfUtils.conceptIRI(conceptId);
+            checkTopConceptOf(conceptId, model, graph);
+            Resource concept = iriFactory.concept(conceptId);
 
             try (RepositoryConnection con = repoGestion.getConnection()) {
-                try (RepositoryResult<Statement> statements = repoGestion.getStatements(con, concept)) {
+                try (RepositoryResult<Statement> statements = repoGestion.getStatements(con, concept, graph)) {
                     boolean hasBroader = false;
                     while (statements.hasNext()) {
                         Statement st = statements.next();
 
                         // Notes, transform URI and get attributs
                         hasBroader = prepareOneTripleToPublicationAndCheckIfHasBroader(
-                                model, noteToClear, topConceptOfToDelete, con, st, hasBroader);
+                                model, noteToClear, topConceptOfToDelete, con, st, hasBroader, graph);
                     }
                     if (!hasBroader) {
                         model.add(
                                 publicationUtils.tranformBaseURIToPublish(concept),
                                 SKOS.TOP_CONCEPT_OF,
-                                publicationUtils.tranformBaseURIToPublish(RdfUtils.conceptScheme()),
-                                RdfUtils.conceptGraph());
+                                publicationUtils.tranformBaseURIToPublish(iriFactory.conceptScheme()),
+                                graph);
                     }
                 } catch (RepositoryException e) {
                     throw new RmesException(
                             HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), Constants.REPOSITORY_EXCEPTION);
                 }
 
-                publishMemberLinks(concept, model, con);
+                publishMemberLinks(concept, model, con, graph);
             }
 
             Resource conceptToPublish = publicationUtils.tranformBaseURIToPublish(concept);
-            repositoryPublication.publishConcept(conceptToPublish, model, noteToClear, topConceptOfToDelete);
+            repositoryPublication.publishConcept(conceptToPublish, model, noteToClear, topConceptOfToDelete, graph);
         }
     }
 
@@ -95,12 +100,12 @@ public class ConceptsPublication extends RdfService {
             List<Resource> topConceptOfToDelete,
             RepositoryConnection con,
             Statement st,
-            boolean hasBroader)
+            boolean hasBroader,
+            Resource graph)
             throws RmesException {
 
         Resource subject = publicationUtils.tranformBaseURIToPublish(st.getSubject());
-        Resource graph = st.getContext();
-        String predicat = RdfUtils.toString(st.getPredicate());
+        String predicat = st.getPredicate().toString();
 
         if (PublicationUtils.stringEndsWithItemFromList(predicat, notes)) {
             model.add(
@@ -108,7 +113,7 @@ public class ConceptsPublication extends RdfService {
                     st.getPredicate(),
                     publicationUtils.tranformBaseURIToPublish((Resource) st.getObject()),
                     graph);
-            publishExplanatoryNotes(con, RdfUtils.toURI(st.getObject().toString()), model);
+            publishExplanatoryNotes(con, RdfTriples.iri(st.getObject().toString()), model, graph);
             noteToClear.add(publicationUtils.tranformBaseURIToPublish((Resource) st.getObject()));
         }
         // Other URI to transform
@@ -178,32 +183,31 @@ public class ConceptsPublication extends RdfService {
         return hasBroader;
     }
 
-    private void checkTopConceptOf(String conceptId, Model model) throws RmesException {
+    private void checkTopConceptOf(String conceptId, Model model, Resource graph) throws RmesException {
         JSONArray conceptsToCheck =
                 repositoryPublication.getResponseAsArray(conceptConceptsQueries.getNarrowers(conceptId));
         for (int i = 0; i < conceptsToCheck.length(); i++) {
             String id = conceptsToCheck.getJSONObject(i).getString("narrowerId");
             if (!repoGestion.getResponseAsBoolean(conceptConceptsQueries.hasBroader(id))) {
                 model.add(
-                        publicationUtils.tranformBaseURIToPublish(RdfUtils.conceptIRI(id)),
+                        publicationUtils.tranformBaseURIToPublish(iriFactory.concept(id)),
                         SKOS.TOP_CONCEPT_OF,
-                        publicationUtils.tranformBaseURIToPublish(RdfUtils.conceptScheme()),
-                        RdfUtils.conceptGraph());
+                        publicationUtils.tranformBaseURIToPublish(iriFactory.conceptScheme()),
+                        graph);
             }
         }
     }
 
-    private void publishExplanatoryNotes(RepositoryConnection con, Resource note, Model model) throws RmesException {
-        try (RepositoryResult<Statement> statements = repoGestion.getStatements(con, note)) {
+    private void publishExplanatoryNotes(RepositoryConnection con, Resource note, Model model, Resource graph)
+            throws RmesException {
+        try (RepositoryResult<Statement> statements = repoGestion.getStatements(con, note, graph)) {
             String lg = "";
             String xhtml = "";
             Resource subject = null;
-            Resource graph = null;
             while (statements.hasNext()) {
                 Statement st = statements.next();
-                String predicat = RdfUtils.toString(st.getPredicate());
+                String predicat = st.getPredicate().toString();
                 subject = publicationUtils.tranformBaseURIToPublish(st.getSubject());
-                graph = st.getContext();
                 if (predicat.endsWith("conceptVersion")) {
                     // nothing, wouldn't copy this attr
                 }
@@ -218,10 +222,10 @@ public class ConceptsPublication extends RdfService {
                                 .substring(1)
                                 .replace("\"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#XMLLiteral>", "");
                     }
-                    model.add(subject, st.getPredicate(), st.getObject(), st.getContext());
+                    model.add(subject, st.getPredicate(), st.getObject(), graph);
                 }
             }
-            Literal plainText = RdfUtils.setLiteralString(Jsoup.parse(xhtml).text(), lg);
+            Literal plainText = RdfTriples.string(Jsoup.parse(xhtml).text(), lg);
             if (subject == null) {
                 throw new RmesException(HttpStatus.SC_NO_CONTENT, "subject can't be null", "");
             }
@@ -232,15 +236,17 @@ public class ConceptsPublication extends RdfService {
         }
     }
 
-    private void publishMemberLinks(Resource concept, Model model, RepositoryConnection conn) throws RmesException {
-        try (RepositoryResult<Statement> statements = conn.getStatements(null, SKOS.MEMBER, concept, false)) {
+    private void publishMemberLinks(Resource concept, Model model, RepositoryConnection conn, Resource graph)
+            throws RmesException {
+        try (RepositoryResult<Statement> statements =
+                repoGestion.getStatementsPredicateObject(conn, SKOS.MEMBER, concept, graph)) {
             while (statements.hasNext()) {
                 Statement st = statements.next();
                 model.add(
                         publicationUtils.tranformBaseURIToPublish(st.getSubject()),
                         st.getPredicate(),
                         publicationUtils.tranformBaseURIToPublish((Resource) st.getObject()),
-                        st.getContext());
+                        graph);
             }
         } catch (RepositoryException e) {
             throw new RmesException(
@@ -248,32 +254,31 @@ public class ConceptsPublication extends RdfService {
         }
     }
 
-    public void publishCollection(JSONArray collectionsToValidate) throws RmesException {
+    public void publishCollection(JSONArray collectionsToValidate, Resource graph) throws RmesException {
 
         for (int i = 0; i < collectionsToValidate.length(); ++i) {
             String collectionId = collectionsToValidate.getString(i);
             Model model = new LinkedHashModel();
             Resource collection = collectionProperties.getResourceIRI(collectionId);
             try (RepositoryConnection con = repoGestion.getConnection();
-                    RepositoryResult<Statement> statements = repoGestion.getStatements(con, collection)) {
+                    RepositoryResult<Statement> statements = repoGestion.getStatements(con, collection, graph)) {
                 while (statements.hasNext()) {
                     Statement st = statements.next();
-                    String predicate = RdfUtils.toString(st.getPredicate());
+                    String predicate = st.getPredicate().toString();
                     if (predicate.endsWith("member")) {
                         model.add(
                                 publicationUtils.tranformBaseURIToPublish(st.getSubject()),
                                 st.getPredicate(),
                                 publicationUtils.tranformBaseURIToPublish((Resource) st.getObject()),
-                                st.getContext());
-                    } else if (predicate.endsWith(Constants.CREATOR) || predicate.endsWith(Constants.CONTRIBUTOR)) {
-                        // not copied: gestion-only metadata
+                                graph);
+                    } else if (PublicationUtils.stringEndsWithItemFromList(predicate, ignoredCollectionAttrs)) {
+                        // not copied: gestion-only metadata, validation status included
                     } else {
-                        // Literals (incl. isValidated which has just been set to true upstream)
                         model.add(
                                 publicationUtils.tranformBaseURIToPublish(st.getSubject()),
                                 st.getPredicate(),
                                 st.getObject(),
-                                st.getContext());
+                                graph);
                     }
                 }
             } catch (RepositoryException e) {
@@ -281,7 +286,7 @@ public class ConceptsPublication extends RdfService {
                         HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), Constants.REPOSITORY_EXCEPTION);
             }
             Resource collectionToPublish = publicationUtils.tranformBaseURIToPublish(collection);
-            repositoryPublication.publishResource(collectionToPublish, model, Constants.COLLECTION);
+            repositoryPublication.publishResource(collectionToPublish, model, Constants.COLLECTION, graph);
         }
     }
 }

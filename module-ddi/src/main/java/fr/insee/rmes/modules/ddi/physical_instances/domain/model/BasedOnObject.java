@@ -9,9 +9,9 @@ public record BasedOnObject(
         @JsonProperty("$type") String type,
         @JsonProperty("BasedOnReference") List<Reference> basedOnReferences) {
 
-    public static final String TYPE = "BasedOnObjectType";
+    public static final String TYPE_NAME = "BasedOnObjectType";
 
     public static BasedOnObject of(List<Reference> basedOnReferences) {
-        return new BasedOnObject(TYPE, basedOnReferences);
+        return new BasedOnObject(TYPE_NAME, basedOnReferences);
     }
 }

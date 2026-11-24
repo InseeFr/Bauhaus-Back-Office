@@ -16,6 +16,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnitRe
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4VariableScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.DuplicatePhysicalInstanceRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.MutualizedCodeListCodes;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.OperationStudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodesList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialGroup;
@@ -25,6 +26,8 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialPhysical
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceIds;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceParents;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceSearchRow;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.ReuseVariablesRequest;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.RolloverRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UpdatePhysicalInstanceRequest;
 import java.time.LocalDate;
 import java.util.List;
@@ -64,6 +67,19 @@ public interface DDIService {
     /** Duplique la PhysicalInstance {@code agencyId/id} sous l'Étude de la requête et renvoie la copie. */
     Ddi4Response duplicatePhysicalInstance(String agencyId, String id, DuplicatePhysicalInstanceRequest request);
 
+    /**
+     * Crée une PhysicalInstance dans l'Étude de {@code agencyId/id} qui réutilise, sans les copier,
+     * les variables choisies de la source (#1674), et la renvoie.
+     */
+    Ddi4Response reuseVariables(String agencyId, String id, ReuseVariablesRequest request);
+
+    /**
+     * Nouvelle période (#1672) : crée une PhysicalInstance dans une autre étude du groupe de
+     * {@code agencyId/id}, qui copie les variables choisies (avec {@code BasedOn}) ou réutilise celles
+     * déjà dérivées de la source dans l'étude cible, et la renvoie.
+     */
+    Ddi4Response rollover(String agencyId, String id, RolloverRequest request);
+
     Ddi4Response createPhysicalInstance(CreatePhysicalInstanceRequest request);
 
     /** Même création, mais avec les identifiants imposés par l'appelant (init local idempotent). */
@@ -80,6 +96,8 @@ public interface DDIService {
     Optional<Ddi4CategoryScheme> findCategoryScheme(String agencyId, String id);
 
     Optional<Ddi4ManagedRepresentationScheme> findManagedRepresentationScheme(String agencyId, String id);
+
+    Optional<Ddi4VariableScheme> findVariableScheme(String agencyId, String id);
 
     void createLogicalProduct(Ddi4LogicalProduct logicalProduct);
 
@@ -183,4 +201,10 @@ public interface DDIService {
      * {@code operationId}, quelle que soit l'IRI sous laquelle elles la désignent ; vide sans miroir.
      */
     List<PartialPhysicalInstance> getPhysicalInstancesByOperation(String operationId);
+
+    /**
+     * Les StudyUnits miroirs de l'opération d'identifiant {@code operationId}, chacune avec le Group
+     * qui la classe : là où créer un fichier de données de l'opération. Vide sans miroir.
+     */
+    List<OperationStudyUnit> getStudyUnitsByOperation(String operationId);
 }

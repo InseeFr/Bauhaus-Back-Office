@@ -3,7 +3,7 @@ package fr.insee.rmes.modules.operations.documents.infrastructure.graphdb;
 import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.BauhausUriProperties;
 import fr.insee.rmes.GraphsProperties;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfTriples;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.freemarker.FreeMarkerUtils;
 import fr.insee.rmes.graphdb.SparqlLiterals;
@@ -162,7 +162,7 @@ public class GraphDBManagedDocumentRepository implements ManagedDocumentReposito
                 params,
                 "UPDATED_DATE",
                 form.updatedDate(),
-                value -> SparqlLiterals.literal(RdfUtils.setLiteralDate(value).getLabel()));
+                value -> SparqlLiterals.literal(RdfTriples.date(value).getLabel()));
         FileSize size = document.size();
         if (size != null) {
             params.put("SIZE", SparqlLiterals.literal(Long.toString(size.bytes())));

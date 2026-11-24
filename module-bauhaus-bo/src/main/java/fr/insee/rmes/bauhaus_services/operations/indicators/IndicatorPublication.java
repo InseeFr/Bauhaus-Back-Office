@@ -2,8 +2,8 @@ package fr.insee.rmes.bauhaus_services.operations.indicators;
 
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.operations.OperationsParentRepository;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausIriFactory;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.ErrorCodes;
@@ -33,11 +33,15 @@ public class IndicatorPublication implements ObjectPublication<Indicator> {
     final RepositoryPublication repositoryPublication;
     final PublicationUtils publicationUtils;
 
+    private final BauhausIriFactory iriFactory;
+
     public IndicatorPublication(
             OperationsParentRepository operationsParentRepository,
             RepositoryGestion repoGestion,
             RepositoryPublication repositoryPublication,
-            PublicationUtils publicationUtils) {
+            PublicationUtils publicationUtils,
+            BauhausIriFactory iriFactory) {
+        this.iriFactory = iriFactory;
         this.operationsParentRepository = operationsParentRepository;
         this.repoGestion = repoGestion;
         this.repositoryPublication = repositoryPublication;
@@ -67,53 +71,68 @@ public class IndicatorPublication implements ObjectPublication<Indicator> {
         }
     }
 
+    /**
+     * L'indicateur est réparti sur deux graphes : sa description dans celui des produits, ses dates
+     * dans celui des opérations. Chacun est relu et republié séparément, dans son propre graphe : le
+     * contexte d'un triplet relu est {@code null} hors de GraphDB.
+     */
     @Override
     public void publish(String indicatorId) throws RmesException {
+        Resource indicator = iriFactory.objectIri(ObjectType.INDICATOR, indicatorId);
+        Resource productsGraph = iriFactory.productsGraph();
+        Resource operationsGraph = iriFactory.operationsGraph();
 
-        Model model = new LinkedHashModel();
-        Resource indicator = RdfUtils.objectIRI(ObjectType.INDICATOR, indicatorId);
-
-        try (RepositoryConnection con = repoGestion.getConnection();
-                RepositoryResult<Statement> statements = repoGestion.getStatements(con, indicator)) {
-            if (!statements.hasNext()) {
+        Model description = new LinkedHashModel();
+        Model dates = new LinkedHashModel();
+        try (RepositoryConnection con = repoGestion.getConnection()) {
+            if (!readTriples(con, indicator, productsGraph, description)) {
                 throw new RmesNotFoundException(ErrorCodes.INDICATOR_UNKNOWN_ID, "Indicator not found", indicatorId);
             }
-            while (statements.hasNext()) {
-                Statement st = statements.next();
-                // Triplets that don't get published
-                String pred = RdfUtils.toString(st.getPredicate());
-
-                if (pred.endsWith("isValidated") || pred.endsWith("validationState")) {
-                    // nothing, wouldn't copy this attr
-                } else if (pred.endsWith(Constants.WASGENERATEDBY)
-                        || pred.endsWith(Constants.SEEALSO)
-                        || pred.endsWith(Constants.REPLACES)
-                        || pred.endsWith(Constants.ISREPLACEDBY)
-                        || pred.endsWith(Constants.CREATOR)
-                        || pred.endsWith(Constants.CONTRIBUTOR)
-                        || pred.endsWith(Constants.PUBLISHER)
-                        || pred.endsWith("accrualPeriodicity")) {
-                    model.add(
-                            publicationUtils.tranformBaseURIToPublish(st.getSubject()),
-                            st.getPredicate(),
-                            publicationUtils.tranformBaseURIToPublish((Resource) st.getObject()),
-                            st.getContext());
-                }
-                // Literals
-                else {
-                    model.add(
-                            publicationUtils.tranformBaseURIToPublish(st.getSubject()),
-                            st.getPredicate(),
-                            st.getObject(),
-                            st.getContext());
-                }
-                // Other URI to transform : none
-            }
+            readTriples(con, indicator, operationsGraph, dates);
         } catch (RepositoryException e) {
             throw new RmesException(
                     HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), Constants.REPOSITORY_EXCEPTION);
         }
         Resource indicatorToPublishRessource = publicationUtils.tranformBaseURIToPublish(indicator);
-        repositoryPublication.publishResource(indicatorToPublishRessource, model, "indicator");
+        repositoryPublication.publishResource(indicatorToPublishRessource, description, "indicator", productsGraph);
+        repositoryPublication.publishResource(indicatorToPublishRessource, dates, "indicator", operationsGraph);
+    }
+
+    /** Recopie dans le modèle les triplets publiables de l'indicateur lus dans le graphe donné. */
+    private boolean readTriples(RepositoryConnection con, Resource indicator, Resource graph, Model model)
+            throws RmesException {
+        try (RepositoryResult<Statement> statements = repoGestion.getStatements(con, indicator, graph)) {
+            boolean found = statements.hasNext();
+            while (statements.hasNext()) {
+                addTripleToPublish(model, statements.next(), graph);
+            }
+            return found;
+        }
+    }
+
+    private void addTripleToPublish(Model model, Statement st, Resource graph) {
+        String pred = st.getPredicate().toString();
+        if (pred.endsWith("isValidated") || pred.endsWith("validationState")) {
+            // nothing, wouldn't copy this attr
+            return;
+        }
+        Resource subject = publicationUtils.tranformBaseURIToPublish(st.getSubject());
+        if (pred.endsWith(Constants.WASGENERATEDBY)
+                || pred.endsWith(Constants.SEEALSO)
+                || pred.endsWith(Constants.REPLACES)
+                || pred.endsWith(Constants.ISREPLACEDBY)
+                || pred.endsWith(Constants.CREATOR)
+                || pred.endsWith(Constants.CONTRIBUTOR)
+                || pred.endsWith(Constants.PUBLISHER)
+                || pred.endsWith("accrualPeriodicity")) {
+            model.add(
+                    subject,
+                    st.getPredicate(),
+                    publicationUtils.tranformBaseURIToPublish((Resource) st.getObject()),
+                    graph);
+        } else {
+            // Literals
+            model.add(subject, st.getPredicate(), st.getObject(), graph);
+        }
     }
 }

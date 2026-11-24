@@ -239,10 +239,10 @@ class DdiResourcesSchemaValidationTest {
     @Test
     void shouldAcceptGetResponseSerializedByTheApplicationMapper() throws Exception {
         Ddi4Response response = new Ddi4Response(
-                Ddi4Response.SCHEMA,
-                List.of(Reference.of("fr.insee", "pi-1", "1", Ddi4PhysicalInstance.TYPE)),
+                Ddi4Response.SCHEMA_ID,
+                List.of(Reference.of("fr.insee", "pi-1", "1", Ddi4PhysicalInstance.TYPE_NAME)),
                 List.of(new Ddi4PhysicalInstance(
-                        Ddi4PhysicalInstance.TYPE,
+                        Ddi4PhysicalInstance.TYPE_NAME,
                         CogsDate.ofDateTime("2026-08-06T13:28:10.283854228+01:00"),
                         "urn:ddi:fr.insee:pi-1:1",
                         "fr.insee",
@@ -250,9 +250,9 @@ class DdiResourcesSchemaValidationTest {
                         "1",
                         null,
                         new Citation(LangStrings.of("fr-FR", "20260804")),
-                        List.of(Reference.of("fr.insee", "dr-1", "1", Ddi4DataRelationship.TYPE)))),
+                        List.of(Reference.of("fr.insee", "dr-1", "1", Ddi4DataRelationship.TYPE_NAME)))),
                 List.of(new Ddi4DataRelationship(
-                        Ddi4DataRelationship.TYPE,
+                        Ddi4DataRelationship.TYPE_NAME,
                         CogsDate.ofDateTime("2026-08-06T13:28:10.283854228+01:00"),
                         "urn:ddi:fr.insee:dr-1:1",
                         "fr.insee",
@@ -261,16 +261,16 @@ class DdiResourcesSchemaValidationTest {
                         null,
                         LangStrings.of("fr-FR", "Structure"),
                         List.of(new LogicalRecord(
-                                LogicalRecord.TYPE,
+                                LogicalRecord.TYPE_NAME,
                                 "urn:ddi:fr.insee:lr-1:1",
                                 "fr.insee",
                                 "lr-1",
                                 "1",
                                 LangStrings.of("fr-FR", "Enregistrement logique"),
                                 new VariablesInRecord(
-                                        List.of(Reference.of("fr.insee", "var-1", "1", Ddi4Variable.TYPE))))))),
+                                        List.of(Reference.of("fr.insee", "var-1", "1", Ddi4Variable.TYPE_NAME))))))),
                 List.of(new Ddi4Variable(
-                        Ddi4Variable.TYPE,
+                        Ddi4Variable.TYPE_NAME,
                         CogsDate.ofDateTime("2026-08-06T10:27:45.371360683+01:00"),
                         "urn:ddi:fr.insee:var-1:1",
                         "fr.insee",
@@ -283,16 +283,16 @@ class DdiResourcesSchemaValidationTest {
                         new VariableRepresentation(
                                 null,
                                 new CodeRepresentation(
-                                        CodeRepresentation.TYPE,
+                                        CodeRepresentation.TYPE_NAME,
                                         false,
-                                        Reference.of("fr.insee", "cl-1", "1", Ddi4CodeList.TYPE)),
+                                        Reference.of("fr.insee", "cl-1", "1", Ddi4CodeList.TYPE_NAME)),
                                 null,
                                 null,
                                 null,
                                 null),
                         null)),
                 List.of(new Ddi4CodeList(
-                        Ddi4CodeList.TYPE,
+                        Ddi4CodeList.TYPE_NAME,
                         CogsDate.ofDateTime("2026-08-06T10:27:45.371360683+01:00"),
                         "urn:ddi:fr.insee:cl-1:1",
                         "fr.insee",
@@ -301,16 +301,16 @@ class DdiResourcesSchemaValidationTest {
                         LangStrings.of("fr-FR", "Liste"),
                         null,
                         List.of(new Code(
-                                Code.TYPE,
+                                Code.TYPE_NAME,
                                 "urn:ddi:fr.insee:code-1:1",
                                 "fr.insee",
                                 "code-1",
                                 "1",
-                                Reference.of("fr.insee", "cat-1", "1", Ddi4Category.TYPE),
+                                Reference.of("fr.insee", "cat-1", "1", Ddi4Category.TYPE_NAME),
                                 ValueType.of("1"),
                                 null)))),
                 List.of(new Ddi4Category(
-                        Ddi4Category.TYPE,
+                        Ddi4Category.TYPE_NAME,
                         CogsDate.ofDateTime("2026-08-06T10:27:45.371360683+01:00"),
                         "urn:ddi:fr.insee:cat-1:1",
                         "fr.insee",

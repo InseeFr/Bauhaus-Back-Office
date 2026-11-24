@@ -86,7 +86,9 @@ class PhysicalInstanceSearchRowsCacheIntegrationTest {
                     "password",
                     "user",
                     "pass",
-                    AGENCY);
+                    AGENCY,
+                    null,
+                    null);
             return new ColecticaConfiguration(
                     List.of("fr-FR"),
                     server,
@@ -174,7 +176,7 @@ class PhysicalInstanceSearchRowsCacheIntegrationTest {
                 .containsExactly("Ancien libellé");
 
         Ddi4PhysicalInstance saved = new Ddi4PhysicalInstance(
-                Ddi4PhysicalInstance.TYPE,
+                Ddi4PhysicalInstance.TYPE_NAME,
                 CogsDate.ofDateTime("2026-10-02T10:00:00Z"),
                 "urn:ddi:fr.insee:pi-1:2",
                 AGENCY,

@@ -15,7 +15,7 @@ public class Collection {
     private List<String> members;
     private String created;
     private String modified;
-    private String isValidated;
+    private final String isValidated;
 
     public Collection() {
         this.created = LocalDateTime.now().toString();

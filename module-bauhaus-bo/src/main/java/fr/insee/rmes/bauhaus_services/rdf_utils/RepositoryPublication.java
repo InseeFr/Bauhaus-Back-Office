@@ -9,13 +9,12 @@ import java.util.List;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
-import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;
+import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
-import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.json.JSONArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -102,25 +101,19 @@ public class RepositoryPublication {
                 updateQuery, repositoryUtils.initRepository(rdfServerPublicationExt, idRepositoryPublicationExt));
     }
 
+    /**
+     * Remplace le concept publié dans le graphe donné : ses notes, le {@code skos:topConceptOf} de ses
+     * enfants et ses propres triplets n'y sont effacés que dans ce graphe, une suppression sans graphe
+     * nommé ne retirant rien hors de GraphDB.
+     */
     public void publishConcept(
-            Resource concept, Model model, List<Resource> noteToClear, List<Resource> topConceptOfToDelete)
-            throws RmesException {
-        publishConcept(
-                concept,
-                model,
-                noteToClear,
-                topConceptOfToDelete,
-                repositoryUtils.initRepository(rdfServerPublicationExt, idRepositoryPublicationExt));
-    }
-
-    private void publishConcept(
             Resource concept,
             Model model,
             List<Resource> noteToClear,
             List<Resource> topConceptOfToDelete,
-            Repository repo)
+            Resource graph)
             throws RmesException {
-
+        Repository repo = repositoryUtils.initRepository(rdfServerPublicationExt, idRepositoryPublicationExt);
         if (repo == null) {
             return;
         }
@@ -128,18 +121,18 @@ public class RepositoryPublication {
         try (RepositoryConnection conn = repo.getConnection()) {
             // notes to delete
             for (Resource note : noteToClear) {
-                conn.remove(note, null, null);
+                conn.remove(note, null, null, graph);
             }
             // top concepts of to delete
             for (Resource c : topConceptOfToDelete) {
-                conn.remove(c, SKOS.TOP_CONCEPT_OF, null);
+                conn.remove(c, SKOS.TOP_CONCEPT_OF, null, graph);
             }
             // links to delete
             clearConceptLinks(concept, conn);
 
-            conn.remove(concept, null, null);
+            conn.remove(concept, null, null, graph);
             conn.add(model);
-            logger.info("Publication of concept : {}", concept);
+            logger.info("Publication of concept : {} in {}", concept, graph);
         } catch (RepositoryException e) {
             throwIfUnauthorized(e, "Publication of concept : " + concept);
             logger.error("Publication of concept : {} {} {}", concept, FAILED, e.getMessage());
@@ -148,35 +141,9 @@ public class RepositoryPublication {
         }
     }
 
-    public void publishResource(Resource resource, Model model, String type) throws RmesException {
-        publishResource(
-                resource,
-                model,
-                type,
-                repositoryUtils.initRepository(rdfServerPublicationExt, idRepositoryPublicationExt));
-    }
-
-    private void publishResource(Resource resource, Model model, String type, Repository repo) throws RmesException {
-        if (repo == null) {
-            return;
-        }
-
-        try (RepositoryConnection conn = repo.getConnection()) {
-            conn.remove(resource, null, null);
-            conn.add(model);
-            logger.info("Publication of Resource {} : {}", type, resource);
-        } catch (RepositoryException e) {
-            throwIfUnauthorized(e, "Publication of Resource " + type + " : " + resource);
-            logger.error("Publication of Resource {} : {} {}", type, resource, FAILED);
-            logger.error(THREE_PARAMS_LOG, CONNECTION_TO, repo, FAILED);
-            throw unavailableRepository(e);
-        }
-    }
-
     /**
-     * Remplace les triplets de la ressource dans le graphe donné. À préférer à {@link
-     * #publishResource(Resource, Model, String)}, dont la suppression sans graphe nommé ne retire rien
-     * sur un triplestore dont le graphe par défaut n'est pas l'union des graphes nommés.
+     * Remplace les triplets de la ressource dans le graphe donné : ses anciens triplets publiés n'y
+     * sont effacés que là, une suppression sans graphe nommé ne retirant rien hors de GraphDB.
      */
     public void publishResource(Resource resource, Model model, String type, Resource graph) throws RmesException {
         Repository repo = repositoryUtils.initRepository(rdfServerPublicationExt, idRepositoryPublicationExt);
@@ -262,9 +229,14 @@ public class RepositoryPublication {
         List<IRI> typeOfLink = Arrays.asList(
                 SKOS.BROADER, SKOS.NARROWER, SKOS.MEMBER, DCTERMS.REPLACES, SKOS.RELATED, DCTERMS.IS_REPLACED_BY);
 
+        // Effacement par SPARQL dans tous les graphes nommés : un remove sans graphe ne supprime rien
+        // hors de GraphDB, dont le graphe par défaut est l'union des graphes nommés.
         for (IRI predicat : typeOfLink) {
-            try (RepositoryResult<Statement> statements = conn.getStatements(null, predicat, concept, false)) {
-                conn.remove(statements);
+            try {
+                conn.prepareUpdate(
+                                QueryLanguage.SPARQL,
+                                "DELETE WHERE { GRAPH ?graph { ?subject <%s> <%s> } }".formatted(predicat, concept))
+                        .execute();
             } catch (RepositoryException e) {
                 throwIfUnauthorized(e, "Clear of concept links : " + concept);
                 throw unavailableRepository(e);

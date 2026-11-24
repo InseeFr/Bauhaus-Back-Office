@@ -39,7 +39,7 @@ public class GraphDBOrganisationsRepository implements OrganisationsRepository {
                     Deserializer.deserializeJSONObject(organisation, GraphDbCompactOrganisation.class);
             return graphDbOrganisation.toDomain();
 
-        } catch (Exception e) {
+        } catch (Exception _) {
             throw new OrganisationFetchException();
         }
     }
@@ -60,7 +60,7 @@ public class GraphDBOrganisationsRepository implements OrganisationsRepository {
                         OrganisationLabel.withAcronym(org.optString("labelLg2", null), acronym)));
             });
             return result;
-        } catch (RmesException e) {
+        } catch (RmesException _) {
             throw new OrganisationFetchException();
         }
     }
@@ -80,7 +80,7 @@ public class GraphDBOrganisationsRepository implements OrganisationsRepository {
             }
 
             return result;
-        } catch (Exception e) {
+        } catch (Exception _) {
             throw new OrganisationFetchException();
         }
     }
@@ -89,7 +89,7 @@ public class GraphDBOrganisationsRepository implements OrganisationsRepository {
     public boolean checkIfOrganisationExists(String iri) throws OrganisationFetchException {
         try {
             return this.repositoryGestion.getResponseAsBoolean(organizationQueries.checkIfOrganisationExistsQuery(iri));
-        } catch (Exception e) {
+        } catch (Exception _) {
             throw new OrganisationFetchException();
         }
     }
@@ -99,7 +99,7 @@ public class GraphDBOrganisationsRepository implements OrganisationsRepository {
         try {
             return getOrganisationIdentifier(organizationQueries.getOrganizationIdenfier(
                     ADMS.HAS_IDENTIFIER, admsIdentifier, DCTERMS.IDENTIFIER));
-        } catch (RmesException e) {
+        } catch (RmesException _) {
             throw new OrganisationFetchException();
         }
     }
@@ -112,7 +112,7 @@ public class GraphDBOrganisationsRepository implements OrganisationsRepository {
             }
 
             return Optional.of(organisation.getString("value"));
-        } catch (RmesException e) {
+        } catch (RmesException _) {
             throw new OrganisationFetchException();
         }
     }
@@ -122,7 +122,7 @@ public class GraphDBOrganisationsRepository implements OrganisationsRepository {
         try {
             return getOrganisationIdentifier(organizationQueries.getOrganizationIdenfier(
                     DCTERMS.IDENTIFIER, dctermsIdentifier, ADMS.HAS_IDENTIFIER));
-        } catch (RmesException e) {
+        } catch (RmesException _) {
             throw new OrganisationFetchException();
         }
     }

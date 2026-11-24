@@ -161,7 +161,7 @@ class ColecticaSchemeFiler {
             List<Ddi4CodeList> nonMutualized,
             List<ColecticaItemResponse> colecticaItems) {
         List<Reference> newRefs = nonMutualized.stream()
-                .map(cl -> Reference.of(cl.agency(), cl.id(), cl.version(), Ddi4CodeList.TYPE))
+                .map(cl -> Reference.of(cl.agency(), cl.id(), cl.version(), Ddi4CodeList.TYPE_NAME))
                 .toList();
         ItemReference schemeRef = requireGroupScheme(
                 group,
@@ -201,7 +201,7 @@ class ColecticaSchemeFiler {
             List<Ddi4Category> categories,
             List<ColecticaItemResponse> colecticaItems) {
         List<Reference> newRefs = categories.stream()
-                .map(cat -> Reference.of(cat.agency(), cat.id(), cat.version(), Ddi4Category.TYPE))
+                .map(cat -> Reference.of(cat.agency(), cat.id(), cat.version(), Ddi4Category.TYPE_NAME))
                 .toList();
         ItemReference schemeRef = requireGroupScheme(
                 group,
@@ -246,7 +246,7 @@ class ColecticaSchemeFiler {
             List<ColecticaItemResponse> colecticaItems) {
         List<Reference> newRefs = missingValuesRepresentations.stream()
                 .map(mmvr -> Reference.of(
-                        mmvr.agency(), mmvr.id(), mmvr.version(), Ddi4ManagedMissingValuesRepresentation.TYPE))
+                        mmvr.agency(), mmvr.id(), mmvr.version(), Ddi4ManagedMissingValuesRepresentation.TYPE_NAME))
                 .toList();
         ItemReference schemeRef = requireGroupScheme(
                 group,
@@ -304,7 +304,7 @@ class ColecticaSchemeFiler {
         String suAgency = parents.studyUnitAgency();
         String suId = parents.studyUnitId();
         List<Reference> newRefs = variables.stream()
-                .map(v -> Reference.of(v.agency(), v.id(), v.version(), Ddi4Variable.TYPE))
+                .map(v -> Reference.of(v.agency(), v.id(), v.version(), Ddi4Variable.TYPE_NAME))
                 .toList();
 
         List<ItemReference> logicalProducts = findContainerLogicalProducts(suAgency, suId);
@@ -343,7 +343,9 @@ class ColecticaSchemeFiler {
                 current.id(),
                 current.version(),
                 current.label(),
-                merged);
+                merged,
+                current.name(),
+                current.variableGroupReference());
         colecticaItems.add(ColecticaItems.toColecticaItem(ddi4ToDdi3Converter.toVariableSchemeItem(updated)));
         logger.info(
                 "Filed {} variable(s) under variable scheme {}/{} of study unit {}/{}",

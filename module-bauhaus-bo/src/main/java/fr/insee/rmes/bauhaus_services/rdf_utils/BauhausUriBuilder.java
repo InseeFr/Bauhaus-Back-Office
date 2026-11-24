@@ -18,7 +18,6 @@ public record BauhausUriBuilder(String baseUriPublication, String baseUriGestion
         this.baseUriPublication = baseUriPublication;
         this.baseUriGestion = baseUriGestion;
         this.propertiesFinder = propertiesFinder;
-        RdfUtils.setBauhausUriBuilder(this);
     }
 
     public String getBaseUriPublication(ObjectType objectType) {

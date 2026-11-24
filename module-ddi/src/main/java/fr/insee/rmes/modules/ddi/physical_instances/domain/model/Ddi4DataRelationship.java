@@ -18,7 +18,7 @@ public record Ddi4DataRelationship(
         @JsonProperty("VersionResponsibility") String versionResponsibility)
         implements Ddi4VersionedItem {
 
-    public static final String TYPE = "DataRelationship";
+    public static final String TYPE_NAME = "DataRelationship";
 
     /**
      * Constructeur de compatibilité (sans {@code VersionResponsibility}) : le champ est estampillé

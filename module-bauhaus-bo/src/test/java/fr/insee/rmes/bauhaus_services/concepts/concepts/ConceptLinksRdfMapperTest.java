@@ -2,15 +2,12 @@ package fr.insee.rmes.bauhaus_services.concepts.concepts;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.config.GraphsPropertiesStub;
+import fr.insee.rmes.config.BauhausIriFactoryStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.model.links.Link;
 import fr.insee.rmes.utils.Deserializer;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Statement;
@@ -19,7 +16,6 @@ import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 class ConceptLinksRdfMapperTest {
@@ -28,15 +24,9 @@ class ConceptLinksRdfMapperTest {
     private static final IRI CONCEPTS_GRAPH = FACTORY.createIRI("http://rdf.insee.fr/graphes/concepts/");
     private static final IRI SOURCE = FACTORY.createIRI("http://bauhaus//concepts/definition/c-source");
 
-    private final ConceptLinksRdfMapper conceptLinksRdfMapper = new ConceptLinksRdfMapper();
+    private final ConceptLinksRdfMapper conceptLinksRdfMapper =
+            new ConceptLinksRdfMapper(BauhausIriFactoryStub.stub("/concepts/definition"));
     private final Model model = new LinkedHashModel();
-
-    @BeforeAll
-    static void initConfig() {
-        RdfUtils.setGraphs(GraphsPropertiesStub.stub());
-        RdfUtils.setBauhausUriBuilder(new BauhausUriBuilder(
-                "http://bauhaus/publication/", "http://bauhaus/", p -> Optional.of("/concepts/definition")));
-    }
 
     @Test
     void shouldMapNarrowerToSkosNarrowerAndItsInverse() throws RmesException {

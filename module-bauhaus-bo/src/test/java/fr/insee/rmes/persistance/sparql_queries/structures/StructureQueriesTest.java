@@ -208,26 +208,6 @@ class StructureQueriesTest {
     }
 
     @Test
-    void shouldGetContributorsByStructureUri() throws RmesException {
-        assertQueryBuiltFromTemplate(
-                STRUCTURES_FOLDER,
-                "getStructureContributorsByUriQuery.ftlh",
-                CONTRIBUTORS_QUERY,
-                () -> structureQueries.getContributorsByStructureUri("http://example.org/structure/123"),
-                map -> "<http://example.org/structure/123>".equals(map.get("URI_STRUCTURE")));
-    }
-
-    @Test
-    void shouldGetContributorsByComponentUri() throws RmesException {
-        assertQueryBuiltFromTemplate(
-                STRUCTURES_FOLDER,
-                "getComponentContributorsByUriQuery.ftlh",
-                CONTRIBUTORS_QUERY,
-                () -> structureQueries.getContributorsByComponentUri("http://example.org/component/123"),
-                map -> "<http://example.org/component/123>".equals(map.get("URI_COMPONENT")));
-    }
-
-    @Test
     void shouldGetStructureContributors() throws RmesException {
         IRI iri = SimpleValueFactory.getInstance().createIRI("http://example.org/structure/123");
         assertQueryBuiltFromTemplate(

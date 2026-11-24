@@ -22,7 +22,7 @@ public class Concept {
     private List<DatableNote> datableNotes;
     private List<Link> links;
     private String created;
-    private String modified;
+    private final String modified;
     private Boolean creation;
     private Boolean versioning;
     private List<String> collections;

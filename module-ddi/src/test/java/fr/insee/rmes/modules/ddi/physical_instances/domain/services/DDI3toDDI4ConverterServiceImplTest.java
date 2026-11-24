@@ -122,7 +122,7 @@ class DDI3toDDI4ConverterServiceImplTest {
         // Build a schema-valid Group fragment with the real serializer, then parse it back:
         // this is the exact round-trip the auto-provision of a group's CodeListScheme relies on.
         Ddi4Group original = new Ddi4Group(
-                Ddi4Group.TYPE,
+                Ddi4Group.TYPE_NAME,
                 CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
                 "urn:ddi:fr.insee:group-id:1",
                 "fr.insee",
@@ -153,7 +153,7 @@ class DDI3toDDI4ConverterServiceImplTest {
     @Test
     void shouldReadBackEverythingTheOperationsMirrorRewritesOnAGroup() {
         Ddi4Group original = new Ddi4Group(
-                Ddi4Group.TYPE,
+                Ddi4Group.TYPE_NAME,
                 CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
                 "urn:ddi:fr.insee:group-id:1",
                 "fr.insee",
@@ -178,7 +178,7 @@ class DDI3toDDI4ConverterServiceImplTest {
     @Test
     void shouldParseCategorySchemeFromFragmentXml() {
         Ddi4CategoryScheme original = new Ddi4CategoryScheme(
-                Ddi4CategoryScheme.TYPE,
+                Ddi4CategoryScheme.TYPE_NAME,
                 CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
                 "urn:ddi:fr.insee:cats-id:1",
                 "fr.insee",
@@ -199,7 +199,7 @@ class DDI3toDDI4ConverterServiceImplTest {
     @Test
     void shouldParseVariableSchemeFromFragmentXml() {
         Ddi4VariableScheme original = new Ddi4VariableScheme(
-                Ddi4VariableScheme.TYPE,
+                Ddi4VariableScheme.TYPE_NAME,
                 CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
                 "urn:ddi:fr.insee:vars-id:1",
                 "fr.insee",
@@ -215,6 +215,45 @@ class DDI3toDDI4ConverterServiceImplTest {
         assertEquals("fr.insee", scheme.agency());
         assertEquals(1, scheme.variableReference().size());
         assertEquals("var-1", scheme.variableReference().get(0).id());
+    }
+
+    @Test
+    void shouldKeepTheVariableGroupReferencesOfAParsedVariableScheme() {
+        Ddi4VariableScheme original = new Ddi4VariableScheme(
+                Ddi4VariableScheme.TYPE_NAME,
+                CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
+                "urn:ddi:fr.insee:vars-id:1",
+                "fr.insee",
+                "vars-id",
+                "1",
+                LangStrings.of("fr-FR", "Schéma variables"),
+                null,
+                null,
+                List.of(Reference.of("fr.insee", "vg-1", "2", "VariableGroup")));
+        String xml = new Ddi4ToLifecycle33("abcde").toVariableScheme(original).xmlText(logicalProductFragmentOptions());
+
+        Ddi4VariableScheme scheme = converter.toVariableScheme(xml);
+
+        assertEquals(List.of(Reference.of("fr.insee", "vg-1", "2", "VariableGroup")), scheme.variableGroupReference());
+    }
+
+    @Test
+    void shouldKeepTheNameOfAParsedVariableScheme() {
+        Ddi4VariableScheme original = new Ddi4VariableScheme(
+                Ddi4VariableScheme.TYPE_NAME,
+                CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
+                "urn:ddi:fr.insee:vars-id:1",
+                "fr.insee",
+                "vars-id",
+                "1",
+                LangStrings.of("fr-FR", "Schéma variables"),
+                null,
+                "VS-EEC");
+        String xml = new Ddi4ToLifecycle33("abcde").toVariableScheme(original).xmlText(logicalProductFragmentOptions());
+
+        Ddi4VariableScheme scheme = converter.toVariableScheme(xml);
+
+        assertEquals("VS-EEC", scheme.name());
     }
 
     @Test
@@ -244,7 +283,7 @@ class DDI3toDDI4ConverterServiceImplTest {
     @Test
     void shouldParseStudyUnitFromFragmentXml() {
         Ddi4StudyUnit original = new Ddi4StudyUnit(
-                Ddi4StudyUnit.TYPE,
+                Ddi4StudyUnit.TYPE_NAME,
                 CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
                 "urn:ddi:fr.insee:su-id:1",
                 "fr.insee",

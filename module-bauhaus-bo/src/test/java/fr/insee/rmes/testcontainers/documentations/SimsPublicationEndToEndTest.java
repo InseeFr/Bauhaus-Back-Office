@@ -6,14 +6,14 @@ import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationExcep
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import org.springframework.http.ResponseEntity;
+import org.springframework.test.web.servlet.client.EntityExchangeResult;
 
 /**
  * Test E2E reproduisant le bug : insee:html de la rubrique S.3.1 (RICHTEXT)
  * est stocké dans le graphe rapport/null au lieu du graphe rapport/8888.
  *
- * Cause : addHtmlVersionForRichText() utilise RdfUtils.simsGraph(null) comme
- * contexte du graphe au lieu de RdfUtils.simsGraph(simsId).
+ * Cause : addHtmlVersionForRichText() utilise iriFactory.simsGraph(null) comme
+ * contexte du graphe au lieu de iriFactory.simsGraph(simsId).
  *
  * Ce test ÉCHOUE intentionnellement tant que le bug n'est pas corrigé.
  */
@@ -27,9 +27,9 @@ class SimsPublicationEndToEndTest extends AbstractSimsPublicationEndToEndTest {
 
     @Test
     void validate_htmlS31DevraitEtreDansLeGrapheRapport8888() throws Exception, MissingUserInformationException {
-        ResponseEntity<String> response = validateSimsAsAdmin("8888");
+        EntityExchangeResult<String> response = validateSimsAsAdmin("8888");
 
-        assertThat(response.getStatusCode().value()).isEqualTo(200);
+        assertThat(response.getStatus().value()).isEqualTo(200);
 
         // BUG : addHtmlVersionForRichText() utilise simsGraph(null) → graphe rapport/null
         // au lieu de simsGraph("8888") → graphe rapport/8888

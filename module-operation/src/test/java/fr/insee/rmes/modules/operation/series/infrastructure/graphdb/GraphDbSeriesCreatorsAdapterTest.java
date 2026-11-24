@@ -75,8 +75,11 @@ class GraphDbSeriesCreatorsAdapterTest {
         ArgumentCaptor<String> queryCaptor = ArgumentCaptor.forClass(String.class);
         verify(repositoryGestion).getResponseAsArray(queryCaptor.capture());
         String query = queryCaptor.getValue();
-        assertThat(query).contains("<" + gestionIri1 + ">").contains("<" + gestionIri2 + ">");
-        assertThat(query).doesNotContain(publicationIri1).doesNotContain(publicationIri2);
+        assertThat(query)
+                .contains("<" + gestionIri1 + ">")
+                .contains("<" + gestionIri2 + ">")
+                .doesNotContain(publicationIri1)
+                .doesNotContain(publicationIri2);
 
         // The result must be keyed by the publication IRIs the caller passed in.
         assertThat(result).hasSize(2);

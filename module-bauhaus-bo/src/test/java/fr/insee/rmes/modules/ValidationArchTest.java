@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * Un corps de requête doit être validé par Bean Validation, pas par des {@code if} dispersés
@@ -27,6 +29,9 @@ import org.springframework.web.bind.annotation.RequestBody;
  * {@code @RequestBody String} bruts) sont enregistrés dans {@code archunit_store} et tolérés,
  * mais aucun nouvel endpoint ne peut s'ajouter sans {@code @Valid}. Le store ne doit que décroître,
  * lot après lot.
+ * <p>
+ * La partie JSON d'un envoi multipart ({@code @RequestPart} qui n'est pas un fichier) est un corps
+ * comme un autre : elle suit la même règle.
  *
  * @see ArchUnitStoreTest
  */
@@ -61,8 +66,18 @@ public class ValidationArchTest {
                                 method,
                                 method.getFullName() + " takes a @RequestBody that is not annotated with @Valid"));
                     }
+                    if (isJsonPart(parameter) && !parameter.isAnnotatedWith(Valid.class)) {
+                        events.add(SimpleConditionEvent.violated(
+                                method,
+                                method.getFullName() + " takes a @RequestPart that is not annotated with @Valid"));
+                    }
                 }
             }
         };
+    }
+
+    private static boolean isJsonPart(JavaParameter parameter) {
+        return parameter.isAnnotatedWith(RequestPart.class)
+                && !parameter.getRawType().isAssignableTo(MultipartFile.class);
     }
 }

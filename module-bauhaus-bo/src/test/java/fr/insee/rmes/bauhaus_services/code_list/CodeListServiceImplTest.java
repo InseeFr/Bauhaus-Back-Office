@@ -3,14 +3,15 @@ package fr.insee.rmes.bauhaus_services.code_list;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Answers.CALLS_REAL_METHODS;
 import static org.mockito.Mockito.*;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.Constants;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausIriFactory;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfTriples;
+import fr.insee.rmes.config.BauhausIriFactoryStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
@@ -47,15 +48,15 @@ class CodeListServiceImplTest {
     JSONObject counter;
 
     @Spy
+    BauhausIriFactory iriFactory = BauhausIriFactoryStub.stub("codes");
+
+    @Spy
     @InjectMocks
     CodeListServiceImpl codeListService;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    private static final IRI OWL_CLASS_IRI = RdfUtils.createIRI("http://concept/lastClassUriSegment");
-    private static final IRI CODE_IRI = RdfUtils.createIRI("http://lastCodeUriSegment/code");
-    private static final IRI CODES_LIST_IRI = RdfUtils.createIRI("http://codeLists");
-    private static final IRI CODES_LIST_GRAPH = RdfUtils.createIRI("http://codesListGraph");
+    private static final IRI CODE_IRI = RdfTriples.iriAsIs("http://bauhaus/codes/lastCodeUriSegment/code");
 
     /**
      * Service réel, doté des deux langues, dont seule la lecture de la liste de codes est simulée :
@@ -73,22 +74,11 @@ class CodeListServiceImplTest {
                 new BauhausLanguagesProperties("fr", "en"),
                 null,
                 null,
-                codeListsQueries));
+                codeListsQueries,
+                null,
+                iriFactory));
         doReturn(codesList).when(service).getDetailedCodesListJson(notation);
         return service;
-    }
-
-    /** IRI et littéraux passent par des méthodes statiques : sans ces stubs, le modèle sort vide. */
-    private static void stubRdfUtilsForCode(MockedStatic<RdfUtils> rdfUtils) {
-        rdfUtils.when(() -> RdfUtils.codeListIRI("concept/lastClassUriSegment")).thenReturn(OWL_CLASS_IRI);
-        rdfUtils.when(() -> RdfUtils.codeListIRI("lastCodeUriSegment/code")).thenReturn(CODE_IRI);
-        rdfUtils.when(() -> RdfUtils.codeListIRI("lastListUriSegment")).thenReturn(CODES_LIST_IRI);
-        rdfUtils.when(() -> RdfUtils.addTripleString(any(), any(), any(), any(), any()))
-                .thenCallRealMethod();
-        rdfUtils.when(() -> RdfUtils.setLiteralString(any(String.class))).thenCallRealMethod();
-        rdfUtils.when(() -> RdfUtils.setLiteralString(any(String.class), any(String.class)))
-                .thenCallRealMethod();
-        rdfUtils.when(RdfUtils::codesListGraph).thenReturn(CODES_LIST_GRAPH);
     }
 
     /** Réponse de la requête d'existence d'un code : vide = le code n'est pas dans la liste. */
@@ -207,20 +197,19 @@ class CodeListServiceImplTest {
 
         CodeRequest code = new CodeRequest("code", "labelLg1", "labelLg2", null, null);
 
-        try (MockedStatic<RdfUtils> mockedFactory = Mockito.mockStatic(RdfUtils.class)) {
-            stubRdfUtilsForCode(mockedFactory);
+        String result = service.addCodeFromCodeList("notation", code);
 
-            String result = service.addCodeFromCodeList("notation", code);
+        ArgumentCaptor<Model> model = ArgumentCaptor.forClass(Model.class);
+        verify(repositoryGestion, times(1)).loadSimpleObject(eq(CODE_IRI), model.capture(), eq(null));
 
-            ArgumentCaptor<Model> model = ArgumentCaptor.forClass(Model.class);
-            verify(repositoryGestion, times(1)).loadSimpleObject(eq(CODE_IRI), model.capture(), eq(null));
-
-            assertEquals("code", result);
-            Assertions.assertEquals("""
-                    [(http://lastCodeUriSegment/code, http://www.w3.org/2004/02/skos/core#notation, "code") [http://codesListGraph], \
-                    (http://lastCodeUriSegment/code, http://www.w3.org/2004/02/skos/core#prefLabel, "labelLg1"@fr) [http://codesListGraph], \
-                    (http://lastCodeUriSegment/code, http://www.w3.org/2004/02/skos/core#prefLabel, "labelLg2"@en) [http://codesListGraph]]""", model.getValue().toString());
-        }
+        assertEquals("code", result);
+        Assertions.assertEquals("""
+                [(http://bauhaus/codes/lastCodeUriSegment/code, http://www.w3.org/2004/02/skos/core#inScheme, http://bauhaus/codes/lastListUriSegment) [http://rdf.insee.fr/graphes/codes], \
+                (http://bauhaus/codes/lastCodeUriSegment/code, http://www.w3.org/2004/02/skos/core#notation, "code") [http://rdf.insee.fr/graphes/codes], \
+                (http://bauhaus/codes/lastCodeUriSegment/code, http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://www.w3.org/2004/02/skos/core#Concept) [http://rdf.insee.fr/graphes/codes], \
+                (http://bauhaus/codes/lastCodeUriSegment/code, http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://bauhaus/codes/concept/lastClassUriSegment) [http://rdf.insee.fr/graphes/codes], \
+                (http://bauhaus/codes/lastCodeUriSegment/code, http://www.w3.org/2004/02/skos/core#prefLabel, "labelLg1"@fr) [http://rdf.insee.fr/graphes/codes], \
+                (http://bauhaus/codes/lastCodeUriSegment/code, http://www.w3.org/2004/02/skos/core#prefLabel, "labelLg2"@en) [http://rdf.insee.fr/graphes/codes]]""", model.getValue().toString());
     }
 
     @Test
@@ -232,21 +221,16 @@ class CodeListServiceImplTest {
         CodeRequest first = new CodeRequest("code", "labelLg1", "labelLg2", null, null);
         CodeRequest second = new CodeRequest("code", "autre libellé", "another label", null, null);
 
-        try (MockedStatic<RdfUtils> mockedFactory = Mockito.mockStatic(RdfUtils.class)) {
-            stubRdfUtilsForCode(mockedFactory);
+        assertEquals("code", service.addCodeFromCodeList("notation", first));
 
-            assertEquals("code", service.addCodeFromCodeList("notation", first));
+        RmesException exception =
+                assertThrows(RmesBadRequestException.class, () -> service.addCodeFromCodeList("notation", second));
 
-            RmesException exception =
-                    assertThrows(RmesBadRequestException.class, () -> service.addCodeFromCodeList("notation", second));
-
-            assertEquals(400, exception.getStatus());
-            assertThat(exception.getDetails()).contains("Code already exists in this code list");
-            assertThat(exception.getDetails())
-                    .contains(String.valueOf(CodesListErrorCodes.CODE_LIST_CODE_ALREADY_EXISTS));
-            // Le second appel n'a rien écrit : la liste garde le code et les libellés du premier.
-            verify(repositoryGestion, times(1)).loadSimpleObject(eq(CODE_IRI), any(), eq(null));
-        }
+        assertEquals(400, exception.getStatus());
+        assertThat(exception.getDetails()).contains("Code already exists in this code list");
+        assertThat(exception.getDetails()).contains(String.valueOf(CodesListErrorCodes.CODE_LIST_CODE_ALREADY_EXISTS));
+        // Le second appel n'a rien écrit : la liste garde le code et les libellés du premier.
+        verify(repositoryGestion, times(1)).loadSimpleObject(eq(CODE_IRI), any(), eq(null));
     }
 
     @Test
@@ -257,15 +241,11 @@ class CodeListServiceImplTest {
 
         CodeRequest body = new CodeRequest("code", "nouveau libellé", "new label", null, null);
 
-        try (MockedStatic<RdfUtils> mockedFactory = Mockito.mockStatic(RdfUtils.class)) {
-            stubRdfUtilsForCode(mockedFactory);
+        assertEquals("code", service.updateCodeFromCodeList("notation", "code", body));
 
-            assertEquals("code", service.updateCodeFromCodeList("notation", "code", body));
-
-            InOrder inOrder = inOrder(repositoryGestion);
-            inOrder.verify(repositoryGestion).deleteObject(CODE_IRI, null);
-            inOrder.verify(repositoryGestion).loadSimpleObject(eq(CODE_IRI), any(), eq(null));
-        }
+        InOrder inOrder = inOrder(repositoryGestion);
+        inOrder.verify(repositoryGestion).deleteObject(CODE_IRI, null);
+        inOrder.verify(repositoryGestion).loadSimpleObject(eq(CODE_IRI), any(), eq(null));
     }
 
     private static String codesListBody(String id) {
@@ -307,31 +287,22 @@ class CodeListServiceImplTest {
      */
     @Test
     void setCodesList_whenTheCodeListDoesNotExist_shouldThrowNotFound() throws RmesException {
-        IRI codeListIri = RdfUtils.createIRI("http://codelists/lastListUriSegment");
+        when(codeListsQueries.getCodesListByIri("http://bauhaus/codes/lastListUriSegment"))
+                .thenReturn("iri-query");
+        when(repositoryGestion.getResponseAsObject("iri-query")).thenReturn(new JSONObject());
 
-        try (MockedStatic<RdfUtils> mockedRdfUtils = Mockito.mockStatic(RdfUtils.class, CALLS_REAL_METHODS)) {
-            mockedRdfUtils
-                    .when(() -> RdfUtils.codeListIRI("lastListUriSegment"))
-                    .thenReturn(codeListIri);
-            when(codeListsQueries.getCodesListByIri("http://codelists/lastListUriSegment"))
-                    .thenReturn("iri-query");
-            when(repositoryGestion.getResponseAsObject("iri-query")).thenReturn(new JSONObject());
+        RmesException exception = assertThrows(
+                RmesNotFoundException.class,
+                () -> codeListService.setCodesList("CL_TEST", codesListBody("CL_TEST"), CodeListKind.FULL));
 
-            RmesException exception = assertThrows(
-                    RmesNotFoundException.class,
-                    () -> codeListService.setCodesList("CL_TEST", codesListBody("CL_TEST"), CodeListKind.FULL));
-
-            assertEquals(404, exception.getStatus());
-            verify(repositoryGestion, never()).loadSimpleObject(any(), any(), any());
-            verify(codeListsQueries, never()).getDetailedCodeListByNotation(anyString());
-        }
+        assertEquals(404, exception.getStatus());
+        verify(repositoryGestion, never()).loadSimpleObject(any(), any(), any());
+        verify(codeListsQueries, never()).getDetailedCodeListByNotation(anyString());
     }
 
     @Test
     void setCodesList_whenTheIdIsRenamed_shouldKeepTheIriAndThePersistedCreationDate() throws RmesException {
-        IRI codeListIri = RdfUtils.createIRI("http://codelists/lastListUriSegment");
-        IRI owlClassIri = RdfUtils.createIRI("http://codelists/concept/lastClassUriSegment");
-        IRI graph = RdfUtils.createIRI("http://codesListGraph");
+        IRI codeListIri = RdfTriples.iriAsIs("http://bauhaus/codes/lastListUriSegment");
         CodeListServiceImpl service = new CodeListServiceImpl(
                 repositoryGestion,
                 null,
@@ -339,31 +310,23 @@ class CodeListServiceImplTest {
                 new BauhausLanguagesProperties("fr", "en"),
                 null,
                 null,
-                codeListsQueries);
+                codeListsQueries,
+                null,
+                iriFactory);
 
-        try (MockedStatic<RdfUtils> mockedRdfUtils = Mockito.mockStatic(RdfUtils.class, CALLS_REAL_METHODS)) {
-            mockedRdfUtils
-                    .when(() -> RdfUtils.codeListIRI("lastListUriSegment"))
-                    .thenReturn(codeListIri);
-            mockedRdfUtils
-                    .when(() -> RdfUtils.codeListIRI("concept/lastClassUriSegment"))
-                    .thenReturn(owlClassIri);
-            mockedRdfUtils.when(RdfUtils::codesListGraph).thenReturn(graph);
+        when(codeListsQueries.getCodesListByIri("http://bauhaus/codes/lastListUriSegment"))
+                .thenReturn("iri-query");
+        when(repositoryGestion.getResponseAsObject("iri-query"))
+                .thenReturn(new JSONObject().put("created", "2020-01-01T00:00:00"));
 
-            when(codeListsQueries.getCodesListByIri("http://codelists/lastListUriSegment"))
-                    .thenReturn("iri-query");
-            when(repositoryGestion.getResponseAsObject("iri-query"))
-                    .thenReturn(new JSONObject().put("created", "2020-01-01T00:00:00"));
+        String id = service.setCodesList("CL_RENAMED", codesListBody("CL_RENAMED"), CodeListKind.FULL);
 
-            String id = service.setCodesList("CL_RENAMED", codesListBody("CL_RENAMED"), CodeListKind.FULL);
-
-            assertEquals("CL_RENAMED", id);
-            ArgumentCaptor<Model> model = ArgumentCaptor.forClass(Model.class);
-            verify(repositoryGestion).loadSimpleObject(eq(codeListIri), model.capture(), eq(null));
-            assertThat(model.getValue().toString())
-                    .contains("http://purl.org/dc/terms/created, \"2020-01-01T00:00:00\"")
-                    .contains("\"CL_RENAMED\"");
-        }
+        assertEquals("CL_RENAMED", id);
+        ArgumentCaptor<Model> model = ArgumentCaptor.forClass(Model.class);
+        verify(repositoryGestion).loadSimpleObject(eq(codeListIri), model.capture(), eq(null));
+        assertThat(model.getValue().toString())
+                .contains("http://purl.org/dc/terms/created, \"2020-01-01T00:00:00\"")
+                .contains("\"CL_RENAMED\"");
     }
 
     @Test
@@ -395,21 +358,14 @@ class CodeListServiceImplTest {
 
     @Test
     void deleteCodeFromCodeList() throws RmesException {
-        IRI codeIRI = RdfUtils.createIRI("http://lastCodeUriSegment/code");
+        JSONObject codesList = new JSONObject();
+        codesList.put("lastCodeUriSegment", "lastCodeUriSegment");
 
-        try (MockedStatic<RdfUtils> mockedFactory = Mockito.mockStatic(RdfUtils.class)) {
-            mockedFactory
-                    .when(() -> RdfUtils.codeListIRI("lastCodeUriSegment/code"))
-                    .thenReturn(codeIRI);
-            JSONObject codesList = new JSONObject();
-            codesList.put("lastCodeUriSegment", "lastCodeUriSegment");
-
-            when(codeListsQueries.getCodeByNotation("notation", "code")).thenReturn("code-query");
-            when(repositoryGestion.getResponseAsObject("code-query")).thenReturn(new JSONObject().put("code", "code"));
-            doReturn(codesList).when(codeListService).getDetailedCodesListJson("notation");
-            codeListService.deleteCodeFromCodeList("notation", "code");
-            verify(repositoryGestion, times(1)).deleteObject(codeIRI, null);
-        }
+        when(codeListsQueries.getCodeByNotation("notation", "code")).thenReturn("code-query");
+        when(repositoryGestion.getResponseAsObject("code-query")).thenReturn(new JSONObject().put("code", "code"));
+        doReturn(codesList).when(codeListService).getDetailedCodesListJson("notation");
+        codeListService.deleteCodeFromCodeList("notation", "code");
+        verify(repositoryGestion, times(1)).deleteObject(CODE_IRI, null);
     }
 
     @Test

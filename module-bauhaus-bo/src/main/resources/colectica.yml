@@ -10,7 +10,7 @@ fr.insee.rmes.bauhaus.colectica:
   # rien n'est écouté, le chemin d'écriture RDF est inchangé.
   # La synchronisation est synchrone et bloquante : si Colectica refuse l'écriture, la requête échoue.
   operations-mirror:
-    enabled: false
+    enabled: true
 
   server:
     # Primary Colectica Instance
@@ -35,6 +35,12 @@ fr.insee.rmes.bauhaus.colectica:
     baseUrl: https://metadonnees-operations-demo.insee.fr/
     apiPath: /api/v1/
     defaultAgencyId: fr.insee
+
+    # Timeouts des appels HTTP vers Colectica (format Spring Duration). Absents : 5s pour ouvrir la
+    # connexion, 2m pour attendre la réponse (les lectures de set et les écritures de gros items
+    # sont lentes). Sans eux, un Colectica qui ne répond plus bloquait le thread de la requête.
+    # connectTimeout: 5s
+    # readTimeout: 2m
 
     # Authentication mode:
     # - "password": Uses username/password credentials to obtain a token from /token/createtoken endpoint.

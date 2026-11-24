@@ -106,10 +106,6 @@ class OrganisationGraphDBRepositoryTest {
                 .contains("\"fr\"")
                 .contains("adms:identifier")
                 .contains("skos:prefLabel");
-        assertThat(query).contains("http://rdf.insee.fr/graphes/organisations/insee");
-        assertThat(query).contains("\"fr\"");
-        assertThat(query).contains("adms:identifier");
-        assertThat(query).contains("skos:prefLabel");
     }
 
     @Test

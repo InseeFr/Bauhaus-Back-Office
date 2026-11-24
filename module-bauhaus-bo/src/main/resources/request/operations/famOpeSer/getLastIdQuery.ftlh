@@ -1,5 +1,5 @@
 # Dernier identifiant du compteur partagé des familles, séries et opérations.
-# L'identifiant est le dernier segment de l'IRI : RdfUtils.objectIRI le construit ainsi.
+# L'identifiant est le dernier segment de l'IRI : BauhausIriFactory.objectIri le construit ainsi.
 # Les exports historiques n'ont pas d'adms:identifier, on ne peut donc pas s'appuyer dessus.
 # Le FILTER écarte tout ce qui n'est pas un identifiant, sans quoi xsd:integer échoue et ?id
 # reste non lié.

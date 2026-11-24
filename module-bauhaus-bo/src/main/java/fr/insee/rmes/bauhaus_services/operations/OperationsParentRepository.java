@@ -1,9 +1,9 @@
 package fr.insee.rmes.bauhaus_services.operations;
 
 import fr.insee.rmes.Constants;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausIriFactory;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.bauhaus_services.utils.OrganisationLookup;
 import fr.insee.rmes.domain.exceptions.RmesException;
@@ -45,6 +45,8 @@ public class OperationsParentRepository extends RdfService {
 
     private final OrganisationLookup organisationLookup;
 
+    private final BauhausIriFactory iriFactory;
+
     public OperationsParentRepository(
             RepositoryGestion repoGestion,
             IdGenerator idGenerator,
@@ -56,8 +58,10 @@ public class OperationsParentRepository extends RdfService {
             ParentQueries parentQueries,
             OperationQueries operationQueries,
             OperationSeriesQueries operationSeriesQueries,
-            OrganisationLookup organisationLookup) {
+            OrganisationLookup organisationLookup,
+            BauhausIriFactory iriFactory) {
         super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
+        this.iriFactory = iriFactory;
         this.operationIndicatorsQueries = operationIndicatorsQueries;
         this.operationsOperationQueries = operationsOperationQueries;
         this.documentationQueries = documentationQueries;
@@ -94,7 +98,7 @@ public class OperationsParentRepository extends RdfService {
     public IRI getSeriesUriByOperationId(String idOperation) throws RmesException {
         JSONObject series = repoGestion.getResponseAsObject(operationsOperationQueries.seriesQuery(idOperation));
         if (series != null && series.has(Constants.ID))
-            return RdfUtils.objectIRI(ObjectType.SERIES, series.getString(Constants.ID));
+            return iriFactory.objectIri(ObjectType.SERIES, series.getString(Constants.ID));
         return null;
     }
 
@@ -141,8 +145,8 @@ public class OperationsParentRepository extends RdfService {
     }
 
     public JSONArray getSeriesCreators(IRI iri) throws RmesException {
-        JSONArray raw = repoGestion.getResponseAsJSONList(
-                operationSeriesQueries.getCreatorsBySeriesUri(RdfUtils.toString(iri)));
+        JSONArray raw =
+                repoGestion.getResponseAsJSONList(operationSeriesQueries.getCreatorsBySeriesUri(iri.toString()));
         return organisationLookup.canonicalize(raw);
     }
 

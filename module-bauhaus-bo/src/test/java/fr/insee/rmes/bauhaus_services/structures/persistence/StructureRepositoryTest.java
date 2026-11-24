@@ -10,8 +10,9 @@ import static org.mockito.Mockito.*;
 import fr.insee.rmes.AppSpringBootTest;
 import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.Constants;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausIriFactory;
 import fr.insee.rmes.bauhaus_services.structures.StructureComponent;
+import fr.insee.rmes.config.BauhausIriFactoryStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
@@ -40,7 +41,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -54,6 +54,9 @@ class StructureRepositoryTest {
 
     @Spy
     BauhausLanguagesProperties languages = new BauhausLanguagesProperties("fr", "en");
+
+    @Spy
+    BauhausIriFactory iriFactory = BauhausIriFactoryStub.stub("structuresDSD");
 
     @MockitoBean
     RepositoryGestion repositoryGestion;
@@ -169,66 +172,29 @@ class StructureRepositoryTest {
         IRI structureIri = SimpleValueFactory.getInstance().createIRI("http://bauhaus/structuresDSD/dsd1000");
         Resource graph = SimpleValueFactory.getInstance().createIRI("http://rdf.insee.fr/graphes/structures");
 
-        try (MockedStatic<RdfUtils> rdfUtilsMock = mockStatic(RdfUtils.class)) {
-            rdfUtilsMock.when(() -> RdfUtils.toURI(anyString())).thenCallRealMethod();
-            rdfUtilsMock.when(() -> RdfUtils.setLiteralString(anyString())).thenCallRealMethod();
-            rdfUtilsMock
-                    .when(() -> RdfUtils.setLiteralString(anyString(), anyString()))
-                    .thenCallRealMethod();
-            rdfUtilsMock
-                    .when(() -> RdfUtils.setLiteralString(any(ValidationStatus.class)))
-                    .thenCallRealMethod();
-            rdfUtilsMock
-                    .when(() -> RdfUtils.addTripleString(
-                            any(IRI.class), any(IRI.class), anyString(), any(Model.class), any(Resource.class)))
-                    .thenCallRealMethod();
-            rdfUtilsMock
-                    .when(() -> RdfUtils.addTripleString(
-                            any(IRI.class),
-                            any(IRI.class),
-                            anyString(),
-                            anyString(),
-                            any(Model.class),
-                            any(Resource.class)))
-                    .thenCallRealMethod();
-            rdfUtilsMock
-                    .when(() -> RdfUtils.addTripleDateTime(
-                            any(IRI.class), any(IRI.class), anyString(), any(Model.class), any(Resource.class)))
-                    .thenCallRealMethod();
-            rdfUtilsMock
-                    .when(() -> RdfUtils.addTripleUri(
-                            any(IRI.class), any(IRI.class), any(IRI.class), any(Model.class), any(Resource.class)))
-                    .thenCallRealMethod();
-            rdfUtilsMock
-                    .when(() -> RdfUtils.addTripleUri(
-                            any(Resource.class), any(IRI.class), anyString(), any(Model.class), any(Resource.class)))
-                    .thenCallRealMethod();
+        Structure structure = new Structure("dsd1000");
+        structure.setIdentifiant("identifiant");
+        structure.setLabelLg1("label fr");
+        structure.setLabelLg2("label en");
+        structure.setCreator("http://creator-uri");
+        structure.setContributor(List.of("http://contributor-uri"));
+        structure.setComponentDefinitions(List.of());
 
-            Structure structure = new Structure("dsd1000");
-            structure.setIdentifiant("identifiant");
-            structure.setLabelLg1("label fr");
-            structure.setLabelLg2("label en");
-            structure.setCreator("http://creator-uri");
-            structure.setContributor(List.of("http://contributor-uri"));
-            structure.setComponentDefinitions(List.of());
+        structureRepository.createRdfStructure(structure, "dsd1000", structureIri, graph, ValidationStatus.UNPUBLISHED);
 
-            structureRepository.createRdfStructure(
-                    structure, "dsd1000", structureIri, graph, ValidationStatus.UNPUBLISHED);
+        ArgumentCaptor<Model> modelCaptor = ArgumentCaptor.forClass(Model.class);
+        verify(repositoryGestion).loadSimpleObject(eq(structureIri), modelCaptor.capture(), isNull());
 
-            ArgumentCaptor<Model> modelCaptor = ArgumentCaptor.forClass(Model.class);
-            verify(repositoryGestion).loadSimpleObject(eq(structureIri), modelCaptor.capture(), isNull());
+        Model model = modelCaptor.getValue();
+        IRI expectedCreatorIri = SimpleValueFactory.getInstance().createIRI("http://creator-uri");
+        IRI expectedContributorIri = SimpleValueFactory.getInstance().createIRI("http://contributor-uri");
 
-            Model model = modelCaptor.getValue();
-            IRI expectedCreatorIri = SimpleValueFactory.getInstance().createIRI("http://creator-uri");
-            IRI expectedContributorIri = SimpleValueFactory.getInstance().createIRI("http://contributor-uri");
-
-            assertThat(model)
-                    .anyMatch(stmt -> stmt.getPredicate().equals(DC.CREATOR)
-                            && stmt.getObject().equals(expectedCreatorIri));
-            assertThat(model)
-                    .anyMatch(stmt -> stmt.getPredicate().equals(DC.CONTRIBUTOR)
-                            && stmt.getObject().equals(expectedContributorIri));
-        }
+        assertThat(model)
+                .anyMatch(stmt -> stmt.getPredicate().equals(DC.CREATOR)
+                        && stmt.getObject().equals(expectedCreatorIri));
+        assertThat(model)
+                .anyMatch(stmt -> stmt.getPredicate().equals(DC.CONTRIBUTOR)
+                        && stmt.getObject().equals(expectedContributorIri));
     }
 
     @Test

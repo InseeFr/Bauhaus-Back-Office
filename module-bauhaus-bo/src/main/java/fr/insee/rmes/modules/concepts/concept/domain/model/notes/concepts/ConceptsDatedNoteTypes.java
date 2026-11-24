@@ -62,7 +62,7 @@ public enum ConceptsDatedNoteTypes {
         }
     }
 
-    private String text;
+    private final String text;
 
     ConceptsDatedNoteTypes(String text) {
         this.text = text;

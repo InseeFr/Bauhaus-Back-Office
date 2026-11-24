@@ -1,11 +1,13 @@
 package fr.insee.rmes.modules.datasets.distributions.webservice;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -16,6 +18,7 @@ import fr.insee.rmes.bauhaus_services.datasets.DatasetService;
 import fr.insee.rmes.bauhaus_services.distribution.DistributionService;
 import fr.insee.rmes.modules.commons.configuration.LogRequestFilter;
 import fr.insee.rmes.modules.datasets.distributions.model.Distribution;
+import fr.insee.rmes.modules.datasets.distributions.model.PatchDistribution;
 import fr.insee.rmes.modules.users.domain.port.serverside.UserDecoder;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
@@ -38,7 +41,7 @@ import tools.jackson.databind.json.JsonMapper;
  * de données, sans libellés, ou avec une adresse d'accès ou de téléchargement qui n'est pas une URL est
  * refusé en 400 nommant le champ, avant que le service n'écrive quoi que ce soit. Avant, le service
  * refusait les champs absents avec un 400 sans champ, et acceptait les valeurs blanches et les
- * adresses mal formées.
+ * adresses mal formées. Le PATCH refuse de même une adresse de téléchargement mal formée.
  */
 @WebMvcTest(
         value = DistributionResources.class,
@@ -175,5 +178,35 @@ class DistributionResourcesValidationTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.identifier").value(scriptId));
+    }
+
+    @Test
+    void patchDistribution_whenTheUrlIsMalformed_shouldReturnBadRequestNamingIt() throws Exception {
+        mockMvc.perform(patch("/distribution/{id}", "d1001")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"url\": \"insee.fr/fichier\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors[*].field").value(Matchers.contains("url")));
+
+        verify(distributionService, never()).patchDistribution(anyString(), any(PatchDistribution.class));
+    }
+
+    @Test
+    void patchDistribution_whenTheBodyIsValid_shouldForwardItToTheService() throws Exception {
+        mockMvc.perform(patch("/distribution/{id}", "d1001")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"updated": "2026-10-22T00:00:00",
+                                 "byteSize": "2048",
+                                 "url": "https://www.insee.fr/fr/statistiques/fichier/1.zip"}"""))
+                .andExpect(status().isOk());
+
+        ArgumentCaptor<PatchDistribution> forwarded = ArgumentCaptor.forClass(PatchDistribution.class);
+        verify(distributionService).patchDistribution(eq("d1001"), forwarded.capture());
+        assertEquals("2026-10-22T00:00:00", forwarded.getValue().getUpdated());
+        assertEquals("2048", forwarded.getValue().getByteSize());
+        assertEquals(
+                "https://www.insee.fr/fr/statistiques/fichier/1.zip",
+                forwarded.getValue().getUrl());
     }
 }

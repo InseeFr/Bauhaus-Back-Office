@@ -25,7 +25,7 @@ class OperationsObjectMapperTest {
 
         jsonObject.put(Constants.CREATORS, creators);
 
-        OperationsObjectMapper operationsObjectMapper = new OperationsObjectMapper(null, null, null, null, null);
+        OperationsObjectMapper operationsObjectMapper = new OperationsObjectMapper(null, null, null, null, null, null);
 
         IdLabelTwoLangs labelTwoLangs = operationsObjectMapper.buildIdLabelTwoLangsFromJson(jsonObject);
 
@@ -57,7 +57,7 @@ class OperationsObjectMapperTest {
         jsonObjectAfter.put(Constants.CONTRIBUTORS, "contributorsExample");
         jsonObjectAfter.put(Constants.DATA_COLLECTORS, "dataCollectorsExample");
 
-        OperationsObjectMapper operationsObjectMapper = new OperationsObjectMapper(null, null, null, null, null);
+        OperationsObjectMapper operationsObjectMapper = new OperationsObjectMapper(null, null, null, null, null, null);
         operationsObjectMapper.fixOrganizationsNames(jsonObjectBefore);
 
         assertEquals(jsonObjectAfter.toString(), jsonObjectBefore.toString());
@@ -68,7 +68,7 @@ class OperationsObjectMapperTest {
 
         JSONArray jsonArray = new JSONArray();
         jsonArray.put(Constants.ID).put(Constants.UNDEFINED).put(Constants.LABEL_LG1);
-        OperationsObjectMapper operationsObjectMapper = new OperationsObjectMapper(null, null, null, null, null);
+        OperationsObjectMapper operationsObjectMapper = new OperationsObjectMapper(null, null, null, null, null, null);
 
         String actual =
                 operationsObjectMapper.buildStringListFromJson(jsonArray).toString();

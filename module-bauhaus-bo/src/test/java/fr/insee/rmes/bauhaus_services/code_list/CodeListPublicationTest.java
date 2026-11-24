@@ -9,9 +9,9 @@ import static org.mockito.Mockito.when;
 
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import java.util.Arrays;
 import java.util.Collections;
@@ -59,7 +59,7 @@ class CodeListPublicationTest {
     void shouldExcludeTriplet() {
         InternedIRI myIRI = new InternedIRI("myIRI", "creator");
         when(statement.getPredicate()).thenReturn(myIRI);
-        String pred = RdfUtils.toString(statement.getPredicate());
+        String pred = statement.getPredicate().toString();
         assertTrue(pred.endsWith("validationState")
                 || pred.endsWith(Constants.CREATOR)
                 || pred.endsWith(Constants.CONTRIBUTOR)
@@ -67,7 +67,7 @@ class CodeListPublicationTest {
     }
 
     @Test
-    void shouldThrowExceptionIfNoStatements() throws RmesException {
+    void shouldThrowNotFoundIfNoStatements() throws RmesException {
         List<Statement> fakeStatements = Collections.emptyList();
 
         IRI resource = SimpleValueFactory.getInstance().createIRI("http://codes-list/1");
@@ -79,7 +79,7 @@ class CodeListPublicationTest {
                 .thenReturn(new RepositoryResult<>(fakeRepositoryResult));
 
         Assertions.assertThrows(
-                RuntimeException.class, () -> codeListPublication.publishCodeListAndCodes(resource, GRAPH));
+                RmesNotFoundException.class, () -> codeListPublication.publishCodeListAndCodes(resource, GRAPH));
     }
 
     @Test

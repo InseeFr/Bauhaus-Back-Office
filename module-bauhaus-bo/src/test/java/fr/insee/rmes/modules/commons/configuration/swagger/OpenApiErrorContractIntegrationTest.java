@@ -55,7 +55,7 @@ class OpenApiErrorContractIntegrationTest {
         }
 
         @Bean
-        SecurityFilterChain applicationSecurityFilterChain(HttpSecurity http) throws Exception {
+        SecurityFilterChain applicationSecurityFilterChain(HttpSecurity http) {
             return http.csrf(AbstractHttpConfigurer::disable)
                     .authorizeHttpRequests(request -> request.anyRequest().permitAll())
                     .build();

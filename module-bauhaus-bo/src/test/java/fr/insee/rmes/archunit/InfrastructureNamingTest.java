@@ -5,22 +5,10 @@ import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 import com.tngtech.archunit.core.domain.JavaClasses;
 import com.tngtech.archunit.core.importer.ClassFileImporter;
 import com.tngtech.archunit.core.importer.ImportOption;
-import fr.insee.rmes.modules.commons.webservice.BaseResponse;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.bind.annotation.RestController;
 
 class InfrastructureNamingTest {
-    @Test
-    void responseNaming() {
-        JavaClasses classes = new ClassFileImporter().importPackages("fr.insee.rmes.modules");
-        classes()
-                .that()
-                .areAssignableTo(BaseResponse.class)
-                .should()
-                .haveSimpleNameEndingWith("Response")
-                .check(classes);
-    }
-
     @Test
     void controllerNaming() {
         // Naming/package conventions target production controllers, not test probe controllers.

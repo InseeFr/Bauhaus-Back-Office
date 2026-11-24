@@ -8,7 +8,7 @@ public class DatableNote {
     private String noteType;
     private String lang;
     private String content;
-    private String issued;
+    private final String issued;
     private String conceptVersion;
     private String path;
     private IRI predicat;

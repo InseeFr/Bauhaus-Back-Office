@@ -13,9 +13,10 @@ import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.concepts.publication.ConceptsPublication;
 import fr.insee.rmes.bauhaus_services.notes.NoteManager;
 import fr.insee.rmes.bauhaus_services.notes.NotesRepository;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausIriFactory;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
+import fr.insee.rmes.config.BauhausIriFactoryStub;
 import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
@@ -76,17 +77,23 @@ class LegacyConceptsRepositoryTest {
     private ConceptsPublication conceptsPublication;
     private NoteManager noteManager;
     private ConceptConceptsQueries conceptConceptsQueries;
+    private final BauhausIriFactory iriFactory = BauhausIriFactoryStub.stub("concepts/definition");
 
     @BeforeEach
     void setUp() {
-        RdfUtils.setGraphs(GraphsPropertiesStub.stub());
         conceptConceptsQueries =
                 new ConceptConceptsQueries(new BauhausLanguagesProperties("fr", "en"), GraphsPropertiesStub.stub());
 
         conceptsPublication = new ConceptsPublication(
-                repoGestion, idGenerator, repositoryPublication, publicationUtils, conceptConceptsQueries, null);
+                repoGestion,
+                idGenerator,
+                repositoryPublication,
+                publicationUtils,
+                conceptConceptsQueries,
+                null,
+                iriFactory);
 
-        noteManager = new NoteManager(notesRepository);
+        noteManager = new NoteManager(notesRepository, iriFactory);
 
         legacyConceptsRepository = new LegacyConceptsRepository(
                 repoGestion,
@@ -99,16 +106,18 @@ class LegacyConceptsRepositoryTest {
                 5,
                 conceptConceptsQueries,
                 conceptsService,
-                collectionsService);
+                collectionsService,
+                iriFactory);
     }
 
     @Test
     void shouldReturnGetConceptExportFileName() {
 
-        ConceptsPublication conceptsPublication = new ConceptsPublication(null, null, null, null, null, null);
-        NoteManager noteManager = new NoteManager(null);
+        ConceptsPublication conceptsPublication =
+                new ConceptsPublication(null, null, null, null, null, null, iriFactory);
+        NoteManager noteManager = new NoteManager(null, iriFactory);
         LegacyConceptsRepository legacyConceptsRepositoryExample = new LegacyConceptsRepository(
-                null, null, null, null, null, conceptsPublication, noteManager, 19, null, null, null);
+                null, null, null, null, null, conceptsPublication, noteManager, 19, null, null, null, iriFactory);
 
         ConceptForExport conceptForExport = new ConceptForExport();
         conceptForExport.setId("id");
@@ -161,14 +170,15 @@ class LegacyConceptsRepositoryTest {
 
     @Test
     void shouldDeleteConcept() throws RmesException {
-        RdfUtils.setGraphs(GraphsPropertiesStub.stub());
         when(repoGestion.executeUpdate(conceptConceptsQueries.deleteConcept(
-                        RdfUtils.toString(RdfUtils.objectIRI(ObjectType.CONCEPT, "c1000")),
-                        RdfUtils.conceptGraph().toString())))
+                        iriFactory.objectIri(ObjectType.CONCEPT, "c1000").toString(),
+                        iriFactory.conceptGraph().toString())))
                 .thenReturn(HttpStatus.OK);
         when(repositoryPublication.executeUpdate(conceptConceptsQueries.deleteConcept(
-                        RdfUtils.toString(RdfUtils.objectIRIPublication(ObjectType.CONCEPT, "c1000")),
-                        RdfUtils.conceptGraph().toString())))
+                        iriFactory
+                                .objectIriPublication(ObjectType.CONCEPT, "c1000")
+                                .toString(),
+                        iriFactory.conceptGraph().toString())))
                 .thenReturn(HttpStatus.BAD_REQUEST);
         HttpStatus actual = legacyConceptsRepository.deleteConcept("c1000");
         assertEquals(HttpStatus.BAD_REQUEST, actual);
@@ -213,7 +223,7 @@ class LegacyConceptsRepositoryTest {
     }
 
     @Test
-    void shouldUpdateConceptWithSetConcept() throws RmesException {
+    void shouldUpdateConceptWithSetConcept() {
         // Given
         String id = "c1";
         String body =
@@ -237,11 +247,13 @@ class LegacyConceptsRepositoryTest {
         RepositoryResult mockStatements = mock(RepositoryResult.class);
 
         when(repoGestion.getConnection()).thenReturn(mockConnection);
-        when(repoGestion.getStatements(any(), any())).thenReturn(mockStatements);
+        when(repoGestion.getStatements(any(), any(), eq(iriFactory.conceptGraph())))
+                .thenReturn(mockStatements);
         when(mockStatements.hasNext()).thenReturn(false);
 
-        // Mock getStatements on the connection itself (for publishMemberLinks)
-        when(mockConnection.getStatements(any(), any(), any(), anyBoolean())).thenReturn(mockStatements);
+        // Mock the incoming skos:member links (for publishMemberLinks)
+        when(repoGestion.getStatementsPredicateObject(any(), any(), any(), eq(iriFactory.conceptGraph())))
+                .thenReturn(mockStatements);
 
         // Mock publicationUtils to return valid IRI/Resource objects
         Resource mockResource = factory.createIRI("http://example.com/concept");

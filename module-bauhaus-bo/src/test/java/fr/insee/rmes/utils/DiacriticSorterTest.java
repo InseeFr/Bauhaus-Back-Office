@@ -49,7 +49,7 @@ class DiacriticSorterTest {
     }
 
     @Test
-    void shouldSortSimpleArray() throws RmesException {
+    void shouldSortSimpleArray() {
         JSONArray jsonArray = new JSONArray();
         jsonArray.put(new JSONArray().put("1").put("Zebra"));
         jsonArray.put(new JSONArray().put("2").put("Apple"));

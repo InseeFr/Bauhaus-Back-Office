@@ -3,7 +3,8 @@ package fr.insee.rmes.modules.concepts.collections.infrastructure.graphdb;
 import fr.insee.rmes.bauhaus_services.ConceptsService;
 import fr.insee.rmes.bauhaus_services.concepts.collections.CollectionExportBuilder;
 import fr.insee.rmes.bauhaus_services.concepts.collections.LegacyCollectionsRepository;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausIriFactory;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfTriples;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.ontologies.INSEE;
 import fr.insee.rmes.json.JSONUtils;
@@ -67,6 +68,7 @@ public class GraphDBCollectionsRepository implements CollectionsRepository {
     private final CollectionExportBuilder collectionExportBuilder;
     private final ConceptsService conceptsService;
     private final int filenameMaxLength;
+    private final BauhausIriFactory iriFactory;
 
     public GraphDBCollectionsRepository(
             RepositoryGestion repositoryGestion,
@@ -75,7 +77,8 @@ public class GraphDBCollectionsRepository implements CollectionsRepository {
             LegacyCollectionsRepository legacyCollectionsRepository,
             CollectionExportBuilder collectionExportBuilder,
             @Lazy ConceptsService conceptsService,
-            @Value("${fr.insee.rmes.bauhaus.filenames.maxlength}") int filenameMaxLength) {
+            @Value("${fr.insee.rmes.bauhaus.filenames.maxlength}") int filenameMaxLength,
+            BauhausIriFactory iriFactory) {
         this.repositoryGestion = repositoryGestion;
         this.graphDBCollectionProperties = graphDBCollectionProperties;
         this.conceptCollectionsQueries = conceptCollectionsQueries;
@@ -83,6 +86,7 @@ public class GraphDBCollectionsRepository implements CollectionsRepository {
         this.collectionExportBuilder = collectionExportBuilder;
         this.conceptsService = conceptsService;
         this.filenameMaxLength = filenameMaxLength;
+        this.iriFactory = iriFactory;
     }
 
     @Override
@@ -135,38 +139,34 @@ public class GraphDBCollectionsRepository implements CollectionsRepository {
         Resource graph = graphDBCollectionProperties.getResourceGraph();
 
         model.add(collectionURI, RDF.TYPE, SKOS.COLLECTION, graph);
-        model.add(
-                collectionURI,
-                INSEE.VALIDATION_STATE,
-                RdfUtils.setLiteralString(graphDBCollection.validationState()),
-                graph);
+        model.add(collectionURI, INSEE.VALIDATION_STATE, RdfTriples.string(graphDBCollection.validationState()), graph);
         model.add(
                 collectionURI,
                 DCTERMS.TITLE,
-                RdfUtils.setLiteralString(graphDBCollection.prefLabelLg1(), graphDBCollection.prefLabelLg1_lg()),
+                RdfTriples.string(graphDBCollection.prefLabelLg1(), graphDBCollection.prefLabelLg1_lg()),
                 graph);
-        model.add(collectionURI, DCTERMS.CREATED, RdfUtils.setLiteralDateTime(graphDBCollection.created()), graph);
+        model.add(collectionURI, DCTERMS.CREATED, RdfTriples.dateTime(graphDBCollection.created()), graph);
 
-        RdfUtils.addTripleUri(collectionURI, DC.CONTRIBUTOR, graphDBCollection.contributor(), model, graph);
-        RdfUtils.addTripleUri(collectionURI, DC.CREATOR, graphDBCollection.creator(), model, graph);
+        RdfTriples.addUri(collectionURI, DC.CONTRIBUTOR, graphDBCollection.contributor(), model, graph);
+        RdfTriples.addUri(collectionURI, DC.CREATOR, graphDBCollection.creator(), model, graph);
 
         /*Optional*/
-        RdfUtils.addTripleDateTime(collectionURI, DCTERMS.MODIFIED, graphDBCollection.modified(), model, graph);
-        RdfUtils.addTripleString(
+        RdfTriples.addDateTime(collectionURI, DCTERMS.MODIFIED, graphDBCollection.modified(), model, graph);
+        RdfTriples.addString(
                 collectionURI,
                 DCTERMS.TITLE,
                 graphDBCollection.prefLabelLg2(),
                 graphDBCollection.prefLabelLg2_lg(),
                 model,
                 graph);
-        RdfUtils.addTripleString(
+        RdfTriples.addString(
                 collectionURI,
                 DCTERMS.DESCRIPTION,
                 graphDBCollection.descriptionLg1(),
                 graphDBCollection.descriptionLg1_lg(),
                 model,
                 graph);
-        RdfUtils.addTripleString(
+        RdfTriples.addString(
                 collectionURI,
                 DCTERMS.DESCRIPTION,
                 graphDBCollection.descriptionLg2(),
@@ -176,7 +176,7 @@ public class GraphDBCollectionsRepository implements CollectionsRepository {
 
         /*Members*/
         graphDBCollection.conceptIds().forEach(conceptId -> {
-            IRI memberIRI = RdfUtils.conceptIRI(conceptId);
+            IRI memberIRI = iriFactory.concept(conceptId);
             model.add(collectionURI, SKOS.MEMBER, memberIRI, graph);
         });
 
@@ -273,7 +273,7 @@ public class GraphDBCollectionsRepository implements CollectionsRepository {
     @Override
     public void linkConceptToCollection(CollectionId collectionId, String conceptId) throws CollectionsSaveException {
         try {
-            String conceptUri = RdfUtils.conceptIRI(conceptId).toString();
+            String conceptUri = iriFactory.concept(conceptId).toString();
             String graph = graphDBCollectionProperties.getResourceGraph().toString();
             repositoryGestion.executeUpdate(
                     conceptCollectionsQueries.linkConceptToCollection(collectionId.value(), conceptUri, graph));
@@ -286,7 +286,7 @@ public class GraphDBCollectionsRepository implements CollectionsRepository {
     public void unlinkConceptFromCollection(CollectionId collectionId, String conceptId)
             throws CollectionsSaveException {
         try {
-            String conceptUri = RdfUtils.conceptIRI(conceptId).toString();
+            String conceptUri = iriFactory.concept(conceptId).toString();
             String graph = graphDBCollectionProperties.getResourceGraph().toString();
             repositoryGestion.executeUpdate(
                     conceptCollectionsQueries.unlinkConceptFromCollection(collectionId.value(), conceptUri, graph));
@@ -390,7 +390,7 @@ public class GraphDBCollectionsRepository implements CollectionsRepository {
                     if (!conceptsIds.isEmpty()) {
                         collectionsConcepts.put(fileName, conceptsService.getConceptsExportIS(conceptsIds, null));
                     }
-                } catch (RmesException ignored) {
+                } catch (RmesException _) {
                     // Mirror legacy behavior: skip individual failures, keep building the archive.
                 }
             }

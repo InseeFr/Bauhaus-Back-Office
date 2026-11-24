@@ -7,10 +7,11 @@ import static org.mockito.Mockito.when;
 import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.bauhaus_services.operations.OperationsParentRepository;
 import fr.insee.rmes.bauhaus_services.operations.series.SeriesPublication;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausIriFactory;
 import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
+import fr.insee.rmes.config.DocumentationsPropertiesStub;
 import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.RdfConnectionDetails;
@@ -62,9 +63,6 @@ interface SeriesPublicationScenario {
     /** Le conteneur n'est vidé qu'entre deux classes : chaque test repart d'un graphe vide. */
     @BeforeEach
     default void dropTheOperationsGraph() throws RmesException {
-        RdfUtils.setGraphs(GraphsPropertiesStub.stub());
-        RdfUtils.setBauhausUriBuilder(
-                new BauhausUriBuilder(PUBLICATION_BASE, GESTION_BASE, name -> Optional.of("operations/serie")));
         gestion().executeUpdate("DROP SILENT GRAPH <%s>".formatted(OPERATIONS_GRAPH));
     }
 
@@ -114,6 +112,13 @@ interface SeriesPublicationScenario {
         return new RepositoryGestion(connectionDetails(), repositoryUtils());
     }
 
+    private BauhausIriFactory iriFactory() {
+        return new BauhausIriFactory(
+                GraphsPropertiesStub.stub(),
+                new BauhausUriBuilder(PUBLICATION_BASE, GESTION_BASE, name -> Optional.of("operations/serie")),
+                DocumentationsPropertiesStub.stub());
+    }
+
     private SeriesPublication seriesPublication(RepositoryGestion gestion) throws RmesException {
         RepositoryPublication publication = new RepositoryPublication(
                 connectionDetails().getUrlServer(), connectionDetails().repositoryId(), repositoryUtils());
@@ -125,7 +130,8 @@ interface SeriesPublicationScenario {
                 new PublicationUtils(GESTION_BASE, PUBLICATION_BASE, null, null),
                 gestion,
                 publication,
-                new OperationSeriesQueries(new BauhausLanguagesProperties("fr", "en"), GraphsPropertiesStub.stub()));
+                new OperationSeriesQueries(new BauhausLanguagesProperties("fr", "en"), GraphsPropertiesStub.stub()),
+                iriFactory());
     }
 
     private static String seriesLabelled(String label) {

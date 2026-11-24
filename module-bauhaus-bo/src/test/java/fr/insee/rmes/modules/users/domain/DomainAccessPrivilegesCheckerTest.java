@@ -14,6 +14,7 @@ import fr.insee.rmes.modules.users.domain.model.User;
 import fr.insee.rmes.modules.users.domain.port.serverside.RbacFetcher;
 import fr.insee.rmes.modules.users.domain.port.serverside.StampChecker;
 import fr.insee.rmes.modules.users.domain.port.serverside.UserDecoder;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -148,7 +149,7 @@ class DomainAccessPrivilegesCheckerTest {
 
     @Test
     void should_grant_access_with_stamp_strategy_when_stamp_matches()
-            throws Exception, StampFetchException, UnsupportedModuleException, MissingUserInformationException {
+            throws StampFetchException, UnsupportedModuleException, MissingUserInformationException {
         givenSeriesUpdateWithStampStrategy(userWithStamps("ssm", "STAMP-01"));
         whenSeriesCreatorsStampsFetched().thenReturn(List.of("STAMP-01", "STAMP-02"));
 
@@ -160,7 +161,7 @@ class DomainAccessPrivilegesCheckerTest {
 
     @Test
     void should_deny_access_with_stamp_strategy_when_stamp_does_not_match()
-            throws Exception, MissingUserInformationException, StampFetchException, UnsupportedModuleException {
+            throws MissingUserInformationException, StampFetchException, UnsupportedModuleException {
         givenSeriesUpdateWithStampStrategy(userWithStamps("ssm", "STAMP-03"));
         whenSeriesCreatorsStampsFetched().thenReturn(List.of("STAMP-01", "STAMP-02"));
 
@@ -171,7 +172,7 @@ class DomainAccessPrivilegesCheckerTest {
 
     @Test
     void should_grant_access_with_stamp_strategy_when_no_stamps_required()
-            throws Exception, MissingUserInformationException, StampFetchException, UnsupportedModuleException {
+            throws MissingUserInformationException, StampFetchException, UnsupportedModuleException {
         givenSeriesUpdateWithStampStrategy(userWithStamps("ssm", "STAMP-01"));
         whenSeriesCreatorsStampsFetched().thenReturn(List.of());
 
@@ -182,7 +183,7 @@ class DomainAccessPrivilegesCheckerTest {
 
     @Test
     void should_deny_access_when_stamp_fetch_fails()
-            throws Exception, MissingUserInformationException, StampFetchException, UnsupportedModuleException {
+            throws MissingUserInformationException, StampFetchException, UnsupportedModuleException {
         givenSeriesUpdateWithStampStrategy(userWithStamps("ssm", "STAMP-01"));
         whenSeriesCreatorsStampsFetched().thenThrow(new StampFetchException(RBAC.Module.OPERATION_SERIES, RESOURCE_ID));
 
@@ -193,7 +194,7 @@ class DomainAccessPrivilegesCheckerTest {
 
     @Test
     void should_handle_dataset_distribution_module()
-            throws Exception, MissingUserInformationException, StampFetchException, UnsupportedModuleException {
+            throws MissingUserInformationException, StampFetchException, UnsupportedModuleException {
         givenUpdateWithStampStrategyOnContributorsStamps(RBAC.Module.DATASET_DISTRIBUTION, "STAMP-01");
 
         boolean hasAccess = hasAccess("DATASET_DISTRIBUTION", "UPDATE");
@@ -204,7 +205,7 @@ class DomainAccessPrivilegesCheckerTest {
 
     @Test
     void should_handle_structure_module()
-            throws Exception, MissingUserInformationException, StampFetchException, UnsupportedModuleException {
+            throws MissingUserInformationException, StampFetchException, UnsupportedModuleException {
         givenUpdateWithStampStrategyOnContributorsStamps(RBAC.Module.STRUCTURE_STRUCTURE, "STAMP-01");
 
         boolean hasAccess = hasAccess("STRUCTURE_STRUCTURE", "UPDATE");
@@ -252,7 +253,7 @@ class DomainAccessPrivilegesCheckerTest {
 
     @Test
     void should_grant_access_with_stamp_strategy_when_user_has_multiple_stamps_and_one_matches()
-            throws Exception, StampFetchException, UnsupportedModuleException, MissingUserInformationException {
+            throws StampFetchException, UnsupportedModuleException, MissingUserInformationException {
         // User has multiple stamps: STAMP-01, STAMP-02, STAMP-03
         givenSeriesUpdateWithStampStrategy(userWithStamps("ssm", "STAMP-01", "STAMP-02", "STAMP-03"));
         // Resource only requires STAMP-02
@@ -265,7 +266,7 @@ class DomainAccessPrivilegesCheckerTest {
 
     @Test
     void should_grant_access_for_ddi_physicalinstance_with_stamp_strategy_when_stamp_matches()
-            throws Exception, StampFetchException, UnsupportedModuleException, MissingUserInformationException {
+            throws StampFetchException, UnsupportedModuleException, MissingUserInformationException {
         givenDdiGroupCreatedByStampsAAndB(userWithStamps("ssm", "stamp-A"));
 
         boolean hasAccess = accessChecker.hasAccess("DDI_PHYSICALINSTANCE", "CREATE", DDI_GROUP_ID, PRINCIPAL);
@@ -276,7 +277,7 @@ class DomainAccessPrivilegesCheckerTest {
 
     @Test
     void should_deny_access_for_ddi_physicalinstance_with_stamp_strategy_when_stamp_does_not_match()
-            throws Exception, StampFetchException, UnsupportedModuleException, MissingUserInformationException {
+            throws StampFetchException, UnsupportedModuleException, MissingUserInformationException {
         givenDdiGroupCreatedByStampsAAndB(userWithStamps("ssm", "stamp-X"));
 
         boolean hasAccess = accessChecker.hasAccess("DDI_PHYSICALINSTANCE", "CREATE", DDI_GROUP_ID, PRINCIPAL);
@@ -286,7 +287,7 @@ class DomainAccessPrivilegesCheckerTest {
 
     @Test
     void should_deny_access_when_user_has_multiple_stamps_but_none_matches()
-            throws Exception, StampFetchException, UnsupportedModuleException, MissingUserInformationException {
+            throws StampFetchException, UnsupportedModuleException, MissingUserInformationException {
         // User has multiple stamps but none match the resource
         givenSeriesUpdateWithStampStrategy(userWithStamps("ssm", "STAMP-01", "STAMP-02"));
         // Resource requires STAMP-99 which user doesn't have
@@ -342,10 +343,349 @@ class DomainAccessPrivilegesCheckerTest {
     }
 
     @Test
+    void should_grant_access_to_a_concept_whose_contributor_matches_the_user_stamp()
+            throws MissingUserInformationException, StampFetchException, UnsupportedModuleException {
+        givenUpdateWithStampStrategyOnContributorsStamps(RBAC.Module.CONCEPT_CONCEPT, "STAMP-01");
+
+        assertThat(hasAccess("CONCEPT_CONCEPT", "UPDATE")).isTrue();
+    }
+
+    @Test
+    void should_deny_access_to_a_concept_whose_contributor_does_not_match_the_user_stamp()
+            throws MissingUserInformationException, StampFetchException, UnsupportedModuleException {
+        givenUpdateWithStampStrategyOnContributorsStamps(RBAC.Module.CONCEPT_CONCEPT, "STAMP-02");
+
+        assertThat(hasAccess("CONCEPT_CONCEPT", "UPDATE")).isFalse();
+    }
+
+    @Test
+    void should_grant_access_to_a_collection_whose_contributor_matches_the_user_stamp()
+            throws MissingUserInformationException, StampFetchException, UnsupportedModuleException {
+        givenUpdateWithStampStrategyOnContributorsStamps(RBAC.Module.CONCEPT_COLLECTION, "STAMP-01");
+
+        assertThat(hasAccess("CONCEPT_COLLECTION", "UPDATE")).isTrue();
+    }
+
+    @Test
+    void should_deny_access_to_a_collection_whose_contributor_does_not_match_the_user_stamp()
+            throws MissingUserInformationException, StampFetchException, UnsupportedModuleException {
+        givenUpdateWithStampStrategyOnContributorsStamps(RBAC.Module.CONCEPT_COLLECTION, "STAMP-02");
+
+        assertThat(hasAccess("CONCEPT_COLLECTION", "UPDATE")).isFalse();
+    }
+
+    @Test
+    void should_grant_access_to_a_classification_whose_contributor_matches_the_user_stamp()
+            throws MissingUserInformationException, StampFetchException, UnsupportedModuleException {
+        givenUpdateWithStampStrategyOnContributorsStamps(RBAC.Module.CLASSIFICATION_CLASSIFICATION, "STAMP-01");
+
+        assertThat(hasAccess("CLASSIFICATION_CLASSIFICATION", "UPDATE")).isTrue();
+    }
+
+    @Test
+    void should_deny_access_to_a_classification_whose_contributor_does_not_match_the_user_stamp()
+            throws MissingUserInformationException, StampFetchException, UnsupportedModuleException {
+        givenUpdateWithStampStrategyOnContributorsStamps(RBAC.Module.CLASSIFICATION_CLASSIFICATION, "STAMP-02");
+
+        assertThat(hasAccess("CLASSIFICATION_CLASSIFICATION", "UPDATE")).isFalse();
+    }
+
+    @Test
+    void should_grant_access_to_a_codes_list_whose_contributor_matches_the_user_stamp()
+            throws MissingUserInformationException, StampFetchException, UnsupportedModuleException {
+        givenUpdateWithStampStrategyOnContributorsStamps(RBAC.Module.CODESLIST_CODESLIST, "STAMP-01");
+
+        assertThat(hasAccess("CODESLIST_CODESLIST", "UPDATE")).isTrue();
+    }
+
+    @Test
+    void should_deny_access_to_a_codes_list_whose_contributor_does_not_match_the_user_stamp()
+            throws MissingUserInformationException, StampFetchException, UnsupportedModuleException {
+        givenUpdateWithStampStrategyOnContributorsStamps(RBAC.Module.CODESLIST_CODESLIST, "STAMP-02");
+
+        assertThat(hasAccess("CODESLIST_CODESLIST", "UPDATE")).isFalse();
+    }
+
+    @Test
+    void should_grant_access_to_a_partial_codes_list_whose_contributor_matches_the_user_stamp()
+            throws MissingUserInformationException, StampFetchException, UnsupportedModuleException {
+        givenUpdateWithStampStrategyOnContributorsStamps(RBAC.Module.CODESLIST_PARTIALCODESLIST, "STAMP-01");
+
+        assertThat(hasAccess("CODESLIST_PARTIALCODESLIST", "UPDATE")).isTrue();
+    }
+
+    @Test
+    void should_deny_access_to_a_partial_codes_list_whose_contributor_does_not_match_the_user_stamp()
+            throws MissingUserInformationException, StampFetchException, UnsupportedModuleException {
+        givenUpdateWithStampStrategyOnContributorsStamps(RBAC.Module.CODESLIST_PARTIALCODESLIST, "STAMP-02");
+
+        assertThat(hasAccess("CODESLIST_PARTIALCODESLIST", "UPDATE")).isFalse();
+    }
+
+    @Test
+    void should_grant_access_to_a_family_whose_contributor_matches_the_user_stamp()
+            throws MissingUserInformationException, StampFetchException, UnsupportedModuleException {
+        givenUpdateWithStampStrategyOnContributorsStamps(RBAC.Module.OPERATION_FAMILY, "STAMP-01");
+
+        assertThat(hasAccess("OPERATION_FAMILY", "UPDATE")).isTrue();
+    }
+
+    @Test
+    void should_deny_access_to_a_family_whose_contributor_does_not_match_the_user_stamp()
+            throws MissingUserInformationException, StampFetchException, UnsupportedModuleException {
+        givenUpdateWithStampStrategyOnContributorsStamps(RBAC.Module.OPERATION_FAMILY, "STAMP-02");
+
+        assertThat(hasAccess("OPERATION_FAMILY", "UPDATE")).isFalse();
+    }
+
+    @Test
+    void should_grant_access_to_an_operation_whose_parent_series_creator_matches_the_user_stamp()
+            throws MissingUserInformationException, StampFetchException, UnsupportedModuleException {
+        givenUserWithPrivilege(
+                userWithStamps("ssm", "STAMP-01"),
+                RBAC.Module.OPERATION_OPERATION,
+                RBAC.Privilege.UPDATE,
+                RBAC.Strategy.STAMP);
+        when(stampChecker.getCreatorsStamps(RBAC.Module.OPERATION_OPERATION, RESOURCE_ID))
+                .thenReturn(List.of("STAMP-01"));
+
+        assertThat(hasAccess("OPERATION_OPERATION", "UPDATE")).isTrue();
+    }
+
+    @Test
+    void should_deny_access_to_an_operation_whose_parent_series_creator_does_not_match_the_user_stamp()
+            throws MissingUserInformationException, StampFetchException, UnsupportedModuleException {
+        givenUserWithPrivilege(
+                userWithStamps("ssm", "STAMP-01"),
+                RBAC.Module.OPERATION_OPERATION,
+                RBAC.Privilege.UPDATE,
+                RBAC.Strategy.STAMP);
+        when(stampChecker.getCreatorsStamps(RBAC.Module.OPERATION_OPERATION, RESOURCE_ID))
+                .thenReturn(List.of("STAMP-02"));
+
+        assertThat(hasAccess("OPERATION_OPERATION", "UPDATE")).isFalse();
+    }
+
+    @Test
+    void should_grant_access_to_an_indicator_whose_creator_matches_the_user_stamp()
+            throws MissingUserInformationException, StampFetchException, UnsupportedModuleException {
+        givenUserWithPrivilege(
+                userWithStamps("ssm", "STAMP-01"),
+                RBAC.Module.OPERATION_INDICATOR,
+                RBAC.Privilege.UPDATE,
+                RBAC.Strategy.STAMP);
+        when(stampChecker.getCreatorsStamps(RBAC.Module.OPERATION_INDICATOR, RESOURCE_ID))
+                .thenReturn(List.of("STAMP-01"));
+
+        assertThat(hasAccess("OPERATION_INDICATOR", "UPDATE")).isTrue();
+    }
+
+    @Test
+    void should_deny_access_to_an_indicator_whose_creator_does_not_match_the_user_stamp()
+            throws MissingUserInformationException, StampFetchException, UnsupportedModuleException {
+        givenUserWithPrivilege(
+                userWithStamps("ssm", "STAMP-01"),
+                RBAC.Module.OPERATION_INDICATOR,
+                RBAC.Privilege.UPDATE,
+                RBAC.Strategy.STAMP);
+        when(stampChecker.getCreatorsStamps(RBAC.Module.OPERATION_INDICATOR, RESOURCE_ID))
+                .thenReturn(List.of("STAMP-02"));
+
+        assertThat(hasAccess("OPERATION_INDICATOR", "UPDATE")).isFalse();
+    }
+
+    @Test
+    void should_grant_access_to_a_sims_whose_target_creator_matches_the_user_stamp()
+            throws MissingUserInformationException, StampFetchException, UnsupportedModuleException {
+        givenUserWithPrivilege(
+                userWithStamps("ssm", "STAMP-01"),
+                RBAC.Module.OPERATION_SIMS,
+                RBAC.Privilege.UPDATE,
+                RBAC.Strategy.STAMP);
+        when(stampChecker.getCreatorsStamps(RBAC.Module.OPERATION_SIMS, RESOURCE_ID))
+                .thenReturn(List.of("STAMP-01"));
+
+        assertThat(hasAccess("OPERATION_SIMS", "UPDATE")).isTrue();
+    }
+
+    @Test
+    void should_deny_access_to_a_sims_whose_target_creator_does_not_match_the_user_stamp()
+            throws MissingUserInformationException, StampFetchException, UnsupportedModuleException {
+        givenUserWithPrivilege(
+                userWithStamps("ssm", "STAMP-01"),
+                RBAC.Module.OPERATION_SIMS,
+                RBAC.Privilege.UPDATE,
+                RBAC.Strategy.STAMP);
+        when(stampChecker.getCreatorsStamps(RBAC.Module.OPERATION_SIMS, RESOURCE_ID))
+                .thenReturn(List.of("STAMP-02"));
+
+        assertThat(hasAccess("OPERATION_SIMS", "UPDATE")).isFalse();
+    }
+
+    @Test
     void should_check_the_contributors_stamps_of_a_dataset()
             throws MissingUserInformationException, StampFetchException, UnsupportedModuleException {
         givenUpdateWithStampStrategyOnContributorsStamps(RBAC.Module.DATASET_DATASET, "STAMP-02");
 
         assertThat(hasAccess("DATASET_DATASET", "UPDATE")).isFalse();
+    }
+
+    /**
+     * Création sous la stratégie STAMP : l'utilisateur, timbré STAMP-01 et STAMP-02, doit compter
+     * l'un de ses timbres parmi les organisations propriétaires postées.
+     */
+    private void givenFamilyCreateWithStrategy(RBAC.Strategy strategy) throws MissingUserInformationException {
+        givenUserWithPrivilege(
+                userWithStamps("ssm", "STAMP-01", "STAMP-02"),
+                RBAC.Module.OPERATION_FAMILY,
+                RBAC.Privilege.CREATE,
+                strategy);
+    }
+
+    private boolean hasFamilyCreateAccess(List<String> owners) throws MissingUserInformationException {
+        return accessChecker.hasCreateAccess("OPERATION_FAMILY", owners, PRINCIPAL);
+    }
+
+    @Test
+    void should_grant_creation_with_stamp_strategy_when_one_owner_is_a_user_stamp()
+            throws MissingUserInformationException {
+        givenFamilyCreateWithStrategy(RBAC.Strategy.STAMP);
+        var owners =
+                List.of("http://bauhaus/organisations/insee/DG75-G999", "http://bauhaus/organisations/insee/STAMP-02");
+        when(stampChecker.toStamps(owners)).thenReturn(List.of("DG75-G999", "STAMP-02"));
+
+        assertThat(hasFamilyCreateAccess(owners)).isTrue();
+    }
+
+    @Test
+    void should_deny_creation_with_stamp_strategy_when_no_owner_is_a_user_stamp()
+            throws MissingUserInformationException {
+        givenFamilyCreateWithStrategy(RBAC.Strategy.STAMP);
+        var owners = List.of("http://bauhaus/organisations/insee/DG75-G999");
+        when(stampChecker.toStamps(owners)).thenReturn(List.of("DG75-G999"));
+
+        assertThat(hasFamilyCreateAccess(owners)).isFalse();
+    }
+
+    /** Une ressource créée sans propriétaire échapperait ensuite à tout contrôle par timbre. */
+    @Test
+    void should_deny_creation_with_stamp_strategy_without_any_owner() throws MissingUserInformationException {
+        givenFamilyCreateWithStrategy(RBAC.Strategy.STAMP);
+
+        assertThat(hasFamilyCreateAccess(List.of())).isFalse();
+    }
+
+    @Test
+    void should_deny_creation_with_stamp_strategy_when_the_owners_are_absent_from_the_body()
+            throws MissingUserInformationException {
+        givenFamilyCreateWithStrategy(RBAC.Strategy.STAMP);
+
+        assertThat(hasFamilyCreateAccess(null)).isFalse();
+    }
+
+    /** La stratégie ALL laisse créer au nom de n'importe quelle organisation. */
+    @Test
+    void should_grant_creation_with_all_strategy_whatever_the_owners() throws MissingUserInformationException {
+        givenFamilyCreateWithStrategy(RBAC.Strategy.ALL);
+
+        assertThat(hasFamilyCreateAccess(List.of("http://bauhaus/organisations/insee/DG75-G999")))
+                .isTrue();
+    }
+
+    @Test
+    void should_deny_creation_without_the_create_privilege() throws MissingUserInformationException {
+        givenUserWithPrivilege(
+                userWithStamps("ssm", "STAMP-01"),
+                RBAC.Module.OPERATION_FAMILY,
+                RBAC.Privilege.UPDATE,
+                RBAC.Strategy.ALL);
+
+        assertThat(hasFamilyCreateAccess(List.of("STAMP-01"))).isFalse();
+    }
+
+    /** {@code "contributor": [null, "STAMP-01"]} : les valeurs nulles du corps sont ignorées. */
+    @Test
+    void should_ignore_null_owners_posted_in_the_request() throws MissingUserInformationException {
+        givenFamilyCreateWithStrategy(RBAC.Strategy.STAMP);
+        when(stampChecker.toStamps(List.of("STAMP-01"))).thenReturn(List.of("STAMP-01"));
+
+        assertThat(hasFamilyCreateAccess(Arrays.asList(null, "STAMP-01"))).isTrue();
+    }
+    /**
+     * Création d'une opération sous la stratégie STAMP : elle n'a pas de créateur propre, ce sont
+     * ceux de la série parente, déjà en base, qui doivent porter un timbre de l'utilisateur.
+     */
+    private void givenOperationCreateWithStrategy(RBAC.Strategy strategy) throws MissingUserInformationException {
+        givenUserWithPrivilege(
+                userWithStamps("ssm", "STAMP-01", "STAMP-02"),
+                RBAC.Module.OPERATION_OPERATION,
+                RBAC.Privilege.CREATE,
+                strategy);
+    }
+
+    private OngoingStubbing<List<String>> whenParentSeriesCreatorsStampsFetched()
+            throws StampFetchException, UnsupportedModuleException {
+        return when(stampChecker.getCreatorsStamps(RBAC.Module.OPERATION_SERIES, "s42"));
+    }
+
+    private boolean hasOperationCreateAccessUnderSeries() throws MissingUserInformationException {
+        return accessChecker.hasCreateAccessUnder("OPERATION_OPERATION", "OPERATION_SERIES", "s42", PRINCIPAL);
+    }
+
+    @Test
+    void should_grant_operation_creation_when_a_parent_series_creator_is_a_user_stamp()
+            throws MissingUserInformationException, StampFetchException, UnsupportedModuleException {
+        givenOperationCreateWithStrategy(RBAC.Strategy.STAMP);
+        whenParentSeriesCreatorsStampsFetched().thenReturn(List.of("DG75-G999", "STAMP-02"));
+
+        assertThat(hasOperationCreateAccessUnderSeries()).isTrue();
+    }
+
+    @Test
+    void should_deny_operation_creation_when_no_parent_series_creator_is_a_user_stamp()
+            throws MissingUserInformationException, StampFetchException, UnsupportedModuleException {
+        givenOperationCreateWithStrategy(RBAC.Strategy.STAMP);
+        whenParentSeriesCreatorsStampsFetched().thenReturn(List.of("DG75-G999"));
+
+        assertThat(hasOperationCreateAccessUnderSeries()).isFalse();
+    }
+
+    /** Une série sans créateur ne laisse personne y rattacher d'opération sous la stratégie STAMP. */
+    @Test
+    void should_deny_operation_creation_when_the_parent_series_has_no_creator()
+            throws MissingUserInformationException, StampFetchException, UnsupportedModuleException {
+        givenOperationCreateWithStrategy(RBAC.Strategy.STAMP);
+        whenParentSeriesCreatorsStampsFetched().thenReturn(List.of());
+
+        assertThat(hasOperationCreateAccessUnderSeries()).isFalse();
+    }
+
+    @Test
+    void should_deny_operation_creation_when_the_parent_series_creators_cannot_be_fetched()
+            throws MissingUserInformationException, StampFetchException, UnsupportedModuleException {
+        givenOperationCreateWithStrategy(RBAC.Strategy.STAMP);
+        whenParentSeriesCreatorsStampsFetched().thenThrow(new StampFetchException(RBAC.Module.OPERATION_SERIES, "s42"));
+
+        assertThat(hasOperationCreateAccessUnderSeries()).isFalse();
+    }
+
+    /** La stratégie ALL laisse créer sous n'importe quelle série, sans relire ses créateurs. */
+    @Test
+    void should_grant_operation_creation_with_all_strategy_whatever_the_parent_series()
+            throws MissingUserInformationException {
+        givenOperationCreateWithStrategy(RBAC.Strategy.ALL);
+
+        assertThat(hasOperationCreateAccessUnderSeries()).isTrue();
+    }
+
+    @Test
+    void should_deny_operation_creation_without_the_create_privilege() throws MissingUserInformationException {
+        givenUserWithPrivilege(
+                userWithStamps("ssm", "STAMP-01"),
+                RBAC.Module.OPERATION_OPERATION,
+                RBAC.Privilege.UPDATE,
+                RBAC.Strategy.ALL);
+
+        assertThat(hasOperationCreateAccessUnderSeries()).isFalse();
     }
 }

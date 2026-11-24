@@ -1,6 +1,6 @@
 package fr.insee.rmes.bauhaus_services.notes;
 
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausIriFactory;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.model.concepts.Concept;
 import fr.insee.rmes.modules.concepts.concept.domain.model.notes.DatableNote;
@@ -19,9 +19,11 @@ import org.springframework.stereotype.Component;
 public class NoteManager {
 
     final NotesRepository notesRepository;
+    private final BauhausIriFactory iriFactory;
 
-    public NoteManager(NotesRepository notesRepository) {
+    public NoteManager(NotesRepository notesRepository, BauhausIriFactory iriFactory) {
         this.notesRepository = notesRepository;
+        this.iriFactory = iriFactory;
     }
 
     public List<List<IRI>> setNotes(Concept concept, Model model) throws RmesException {
@@ -91,7 +93,7 @@ public class NoteManager {
                         notesRepository.closeRdfVersionableNote(conceptId, versionableNote, model);
                     } else if (Boolean.FALSE.equals(concept.getCreation())) {
                         // Delete note in the current conceptVersion
-                        notesToDelete.add(RdfUtils.versionableNoteIRI(conceptId, versionableNote));
+                        notesToDelete.add(iriFactory.versionableNote(conceptId, versionableNote));
                     }
                     break;
                 }

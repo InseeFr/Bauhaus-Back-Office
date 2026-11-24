@@ -41,7 +41,7 @@ class SentinelValuesRoundTripTest {
         VariableRepresentation rep = new VariableRepresentation(
                 null,
                 new CodeRepresentation(
-                        CodeRepresentation.TYPE, false, Reference.of("fr.insee", "cl-1", "1", "CodeList")),
+                        CodeRepresentation.TYPE_NAME, false, Reference.of("fr.insee", "cl-1", "1", "CodeList")),
                 null,
                 null,
                 null,
@@ -59,7 +59,7 @@ class SentinelValuesRoundTripTest {
                 null,
                 null,
                 new NumericRepresentation(
-                        NumericRepresentation.TYPE,
+                        NumericRepresentation.TYPE_NAME,
                         CodeValue.numericType("Integer"),
                         new NumberRange(new RangeValue(false, 0.0), new RangeValue(true, 100.0))),
                 null,
@@ -78,7 +78,7 @@ class SentinelValuesRoundTripTest {
                 null,
                 null,
                 null,
-                new DateTimeRepresentation(DateTimeRepresentation.TYPE, CodeValue.dateType("Date"), "yyyy-MM-dd"),
+                new DateTimeRepresentation(DateTimeRepresentation.TYPE_NAME, CodeValue.dateType("Date"), "yyyy-MM-dd"),
                 null,
                 MMVR_REF);
 
@@ -95,7 +95,7 @@ class SentinelValuesRoundTripTest {
                 null,
                 null,
                 null,
-                new TextRepresentation(TextRepresentation.TYPE, 255, 1, "[A-Z]+", true),
+                new TextRepresentation(TextRepresentation.TYPE_NAME, 255, 1, "[A-Z]+", true),
                 MMVR_REF);
 
         VariableRepresentation roundTripped = roundTrip(rep);
@@ -139,7 +139,7 @@ class SentinelValuesRoundTripTest {
 
     private VariableRepresentation roundTrip(VariableRepresentation rep) throws XmlException {
         Ddi4Variable variable = new Ddi4Variable(
-                Ddi4Variable.TYPE,
+                Ddi4Variable.TYPE_NAME,
                 CogsDate.ofDateTime("2025-12-23T09:52:06.355Z"),
                 "urn:ddi:fr.insee:var-rt:1",
                 "fr.insee",

@@ -2,8 +2,9 @@ package fr.insee.rmes.bauhaus_services.operations.series;
 
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.operations.OperationsParentRepository;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausIriFactory;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfTriples;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.ErrorCodes;
@@ -52,12 +53,16 @@ public class SeriesPublication {
     private final RepositoryPublication repositoryPublication;
     private final OperationSeriesQueries operationSeriesQueries;
 
+    private final BauhausIriFactory iriFactory;
+
     public SeriesPublication(
             OperationsParentRepository operationsParentRepository,
             PublicationUtils publicationUtils,
             RepositoryGestion repoGestion,
             RepositoryPublication repositoryPublication,
-            OperationSeriesQueries operationSeriesQueries) {
+            OperationSeriesQueries operationSeriesQueries,
+            BauhausIriFactory iriFactory) {
+        this.iriFactory = iriFactory;
         this.operationsParentRepository = operationsParentRepository;
         this.publicationUtils = publicationUtils;
         this.repoGestion = repoGestion;
@@ -87,7 +92,7 @@ public class SeriesPublication {
         }
 
         Model model = new LinkedHashModel();
-        Resource resource = RdfUtils.seriesIRI(id);
+        Resource resource = iriFactory.series(id);
 
         try (RepositoryConnection con = repoGestion.getConnection();
                 RepositoryResult<Statement> statements = repoGestion.getStatements(con, resource, graph);
@@ -116,7 +121,7 @@ public class SeriesPublication {
             throws RmesException {
         while (statements.hasNext()) {
             Statement st = statements.next();
-            String predicate = RdfUtils.toString(st.getPredicate());
+            String predicate = st.getPredicate().toString();
 
             if (URI_PREDICATES_TO_TRANSFORM.stream().anyMatch(predicate::endsWith)) {
                 transformSubjectAndObject(model, st, graph);
@@ -147,7 +152,7 @@ public class SeriesPublication {
                 .forEach(iri -> model.add(
                         publicationUtils.tranformBaseURIToPublish(resource),
                         DCTERMS.HAS_PART,
-                        publicationUtils.tranformBaseURIToPublish(RdfUtils.createIRI(iri)),
+                        publicationUtils.tranformBaseURIToPublish(RdfTriples.iriAsIs(iri)),
                         graph));
     }
 

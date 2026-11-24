@@ -133,7 +133,7 @@ public enum ConceptsVersionnedNoteTypes {
 
     private static final Map<String, ConceptsVersionnedNoteTypes> map = new HashMap<>();
 
-    private String text;
+    private final String text;
 
     ConceptsVersionnedNoteTypes(String text) {
         this.text = text;

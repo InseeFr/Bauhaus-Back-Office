@@ -3,7 +3,7 @@ package fr.insee.rmes.bauhaus_services.code_list;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfTriples;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
@@ -44,7 +44,7 @@ public class CodeListPublication extends RdfService {
     }
 
     private boolean shouldExcludeTriplet(Statement statement) {
-        String pred = RdfUtils.toString(statement.getPredicate());
+        String pred = statement.getPredicate().toString();
         return pred.endsWith("validationState")
                 || pred.endsWith(Constants.CREATOR)
                 || pred.endsWith(Constants.CONTRIBUTOR)
@@ -67,7 +67,7 @@ public class CodeListPublication extends RdfService {
                     continue;
                 }
 
-                String predicate = RdfUtils.toString(st.getPredicate());
+                String predicate = st.getPredicate().toString();
                 String object = st.getObject().stringValue();
                 if (RDFS.SEEALSO.toString().equalsIgnoreCase(predicate)) {
                     publishSeeAlsoTriplets(object, graph, connection);
@@ -76,7 +76,7 @@ public class CodeListPublication extends RdfService {
                             publicationUtils.tranformBaseURIToPublish(st.getSubject()),
                             st.getPredicate(),
                             publicationUtils.tranformBaseURIToPublish(
-                                    RdfUtils.createIRI(st.getObject().stringValue())),
+                                    RdfTriples.iriAsIs(st.getObject().stringValue())),
                             graph);
 
                 } else {
@@ -92,8 +92,6 @@ public class CodeListPublication extends RdfService {
 
             Resource codeListPublishResource = publicationUtils.tranformBaseURIToPublish(codeListOrCode);
             repositoryPublication.publishResource(codeListPublishResource, model, Constants.CODELIST, graph);
-        } catch (RmesException e) {
-            throw new RuntimeException(e);
         } finally {
             repoGestion.closeStatements(statements);
         }
@@ -138,7 +136,7 @@ public class CodeListPublication extends RdfService {
                             publicationUtils.tranformBaseURIToPublish(codeStatement.getSubject()),
                             codeStatement.getPredicate(),
                             publicationUtils.tranformBaseURIToPublish(
-                                    RdfUtils.createIRI(codeStatement.getObject().stringValue())),
+                                    RdfTriples.iriAsIs(codeStatement.getObject().stringValue())),
                             graph);
                 } else {
                     model.add(
@@ -157,7 +155,7 @@ public class CodeListPublication extends RdfService {
             throws RmesException {
         Model model = new LinkedHashModel();
 
-        IRI seeAlsoIri = RdfUtils.createIRI(seeAlso);
+        IRI seeAlsoIri = RdfTriples.iriAsIs(seeAlso);
         RepositoryResult<Statement> statements = repoGestion.getStatements(connection, seeAlsoIri, graph);
         try {
             checkIfResourceExists(statements, seeAlsoIri);

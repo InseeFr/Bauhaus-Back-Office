@@ -13,8 +13,9 @@ import fr.insee.rmes.bauhaus_services.operations.OperationsParentRepository;
 import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationsUtils;
 import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.OperationsObjectMapper;
 import fr.insee.rmes.bauhaus_services.operations.series.validation.SeriesValidator;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausIriFactory;
 import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfTriples;
 import fr.insee.rmes.bauhaus_services.utils.OrganisationLookup;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
@@ -27,6 +28,7 @@ import fr.insee.rmes.modules.operation.domain.event.SeriesSaved;
 import fr.insee.rmes.modules.operations.series.domain.model.Series;
 import fr.insee.rmes.modules.operations.series.domain.model.commands.SeriesCommand;
 import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
+import fr.insee.rmes.modules.shared_kernel.infrastructure.publication.ObjectPublished;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationSeriesQueries;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.utils.EncodingType;
@@ -64,6 +66,9 @@ class SeriesRepositoryTest {
     @Autowired
     private OperationSeriesQueries operationSeriesQueries;
 
+    @Autowired
+    private BauhausIriFactory iriFactory;
+
     @Test
     void shouldAddAbstractPropertyAsPlainMarkdownLiterals() {
         SeriesRepository seriesRepository = seriesRepository(null, null);
@@ -91,7 +96,7 @@ class SeriesRepositoryTest {
 
         ArgumentCaptor<Model> captor = ArgumentCaptor.forClass(Model.class);
         verify(repositoryGestion).loadObjectWithReplaceLinks(any(), captor.capture());
-        IRI seriesURI = RdfUtils.objectIRI(ObjectType.SERIES, "s2000");
+        IRI seriesURI = iriFactory.objectIri(ObjectType.SERIES, "s2000");
         assertThat(captor.getValue()
                         .filter(seriesURI, ADMS.HAS_IDENTIFIER, null)
                         .objects())
@@ -113,13 +118,13 @@ class SeriesRepositoryTest {
 
         ArgumentCaptor<Model> captor = ArgumentCaptor.forClass(Model.class);
         verify(repositoryGestion).loadObjectWithReplaceLinks(any(), captor.capture());
-        IRI seriesURI = RdfUtils.objectIRI(ObjectType.SERIES, "s2000");
-        IRI linkedIndicator = RdfUtils.toURI(bauhausUriBuilder.getCompleteUriGestion("indicator", "p1"));
-        IRI linkedSeries = RdfUtils.toURI(bauhausUriBuilder.getCompleteUriGestion("series", "s3"));
+        IRI seriesURI = iriFactory.objectIri(ObjectType.SERIES, "s2000");
+        IRI linkedIndicator = RdfTriples.iri(bauhausUriBuilder.getCompleteUriGestion("indicator", "p1"));
+        IRI linkedSeries = RdfTriples.iri(bauhausUriBuilder.getCompleteUriGestion("series", "s3"));
         Model model = captor.getValue();
-        assertThat(model.contains(linkedIndicator, RDFS.SEEALSO, seriesURI, RdfUtils.productsGraph()))
+        assertThat(model.contains(linkedIndicator, RDFS.SEEALSO, seriesURI, iriFactory.productsGraph()))
                 .isTrue();
-        assertThat(model.contains(linkedSeries, RDFS.SEEALSO, seriesURI, RdfUtils.operationsGraph()))
+        assertThat(model.contains(linkedSeries, RDFS.SEEALSO, seriesURI, iriFactory.operationsGraph()))
                 .isTrue();
     }
 
@@ -135,12 +140,12 @@ class SeriesRepositoryTest {
 
         ArgumentCaptor<Model> captor = ArgumentCaptor.forClass(Model.class);
         verify(repositoryGestion).loadObjectWithReplaceLinks(any(), captor.capture());
-        IRI seriesURI = RdfUtils.objectIRI(ObjectType.SERIES, "s2000");
+        IRI seriesURI = iriFactory.objectIri(ObjectType.SERIES, "s2000");
         List<Value> themes = captor.getValue().filter(seriesURI, DCTERMS.SUBJECT, null).stream()
                 .map(Statement::getObject)
                 .toList();
-        assertThat(themes).allMatch(IRI.class::isInstance, "every dcterms:subject object must be an IRI");
         assertThat(themes)
+                .allMatch(IRI.class::isInstance, "every dcterms:subject object must be an IRI")
                 .extracting(Value::stringValue)
                 .containsExactlyInAnyOrder("http://bauhaus/concepts/themes/th1", "http://bauhaus/concepts/themes/th2");
     }
@@ -148,7 +153,7 @@ class SeriesRepositoryTest {
     @Test
     void getSeriesJsonById_returnsTheThemesOfTheSeries() throws RmesException {
         String themesQuery = operationSeriesQueries.getThemesBySeriesIri(
-                RdfUtils.objectIRI(ObjectType.SERIES, "s2000").stringValue());
+                iriFactory.objectIri(ObjectType.SERIES, "s2000").stringValue());
         when(repositoryGestion.getResponseAsObject(any())).thenReturn(new JSONObject(Map.of("id", "s2000")));
         when(repositoryGestion.getResponseAsArray(any())).thenReturn(new JSONArray());
         when(repositoryGestion.getResponseAsJSONList(any())).thenReturn(new JSONArray());
@@ -235,9 +240,9 @@ class SeriesRepositoryTest {
         List<Value> creators = model.filter(seriesURI, dcCreator, null).stream()
                 .map(Statement::getObject)
                 .toList();
-        assertThat(creators).hasSize(2);
-        assertThat(creators).allMatch(IRI.class::isInstance, "every dc:creator object must be an IRI, not a literal");
         assertThat(creators)
+                .hasSize(2)
+                .allMatch(IRI.class::isInstance, "every dc:creator object must be an IRI, not a literal")
                 .extracting(Value::stringValue)
                 .containsExactlyInAnyOrder(
                         "http://bauhaus/organisations/DG75-A001", "http://bauhaus/organisations/DG75-B002");
@@ -264,7 +269,8 @@ class SeriesRepositoryTest {
                 mock(SeriesValidator.class),
                 null,
                 null,
-                events);
+                events,
+                iriFactory);
 
         seriesRepository.setSeries("s1001", command("Recensement", "Census", "RP", "CENS", null));
 
@@ -276,6 +282,38 @@ class SeriesRepositoryTest {
                         "s1001",
                         new BilingualLabel("Recensement", "Census"),
                         new BilingualLabel("RP", "CENS")));
+    }
+
+    @Test
+    void setSeriesValidation_announcesThePublicationWithTheOperationsGraph() throws RmesException {
+        ApplicationEventPublisher events = mock(ApplicationEventPublisher.class);
+        SeriesPublication seriesPublication = mock(SeriesPublication.class);
+        when(repositoryGestion.getResponseAsObject(any())).thenReturn(new JSONObject(Map.of("id", "s1001")));
+        when(repositoryGestion.getResponseAsArray(any())).thenReturn(new JSONArray());
+        when(repositoryGestion.getResponseAsJSONList(any())).thenReturn(new JSONArray());
+        SeriesRepository seriesRepository = new SeriesRepository(
+                new BauhausLanguagesProperties("fr", "en"),
+                repositoryGestion,
+                null,
+                null,
+                operationsObjectMapper,
+                null,
+                seriesPublication,
+                null,
+                null,
+                null,
+                operationSeriesQueries,
+                null,
+                events,
+                iriFactory);
+
+        seriesRepository.setSeriesValidation("s1001");
+
+        ArgumentCaptor<ObjectPublished> captor = ArgumentCaptor.forClass(ObjectPublished.class);
+        verify(events).publishEvent(captor.capture());
+        assertThat(captor.getValue())
+                .isEqualTo(new ObjectPublished(
+                        iriFactory.objectIri(ObjectType.SERIES, "s1001"), iriFactory.operationsGraph()));
     }
 
     @Test
@@ -300,7 +338,8 @@ class SeriesRepositoryTest {
                 mock(SeriesValidator.class),
                 null,
                 null,
-                events);
+                events,
+                iriFactory);
 
         seriesRepository.createSeries(commandInFamily("Recensement", "f1"));
 
@@ -384,6 +423,7 @@ class SeriesRepositoryTest {
                 validator,
                 operationSeriesQueries,
                 organisationLookup,
-                null);
+                null,
+                iriFactory);
     }
 }

@@ -10,6 +10,7 @@ import fr.insee.rmes.modules.commons.configuration.ConditionalOnModule;
 import fr.insee.rmes.modules.commons.configuration.swagger.model.Id;
 import fr.insee.rmes.modules.users.domain.model.RBAC;
 import fr.insee.rmes.modules.users.webservice.HasAccess;
+import fr.insee.rmes.modules.users.webservice.HasCreateAccess;
 import jakarta.validation.Valid;
 import java.util.List;
 import org.apache.http.HttpStatus;
@@ -77,7 +78,7 @@ public class StructureResources {
         return ResponseEntity.status(HttpStatus.SC_OK).body(structure);
     }
 
-    @HasAccess(module = RBAC.Module.STRUCTURE_STRUCTURE, privilege = RBAC.Privilege.CREATE)
+    @HasCreateAccess(module = RBAC.Module.STRUCTURE_STRUCTURE, owners = "#structure.contributor()")
     @PostMapping(value = "/structure", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> setStructure(@Valid @RequestBody StructureRequest structure) throws RmesException {
         String id = structureService.setStructure(structure.toLegacyJson());

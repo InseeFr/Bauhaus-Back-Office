@@ -2,6 +2,7 @@ package fr.insee.rmes.integration.authorizations;
 
 import static fr.insee.rmes.integration.authorizations.TokenForTestsConfiguration.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -15,6 +16,7 @@ import fr.insee.rmes.modules.datasets.distributions.webservice.DistributionResou
 import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
 import java.util.Collections;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -79,7 +81,7 @@ class TestDistributionsResourcesEnvProd extends AbstractResourcesEnvProd {
     @MethodSource("provideDataForPostEndpoints")
     @ParameterizedTest
     void create(Integer code, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
-        when(checker.hasAccess(any(), any(), any(), any())).thenReturn(hasAccessReturn);
+        when(checker.hasCreateAccessUnder(any(), any(), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
 
         var request = post("/distribution")
@@ -89,6 +91,26 @@ class TestDistributionsResourcesEnvProd extends AbstractResourcesEnvProd {
         request.header("Authorization", "Bearer toto");
 
         mvc.perform(request).andExpect(status().is(code));
+    }
+
+    /**
+     * Une distribution n'a pas de gestionnaire propre : à sa création, le contrôle par timbre
+     * porte sur les gestionnaires du jeu de données parent posté, que l'utilisateur doit compter
+     * parmi ses organisations.
+     */
+    @Test
+    void checks_the_creation_access_on_the_posted_parent_dataset() throws Exception, MissingUserInformationException {
+        when(checker.hasCreateAccessUnder(eq("DATASET_DISTRIBUTION"), eq("DATASET_DATASET"), eq("jd1001"), any()))
+                .thenReturn(true);
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
+
+        var request = post("/distribution")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(DISTRIBUTION_BODY);
+        request.header("Authorization", "Bearer toto");
+
+        mvc.perform(request).andExpect(status().isCreated());
     }
 
     private static Stream<Arguments> provideDataForPutEndpoints() {

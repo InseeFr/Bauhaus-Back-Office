@@ -71,6 +71,11 @@ public record ColecticaConfiguration(
 
     /**
      * Configuration for a single Colectica instance
+     *
+     * @param connectTimeout time allowed to open the connection to Colectica; {@link #DEFAULT_CONNECT_TIMEOUT}
+     *                       when absent
+     * @param readTimeout time allowed to wait for Colectica's answer; {@link #DEFAULT_READ_TIMEOUT} when absent.
+     *                    Large enough for the heaviest calls (sets of a physical instance, writes of big items)
      */
     public record ColecticaInstanceConfiguration(
             String baseUrl,
@@ -81,13 +86,24 @@ public record ColecticaConfiguration(
             String authenticationMode,
             String username,
             String password,
-            String defaultAgencyId) {
+            String defaultAgencyId,
+            Duration connectTimeout,
+            Duration readTimeout) {
+        public static final Duration DEFAULT_CONNECT_TIMEOUT = Duration.ofSeconds(5);
+        public static final Duration DEFAULT_READ_TIMEOUT = Duration.ofMinutes(2);
+
         public ColecticaInstanceConfiguration {
             if (apiPath == null || apiPath.isBlank()) {
                 apiPath = "/api/v1/";
             }
             if (authenticationMode == null || authenticationMode.isBlank()) {
                 authenticationMode = "password";
+            }
+            if (connectTimeout == null) {
+                connectTimeout = DEFAULT_CONNECT_TIMEOUT;
+            }
+            if (readTimeout == null) {
+                readTimeout = DEFAULT_READ_TIMEOUT;
             }
         }
 

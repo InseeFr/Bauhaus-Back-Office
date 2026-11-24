@@ -55,7 +55,7 @@ class ColecticaResponseLoggingInterceptor implements ClientHttpRequestIntercepto
         }
         try {
             return MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(MAPPER.readTree(text));
-        } catch (JacksonException notJson) {
+        } catch (JacksonException _) {
             return text;
         }
     }

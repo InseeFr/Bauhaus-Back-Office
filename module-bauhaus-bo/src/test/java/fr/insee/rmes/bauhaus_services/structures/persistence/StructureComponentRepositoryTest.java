@@ -14,6 +14,7 @@ import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausIriFactory;
 import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfTriples;
+import fr.insee.rmes.config.DocumentationsPropertiesStub;
 import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
@@ -83,7 +84,8 @@ class StructureComponentRepositoryTest {
     @Spy
     BauhausIriFactory iriFactory = new BauhausIriFactory(
             GraphsPropertiesStub.stub(),
-            new BauhausUriBuilder("http://publication/", "http://bauhaus/", name -> Optional.of("composants/")));
+            new BauhausUriBuilder("http://publication/", "http://bauhaus/", name -> Optional.of("composants/")),
+            DocumentationsPropertiesStub.stub());
 
     @Test
     void shouldThrowRmesExceptionWhenUpdateComponent() {

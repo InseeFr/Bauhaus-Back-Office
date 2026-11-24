@@ -72,8 +72,10 @@ WHERE {
 			
 		<#-- RangeType.CODELIST : value, codelist, maxoccurs -->
 		UNION {
-			BIND(REPLACE( STR(?attr) , '(.*/)(\\w.*$)', '$2' ) AS ?idAttribute) . 
-			?reportAttr ?attr ?codeUri . 
+			<#-- BIND après le motif qui lie ?attr : avant, ?idAttribute reste vide sous un
+			     dialecte SPARQL strict (Fuseki). -->
+			?reportAttr ?attr ?codeUri .
+			BIND(REPLACE( STR(?attr) , '(.*/)(\\w.*$)', '$2' ) AS ?idAttribute) .
 			?codeUri skos:notation ?value .
 			?codeUri skos:inScheme ?listUri .
 			?listUri skos:notation ?codeList .

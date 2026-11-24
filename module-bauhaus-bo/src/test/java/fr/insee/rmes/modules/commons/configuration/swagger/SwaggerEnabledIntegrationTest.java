@@ -46,7 +46,7 @@ class SwaggerEnabledIntegrationTest {
          * Reproduit la chaîne applicative : tout ce qui n'est pas explicitement ouvert est authentifié.
          */
         @Bean
-        SecurityFilterChain applicationSecurityFilterChain(HttpSecurity http) throws Exception {
+        SecurityFilterChain applicationSecurityFilterChain(HttpSecurity http) {
             return http.csrf(AbstractHttpConfigurer::disable)
                     .authorizeHttpRequests(request -> request.anyRequest().authenticated())
                     .build();

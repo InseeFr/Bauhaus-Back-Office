@@ -150,7 +150,7 @@ public class OidcUserDecoder implements UserDecoder {
     private Optional<String> fetchAdmsIdentifier(String stamp) {
         try {
             return organisationService.getAdmsIdentifier(stamp);
-        } catch (OrganisationFetchException e) {
+        } catch (OrganisationFetchException _) {
             logger.debug("Impossible to fetch the adms:identifier for stamp {}", stamp);
             return empty();
         }
@@ -159,7 +159,7 @@ public class OidcUserDecoder implements UserDecoder {
     private Optional<String> fetchDctermsIdentifier(String hie) {
         try {
             return organisationService.getDctermsIdentifier(hie);
-        } catch (OrganisationFetchException e) {
+        } catch (OrganisationFetchException _) {
             logger.debug("Impossible to fetch the dcterms:identifier for hie {}", hie);
             return empty();
         }

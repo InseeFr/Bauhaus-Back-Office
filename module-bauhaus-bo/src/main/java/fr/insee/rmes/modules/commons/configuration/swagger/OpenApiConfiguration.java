@@ -219,7 +219,7 @@ public class OpenApiConfiguration {
 
     @Bean
     @Order(0)
-    public SecurityFilterChain swaggerSecurityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain swaggerSecurityFilterChain(HttpSecurity http) {
         return http.securityMatcher(SWAGGER_PATHS)
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(request -> request.anyRequest().permitAll())

@@ -329,7 +329,7 @@ class RepositoryUtilsTest {
     }
 
     @Test
-    void shouldClearStructureAndComponents() throws RmesException {
+    void shouldClearStructureAndComponents() {
         Resource structure = SimpleValueFactory.getInstance().createIRI("http://example.org/structure");
         Resource graph = SimpleValueFactory.getInstance().createIRI("http://example.org/graph");
 

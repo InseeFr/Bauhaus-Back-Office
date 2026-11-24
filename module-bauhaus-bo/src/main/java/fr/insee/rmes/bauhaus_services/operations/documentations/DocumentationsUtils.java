@@ -6,8 +6,9 @@ import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.DocumentationsProperties;
 import fr.insee.rmes.bauhaus_services.operations.OperationsParentRepository;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausIriFactory;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfTriples;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.ErrorCodes;
@@ -60,6 +61,8 @@ public class DocumentationsUtils {
     private final OperationsParentRepository operationsParentRepository;
     private final DocumentationQueries documentationQueries;
 
+    private final BauhausIriFactory iriFactory;
+
     public DocumentationsUtils(
             RepositoryGestion repoGestion,
             RepositoryPublication repositoryPublication,
@@ -68,7 +71,9 @@ public class DocumentationsUtils {
             DocumentationsRubricsUtils documentationsRubricsUtils,
             DocumentationPublication documentationPublication,
             OperationsParentRepository operationsParentRepository,
-            DocumentationQueries documentationQueries) {
+            DocumentationQueries documentationQueries,
+            BauhausIriFactory iriFactory) {
+        this.iriFactory = iriFactory;
         this.repoGestion = repoGestion;
         this.repositoryPublication = repositoryPublication;
         this.languages = languages;
@@ -248,11 +253,11 @@ public class DocumentationsUtils {
         documentationPublication.publishSims(id);
 
         Model model = new LinkedHashModel();
-        Resource graph = RdfUtils.simsGraph(id);
-        IRI simsURI = RdfUtils.objectIRI(ObjectType.DOCUMENTATION, id);
-        model.add(simsURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.VALIDATED), graph);
-        model.remove(simsURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.UNPUBLISHED), graph);
-        model.remove(simsURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.MODIFIED), graph);
+        Resource graph = iriFactory.simsGraph(id);
+        IRI simsURI = iriFactory.objectIri(ObjectType.DOCUMENTATION, id);
+        model.add(simsURI, INSEE.VALIDATION_STATE, RdfTriples.string(ValidationStatus.VALIDATED), graph);
+        model.remove(simsURI, INSEE.VALIDATION_STATE, RdfTriples.string(ValidationStatus.UNPUBLISHED), graph);
+        model.remove(simsURI, INSEE.VALIDATION_STATE, RdfTriples.string(ValidationStatus.MODIFIED), graph);
         logger.info("Validate sims : {}", simsURI);
 
         repoGestion.objectValidation(simsURI, model);
@@ -268,16 +273,15 @@ public class DocumentationsUtils {
         IRI target = null;
 
         if (StringUtils.isNotEmpty(sims.getIdOperation())) {
-            target = RdfUtils.objectIRI(ObjectType.OPERATION, sims.getIdTarget());
+            target = iriFactory.objectIri(ObjectType.OPERATION, sims.getIdTarget());
         }
         if (StringUtils.isNotEmpty(sims.getIdSeries())) {
-            target = RdfUtils.objectIRI(ObjectType.SERIES, sims.getIdTarget());
+            target = iriFactory.objectIri(ObjectType.SERIES, sims.getIdTarget());
         }
         if (StringUtils.isNotEmpty(sims.getIdIndicator())) {
-            target = RdfUtils.objectIRI(ObjectType.INDICATOR, sims.getIdTarget());
+            target = iriFactory.objectIri(ObjectType.INDICATOR, sims.getIdTarget());
         }
-        if (!operationsParentRepository.checkIfParentExists(RdfUtils.toString(target))) target = null;
-        if (target == null) {
+        if (target == null || !operationsParentRepository.checkIfParentExists(target.toString())) {
             logger.error("Create or Update sims cancelled - no target");
             throw new RmesException(
                     HttpStatus.BAD_REQUEST,
@@ -368,20 +372,20 @@ public class DocumentationsUtils {
      */
     void saveRdfMetadataReport(Documentation sims, IRI target, ValidationStatus state) throws RmesException {
         Model model = new LinkedHashModel();
-        IRI simsUri = RdfUtils.objectIRI(ObjectType.DOCUMENTATION, sims.getId());
-        Resource graph = RdfUtils.simsGraph(sims.getId());
+        IRI simsUri = iriFactory.objectIri(ObjectType.DOCUMENTATION, sims.getId());
+        Resource graph = iriFactory.simsGraph(sims.getId());
         /*Const*/
         model.add(simsUri, RDF.TYPE, SDMX_MM.METADATA_REPORT, graph);
-        model.add(simsUri, ADMS.HAS_IDENTIFIER, RdfUtils.setLiteralString(sims.getId()), graph);
+        model.add(simsUri, ADMS.HAS_IDENTIFIER, RdfTriples.string(sims.getId()), graph);
         model.add(simsUri, SDMX_MM.TARGET, target, graph);
-        model.add(simsUri, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(state), graph);
+        model.add(simsUri, INSEE.VALIDATION_STATE, RdfTriples.string(state), graph);
 
         /*Optional*/
-        RdfUtils.addTripleString(simsUri, RDFS.LABEL, sims.getLabelLg1(), languages.lg1(), model, graph);
-        RdfUtils.addTripleString(simsUri, RDFS.LABEL, sims.getLabelLg2(), languages.lg2(), model, graph);
+        RdfTriples.addString(simsUri, RDFS.LABEL, sims.getLabelLg1(), languages.lg1(), model, graph);
+        RdfTriples.addString(simsUri, RDFS.LABEL, sims.getLabelLg2(), languages.lg2(), model, graph);
 
-        RdfUtils.addTripleDateTime(simsUri, DCTERMS.CREATED, sims.getCreated(), model, graph);
-        RdfUtils.addTripleDateTime(simsUri, DCTERMS.MODIFIED, sims.getUpdated(), model, graph);
+        RdfTriples.addDateTime(simsUri, DCTERMS.CREATED, sims.getCreated(), model, graph);
+        RdfTriples.addDateTime(simsUri, DCTERMS.MODIFIED, sims.getUpdated(), model, graph);
 
         documentationsRubricsUtils.addRubricsToModel(model, sims.getId(), graph, sims.getRubrics());
 
@@ -443,7 +447,7 @@ public class DocumentationsUtils {
 
     public void deleteMetadataReport(String id) throws RmesException {
         getExistingDocumentationTitle(id);
-        Resource graph = RdfUtils.simsGraph(id);
+        Resource graph = iriFactory.simsGraph(id);
 
         repoGestion.executeUpdate(documentationQueries.deleteGraph(graph));
         repositoryPublication.executeUpdate(documentationQueries.deleteGraph(graph));
@@ -451,18 +455,18 @@ public class DocumentationsUtils {
 
     public void updateDocumentationTitle(String idSims, String prefLabeLg1, String prefLabelLg2) throws RmesException {
         Model model = new LinkedHashModel();
-        IRI simsUri = RdfUtils.objectIRI(ObjectType.DOCUMENTATION, idSims);
-        Resource graph = RdfUtils.simsGraph(idSims);
+        IRI simsUri = iriFactory.objectIri(ObjectType.DOCUMENTATION, idSims);
+        Resource graph = iriFactory.simsGraph(idSims);
 
         /*Optional*/
-        RdfUtils.addTripleString(
+        RdfTriples.addString(
                 simsUri,
                 RDFS.LABEL,
                 documentations.titlePrefixLg1() + " " + prefLabeLg1,
                 languages.lg1(),
                 model,
                 graph);
-        RdfUtils.addTripleString(
+        RdfTriples.addString(
                 simsUri,
                 RDFS.LABEL,
                 documentations.titlePrefixLg2() + " " + prefLabelLg2,

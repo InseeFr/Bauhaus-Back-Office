@@ -75,4 +75,29 @@ class GraphDBDocumentationRepositoryTest extends WithGraphDBContainer {
         DocumentationAttribute result = repository.getAttributeSpecification("S.6");
         Assertions.assertNull(result.subPropertyOf());
     }
+
+    @Test
+    void should_expose_markdown_instructions_of_rubric_in_both_languages() throws Exception {
+        DocumentationAttribute result = repository.getAttributeSpecification("S.3.9");
+        Assertions.assertEquals("Indiquer la période de base, par exemple, l'année **2021**.", result.instructionLg1());
+        Assertions.assertEquals("Indicate the base period, for example the year **2021**.", result.instructionLg2());
+    }
+
+    @Test
+    void should_return_null_instructions_for_rubric_without_method_of_instruction() throws Exception {
+        DocumentationAttribute result = repository.getAttributeSpecification("S.6");
+        Assertions.assertNull(result.instructionLg1());
+        Assertions.assertNull(result.instructionLg2());
+    }
+
+    @Test
+    void should_expose_instructions_in_rubrics_list() throws Exception {
+        List<DocumentationAttribute> result = repository.getAttributesSpecification();
+        DocumentationAttribute basePeriod = result.stream()
+                .filter(attribute -> "S.3.9".equals(attribute.id()))
+                .findFirst()
+                .orElseThrow();
+        Assertions.assertEquals(
+                "Indiquer la période de base, par exemple, l'année **2021**.", basePeriod.instructionLg1());
+    }
 }

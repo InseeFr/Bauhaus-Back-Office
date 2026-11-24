@@ -1,16 +1,19 @@
 package fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import fr.insee.rmes.colectica.client.ColecticaClient;
+import fr.insee.rmes.colectica.client.ItemReference;
+import fr.insee.rmes.colectica.client.dto.ColecticaItemResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4GroupResponse;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LangString;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
-import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -53,9 +56,69 @@ class ColecticaGroupSetReaderTest {
                 .containsExactly(new LangString("fr-FR", "BPE"), new LangString("en-GB", "PDF"));
     }
 
+    /**
+     * Le miroir réécrit le Group à version constante : le ddiset de Colectica rend alors l'état
+     * antérieur, sans les StudyUnits ajoutées depuis. Elles doivent être lues sur l'item.
+     */
+    @Test
+    void listsTheStudyUnitsFiledInTheLatestGroupItemEvenWhenTheDdisetIsStale() {
+        when(colecticaClient.getItem("fr.insee", GROUP_ID, null))
+                .thenReturn(item(GROUP_ID, groupFragment(List.of("su-1", "su-2"))));
+        when(colecticaClient.getLatestItems(
+                        List.of(new ItemReference("fr.insee", "su-1"), new ItemReference("fr.insee", "su-2"))))
+                .thenReturn(new ColecticaItemResponse[] {
+                    item("su-1", studyUnitFragment("su-1", "Opération 2025")),
+                    item("su-2", studyUnitFragment("su-2", "Opération 2026"))
+                });
+
+        Ddi4GroupResponse response = reader.getGroup("fr.insee", GROUP_ID);
+
+        assertThat(response.studyUnit()).extracting(Ddi4StudyUnit::id).containsExactly("su-1", "su-2");
+        assertThat(response.studyUnit().get(1).citation().title())
+                .containsExactly(new LangString("fr-FR", "Opération 2026"));
+    }
+
+    private static ColecticaItemResponse item(String id, String xml) {
+        return new ColecticaItemResponse(null, "fr.insee", 1, id, xml, null, null, false, false, false, null);
+    }
+
+    private static String groupFragment(List<String> studyUnitIds) {
+        String references = studyUnitIds.stream().map(id -> """
+                        <r:StudyUnitReference>
+                            <r:Agency>fr.insee</r:Agency>
+                            <r:ID>%s</r:ID>
+                            <r:Version>1</r:Version>
+                            <r:TypeOfObject>StudyUnit</r:TypeOfObject>
+                        </r:StudyUnitReference>""".formatted(id)).collect(Collectors.joining());
+        return """
+                <Fragment xmlns:r="ddi:reusable:3_3" xmlns="ddi:instance:3_3">
+                    <ddi:Group isUniversallyUnique="true" versionDate="2026-11-20T09:50:04Z" xmlns:ddi="ddi:group:3_3">
+                        <r:URN>urn:ddi:fr.insee:%1$s:1</r:URN>
+                        <r:Agency>fr.insee</r:Agency>
+                        <r:ID>%1$s</r:ID>
+                        <r:Version>1</r:Version>
+                        <r:UserID typeOfUserID="URI">http://id.insee.fr/operations/serie/s1001</r:UserID>
+                        <r:Citation><r:Title><r:String xml:lang="fr-FR">G1</r:String></r:Title></r:Citation>
+                        %2$s
+                    </ddi:Group>
+                </Fragment>""".formatted(GROUP_ID, references);
+    }
+
+    private static String studyUnitFragment(String id, String title) {
+        return """
+                <Fragment xmlns:r="ddi:reusable:3_3" xmlns="ddi:instance:3_3">
+                    <StudyUnit isUniversallyUnique="true" versionDate="2026-11-20T09:49:41Z" xmlns="ddi:studyunit:3_3">
+                        <r:URN>urn:ddi:fr.insee:%1$s:1</r:URN>
+                        <r:Agency>fr.insee</r:Agency>
+                        <r:ID>%1$s</r:ID>
+                        <r:Version>1</r:Version>
+                        <r:Citation><r:Title><r:String xml:lang="fr-FR">%2$s</r:String></r:Title></r:Citation>
+                    </StudyUnit>
+                </Fragment>""".formatted(id, title);
+    }
+
     private Ddi4Group findGroup() {
-        when(colecticaClient.getDdiSet(anyString(), anyString()))
-                .thenReturn(ddisetXml().getBytes(StandardCharsets.UTF_8));
+        when(colecticaClient.getItem("fr.insee", GROUP_ID, null)).thenReturn(item(GROUP_ID, groupItemXml()));
 
         Ddi4GroupResponse response = reader.getGroup("fr.insee", GROUP_ID);
 
@@ -63,10 +126,8 @@ class ColecticaGroupSetReaderTest {
         return response.group().getFirst();
     }
 
-    private static String ddisetXml() {
+    private static String groupItemXml() {
         return """
-                <?xml version="1.0" encoding="utf-8"?>
-                <ddi:FragmentInstance xmlns:r="ddi:reusable:3_3" xmlns:ddi="ddi:instance:3_3">
                     <Fragment xmlns:r="ddi:reusable:3_3" xmlns="ddi:instance:3_3">
                         <Group isUniversallyUnique="true" versionDate="2026-01-09T09:00:00Z" xmlns="ddi:group:3_3">
                             <r:URN>urn:ddi:fr.insee:%1$s:1</r:URN>
@@ -100,7 +161,6 @@ class ColecticaGroupSetReaderTest {
                                 <r:TypeOfObject>LogicalProduct</r:TypeOfObject>
                             </r:LogicalProductReference>
                         </Group>
-                    </Fragment>
-                </ddi:FragmentInstance>""".formatted(GROUP_ID);
+                    </Fragment>""".formatted(GROUP_ID);
     }
 }

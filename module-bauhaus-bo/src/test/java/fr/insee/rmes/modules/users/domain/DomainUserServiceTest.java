@@ -57,8 +57,7 @@ class DomainUserServiceTest {
 
         Set<Stamp> result = userService.findStampsFrom(PRINCIPAL);
 
-        assertThat(result).isNotNull();
-        assertThat(result).extracting(Stamp::stamp).containsExactly("STAMP-01");
+        assertThat(result).isNotNull().extracting(Stamp::stamp).containsExactly("STAMP-01");
         verify(userDecoder).fromPrincipal(PRINCIPAL);
     }
 
@@ -103,8 +102,7 @@ class DomainUserServiceTest {
 
         Set<ModuleAccessPrivileges> result = userService.computePrivileges(PRINCIPAL);
 
-        assertThat(result).hasSize(1);
-        assertThat(result).contains(modulePrivileges);
+        assertThat(result).hasSize(1).contains(modulePrivileges);
         verify(userDecoder).fromPrincipal(PRINCIPAL);
         verify(rbacFetcher).computePrivileges(List.of("ADMIN", "USER"), Source.INSEE);
     }
@@ -125,8 +123,7 @@ class DomainUserServiceTest {
 
         Set<ModuleAccessPrivileges> result = userService.computePrivileges(PRINCIPAL);
 
-        assertThat(result).hasSize(2);
-        assertThat(result).contains(conceptPrivileges, operationPrivileges);
+        assertThat(result).hasSize(2).contains(conceptPrivileges, operationPrivileges);
     }
 
     @Test
@@ -147,8 +144,10 @@ class DomainUserServiceTest {
 
         Set<Stamp> result = userService.findStampsFrom(PRINCIPAL);
 
-        assertThat(result).hasSize(3);
-        assertThat(result).extracting(Stamp::stamp).containsExactlyInAnyOrder("STAMP-01", "STAMP-02", "STAMP-03");
+        assertThat(result)
+                .hasSize(3)
+                .extracting(Stamp::stamp)
+                .containsExactlyInAnyOrder("STAMP-01", "STAMP-02", "STAMP-03");
     }
 
     @Test

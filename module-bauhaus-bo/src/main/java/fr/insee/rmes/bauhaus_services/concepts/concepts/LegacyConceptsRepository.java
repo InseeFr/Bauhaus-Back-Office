@@ -6,9 +6,10 @@ import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.concepts.publication.ConceptsPublication;
 import fr.insee.rmes.bauhaus_services.notes.NoteManager;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausIriFactory;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfTriples;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.ErrorCodes;
@@ -61,6 +62,7 @@ public class LegacyConceptsRepository extends RdfService {
     private final ConceptConceptsQueries conceptConceptsQueries;
     private final ConceptsService conceptsService;
     private final CollectionsService collectionsService;
+    private final BauhausIriFactory iriFactory;
 
     public LegacyConceptsRepository(
             RepositoryGestion repoGestion,
@@ -73,7 +75,8 @@ public class LegacyConceptsRepository extends RdfService {
             @Value("${fr.insee.rmes.bauhaus.filenames.maxlength}") int maxLength,
             ConceptConceptsQueries conceptConceptsQueries,
             ConceptsService conceptsService,
-            CollectionsService collectionsService) {
+            CollectionsService collectionsService,
+            BauhausIriFactory iriFactory) {
         super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
         this.languages = languages;
         this.conceptsPublication = conceptsPublication;
@@ -82,6 +85,7 @@ public class LegacyConceptsRepository extends RdfService {
         this.conceptConceptsQueries = conceptConceptsQueries;
         this.conceptsService = conceptsService;
         this.collectionsService = collectionsService;
+        this.iriFactory = iriFactory;
     }
 
     public String getConceptExportFileName(ConceptForExport concept) {
@@ -209,64 +213,68 @@ public class LegacyConceptsRepository extends RdfService {
      */
     public void createRdfConcept(Concept concept) throws RmesException {
         Model model = new LinkedHashModel();
-        IRI conceptURI = RdfUtils.conceptIRI(concept.getId());
+        IRI conceptURI = iriFactory.concept(concept.getId());
         /*Const*/
-        model.add(conceptURI, RDF.TYPE, SKOS.CONCEPT, RdfUtils.conceptGraph());
-        model.add(conceptURI, SKOS.IN_SCHEME, RdfUtils.conceptScheme(), RdfUtils.conceptGraph());
+        model.add(conceptURI, RDF.TYPE, SKOS.CONCEPT, iriFactory.conceptGraph());
+        model.add(conceptURI, SKOS.IN_SCHEME, iriFactory.conceptScheme(), iriFactory.conceptGraph());
         model.add(
                 conceptURI,
                 INSEE.VALIDATION_STATE,
-                RdfUtils.setLiteralString(validationStateForWrite(concept)),
-                RdfUtils.conceptGraph());
+                RdfTriples.string(validationStateForWrite(concept)),
+                iriFactory.conceptGraph());
         /*Required*/
-        model.add(conceptURI, SKOS.NOTATION, RdfUtils.setLiteralString(concept.getId()), RdfUtils.conceptGraph());
+        model.add(conceptURI, SKOS.NOTATION, RdfTriples.string(concept.getId()), iriFactory.conceptGraph());
         model.add(
                 conceptURI,
                 SKOS.PREF_LABEL,
-                RdfUtils.setLiteralString(concept.getPrefLabelLg1(), languages.lg1()),
-                RdfUtils.conceptGraph());
+                RdfTriples.string(concept.getPrefLabelLg1(), languages.lg1()),
+                iriFactory.conceptGraph());
 
-        RdfUtils.addTripleUri(conceptURI, DC.CREATOR, concept.getCreator(), model, RdfUtils.conceptGraph());
-        RdfUtils.addTripleUri(conceptURI, DC.CONTRIBUTOR, concept.getContributor(), model, RdfUtils.conceptGraph());
+        RdfTriples.addUri(conceptURI, DC.CREATOR, concept.getCreator(), model, iriFactory.conceptGraph());
+        RdfTriples.addUri(conceptURI, DC.CONTRIBUTOR, concept.getContributor(), model, iriFactory.conceptGraph());
 
         model.add(
                 conceptURI,
                 INSEE.DISSEMINATIONSTATUS,
-                RdfUtils.toURI(concept.getDisseminationStatus()),
-                RdfUtils.conceptGraph());
-        RdfUtils.addTripleDateTime(conceptURI, DCTERMS.CREATED, concept.getCreated(), model, RdfUtils.conceptGraph());
+                RdfTriples.iri(concept.getDisseminationStatus()),
+                iriFactory.conceptGraph());
+        RdfTriples.addDateTime(conceptURI, DCTERMS.CREATED, concept.getCreated(), model, iriFactory.conceptGraph());
         /*Optional*/
-        RdfUtils.addTripleString(
+        RdfTriples.addString(
                 conceptURI,
                 SKOS.PREF_LABEL,
                 concept.getPrefLabelLg2(),
                 languages.lg2(),
                 model,
-                RdfUtils.conceptGraph());
+                iriFactory.conceptGraph());
         List<String> altLabelsLg1 = concept.getAltLabelLg1();
         List<String> altLabelsLg2 = concept.getAltLabelLg2();
         if (altLabelsLg1 != null) {
             for (String altLabelLg1 : altLabelsLg1) {
-                RdfUtils.addTripleString(
-                        conceptURI, SKOS.ALT_LABEL, altLabelLg1, languages.lg1(), model, RdfUtils.conceptGraph());
+                RdfTriples.addString(
+                        conceptURI, SKOS.ALT_LABEL, altLabelLg1, languages.lg1(), model, iriFactory.conceptGraph());
             }
         }
         if (altLabelsLg2 != null) {
             for (String altLabelLg2 : altLabelsLg2) {
-                RdfUtils.addTripleString(
-                        conceptURI, SKOS.ALT_LABEL, altLabelLg2, languages.lg2(), model, RdfUtils.conceptGraph());
+                RdfTriples.addString(
+                        conceptURI, SKOS.ALT_LABEL, altLabelLg2, languages.lg2(), model, iriFactory.conceptGraph());
             }
         }
-        RdfUtils.addTripleString(
-                conceptURI, INSEE.ADDITIONALMATERIAL, concept.getAdditionalMaterial(), model, RdfUtils.conceptGraph());
-        RdfUtils.addTripleDateTime(conceptURI, DCTERMS.VALID, concept.getValid(), model, RdfUtils.conceptGraph());
-        RdfUtils.addTripleDateTime(conceptURI, DCTERMS.MODIFIED, concept.getModified(), model, RdfUtils.conceptGraph());
+        RdfTriples.addString(
+                conceptURI,
+                INSEE.ADDITIONALMATERIAL,
+                concept.getAdditionalMaterial(),
+                model,
+                iriFactory.conceptGraph());
+        RdfTriples.addDateTime(conceptURI, DCTERMS.VALID, concept.getValid(), model, iriFactory.conceptGraph());
+        RdfTriples.addDateTime(conceptURI, DCTERMS.MODIFIED, concept.getModified(), model, iriFactory.conceptGraph());
 
         // Add notes to model, delete some notes and updates some other notes
         List<List<IRI>> notesToDeleteAndUpdate = noteManager.setNotes(concept, model);
 
         // Add links to model and save member links
-        new ConceptLinksRdfMapper().createRdfLinks(conceptURI, concept.getLinks(), model);
+        new ConceptLinksRdfMapper(iriFactory).createRdfLinks(conceptURI, concept.getLinks(), model);
 
         repoGestion.loadConcept(conceptURI, model, notesToDeleteAndUpdate);
     }
@@ -275,17 +283,17 @@ public class LegacyConceptsRepository extends RdfService {
         Model model = new LinkedHashModel();
         List<IRI> conceptsToValidateList = new ArrayList<>();
         JSONUtils.jsonArrayToList(conceptsToValidate).forEach(conceptId -> {
-            IRI conceptURI = RdfUtils.conceptIRI(conceptId);
+            IRI conceptURI = iriFactory.concept(conceptId);
             conceptsToValidateList.add(conceptURI);
             model.add(
                     conceptURI,
                     INSEE.VALIDATION_STATE,
-                    RdfUtils.setLiteralString(ValidationStatus.VALIDATED),
-                    RdfUtils.conceptGraph());
+                    RdfTriples.string(ValidationStatus.VALIDATED),
+                    iriFactory.conceptGraph());
             logger.info("Validate concept : {}", conceptURI);
         });
         repoGestion.objectsValidation(conceptsToValidateList, model);
-        conceptsPublication.publishConcepts(conceptsToValidate);
+        conceptsPublication.publishConcepts(conceptsToValidate, iriFactory.conceptGraph());
     }
 
     private ValidationStatus validationStateForWrite(Concept concept) throws RmesException {
@@ -323,12 +331,12 @@ public class LegacyConceptsRepository extends RdfService {
 
     public HttpStatus deleteConcept(String id) throws RmesException {
         HttpStatus result = repoGestion.executeUpdate(conceptConceptsQueries.deleteConcept(
-                RdfUtils.toString(RdfUtils.objectIRI(ObjectType.CONCEPT, id)),
-                RdfUtils.conceptGraph().toString()));
+                iriFactory.objectIri(ObjectType.CONCEPT, id).toString(),
+                iriFactory.conceptGraph().toString()));
         if (result.equals(HttpStatus.OK)) {
             result = repositoryPublication.executeUpdate(conceptConceptsQueries.deleteConcept(
-                    RdfUtils.toString(RdfUtils.objectIRIPublication(ObjectType.CONCEPT, id)),
-                    RdfUtils.conceptGraph().toString()));
+                    iriFactory.objectIriPublication(ObjectType.CONCEPT, id).toString(),
+                    iriFactory.conceptGraph().toString()));
         }
         return result;
     }

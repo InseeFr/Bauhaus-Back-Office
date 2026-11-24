@@ -1,5 +1,6 @@
 package fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside;
 
+import fr.insee.rmes.modules.commons.hexagonal.ServerSidePort;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialStudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
@@ -10,6 +11,7 @@ import java.util.Optional;
 /**
  * Server-side port for persisting DDI StudyUnit items.
  */
+@ServerSidePort
 public interface StudyUnitRepository extends DdiItemRepository<Ddi4StudyUnit> {
 
     List<PartialStudyUnit> getAll();

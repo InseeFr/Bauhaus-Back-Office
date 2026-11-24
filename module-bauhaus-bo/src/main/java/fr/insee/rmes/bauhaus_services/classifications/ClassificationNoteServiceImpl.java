@@ -1,6 +1,6 @@
 package fr.insee.rmes.bauhaus_services.classifications;
 
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfTriples;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.ontologies.EVOC;
 import fr.insee.rmes.graphdb.ontologies.XKOS;
@@ -23,7 +23,7 @@ public class ClassificationNoteServiceImpl implements ClassificationNoteService 
 
     public void addNotes(Resource graph, String iri, String value, Model model) throws RmesException {
         if (StringUtils.isNotEmpty(iri)) {
-            IRI noteIri = RdfUtils.createIRI(iri);
+            IRI noteIri = RdfTriples.iriAsIs(iri);
             repositoryGestion.deleteTripletByPredicate(noteIri, EVOC.NOTE_LITERAL, graph, null);
             repositoryGestion.deleteTripletByPredicate(noteIri, XKOS.PLAIN_TEXT, graph, null);
             repositoryGestion.deleteTripletByPredicate(noteIri, RDF.VALUE, graph, null);
@@ -33,11 +33,10 @@ public class ClassificationNoteServiceImpl implements ClassificationNoteService 
                 model.add(
                         noteIri,
                         EVOC.NOTE_LITERAL,
-                        RdfUtils.setLiteralString(
-                                "<div xmlns=\"http://www.w3.org/1999/xhtml\">" + html.trim() + "</div>"),
+                        RdfTriples.string("<div xmlns=\"http://www.w3.org/1999/xhtml\">" + html.trim() + "</div>"),
                         graph);
-                model.add(noteIri, XKOS.PLAIN_TEXT, RdfUtils.setLiteralString(raw), graph);
-                model.add(noteIri, RDF.VALUE, RdfUtils.setLiteralString(value), graph);
+                model.add(noteIri, XKOS.PLAIN_TEXT, RdfTriples.string(raw), graph);
+                model.add(noteIri, RDF.VALUE, RdfTriples.string(value), graph);
             }
         }
     }

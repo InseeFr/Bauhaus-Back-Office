@@ -1,8 +1,5 @@
 package fr.insee.rmes.bauhaus_services.datasets;
 
-import static fr.insee.rmes.bauhaus_services.utils.RdfUtilsStaticStubs.CURRENT_DATE;
-import static fr.insee.rmes.bauhaus_services.utils.RdfUtilsStaticStubs.callRealLiteralAndTripleBuilders;
-import static fr.insee.rmes.bauhaus_services.utils.RdfUtilsStaticStubs.freezeCurrentDate;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
@@ -13,7 +10,7 @@ import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.bauhaus_services.OrganizationsService;
 import fr.insee.rmes.bauhaus_services.operations.series.SeriesRepository;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfTriples;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
@@ -60,6 +57,12 @@ class DatasetServiceImplTest {
     private DatasetServiceImpl datasetService;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
+
+    private static final IRI DATASETS_GRAPH =
+            SimpleValueFactory.getInstance().createIRI("http://rdf.insee.fr/graphes/datasetGraph/");
+
+    /** Date courante figée rendue par {@link DateUtils#getCurrentDate()}. */
+    private static final String CURRENT_DATE = "2023-10-19T11:44:23.335590";
 
     private static final String EMPTY_ARRAY = "[]";
     private static final String QUASI_EMPTY_OBJECT = "{\"uri\":\"\"}";
@@ -166,7 +169,7 @@ class DatasetServiceImplTest {
     }
 
     @Test
-    void shouldResolveContributorStampsToIrisWhenFetchingDataset() throws RmesException, JsonProcessingException {
+    void shouldResolveContributorStampsToIrisWhenFetchingDataset() throws RmesException {
         JSONObject object = new JSONObject().put("id", "1");
         JSONArray array = new JSONArray().put(object);
 
@@ -344,22 +347,12 @@ class DatasetServiceImplTest {
     }
 
     private void createANewDataset(String nextId) throws RmesException {
-        try (MockedStatic<RdfUtils> rdfUtilsMock = mockStatic(RdfUtils.class);
-                MockedStatic<DateUtils> dateUtilsMock = mockStatic(DateUtils.class)) {
+        try (MockedStatic<DateUtils> dateUtilsMock = mockStatic(DateUtils.class)) {
             when(idGenerator.generateNextId()).thenReturn(nextId);
             IRI iri = SimpleValueFactory.getInstance().createIRI("http://datasetIRI/" + nextId);
             IRI catalogRecordIri = SimpleValueFactory.getInstance().createIRI("http://recordIRI/" + nextId);
 
-            stubDatasetRdfUtils(rdfUtilsMock);
-            rdfUtilsMock.when(() -> RdfUtils.toURI(anyString())).thenCallRealMethod();
-            rdfUtilsMock
-                    .when(() -> RdfUtils.addTripleUri(any(IRI.class), any(), any(IRI.class), any(), any()))
-                    .thenCallRealMethod();
-            rdfUtilsMock
-                    .when(() -> RdfUtils.addTripleUri(any(), any(IRI.class), any(String.class), any(), any()))
-                    .thenCallRealMethod();
-
-            freezeCurrentDate(dateUtilsMock);
+            dateUtilsMock.when(DateUtils::getCurrentDate).thenReturn(CURRENT_DATE);
             dateUtilsMock.when(() -> DateUtils.parseDate(anyString())).thenCallRealMethod();
             dateUtilsMock
                     .when(() -> DateUtils.parseDateTime(anyString()))
@@ -394,21 +387,9 @@ class DatasetServiceImplTest {
         IRI catalogRecordIri = SimpleValueFactory.getInstance().createIRI("http://recordIRI/jd1001");
         IRI admsIri = SimpleValueFactory.getInstance().createIRI("http://identifiantsAlternatifs/jeuDeDonnees/jd1001");
 
-        try (MockedStatic<RdfUtils> rdfUtilsMock = mockStatic(RdfUtils.class);
-                MockedStatic<DateUtils> dateUtilsMock = mockStatic(DateUtils.class)) {
-            stubDatasetRdfUtils(rdfUtilsMock);
-            rdfUtilsMock.when(() -> RdfUtils.toURI(any())).thenCallRealMethod();
-            rdfUtilsMock
-                    .when(() -> RdfUtils.addTripleUri(any(), any(), any(String.class), any(), any()))
-                    .thenCallRealMethod();
-            rdfUtilsMock
-                    .when(() -> RdfUtils.addTripleUri(any(), any(), any(IRI.class), any(), any()))
-                    .thenCallRealMethod();
-            rdfUtilsMock
-                    .when(() -> RdfUtils.addTripleBNode(any(), any(), any(), any(), any()))
-                    .thenCallRealMethod();
+        try (MockedStatic<DateUtils> dateUtilsMock = mockStatic(DateUtils.class)) {
 
-            freezeCurrentDate(dateUtilsMock);
+            dateUtilsMock.when(DateUtils::getCurrentDate).thenReturn(CURRENT_DATE);
             dateUtilsMock
                     .when(() -> DateUtils.parseDateTime(eq(CURRENT_DATE)))
                     .thenReturn(LocalDateTime.parse(CURRENT_DATE));
@@ -463,9 +444,10 @@ class DatasetServiceImplTest {
         RmesBadRequestException exception =
                 assertThrows(RmesBadRequestException.class, () -> datasetService.publishDataset("1"));
 
-        assertThat(exception.getDetails()).contains("\"code\":1301");
-        assertThat(exception.getDetails()).contains("This dataset is already published");
-        assertThat(exception.getDetails()).contains("Dataset: 1");
+        assertThat(exception.getDetails())
+                .contains("\"code\":1301")
+                .contains("This dataset is already published")
+                .contains("Dataset: 1");
         verify(events, never()).publishEvent(any());
     }
 
@@ -474,9 +456,6 @@ class DatasetServiceImplTest {
         IRI iri = SimpleValueFactory.getInstance().createIRI("http://datasetIRI/1");
         IRI catalogRecordIri = SimpleValueFactory.getInstance().createIRI("http://catalogRecordIRI/1");
         givenDatasetWithValidationState("Modified");
-
-        doNothing().when(publicationUtils).publishResource(iri, Set.of());
-        doNothing().when(publicationUtils).publishResource(catalogRecordIri, Set.of("creator", "contributor"));
 
         Assertions.assertEquals("1", datasetService.publishDataset("1"));
     }
@@ -495,8 +474,9 @@ class DatasetServiceImplTest {
 
         String id = datasetService.publishDataset("1");
 
-        verify(publicationUtils).publishResource(iri, Set.of("processStep", "archiveUnit", "validationState"));
-        verify(publicationUtils).publishResource(catalogRecordIri, Set.of("creator", "contributor"));
+        verify(publicationUtils)
+                .publishResource(iri, Set.of("processStep", "archiveUnit", "validationState"), DATASETS_GRAPH);
+        verify(publicationUtils).publishResource(catalogRecordIri, Set.of("creator", "contributor"), DATASETS_GRAPH);
         Assertions.assertEquals("1", id);
     }
 
@@ -575,9 +555,6 @@ class DatasetServiceImplTest {
         JSONArray empty_array = new JSONArray(EMPTY_ARRAY);
         JSONObject quasi_empty_object = new JSONObject(QUASI_EMPTY_OBJECT);
 
-        String stringDatasetURI = "http://bauhaus/catalogues/entreeCatalogue/idtest";
-        IRI datasetUri = RdfUtils.toURI(stringDatasetURI);
-
         givenDatasetToDelete("Unpublished");
 
         when(datasetQueries.getDerivedDataset(any(), any())).thenReturn("query4 ");
@@ -586,22 +563,20 @@ class DatasetServiceImplTest {
         when(datasetDistributionQueries.getDatasetDistributions(any(), any())).thenReturn("query3 ");
         when(repositoryGestion.getResponseAsArray("query3 ")).thenReturn(empty_array);
 
-        try (MockedStatic<RdfUtils> rdfUtilsMock = mockStatic(RdfUtils.class)) {
-            rdfUtilsMock.when(() -> RdfUtils.createIRI(any(String.class))).thenReturn(datasetUri);
-            rdfUtilsMock.when(() -> RdfUtils.toURI(any(String.class))).thenReturn(datasetUri);
+        datasetService.deleteDatasetId("idTest");
 
-            // Capture the argument passed to deleteObject
-            ArgumentCaptor<IRI> uriCaptor = ArgumentCaptor.forClass(IRI.class);
-
-            datasetService.deleteDatasetId("idTest");
-
-            verify(repositoryGestion, times(3)).deleteObject(uriCaptor.capture());
-            Assertions.assertEquals(datasetUri, uriCaptor.getValue());
-
-            verify(repositoryGestion, times(3)).deleteObject(datasetUri);
-            verify(repositoryGestion, times(1))
-                    .deleteTripletByPredicate(any(IRI.class), eq(DCAT.DATASET), any(IRI.class));
-        }
+        ArgumentCaptor<IRI> uriCaptor = ArgumentCaptor.forClass(IRI.class);
+        verify(repositoryGestion, times(3)).deleteObject(uriCaptor.capture());
+        assertThat(uriCaptor.getAllValues())
+                .containsExactly(
+                        RdfTriples.iriAsIs("http://datasetIRI/idTest"),
+                        RdfTriples.iriAsIs("http://recordIRI/idTest"),
+                        RdfTriples.iriAsIs("http://identifiantsAlternatifs/jeuDeDonnees/idTest"));
+        verify(repositoryGestion, times(1))
+                .deleteTripletByPredicate(
+                        RdfTriples.iriAsIs("http://datasetIRI"),
+                        DCAT.DATASET,
+                        RdfTriples.iriAsIs("http://datasetIRI/idTest"));
     }
 
     @Test
@@ -647,10 +622,11 @@ class DatasetServiceImplTest {
         datasetService.patchDataset("jd1001", new PatchDataset(null, null, 5, null, null));
 
         String model = storedDatasetModel().toString();
-        assertThat(model).contains("2023-01-01");
-        assertThat(model).contains("2023-12-31");
-        assertThat(model).contains(DCAT.START_DATE.stringValue());
-        assertThat(model).contains(DCAT.END_DATE.stringValue());
+        assertThat(model)
+                .contains("2023-01-01")
+                .contains("2023-12-31")
+                .contains(DCAT.START_DATE.stringValue())
+                .contains(DCAT.END_DATE.stringValue());
     }
 
     @Test
@@ -681,9 +657,7 @@ class DatasetServiceImplTest {
         datasetService.patchDataset("jd1001", new PatchDataset(null, null, 5, null, null));
 
         String model = storedDatasetModel().toString();
-        assertThat(model).contains("mot clé");
-        assertThat(model).contains("keyword");
-        assertThat(model).contains("http://document");
+        assertThat(model).contains("mot clé").contains("keyword").contains("http://document");
     }
 
     /**
@@ -816,16 +790,5 @@ class DatasetServiceImplTest {
 
         when(datasetQueries.getDatasetCreators(any(), any())).thenReturn("query2 ");
         when(repositoryGestion.getResponseAsArray("query2 ")).thenReturn(new JSONArray(EMPTY_ARRAY));
-    }
-
-    /** Socle commun des bouchons {@link RdfUtils}, complété des littéraux date et entier et des nœuds anonymes. */
-    private static void stubDatasetRdfUtils(MockedStatic<RdfUtils> rdfUtilsMock) {
-        callRealLiteralAndTripleBuilders(rdfUtilsMock);
-        rdfUtilsMock.when(() -> RdfUtils.setLiteralDate(any())).thenCallRealMethod();
-        rdfUtilsMock
-                .when(() -> RdfUtils.addTripleInt(any(), any(), any(), any(), any()))
-                .thenCallRealMethod();
-        rdfUtilsMock.when(() -> RdfUtils.setLiteralInt(any())).thenCallRealMethod();
-        rdfUtilsMock.when(RdfUtils::createBlankNode).thenCallRealMethod();
     }
 }

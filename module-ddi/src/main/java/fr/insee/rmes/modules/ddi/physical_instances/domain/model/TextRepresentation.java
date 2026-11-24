@@ -11,5 +11,5 @@ public record TextRepresentation(
         @JsonProperty("RegExp") String regExp,
         @JsonProperty("BlankIsMissingValue") Boolean blankIsMissingValue) {
 
-    public static final String TYPE = "TextRepresentationBaseType";
+    public static final String TYPE_NAME = "TextRepresentationBaseType";
 }

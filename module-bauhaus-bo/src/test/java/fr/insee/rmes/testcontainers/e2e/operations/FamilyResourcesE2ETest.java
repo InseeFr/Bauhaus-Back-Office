@@ -2,10 +2,10 @@ package fr.insee.rmes.testcontainers.e2e.operations;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import fr.insee.rmes.testcontainers.e2e.BaseE2ETest;
-import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.*;
+import org.springframework.test.web.servlet.client.EntityExchangeResult;
 
 class FamilyResourcesE2ETest extends BaseE2ETest {
 
@@ -14,7 +14,7 @@ class FamilyResourcesE2ETest extends BaseE2ETest {
         var response = getJsonOk("/api/operations/families");
 
         try {
-            JsonNode jsonArray = objectMapper.readTree(response.getBody());
+            JsonNode jsonArray = objectMapper.readTree(response.getResponseBody());
             Assertions.assertTrue(jsonArray.isArray());
 
             int familyCount = jsonArray.size();
@@ -44,7 +44,7 @@ class FamilyResourcesE2ETest extends BaseE2ETest {
         var response = getJsonOk("/api/operations/family/s88");
 
         try {
-            JsonNode familyJson = objectMapper.readTree(response.getBody());
+            JsonNode familyJson = objectMapper.readTree(response.getResponseBody());
             Assertions.assertTrue(familyJson.isObject());
 
             Assertions.assertTrue(familyJson.has("id"));
@@ -69,15 +69,16 @@ class FamilyResourcesE2ETest extends BaseE2ETest {
     }
 
     /** GET en JSON, dont la réponse doit être un 200 avec un corps. */
-    private ResponseEntity<String> getJsonOk(String path) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setAccept(List.of(MediaType.APPLICATION_JSON));
-        HttpEntity<String> entity = new HttpEntity<>(headers);
+    private EntityExchangeResult<String> getJsonOk(String path) {
+        var response = restTestClient
+                .get()
+                .uri("http://localhost:" + port + path)
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                .returnResult(String.class);
 
-        var response = restTemplate.exchange("http://localhost:" + port + path, HttpMethod.GET, entity, String.class);
-
-        Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
-        Assertions.assertNotNull(response.getBody());
+        Assertions.assertEquals(HttpStatus.OK, response.getStatus());
+        Assertions.assertNotNull(response.getResponseBody());
         return response;
     }
 }

@@ -2,9 +2,9 @@ package fr.insee.rmes.bauhaus_services.structures.impl;
 
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.CodeListService;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausIriFactory;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.bauhaus_services.structures.StructureService;
 import fr.insee.rmes.bauhaus_services.structures.persistence.StructureRepository;
@@ -26,6 +26,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class StructureImpl extends RdfService implements StructureService {
+    private final BauhausIriFactory iriFactory;
 
     static final Logger logger = LoggerFactory.getLogger(StructureImpl.class);
 
@@ -45,12 +46,14 @@ public class StructureImpl extends RdfService implements StructureService {
             StructureRepository structureRepository,
             CodeListService codeListService,
             StructureQueries structureQueries,
-            ConceptConceptsQueries conceptConceptsQueries) {
+            ConceptConceptsQueries conceptConceptsQueries,
+            BauhausIriFactory iriFactory) {
         super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
         this.structureRepository = structureRepository;
         this.codeListService = codeListService;
         this.structureQueries = structureQueries;
         this.conceptConceptsQueries = conceptConceptsQueries;
+        this.iriFactory = iriFactory;
     }
 
     @Override
@@ -72,7 +75,7 @@ public class StructureImpl extends RdfService implements StructureService {
         logger.info("Starting to get structure");
         JSONObject structure = repoGestion.getResponseAsObject(structureQueries.getStructureById(id));
 
-        IRI iri = RdfUtils.structureIRI(id);
+        IRI iri = iriFactory.structure(id);
         this.repoGestion.getMultipleTripletsForObject(
                 structure, "contributor", structureQueries.getStructureContributors(iri), "contributor");
 
@@ -102,11 +105,11 @@ public class StructureImpl extends RdfService implements StructureService {
 
             // We first have to rename the type property
             String type = (String) component.get("type");
-            if (type.equalsIgnoreCase(RdfUtils.toString(QB.ATTRIBUTE_PROPERTY))) {
+            if (type.equalsIgnoreCase(QB.ATTRIBUTE_PROPERTY.toString())) {
                 component.put("type", "attribute");
-            } else if (type.equalsIgnoreCase(RdfUtils.toString(QB.MEASURE_PROPERTY))) {
+            } else if (type.equalsIgnoreCase(QB.MEASURE_PROPERTY.toString())) {
                 component.put("type", "measure");
-            } else if (type.equalsIgnoreCase(RdfUtils.toString(QB.DIMENSION_PROPERTY))) {
+            } else if (type.equalsIgnoreCase(QB.DIMENSION_PROPERTY.toString())) {
                 component.put("type", "dimension");
             }
 

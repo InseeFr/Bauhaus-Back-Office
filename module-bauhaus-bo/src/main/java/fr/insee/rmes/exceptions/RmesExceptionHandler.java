@@ -97,7 +97,7 @@ public class RmesExceptionHandler {
     private static JSONObject parse(String details, HttpStatus status) {
         try {
             return details == null ? new JSONObject() : new JSONObject(details);
-        } catch (JSONException notJson) {
+        } catch (JSONException _) {
             JSONObject json = new JSONObject();
             if (status.is4xxClientError()) {
                 json.put(MESSAGE, details);

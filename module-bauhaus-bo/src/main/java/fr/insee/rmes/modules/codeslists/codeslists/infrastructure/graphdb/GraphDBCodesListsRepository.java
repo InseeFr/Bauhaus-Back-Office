@@ -2,7 +2,8 @@ package fr.insee.rmes.modules.codeslists.codeslists.infrastructure.graphdb;
 
 import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.bauhaus_services.code_list.CodeListKind;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausIriFactory;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfTriples;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.ontologies.INSEE;
 import fr.insee.rmes.modules.codeslists.codeslists.domain.exceptions.CodesListsFetchException;
@@ -38,6 +39,7 @@ import org.springframework.stereotype.Repository;
 @ServerSideAdaptor
 @Repository
 public class GraphDBCodesListsRepository implements CodesListsRepository {
+    private final BauhausIriFactory iriFactory;
 
     /** Segment d'URI de la classe OWL associée à une liste complète. */
     private static final String CONCEPT = "concept/";
@@ -49,18 +51,20 @@ public class GraphDBCodesListsRepository implements CodesListsRepository {
     public GraphDBCodesListsRepository(
             RepositoryGestion repositoryGestion,
             CodeListsQueries codeListsQueries,
-            BauhausLanguagesProperties languages) {
+            BauhausLanguagesProperties languages,
+            BauhausIriFactory iriFactory) {
         this.repositoryGestion = repositoryGestion;
         this.codeListsQueries = codeListsQueries;
         this.languages = languages;
+        this.iriFactory = iriFactory;
     }
 
     @Override
     public boolean isIdentityAlreadyTaken(CodesList codesList) throws CodesListsFetchException {
         try {
-            String owlClassIri = RdfUtils.toString(owlClassIri(codesList));
+            String owlClassIri = owlClassIri(codesList).toString();
             return repositoryGestion.getResponseAsBoolean(codeListsQueries.checkCodeListUnicity(
-                    codesList.id().value(), RdfUtils.toString(iriOf(codesList)), owlClassIri, CodeListKind.FULL));
+                    codesList.id().value(), iriOf(codesList).toString(), owlClassIri, CodeListKind.FULL));
         } catch (RmesException e) {
             throw new CodesListsFetchException(e);
         }
@@ -69,9 +73,9 @@ public class GraphDBCodesListsRepository implements CodesListsRepository {
     @Override
     public Optional<PersistedCodesList> findByUriSegment(String lastListUriSegment) throws CodesListsFetchException {
         try {
-            IRI iri = RdfUtils.codeListIRI(lastListUriSegment);
+            IRI iri = iriFactory.codeList(lastListUriSegment);
             JSONObject persisted =
-                    repositoryGestion.getResponseAsObject(codeListsQueries.getCodesListByIri(RdfUtils.toString(iri)));
+                    repositoryGestion.getResponseAsObject(codeListsQueries.getCodesListByIri(iri.toString()));
             if (persisted.isEmpty()) {
                 return Optional.empty();
             }
@@ -87,58 +91,51 @@ public class GraphDBCodesListsRepository implements CodesListsRepository {
     public void save(CodesList codesList) throws CodesListsSaveException {
         IRI codesListIri = iriOf(codesList);
         IRI owlClassIri = owlClassIri(codesList);
-        Resource graph = RdfUtils.codesListGraph();
+        Resource graph = iriFactory.codesListGraph();
         Model model = new LinkedHashModel();
 
         // La date de création n'appartient pas au client : à la mise à jour, le domaine a rendu
         // celle qui est en base ; à la création, il n'y en a pas encore.
-        RdfUtils.addTripleDateTime(
+        RdfTriples.addDateTime(
                 codesListIri,
                 DCTERMS.CREATED,
                 codesList.created() == null ? DateUtils.getCurrentDate() : codesList.created(),
                 model,
                 graph);
-        RdfUtils.addTripleDateTime(codesListIri, DCTERMS.MODIFIED, DateUtils.getCurrentDate(), model, graph);
+        RdfTriples.addDateTime(codesListIri, DCTERMS.MODIFIED, DateUtils.getCurrentDate(), model, graph);
 
-        model.add(codesListIri, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(codesList.validationState()), graph);
-        RdfUtils.addTripleUri(codesListIri, RDF.TYPE, SKOS.CONCEPT_SCHEME, model, graph);
-        model.add(
-                codesListIri,
-                SKOS.NOTATION,
-                RdfUtils.setLiteralString(codesList.id().value()),
-                graph);
-        RdfUtils.addTripleUri(codesListIri, INSEE.DISSEMINATIONSTATUS, codesList.disseminationStatus(), model, graph);
+        model.add(codesListIri, INSEE.VALIDATION_STATE, RdfTriples.string(codesList.validationState()), graph);
+        RdfTriples.addUri(codesListIri, RDF.TYPE, SKOS.CONCEPT_SCHEME, model, graph);
+        model.add(codesListIri, SKOS.NOTATION, RdfTriples.string(codesList.id().value()), graph);
+        RdfTriples.addUri(codesListIri, INSEE.DISSEMINATIONSTATUS, codesList.disseminationStatus(), model, graph);
 
-        model.add(
-                codesListIri, SKOS.PREF_LABEL, RdfUtils.setLiteralString(codesList.labelLg1(), languages.lg1()), graph);
-        model.add(
-                codesListIri, SKOS.PREF_LABEL, RdfUtils.setLiteralString(codesList.labelLg2(), languages.lg2()), graph);
+        model.add(codesListIri, SKOS.PREF_LABEL, RdfTriples.string(codesList.labelLg1(), languages.lg1()), graph);
+        model.add(codesListIri, SKOS.PREF_LABEL, RdfTriples.string(codesList.labelLg2(), languages.lg2()), graph);
 
         if (codesList.descriptionLg1() != null) {
             model.add(
                     codesListIri,
                     SKOS.DEFINITION,
-                    RdfUtils.setLiteralString(codesList.descriptionLg1(), languages.lg1()),
+                    RdfTriples.string(codesList.descriptionLg1(), languages.lg1()),
                     graph);
         }
         if (codesList.descriptionLg2() != null) {
             model.add(
                     codesListIri,
                     SKOS.DEFINITION,
-                    RdfUtils.setLiteralString(codesList.descriptionLg2(), languages.lg2()),
+                    RdfTriples.string(codesList.descriptionLg2(), languages.lg2()),
                     graph);
         }
 
-        RdfUtils.addTripleUri(codesListIri, DC.CREATOR, codesList.creator(), model, graph);
+        RdfTriples.addUri(codesListIri, DC.CREATOR, codesList.creator(), model, graph);
         codesList
                 .contributors()
-                .forEach(contributor -> RdfUtils.addTripleUri(codesListIri, DC.CONTRIBUTOR, contributor, model, graph));
+                .forEach(contributor -> RdfTriples.addUri(codesListIri, DC.CONTRIBUTOR, contributor, model, graph));
 
-        RdfUtils.addTripleString(
-                codesListIri, INSEE.LAST_CODE_URI_SEGMENT, codesList.lastCodeUriSegment(), model, graph);
-        RdfUtils.addTripleUri(codesListIri, RDFS.SEEALSO, owlClassIri, model, graph);
-        RdfUtils.addTripleUri(owlClassIri, RDF.TYPE, OWL.CLASS, model, graph);
-        RdfUtils.addTripleUri(owlClassIri, RDFS.SEEALSO, codesListIri, model, graph);
+        RdfTriples.addString(codesListIri, INSEE.LAST_CODE_URI_SEGMENT, codesList.lastCodeUriSegment(), model, graph);
+        RdfTriples.addUri(codesListIri, RDFS.SEEALSO, owlClassIri, model, graph);
+        RdfTriples.addUri(owlClassIri, RDF.TYPE, OWL.CLASS, model, graph);
+        RdfTriples.addUri(owlClassIri, RDFS.SEEALSO, codesListIri, model, graph);
 
         try {
             repositoryGestion.clearStructureNodeAndComponents(codesListIri, graph);
@@ -148,11 +145,11 @@ public class GraphDBCodesListsRepository implements CodesListsRepository {
         }
     }
 
-    private static IRI iriOf(CodesList codesList) {
-        return RdfUtils.codeListIRI(codesList.lastListUriSegment());
+    private IRI iriOf(CodesList codesList) {
+        return iriFactory.codeList(codesList.lastListUriSegment());
     }
 
-    private static IRI owlClassIri(CodesList codesList) {
-        return RdfUtils.codeListIRI(CONCEPT + codesList.lastClassUriSegment());
+    private IRI owlClassIri(CodesList codesList) {
+        return iriFactory.codeList(CONCEPT + codesList.lastClassUriSegment());
     }
 }

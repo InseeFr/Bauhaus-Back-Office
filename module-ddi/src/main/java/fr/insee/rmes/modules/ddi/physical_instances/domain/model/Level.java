@@ -11,5 +11,5 @@ public record Level(
         @JsonProperty("LevelName") List<LangString> levelName,
         @JsonProperty("CategoryRelationship") String categoryRelationship) {
 
-    public static final String TYPE = "LevelType";
+    public static final String TYPE_NAME = "LevelType";
 }

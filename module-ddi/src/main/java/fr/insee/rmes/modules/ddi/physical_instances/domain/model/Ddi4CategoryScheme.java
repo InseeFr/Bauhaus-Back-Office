@@ -22,5 +22,5 @@ public record Ddi4CategoryScheme(
         @JsonProperty("Label") List<LangString> label,
         @JsonProperty("CategoryReference") List<Reference> categoryReference) {
 
-    public static final String TYPE = "CategoryScheme";
+    public static final String TYPE_NAME = "CategoryScheme";
 }

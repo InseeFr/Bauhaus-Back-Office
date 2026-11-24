@@ -61,7 +61,7 @@ public record Ddi4StudyUnitResponse(
         }
 
         return new Ddi4StudyUnitResponse(
-                Ddi4Response.SCHEMA,
+                Ddi4Response.SCHEMA_ID,
                 topLevelReferences,
                 studyUnits.isEmpty() ? null : studyUnits,
                 physicalInstances.isEmpty() ? null : physicalInstances);

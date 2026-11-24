@@ -8,6 +8,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4LogicalProduct;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedRepresentationScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4VariableScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3toDDI4ConverterService;
 import java.util.List;
 import java.util.Optional;
@@ -89,6 +90,10 @@ class ColecticaItemByIdReader {
     Optional<Ddi4ManagedRepresentationScheme> findManagedRepresentationScheme(String agencyId, String id) {
         return findItem("managed representation scheme", agencyId, id)
                 .map(ddi3ToDdi4Converter::toManagedRepresentationScheme);
+    }
+
+    Optional<Ddi4VariableScheme> findVariableScheme(String agencyId, String id) {
+        return findItem("variable scheme", agencyId, id).map(ddi3ToDdi4Converter::toVariableScheme);
     }
 
     /**

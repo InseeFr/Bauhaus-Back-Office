@@ -11,13 +11,14 @@ import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.operations.families.infrastructure.graphdb.OperationFamilyQueries;
 import fr.insee.rmes.modules.shared_kernel.domain.model.Language;
-import fr.insee.rmes.modules.structures.infrastructure.graphdb.StructureQueries;
+import fr.insee.rmes.modules.users.infrastructure.stamps.ContributorsQueries;
 import fr.insee.rmes.persistance.sparql_queries.datasets.DatasetDistributionQueries;
 import fr.insee.rmes.persistance.sparql_queries.datasets.DatasetQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationIndicatorsQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationSeriesQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationsOperationQueries;
 import java.util.stream.Stream;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.parser.QueryParserUtil;
 import org.junit.jupiter.api.Named;
@@ -60,7 +61,7 @@ class QueryValueEscapingTest {
     private static final OperationSeriesQueries SERIES = new OperationSeriesQueries(LANGUAGES, GRAPHS);
     private static final OperationIndicatorsQueries INDICATORS =
             new OperationIndicatorsQueries(BauhausUriPropertiesStub.stub(), LANGUAGES, GRAPHS);
-    private static final StructureQueries STRUCTURES = new StructureQueries(LANGUAGES, GRAPHS);
+    private static final ContributorsQueries CONTRIBUTORS = new ContributorsQueries();
     private static final DatasetQueries DATASETS = new DatasetQueries(LANGUAGES);
     private static final DatasetDistributionQueries DISTRIBUTIONS = new DatasetDistributionQueries(LANGUAGES);
 
@@ -84,8 +85,11 @@ class QueryValueEscapingTest {
 
     static Stream<Arguments> uriQueries() {
         return Stream.of(
-                Arguments.of(Named.<UriQuery>of("structure contributors", STRUCTURES::getContributorsByStructureUri)),
-                Arguments.of(Named.<UriQuery>of("component contributors", STRUCTURES::getContributorsByComponentUri)),
+                Arguments.of(Named.<UriQuery>of(
+                        "resource contributors",
+                        uri -> CONTRIBUTORS.getContributors(
+                                GRAPHS.conceptsGraph(),
+                                SimpleValueFactory.getInstance().createIRI(uri)))),
                 Arguments.of(Named.<UriQuery>of("dataset contributors", DATASETS::getContributorsByDatasetUri)),
                 Arguments.of(Named.<UriQuery>of(
                         "distribution contributors", DISTRIBUTIONS::getContributorsByDistributionUri)),

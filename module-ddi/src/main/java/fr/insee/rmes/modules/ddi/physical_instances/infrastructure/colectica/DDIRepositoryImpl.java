@@ -20,6 +20,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnitRe
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4VariableScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.DuplicatePhysicalInstanceRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.MutualizedCodeListCodes;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.OperationStudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodesList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialGroup;
@@ -31,6 +32,8 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanc
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceParents;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceSearchRow;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.ReuseVariablesRequest;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.RolloverRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UpdatePhysicalInstanceRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3toDDI4ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI4toDDI3ConverterService;
@@ -38,6 +41,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.DDIRe
 import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Executor;
 import org.jspecify.annotations.Nullable;
@@ -239,6 +243,11 @@ public class DDIRepositoryImpl implements DDIRepository {
     }
 
     @Override
+    public List<OperationStudyUnit> findStudyUnitsByOperationIris(Collection<String> operationIris) {
+        return catalog.findStudyUnitsByOperationIris(operationIris);
+    }
+
+    @Override
     public String getItemXml(String agency, String id, String version) {
         return catalog.getItemXml(agency, id, version);
     }
@@ -287,7 +296,7 @@ public class DDIRepositoryImpl implements DDIRepository {
     public Ddi4Response createPhysicalInstance(CreatePhysicalInstanceRequest request) {
         Ddi4Response created = physicalInstanceWriter.createPhysicalInstance(request);
         searchRowsCache.add(createdPhysicalInstance(created), request.studyUnitAgency(), request.studyUnitId());
-        catalog.refreshStudyUnitsByOperationAsync();
+        catalog.refreshStudyUnitsByOperationNow();
         return created;
     }
 
@@ -295,7 +304,7 @@ public class DDIRepositoryImpl implements DDIRepository {
     public Ddi4Response createPhysicalInstance(CreatePhysicalInstanceRequest request, PhysicalInstanceIds ids) {
         Ddi4Response created = physicalInstanceWriter.createPhysicalInstance(request, ids);
         searchRowsCache.add(createdPhysicalInstance(created), request.studyUnitAgency(), request.studyUnitId());
-        catalog.refreshStudyUnitsByOperationAsync();
+        catalog.refreshStudyUnitsByOperationNow();
         return created;
     }
 
@@ -320,7 +329,22 @@ public class DDIRepositoryImpl implements DDIRepository {
         Ddi4PhysicalInstance copy = physicalInstanceWriter.duplicatePhysicalInstance(agencyId, id, request);
         searchRowsCache.add(copy, request.studyUnitAgency(), request.studyUnitId());
         catalog.refreshStudyUnitsByOperationAsync();
-        return Reference.of(copy.agency(), copy.id(), copy.version(), Ddi4PhysicalInstance.TYPE);
+        return Reference.of(copy.agency(), copy.id(), copy.version(), Ddi4PhysicalInstance.TYPE_NAME);
+    }
+
+    @Override
+    @CacheEvict(cacheNames = ColecticaCacheNames.PHYSICAL_INSTANCE_SEARCH_ROWS, allEntries = true)
+    public Reference reuseVariables(String agencyId, String id, ReuseVariablesRequest request) {
+        return physicalInstanceWriter.reuseVariables(
+                agencyId, id, request, catalog.getPhysicalInstanceParents(agencyId, id));
+    }
+
+    @Override
+    @CacheEvict(cacheNames = ColecticaCacheNames.PHYSICAL_INSTANCE_SEARCH_ROWS, allEntries = true)
+    public Reference rollover(Ddi4Response source, RolloverRequest request, Map<String, Reference> reusedBySourceId) {
+        Reference created = physicalInstanceWriter.rollover(source, request, reusedBySourceId);
+        catalog.refreshStudyUnitsByOperationAsync();
+        return created;
     }
 
     /** Les parents ne changent pas : la ligne de recherche est mise à jour en place. */
@@ -388,6 +412,11 @@ public class DDIRepositoryImpl implements DDIRepository {
     @Override
     public Optional<Ddi4ManagedRepresentationScheme> findManagedRepresentationScheme(String agencyId, String id) {
         return itemByIdReader.findManagedRepresentationScheme(agencyId, id);
+    }
+
+    @Override
+    public Optional<Ddi4VariableScheme> findVariableScheme(String agencyId, String id) {
+        return itemByIdReader.findVariableScheme(agencyId, id);
     }
 
     @Override

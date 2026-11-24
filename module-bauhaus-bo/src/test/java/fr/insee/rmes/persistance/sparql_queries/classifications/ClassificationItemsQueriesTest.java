@@ -19,35 +19,31 @@ class ClassificationItemsQueriesTest {
     void itemQuery_addressesTheItemByTheUriOfItsClassification() throws RmesException {
         String query = classificationItemsQueries.itemQuery("nafr2", "01.1");
 
-        assertThat(query).contains("\"/codes/nafr2/\"");
-        assertThat(query).contains("\"/01.1\"");
-        assertThat(query).contains("\"fr\"");
-        assertThat(query).contains("\"en\"");
+        assertThat(query)
+                .contains("\"/codes/nafr2/\"")
+                .contains("\"/01.1\"")
+                .contains("\"fr\"")
+                .contains("\"en\"");
     }
 
     @Test
     void itemAltQuery_addressesTheItemByTheUriOfItsClassification() throws RmesException {
         String query = classificationItemsQueries.itemAltQuery("nafr2", "01.1");
 
-        assertThat(query).contains("\"/codes/nafr2/\"");
-        assertThat(query).contains("\"/01.1\"");
-        assertThat(query).contains("skosxl:literalForm");
+        assertThat(query).contains("\"/codes/nafr2/\"").contains("\"/01.1\"").contains("skosxl:literalForm");
     }
 
     @Test
     void itemNotesQuery_selectsTheAskedVersionOfTheNotes() throws RmesException {
         String query = classificationItemsQueries.itemNotesQuery("nafr2", "01.1", 3);
 
-        assertThat(query).contains("\"/codes/nafr2/\"");
-        assertThat(query).contains("\"3\"");
+        assertThat(query).contains("\"/codes/nafr2/\"").contains("\"3\"");
     }
 
     @Test
     void itemNarrowersQuery_addressesTheItemByTheUriOfItsClassification() throws RmesException {
         String query = classificationItemsQueries.itemNarrowersQuery("nafr2", "01.1");
 
-        assertThat(query).contains("\"/codes/nafr2/\"");
-        assertThat(query).contains("\"/01.1\"");
-        assertThat(query).contains("narrower");
+        assertThat(query).contains("\"/codes/nafr2/\"").contains("\"/01.1\"").contains("narrower");
     }
 }

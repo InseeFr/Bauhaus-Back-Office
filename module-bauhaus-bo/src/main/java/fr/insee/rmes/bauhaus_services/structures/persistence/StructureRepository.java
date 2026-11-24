@@ -4,9 +4,10 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.Constants;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausIriFactory;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfTriples;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.bauhaus_services.structures.StructureComponent;
 import fr.insee.rmes.domain.exceptions.RmesException;
@@ -42,6 +43,8 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public class StructureRepository extends RdfService {
+    private final BauhausIriFactory iriFactory;
+
     private final BauhausLanguagesProperties languages;
 
     private static final String IO_EXCEPTION = "IOException";
@@ -74,13 +77,15 @@ public class StructureRepository extends RdfService {
             StructureComponent structureComponent,
             StructureQueries structureQueries,
             StructureComponentRepository structureComponentRepository,
-            StructurePublication structurePublication) {
+            StructurePublication structurePublication,
+            BauhausIriFactory iriFactory) {
         super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
         this.languages = languages;
         this.structureComponent = structureComponent;
         this.structureQueries = structureQueries;
         this.structureComponentRepository = structureComponentRepository;
         this.structurePublication = structurePublication;
+        this.iriFactory = iriFactory;
     }
 
     public JSONArray formatStructuresForSearch(JSONArray structures) throws RmesException {
@@ -223,8 +228,8 @@ public class StructureRepository extends RdfService {
         validateStructure(structure);
 
         structure.setUpdated(DateUtils.getCurrentDate());
-        IRI structureIri = RdfUtils.structureIRI(structure.getId());
-        repoGestion.clearStructureNodeAndComponents(structureIri, RdfUtils.structureGraph());
+        IRI structureIri = iriFactory.structure(structure.getId());
+        repoGestion.clearStructureNodeAndComponents(structureIri, iriFactory.structureGraph());
 
         String status = getValidationStatus(id);
         if (status.equals(ValidationStatus.UNPUBLISHED.getValue()) || status.equals(Constants.UNDEFINED)) {
@@ -244,8 +249,8 @@ public class StructureRepository extends RdfService {
      */
     public void createRdfStructure(Structure structure, ValidationStatus status) throws RmesException {
         String structureId = structure.getId();
-        IRI structureIri = RdfUtils.structureIRI(structureId);
-        Resource graph = RdfUtils.structureGraph();
+        IRI structureIri = iriFactory.structure(structureId);
+        Resource graph = iriFactory.structureGraph();
 
         createRdfStructure(structure, structureId, structureIri, graph, status);
     }
@@ -280,28 +285,25 @@ public class StructureRepository extends RdfService {
 
         model.add(structureIri, RDF.TYPE, QB.DATA_STRUCTURE_DEFINITION, graph);
         /*Required*/
-        model.add(structureIri, DCTERMS.IDENTIFIER, RdfUtils.setLiteralString(structureId), graph);
-        model.add(structureIri, SKOS.NOTATION, RdfUtils.setLiteralString(structure.getIdentifiant()), graph);
-        model.add(structureIri, RDFS.LABEL, RdfUtils.setLiteralString(structure.getLabelLg1(), languages.lg1()), graph);
-        model.add(structureIri, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(status.toString()), graph);
+        model.add(structureIri, DCTERMS.IDENTIFIER, RdfTriples.string(structureId), graph);
+        model.add(structureIri, SKOS.NOTATION, RdfTriples.string(structure.getIdentifiant()), graph);
+        model.add(structureIri, RDFS.LABEL, RdfTriples.string(structure.getLabelLg1(), languages.lg1()), graph);
+        model.add(structureIri, INSEE.VALIDATION_STATE, RdfTriples.string(status.toString()), graph);
 
         /*Optional*/
-        RdfUtils.addTripleDateTime(structureIri, DCTERMS.CREATED, structure.getCreated(), model, graph);
-        RdfUtils.addTripleDateTime(structureIri, DCTERMS.MODIFIED, structure.getUpdated(), model, graph);
+        RdfTriples.addDateTime(structureIri, DCTERMS.CREATED, structure.getCreated(), model, graph);
+        RdfTriples.addDateTime(structureIri, DCTERMS.MODIFIED, structure.getUpdated(), model, graph);
 
-        RdfUtils.addTripleString(structureIri, RDFS.LABEL, structure.getLabelLg2(), languages.lg2(), model, graph);
-        RdfUtils.addTripleString(
-                structureIri, RDFS.COMMENT, structure.getDescriptionLg1(), languages.lg1(), model, graph);
-        RdfUtils.addTripleString(
-                structureIri, RDFS.COMMENT, structure.getDescriptionLg2(), languages.lg2(), model, graph);
+        RdfTriples.addString(structureIri, RDFS.LABEL, structure.getLabelLg2(), languages.lg2(), model, graph);
+        RdfTriples.addString(structureIri, RDFS.COMMENT, structure.getDescriptionLg1(), languages.lg1(), model, graph);
+        RdfTriples.addString(structureIri, RDFS.COMMENT, structure.getDescriptionLg2(), languages.lg2(), model, graph);
 
-        RdfUtils.addTripleUri(structureIri, DC.CREATOR, structure.getCreator(), model, graph);
+        RdfTriples.addUri(structureIri, DC.CREATOR, structure.getCreator(), model, graph);
         structure
                 .getContributor()
-                .forEach(contributor -> RdfUtils.addTripleUri(structureIri, DC.CONTRIBUTOR, contributor, model, graph));
+                .forEach(contributor -> RdfTriples.addUri(structureIri, DC.CONTRIBUTOR, contributor, model, graph));
 
-        RdfUtils.addTripleUri(
-                structureIri, INSEE.DISSEMINATIONSTATUS, structure.getDisseminationStatus(), model, graph);
+        RdfTriples.addUri(structureIri, INSEE.DISSEMINATIONSTATUS, structure.getDisseminationStatus(), model, graph);
 
         repoGestion.loadSimpleObject(structureIri, model, null);
 
@@ -342,68 +344,62 @@ public class StructureRepository extends RdfService {
 
         IRI componentSpecificationIRI;
 
-        componentSpecificationIRI =
-                getComponentDefinitionIRI(RdfUtils.toString(structureIRI), componentDefinition.getId());
+        componentSpecificationIRI = getComponentDefinitionIRI(structureIRI.toString(), componentDefinition.getId());
 
         model.add(structureIRI, QB.COMPONENT, componentSpecificationIRI, graph);
 
         model.add(componentSpecificationIRI, RDF.TYPE, QB.COMPONENT_SPECIFICATION, graph);
 
-        model.add(
-                componentSpecificationIRI,
-                DCTERMS.IDENTIFIER,
-                RdfUtils.setLiteralString(componentDefinition.getId()),
-                graph);
+        model.add(componentSpecificationIRI, DCTERMS.IDENTIFIER, RdfTriples.string(componentDefinition.getId()), graph);
         if (componentDefinition.getCreated() != null) {
             model.add(
                     componentSpecificationIRI,
                     DCTERMS.CREATED,
-                    RdfUtils.setLiteralDateTime(componentDefinition.getCreated()),
+                    RdfTriples.dateTime(componentDefinition.getCreated()),
                     graph);
         }
         if (componentDefinition.getModified() != null) {
             model.add(
                     componentSpecificationIRI,
                     DCTERMS.MODIFIED,
-                    RdfUtils.setLiteralDateTime(componentDefinition.getModified()),
+                    RdfTriples.dateTime(componentDefinition.getModified()),
                     graph);
         }
         if (componentDefinition.getOrder() != null) {
-            model.add(
-                    componentSpecificationIRI, QB.ORDER, RdfUtils.setLiteralInt(componentDefinition.getOrder()), graph);
+            model.add(componentSpecificationIRI, QB.ORDER, RdfTriples.integer(componentDefinition.getOrder()), graph);
         }
         if (componentDefinition.getNotation() != null) {
             model.add(
                     componentSpecificationIRI,
                     SKOS.NOTATION,
-                    RdfUtils.setLiteralString(componentDefinition.getNotation()),
+                    RdfTriples.string(componentDefinition.getNotation()),
                     graph);
         }
         if (componentDefinition.getLabelLg1() != null) {
             model.add(
                     componentSpecificationIRI,
                     RDFS.LABEL,
-                    RdfUtils.setLiteralString(componentDefinition.getLabelLg1(), languages.lg1()),
+                    RdfTriples.string(componentDefinition.getLabelLg1(), languages.lg1()),
                     graph);
         }
         if (componentDefinition.getLabelLg2() != null) {
             model.add(
                     componentSpecificationIRI,
                     RDFS.LABEL,
-                    RdfUtils.setLiteralString(componentDefinition.getLabelLg2(), languages.lg2()),
+                    RdfTriples.string(componentDefinition.getLabelLg2(), languages.lg2()),
                     graph);
         }
         MutualizedComponent component = componentDefinition.getComponent();
-        if (component.getType().equals(RdfUtils.toString(QB.DIMENSION_PROPERTY))) {
+        if (component.getType().equals(QB.DIMENSION_PROPERTY.toString())) {
             model.add(componentSpecificationIRI, QB.DIMENSION, getDimensionIRI(component.getId()), graph);
         }
-        if (component.getType().equals(RdfUtils.toString(QB.ATTRIBUTE_PROPERTY))) {
+        if (component.getType().equals(QB.ATTRIBUTE_PROPERTY.toString())) {
             for (String attachment : componentDefinition.getAttachment()) {
                 IRI attachmentIRI;
                 try {
-                    attachmentIRI = RdfUtils.createIRI(attachment);
+                    attachmentIRI = RdfTriples.iriAsIs(attachment);
                 } catch (Exception _) {
-                    attachmentIRI = RdfUtils.structureComponentMeasureIRI(attachment);
+                    attachmentIRI = iriFactory.structureComponentMeasure(attachment);
                 }
 
                 model.add(componentSpecificationIRI, QB.COMPONENT_ATTACHMENT, attachmentIRI, graph);
@@ -413,29 +409,29 @@ public class StructureRepository extends RdfService {
             model.add(
                     componentSpecificationIRI,
                     QB.COMPONENT_REQUIRED,
-                    RdfUtils.setLiteralBoolean(componentDefinition.getRequired()),
+                    RdfTriples.bool(componentDefinition.getRequired()),
                     graph);
         }
-        if (component.getType().equals(RdfUtils.toString(QB.MEASURE_PROPERTY))) {
+        if (component.getType().equals(QB.MEASURE_PROPERTY.toString())) {
             model.add(componentSpecificationIRI, QB.MEASURE, getMeasureIRI(component.getId()), graph);
         }
         repoGestion.loadSimpleObject(componentSpecificationIRI, model);
     }
 
     public IRI getComponentDefinitionIRI(String structureIRI, String componentDefinitionId) {
-        return RdfUtils.structureComponentDefinitionIRI(structureIRI, componentDefinitionId);
+        return iriFactory.structureComponentDefinition(structureIRI, componentDefinitionId);
     }
 
     public IRI getDimensionIRI(String id) {
-        return RdfUtils.structureComponentDimensionIRI(id);
+        return iriFactory.structureComponentDimension(id);
     }
 
     public IRI getMeasureIRI(String id) {
-        return RdfUtils.structureComponentMeasureIRI(id);
+        return iriFactory.structureComponentMeasure(id);
     }
 
     public IRI getAttributeIRI(String id) {
-        return RdfUtils.structureComponentAttributeIRI(id);
+        return iriFactory.structureComponentAttribute(id);
     }
 
     private void validateStructure(Structure structure) throws RmesException {
@@ -458,8 +454,8 @@ public class StructureRepository extends RdfService {
             throw new RmesBadRequestException(
                     ErrorCodes.STRUCTURE_DELETE_ONLY_UNPUBLISHED, "Only unpublished structures can be deleted");
         } else {
-            IRI structureIri = RdfUtils.structureIRI(structureId);
-            repoGestion.clearStructureNodeAndComponents(structureIri, RdfUtils.structureGraph());
+            IRI structureIri = iriFactory.structure(structureId);
+            repoGestion.clearStructureNodeAndComponents(structureIri, iriFactory.structureGraph());
             repoGestion.deleteObject(structureIri, null);
         }
     }
@@ -503,12 +499,12 @@ public class StructureRepository extends RdfService {
             throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), IO_EXCEPTION);
         }
 
-        IRI structureIri = RdfUtils.structureIRI(structureObject.getId());
+        IRI structureIri = iriFactory.structure(structureObject.getId());
 
-        this.structurePublication.publish(structureIri, RdfUtils.structureGraph());
+        this.structurePublication.publish(structureIri, iriFactory.structureGraph());
 
         structureObject.setUpdated(DateUtils.getCurrentDate());
-        repoGestion.clearStructureNodeAndComponents(structureIri, RdfUtils.structureGraph());
+        repoGestion.clearStructureNodeAndComponents(structureIri, iriFactory.structureGraph());
         createRdfStructure(structureObject, ValidationStatus.VALIDATED);
 
         return structure.toString();

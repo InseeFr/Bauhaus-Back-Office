@@ -64,7 +64,7 @@ class DDI4toDDI3ConverterServiceImplTest {
     @Test
     void shouldWriteConfiguredVersionResponsibilityInTheDdi3Fragment() {
         Ddi4PhysicalInstance pi = new Ddi4PhysicalInstance(
-                Ddi4PhysicalInstance.TYPE,
+                Ddi4PhysicalInstance.TYPE_NAME,
                 CogsDate.ofDateTime("2026-01-21T13:48:46.363"),
                 "urn:ddi:fr.insee:PhysicalInstance.saphir-rp99-sas:1",
                 "fr.insee",
@@ -86,7 +86,7 @@ class DDI4toDDI3ConverterServiceImplTest {
     @Test
     void shouldConvertPhysicalInstance() {
         Ddi4PhysicalInstance pi = new Ddi4PhysicalInstance(
-                Ddi4PhysicalInstance.TYPE,
+                Ddi4PhysicalInstance.TYPE_NAME,
                 CogsDate.ofDateTime("2025-01-21T13:48:46.363"),
                 "urn:ddi:fr.insee:PhysicalInstance.saphir-rp99-sas:1",
                 "fr.insee",
@@ -107,7 +107,7 @@ class DDI4toDDI3ConverterServiceImplTest {
     @Test
     void shouldConvertDataRelationship() {
         Ddi4DataRelationship dr = new Ddi4DataRelationship(
-                Ddi4DataRelationship.TYPE,
+                Ddi4DataRelationship.TYPE_NAME,
                 CogsDate.ofDateTime("2025-01-21T13:48:46.363"),
                 "urn:ddi:fr.insee:DataRelationship.saphir-rp99-sas:1",
                 "fr.insee",
@@ -116,7 +116,7 @@ class DDI4toDDI3ConverterServiceImplTest {
                 null,
                 LangStrings.of("fr-FR", "SAPHIR - RP99"),
                 List.of(new LogicalRecord(
-                        LogicalRecord.TYPE,
+                        LogicalRecord.TYPE_NAME,
                         "urn:ddi:fr.insee:lr:1",
                         "fr.insee",
                         "saphir-rp99-sas",
@@ -133,7 +133,7 @@ class DDI4toDDI3ConverterServiceImplTest {
     @Test
     void shouldConvertVariable() {
         Ddi4Variable var = new Ddi4Variable(
-                Ddi4Variable.TYPE,
+                Ddi4Variable.TYPE_NAME,
                 CogsDate.ofDateTime("2025-01-21T13:48:46.363"),
                 "urn:ddi:fr.insee:Variable.AGEMEN8:1",
                 "fr.insee",
@@ -146,7 +146,7 @@ class DDI4toDDI3ConverterServiceImplTest {
                 new VariableRepresentation(
                         null,
                         new CodeRepresentation(
-                                CodeRepresentation.TYPE,
+                                CodeRepresentation.TYPE_NAME,
                                 false,
                                 Reference.of("fr.insee", "CL_AGEMEN8", "1", "CodeList")),
                         null,
@@ -168,7 +168,7 @@ class DDI4toDDI3ConverterServiceImplTest {
     @Test
     void shouldConvertCodeList() {
         Ddi4CodeList cl = new Ddi4CodeList(
-                Ddi4CodeList.TYPE,
+                Ddi4CodeList.TYPE_NAME,
                 CogsDate.ofDateTime("2025-01-21T13:48:46.363"),
                 "urn:ddi:fr.insee:CodeList.CL_AGEMEN8:1",
                 "fr.insee",
@@ -187,7 +187,7 @@ class DDI4toDDI3ConverterServiceImplTest {
     @Test
     void shouldConvertCategory() {
         Ddi4Category cat = new Ddi4Category(
-                Ddi4Category.TYPE,
+                Ddi4Category.TYPE_NAME,
                 CogsDate.ofDateTime("2025-01-21T13:48:46.363"),
                 "urn:ddi:fr.insee:Category.CAT_0:1",
                 "fr.insee",
@@ -223,7 +223,7 @@ class DDI4toDDI3ConverterServiceImplTest {
     @Test
     void shouldConvertCodeListSchemeToDdi3Item() {
         Ddi4CodeListScheme scheme = new Ddi4CodeListScheme(
-                Ddi4CodeListScheme.TYPE,
+                Ddi4CodeListScheme.TYPE_NAME,
                 CogsDate.ofDateTime("2025-01-21T13:48:46.363"),
                 "urn:ddi:fr.insee:CLS_1:1",
                 "fr.insee",
@@ -247,7 +247,7 @@ class DDI4toDDI3ConverterServiceImplTest {
     @Test
     void shouldConvertCategorySchemeToDdi3Item() {
         Ddi4CategoryScheme scheme = new Ddi4CategoryScheme(
-                Ddi4CategoryScheme.TYPE,
+                Ddi4CategoryScheme.TYPE_NAME,
                 CogsDate.ofDateTime("2025-01-21T13:48:46.363"),
                 "urn:ddi:fr.insee:CATS_1:1",
                 "fr.insee",
@@ -271,7 +271,7 @@ class DDI4toDDI3ConverterServiceImplTest {
     @Test
     void shouldConvertManagedRepresentationSchemeToDdi3Item() {
         Ddi4ManagedRepresentationScheme scheme = new Ddi4ManagedRepresentationScheme(
-                Ddi4ManagedRepresentationScheme.TYPE,
+                Ddi4ManagedRepresentationScheme.TYPE_NAME,
                 CogsDate.ofDateTime("2025-01-21T13:48:46.363"),
                 "urn:ddi:fr.insee:MRS_1:1",
                 "fr.insee",
@@ -292,7 +292,7 @@ class DDI4toDDI3ConverterServiceImplTest {
     @Test
     void shouldConvertManagedMissingValuesRepresentationToDdi3Item() {
         Ddi4ManagedMissingValuesRepresentation mmvr = new Ddi4ManagedMissingValuesRepresentation(
-                Ddi4ManagedMissingValuesRepresentation.TYPE,
+                Ddi4ManagedMissingValuesRepresentation.TYPE_NAME,
                 CogsDate.ofDateTime("2025-01-21T13:48:46.363"),
                 "urn:ddi:fr.insee:MMVR_1:1",
                 "fr.insee",
@@ -300,7 +300,7 @@ class DDI4toDDI3ConverterServiceImplTest {
                 "1",
                 LangStrings.of("fr-FR", "Valeurs manquantes standard"),
                 List.of(new CodeRepresentation(
-                        CodeRepresentation.TYPE,
+                        CodeRepresentation.TYPE_NAME,
                         Boolean.FALSE,
                         Reference.of("fr.insee", "CL_SENTINEL", "1", "CodeList"))));
 
@@ -319,7 +319,7 @@ class DDI4toDDI3ConverterServiceImplTest {
     @Test
     void shouldConvertCodeListToDdi3Item() {
         Ddi4CodeList codeList = new Ddi4CodeList(
-                Ddi4CodeList.TYPE,
+                Ddi4CodeList.TYPE_NAME,
                 CogsDate.ofDateTime("2025-01-21T13:48:46.363"),
                 "urn:ddi:fr.insee:CL_1:1",
                 "fr.insee",
@@ -328,7 +328,7 @@ class DDI4toDDI3ConverterServiceImplTest {
                 LangStrings.of("fr-FR", "Liste sentinelle"),
                 null,
                 List.of(new Code(
-                        Code.TYPE,
+                        Code.TYPE_NAME,
                         "urn:ddi:fr.insee:CODE_1:1",
                         "fr.insee",
                         "CODE_1",
@@ -353,7 +353,7 @@ class DDI4toDDI3ConverterServiceImplTest {
     @Test
     void shouldConvertCategoryToDdi3Item() {
         Ddi4Category category = new Ddi4Category(
-                Ddi4Category.TYPE,
+                Ddi4Category.TYPE_NAME,
                 CogsDate.ofDateTime("2025-01-21T13:48:46.363"),
                 "urn:ddi:fr.insee:CAT_1:1",
                 "fr.insee",
@@ -373,7 +373,7 @@ class DDI4toDDI3ConverterServiceImplTest {
     @Test
     void shouldConvertVariableSchemeToDdi3Item() {
         Ddi4VariableScheme scheme = new Ddi4VariableScheme(
-                Ddi4VariableScheme.TYPE,
+                Ddi4VariableScheme.TYPE_NAME,
                 CogsDate.ofDateTime("2025-01-21T13:48:46.363"),
                 "urn:ddi:fr.insee:VARS_1:1",
                 "fr.insee",
@@ -397,7 +397,7 @@ class DDI4toDDI3ConverterServiceImplTest {
     @Test
     void shouldConvertLogicalProductToDdi3Item() {
         Ddi4LogicalProduct logicalProduct = new Ddi4LogicalProduct(
-                Ddi4LogicalProduct.TYPE,
+                Ddi4LogicalProduct.TYPE_NAME,
                 CogsDate.ofDateTime("2025-01-21T13:48:46.363"),
                 "urn:ddi:fr.insee:LP_1:1",
                 "fr.insee",
@@ -421,7 +421,7 @@ class DDI4toDDI3ConverterServiceImplTest {
     @Test
     void shouldConvertGroupToDdi3ItemWithLogicalProductReference() {
         Ddi4Group group = new Ddi4Group(
-                Ddi4Group.TYPE,
+                Ddi4Group.TYPE_NAME,
                 CogsDate.ofDateTime("2025-01-21T13:48:46.363"),
                 "urn:ddi:fr.insee:GROUP_1:1",
                 "fr.insee",
@@ -451,7 +451,7 @@ class DDI4toDDI3ConverterServiceImplTest {
     @Test
     void shouldConvertStudyUnitToDdi3ItemWithLogicalProductReference() {
         Ddi4StudyUnit studyUnit = new Ddi4StudyUnit(
-                Ddi4StudyUnit.TYPE,
+                Ddi4StudyUnit.TYPE_NAME,
                 CogsDate.ofDateTime("2025-01-21T13:48:46.363"),
                 "urn:ddi:fr.insee:SU_1:1",
                 "fr.insee",
@@ -509,7 +509,7 @@ class DDI4toDDI3ConverterServiceImplTest {
     /** A single physical instance, declared as the top-level reference of the response. */
     private static Ddi4Response physicalInstanceWithTopLevelReference() {
         Ddi4PhysicalInstance pi = new Ddi4PhysicalInstance(
-                Ddi4PhysicalInstance.TYPE,
+                Ddi4PhysicalInstance.TYPE_NAME,
                 CogsDate.ofDateTime("2025-01-21T13:48:46.363"),
                 "urn:ddi:fr.insee:PhysicalInstance.test:1",
                 "fr.insee",

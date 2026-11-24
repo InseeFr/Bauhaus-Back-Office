@@ -228,7 +228,7 @@ class CollectionExportBuilderTest {
     }
 
     @Test
-    void shouldExportMultipleCollectionsAsZipOdt() throws RmesException, Exception {
+    void shouldExportMultipleCollectionsAsZipOdt() throws Exception {
         // Given
         Map<String, Map<String, String>> collections = new HashMap<>();
         collections.put("collection1.odt", collectionXmlContent());
@@ -246,7 +246,7 @@ class CollectionExportBuilderTest {
     }
 
     @Test
-    void shouldExportMultipleCollectionsAsZipOds() throws RmesException, Exception {
+    void shouldExportMultipleCollectionsAsZipOds() throws Exception {
         // Given
         Map<String, Map<String, String>> collections = new HashMap<>();
         collections.put("collection1.ods", collectionXmlContent());

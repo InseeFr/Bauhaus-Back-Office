@@ -34,6 +34,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIIt
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.Ddi4SchemaService;
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.CodeListSummaryResponse;
+import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.OperationStudyUnitResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PartialPhysicalInstanceResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PhysicalInstanceParentsResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PhysicalInstanceSearchResponse;
@@ -174,7 +175,7 @@ class DdiResourcesTest {
         String agencyId = "fr.insee";
         String id = "pi-1";
         Ddi4CodeList codeList = new Ddi4CodeList(
-                Ddi4CodeList.TYPE,
+                Ddi4CodeList.TYPE_NAME,
                 null,
                 "urn:ddi:fr.insee:cl-1:1",
                 agencyId,
@@ -342,7 +343,17 @@ class DdiResourcesTest {
         when(ddiService.updatePhysicalInstance(agencyId, instanceId, request)).thenReturn(expectedResponse);
 
         // When
-        ResponseEntity<Ddi4Response> result = ddiResources.updatePhysicalInstance(agencyId, instanceId, request);
+        ResponseEntity<Ddi4Response> result = ddiResources.updatePhysicalInstance(
+                agencyId,
+                instanceId,
+                new PhysicalInstanceUpdateRequest(
+                        request.physicalInstanceLabel(),
+                        request.dataRelationshipLabel(),
+                        request.logicalRecordLabel(),
+                        null,
+                        null,
+                        null,
+                        null));
 
         // Then
         assertOkDdi4Json(result);
@@ -387,6 +398,62 @@ class DdiResourcesTest {
     }
 
     @Test
+    void shouldCreatePhysicalInstanceReusingSourceVariables() {
+        PhysicalInstanceReuseVariablesRequest request = new PhysicalInstanceReuseVariablesRequest(
+                "New PI", "DR", "LR", "group-1", "fr.insee", List.of("VAR_1", "VAR_2"));
+        Ddi4Response created = createMockDdi4Response();
+        when(ddiService.reuseVariables(
+                        "fr.insee",
+                        "pi-src",
+                        new ReuseVariablesRequest(
+                                "New PI", "DR", "LR", "group-1", "fr.insee", List.of("VAR_1", "VAR_2"))))
+                .thenReturn(created);
+
+        ResponseEntity<Ddi4Response> result = ddiResources.reuseVariables("fr.insee", "pi-src", request);
+
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertEquals(MediaType.APPLICATION_JSON, result.getHeaders().getContentType());
+        assertEquals(created, result.getBody());
+    }
+
+    @Test
+    void should_roll_physical_instance_over() {
+        PhysicalInstanceRolloverRequest request = new PhysicalInstanceRolloverRequest(
+                "PI 2025",
+                "DR",
+                "LR",
+                "su-2025",
+                "fr.insee",
+                "group-1",
+                "fr.insee",
+                List.of(
+                        new PhysicalInstanceRolloverRequest.Variable("VAR_1", null, null),
+                        new PhysicalInstanceRolloverRequest.Variable("VAR_2", "fr.insee", "VAR_2_2025")));
+        Ddi4Response created = createMockDdi4Response();
+        when(ddiService.rollover(
+                        "fr.insee",
+                        "pi-src",
+                        new RolloverRequest(
+                                "PI 2025",
+                                "DR",
+                                "LR",
+                                "su-2025",
+                                "fr.insee",
+                                "group-1",
+                                "fr.insee",
+                                List.of(
+                                        RolloverVariable.copy("VAR_1"),
+                                        RolloverVariable.reuse("VAR_2", "fr.insee", "VAR_2_2025")))))
+                .thenReturn(created);
+
+        ResponseEntity<Ddi4Response> result = ddiResources.rollover("fr.insee", "pi-src", request);
+
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertEquals(MediaType.APPLICATION_JSON, result.getHeaders().getContentType());
+        assertEquals(created, result.getBody());
+    }
+
+    @Test
     void shouldCreatePhysicalInstance() {
         // Given
         CreatePhysicalInstanceRequest request = new CreatePhysicalInstanceRequest(
@@ -401,7 +468,14 @@ class DdiResourcesTest {
         when(ddiService.createPhysicalInstance(request)).thenReturn(expectedResponse);
 
         // When
-        ResponseEntity<Ddi4Response> result = ddiResources.createPhysicalInstance(request);
+        ResponseEntity<Ddi4Response> result = ddiResources.createPhysicalInstance(new PhysicalInstanceCreationRequest(
+                request.physicalInstanceLabel(),
+                request.dataRelationshipLabel(),
+                request.logicalRecordLabel(),
+                request.studyUnitId(),
+                request.studyUnitAgency(),
+                request.groupId(),
+                request.groupAgency()));
 
         // Then
         Ddi4Response responseBody = assertOkDdi4Json(result);
@@ -688,7 +762,9 @@ class DdiResourcesTest {
                 "Study One",
                 "fr.insee",
                 "g1",
-                "Group One");
+                "Group One",
+                List.of("SO"),
+                List.of("G1", "GRP"));
         when(ddiService.searchPhysicalInstances()).thenReturn(List.of(row));
 
         ResponseEntity<List<PhysicalInstanceSearchResponse>> response = ddiResources.searchPhysicalInstances(null);
@@ -701,6 +777,8 @@ class DdiResourcesTest {
         assertEquals("Instance A", body.getFirst().label());
         assertEquals("Study One", body.getFirst().studyUnitLabel());
         assertEquals("Group One", body.getFirst().groupLabel());
+        assertEquals(List.of("SO"), body.getFirst().studyUnitAlternateTitles());
+        assertEquals(List.of("G1", "GRP"), body.getFirst().groupAlternateTitles());
         verify(ddiService).searchPhysicalInstances();
     }
 
@@ -717,7 +795,9 @@ class DdiResourcesTest {
                 "Study One",
                 "fr.insee",
                 "g1",
-                "Group One");
+                "Group One",
+                List.of(),
+                List.of());
         when(ddiService.searchPhysicalInstances()).thenReturn(List.of(row));
 
         ResponseEntity<List<PhysicalInstanceSearchResponse>> response =
@@ -805,7 +885,7 @@ class DdiResourcesTest {
                 Reference.of("fr.insee", "d8283793-e88d-4cc7-a697-2951054e9a3a", "1", "DataRelationship");
 
         Ddi4PhysicalInstance physicalInstance = new Ddi4PhysicalInstance(
-                Ddi4PhysicalInstance.TYPE,
+                Ddi4PhysicalInstance.TYPE_NAME,
                 CogsDate.ofDateTime("2024-06-03T14:29:23.4049817Z"),
                 "urn:ddi:fr.insee:9a7f1abd-10ec-48f3-975f-fcfedb7dc4cd:1",
                 "fr.insee",
@@ -818,7 +898,7 @@ class DdiResourcesTest {
         List<LangString> drLabel = LangStrings.of("fr-FR", "Dessin de fichier thl-CASD");
 
         Ddi4DataRelationship dataRelationship = new Ddi4DataRelationship(
-                Ddi4DataRelationship.TYPE,
+                Ddi4DataRelationship.TYPE_NAME,
                 CogsDate.ofDateTime("2024-06-03T14:29:23.4049817Z"),
                 "urn:ddi:fr.insee:d8283793-e88d-4cc7-a697-2951054e9a3a:1",
                 "fr.insee",
@@ -962,10 +1042,27 @@ class DdiResourcesTest {
         assertEquals("Individus", result.getFirst().getLabel());
     }
 
+    // --- GET /ddi/operation/{id}/study-units ---
+
+    @Test
+    void getOperationStudyUnits_givesEachStudyUnitOfTheOperationWithItsGroup() {
+        when(ddiService.getStudyUnitsByOperation("s1268"))
+                .thenReturn(List.of(new OperationStudyUnit("fr.insee", "su-1", "Alpha", "fr.insee", "grp-1", "Série")));
+
+        ResponseEntity<List<OperationStudyUnitResponse>> response = ddiResources.getOperationStudyUnits("s1268");
+
+        List<OperationStudyUnitResponse> result = assertOkListOfSize(response, 1);
+        assertEquals(
+                new OperationStudyUnitResponse(
+                        new OperationStudyUnitResponse.Ref("fr.insee", "su-1", "Alpha"),
+                        new OperationStudyUnitResponse.Ref("fr.insee", "grp-1", "Série")),
+                result.getFirst());
+    }
+
     // --- GET /ddi/operation/{id}/fichiers (JSON, public) ---
 
     @Test
-    void getOperationStudyUnitJson_returns200WithDdi4_whenStudyUnitExists() throws RmesException {
+    void getOperationStudyUnitJson_returns200WithDdi4_whenStudyUnitExists() {
         String id = "op1";
         String operationIri = givenOperationIri(id);
         Ddi4StudyUnitResponse expected = aStudyUnitResponse(operationIri);
@@ -978,7 +1075,7 @@ class DdiResourcesTest {
     }
 
     @Test
-    void getOperationStudyUnitJson_returns404_whenStudyUnitNotFound() throws RmesException {
+    void getOperationStudyUnitJson_returns404_whenStudyUnitNotFound() {
         String id = "unknown";
         String operationIri = givenOperationIri(id);
         when(ddiService.getStudyUnitByOperationIri(operationIri, null)).thenReturn(Optional.empty());
@@ -1002,10 +1099,10 @@ class DdiResourcesTest {
 
     private static Ddi4StudyUnitResponse aStudyUnitResponse(String operationIri) {
         return new Ddi4StudyUnitResponse(
-                Ddi4Response.SCHEMA,
-                List.of(Reference.of("fr.insee", "su-1", "1", Ddi4StudyUnit.TYPE)),
+                Ddi4Response.SCHEMA_ID,
+                List.of(Reference.of("fr.insee", "su-1", "1", Ddi4StudyUnit.TYPE_NAME)),
                 List.of(new Ddi4StudyUnit(
-                        Ddi4StudyUnit.TYPE,
+                        Ddi4StudyUnit.TYPE_NAME,
                         null,
                         "urn:ddi:fr.insee:su-1:1",
                         "fr.insee",
@@ -1015,7 +1112,7 @@ class DdiResourcesTest {
                         operationIri,
                         null)),
                 List.of(new Ddi4PhysicalInstance(
-                        Ddi4PhysicalInstance.TYPE,
+                        Ddi4PhysicalInstance.TYPE_NAME,
                         null,
                         "urn:ddi:fr.insee:pi-1:1",
                         "fr.insee",
@@ -1029,7 +1126,7 @@ class DdiResourcesTest {
     // --- GET /ddi/operation/{id}/fichiers (XML DDI 3.3, public) ---
 
     @Test
-    void getOperationStudyUnitXml_returns200WithXml_whenStudyUnitExists() throws RmesException {
+    void getOperationStudyUnitXml_returns200WithXml_whenStudyUnitExists() {
         String id = "op1";
         String operationIri = givenOperationIri(id);
         String xml = "<Fragment><StudyUnit/></Fragment>";
@@ -1042,7 +1139,7 @@ class DdiResourcesTest {
     }
 
     @Test
-    void getOperationStudyUnitXml_returns404_whenStudyUnitNotFound() throws RmesException {
+    void getOperationStudyUnitXml_returns404_whenStudyUnitNotFound() {
         String id = "unknown";
         String operationIri = givenOperationIri(id);
         when(ddiService.getStudyUnitXmlByOperationIri(operationIri, null)).thenReturn(Optional.empty());
@@ -1155,7 +1252,9 @@ class DdiResourcesTest {
                 "Study One",
                 "fr.insee",
                 "g1",
-                "Group One");
+                "Group One",
+                List.of(),
+                List.of());
     }
 
     /** 200 JSON dont le corps est la réponse DDI 4 de schéma {@code test-schema}, rendue pour la suite. */

@@ -22,6 +22,7 @@ import fr.insee.rmes.modules.operations.series.webservice.SeriesResources;
 import fr.insee.rmes.modules.shared_kernel.domain.model.Language;
 import fr.insee.rmes.modules.users.domain.model.RBAC;
 import fr.insee.rmes.modules.users.webservice.HasAccess;
+import fr.insee.rmes.modules.users.webservice.HasCreateAccess;
 import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -114,7 +115,7 @@ public class FamilyResources {
     }
 
     @PostMapping("/family")
-    @HasAccess(module = RBAC.Module.OPERATION_FAMILY, privilege = RBAC.Privilege.CREATE)
+    @HasCreateAccess(module = RBAC.Module.OPERATION_FAMILY, owners = "#family.contributor()")
     public ResponseEntity<Object> createFamily(@Valid @RequestBody FamilyRequest family) throws RmesException {
         String id;
         try {

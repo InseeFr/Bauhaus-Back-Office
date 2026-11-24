@@ -112,7 +112,7 @@ class OidcUserDecoderTest {
         Optional<User> result = userDecoder.fromPrincipal(user);
 
         assertThat(result).isPresent();
-        assertThat(result.get()).isEqualTo(user);
+        assertThat(result).contains(user);
     }
 
     @Test

@@ -27,7 +27,7 @@ public record Ddi4Group(
         @JsonProperty("LogicalProductReference") List<Reference> logicalProductReference)
         implements Ddi4Item {
 
-    public static final String TYPE = "Group";
+    public static final String TYPE_NAME = "Group";
 
     /**
      * Backward-compatible constructor for groups that carry no LogicalProductReference.

@@ -1,0 +1,40 @@
+@prefix dc:      <http://purl.org/dc/elements/1.1/> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix insee:   <http://rdf.insee.fr/def/base#> .
+@prefix sdmx-mm: <http://www.w3.org/ns/sdmx-mm#> .
+
+# Les créateurs d'un rapport SIMS sont ceux de sa cible : la série elle-même, la série parente
+# d'une opération, ou l'indicateur. Identifiants propres à ce test (conteneur partagé).
+
+<http://rdf.insee.fr/graphes/qualite/rapport/9801> {
+    <http://bauhaus/qualite/rapport/9801> a sdmx-mm:MetadataReport ;
+        sdmx-mm:target <http://bauhaus/operations/operation/s9801op> .
+}
+
+<http://rdf.insee.fr/graphes/qualite/rapport/9802> {
+    <http://bauhaus/qualite/rapport/9802> a sdmx-mm:MetadataReport ;
+        sdmx-mm:target <http://bauhaus/operations/serie/s9801> .
+}
+
+<http://rdf.insee.fr/graphes/qualite/rapport/9803> {
+    <http://bauhaus/qualite/rapport/9803> a sdmx-mm:MetadataReport ;
+        sdmx-mm:target <http://bauhaus/produits/indicateur/p9803> .
+}
+
+<http://rdf.insee.fr/graphes/operations> {
+    <http://bauhaus/operations/famille/s9800> a insee:StatisticalOperationFamily ;
+        dcterms:hasPart <http://bauhaus/operations/serie/s9801> .
+
+    <http://bauhaus/operations/serie/s9801> a insee:StatisticalOperationSeries ;
+        dcterms:isPartOf <http://bauhaus/operations/famille/s9800> ;
+        dcterms:hasPart <http://bauhaus/operations/operation/s9801op> ;
+        dc:creator <http://bauhaus/organisations/insee/SERIES-9801> .
+
+    <http://bauhaus/operations/operation/s9801op> a insee:StatisticalOperation ;
+        dcterms:isPartOf <http://bauhaus/operations/serie/s9801> .
+}
+
+<http://rdf.insee.fr/graphes/produits> {
+    <http://bauhaus/produits/indicateur/p9803> a insee:StatisticalIndicator ;
+        dc:creator <http://bauhaus/organisations/insee/INDICATOR-9803> .
+}
