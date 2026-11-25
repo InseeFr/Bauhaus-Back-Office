@@ -106,6 +106,8 @@ import org.springframework.core.annotation.Order;
 @ConditionalOnProperty(name = "fr.insee.rmes.bauhaus.colectica.init", havingValue = "true")
 public class LocalColecticaGroupInitConfiguration {
 
+    static final String LARGE_CODE_LIST_ONLY_PROPERTY = "fr.insee.rmes.bauhaus.colectica.init-large-code-list-only";
+
     private static final Logger logger = LoggerFactory.getLogger(LocalColecticaGroupInitConfiguration.class);
 
     /**
@@ -187,6 +189,7 @@ public class LocalColecticaGroupInitConfiguration {
     }
 
     @Bean
+    @ConditionalOnProperty(name = LARGE_CODE_LIST_ONLY_PROPERTY, havingValue = "false", matchIfMissing = true)
     CommandLineRunner initColecticaGroups(
             GroupService groupService,
             StudyUnitService studyUnitService,
@@ -517,6 +520,7 @@ public class LocalColecticaGroupInitConfiguration {
      */
     @Bean
     @Order(Ordered.LOWEST_PRECEDENCE)
+    @ConditionalOnProperty(name = LARGE_CODE_LIST_ONLY_PROPERTY, havingValue = "false", matchIfMissing = true)
     CommandLineRunner initColecticaVersionedStudyUnitExample(
             GroupService groupService,
             StudyUnitService studyUnitService,
@@ -618,6 +622,7 @@ public class LocalColecticaGroupInitConfiguration {
      */
     @Bean
     @Order(Ordered.LOWEST_PRECEDENCE)
+    @ConditionalOnProperty(name = LARGE_CODE_LIST_ONLY_PROPERTY, havingValue = "false", matchIfMissing = true)
     CommandLineRunner initColecticaMovedStudyUnitExample(
             GroupService groupService,
             StudyUnitService studyUnitService,
@@ -747,6 +752,7 @@ public class LocalColecticaGroupInitConfiguration {
      */
     @Bean
     @Order(Ordered.LOWEST_PRECEDENCE)
+    @ConditionalOnProperty(name = LARGE_CODE_LIST_ONLY_PROPERTY, havingValue = "false", matchIfMissing = true)
     CommandLineRunner initColecticaSixVersionsStudyUnitExample(
             GroupService groupService,
             StudyUnitService studyUnitService,
@@ -842,6 +848,7 @@ public class LocalColecticaGroupInitConfiguration {
      */
     @Bean
     @Order(Ordered.LOWEST_PRECEDENCE)
+    @ConditionalOnProperty(name = LARGE_CODE_LIST_ONLY_PROPERTY, havingValue = "false", matchIfMissing = true)
     CommandLineRunner initColecticaWithoutLogicalProductExample(
             GroupService groupService,
             StudyUnitService studyUnitService,
@@ -936,6 +943,7 @@ public class LocalColecticaGroupInitConfiguration {
      */
     @Bean
     @Order(Ordered.LOWEST_PRECEDENCE)
+    @ConditionalOnProperty(name = LARGE_CODE_LIST_ONLY_PROPERTY, havingValue = "false", matchIfMissing = true)
     CommandLineRunner initColecticaDanglingLogicalProductExample(
             GroupService groupService,
             StudyUnitService studyUnitService,
@@ -1031,6 +1039,7 @@ public class LocalColecticaGroupInitConfiguration {
      */
     @Bean
     @Order(Ordered.LOWEST_PRECEDENCE)
+    @ConditionalOnProperty(name = LARGE_CODE_LIST_ONLY_PROPERTY, havingValue = "false", matchIfMissing = true)
     CommandLineRunner initColecticaIncompleteGroupSchemesExample(
             GroupService groupService,
             StudyUnitService studyUnitService,
@@ -1185,6 +1194,7 @@ public class LocalColecticaGroupInitConfiguration {
      */
     @Bean
     @Order(Ordered.LOWEST_PRECEDENCE)
+    @ConditionalOnProperty(name = LARGE_CODE_LIST_ONLY_PROPERTY, havingValue = "false", matchIfMissing = true)
     CommandLineRunner initColecticaVariableGroupExample(
             GroupService groupService,
             StudyUnitService studyUnitService,

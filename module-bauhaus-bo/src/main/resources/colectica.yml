@@ -3,6 +3,7 @@ fr.insee.rmes.bauhaus.colectica:
     - fr-FR
     - en-GB
   init: false
+  init-large-code-list-only: false
 
   # Miroir DDI des séries et opérations statistiques : à true, chaque création ou modification d'une
   # série (resp. d'une opération) dans le dépôt RDF est rejouée côté Colectica sur le Group
