@@ -17,9 +17,11 @@ import java.util.Optional;
 final class ColecticaLabels {
 
     private final String defaultLang;
+    private final List<String> langs;
 
-    ColecticaLabels(String defaultLang) {
-        this.defaultLang = defaultLang;
+    ColecticaLabels(List<String> langs) {
+        this.langs = List.copyOf(langs);
+        this.defaultLang = this.langs.getFirst();
     }
 
     String defaultLang() {
@@ -52,13 +54,11 @@ final class ColecticaLabels {
         if (languageMap == null) {
             return Optional.empty();
         }
-        String preferred = languageMap.get(defaultLang);
-        if (preferred != null && !preferred.isBlank()) {
-            return Optional.of(preferred);
-        }
-        String english = languageMap.get("en");
-        if (english != null && !english.isBlank()) {
-            return Optional.of(english);
+        for (String lang : langs) {
+            String preferred = languageMap.get(lang);
+            if (preferred != null && !preferred.isBlank()) {
+                return Optional.of(preferred);
+            }
         }
         return languageMap.values().stream()
                 .filter(v -> v != null && !v.isBlank())
@@ -69,14 +69,13 @@ final class ColecticaLabels {
         if (languageMap == null) {
             return null;
         }
-        String label = languageMap.get(defaultLang);
-        if (label == null || label.trim().isEmpty()) {
-            label = languageMap.get("en");
+        for (String lang : langs) {
+            String label = languageMap.get(lang);
+            if (label != null && !label.trim().isEmpty()) {
+                return label;
+            }
         }
-        if (label == null || label.trim().isEmpty()) {
-            label = languageMap.values().stream().findFirst().orElse(null);
-        }
-        return label;
+        return languageMap.values().stream().findFirst().orElse(null);
     }
 
     /**
