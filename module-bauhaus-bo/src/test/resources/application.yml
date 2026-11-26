@@ -6,6 +6,7 @@ fr.insee.rmes.bauhaus.colectica:
   # ApplicationReadyEvent-triggered Colectica tree walk only slows tests down and never
   # serves a real request in a test context.
   cache-warmup-enabled: false
+  init: false
 
 fr.insee.rmes.bauhaus:
   # Disable the defaultContributor startup check (DefaultContributorValidator): test contexts have

@@ -101,7 +101,7 @@ public class DDIRepositoryImpl implements DDIRepository {
             Executor cacheRefreshExecutor) {
         String defaultLang = colecticaConfiguration.langs().getFirst();
         this.defaultLang = defaultLang;
-        ColecticaLabels labels = new ColecticaLabels(defaultLang);
+        ColecticaLabels labels = new ColecticaLabels(colecticaConfiguration.langs());
         ColecticaSetReader setReader = new ColecticaSetReader(instanceConfiguration, colecticaClient);
         ColecticaVersionDates versionDates = new ColecticaVersionDates(colecticaClient, instanceConfiguration);
 
